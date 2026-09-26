@@ -1,0 +1,1166 @@
+{
+  "schemaVersion": "cleanup-data-deletions/1",
+  "baseCommit": "92e4d04cdeaaa2d8ccc65680c6fea1675dcee88a",
+  "usageReview": "docs/evidence/usp/orchestration/cleanup-usage-review-2026-09-26.paths.json",
+  "privateArchive": {
+    "path": "/Users/vinayak/.codex/archives/3d-ulpin-cleanup-data-2026-09-26-92e4d04c",
+    "manifestSha256": "7b5bb1f2dfc427c6fecf6be2e285811f712a32e65be43fbf40c5295210994e1b",
+    "fileCount": 148
+  },
+  "groups": {
+    "GEOGRAPHIC_SYNTHETIC_COMPANIONS": [
+      {
+        "path": "fixtures/google-uttam/03-DEMO-building-envelopes.geojson",
+        "gitBlob": "6b4c32053a89927a86737b0800c2f7d06a94ae8e"
+      },
+      {
+        "path": "fixtures/google-uttam/04-DEMO-road-corridors.geojson",
+        "gitBlob": "0a6cdb144dfd8fb90752fe99eae0ea47abb341fb"
+      },
+      {
+        "path": "fixtures/google-uttam/05-DEMO-road-conflict.geojson",
+        "gitBlob": "7ecdba26b2d271828b3e60a75502e89b9518120c"
+      },
+      {
+        "path": "fixtures/google-uttam/UN-A-SYNTHETIC-plan.png",
+        "gitBlob": "0d1b8fed4ed39ae8891b31fbb4d2f5e2ca88bf48"
+      },
+      {
+        "path": "fixtures/google-uttam/UN-B-SYNTHETIC-plan.png",
+        "gitBlob": "227d5eb0fd95821e9ceb668e24aebd421557c6d7"
+      },
+      {
+        "path": "fixtures/google-uttam/UN-C-SYNTHETIC-plan.png",
+        "gitBlob": "7e6d0b02bf099a8c0f1bf6218f446db8ef8abd57"
+      },
+      {
+        "path": "fixtures/google-uttam/synthetic-interior-spec.json",
+        "gitBlob": "e93d04903e9844b794c5203d857b5740bdea4baa"
+      },
+      {
+        "path": "fixtures/uttam-nagar/demo-buildings.geojson",
+        "gitBlob": "b13adb6705b68f142b6583dde2a8d00bb72ea346"
+      },
+      {
+        "path": "fixtures/uttam-nagar/demo-conflict-road.geojson",
+        "gitBlob": "c2e0fc3bbdc6b3a44eea639fd262e45e0ca62dcf"
+      },
+      {
+        "path": "fixtures/uttam-nagar/demo-conflict-shed.geojson",
+        "gitBlob": "ba386dd64f62f39a9a00718edadcabdbd13fbd55"
+      },
+      {
+        "path": "fixtures/uttam-nagar/demo-parcels.geojson",
+        "gitBlob": "f5f2eec148f8e79846cb0cfa6788825aeaad912c"
+      },
+      {
+        "path": "fixtures/uttam-nagar/demo-plan-spec.json",
+        "gitBlob": "befc50ae724a9a19b5f849dbece0204eeb985036"
+      },
+      {
+        "path": "fixtures/uttam-nagar/demo-road-widths.geojson",
+        "gitBlob": "9c1f6a0f4c6ef677ef1dc8f3b31d4555d7184d88"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-1-fictional-residents.json",
+        "gitBlob": "7d9757bbfc2eef30cfa1d5a24ea6f2ee779c4f67"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-1-fictional-residents.txt",
+        "gitBlob": "8b00e96bdb95af83718b87c7a5aa45e184b1bfd7"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-1-fictional-spaces.csv",
+        "gitBlob": "b96072c07206ba5bc07bf98fa850b55207c34a34"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-1-native-fictional-resident-schedule.csv",
+        "gitBlob": "abd434efd93157c2ba2205fbec31f049872bc0c9"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-2-fictional-residents.json",
+        "gitBlob": "5613f7a2e9aa0b299f0c4307467db62cd135fcc0"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-2-fictional-residents.txt",
+        "gitBlob": "dfd6aa7f55f2c58e492fe119cec060ac8098d102"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-2-fictional-spaces.csv",
+        "gitBlob": "eb9725ff9eaf687ea969e234295f648a33afcafd"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-2-native-fictional-resident-schedule.csv",
+        "gitBlob": "8fd2b667baad88154c9d29f6111890ecc20f68d0"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-3-fictional-residents.json",
+        "gitBlob": "6e8f1cd291891962fbf307c9ec493cc577660fcb"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-3-fictional-residents.txt",
+        "gitBlob": "a81783548d1db8f009fef3678b6fcb4782923f5c"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-3-fictional-spaces.csv",
+        "gitBlob": "f895286f876ac94eae7e14d77eff43172eaa3969"
+      },
+      {
+        "path": "fixtures/uttam-nagar/generated/residence-3-native-fictional-resident-schedule.csv",
+        "gitBlob": "7d174c54584eafe222a6e98c48cf28dd80112b79"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/DEMO-A-floor-plan.png",
+        "gitBlob": "6f8eb05ea9607a6219f7e5eb7bb032ce3504a1de"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/DEMO-A-occupants.txt",
+        "gitBlob": "2366cbec71f05e3ecc3f9971544fc0614d827555"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/DEMO-A-spaces.csv",
+        "gitBlob": "20515a05931e26b558f4192bc53bb294557c6202"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/DEMO-B-floor-plan.png",
+        "gitBlob": "ee5e4dca5c20d0c1ad9f4505dc50ba12de6873fd"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/DEMO-B-occupants.txt",
+        "gitBlob": "447e6b3949b3f8f2915a8a5af58fae75abf2ae6f"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/DEMO-B-spaces.csv",
+        "gitBlob": "8043131c3776d6e18b58b9bedc9536395f426df6"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/DEMO-C-floor-plan.png",
+        "gitBlob": "1c115d57520f1f753337e4080189a5f4fdd7494d"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/DEMO-C-occupants.txt",
+        "gitBlob": "7e266a545a5257f40feb056431554822adb56e02"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/DEMO-C-spaces.csv",
+        "gitBlob": "40fa5bd96247f0ce20181c5db5611f5c38d66105"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/demo-buildings.geojson",
+        "gitBlob": "066532dba0685a3dffe69c5b0ba34b4cb6610f55"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/demo-parcels.geojson",
+        "gitBlob": "abb675573be7549228edaf0d82026568f99ad53e"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/demo-road-widths.geojson",
+        "gitBlob": "1073717c1eb8cebdad95119e3ef6823d653649f8"
+      },
+      {
+        "path": "fixtures/uttam-nagar/scenario/interior-plan.json",
+        "gitBlob": "72cbabe08c7d1dc7cd49adfa9a34648540220c88"
+      },
+      {
+        "path": "scripts/google-uttam/complete_bundle.py",
+        "gitBlob": "75693453cb8fda2499e6c0d3c8b50540804d3e5e"
+      },
+      {
+        "path": "scripts/google-uttam/finalize-evidence.mjs",
+        "gitBlob": "d1a1850dc0b5589296cb56e8775a870fc124e880"
+      },
+      {
+        "path": "scripts/google-uttam/import.mjs",
+        "gitBlob": "77c9cc24e92283acb9ea268b50a1ace21d4b827e"
+      },
+      {
+        "path": "scripts/google-uttam/package-proof.mjs",
+        "gitBlob": "ec91edf757740ce7c30602871dcf1d9eded47c0e"
+      },
+      {
+        "path": "scripts/google-uttam/prepare.py",
+        "gitBlob": "f2f1b0525aa637ea09362aeb26ad42027407b1dc"
+      },
+      {
+        "path": "scripts/google-uttam/verify-and-record.mjs",
+        "gitBlob": "8d041006a9884206d2d17470e62bad66ed99bffe"
+      },
+      {
+        "path": "scripts/uttam-nagar/derive-fictional-scenario.py",
+        "gitBlob": "3c11f69395285b184c960823340e37b028162ac7"
+      },
+      {
+        "path": "scripts/uttam-nagar/import-fictional-rooms.mjs",
+        "gitBlob": "e57f2d829025b689f80b46943da2e9095ff7713b"
+      },
+      {
+        "path": "scripts/uttam-nagar/import.mjs",
+        "gitBlob": "c721f097afa19ca3ed9b23e617e8aba523cb9bf0"
+      },
+      {
+        "path": "scripts/uttam-nagar/prepare.py",
+        "gitBlob": "2a3538a83684c94347a61a8f04109bad71c0cf9b"
+      },
+      {
+        "path": "scripts/uttam-nagar/verify.mjs",
+        "gitBlob": "aa92a44a9c3630c391280513f035a8b6054c5d09"
+      }
+    ],
+    "D0_REPLAY": [
+      {
+        "path": "fixtures/usp/D0/contract-smoke/evidence.txt",
+        "gitBlob": "065c129411bf184ec01e9e0328ebcd4bda4219e4"
+      },
+      {
+        "path": "fixtures/usp/D0/contract-smoke/expected.json",
+        "gitBlob": "947de9865bdb408155eaa17b12b0b4221c4bfa49"
+      },
+      {
+        "path": "fixtures/usp/D0/contract-smoke/manifest.json",
+        "gitBlob": "8d40dc85a51628e29a574175c60a43bc2a88330c"
+      },
+      {
+        "path": "fixtures/usp/D0/contract-smoke/records.csv",
+        "gitBlob": "53e7a7d391c8e630ef524c907145dfc4444ef18e"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/buildings-courtyard-draft.arcgis.json",
+        "gitBlob": "c6ebdbb9ac4096ac1e1830c5a89b4547109bb401"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/buildings.arcgis.json",
+        "gitBlob": "4fd6b86cb99c4ad305bba99bbc61d36de2f2f198"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/expected.json",
+        "gitBlob": "44f0d30dc378b725baea5dd09f9ec57ef9ff7163"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/manifest.json",
+        "gitBlob": "3c793d83b0bc3e6a1a6aa8428fdfe3a51f030bec"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/mixed-page-r1.txt",
+        "gitBlob": "50f873dbe4b012f84393dda975d0c04f42a19b35"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/mixed-page-r2.txt",
+        "gitBlob": "5bd47c910aee762f28b4a05e1d9759b8557f757b"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/mixed-rows-r1.csv",
+        "gitBlob": "acfa0db71dc279b82f71eaba10f2ff70ef362b67"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/mixed-rows-r2.csv",
+        "gitBlob": "aebece913a40f06863a128fa49b12819e7166976"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/parcels.arcgis.json",
+        "gitBlob": "573a832a879a8ff6e6d15226076d1e3c4a2a8245"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/scenario-courtyard-draft.json",
+        "gitBlob": "762d7587d76764144000bb940f916b4ef265f6fa"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/scenario.json",
+        "gitBlob": "9a02ac795133419d24818bfd4a0bb631caddcfc9"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/spaces-B-A.csv",
+        "gitBlob": "4e4410cc04bd5a708a275c8ef5be7c1883144042"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/spaces-B-B.csv",
+        "gitBlob": "d5a617482caca30875ed43233e139429547449e3"
+      },
+      {
+        "path": "fixtures/usp/D0/golden-v1/spaces-B-C.csv",
+        "gitBlob": "be1f852614f3b515c8194834a4cdd51362222177"
+      }
+    ],
+    "LAKE_REFERENCE_SEED_AND_SCENE": [
+      {
+        "path": "apps/web/public/scene-assets/complete-demo/kiosk.glb",
+        "gitBlob": "6944a156a6d47166209f31a57764a78fe56d3fea"
+      },
+      {
+        "path": "apps/web/public/scene-assets/reference/A.glb",
+        "gitBlob": "2f26c76d171723019fc86b8d8ba8a202eca1df9d"
+      },
+      {
+        "path": "apps/web/public/scene-assets/reference/B.glb",
+        "gitBlob": "c22161f996a2c83a79e460f2b10c4ae07719831f"
+      },
+      {
+        "path": "apps/web/public/scene-assets/reference/C.glb",
+        "gitBlob": "f6d5bb383ffd2dc0cc6167adda89094ecd53e66c"
+      },
+      {
+        "path": "apps/web/public/scene-assets/reference/D.glb",
+        "gitBlob": "3a0a54742a5b91e791ec194183c51f5a4448a2c3"
+      },
+      {
+        "path": "apps/web/public/scene-assets/reference/E.glb",
+        "gitBlob": "04f746d3c366cf7545a8eebc7c9cb2f553dfd7e0"
+      },
+      {
+        "path": "apps/web/public/scene-assets/reference/F.glb",
+        "gitBlob": "1380a2367f0fa31ab853526a8dc3f35aed0eb032"
+      },
+      {
+        "path": "apps/web/public/scene-assets/reference/G.glb",
+        "gitBlob": "8f88767d40f6946c52b611dd9e4a6d9d0acd9726"
+      },
+      {
+        "path": "apps/web/public/scene-assets/reference/H.glb",
+        "gitBlob": "2ae83b700f5a303a07cab7fb4e03fbc3bd7da5d2"
+      },
+      {
+        "path": "apps/web/public/scene-assets/reference/landscape.glb",
+        "gitBlob": "4b80d2a34756dbcbac2d1d795b20b77dcb379f89"
+      },
+      {
+        "path": "fixtures/complete-demo/K1.arcgis.json",
+        "gitBlob": "e512898caf6f5152890c3d83dc29c09752ce0d61"
+      },
+      {
+        "path": "fixtures/complete-demo/R3.arcgis.json",
+        "gitBlob": "e6ceeea114a2d101e54fb564c1d2d137c1386ded"
+      },
+      {
+        "path": "fixtures/complete-demo/README.md",
+        "gitBlob": "e634effbad2233c48b1e1cc4aec6565169db9613"
+      },
+      {
+        "path": "fixtures/complete-demo/parcel-identifiers.csv",
+        "gitBlob": "68298b8452eb50ee06a670828acfcca74892ecd9"
+      },
+      {
+        "path": "fixtures/complete-demo/site-and-identity-schedule.pdf",
+        "gitBlob": "8d253fc7fd192b692510cfd2a08e8afa7a0fec11"
+      },
+      {
+        "path": "fixtures/complete-demo/spec.json",
+        "gitBlob": "d7009a73c4896734ca0d4870ab0b3f83a4e7a771"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/A-floor-0.png",
+        "gitBlob": "73d44722803f9613fff99d4d94f985c7e9ce7389"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/A-floor-1.png",
+        "gitBlob": "be72ed73a546f2dc02586fca01fc2a353c611d83"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/A-floor-2.png",
+        "gitBlob": "68137e47756049a544d77b9de1734518faae72ca"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/A-floor-3.png",
+        "gitBlob": "dadc889d86a0dfe7a7c8e68ae5210fc5055cdfa7"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/A-floor-plans.pdf",
+        "gitBlob": "36b33cf3070af5c861eee09e5d369315f778f366"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/B-floor-0.png",
+        "gitBlob": "d1514d74bc2c4f6c2f2e2563ebdc10b213aef559"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/B-floor-1.png",
+        "gitBlob": "f39195f5a67c86f6a623cf118c9a2035a53d2762"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/B-floor-2.png",
+        "gitBlob": "bc6b445790e59a48e8948b69d03fc9ccad14c17c"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/B-floor-plans.pdf",
+        "gitBlob": "3703e30edabd5d7cf54bf169405f0f562ad77e53"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/C-floor-0.png",
+        "gitBlob": "dce8aca534aa607edc9190c0390d1e17c4b62384"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/C-floor-1.png",
+        "gitBlob": "4d46ef591d9af257501cf95326cbb5e0071146c3"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/C-floor-2.png",
+        "gitBlob": "a001eec0d2a2dfb7849c8a4b2899fb60e2bd0817"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/C-floor-3.png",
+        "gitBlob": "6e7bc3972ae587ffa80dfdf29c306a6f3a89e9fb"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/C-floor-4.png",
+        "gitBlob": "e7c2fe453a49589116f131db0a78a2c5ab285b69"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/C-floor-plans.pdf",
+        "gitBlob": "cc6e005d1a6e832fa61a8e0cc22e38d77979e99d"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/D-floor-0.png",
+        "gitBlob": "e4d4a41eea1b1592b3fd6818ef11f8511c56f302"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/D-floor-1.png",
+        "gitBlob": "73dfe4e776f04aabd7b71a245e65b0eab374be5b"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/D-floor-2.png",
+        "gitBlob": "404762e801eeec5103a55e622e2f6fd8e126b061"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/D-floor-plans-revision-2.pdf",
+        "gitBlob": "eeefff25d9adf3fc88463b01f6f6025dae1cc27f"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/D-floor-plans.pdf",
+        "gitBlob": "95c5733f58fe7b2b9e71c1d94d192e1fcd9bfffa"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/README.md",
+        "gitBlob": "18f3d3a3261825efd63be6954a03e9513c3a29b2"
+      },
+      {
+        "path": "fixtures/reference-neighborhood/spec.json",
+        "gitBlob": "5754bd7bc570ac85db7859e710b3d746310b77ab"
+      },
+      {
+        "path": "scripts/reference/browser.ts",
+        "gitBlob": "25694733f6cb41f0e07ac8424548df7f5bb64c71"
+      },
+      {
+        "path": "scripts/reference/bundle.py",
+        "gitBlob": "9d423eb977b1286ee9efa8a57e595a7b637038b5"
+      },
+      {
+        "path": "scripts/reference/complete-browser.ts",
+        "gitBlob": "8182d7a06754755140aca83542f84d9990dbfff6"
+      },
+      {
+        "path": "scripts/reference/complete-data.py",
+        "gitBlob": "cf384d682eea72141a6aa4704f2ab1ab65312349"
+      },
+      {
+        "path": "scripts/reference/complete-verify.ts",
+        "gitBlob": "4272149050f514ad60e78d3422e77cdb31158296"
+      },
+      {
+        "path": "scripts/reference/complete.ts",
+        "gitBlob": "e2decb656c28b992826bb09a289f6619cabe9d8f"
+      },
+      {
+        "path": "scripts/reference/generate.py",
+        "gitBlob": "8d825d1021181a29ccbe242ff1f3aefa1abb7b58"
+      },
+      {
+        "path": "scripts/reference/investigation-browser.ts",
+        "gitBlob": "b7b02e75e98026e950e3dd78a69764a0f5336e1e"
+      },
+      {
+        "path": "scripts/reference/mesh.py",
+        "gitBlob": "1250dfacb04f96e799e831c1783b7a3a1186ce59"
+      },
+      {
+        "path": "scripts/reference/register-controls-browser.ts",
+        "gitBlob": "5d72f9dfc9ec2e30d60ff48eddce3ef58f4c915d"
+      },
+      {
+        "path": "scripts/reference/register-export-verify.ts",
+        "gitBlob": "671319ab98f0881df8956f8689717fd0a03ca455"
+      },
+      {
+        "path": "scripts/reference/requirements.txt",
+        "gitBlob": "c16b8be74ccdfb6366e3bbcaa99f796a25a2a645"
+      },
+      {
+        "path": "scripts/reference/scenarios.ts",
+        "gitBlob": "25acad0c682c6223ffb27f35c0ae6c9085bee546"
+      },
+      {
+        "path": "scripts/reference/seed.ts",
+        "gitBlob": "16153e41e28db8002d7c005b4fd1aa15da880558"
+      },
+      {
+        "path": "scripts/reference/verify.ts",
+        "gitBlob": "9b6dbc29b8a6d2022d45290ae0c5a72a575cd5ea"
+      }
+    ],
+    "MIXED_SAVED_STATE_PRIVATE_ARCHIVE": [
+      {
+        "path": "repo-data/README.md",
+        "gitBlob": "dac7fde4e1a8e7a3c1676a29da8753956d73f6d7"
+      },
+      {
+        "path": "repo-data/database.dump",
+        "gitBlob": "f8e37aaaef7855e35d09b449ce488bf96cb3dc80"
+      },
+      {
+        "path": "repo-data/installed.json",
+        "gitBlob": "a4ad824221d701e1e353576057022076174f24d7"
+      },
+      {
+        "path": "repo-data/manifest.json",
+        "gitBlob": "c69c3345cc707f541b782de31f4732d403132b6e"
+      },
+      {
+        "path": "repo-data/objects/016dba1bf85c80797387f5cfe597db1852106b2d8e65887470642bb4038b8ad9.json",
+        "gitBlob": "496ca37ad0cc5560cb0092e4802b654e376ca8db"
+      },
+      {
+        "path": "repo-data/objects/0729c7d5b76175623352d5c3b4e2f4f660828938b3dbdc2e1e7f9e0199439a2e.pdf",
+        "gitBlob": "b4c8af58fbb9734c359dbc60e2cdc1255b3b2732"
+      },
+      {
+        "path": "repo-data/objects/15dcdca98a301018a6ed6443f972a6b3bd538edf5c927fa781af402ddc81ad4b.json",
+        "gitBlob": "f8a5048c13135c6eea2f4a9f6d402d462059f156"
+      },
+      {
+        "path": "repo-data/objects/19d84cfdbdd4281e9e71c24ec2f885669348de1ad9c30bca3fd18886e78728d8.csv",
+        "gitBlob": "f087810883642304c7499fa3e2684968f19ee10c"
+      },
+      {
+        "path": "repo-data/objects/1f96df644df6f75d52da7e53b8221d914bf5b4e3ef1fb9456c934437495ec988.json",
+        "gitBlob": "2c6af5607df92c0cc09e8c535eb162bcfc01d5ba"
+      },
+      {
+        "path": "repo-data/objects/1ffbf78a57b3f0d394a8ae6f618b1b449079aa26dce5f94433de58504de23446.json",
+        "gitBlob": "5806d0eb12dcfef8a8dae1728984d01300f631d0"
+      },
+      {
+        "path": "repo-data/objects/20a4f5aff4946c4f7604c5f6d435fc2fc7904154788f8057fd34fbf918914fe8.json",
+        "gitBlob": "fc58b2c6e2245d5026486673eec2a2699668f177"
+      },
+      {
+        "path": "repo-data/objects/23c595c34bedf42c211804ea3974d55940a6486c211138cb463942bd085e23da.png",
+        "gitBlob": "d1514d74bc2c4f6c2f2e2563ebdc10b213aef559"
+      },
+      {
+        "path": "repo-data/objects/2630807861da5a8f1a91771c60618be20e329562ce9f2dc5a00b24969f7fcc65.pdf",
+        "gitBlob": "3703e30edabd5d7cf54bf169405f0f562ad77e53"
+      },
+      {
+        "path": "repo-data/objects/29671f831d666bb797b585df6f631818cbcfc854332d7c6699dd3cb590112d4d.json",
+        "gitBlob": "450e674df6867eabe7f777322a5e87a232a673d3"
+      },
+      {
+        "path": "repo-data/objects/2d919c5407ce84859445cb0d17efadbf6a51ff867f97ba6bde3975eb56041c3e.png",
+        "gitBlob": "6e7bc3972ae587ffa80dfdf29c306a6f3a89e9fb"
+      },
+      {
+        "path": "repo-data/objects/2e05b4ac70c2405fcb329d73f5975d43bba70b657de86a9fc686eee90177c870.pdf",
+        "gitBlob": "eeefff25d9adf3fc88463b01f6f6025dae1cc27f"
+      },
+      {
+        "path": "repo-data/objects/2e8706ba99b944b440d2316241bc173c4e416af8abec6cfbade1e594025468f2.json",
+        "gitBlob": "b2a599b411e83ae7e2c2cd0eeb6b134dd79b9ec1"
+      },
+      {
+        "path": "repo-data/objects/2f1c9e28994202fa2f1c1791257028f3a0c497e0ac6abe2e69bcdfd40cd5d1f1.json",
+        "gitBlob": "175086fecc8a5bb3a91b2c18235599735d014fb4"
+      },
+      {
+        "path": "repo-data/objects/32f23cf0fb2a71baddd76b5322f88c864aee1dfeaf99f69ea6c07b6af55af7c2.png",
+        "gitBlob": "be72ed73a546f2dc02586fca01fc2a353c611d83"
+      },
+      {
+        "path": "repo-data/objects/331ca5a2c5e3999dca5e9d0e2d6e7b94ee23b219e852e98f566e15140e6a8f5a.png",
+        "gitBlob": "bc6b445790e59a48e8948b69d03fc9ccad14c17c"
+      },
+      {
+        "path": "repo-data/objects/334a6c522c99937439e83753427e794f6502d026ce5a1202da3b9c1422666747.png",
+        "gitBlob": "e3e4a29196e106b50a341968c54fe0bd57cd2e7f"
+      },
+      {
+        "path": "repo-data/objects/3467980e791e3f88e5de803fc8ecd655480cadc251d8af1c4739ef6f60a6e900.csv",
+        "gitBlob": "cce893862774507ea0ded68d80f853e3e2644822"
+      },
+      {
+        "path": "repo-data/objects/3628756d435b1fbc13314f9c6bdab7d6945fb2a96a714bd3ce10a0b8e137e0a0.png",
+        "gitBlob": "e4d4a41eea1b1592b3fd6818ef11f8511c56f302"
+      },
+      {
+        "path": "repo-data/objects/37ce6da0cc4c55142c6ac33cb36a4dbaf450b55f08760c631dc93e30e7d605a3.json",
+        "gitBlob": "64c2350f955abd516532f44db36fc79f29d366e3"
+      },
+      {
+        "path": "repo-data/objects/3c52f05e2be79ca22a31266062bd7de40ea614048233a95ec5380bd526b2a2f6.png",
+        "gitBlob": "7a71f8a4275fa1d3fed5e289b554028f696fec3b"
+      },
+      {
+        "path": "repo-data/objects/3eadf2bb69660075e66f48decd31afebe37251cf76e8d9d07b4220d893f6fdd8.csv",
+        "gitBlob": "6548e46e64ea247e50e09c928e439acbcf3de5c6"
+      },
+      {
+        "path": "repo-data/objects/3f00067883dd6e8fa22b435083214db026c515ee89b6be5809373e09f0048073.csv",
+        "gitBlob": "69cc28556da0bd606d803f40df9584b3163f4bf3"
+      },
+      {
+        "path": "repo-data/objects/3faabbb97b49518a0898ee96f228bce057622ac97cd7d4ce013ad6eebf8b3b4c.json",
+        "gitBlob": "a6c11c9f28d4de11e8ce578caf5645c1196ba13a"
+      },
+      {
+        "path": "repo-data/objects/44417ac01f700d35f7ff3164ac94f49e859a2e41c13ff3cf00ce7ca19b2ad177.csv",
+        "gitBlob": "3205f118d54e1cdbadcb1da904cb6ef01205adcc"
+      },
+      {
+        "path": "repo-data/objects/463cf467388d4613051b649482669dc00cd9208a0986f04aee1edad93dc51e34.pdf",
+        "gitBlob": "4d4672fe04bda5069483188f5a18f707cb065197"
+      },
+      {
+        "path": "repo-data/objects/485e97f612c5d4f86337da8d22e0daac1823d02701abe9b6ecd539fb62f7fa31.json",
+        "gitBlob": "26f13031eca94e40dc962b7d04cfecd92c344e3b"
+      },
+      {
+        "path": "repo-data/objects/4dca4762cbc92166dbdf7f28c74fbc63dab676bc95f9bd4f15dc1846e20afd54.csv",
+        "gitBlob": "f7d6553ba19ab2e0214e17566c5150ec7d6dd713"
+      },
+      {
+        "path": "repo-data/objects/51e6a16f11194dafded444ee33d9bb1d87813a4f73a989893b0000385b15f0df.json",
+        "gitBlob": "67669345cba2d7515c8ee7edb1eb8f12b7ba348b"
+      },
+      {
+        "path": "repo-data/objects/56a25a4b687876612d2367afe3032562e91ababd6302cb6f8fd606041f64972a.json",
+        "gitBlob": "f3ba94a8916633c102fdd64547749cb4d1be2eb6"
+      },
+      {
+        "path": "repo-data/objects/5d4d15755a50f3508586f13aea90c76af5f0c2621e4769537ebebdc3b742ab96.png",
+        "gitBlob": "a001eec0d2a2dfb7849c8a4b2899fb60e2bd0817"
+      },
+      {
+        "path": "repo-data/objects/5ecea9cd9bc5ed20a83393c2e86b3c896b56b90eadc2d6e551074e421d086b50.json",
+        "gitBlob": "81de87d970ddde2909c431e82c69be2da3a771af"
+      },
+      {
+        "path": "repo-data/objects/5fc4673a916ea5d9f5ea81d2512e43a06eeaed451b656261e97c29eea9803960.csv",
+        "gitBlob": "c4090add9927b581ef1da0ad5fd85095fea15fce"
+      },
+      {
+        "path": "repo-data/objects/65bad40670e0e0cc3dad24b79a12fe7473be4859aa942b669432c6cb93c97b6b.csv",
+        "gitBlob": "b1d5e5857ffc6e3e8d4eb698d5fe7f23c986fb95"
+      },
+      {
+        "path": "repo-data/objects/6697f0d34f7bb6d09899f802ce0aeddf93a71265ecfb48c33771d872f56d15ee.csv",
+        "gitBlob": "de411ee6fed26e01e9aa899e598c40a535209a5f"
+      },
+      {
+        "path": "repo-data/objects/6ada8dedb3ab90a90aeb1fac2ef8415e71a4c10a5eb1d4dd808477a6354c3dce.csv",
+        "gitBlob": "19549190e70e7f9485574ceba59f36a7a0505f0c"
+      },
+      {
+        "path": "repo-data/objects/6b284308657320d7a91626876e5b9458c964411bb1a0882b20bfc5d75c0bb90d.pdf",
+        "gitBlob": "add8d2dc87a1d9e25e76cffb2caad24e1430f7c8"
+      },
+      {
+        "path": "repo-data/objects/6c9d5d283e3916a865c690c83eecfecf1c2a0b409ba00fdedcc869503bd3bfb1.csv",
+        "gitBlob": "42fb6444ccadcce450b591ca43da853f50c1efda"
+      },
+      {
+        "path": "repo-data/objects/6f00b566d63e7d2d750bd5bf01c1d4ccc345ec90ceaf91cd7d658372712b7d2e.json",
+        "gitBlob": "1de46d9033c0a29857323d9c2015cf1cee484ce5"
+      },
+      {
+        "path": "repo-data/objects/777b24d5ba97891c5c8975681b2ac213c618ece53e5c3e3c8bf88e40da2e4486.json",
+        "gitBlob": "1cb83243596d7393c4e449ede37c4f17fff16ad9"
+      },
+      {
+        "path": "repo-data/objects/792a3b0b0b4699806dc2af0b2ad2e5d3834f9e2f71a00fb69c79cec68b9bd9d8.csv",
+        "gitBlob": "ed004221d441f5ee2e1f9df3f9ecc7062e37c5b9"
+      },
+      {
+        "path": "repo-data/objects/7ae2dedb1d76eefaf278707e19a3392af3428f278e066e02cec5f6bb02eee482.json",
+        "gitBlob": "4e1f5313c932488101fdb85ef4355367b7d6972c"
+      },
+      {
+        "path": "repo-data/objects/7c078e71c1cab8ebd3b97fff78b312af79cf1991ff63f24f2b7919dc5de78113.pdf",
+        "gitBlob": "36b33cf3070af5c861eee09e5d369315f778f366"
+      },
+      {
+        "path": "repo-data/objects/839ca748efff64795a02fcea77c1ba9cb3d25e01c7a76ed93c8902422aed607e.json",
+        "gitBlob": "68247a6b2eea385612e8823f548eec8e19515f75"
+      },
+      {
+        "path": "repo-data/objects/83a3d72e39d5388b98f1f50bd1f439cec66d17eeacc04da8cf00651f2491832f.json",
+        "gitBlob": "41a6e0a0fe984c3ddfb8bd7b848dc6670779a9fa"
+      },
+      {
+        "path": "repo-data/objects/855e992bccd750b3d0b31cdd44b3018448d111abb0322c62719d59ee5d975f2f.csv",
+        "gitBlob": "f8e1d85a004812d025a2d2a651f4b653b29c2f50"
+      },
+      {
+        "path": "repo-data/objects/869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a.bin",
+        "gitBlob": "0ae58bae8a06c9d854ecc4ceb96e4c6721c418f7"
+      },
+      {
+        "path": "repo-data/objects/86d346d1f7ec786d001295f6159fdfdccf0a99c764fa3d6efae2d588837d5c7c.json",
+        "gitBlob": "8d0aebd9c88e81311208f5b52d52fb9dbd549367"
+      },
+      {
+        "path": "repo-data/objects/8c4be81f3050aeb733ace4001f33de1c35570ac0a5a3ca012d185c03b5c7a522.csv",
+        "gitBlob": "c75ce74a80c2650ece2604e37395b9f054d30902"
+      },
+      {
+        "path": "repo-data/objects/8ee4714f096ed30764a8816454ed9fb2d86db6f162c23868ea924898e14bb48c.pdf",
+        "gitBlob": "8d253fc7fd192b692510cfd2a08e8afa7a0fec11"
+      },
+      {
+        "path": "repo-data/objects/90ea5543348e3a4eb8ed6c2eeeb235baf6599295790b240ded53bcf27840cf9c.png",
+        "gitBlob": "f39195f5a67c86f6a623cf118c9a2035a53d2762"
+      },
+      {
+        "path": "repo-data/objects/9398304429f2002a5eaf39fd12d8f50bc877f1c26167329260c0e25f80c07810.pdf",
+        "gitBlob": "95c5733f58fe7b2b9e71c1d94d192e1fcd9bfffa"
+      },
+      {
+        "path": "repo-data/objects/950373c97ae02c5e045d2295284d40e88a34216bc1f180e976abde5c8ab636f2.json",
+        "gitBlob": "03030122f85e130fd5d81621f81efc02bdba5786"
+      },
+      {
+        "path": "repo-data/objects/99af7cdb604be9076e247cdefe3d3df6284de1b470373c82094f1b0b31a08dcb.csv",
+        "gitBlob": "2cea1f2d372a273f460889c701f49fe37e73014d"
+      },
+      {
+        "path": "repo-data/objects/9a47d8079c40f2b5162c979a844381fa6c795500184342895fe01d72d3eb8ae0.csv",
+        "gitBlob": "87c7ff4c13ee4953c361de406370b7407bb25c94"
+      },
+      {
+        "path": "repo-data/objects/9d0bafdb39f8e4752886fefbf20b433f0eae204570bc16418c70ced757aa9312.json",
+        "gitBlob": "2c9643941a3e36a9e11aed0bf868dd36c65890c1"
+      },
+      {
+        "path": "repo-data/objects/a0dd316d558942971bf5ed0f5ab9f4f040d069b21c6fd18b03580434d4c3bf74.json",
+        "gitBlob": "f95630ccef9f4aa77a70deafae9c7678bddda343"
+      },
+      {
+        "path": "repo-data/objects/a1af12629f0f36fd87a844671f3b23c5ab90bf340dafeea75abaafbca944421a.csv",
+        "gitBlob": "e0eacfa3180054214213d86c656af5d1bebfef1c"
+      },
+      {
+        "path": "repo-data/objects/a56b47350ad91607408135bb4a8f0b0c6c0825cc63544111f136814781cadb41.json",
+        "gitBlob": "ba449834d77f37ceeb666d0230c6a36171fceea8"
+      },
+      {
+        "path": "repo-data/objects/a82731224539734329b23556a9de801e88acb0b39f6573b12788eacaa2bcdca3.json",
+        "gitBlob": "fef70512f4941813a88fd90ccc5d1ef1d45f205d"
+      },
+      {
+        "path": "repo-data/objects/af77b8f79265c3285f2d408d6c497a42b649ada7688ef7b9bf1c2e1369990ce4.json",
+        "gitBlob": "3b08331d6a16b8949f879cc9380b5a21903e5494"
+      },
+      {
+        "path": "repo-data/objects/b1518d752ad192e3b25fb2558a93a51ecda411b9e4476549bc9662c6def195d6.json",
+        "gitBlob": "f0026c9599704437ead3e1b0ec3c7515d5c587b0"
+      },
+      {
+        "path": "repo-data/objects/b1d76fc45c85d3de642d400b5f3b85b20ebc1c6908bdef9229cfd62baee8957f.png",
+        "gitBlob": "e7c2fe453a49589116f131db0a78a2c5ab285b69"
+      },
+      {
+        "path": "repo-data/objects/b6b677647625c79c251effdaa5c207bf679460b282365f2aaad1ba8c75e6e3ea.json",
+        "gitBlob": "1f1ceb4d75bdb400db9c4efeb3cfd5bdef7d67d6"
+      },
+      {
+        "path": "repo-data/objects/ba076aedb1c90163bcadf7b565c96ea1a11abce3e77f0b87d7c50304c05dff7c.png",
+        "gitBlob": "fa63bfe21fa9a1f1d112b788173139ecf4311513"
+      },
+      {
+        "path": "repo-data/objects/bcac87fa86b5a257f575bd4aa833140f292822c9e25de67b7ecf2fff3c9a2a28.csv",
+        "gitBlob": "3e93f35db87d580d94fa5f771aee7a9a8c6f3cc9"
+      },
+      {
+        "path": "repo-data/objects/c15f6abb4c71afa5be421adb02f78583cd781e66251e30ccb3e390748ccaaa31.json",
+        "gitBlob": "78cfdc038dd051e366b1620d1fd7a4925c14c1de"
+      },
+      {
+        "path": "repo-data/objects/c1d135627584da402cf12830b4f2de87009e1e36bfc33cc4435f976b3ee55ea9.json",
+        "gitBlob": "9916f1d426a7bacfa82529c8c7405e12a21e91f3"
+      },
+      {
+        "path": "repo-data/objects/c44a8242c662d69c88272ed0c894885d6c19814ad422f2109d72266d7a41f686.json",
+        "gitBlob": "c78edaaab23421a0e5a5d52d6e0f0cb0b6109884"
+      },
+      {
+        "path": "repo-data/objects/c95a2046e404ceef2b306e057b15b0a62ffd70a4ea82b2b8d9dcd8e961109cf7.csv",
+        "gitBlob": "7b5715c67a2754dda6eab10a0c314de4a7426090"
+      },
+      {
+        "path": "repo-data/objects/ce1bfcfa091f2b6f09e7e8b4e477284227c4e3f36749dc8dcb2e7ced80b66259.pdf",
+        "gitBlob": "cc6e005d1a6e832fa61a8e0cc22e38d77979e99d"
+      },
+      {
+        "path": "repo-data/objects/ce89325580d651efa8a41ac468b7893c69cf0c402e6e0dd43fc2c1630139d53d.json",
+        "gitBlob": "c53b6ff386ddc934be67b48c3bf21aa64fc7f70f"
+      },
+      {
+        "path": "repo-data/objects/cf3865560acdd163fbcb7d3fd74ab97801848b41daccc6773aaee7513212e61b.json",
+        "gitBlob": "af912f50732ba662a9df83588e099d3e06db1730"
+      },
+      {
+        "path": "repo-data/objects/d0ddec9f6f616dc303936ad963c8273ad6ad6f086ab44ea94fff54e50d2ee476.png",
+        "gitBlob": "dadc889d86a0dfe7a7c8e68ae5210fc5055cdfa7"
+      },
+      {
+        "path": "repo-data/objects/d5c5f5a44d1e57ca44b184d5e0a39f74a60d01ca935fdb4c92aea3d1de68dcda.png",
+        "gitBlob": "73d44722803f9613fff99d4d94f985c7e9ce7389"
+      },
+      {
+        "path": "repo-data/objects/e08832c876e7c1b720df93d7eebe5901b98f5f6b71854a54090790fc5d0670ac.json",
+        "gitBlob": "72295cf8c7abbfb9830153432e8d80f7b175e3e8"
+      },
+      {
+        "path": "repo-data/objects/e1f865cb8f84a9d805cffa2c77b55e18219760aef1539f4328943a3995701e83.json",
+        "gitBlob": "285db70fe034bcb7891d2e8412ed40bf1a5f1ec3"
+      },
+      {
+        "path": "repo-data/objects/e3ed760455e9fff912a5e58bcc00772b308418958ef54ebe183f01aa4419c823.png",
+        "gitBlob": "0447de9b0d33f8faacbddaa9b2964baa476fd1ae"
+      },
+      {
+        "path": "repo-data/objects/e6e228539e88b45cc78ec66f761c12959786f49c9fe792e13db55620b3e3bee8.pdf",
+        "gitBlob": "a60191e3ad06b3c0f76554e1ae9f33ec0d14226a"
+      },
+      {
+        "path": "repo-data/objects/e8af4319fd27d2f605ce21c9ca560b3627708a6f8d6f6fef22cd18013b9a66bc.png",
+        "gitBlob": "4d46ef591d9af257501cf95326cbb5e0071146c3"
+      },
+      {
+        "path": "repo-data/objects/e984f82adb0e082159f1aa23e82f9d8ea14bc616a050bc4a44e1accc8c3f7047.csv",
+        "gitBlob": "f6bdd3c42362f5af30b41027164dfbeb8ca77281"
+      },
+      {
+        "path": "repo-data/objects/ed64384c60dbfb0f7069dbe9cbcfd796deb449c45542a700dca2663a7009d6b1.csv",
+        "gitBlob": "befefc3a9a83eabef169e2363d87aec3542353ae"
+      },
+      {
+        "path": "repo-data/objects/eee95522057979ae4343fbc069e5abcb7323f4377997e0c58ed1230427431d3b.png",
+        "gitBlob": "2cde2b850863cf7c99ec916b682b01ede7a08d93"
+      },
+      {
+        "path": "repo-data/objects/efdd2b819104cdb9c1b26c28251839699d74d7664b40e3343d747305fa2cf590.csv",
+        "gitBlob": "54ced73bc9b95a8a2dd6f6b5ee84036a69d3c6b9"
+      },
+      {
+        "path": "repo-data/objects/f012708ac72cbbfecb4bfd5bf81cbc4646e37c714e618eaff1e43a3d1f3b70a1.json",
+        "gitBlob": "c3659c4f3ca397b9141304cbb835b1e29cdb9a76"
+      },
+      {
+        "path": "repo-data/objects/f22080fc7ccacca135d63cfae153ce05f5ae4be8c5db76ebf164bb545fbb3631.pdf",
+        "gitBlob": "a68afc0ba8a6fa9a7dbcf8d0278faaf496eec95f"
+      },
+      {
+        "path": "repo-data/objects/f4421f9810e5207a22df26fce2c053d5a14fe6e4ac0f1dc362034f858ed9c0ac.png",
+        "gitBlob": "68137e47756049a544d77b9de1734518faae72ca"
+      },
+      {
+        "path": "repo-data/objects/ff34ade1400b9bccc1d4acf21647dd9a55671e8249f41e8cb50af57dbf2c56d2.png",
+        "gitBlob": "dce8aca534aa607edc9190c0390d1e17c4b62384"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/README.md",
+        "gitBlob": "490f9f7e34c6e535f0483c07ac4460e12f312386"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/manifest.json",
+        "gitBlob": "c2de9ed6fba77ec0c405514cdcdadb7077933d16"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/00a0417e2896a94ccd87a7cab19181886cd06d260967522eddebc47a8aacbfe6.csv",
+        "gitBlob": "20515a05931e26b558f4192bc53bb294557c6202"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/035f22515ce7460c4c58a585886c063fa7ea59fa268de654ad725df9f4fcfa81.json",
+        "gitBlob": "13bb44d0b3bb615c342ae29b8505e9a030978be7"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/0620ccd34cc76bddbf0180583514c75e9e3237acd093aa22cd506014fd097e0e.csv",
+        "gitBlob": "b96072c07206ba5bc07bf98fa850b55207c34a34"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/07d6cd8ce0174b6f1a0777b3862435c4620d634d0725a2775f6db8cef5231460.txt",
+        "gitBlob": "8b00e96bdb95af83718b87c7a5aa45e184b1bfd7"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/0ab4a22a73117589451ab94161f7ed18e0481beb245fc27319d4e4e874475946.csv",
+        "gitBlob": "8fd2b667baad88154c9d29f6111890ecc20f68d0"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/15e50b795f2738d5dcaf51c33e450e03aa1d9b86a3d6ffd90e90bb82019a01c7.csv",
+        "gitBlob": "eb9725ff9eaf687ea969e234295f648a33afcafd"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/1e708d7307c46c8e9bf8b5733b76755b5078279eae24b5467393e7baf983bfaf.geojson",
+        "gitBlob": "e76cf1d6159895769cc8512cc6af212b3169cf95"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/25052183072b49e47da943f4495e0d3ac8a66895e8efad59866de9df15d02ad2.csv",
+        "gitBlob": "6790684758c4d184ef7df1f7d8292ea00415f434"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/270eaf6da905e68be69053ce60869633ca0f9b1ebe59beb6a28070baa890d636.geojson",
+        "gitBlob": "7ecdba26b2d271828b3e60a75502e89b9518120c"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/274c8489420c8163ccd19e8358e8702697d2c0a995a61358edd6395a50f51653.png",
+        "gitBlob": "0d1b8fed4ed39ae8891b31fbb4d2f5e2ca88bf48"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/2d92fd1a95c989f3b6107928387bf0c3d1c0c0749c3f83ef98a69a2ae427caf9.png",
+        "gitBlob": "ee5e4dca5c20d0c1ad9f4505dc50ba12de6873fd"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93.geojson",
+        "gitBlob": "80e1c84032892ac4ee7f0896998ce6477f31468d"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/341af2178d76aa7666478094e490778f22c48923ed6d5a4f479385a881b6b5ab.csv",
+        "gitBlob": "7d174c54584eafe222a6e98c48cf28dd80112b79"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/382df8ea749b6e0b44d9d897b6fd1d7ff3486a8c83dd3144d3e9af92a7cf9e88.png",
+        "gitBlob": "6f8eb05ea9607a6219f7e5eb7bb032ce3504a1de"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/3e231dcfcf779076b616f87bc9f6cb16bb0c64c249c7e0e319043be4cd785785.geojson",
+        "gitBlob": "9c1f6a0f4c6ef677ef1dc8f3b31d4555d7184d88"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/4273f42349db68a9591f96ba41df7c1160d55fa540a721577221a1e3010a15ea.json",
+        "gitBlob": "687959e69380c0911c27a1e9eb036f895fc5d282"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/43fa1040d3a8248fd862734a2f717d78b93b4b85950ebe6b65cbef9625526be0.json",
+        "gitBlob": "f0578faf2ee50e5978bc26172fe2c7ba2dbe2c5c"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/4e493d0cad716b4bd78c6e7d8c3e2d708898caa076c7b836d8d707dac25051b8.csv",
+        "gitBlob": "187579441bd46d737d525c9e7e93fc22a46a7968"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/4fe8b39f00d36a5d94faaa8e9c727076f01bd104b757b2f64580b79787c55ccf.txt",
+        "gitBlob": "7e266a545a5257f40feb056431554822adb56e02"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/50dce88c64ed54e5a4c05af69080c2166a1d35c336379d80ed2f62ad382d6eb5.csv",
+        "gitBlob": "abd434efd93157c2ba2205fbec31f049872bc0c9"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/52ef091e0665382067f638a6b39cb3df7da46dd2a2b2c2892acc1f7d35084b6e.json",
+        "gitBlob": "134024c72f239d38475e1f8c3f74a728fcb2eb7a"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/55f330ce782d1e30b49f5ae5f7a8f515461a39d80d021d439a71a1accd29fe5a.geojson",
+        "gitBlob": "ba386dd64f62f39a9a00718edadcabdbd13fbd55"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/5c838c437da5b30ddd9f0fc3ebd5a13aeca26ae687a64b137e140860d451abfe.txt",
+        "gitBlob": "a09ad0d54df3872aa9a2fdaf95a7f9092a7350df"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/5e116a96e3d59a7ef1d83d4d38563db2587fc0281f1ee2a6ed85915933a52dae.txt",
+        "gitBlob": "dfd6aa7f55f2c58e492fe119cec060ac8098d102"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/6416a73348b4df24cd88e0f8f4efcc7788b4d399747312bb2ca170eedb99048c.txt",
+        "gitBlob": "2366cbec71f05e3ecc3f9971544fc0614d827555"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/6b79d46a629f30ba0287c615798fccce7df1c055990693083cb48f407ed2c9b6.geojson",
+        "gitBlob": "0a6cdb144dfd8fb90752fe99eae0ea47abb341fb"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/74158a07f3f9a787b56e9f4ba3644be73641ada41ca7fbaad7fa2c939129657e.txt",
+        "gitBlob": "c55bca949a44f4b16a66e037baea32cc851400fd"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/77c23ac4114737b0fe4ad79e3672750fd973e54d4eafa38f53a74ed7ec1d63cf.json",
+        "gitBlob": "0ce39cb083d5473bdd85cb9efd19b8442f7c0999"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/78cf36c241631b346c28746663d758ac0bccc141f046daa1b69de92006be563a.csv",
+        "gitBlob": "8043131c3776d6e18b58b9bedc9536395f426df6"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/7e211055d2f8807470841290af199653df6518db52d88e62f33859dac92275cb.geojson",
+        "gitBlob": "6b4c32053a89927a86737b0800c2f7d06a94ae8e"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/861cad91fd72174c502ff29715bafe9b69a7ced9d7d5569305efb8b3b32ff279.geojson",
+        "gitBlob": "b13adb6705b68f142b6583dde2a8d00bb72ea346"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/8fb70e73319aaaac8a828aaca398ebf01f379bf9ec3ee18850e653e826f45533.txt",
+        "gitBlob": "447e6b3949b3f8f2915a8a5af58fae75abf2ae6f"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/902f09f5db0488f316e2dd96ad9d255b373f04f24b9c2ea0f0f50716e9609b65.geojson",
+        "gitBlob": "c2e0fc3bbdc6b3a44eea639fd262e45e0ca62dcf"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/937f903d9a5fbf58479c126dc2f353b741ab6e26d4c71b76041085483ac56b12.json",
+        "gitBlob": "f66993f57ad66a982481da7459b5345794f44964"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/9cfea954b64d86a586b31980ecc49fdedb6d84e8ce73c9a851229f5392dea6a8.geojson",
+        "gitBlob": "c07b9e12bc39d55e22f19aee98d5ae74f85c80be"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/9f5af0e0d25fc133e840e0152fc540b949198efe44b47116c3c32a31a735d7cf.geojson",
+        "gitBlob": "a72f283c4bacceaddaa2a665fd3f3a124bf7bc7b"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/a367264bbbd1425a26dbe124b15bd3bc7ad131552464f343af25f6f060dc874e.geojson",
+        "gitBlob": "066532dba0685a3dffe69c5b0ba34b4cb6610f55"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/a911d329c5bc45246f9548affa239264c85662b0fa20fefaa8e38a90cba1f63a.csv",
+        "gitBlob": "40fa5bd96247f0ce20181c5db5611f5c38d66105"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/b304e0406b8f95b1d8a03389e5fe45e7854f7b0e62a007301f742bb58df9ae2a.csv",
+        "gitBlob": "0e29f0bced5627b4f50cd79bf9da655dc68e2fcd"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/b85313b71d8dd38eb81158c5a6fda95e7ddcfd838b9fb4b3779b45c144bc5e36.json",
+        "gitBlob": "c9930b12458cbe110a956a2a80228c5317e72113"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/bad1a52ccc23126bb22b887c6b318781b5a42dd9192ab3752a6249d947aa09d2.geojson",
+        "gitBlob": "f5f2eec148f8e79846cb0cfa6788825aeaad912c"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/bb7be57612fdc463a9d67187e3ae5f571f271191b1395e3ed35c79b74dbf8f02.csv",
+        "gitBlob": "f895286f876ac94eae7e14d77eff43172eaa3969"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/c6ac3c71d1103805b20c3c4713f37c5b7752e7aaa5883d46f8b9a70a42278256.geojson",
+        "gitBlob": "1073717c1eb8cebdad95119e3ef6823d653649f8"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/cbc811bd3c9382ad8ee1fe376fec55cb2b8055e85a405ce8b8be5c2e9b9a7b81.geojson",
+        "gitBlob": "abb675573be7549228edaf0d82026568f99ad53e"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/cd0c61a3844548f1f611723f56870af1c5308de9bfbc486ee9ef4f2a80598fb2.png",
+        "gitBlob": "227d5eb0fd95821e9ceb668e24aebd421557c6d7"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/ceb6eea4d93d6b6eef14bcc1f1568cb4e994dae1c91ec6b0053edc3ecb33ca67.json",
+        "gitBlob": "c39388efbcf2d58fe8da58c9f0815ee8a083f325"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/d5c94b774ebc6286da91e84c5c3158090b28fd817888173289bfa29c13e5b165.txt",
+        "gitBlob": "a81783548d1db8f009fef3678b6fcb4782923f5c"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/d7cee8186414ac89f35d0fcaad0186e884117c2e5eef1ef50ad7881f4f0e2ae7.txt",
+        "gitBlob": "0d6b9557e05818c7d8b8fe3b30a39d3220440075"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/dbd094fadae4621ea7149bb39720472bf65ba8c0545d4b439cd2fcb9be4f2eb9.geojson",
+        "gitBlob": "b31e1596ff78b376682a5461cce950f147dc80bf"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/dd0a958646327381a4f3884ae9049dddf40bb1b095d776942684ab0c8f767c07.png",
+        "gitBlob": "7e6d0b02bf099a8c0f1bf6218f446db8ef8abd57"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/e3b90921735614c7fab4af5b714a06ff3d57b05f1009c473bbc4a9892e1df9f8.png",
+        "gitBlob": "1c115d57520f1f753337e4080189a5f4fdd7494d"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/f8e12a31e60d2c0e1863ca4d10a1ff5c07f89332f007f866ffd40e39e2a5542a.json",
+        "gitBlob": "a9a3646797bfb604cfccfa0fae9f3de96bb2e1dd"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/objects/fe34b52f0cf6706380527da4e659ca2a22624fd561e85d6bab5b8a22d32c2736.geojson",
+        "gitBlob": "c967af24025940fbd686bed54056d75035b9a7c4"
+      },
+      {
+        "path": "data-bundles/uttam-nagar/rows.json.gz",
+        "gitBlob": "f4d3d6e435274f29ec18044a4cd3308adc3459b5"
+      }
+    ],
+    "OBSOLETE_MIXED_BOOTSTRAP_AND_REPLAY": [
+      {
+        "path": "scripts/datasets/bundle.mjs",
+        "gitBlob": "36935fb69415f05745498393ab23816fa16646c5"
+      },
+      {
+        "path": "scripts/datasets/uttam-nagar.mjs",
+        "gitBlob": "1537d8df2cff43075828a26363835b33fca1fe66"
+      },
+      {
+        "path": "scripts/datasets/test-transfer.mjs",
+        "gitBlob": "b20de7f53e2d8e345da6b9042e5089a5f0d7cc02"
+      },
+      {
+        "path": "scripts/datasets/export-uttam-nagar.mjs",
+        "gitBlob": "4bacf9cb41739c9ad45af48599d7f558f080961b"
+      },
+      {
+        "path": "scripts/datasets/uttam-v1-schema.mjs",
+        "gitBlob": "d696b41c243287c8af72aa6381e7bbc8008b5eed"
+      },
+      {
+        "path": "scripts/repo-data.ts",
+        "gitBlob": "8d582ca3bb892cb44c7cd6e906702417468d818a"
+      },
+      {
+        "path": "scripts/osm-road-block/verify.mjs",
+        "gitBlob": "aa92a44a9c3630c391280513f035a8b6054c5d09"
+      },
+      {
+        "path": "scripts/engineering/isolated-baseline.mjs",
+        "gitBlob": "d6ecef58c9ff02ab451ed3d5df8be183a2bf3900"
+      },
+      {
+        "path": "scripts/usp/isolated-live.mjs",
+        "gitBlob": "810f97b042dcaafa41758908c2d72b023538f724"
+      },
+      {
+        "path": "scripts/usp/ui/UI-03-isolated-preview.mjs",
+        "gitBlob": "aa07fa892dbd5dd7e555085f1ce96376b028bdbf"
+      },
+      {
+        "path": "scripts/usp/gf/FND-04-isolated.mjs",
+        "gitBlob": "f6eb48694a8d04284f3402e60eb4b59ac74e2234"
+      },
+      {
+        "path": "scripts/usp/gf/FND-04-sql.ts",
+        "gitBlob": "a6b4a3c528ef46f45b71d47dfaf04a4de0bbbfd0"
+      },
+      {
+        "path": "scripts/usp/gf/FND-06-isolated.mjs",
+        "gitBlob": "b33caa475478cf84712b3fae5c171a3bca8f60a3"
+      },
+      {
+        "path": "scripts/usp/data/import-d0.ts",
+        "gitBlob": "00dc48a29c31dddeca7c8738c4b898adb26df917"
+      },
+      {
+        "path": "scripts/usp/data/verify-d0.ts",
+        "gitBlob": "fd430a5ea8e89df66598c9081d0f470baf6981b3"
+      },
+      {
+        "path": "scripts/usp/verify-d0-live.ts",
+        "gitBlob": "da9b736aeb3e2c0b45631b3e8aad928b2349d5e3"
+      },
+      {
+        "path": "tests/usp-data-pack.test.ts",
+        "gitBlob": "752c7d35d22b2a7ca20c77de9f731a8a300e5e6e"
+      },
+      {
+        "path": "tests/dataset-bundle.test.mjs",
+        "gitBlob": "78fc5e12a629984844c7060de75caad1208495c0"
+      }
+    ]
+  }
+}

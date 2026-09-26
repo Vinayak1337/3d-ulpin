@@ -12,7 +12,6 @@ import {
   getSource,
   listCases,
   loadDemoInputs,
-  loadDemoLevels,
   prepareCase,
   readDemoFile,
   readRealDemoAsset,
@@ -207,16 +206,6 @@ async function handle(request: Request, context: Context): Promise<Response> {
             ),
             201,
           );
-        }
-        if (p[2] === "demo-levels") {
-          const { dataset } = demoSchema.parse(await body(request));
-          if (dataset === "real-nyc")
-            throw new AppError(
-              422,
-              "NO_REVISED_SAMPLE",
-              "The NYC sample has no revised level schedule or interior floor measurements.",
-            );
-          return json(await loadDemoLevels(caseId, dataset), 201);
         }
         if (p[2] === "prepare")
           return json(

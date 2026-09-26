@@ -42,7 +42,7 @@ export const api = {
       }),
     ),
   detail: (id: string) => request<CaseDetail>(`/cases/${id}`),
-  demo: (id: string, dataset: "c001" | "c002" | "real-nyc") =>
+  demo: (id: string, dataset: "real-nyc") =>
     request<{ sourceIds: string[] }>(`/cases/${id}/demo-inputs`, {
       ...json({ dataset }),
       headers: {
@@ -50,8 +50,6 @@ export const api = {
         "Idempotency-Key": `demo-${id}-${dataset}`,
       },
     }),
-  demoLevels: (id: string, dataset: "c001" | "c002") =>
-    request<SourceRevision>(`/cases/${id}/demo-levels`, json({ dataset })),
   upload: async (
     id: string,
     file: File,

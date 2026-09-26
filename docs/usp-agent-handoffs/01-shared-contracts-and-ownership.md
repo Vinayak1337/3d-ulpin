@@ -1,6 +1,6 @@
 # Shared contracts, ownership and foundation implementation
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Current continuation note, 23 September 2026:** [02 - implementation lead, role tiers and worker delegation](02-lead-agent-execution.md) governs development workers. [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) specifies DEPLOY-owned runtime inference, money reservations, shared organisation wallets and one-way key retirement. Current [ports](../../packages/contracts/src/usp/ports.ts), [domain types](../../packages/contracts/src/usp/domain.ts) and [FND interfaces](../evidence/usp/fnd/INTERFACES.md) have advanced beyond the historical F0a note below. Their existence does not qualify the provider gateway; inspect actual bindings/tests rather than recreate these modules.
 
@@ -10,7 +10,7 @@ Current planning base is integrated `staging@45d033baae7ec4e5a572d82459b0062c70a
 
 ## Historical F0a checkpoint — reconcile with current implementation
 
-On `feat/usp-foundation-f0`, code commit `1894f2e94e3f4f113fb4431afaf69018dcb730c3` implements [common schemas](../../packages/contracts/src/usp/common.ts), the [reference codec](../../packages/contracts/src/usp/reference-codec.ts), [data-pack schema](../../packages/contracts/src/usp/data-pack.ts), opt-in [module entry](../../packages/contracts/src/usp/index.ts), [serialized fixture producer](../../tests/fixtures/usp-common.ts), [contract tests](../../tests/usp-foundation.test.ts), [data tests](../../tests/usp-data-pack.test.ts) and the offline [pack-byte verifier](../../scripts/usp/data/verify-pack.ts). Reuse these; do not generate competing versions from the prose below. Root package exports are unchanged; import the opt-in USP module explicitly until FND deliberately exposes it through the root.
+On `feat/usp-foundation-f0`, code commit `1894f2e94e3f4f113fb4431afaf69018dcb730c3` implements [common schemas](../../packages/contracts/src/usp/common.ts), the [reference codec](../../packages/contracts/src/usp/reference-codec.ts), [data-pack schema](../../packages/contracts/src/usp/data-pack.ts), opt-in [module entry](../../packages/contracts/src/usp/index.ts), [serialized fixture producer](../../tests/fixtures/usp-common.ts), [contract tests](../../tests/usp-foundation.test.ts), [historical D0 data tests](https://github.com/Vinayak1337/3d-ulpin/blob/92e4d04cdeaaa2d8ccc65680c6fea1675dcee88a/tests/usp-data-pack.test.ts) and the offline [pack-byte verifier](../../scripts/usp/data/verify-pack.ts). Reuse these; do not generate competing versions from the prose below. Root package exports are unchanged; import the opt-in USP module explicitly until FND deliberately exposes it through the root.
 
 **Verified:** [run 35796807605](https://github.com/Vinayak1337/3d-ulpin/actions/runs/35796807605) passed 64 new tests, explicit starter TypeScript checking, application typecheck, byte verification and 370 existing Studio/core/scope/Uttam/repository-mode tests. This is schema/fixture verification, not a real service producer/consumer, DB, browser or rendering pass.
 
@@ -70,7 +70,7 @@ All principal/access context is server-derived. Caller scope is a request, not a
 
 `EvidencePointer` pins source revision, nullable asset/source-part revision, typed locator, purpose, direct/inherited origin and target. Keep original legacy locator text alongside any validated typed derivative. Whole-source/verbatim locators do not authorize arbitrary extracts. Identifier assertions retain scheme, literal value, known issuer, source and review/assertion state.
 
-**Schema ownership:** FND owns common opaque AssetRef and SnapshotScope; INGEST owns its scene AssetDescriptor/DraftSceneManifest; UI owns the renderer adapter, not a competing manifest schema. A render-manifest ID and its underlying data SnapshotScope.manifestId are distinct. Use namespaced/branded ID types in implementation to prevent accidental interchange. Hash canonical manifest content excluding its own ID/digest fields; do not create self-referential hashes.
+**Schema ownership:** FND owns common opaque AssetRef and SnapshotScope; INGEST owns its scene AssetDescriptor/DraftSceneManifest; the user-owned UI consumes renderer adapters, with no new frontend assignment or competing manifest schema. A render-manifest ID and its underlying data SnapshotScope.manifestId are distinct. Use namespaced/branded ID types in implementation to prevent accidental interchange. Hash canonical manifest content excluding its own ID/digest fields; do not create self-referential hashes.
 
 | Port (context first, Promise result) | Request → result | Sole implementation/wiring rule |
 | --- | --- | --- |
@@ -161,13 +161,13 @@ Private derivatives require current target AND contributing source/part/asset gr
 
 Inventory main/specialized API, ML/scene/source assets, SSR pages and static files before F2. Guarding the new route does not protect old downloads. Keep unqualified routes externally inaccessible, preserve trusted-proxy boundary and never remove localOnly globally. Public search/MCP uses explicit released projections, not a full dossier with a few fields removed.
 
-## 8. Selection, caches and UI boundary
+## 8. API selection, cache and consumer boundary
 
-UI owns URL/transient state; server snapshots own facts. SelectionContext: none/pending/valid/invalid, each with generation; valid carries scope,target, optional building/floor/space refs and evidence. Invalid carries requested context and safe reason. Every selection/world/stage/entitlement change advances generation. Supplied invalid unit/area/source cannot silently broaden an action; retired IDs show explicit historic/unavailable context.
+The user-owned UI owns URL/transient state; backend snapshots own facts. The following selection/cache fields are integration contracts, not assignments to implement client state. SelectionContext: none/pending/valid/invalid, each with generation; valid carries scope,target, optional building/floor/space refs and evidence. Invalid carries requested context and safe reason. Every selection/world/stage/entitlement change advances generation. Supplied invalid unit/area/source cannot silently broaden an action; retired IDs show explicit historic/unavailable context.
 
 Cache key includes method/path, scope/stage/world, manifest/target pin, parameters, accessView/entitlement/policy. Intake reads use workspace/version. Abort or suppress old-generation responses; revoked pending reads cannot repopulate cleared caches. Asset events invalidate targeted consumers, not every dossier. Source/relationship/record changes invalidate dependency-matching manifests. Hidden selection stays explicit with reveal/clear action. Never store private records/tokens/packets in localStorage.
 
-Reuse [resource cache](../../apps/web/features/spatial/data/resource-cache.ts), [sessions](../../apps/web/features/spatial/data/session.ts), [store](../../apps/web/features/officer/shared/store.tsx), [useBlock](../../apps/web/features/officer/block/useBlock.ts) and existing viewport. One active3D viewport/focused workspace; no feature-owned global provider/Canvas. UI owns renderer/slots and query translation; features supply typed callbacks/results.
+Reuse [resource cache](../../apps/web/features/spatial/data/resource-cache.ts), [sessions](../../apps/web/features/spatial/data/session.ts), [store](../../apps/web/features/officer/shared/store.tsx), [useBlock](../../apps/web/features/officer/block/useBlock.ts) and existing viewport. One active3D viewport/focused workspace; no feature-owned global provider/Canvas. the user owns renderer/slots/query translation; backend feature owners supply typed operation/results contracts only.
 
 ## 9. Sole ownership and migrations
 
@@ -178,8 +178,8 @@ Reuse [resource cache](../../apps/web/features/spatial/data/resource-cache.ts), 
 | [Processing](../../apps/web/lib/server/processing.ts), [dispatcher](../../scripts/dispatcher.ts), [geo API](../../services/geo/geo/api.py), [tasks](../../services/geo/geo/tasks.py), [JobStore](../../services/geo/geo/store.py) | FND; registered leaf tasks remain feature-owned |
 | Proposed `app/api/v1/usp/[...path]/route.ts`, `app/mcp/route.ts`, existing API guards | FND |
 | Existing config/compose/Dockerfiles/geo settings/legacy provider/package/requirements/locks; proposed `infra/deployment/Dockerfile.web` | FND applies bounded patches; DEPLOY owns new policy/provider/standalone reference files |
-| Studio routes/layout/Shell/ProductHeader/map/cache/store/parent widgets and public page mounts | UI; integrates FND SSR wrapper |
-| Proposed `contracts/src/usp/<feature>.ts`, `lib/server/usp/<feature>/**`, `features/usp/<feature>/**`, leaf tests/migration | Named feature owner |
+| Studio routes/layout/Shell/ProductHeader/map/cache/store/parent widgets and public page mounts | User-owned UI; FND supplies API/SSR contracts only, no frontend assignment |
+| Proposed `contracts/src/usp/<feature>.ts`, `lib/server/usp/<feature>/**`, API projection types, leaf tests/migration | Named feature owner |
 | Proposed `fixtures/usp/**`, `scripts/usp/data/**` | DATA; FND data-pack schema, feature owners submit expected cases |
 
 Reuse one pool and existing `pnpm db:migrate`; add named migration ledger/advisory-lock protection. Failed migration not applied. FND registers feature-owned migrations in dependency order, not just file numbering. Prefixes: usp_packet,usp_readiness,usp_finding,usp_citizen,usp_ingest,usp_history,usp_rights,usp_impact,usp_assist,usp_deployment. Stores contain feature state, exact manifests/receipts/bindings, not duplicate mutable property truth. Test clean, populated baseline, rerun and partial feature upgrade. Recovery disables feature routes/workers and preserves originals; no destructive down-migration or snapshot refresh default. Shared patches follow 00 and explicit role transfer, not concurrent silent edits.
@@ -188,7 +188,7 @@ Reuse one pool and existing `pnpm db:migrate`; add named migration ledger/adviso
 
 **Dataset policy, 24 September 2026:** follow [H28](28-data-acquisition-and-finale-tests.md) for the matched finale bundle (any permitted geography, labelled), exact source status, independent oracles, permitted fallbacks and aggregate load ladder. FND must not encode a required locality or provider in shared contracts. Larger corpora require tested partitioned storage/manifests, paging, identity and recovery within existing per-operation limits; no admission-limit increase or runtime schema migration is authorized by a new source upload. Existing D0/D1 and historical regression receipts below remain unchanged.
 
-Use DATA's D0 and one D1 reference/geometry example as historical foundation fixtures; use H28's qualified matched bundle for GF0–GF5. FND's `usp-data-pack/1` starter now lives in `data-pack.ts`; DATA prepares the remaining full packs. The small [contract-smoke manifest](../../fixtures/usp/D0/contract-smoke/manifest.json) is not a full D0 scene. No existing PC path or unacquired archive is presumed available. Manifest stage assertions are supplied metadata, not independently verified results; the verifier only checks declared local bytes and never promotes parsing/rendering/workflow states.
+Use DATA's D0 and one D1 reference/geometry example as historical foundation fixtures; use H28's qualified matched bundle for GF0–GF5. FND's `usp-data-pack/1` starter now lives in `data-pack.ts`; DATA prepares the remaining full packs. The small [contract-smoke manifest](https://github.com/Vinayak1337/3d-ulpin/blob/92e4d04cdeaaa2d8ccc65680c6fea1675dcee88a/fixtures/usp/D0/contract-smoke/manifest.json) is not a full D0 scene. No existing PC path or unacquired archive is presumed available. Manifest stage assertions are supplied metadata, not independently verified results; the verifier only checks declared local bytes and never promotes parsing/rendering/workflow states.
 
 1. F0 fixtures must cover unassigned intake, valid/historical snapshot, invalid cross-building unit, distinct namespaces, unknown quantity, pending job, unavailable producer, create/update guards, one-target/multi-target proposal and released derivative from restricted source. Producers and consumers parse the same bytes. Proposed `tests/usp-contract-producers.test.ts`. F0a's wire round trips do not replace these remaining domain producer/consumer tests.
    **GF0 FND-01 status: remaining.** Current producer/consumer tests pass, but restricted-source derivative release and the full listed fixture matrix are not proven by a live producer; see [GF-CONTRACT receipt](../evidence/usp/finale/GF-CONTRACT/FND-01-report.md).
@@ -209,13 +209,13 @@ Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:registry`, `pnpm test:register
 
 Repeat the implemented starter with `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-foundation.test.ts tests/usp-data-pack.test.ts`, `pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D0/contract-smoke/manifest.json`, and `pnpm typecheck`. These local checks perform no DB reset, deployment, model call or automatic merge.
 
-## 11. Copy-paste FND assignment
+## 11. Assignment boundary
 
-> Read 00, H26, H28, this handoff including its historical F0a state, root/web AGENTS and actual services; check branch drift. Reuse accepted FND ports and D0 receipts. For `finale_v1`, complete only remaining GF0 contract/data seams, then own GF1's reviewed proposed-code commands, exact resolver, atomic lineage transaction and CityJSON/sidecar registry adapter. Preserve separate UUID, sourced official assertions and missing-anchor state; do not derive a legal parent from overlap. Keep source IDs/bytes, current wrappers, job fences, access/release and local restrictions. HISTORY owns lineage reads, RIGHTS owns declaration assertions, UI owns frontend/SSR mounts, DATA owns independent fixtures and feature owners own leaves; transfer shared contracts explicitly. Run section 10's relevant regression tests plus GF-T15 and round-trip/rollback/concurrency tests. Return source/manifest hashes, code vectors, actual receipts, loss report and unqualified capabilities. Do not treat contract-smoke as a full scene, claim mocks prove integration, activate public services or merge main without authorization.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) FND-01 to FND-05.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) FND-01 to FND-05.
 
 ### Z1. Contract additions FND owns
 

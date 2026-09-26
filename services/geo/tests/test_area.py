@@ -321,14 +321,6 @@ def test_pdf_without_native_text_is_unresolved_and_page_is_identified():
     assert any("page 1" in warning for warning in result["warnings"])
 
 
-def test_existing_fixture_pdf_native_text_has_exact_page_locator():
-    source = Path(__file__).resolve().parents[3] / "fixtures/registry/rights.pdf"
-    result = extract_document(encoded_document(source.read_bytes(), "pdf"))
-    assert result["status"] == "ready"
-    assert result["parts"][0]["locator"] == {"page": 1, "label": "PDF page 1"}
-    assert result["parts"][0]["text"].strip()
-
-
 @pytest.mark.parametrize("data", [
     {"format": "text", "base64": "not base64!"}, encoded_document(b"\xff"),
     encoded_document(b"abc\x00def"), encoded_document(b"Not PDF", "pdf"), encoded_document(b"Not DOCX", "docx"),

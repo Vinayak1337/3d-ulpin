@@ -1,6 +1,6 @@
 # 17 · Saved infrastructure impact screening
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **IMPACT**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), the qualified operation in [12](12-rights-aware-spatial-findings.md) and [99](99-ui-ux-and-integration.md). ER-08/11/24 are incorporated. New paths are implementation tasks.
 
@@ -59,13 +59,12 @@ Require scope.assess and current resource grants for execution/result/report. Sh
 | Proposed `packages/contracts/src/usp/impact.ts` | IMPACT proposal/run/coverage/response schemas |
 | Proposed `apps/web/lib/server/usp/impact/{proposals,screen,report,routes}.ts`, `migrations/17-impact.ts` | IMPACT saved runs, exact manifests, report and leaf API |
 | Proposed `services/geo/geo/usp_impact.py` | IMPACT envelope/profile adaptation calling FIND operations; FND registers |
-| Proposed `apps/web/features/usp/impact/{ImpactEditor,ImpactResults,ImpactCoverage}.tsx` | IMPACT numeric/drawing-result leaves |
-| Existing SpatialInquiry, [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx) and shared map | UI owns drawing/overlay/selection mount |
+| Existing SpatialInquiry, [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx) and shared map | User-owned drawing/overlay consumer; backend owns proposal/result contracts |
 | Proposed `tests/usp-impact.test.ts`, `tests/usp-impact-integration.ts`, `services/geo/tests/test_usp_impact.py`, `tests/e2e/usp-impact.spec.ts` | IMPACT numeric, persistence, permission and report tests |
 
-## G. UI placement and interaction
+## G. Backend contract for user-owned consumers
 
-Area map tools → Assess proposed work → Point stack / Volume → draw or enter numbers → Screen mapped records. Show reference/assumptions and coverage beside results. Click basement → isolate actual level and open its source in existing drawer. Loading retains pinned proposal; empty says no intersection among assessed records plus inventory limitation; missing depth/reference is conspicuous; error preserves edit; denied resources do not leak; success names proposal/manifests. No green all-clear. UI owns camera/focus/mobile/numeric alternative, IMPACT panel content.
+Accept an exact numeric/geometry proposal with reference/assumptions; return pinned proposal/manifests, affected mapped records, coverage and source accuracy/depth. Empty means no intersection among assessed records plus inventory limitation. Missing reference/depth remains explicit; denied resources do not leak and retry preserves the proposal. No clearance or safe-to-dig verdict.
 
 ## H. Ownership and dependencies
 
@@ -92,6 +91,6 @@ Test negative levels, zero height, invalid/holed/compound geometry, reference/un
 
 Run `pnpm typecheck`, `pnpm test:registry`; `python -m pytest services/geo/tests/test_registry.py services/geo/tests/test_usp_impact.py`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-impact.test.ts`; `pnpm exec tsx tests/usp-impact-integration.ts`; `pnpm exec playwright test tests/e2e/usp-impact.spec.ts`. Return actual numeric/result/report hashes, source coverage, saved-proposal evidence and V4 screenshots. Distinguish IMPACT0, utility adapter and field-data qualification.
 
-## K. Copy-paste assignment
+## K. Assignment boundary
 
-> Implement IMPACT on feat/usp-impact using 00, 01, this handoff and FIND's qualified operation. Obtain D0 trench/elevated oracles and later attempt permitted D5/D7 profiles. Complete saved numeric/drawn proposal→exact run→affected-space evidence→reopenable report, with coverage and explicit unsupported utilities. Preserve existing inquiry, source classifications and one map; UI/FND own shared mounts/hooks. Do not fork geometry, fill unknown depth or imply clearance. Run J through real services and return commits, manifests, numeric oracles, report and screenshots with separate capability gates. No main merge, external activation or fabricated data.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.

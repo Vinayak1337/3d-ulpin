@@ -1,23 +1,8 @@
-# Files to show at the hackathon
+# Retained real-source reference notes
 
-The current registry presentation is **fully synthetic**. Follow the root
-[registry demo guide](REGISTRY_DEMO_GUIDE.md); the public-data material below is
-preserved for the separate legacy workbench.
+Updated 26 September 2026. This preserves source lineage from the former demonstration guide; it is not a seed/import walkthrough or proof that a current route has passed. Active source requirements are [H23](docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md), [H28](docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md) and the [delivery policy](docs/usp-agent-handoffs/current-delivery-policy.md).
 
-## Ready-to-use files in this repository
-
-| Folder | What it contains | Classification |
-| --- | --- | --- |
-| [fixtures/registry](fixtures/registry/) | Connected neighbourhood JSON, level CSV, labelled plan PNG/PDF and fictional rights PDF | Current synthetic registry demo: 8 m³ correction and 12/4 m³ excavation impacts. |
-| [fixtures/c001](fixtures/c001/) | `spatial.json`, level/control CSVs, `plan.png`, `plan.pdf` | Synthetic two-storey/basement teaching example; demonstrates interior spaces and the 6.4 m³ correction. |
-| [fixtures/c002](fixtures/c002/) | Another JSON/CSV/PNG/PDF set with different outlines | Synthetic alternative geometry; 14.4 m³ correction. |
-| [fixtures/real-nyc](fixtures/real-nyc/) | Original public GeoJSON, converted spatial JSON, roof-height CSV, provenance manifest | Real public building footprint and published height; a derived exterior prism with no interior-room/floor evidence. |
-
-GeoJSON is a standard geospatial format encoded as JSON. The original NYC file
-has a FeatureCollection, geographic coordinates, MultiPolygon geometry and city
-attributes. Our converted `spatial.json` is a different, explicitly limited
-application format in local metres. Do not describe the converter as a universal
-GeoJSON, CAD, BIM or LiDAR importer.
+Retain `fixtures/real-nyc/` originals, manifest, hashes and deterministic extraction history. This is an exterior footprint/published-height source, not interior, title or Indian operational evidence. Recheck source permission and current service support before any separately assigned use. Discover new Indian operational/test inputs from data.gov.in or their responsible official issuer; vendor predictions and community maps are not official substitutes.
 
 ## Where to get the originals
 
@@ -26,78 +11,6 @@ GeoJSON, CAD, BIM or LiDAR importer.
 - [City of New York metadata](https://github.com/CityOfNewYork/nyc-geo-metadata/blob/main/Metadata/Metadata_BuildingFootprints.md): explains references, geometry/height attributes, source quality and the exclusion of interior divisions.
 - [NYC Open Data terms](https://opendata.cityofnewyork.us/overview/#termsofuse): public access does not mean a warranty of survey accuracy. Attribute the City of New York Office of Technology and Innovation.
 - [buildingSMART IFC examples](https://technical.buildingsmart.org/standards/ifc/ifc-examples/): original BIM test files for a future IFC importer. This application cannot currently import those files; these are interoperability examples, not cadastral evidence.
-
-## Indian data
-
-Yes—both providers below cover India. They are public imagery-derived building
-datasets, not official Indian cadastral boundaries, ownership records or issued
-ULPINs. Links are also in **Sources → Demo files & public data**.
-
-| Provider | Download | What is missing |
-| --- | --- | --- |
-| [Google Open Buildings](https://sites.research.google/gr/open-buildings/) | Use its download map to select a tile over India; polygon CSV files include WKT footprints, confidence and centre Plus Codes. Start with a small area, not the entire dataset. | The footprint dataset has no heights or interior floors/rooms. A Plus Code is not a ULPIN. |
-| [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) | Follow the current `dataset-links.csv` link in the README, filter `Location` to `India`, and download one tile. Files are gzip-compressed GeoJSON Lines, even when named `.csv.gz`. | Height is an estimated value in metres where available; `-1` means missing, not a valid elevation. No interior floor/room boundaries. |
-
-**These are not direct uploads yet.** The working NYC adapter is specific to its
-one documented building. To feed an Indian footprint, retain the original and
-attribution, select a simple polygon, project it from longitude/latitude to an
-appropriate local metric CRS, retain the origin, and map it into
-`parcel-local-json-v1`. Supply a `levels-csv-v1` schedule with actual height
-evidence and an explicit relative benchmark. Do not replace missing height with
-a made-up value. Interior levels and rooms need their own plans or measurements.
-The app's current PDF/PNG plan tracing and local-metre CSV/JSON inputs are usable
-with Indian surveys if you already have those files and their frame/benchmark.
-
-Google's separate [2.5D temporal dataset](https://sites.research.google/gr/open-buildings/temporal/)
-also covers India and estimates building height, but distributes raster layers;
-the app cannot ingest these rasters as building geometry. Use the bundled NYC
-sample for a ready-to-run public-data demo until an Indian adapter is added.
-
-## Keep the workspace picker small
-
-The configured demo machine keeps four distinct workspaces visible: NYC public
-building, C-001 before correction, C-001 guided walkthrough after correction,
-and the C-002 architectural example. Repeated verification/rehearsal workspaces
-are archived, not deleted. **Show archived workspaces** in the top-left picker
-reveals them; direct case links continue to work. New cases remain visible.
-
-To restore a workspace permanently to the normal list:
-
-```sh
-pnpm exec tsx scripts/archive-workspaces.ts --restore <case-uuid>
-```
-
-Omit `--restore` to archive explicit case IDs. Archiving changes only picker
-visibility; sources, geometry revisions, identifiers and history are retained.
-
-## Show the NYC example in the UI
-
-1. Create a new workspace named **NYC public building**.
-2. Select **NYC · Public building footprint**, then **Load sample inputs**.
-3. Open **Sources → Demo files & public data**. Download the original GeoJSON
-   and provenance manifest to show where the inputs came from. The two imported
-   files are the explicitly converted footprint and roof-height schedule.
-4. Choose **Prepare geometry**, select `spatial.json` and `levels-r1.csv`, leave
-   the optional control source empty, then **Prepare draft spaces**.
-5. Choose **Build model**. Switch to **Property volumes** to show the computed
-   exterior envelope. The decorative Building mode remains conceptual.
-6. Inspect `NYC-ENV353927`: footprint approximately **123.950241 m²**, relative
-   height **10.207752 m**, prism volume approximately **1265.253317 m³**.
-7. Show the parent **3D ULPIN · prototype** above the viewer and open
-   **View identifiers**. This source has no known interior levels, so its single
-   envelope space sits in **Unassigned**, not invented numbered floors.
-8. Use C-001 to demonstrate the separate floor/space hierarchy and correction
-   workflow. Label it synthetic when presenting it.
-
-On the configured demo machine, [open the prepared NYC model](http://127.0.0.1:3000/?case=d1d77c93-d979-488d-be1b-792cc81b608c).
-Other machines should follow the steps above to create their own case and ID.
-See the [real-data UI capture](docs/images/real-data-identifiers.png).
-
-Suggested narration: “This is a public city building footprint, not a sample
-rectangle we drew. We preserve the original, project the coordinates into local
-metres and use its reported roof height to compute an exterior prism. We do not
-infer interior apartments from an exterior footprint. Our separate synthetic
-case demonstrates how measured floor and space evidence would be organized.”
 
 ## Conversion and limits
 
@@ -120,3 +33,5 @@ rooms, a detailed roof model, an Indian land record, or proof of ownership.
 No floors are inferred from height. General GIS imports, IFC, DXF and point
 clouds remain unsupported. The pinned files run locally without fetching the
 provider again during the demo.
+
+The former synthetic-file and seeded-case navigation instructions are retired. Historical guide text remains at `92e4d04cdeaaa2d8ccc65680c6fea1675dcee88a:DEMO_DATA.md`. Do not restore retired packages to follow it.

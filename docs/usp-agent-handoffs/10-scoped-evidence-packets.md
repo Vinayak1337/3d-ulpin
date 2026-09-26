@@ -1,6 +1,6 @@
 # 10 · Property-scoped evidence packets
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **PACK**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`. Revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md) and your UI slots in [99](99-ui-ux-and-integration.md). New paths below are implementation destinations, not existing functionality. Audit remedies ER-05/14/15/24 are incorporated here.
 
@@ -95,15 +95,14 @@ Integrity display uses source-byte and derivative hashes for consistency. If a p
 | Proposed `packages/contracts/src/usp/packets.ts` | PACK plan/entry/job/release schemas; import F0 refs/guards |
 | Proposed `apps/web/lib/server/usp/packets/{selector,service,extract,routes}.ts`, `migrations/10-packets.ts` | PACK selection/persistence/page orchestration/routes; FND mounts/migrates |
 | Proposed `services/geo/geo/usp_packets.py` | PACK isolated raster/crop operations; FND owns dependency/task registration |
-| Proposed `apps/web/features/usp/packets/{PacketAction,PacketPreview,PacketStatus}.tsx` | PACK leaf UI, no independent map/state |
 | Existing scope/export/source/PDF helpers linked in B | Read-only reuse or narrow FND adapter; preserve full-original archive |
 | [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx), [ScopedExport](../../apps/web/features/officer/shared/ScopedExport.tsx) | UI alone mounts separate packet action |
 | Proposed `tests/usp-packets.test.ts`, `tests/usp-packets-integration.ts`, `services/geo/tests/test_usp_packets.py`, `tests/e2e/usp-packets.spec.ts` | PACK exact selection, leakage, persistence, permission and browser evidence |
-| Proposed `apps/web/lib/server/usp/packets/{card,qr-resolver}.ts`, `apps/web/features/usp/packets/PropertyCard.tsx`, `tests/usp-card.test.ts` | PACK GF4 card generation and exact-revision QR; FND mounts resolver/identity guard, UI mounts leaf |
+| Proposed `apps/web/lib/server/usp/packets/{card,qr-resolver}.ts`, `tests/usp-card.test.ts` | PACK GF4 card generation and exact-revision QR; FND mounts resolver/identity guard, user-owned UI consumes the typed result |
 
-## G. UI placement and interaction
+## G. Backend contract for user-owned consumers
 
-Map → building → floor/unit → Evidence → Property packet. One drawer keeps exact unit/version visible, shows direct/shared/omitted entries and one Confirm generation action. Full register reuses it. Loading retains the scope header; empty offers existing source/workspace navigation; incomplete names required missing context; denied does not disclose private sources; failure preserves the plan; ready shows historical/current manifest and download. Changing selected property never retargets an open plan. Invalid unit links disable generation instead of exporting the building. Mobile uses one sheet with focus return and no hidden hover actions.
+Return exact unit/version, direct/shared/omitted entries, generation confirmation and immutable artifact status. A pending/failed plan retains its original target; changing consumer selection cannot retarget it. Invalid unit links reject generation instead of exporting the building. Empty/incomplete results name missing authorized context; denied responses expose no private sources. Current versus historical manifests and original archives remain distinct.
 
 ## H. Agent ownership and dependencies
 
@@ -131,6 +130,6 @@ Negative tests: wrong target, source-link change after plan, missing page, rotat
 
 Run `pnpm typecheck`, `pnpm test:register-scope`, `pnpm test:register-exports`; then `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-packets.test.ts`, `pnpm exec tsx tests/usp-packets-integration.ts`, `python -m pytest services/geo/tests/test_usp_packets.py`, `pnpm exec playwright test tests/e2e/usp-packets.spec.ts`. Proposed tests must first be created. Save sanitized artifact/hash and V5/V8 evidence under the 00 evidence convention. Report PACK0, PACK1, real-source and public-release status separately.
 
-## K. Copy-paste agent assignment
+## K. Assignment boundary
 
-> Implement PACK using 00, 01 and this A–K handoff. On isolated feat/usp-packets, inspect the retained D0/PACK0 live receipt and attempt the bounded D4 sample; preserve sources and source-to-target truth. Close verified PACK0 gaps, then qualify the specified one-page PDFium crop/rebuild path and add checkpointed PDF generation. After GF1–GF3 inputs qualify, generate the GF4 card from the exact packet plan and verify the same-device loopback QR resolver; phone access remains conditional on its separate protected-ingress gate. Follow exact SnapshotScope, job fencing and private-versus-released derivative rules. Do not broaden scope, attach whole mixed originals, invent legal applicability or build a second map/router. Request narrow FND/UI changes. Run J through real services and inspect actual bytes/pixels, not mocks; return commits, pack/output hashes, leakage/recovery/permission evidence, screenshots and explicit unsupported gates. Routine technical decisions follow this handoff; no main merge or public activation without authorization.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.

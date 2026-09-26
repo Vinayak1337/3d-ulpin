@@ -1,10 +1,10 @@
 # 3D ULPIN — adaptive, evidence-linked 3D property platform
 
-Current implementation follows the [25 September user scope](docs/usp-agent-handoffs/current-delivery-policy.md): official-source data only, desktop-first/light-only; no synthetic substitutes or current mobile optimization.
+All active plans follow the [26 September backend-only scope](docs/usp-agent-handoffs/current-delivery-policy.md): services, processing, data, security and API contracts for the user-owned UI; official sources only and no synthetic substitutes.
 
 <!-- plan-next-gate: GF0 -->
 
-**Current plan: [start here](docs/usp-agent-handoffs/00-README.md). Revised 24 September 2026.**
+**Current plan: [start here](docs/usp-agent-handoffs/00-README.md). Revised 26 September 2026.**
 
 Build an evidence-linked 3D property workbench: **Identify → Prove → Govern**. Give equal weight to AI-assisted integration of fragmented inputs and the officer outcome: traceable vertical property records, discrepancies and scoped evidence cards.
 
@@ -13,10 +13,10 @@ The [current roadmap](docs/usp-agent-handoffs/00-README.md) separates `finale_v1
 | Topic | Authority |
 | --- | --- |
 | Releases, dependencies, owners, tests | [release-plan.json](docs/usp-agent-handoffs/release-plan.json) |
-| How we build it: ingestion/SSE, geometry and shared UI | [H14](docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md), [H27](docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md), [H99](docs/usp-agent-handoffs/99-ui-ux-and-integration.md) |
+| Backend ingestion/SSE, geometry and consumer contracts | [H14](docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md), [H27](docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md), [H99](docs/usp-agent-handoffs/99-ui-ux-and-integration.md) |
 | Identifiers, LADM and exchange | [H26](docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md) |
 | Exact datasets including data.gov.in and independent tests | [H28](docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md) |
-| Cesium / R3F / Helsinki decision | [H22](docs/usp-agent-handoffs/22-rendering-and-sparse-data.md) |
+| Existing renderer compatibility and source-asset limits | [H22](docs/usp-agent-handoffs/22-rendering-and-sparse-data.md) |
 | Sarvam, India residency and data policy | [H23](docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md), [H20](docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md) |
 | PPT story and measured statistics | [H24](docs/usp-agent-handoffs/24-product-method-and-ppt.md) |
 
@@ -24,15 +24,10 @@ Operational data is Indian, data.gov.in first, with no mandatory locality. Tests
 
 The [recorded local milestone](docs/evidence/usp/continuation-2026-09-23/README.md) covers bounded D0/PACK0 and one real D1 exterior in the current shared Cesium workflow. It does not pass new finale gates. Use [AGENTS.md](AGENTS.md), current code and isolated services. This alignment changes plans only; main remains unchanged.
 
-## Existing local operation
+## Local operation and current cleanup
 
-Follow the [startup guide](docs/OFFICER_STARTUP.md) and [repository-data instructions](repo-data/README.md). Use isolated services for tests. Do not overwrite `.env`, reset populated volumes, reseed implicitly or export a replacement snapshot.
+The [startup guide](docs/OFFICER_STARTUP.md) describes the service boundary and current safeguards. The obsolete repository/Uttam snapshot bootstrap and synthetic seed/replay instructions are retired from active use. A private preservation archive is not permission to restore/reseed it. Do not overwrite `.env`, reset populated volumes, export a replacement snapshot or run a historical guide's commands.
 
-```sh
-pnpm install --frozen-lockfile
-pnpm platform:start
-pnpm db:migrate
-pnpm dev
-```
+This is backend-only planning and dependency cleanup, with no feature implementation authorized by the plan. The user owns UI redesign; preserve compatible API/saved-route behavior and unique inspection capabilities. The lead may work directly or use ordinary authorized Codex tasks, not subagents. No push, deployment or public activation is implied.
 
-Run only applicable configured checks, such as `pnpm typecheck` and `pnpm test:studio`; service/browser tests need their documented isolation. The documentation revision itself is not a runtime test pass. Preserve real gathered originals, hashes and lineage. Retire synthetic [fixtures](fixtures/README.md), [source upload packages](data-source/README.md) or saved-state material only after exact-path/record and dependency review; never reset mixed snapshots. No implicit deployment or merge to main.
+Use [the backend cleanup plan](docs/usp-agent-handoffs/backend-cleanup-plan.md) and actual current scripts to select a separately assigned operation. Run only directly relevant existing checks with locked dependencies and isolation guards; historical test counts are not current passes. Preserve real originals, hashes, source permissions and lineage, and retire obsolete assets only through reviewed exact-path/record classification.

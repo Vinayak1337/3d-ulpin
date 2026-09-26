@@ -1,10 +1,10 @@
 # 20 · Sarvam gateway, credit pools and credential lifecycle
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Release boundary:** the existing gateway/no-key and cost controls support the finale where needed. Live service qualification remains distinct from documentation. Concurrent schema learning belongs to `full_product` H21; this gateway never trains or records property facts itself.
 
-**Owner: DEPLOY, as a supporting part of [19](19-india-contained-deployment.md), not an eleventh independent USP.** FND owns shared contracts, migrations and route registration; UI owns shared settings mounts. **Decision date: 23 September 2026. Planning/code inspection base: `codex/fnd-f0-f1@97146d62d7e64c946abfc98b0d7e670845b17857`. Status: implementation plan, not installed or live-qualified.** Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [14](14-adaptive-ingestion-and-progressive-review.md), [18](18-grounded-assistance-and-mcp.md) and [19](19-india-contained-deployment.md).
+**Owner: DEPLOY, as a supporting part of [19](19-india-contained-deployment.md), not an eleventh independent USP.** FND owns shared contracts, migrations and route registration; the user owns settings presentation; backend scope covers authorized status/command contracts only. **Decision date: 23 September 2026. Planning/code inspection base: `codex/fnd-f0-f1@97146d62d7e64c946abfc98b0d7e670845b17857`. Status: implementation plan, not installed or live-qualified.** Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [14](14-adaptive-ingestion-and-progressive-review.md), [18](18-grounded-assistance-and-mcp.md) and [19](19-india-contained-deployment.md).
 
 This document governs runtime Sarvam inference. [02](02-lead-agent-execution.md) separately governs the coding agents (any user-authorized client, by role tier) that write our software. Development-model usage and Sarvam API billing are different budgets.
 
@@ -199,7 +199,6 @@ Operator-only proposed routes under `/api/v1/usp/deployment/ai`: read settings/c
 | Proposed `apps/web/lib/server/usp/deployment/providers/{sarvam-chat,sarvam-documents}.ts` | DEPLOY pinned protocol/error/usage adapters, no feature-specific clients. |
 | Proposed `apps/web/lib/server/usp/deployment/migrations/20-model-gateway.ts` | DEPLOY additive tables/indices; FND registers via actual migration mechanism. |
 | Existing `apps/web/lib/server/officer-ai-provider.ts` | FND routes or disables legacy external calls through policy; do not leave a bypass. |
-| Proposed `apps/web/features/usp/deployment/AiProviderSettings.tsx` | DEPLOY leaf content; UI mounts in Shell's workspace dialog, not another permanent dashboard. |
 | Proposed `tests/usp-model-gateway.test.ts`, `tests/usp-model-budget-integration.ts`, `tests/usp-model-gateway-recovery.ts`, `tests/e2e/usp-ai-settings.spec.ts` | DEPLOY/FND tests; DATA contributes source/oracle fixtures under existing ownership. |
 | Proposed `scripts/usp/verify-model-gateway.ts` | Bounded permitted official-source live qualifier; network/key/budget explicitly opt-in; never auto-top-up. |
 
@@ -267,9 +266,9 @@ For G-20, a standalone old database cannot prove later retirements never happene
 
 Run existing `pnpm typecheck` and `pnpm test:ai`, then create and execute the listed tests using existing tsx/Playwright runners, for example `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-model-gateway.test.ts` and `pnpm exec tsx tests/usp-model-budget-integration.ts`. Integration uses an explicitly isolated database and fake provider, not the user's live wallet. Run `scripts/usp/verify-model-gateway.ts` only after implementation with explicit opt-in and a small approved synthetic budget. Return code/price/config/pack hashes, request counts, ledger rows, retirement proofs and exact executed commands. No live key means G2 stays unqualified.
 
-## K. Copy-paste DEPLOY assignment
+## K. Assignment boundary
 
-> Implement the H20 portion of DEPLOY using 00, 01, 19 and this A–K specification on an isolated branch based on current integration code. Reuse the existing modelGateway port and FND SQL/jobs; implement Sarvam 105B V1 first, then separately qualified Vision document digitisation. Build shared organisation balances, per-key attribution, exact reservation/usage accounting, account-wide throttles, one-way terminal credential retirement, crash reconciliation and permission-safe operator settings. Use D0/fake-provider tests before live calls; acquire D3/D4 only as prescribed. Use the user's confirmed separate-account setup: one existing key per independently funded account, with a reported ₹100 grant each, ordered threshold rollover and persistent retirement. Verify actual organisation identity, remaining balances and permitted allocations; the grant is not a fresh per-key allowance. No promo farming, rate-limit evasion, secret commits, automatic recharge, invented balance endpoint, direct registry writes or unapproved provider fallback. FND owns shared contracts/migrations/mounts, UI shared surfaces and DATA fixtures. Run J, return actual evidence, and leave unavailable external qualifications explicit while completing unaffected work.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.
 
 ## Primary references checked for this plan
 
@@ -288,7 +287,7 @@ Vendor facts below were checked on 23 September 2026; implementations must pin a
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task card: [H29](29-agent-task-cards.md) DEPLOY-01.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task card: [H29](29-agent-task-cards.md) DEPLOY-01.
 
 ### Z1. Finale subset `R-MODEL-CORE` (GF2)
 

@@ -1,280 +1,87 @@
-# Unified Studio UI/UX, real 3D display and integration
+# 99 · Backend contracts for the user-owned Studio
 
-**26 September sequencing:** Replace legacy UI afresh from the design system and reference mockups while implementing each existing card; delete that surface's superseded components after migration. Do not divert into a separate redesign or continue polishing legacy screens. Reuse shared contracts/runtime, preserve unique inspection and saved URLs, and apply UI-08 record/provenance checks in every replacement. See [delivery policy](current-delivery-policy.md).
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) supersedes older UI assignments and H97 addenda. This handoff plans only backend data, asset and API contracts. The user owns all screen design, frontend implementation and visual acceptance. No screen, theme, mobile, renderer replacement or screenshot work is scheduled here. Plan cleanup implements no feature and passes no runtime gate.
 
-**Current scope:** [Current delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+Read [H01](01-shared-contracts-and-ownership.md), enabled feature producers and [H28](28-data-acquisition-and-finale-tests.md). Preserve the recorded [D0/PACK0 and single-D1 baseline](../evidence/usp/continuation-2026-09-23/README.md) without recreating authored inputs. New official-source qualification remains separate. Use the live pinned staging base; older branch names and first-deliverable instructions are historical.
 
-**Dataset policy update, 24 September 2026:** general map/load qualification uses real data from any suitable geography under [H28](28-data-acquisition-and-finale-tests.md). No Delhi/Uttam Nagar acquisition is required. D0/D1 smoke acceptance remains distinct from the larger real corpus, sparse-source and concurrent-ingestion interaction tests below; this documentation update does not claim those tests passed.
+## 1. Existing consumer boundary
 
-**AI settings/delegation update, 23 September 2026:** use [02 - implementation lead, role tiers and worker delegation](02-lead-agent-execution.md) for worker ownership and [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) for the DEPLOY settings leaf. These are not new top-level product screens or a reason to delay the existing V0 scene.
+Preserve the Studio catch-all and compatible saved routes, the canonical registry/import authorities and the shared map runtime. The current map path is BlockPage → SavedSceneViewport → MapViewport with existing provider/session/cache boundaries. Retain the qualified Cesium D0/D1 path; changing a backend contract is not authorization to add a per-feature viewer or replace the renderer. Keep unique document, GIS, raster and point-cloud inspection capabilities and access to retained originals.
 
-Owner **UI**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026 after reviewing the revised feature handoffs 10–19 and shared contracts. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), this file and the actual enabled producers. ER-02/03/07/11/17/18/23–25 are incorporated. These are implementation/acceptance requirements, not claims that the UI or datasets have been tested in this documentation task.
+Backend producers must support exact source → candidate → review → record → evidence/report → retained revision operations. Source-only records, unavailable interiors and missing geometry remain useful explicit states. Invalid/retired unit requests never silently broaden to a building, parcel or different dataset. Selection IDs, feature IDs, registry IDs, import batch IDs and import package IDs are not interchangeable.
 
-**Current continuation, 23 September 2026:** shared Studio work proceeds on `codex/usp-staging-continuation-20260923` from staging `2838e798af838d7646ff92b1120c62c8458103da`. The baseline below is historical. See [executed D0/D1 evidence](../evidence/usp/fnd/d0/README.md) before claiming a gate.
+## 2. API/view-model ownership
 
-**Finale integration order:** GF0 data/contracts → GF1 identity/exchange → GF2 domain AI, supported spaces and qualified geometry → GF3 governance/IMPACT0 → GF4 PACK Property Card/QR → GF5 measured evidence and rehearsal. Existing D0/D1 receipts are the baseline, not tasks to redo. The `full_product` lane still includes the public dashboard, concurrent learner, MCP, enrichment and large-scale operation; these do not gate this finale UI. [H27](27-domain-ai-and-cadastral-checks.md) supplies the domain outputs and [H28](28-data-acquisition-and-finale-tests.md) the independent test matrix. The root release plan is the machine authority for gate status.
+FND owns shared schemas, request/access context, asset serving, persistence and lifecycle; feature owners own their service result types. A view model is a projection of those authorized records, not a second registry, manifest or source of truth. The [reference view-model schema](../design-system/mockups/officer-studio/view-model.schema.json) is a consumer reference only. Do not invent fields or sample values to satisfy it; expose unavailable/unsupported contracts when a producer is absent.
 
-## 1. Product target and actual integration path
-
-Deliver a polished, usable semantic 3D workbench: neighbourhood → selected building → supplied floor/unit → exact evidence → useful review/report action → reopen saved state. Photographic context is optional. Do not confuse a textured mesh with legal property geometry, or a satellite background with a complete 3D interface.
-
-The active route is [Studio catch-all](../../apps/web/app/studio/%5B%5B...view%5D%5D/page.tsx), using [Shell](../../apps/web/features/officer/shared/Shell.tsx). Active map: [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx) → [SavedSceneViewport](../../apps/web/features/studio/product/SavedSceneViewport.tsx) → [MapViewport](../../apps/web/features/spatial/MapViewport.tsx). Reuse [SpatialDataProvider](../../apps/web/features/spatial/data/Provider.tsx), [map sessions](../../apps/web/features/spatial/data/session.ts), [resource cache](../../apps/web/features/spatial/data/resource-cache.ts) and the appropriate existing renderer/lease path.
-
-The retained D0/D1 qualified viewport path and `ExternalMeshLayer` use Cesium. Keep that path as the current finale runtime and verify its actual feature picking, selected-space identity, basement visibility, section/isolate controls and restored camera. Cesium clipping-polygon documentation for glTF/tilesets does not by itself qualify the existing Primitive layer; a section must be demonstrated against the actual asset/layer type. Clipping changes display only; FIND/IMPACT backend results remain analytical authority. R3F is a later measured option under the one-active-runtime rule, not a required migration.
-
-Existing [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx) supports floor/unit selection. [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx) needs explicit invalid-record handling rather than broadening to a building. ProductHeader's internal search is not appropriate for public pages. Shell's unconditional local-data wording must become capability-aware. These are baseline code observations to reproduce/test, not previously verified live bugs.
-
-## 2. First deliverable and data selection
-
-**V0:** one clean D0 neighbourhood loaded through real services, with 3–5 buildings and ≤30 supplied spaces, active selection, unequal levels/basement, exact evidence and a PACK0 text/CSV packet that survives reload. Do not wait for public authentication, online model learning, every modality or a complete real Indian cadastral dataset. Intentionally conflicting D0 geometry may remain a separate draft test so the clean recorded demonstration is not blocked by correct validation.
-
-**D1 real-geometry gate:** separately load one actual external roof-shaped building through this product's shared viewport, preserve geometry/source identity and show unavailable interiors honestly. Then qualify 25–100 buildings. Passing D0 does not pass D1; D1 exterior success does not qualify apartment records or high-load operation. D2 textured Helsinki context is optional and cannot block V0. D3 supplies geography-independent real scale and unfamiliar/sparse-source cohorts; D4/D5 provide independent record/drawing tests, not automatic geometry joins. See data runbooks and source URLs in section 9 and 00.
-
-## 3. Information architecture and feature matrix
-
-Keep [Batches / Map / Register](../../apps/web/features/studio/product/urls.ts). No separate dashboard/page per USP. Keep known retained-site/dataset routes and legacy redirects.
-
-| Surface | Route and role |
+| Producer | Backend result / command contract |
 | --- | --- |
-| Batches | `/studio/work`: exact work items/next actions and at most three scope-qualified counts |
-| Intake | `/studio/add-files`: durable receipt, recognized/missing stages and focused mapping questions |
-| Batch review | `/studio/imports/:importPackageId`: resolve bound INGEST batch; draft map plus exceptions; no interchange of batch/package UUIDs |
-| Map | `/studio/areas/:areaId`: shared geometry, classification/revision and selected-property quick register |
-| Directories | `/studio/datasets`, `/studio/registry`: actual selectable datasets and exact/ambiguous identities |
-| Full register | `/studio/properties/:buildingId/register`: persistent selected unit, full evidence/records/history |
-| Preparation | Existing `/studio/properties/:buildingId/workspace` and `/studio/cases/:caseId`: reuse editing/review mechanisms |
-| Public, F2 gated | Proposed `/public/properties`, `/public/submissions/:id`: released lookup and own submission only |
-| Operator capabilities | Extend existing Shell workspace dialog, not an assumed settings page |
+| PACK / H10 | Exact scoped plan, direct/shared/omitted evidence, immutable artifact and current/historical status; Property Card subtype and access-checked revision QR use the same service. Original archive stays distinct. |
+| READY / H11 | Scope-qualified requirements and counts, selectionToken resolving the same target population, missing/stale reasons and authorized source/request actions. |
+| FIND / H12 | Exact participants, references, operation/profile, measured result, source roles, coverage, limitations and a persisted review-case command; parcel-only scope needs no invented building. |
+| CITIZEN / H13, deferred | Released lookup and own-submission projections, upload/scan/review/recording states, clarification and retention; no internal dossier reuse or upload-as-ownership inference. |
+| INGEST / H14 | Durable upload receipt, input manifest, recognized capabilities, mapping/sufficiency decisions, draft manifest, exceptions and accountable review commands. |
+| HISTORY / H15 | Exact left/right revisions, field/source/geometry differences, source versus record dates, lineage, retirement and explicit successors. |
+| RIGHTS / H16 | Declared relationships, beneficiaries, clauses, extent/validity and partial/conflicting traversal; one physical space may serve multiple units. |
+| IMPACT / H17 | Pinned proposal, affected mapped spaces, exact manifests, reference/accuracy/depth and unassessed coverage; report never grants clearance. |
+| ASSIST / H18, deferred | Typed grounded facts, evidence, ambiguity choices and allowlisted actions from authorized producers; no synthesis from denied cached data. |
+| DEPLOY / H19–20 | Access-checked profile, capability, qualification, budget/cooldown/retirement and missing-configuration reasons; no credentials or unverified residency claims. |
 
-| Producer | Entry / surface | Main action → visible complete result |
-| --- | --- | --- |
-| [PACK 10](10-scoped-evidence-packets.md) | Selected unit Evidence / same quick/full drawer | Confirm plan → actual scoped artifact; PACK0 and PDF capability distinct; GF4 Property Card/QR shares exact revision; Original archive separate |
-| [READY 11](11-evidence-readiness-and-review-queue.md) | Status strip/Batches count | Open exact requirement/selectionToken → same counted target set and working source/request action |
-| [FIND 12](12-rights-aware-spatial-findings.md) | Map/register Checks | Exact result/evidence → saved scoped review case; parcel-only works without fake building; optional existing investigation link |
-| [CITIZEN 13](13-citizen-evidence-and-corrections.md) | Released finder/own receipt; officer request | Submit/clarify → actual draft receipt → separately recorded outcome, never upload=ownership |
-| [INGEST 14](14-adaptive-ingestion-and-progressive-review.md) | Add files / bound import review | Resolve recipe → selectable durable draft manifest → checked coherent review group |
-| [HISTORY 15](15-property-history-and-comparison.md) | Unit History | Choose exact manifests → field/source/difference view and actual old evidence |
-| [RIGHTS 16](16-shared-spaces-and-vertical-rights.md) | Contextual Relations inside existing unit/shared-space detail | Inspect clause/propose/review → one space, beneficiaries and technical receipt |
-| [IMPACT 17](17-infrastructure-impact-screening.md) | Map contextual tool / existing SpatialInquiry | Enter/draw proposed volume → existing IMPACT0 saved affected-space report plus unassessed coverage |
-| [ASSIST 18](18-grounded-assistance-and-mcp.md) | Ask about this property/submission | Typed service facts → exact evidence/action; native local F1, remote public separately gated |
-| [DEPLOY 19](19-india-contained-deployment.md) | Workspace dialog | Inspect profile/capability → tested/unqualified/disabled reason without secret exposure |
+## 3. Compatible routing and request semantics
 
-Relations and investigation are contextual drill-downs, not another set of permanent top-level tabs. A finding/packet/history panel replaces the foreground inspector with a clear Back action. Do not stack multiple trays over the map. Preserve addressable old register tab/investigation links.
+Preserve current Batches/intake/map/register/dataset/workspace route contracts and safe legacy translation while the user changes presentation. `/studio/showcase?dataset=...` may resolve a retained historical hash to a saved ID; it must not auto-import deleted synthetic downloads. Persisted artifact links resolve their exact plan/comparison, not the currently selected unit.
 
-## 4. Layout, visual language and data honesty
+The server validates area, parent, target, stage, world, manifest and access membership. Missing optional selection differs from invalid supplied selection. Reject duplicate/conflicting known parameters. Intake uses workspace/version before a spatial snapshot exists. Public or unresolved submissions remain intake-scoped until an authorized association exists. Proposed public routes are deferred and externally inaccessible until separately qualified.
 
-```text
-3D ULPIN       Batches  Map  Register       Search        Workspace
-Area / supplied scope       Source classification · revision       Add files
-┌──────────────────────────────────────────┬─────────────────────────┐
-│ 2D/3D  Layers  Fit                        │ Building A       Full ↗ │
-│                                          │ First floor / Flat 101  │
-│        SHARED INTERACTIVE 3D VIEW         │ Exact ID · draft/rev N  │
-│                                          │ Boundary evidence needed│
-│ selected space + relevant overlay         │ Summary  Evidence  More │
-│                                          │ Linked source / action  │
-│ coverage / reference             Checks   │ History / Relations/Ask │
-└──────────────────────────────────────────┴─────────────────────────┘
-```
+## 4. Record-backed states and provenance
 
-Map gets the flexible majority; desktop inspector approximately 360–420 px. Optional layers/property lists open on demand, not a permanent left tree plus right inspector plus another dock. Selected building/floor/unit, classification/stage/revision and action remain visible while detail scrolls. Full register expands long tables/evidence/history; returning preserves camera and selection.
+Return distinct `available`, `pending`, `needs_input`, `unavailable`, `denied`, `not_assessed`, stale and failed states where the feature contract supports them. Unknown, withheld, absent, null, conflicting and unsupported do not collapse to zero or empty success. A result must identify its exact scope, revision, capability and limitation; a denied response must not leak filenames, counts, source URLs or another principal's data.
 
-Reuse restrained sage/green tokens and existing [product](../../apps/web/features/studio/product/product.css), [operations](../../apps/web/features/studio/product/operations.css) and [shared UI](../../apps/web/features/officer/shared/ui.css) styles/icons. Normal task text ≥14 px desktop, essential metadata ≥12 px, readable line-height, 8/12/16/24 spacing and approximately 44 px primary touch targets. Consolidate tokens rather than stacking global overrides or another component library. One accent action per context. Details may be dense; do not replace necessary labels with tiny icons or tooltips.
+Dataset classification and labels come from the record. Preserve fixed provenance words where supported: **Test fixture**, a labelled seeded case, **Replayed**, **Estimated**, **Illustrative**. Historical data is not relabelled official. Do not hard-code mockup names, identifiers, files, dates, counts or people, or add “fictional”/“demo” prose as an application-data label. H10's **Local demonstration link** is a QR delivery mode, not a data classification.
 
-For D0 architectural quality, use stable materials, controlled exposure/contact shadows, legible silhouettes, selected-space outlines, depth hierarchy and calm background/context. New detail must come from verified official sources; historical authored fixtures do not qualify the current release. Real geometry retains source shapes; no invented facade/floor/road-width detail enters measured facts. Ornament is display-only. Building height unknown is shown as footprint/unavailable height, not a random attractive extrusion. Roof overhangs and recorded ground footprints remain separate roles.
+## 5. Geometry and authorized asset contract
 
-Deliver the desktop frame in light mode only, without a theme control or reserved header gap. Keep flexible layout boundaries for later responsive work; phone breakpoints and mobile optimization are deferred. Long IDs wrap/copy. Use local/approved fonts/textures in private mode. No screenshot or satellite image substituted for an interactive 3D scene.
+Keep canonical analytical geometry separate from display derivatives. Source/asset persistence exposes hashes, versions, media/capability types, bounds, named CRS/vertical reference, units, semantic LoD, source IDs, licence/attribution, pick-identity mapping and limitations. FND serves only bounded registered authorized assets. No remote/path-traversal dependency fetches; missing texture/codec/transform is an explicit limitation. Preserve original bytes and relative dependency paths.
 
-## 5. Two geometry lanes, one shared viewport
+The existing canonical compiler's one-frame/5 km/2,000-entity/50,000-position/12,000-facade-bay/80 MiB profile remains a bounded capability, not a promise of arbitrary source support. Do not relax validators to claim a format passed. External CityJSON/CityJSONFeature conversion decodes declared scale/translate once, retains building/part hierarchy and semantic IDs, and preserves planar face rings/holes when triangulating. Unsupported/nonplanar surfaces abstain; roof surfaces are not flattened into XY footprints. Provider tiles retain their actual coordinate/compression/metadata declarations; no second transform on already transformed geometry.
 
-### Existing canonical lane
+NAP heights are not automatically ellipsoidal/ECEF heights. An unavailable qualified operation permits only labelled local-frame inspection and blocks global measurement joins; never invent geoid corrections. Interiors need independent source support. Context meshes are not legal units or analytical volumes. Cross-source placement reconciles reference system, epoch and duplicate identities; shared upstream provenance is not independent corroboration. Foreign geometry remains in its own geography.
 
-[Compiler](../../apps/web/features/spatial/compiler/compile.ts) already emits 3D Tiles 1.1 and coarse/detail GLBs from its bounded profile. Reuse it for supported canonical exterior geometry and existing selected-space overlays. Respect its one-frame/5 km/2,000-entity/50,000-position/12,000-facade-bay/80 MiB bounds. These are backend ceilings, not client loading targets. Do not claim arbitrary CityJSON/mesh input support by removing a validator.
+## 6. Durable manifests, events and cache compatibility
 
-### External display lane
+INGEST owns `usp-scene-manifest/1` descriptors; FND owns opaque AssetRef. The scene manifest ID differs from the pinned data SnapshotScope.manifestId; no self-hashing or ID interchange. Each asset carries actual hash/version, bounds/frame, LoD and identity mapping. Persist before publishing availability. A recorded-only process cache cannot masquerade as a durable draft.
 
-Add a typed `external_asset` display adapter under the current MapViewport/runtime boundary. UI owns proposed `apps/web/features/usp/shared/{external-scene,scene-manifest-adapter}.ts` and compatible client layer changes. FND owns source/asset persistence and authorized HTTP serving; DATA acquires originals. No new standalone Cesium/R3F app or route-specific Canvas.
+Expose a consistent status-plus-cursor snapshot, replay committed events and retain coherent version/removal semantics. Version gaps or expired cursors require the authoritative manifest; provide the specified polling fallback when SSE is unavailable. An older event cannot restore a removed entity. A failed/denied asset leaves explicit coverage rather than inventing a complete result. Ready-to-render is not ready-to-record. Preserve the consumer's bounded four-concurrent-asset loading contract; this is not an instruction to build a new client loader.
 
-First D1 path: parse the full preserved CityJSON/CityJSONFeature sample with its declared metadata/transform, decode scale/translate exactly once, retain building/part hierarchy and semantic IDs, triangulate supported planar surface rings in each face's plane while preserving holes, and produce a display-only mesh with pick identity mapping. Do not flatten roof surfaces into XY footprints. Nonplanar/unsupported surfaces return an explicit adapter limitation; do not silently fill them. Bound one-building input before a wider converter. Use existing triangulation dependency where suitable; FND pins any required codec, never an invented installed library.
+Request/cache identity includes method/path, scope/world/stage, manifest/target pin, filter, accessView and entitlement/policy version; intake uses workspace/version. Target/world/stage/access changes invalidate the old generation. Revocation must prevent pending responses from repopulating cleared private data. Events invalidate affected manifests/assets; source/record mutations invalidate dependency-matching results. Never place private records, tokens or packets in localStorage. The user's UI owns camera/focus/transient state; backend operations do not silently retarget it.
 
-Alternatively a separately qualified provider 3D Tiles lane can retain provider geometry/feature metadata through the existing tiles renderer. It must pass actual decoder/metadata/selection tests, not merely load a bounding box. [3DBAG service documentation](https://docs.3dbag.nl/en/delivery/webservices/) distinguishes its API coordinate system from geocentric tile delivery and names required metadata/compression extensions. Read the actual source declarations; do not apply the CityJSON transform a second time to already transformed tiles. Missing meshopt/quantization/metadata support yields explicit unsupported capability until the selected renderer/codec is qualified.
+## 7. Authorization and mutation boundary
 
-D1 API coordinates with NAP elevations are not automatically ECEF/ellipsoidal. If global transformation resources are unavailable, use an explicitly labelled local engineering display preserving relative roof dimensions; disable unqualified global/measurement joins. Never guess a geoid correction. Full global placement is a separate test. Internal floors remain unavailable unless independently sourced.
+Availability is not authorization. Resolve principal/access context server-side on every read, asset download, job, command, packet and QR path, including compatible legacy endpoints. Preserve expected-version/manifest guards, idempotency, transactions and accountable review history. Capabilities expose implemented producer operations only; an unimplemented DTO is unavailable, not a fake successful result.
 
-D2 textures: preserve mesh/MTL/image dependency paths and licence, resolve only registered bounded local assets, reject remote/path-traversal dependencies. Missing texture uses a neutral material and visible asset limitation, not a blank map. An unsegmented photogrammetry mesh is context, not a set of invented legal units. Analytical volume comes only from qualified canonical representations; display meshes remain non-authoritative.
+A card's selected-unit crop excludes other-unit pixels and metadata. Revoked, retired, wrong-unit or changed-policy requests fail without disclosing private information. QR possession grants no rights. Same-device local_operator mode stays separate from externally reachable/phone delivery; do not remove local-only protection globally. Public projections and provider settings obey their own release and operator grants.
 
-Both lanes preserve canonical/source identity maps across LoD, hide/show, selection and refresh. One 3D view can combine appropriately placed context and semantic overlays with explicit provenance; never relocate geometry from another region to fake local evidence. Same-area building/context sources must reconcile reference systems, epochs and duplicate buildings explicitly; a shared upstream source is not independent corroboration.
+## 8. Backend acceptance and external integration
 
-## 6. Durable draft consumption, selection and cache rules
+GF-CONTRACT covers actual producer/consumer schemas and source/job/geometry seams. GF-VIEW covers source-shape/identity/frame/asset contracts, holes and unsupported geometry, manifest durability and selection pin compatibility. GF-SCENE covers official-source lineage, deterministic derivative rebuilding, invalidation and proof that display styling cannot change analytical hashes, quantities, readiness, findings, packets or exchange. GF-REHEARSAL covers the backend source-to-card state sequence, saved-state recovery, authorization and measured service receipts.
 
-Consume INGEST's `usp-scene-manifest/1` from [14](14-adaptive-ingestion-and-progressive-review.md). The outer rendering manifest ID is distinct from its pinned data SnapshotScope.manifestId; do not hash a manifest into itself or interchange scene/data IDs. Common opaque AssetRef belongs to FND; INGEST owns scene descriptors/manifests; UI consumes them. Each asset supplies actual hash/version, frame/bounds, LoD and pick refs. The recorded-only process cache cannot supply a durable draft by pretending its stage changed.
+Use actual permitted official inputs, locked dependencies and the cheapest directly affected existing checks. Verify stale events, invalid target/scope, revocation during pending reads, missing assets, bounded recovery and resource limits where changed. Backend evidence does not prove picking, clipping/section behavior, camera restoration, browser performance, visual quality, accessibility or officer usability. These remain explicit user-owned integration dependencies; no backend-only receipt passes the complete product release. Historical V1–V8 and D0/D1 captures are evidence at their recorded revision only.
 
-Fetch consistent batch status+event cursor, replay committed manifest events, and load at most four assets concurrently. Adopt a coherent manifest version; remove/release replaced assets and honor entity removals. Version gaps/expired cursors refresh the complete authoritative manifest. Ready-to-render is not ready-to-record. A failed/denied tile preserves usable remaining context and explicit coverage. Never replay a removed entity from an older late response. SSE unavailable uses the specified polling fallback, not fake streaming timers.
+## 9. Preserved visual references, outside the execution plan
 
-Use 01 SelectionContext states/generation. URL owns restorable feature/record/world/panel and artifact refs; server validates exact area/parent/stage membership. Current `feature` physical ID and `record` registry ID are not interchangeable. No explicitly invalid/retired/unavailable unit request silently broadens PACK, source query or submission to its building. A missing optional parameter differs from an invalid supplied parameter. Reject duplicate/conflicting known parameters, preserve safe legacy URL translation.
+Retain [the design system](../design-system/README.md), [UI brief](../design-system/ui-brief.md), [Officer Studio reference notes](../design-system/mockups/officer-studio/README.md), [screen references](../design-system/mockups/officer-studio/screens.md) and [supplied interactive mockup](../../design-mockup/OfficerStudio.dc.html). They are protected visual references for the user's work, never production code or test data. Retain the source images pinned by `apps/web/public/studio-review/comparison-manifest.json` until an explicit hash-preserving reference migration.
 
-Example desired context: `/studio/areas/{areaId}?feature={buildingId}&record={unitId}&world=observed&panel=evidence`. Full register carries the same selection with `record` and `tab=evidence`; artifact IDs resume an exact plan/comparison, not whatever unit is selected now. Intake uses workspace/version before a SnapshotScope exists. Unresolved public submissions remain intake-only.
+No automatic UI task follows from these references. Legacy layout, font, screenshot and screen-implementation assignments remain in Git history at `92e4d04cdeaaa2d8ccc65680c6fea1675dcee88a`; they are superseded by this backend-only contract.
 
-Advance generation on target/world/stage/access changes; abort or suppress old-generation results. Cache keys include method/path, scope/world/stage, manifest/target pin, filter, accessView and entitlement/policy version. Clearing on revocation must also prevent pending reads from repopulating stale private content. Asset-ready invalidates only the relevant manifest/asset consumer; source/record mutations invalidate matching dependency manifests, not every dossier on each tile. Keep private data/tokens/packets out of localStorage.
+## Z4. Fixed wording and service claims
 
-Filters hiding the selected object keep an explicit hidden-selection banner with Reveal/Clear, not automatic nearest-object selection. Removed identity gives historical/unavailable context and explicit successors where supplied. Returning from a register/source restores camera within documented tolerance; streamed assets do not auto-fit every time. Pause hidden render loops and dispose owned geometry/material/texture resources when no longer referenced.
-
-## 7. Shared slots, ownership and interaction states
-
-`FeatureRegistration` contains feature ID, surfaces, required capability, pure availability function and lazy leaf. Available/needs_selection/unavailable/denied/not_assessed is UI state, not authorization. Mount only real implemented producer/leaf combinations. Feature panels receive selection/scope/capabilities and typed onSelectTarget/onOpenEvidence/onNavigateAction/onClose callbacks. Parent verifies scope, routes and [unsaved-work guard](../../apps/web/features/studio/data/navigation-guard.ts). No leaf installs another provider, renderer or selection store.
-
-| Shared path / proposed destination | UI responsibility |
+| Claim | Contract requirement |
 | --- | --- |
-| [Studio layout](../../apps/web/app/studio/layout.tsx), Studio route, Shell, [ProductHeader](../../apps/web/features/studio/product/ProductHeader.tsx), product URLs | Provider lifecycle, navigation, FND SSR wrapper, actual workspace capabilities |
-| BlockPage, [BlockRails](../../apps/web/features/officer/block/BlockRails.tsx), QuickRecords, RegisterPage | Exact invalid-selection handling and contextual feature mounts |
-| SavedSceneViewport, MapViewport, [useBlock](../../apps/web/features/officer/block/useBlock.ts), map sessions/cache/[store](../../apps/web/features/officer/shared/store.tsx) | Two display adapters, one viewport, generation/access-aware state |
-| [WorkQueue](../../apps/web/features/officer/work/WorkQueue.tsx), [ImportWork](../../apps/web/features/officer/work/ImportWork.tsx), [AddFiles](../../apps/web/features/officer/workspace/AddFiles.tsx) | Actual receipt/draft/review producer integration |
-| Proposed `apps/web/features/usp/shared/{FeatureSlots,SelectionBridge,StatusBadge,EvidenceAction,FeaturePanel,PublicShell}.tsx`, `feature-types.ts`, `shared.css` | Reusable status/content/interaction and safe public layout |
-| Proposed `apps/web/features/usp/shared/{external-scene,scene-manifest-adapter}.ts` | Typed source/display manifest adaptation, no new source authority |
-| Proposed public pages named in section 3 | Thin CITIZEN released/own-data mounts behind F2, never internal search/dossier reuse |
-| Proposed `tests/usp-ui-integration.test.ts`, `tests/usp-external-scene.test.ts`, `tests/e2e/usp-product-journey.spec.ts`, `tests/e2e/usp-visual.spec.ts` | Shared contract, geometry preservation, real interaction and visual acceptance |
+| Identity | “Assign proposed 3D ULPIN” / “Assigned”; opaque P3 code separate from location and sourced official assertions; no official issuance claim. |
+| Heights | Metres plus the actual named vertical reference; mean sea level only when the source establishes it. |
+| Infrastructure | “Export screening report” and “Not a clearance or dig permission”; tolerance only when source-supplied, otherwise “tolerance not stated”. |
+| Integrity | “Chain consistent”; “Chain signed and verified” only for a verified signed head. |
+| Findings | Deterministic blocking/severity/size order, not an invented likelihood score. |
+| Delivery | Same-device “Local demonstration link” where that recorded mode applies; no phone/public claim from a local resolver. |
 
-FND remains sole shared API/DB/worker/config writer. Feature owners own their leaves. UI requests a concrete backend patch rather than making a mock API to appear complete. DATA owns fixtures and independent expected results. Explicitly transfer ownership before editing another owner's file.
-
-States: loading retains only matching scope; empty names missing data; incomplete/not_assessed differs from no finding; stale cannot enable a current write; errors retain inputs and bounded retry; denied hides names/counts; submitted/accepted draft/recorded are distinct. Measurements show units/method. Generated packets say compilation, estimates say estimated, hypothetical work says proposed. No legal-clearance or official-issued system ID label.
-
-Test keyboard/list/numeric alternatives to map-only actions, focus trap/return, Escape, readable errors, contrast, 200% zoom and reduced motion. Use text/icon as well as colour. Screen reader updates are coalesced, not every SSE event. Hidden overlays must not intercept pointer/touch input; test actual drag/zoom/orbit, not only screenshots.
-
-### Governed AI settings in the existing workspace dialog
-
-Mount DEPLOY's H20 settings leaf only for permitted operators. Show per-task model profile, organisation-shared funding, local spend/reserved/uncertain amounts, last verified balance observation and safe credential state/history. Distinguish active, draining, cooldown, retired and unqualified; terminal retirement has no reactivate control. Do not show raw keys, fingerprints or billing metadata in the quick/full property register, public pages, tooltips or API errors. Ordinary workflows retain their selected property, useful drafts, manual mapping and typed answers when AI is unavailable. A settings save cannot enable an unqualified provider or override deployment boundaries.
-
-## 8. Visual and interaction acceptance — V1 through V8
-
-Retrieve the actual committed reference images via [comparison-manifest.json](../../apps/web/public/studio-review/comparison-manifest.json). Verify hashes/paths and label reference, historical capture and fresh active-product baseline distinctly. A file named current-map from an earlier task is not a current baseline. Use the accessible original reference to guide composition/material/detail; do not fabricate a missing image from its filename. If unavailable, the concrete shot contracts below still apply and visual-reference comparison remains explicitly unqualified.
-
-| Case | Data and action | Pass condition / evidence |
-| --- | --- | --- |
-| V1 neighbourhood | D0 fixed camera; D1 real roof sample separately | Legible depth/silhouettes, coherent material/light scale, actual non-box D1 roof surfaces preserved; pan/orbit/zoom works; no screenshot background substitution |
-| V2 building selection | Click B-A then B-B and a D1 source feature | Highlight, identity, register and evidence all match; no previous-building flash; D1 without interiors stays unavailable |
-| V3 vertical stack | D0 basement, mezzanine, unequal heights, courtyard and supported per-level unit | Correct source levels/outlines; isolate/explode changes presentation only; measures/source hashes unchanged; unsupported compound analysis not hidden |
-| V4 underground/section | D0 negative levels; FIND/IMPACT when enabled | On the retained Cesium layer, select and isolate an actual basement/section and restore the camera; actual backend result/evidence supports highlighted volume; unknown utility depth is a gap. In V0 this tests scene visibility only, not unfinished FIND/IMPACT calculations. |
-| V5 evidence action | U-A101 mixed source and PACK | Exact locator and applicable clause; NEVER_A102 absent from relevant preview/packet; text PACK0 passes only its profile, PDF requires PACK1; GF4 card/QR retains exact revision and independent release checks; invalid unit cannot export building |
-| V6 history | Two actual D0 manifests | Explicit dates/stages, correct old sources and supported overlay, no current-data substitution; one camera/viewer |
-| V7 progressive draft | Three real INGEST chunks with failure/reversed completion | Selectable persisted geometry before batch completion; restart/replay matches fresh manifest; no duplicated/resurrected objects or global scene reload per event |
-| V8 desktop/failure | Desktop, denied source, missing tile, empty record and reconnect | Readable selected scope/action and keyboard focus; failures do not expose another property or erase context. Mobile optimization deferred. |
-
-V0 requires relevant D0 V1–V5/V8 plus the separate D1 geometry/identity gate. V6/V7 and unfinished feature-specific behavior are later gates, not fake screenshots to satisfy V0. Capture V1–V8 for their enabled phases at desktop 1440×900 and 1024×768, with browser zoom as appropriate, with fixed pack/hash/camera/fonts and explicit scene-ready condition. Compare fresh baseline/final side by side at the same settings. Record actual interaction/DOM IDs/asset requests, not subjective claims of pixel-perfect generated-image equivalence. Do not claim user approval without it.
-
-### Measured budgets, not invented performance
-
-Initial workload: 25–100 exterior buildings, ≤30 detailed spaces, ≤25 MiB visible geometry, local ready services. Proposed acceptance targets: first useful local scene ≤8 seconds, cached property-selection feedback ≤100 ms, interactive desktop frame time p95 ≤33 ms on the recorded reference hardware, and no continuing owned-resource growth over ten repeated open/close/scope-switch cycles after expected cache warmup. Record cold/warm, GPU/browser/device pixel ratio, network/cache, data size and actual p50/p95. Software WebGL tests can prove correctness but not desktop-GPU performance.
-
-If a budget fails, reduce resident LoD/texture resolution/draw calls within the same geometry fidelity, add bounded loading and retest. Do not drop source objects, replace roofs with boxes or freeze interaction to fabricate a pass. On low-end/mobile devices offer a measured reduced-detail or existing 2D/list fallback; state the unsupported 3D profile. Test active renderer count and disposal; a static screenshot cannot prove memory/performance. Targets are configurable project engineering choices, not provider performance claims.
-
-**D3 high-load map acceptance — full_product FP-SCALE:** H28's 10k/100k/1M real-building targets are server-side corpus sizes, not all-resident scene sizes. Preserve the initial visible workload/budgets above while navigating a much larger spatial index; scale visible detail only with separate measured qualification. Run a fixed camera path through dense, sparse, tile-boundary and unavailable-data regions during active ingestion. Inspect a source-identified building, pan/orbit/zoom, change LoD, open evidence, leave and return, then repeat after restart and cache warmup. Retain source-supported roof topology/holes and stable picking; source-only or height-missing records must remain discoverable rather than silently dropped. Verify bounded requests/resident geometry, disposal, no duplicate buildings at tile seams, no camera reset per chunk and exact selected source identity after late arrivals. Record corpus membership, visible counts/vertices/bytes/draw calls, first useful preview and p50/p95 frame/selection/network timings on real reference hardware. A small scene, prerecorded flyover or remote provider tileset alone does not prove our bulk ingestion or adaptive mapper. Concurrent-user capacity is a separate, explicitly sized test, not inferred from one-browser success.
-
-## 9. Dataset acquisition, test use and fallback
-
-**Historical D0:** retain previous aliases/sentinels/oracles and receipts without extending them. Current qualification uses official-source records under the delivery policy. Import through actual services; images, plans, records and 3D must share the same fixture truth. Keep intentional invalid draft cases distinct from the clean V0 example.
-
-**D1:** [preserve this full 3DBAG response](https://api.3dbag.nl/collections/pand/items/NL.IMBAG.Pand.1655100000500568), read [delivery/CRS/extension documentation](https://docs.3dbag.nl/en/delivery/webservices/), save hash and original metadata, and compare decoded coordinates/source face topology before rendering. One asset must pass roof shape, identity, placement and null-interior handling before a larger sample. External access failure → retain D0 visual work and report D1 unqualified; do not manufacture a replacement source.
-
-**D2 optional:** [Helsinki models](https://www.hel.fi/en/decision-making/information-on-helsinki/maps-and-geospatial-data/helsinki-3d) / [mesh directory](https://3d.hel.ninja/data/mesh/). Acquire one small permitted urban crop with textures; archive acquisition/rendering were not completed by planning. Test dependency completeness, missing texture, placement and attribution. It stays geographically separate.
-
-**D3 bounded finale cohort; full-product scale later:** use [H28's geography-independent acquisition and load runbook](28-data-acquisition-and-finale-tests.md). Default candidates are 3DBAG source-shaped buildings plus qualified same-area PDOK context, Overture for sparse vector attributes and Swiss 3D for an independent native-format test. Keep different geographies separate and declare unsupported adapters. Reuse any suitable existing bytes, but no legacy locality pack is mandatory. Display source geometry, uncertain candidates, estimates and missing heights distinctly; detailed roofs are not replaced by generic extrusions, and real exteriors do not supply invented interiors.
-
-**D4/D5 finale acquisition:** [DDA inventory](https://dda.gov.in/sites/default/files/Housing_Department/list_of_flats_and_garages_dda_premium_housing_scheme_2026.pdf) for exact source rows; [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831)/[2079](https://haryanarera.gov.in/view_project/project_preview_open/2079) or permitted campus plan/section for an Indian vertical model. Confirm matched building/phase/revision/levels and permission. DDA alone cannot supply geometry; a planned tower is not a surveyed as-built. Named local-frame inspection may precede global placement. Missing authentic data blocks that real-source claim, not D0 development.
-
-## 10. Implementation sequence and final verification
-
-1. Preserve the recorded D0/PACK0 and D1 single-building roof/identity receipts as the current baseline. Reproduce invalid-record/rapid-switch behavior and capture a fresh active-route baseline before changing the shared view; qualify only missing actual Cesium interactions for the finale.
-2. GF2 mounts reviewed domain candidates, supported spaces and FIND results through the existing typed selection/slots and Cesium display path. Keep D1 exterior and unavailable interiors distinct. No learner/public workflow prerequisite.
-3. GF3 mounts governance checks and the existing IMPACT0 report; GF4 mounts PACK's exact-revision card/QR after its producer tests. HISTORY/RIGHTS/INGEST feature leaves integrate according to their actual dependencies. Native ASSIST0 can run after its F1 producers exist, not only after F2.
-4. `full_product` UI-public: F2/DEPLOY enables released finder/own-submission routes and separately public MCP settings; never reuse internal search/full dossier on public surfaces. GF4 uses PACK's same-device loopback resolver and access checks; phone scanning needs a separately qualified protected read surface and is not a finale prerequisite.
-5. Run corresponding V shots, negative integration and workload tests, then full regressions. Automated task-completion checks (UI-07) are the usability gate; observation by a person is optional and never claimed.
-
-Existing commands: `pnpm typecheck`, `pnpm test:studio`, `pnpm test:register-scope`, `pnpm test:register-exports`, `pnpm test:registry`, `pnpm test:api`, `pnpm test:e2e`. Proposed tests after creation: `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-ui-integration.test.ts tests/usp-external-scene.test.ts`; `pnpm exec playwright test tests/e2e/usp-product-journey.spec.ts tests/e2e/usp-visual.spec.ts`. Respect [Playwright config](../../playwright.config.ts), [isolation](../../scripts/engineering/isolation.mjs) and [build-server guard](../../scripts/check-build-server.mjs).
-
-Return route→producer→pack→test evidence matrix, actual SHA/source/artifact hashes, screenshot comparisons, selection/camera IDs, active viewport count, resource/performance measurements and each unqualified profile. Test stale source, invalid deep link, hidden selected entity, duplicate URL parameters, revoked grant/release during pending read, missed/replayed asset event, offline source and nested pointer overlays. No screenshots from a different showcase or mocked successful network responses as completion evidence.
-
-**Additional settings verification:** use fake credentials and ledger receipts to exercise shared-wallet display, permanent retirement after reload, pending/unknown cost, cooldown and access denial at desktop/mobile sizes. Prove expired/revoked operator grants clear settings and suppress late responses. Do not treat these screens as live provider/residency qualification.
-
-## 11. Copy-paste UI assignment
-
-> Implement UI on feat/usp-ui-integration using 00, 01, this file and enabled feature contracts. Work in the actual Studio route and shared BlockPage/SavedSceneViewport/MapViewport path. Preserve the recorded D0/PACK0 and D1 roof/identity baseline, then verify the current Cesium path's picking, basement/section interaction and camera restoration against actual assets. Mount GF2 domain checks/spaces, GF3 governance/IMPACT0 and GF4 exact-revision PACK card/QR as their producers qualify; preserve rich external source shapes, not generic boxes or another viewer. Qualify the bounded finale cohort and section 8's interaction-under-ingestion tests with bounded resident assets; reserve 10k/100k/1M D3 corpus qualification for full_product FP-SCALE; no locality prerequisite or million-object all-resident scene. Follow selection-generation/cache/access rules, durable INGEST manifests and all relevant V1–V8 shot contracts. UI owns shared frontend; FND backend/config, feature owners leaves, DATA fixtures. Use stated no-data/no-model/local-frame fallbacks and continue unaffected work without asking humans to design it. Run section 10 actual service/browser/geometry/performance checks, compare fixed-camera fresh screenshots and return exact evidence and capability gates. Do not call mocked/showcase-only work finished, invent source facts, activate public services or merge main without authorization.
-
-## Z. Hardening addendum (H97): design system, screens and wording
-
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. This file stays the authority for routes, selection, cache, slots and V1–V8; [the design system](../design-system/README.md) is the authority for tokens, components, map styling and copy. Task cards: [H29](29-agent-task-cards.md) UI-01 to UI-06.
-
-### Z1. Visual source of truth
-
-| Topic | Rule |
-| --- | --- |
-| Tokens | Extend the existing `--ui-*` tokens in `apps/web/features/officer/shared/tokens.css` with the values in [`docs/design-system/tokens.css`](../design-system/tokens.css): map, rights, finding marks, sequential ramp, utility colours and the dark theme. Rename nothing that already exists; consolidate, do not add a second token file at runtime |
-| Base | UX4G 3.1 foundations plus our map and 3D layer. Do not install the UX4G CSS/JS bundle or any other component library in Studio ([H25](25-all-format-agent-and-ux4g.md) Z) |
-| Fonts | Self-host Noto Sans, Noto Sans Devanagari and Noto Sans Mono (woff2, SIL OFL) under `apps/web/public/fonts/`; put them first in `--ui-font-sans` and `--ui-font-mono`. No Google Fonts request in any mode. Call `document.fonts.load()` before creating Cesium labels |
-| Icons | Phosphor Regular (already a dependency) through one `Icon` wrapper. Screens rebuilt for the finale switch from `lucide-react` to the wrapper; never mix both sets on one screen. A lint rule warns on new `lucide-react` imports |
-| Accent | Forest green `--ui-primary` `#235347` (dark `#6cc3a0`) is the only accent. Map colour appears only when a Colour by mode is on |
-| Text | Studio body 15 px, metadata at least 12 px; Portal body 16 px. Tabular figures for numbers |
-
-### Z2. Layout reconciled with section 4
-
-- **Top bar 56 px** (`--ui-header-height: 56px`): wordmark, **Batches · Map · Register**, search (`/`), area switcher, Live/Snapshot status, theme, user. Area, source classification and revision sit in a 36 px scope strip at the top of the map column, which is the second row in section 4's sketch.
-- **No permanent left rail.** Layers, Spaces, Sources and Checks open on demand as one 308 px panel over the left of the canvas; closed by default; one at a time.
-- **Inspector** 360 px by default, 400 px while an evidence preview is open (inside the 360–420 px range).
-- **One tray** (172 px, collapsible) holds either the import stream or the findings list, never both.
-- Floating map toolbar top-left, level rail on the canvas's right edge, legend bottom-left, readout on the bottom edge.
-- Breakpoints as section 4: about 900 px collapses optional panels; about 620 px uses one full-height sheet.
-
-### Z3. Screens by release
-
-The [UI brief](../design-system/ui-brief.md) lists 33 screens. The finale builds these 15; the rest are full_product.
-
-| Brief ID | Screen | Route (section 3) | V shot | Release |
-| --- | --- | --- | --- | --- |
-| S1 | Batches | `/studio/work` | V8 | finale_v1 |
-| S2 | Add files | `/studio/add-files` | V7 | finale_v1 |
-| S3 | Live import on map | `/studio/imports/:importPackageId` | V7 | finale_v1 |
-| S4 | Area map | `/studio/areas/:areaId` | V1, V2 | finale_v1 |
-| S5 | Building and floors | `/studio/areas/:areaId?feature=…&record=…` | V2, V3 | finale_v1 |
-| S6 | Underground and impact screening | same, underground mode | V4 | finale_v1 |
-| S7 | Evidence viewer | same, `panel=evidence` | V5 | finale_v1 |
-| S8 | Findings review | same, findings tray | V4 | finale_v1 |
-| S9 | Workspace: review details | `/studio/properties/:buildingId/workspace` | V3 | finale_v1 |
-| S10 | Workspace: check and record | same, check stage | V3 | finale_v1 |
-| S11 | Assign proposed 3D ULPIN (dialog) | over S10 or S12 | V5 | finale_v1 |
-| S12 | Property register | `/studio/properties/:buildingId/register` | V5, V6 | finale_v1 |
-| S13 | Deviation check | register or map, comparison panel | V6 | finale_v1 |
-| S14 | Property Card | register, card preview | V5 | finale_v1 |
-| P4L | Verify card, local demonstration link | loopback resolver ([H10](10-scoped-evidence-packets.md) local_operator) | V5 | finale_v1 |
-| P1–P7 | Public portal | `/public/*` | V8 | FP-PUBLIC |
-| A1–A7 | Admin console | not built; finale counts live on Batches (at most three) and the workspace dialog | none | full_product |
-| S15–S19 | Unit page, revision compare, air-rights, command palette, split/merge | later | V6 | full_product |
-
-### Z4. Fixed wording
-
-| Do not show | Show instead |
-| --- | --- |
-| "Issue 3D ULPIN", "Issued" | "Assign proposed 3D ULPIN", "Assigned" |
-| An identity code with parcel, level or use segments | The `P3` code, plus the separate "Location" line ([H26](26-identifiers-and-standard-exchange.md) Z1) |
-| "m AMSL" on levels | Metres plus the named vertical reference, for example "m · site datum SD-1"; mean sea level only when the source states it |
-| "Export dig notice" | "Export screening report", with "Not a clearance or dig permission" on the report |
-| Utility sleeves sized by quality letter | A sleeve only when the source states a positional tolerance; otherwise the quality letter badge and "tolerance not stated" |
-| "Chain verified" | "Chain consistent" (or "Chain signed and verified" only when a signed head verifies) |
-| "Ordered by likelihood" | Deterministic order: blocking, then severity, then size ([H27](27-domain-ai-and-cadastral-checks.md) Z3) |
-| "Work queue" | "Batches" |
-| Phone QR scan as the finale path | "Local demonstration link" on the same device |
-
-### Z5. Acceptance additions
-
-- Offline visual test: no external font or icon requests; a Hindi label renders in the map and the inspector.
-- Contrast checks for every token pair used as text (4.5:1) and every control border (3:1) in the delivered light theme.
-- Screenshots for V1–V8 use the qualified data for their gate ([H28](28-data-acquisition-and-finale-tests.md)) and pass on the V-shot contract above. Reviewers may compare them with the reference mockups (Z6) as a design aid; that comparison is not a pass or fail, and values will differ.
-
-### Z6. Reference mockups
-
-Added 25 September 2026. The team's interactive Claude Design mockup of every screen is described in [the Officer Studio reference mockups](../design-system/mockups/officer-studio/README.md): frame, interactions, inspector variants, states, [per-screen layout by gate](../design-system/mockups/officer-studio/screens.md) and a [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) projected from the existing contracts.
-
-- **They are reference UIs, not production UI.** They show intended layout, flow and states. Production requirements come from this file, the design system and the feature handoffs, which win on any conflict. A production screen may depart from the mockup when those, real data, accessibility or usability need it; note notable departures in the receipt. Something that appears only in the mockup creates no requirement, scope or pass. The mockup's prototype code is never ported.
-- Use the mockup for look and behaviour on the routes in section 3 and the shared map path; do not copy its data. Names, codes, numbers, files, dates and people from the mockup never enter code, fixtures, tests or captures.
-- Every varying value is a binding to a record. Levels, spaces, rights, utilities, legend rows and counts take their shape from the data; empty or partial data renders the Empty, *Unknown*, *Not assessed* or *Estimated* state.
-- No screen hard-codes a disclaimer about the data or calls it "fictional" or "demonstration data" ([AGENTS.md](../../AGENTS.md)). The scope strip shows the dataset's recorded classification; fixture, seeded, replayed and illustrative badges come from record provenance. Existing labels and hard-coded demo content are removed by [H29](29-agent-task-cards.md) UI-08.
-- The Studio layout never branches on file format. Intake reduces any upload to profile, frame, mapping and attributes ([H14](14-adaptive-ingestion-and-progressive-review.md) Z2–Z3); unmapped fields are shown as source attributes, not dropped.
-- The schema is a UI projection. FND and feature owners keep the domain contracts; UI adapters map port results onto it without a second store or manifest.
+These are backend response/artifact semantics for the user-owned interface. They schedule no UI changes.

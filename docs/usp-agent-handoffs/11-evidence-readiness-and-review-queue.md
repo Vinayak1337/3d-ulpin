@@ -1,6 +1,6 @@
 # 11 · Evidence readiness and actionable review queue
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **READY**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md) and UI placement in [99](99-ui-ux-and-integration.md). New paths are implementation tasks. ER-05/19/24 are incorporated here; no separate audit interpretation is needed.
 
@@ -80,13 +80,12 @@ Under `/api/v1/usp/readiness`, `POST /assessments` takes target or scope, task/p
 | Existing queue/dossier helpers linked in B | FND exposes exact read projections; READY consumes without replacing queue authority |
 | Proposed `packages/contracts/src/usp/readiness.ts` | READY policy/result/action schemas using F0 types |
 | Proposed `apps/web/lib/server/usp/readiness/{policy,evaluate,aggregate,service,routes}.ts`, `migrations/11-readiness.ts` | READY pure evaluation, manifest-based aggregates and leaf APIs; FND registers |
-| Proposed `apps/web/features/usp/readiness/{ReadinessStrip,ReadinessDetails,ReviewQueue,ScopeSummary}.tsx` | READY leaf content |
 | Existing WorkQueue, BlockPage and RegisterPage | UI sole owner mounts summaries/filters |
 | Proposed `tests/usp-readiness.test.ts`, `tests/usp-readiness-integration.ts`, `tests/e2e/usp-readiness.spec.ts` | READY formulas, access, population equality and navigation |
 
-## G. UI placement and interaction
+## G. Backend contract for user-owned consumers
 
-Batches uses Needs attention / Ready for review / Recorded history with at most three task-qualified counts. Map has an optional readiness layer. Unit quick register says Boundary needed → detail → exact source/workspace/request. Full register reuses the detail. No universal green property badge. Text/icon distinguish not assessed from blocked. Loading keeps matching scope only; stale results are visibly stale; empty names the missing population; errors retain retryable work; permission failures disclose no hidden filenames. 99 owns camera/selection/focus/mobile sheet.
+Return at most three task-qualified counts and a selectionToken resolving the same counted target set, plus scoped requirements and authorized source/request actions. Distinguish not assessed, blocked, stale, empty population and retryable failure; never emit a universal property approval. No denied filenames or stale result from another scope. H99 defines compatibility for the user-owned consumer.
 
 ## H. Ownership and dependencies
 
@@ -98,7 +97,7 @@ Use `feat/usp-readiness`; own READY contracts/services/migration/leaves/tests. F
 2. Wire one real target's reasons and working source/workspace destination for V0.
 3. Persist assessments against complete manifests; test source/relationship change without target revision change.
 4. Add bounded scope jobs, frozen membership/selectionTokens and cursor equality.
-5. Integrate optional provider results and UI mounts, preserving not_assessed states.
+5. Integrate qualified provider results and API projections, preserving not_assessed states; no UI mount is assigned.
 6. Recheck D4 missing-geometry inventory and D3 scale only after the exact D0 results pass.
 
 ## J. Data to use and verification
@@ -113,6 +112,6 @@ Test zero/unknown denominator, absent provider, stale check, source supersession
 
 Run `pnpm typecheck`, `pnpm test:studio`, `pnpm test:registry`; proposed `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-readiness.test.ts`, `pnpm exec tsx tests/usp-readiness-integration.ts`, `pnpm exec playwright test tests/e2e/usp-readiness.spec.ts`. Return manifests, expected/actual counts, queue target sets, real next-action navigation and screenshots per 00. Test-plan existence is not an assessment pass.
 
-## K. Copy-paste assignment
+## K. Assignment boundary
 
-> Implement READY on feat/usp-readiness using 00, 01 and this file. Obtain D0 ten-target truth and attempt D4 real rows; implement technical-review-v1 exactly, then live per-target reasons and matching aggregate/queue membership. Preserve task-specific unknown/withheld/stale states and absent-provider behavior. UI/FND own shared mounts/adapters; do not create another task board or score engine. Complete the visible missing-fact→source/request action and run J through actual services. Return pack/hash, formulas, exact queue/count evidence, screenshots and commits; flag real-domain qualification separately. No legal clearance, guessed geometry, mocked completion or unauthorized main merge.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.

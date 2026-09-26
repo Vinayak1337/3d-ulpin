@@ -1,6 +1,6 @@
 # 18 · Grounded property assistance and optional public MCP
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Release: `full_product` (FP-ASSIST).** Conversational assistance/MCP is deferred beyond the finale. Existing deterministic source-linked explanations may be reused without claiming a deployed agent or MCP server. The finale ingestion agent follows H14/H27 and cannot publish registry facts.
 
@@ -87,17 +87,16 @@ ASSIST0 remains deterministic and requires no model wallet. Optional routing use
 | Proposed `packages/contracts/src/usp/assistance.ts` | ASSIST tool/Fact/Answer/template schemas |
 | Proposed `apps/web/lib/server/usp/assistance/{tools,grounding,templates,service,mcp,routes}.ts`, `migrations/18-assistance.ts` | ASSIST executor, typed rendering, optional model routing and MCP adapter |
 | Proposed `apps/web/app/mcp/route.ts` | FND sole transport/auth mount; DEPLOY mode gate |
-| Proposed `apps/web/features/usp/assistance/{PropertyAssistant,AnswerEvidence,AssistantActions}.tsx` | ASSIST native leaf UI |
 | [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx), public submission parents | UI exact selected-context mounts |
 | Proposed `tests/usp-assistance.test.ts`, `tests/usp-assistance-integration.ts`, `tests/usp-mcp.test.ts`, `tests/e2e/usp-assistance.spec.ts` | ASSIST fact correctness, injection, permissions and real transport tests |
 
-## G. UI placement and interaction
+## G. Backend contract for user-owned consumers
 
-Quick/full register → Ask about this property → persistent building/floor/unit header → questions drawn from available producers → concise typed facts with Evidence and one next action. Own-submission assistance stays in the contributor surface, not the officer shell. Loading is bounded; unknown intent points to a real workflow; absent evidence stays unavailable; denied data is not summarized from cache. Ambiguity displays target choices. Scope changes are explicit. UI owns navigation/focus/mobile sheet, ASSIST content. No mandatory external ChatGPT setup for ordinary users.
+Deferred assistance exposes typed grounded facts/evidence and allowlisted next actions for an exact authorized target. Unknown intent returns supported workflow capabilities; ambiguity returns target choices. Missing evidence stays unavailable, denied content is never summarized from cache and scope changes require explicit request context. Own-submission access remains separate. No conversational UI or external ChatGPT setup is scheduled.
 
 ## H. Ownership and dependencies
 
-`feat/usp-assistance`; own feature code/tests/migration. F0 schemas first, F1 real-service ASSIST0 as soon as those producers exist. F2 applies only to actual authenticated public/private deployments and remote MCP, not the local operator. DEPLOY is the only model-network client; FND defines/wires ports and pins SDK; UI mounts; DATA prepares shared oracles. Do not create an alternative RAG/property database to mask unavailable producers.
+`feat/usp-assistance`; own feature code/tests/migration. F0 schemas first, F1 real-service ASSIST0 as soon as those producers exist. F2 applies only to actual authenticated public/private deployments and remote MCP, not the local operator. DEPLOY is the only model-network client; FND defines/wires ports and pins SDK; the user-owned UI consumes its contracts; DATA prepares shared oracles. Do not create an alternative RAG/property database to mask unavailable producers.
 
 ## I. Implementation sequence
 
@@ -120,13 +119,13 @@ Run `pnpm typecheck`, `pnpm test:ai`; `pnpm exec tsx --tsconfig apps/web/tsconfi
 
 **Additional H20 acceptance:** zero-key, exhausted-wallet and 429 scenarios still return correct available typed facts without leaking settings. Revoke evidence access during a pending answer and verify neither cached model text nor a fallback discloses it. Any optional model call shares H20's two-attempt and money caps; no hidden second client.
 
-## K. Copy-paste assignment
+## K. Assignment boundary
 
-> Implement ASSIST on feat/usp-assistance using 00, 01 and this handoff. Start with actual D0 service facts and deterministic templates, then attempt normalized D4 rows for independent source testing. Build useful native answers with exact citations/actions before optional model routing or remote MCP. Citation membership alone is not truth: preserve subject, units, negation, unknown state and coverage mechanically. Use DEPLOY's gateway, FND auth/SDK/mounts and UI selection slots; do not add SQL, URL fetching, hidden writes or a separate data authority. Run J real-service injection/permission/semantic tests, return commits, fact outputs, screenshots and separate client gates. Local F1 assistance must not wait for public F2. No external activation or main merge without authorization.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. This file is full_product (FP-ASSIST). Task card: [H29](29-agent-task-cards.md) FP-ASSIST-01.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. This file is full_product (FP-ASSIST). Task card: [H29](29-agent-task-cards.md) FP-ASSIST-01.
 
 - **Vendor-neutral.** "External MCP clients" means any vendor's client. Cite the MCP specification and the official SDK first; any single vendor's guide is one example.
 - **Origin and Host validation.** Streamable HTTP requires `allowedHosts` and `allowedOrigins`; a forged Origin or Host gets 403 (test it).

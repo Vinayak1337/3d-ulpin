@@ -25,7 +25,7 @@ export function repositoryMode(value = baseEnvironment().REPO_DATA) {
 export function repositoryEnvironment(create = false, root = projectRoot()) {
   const file = resolve(root, '.runtime/repo-data.env');
   if (!existsSync(file)) {
-    if (!create) throw new Error('Repository data is not initialized. Run pnpm repo:init first.');
+    if (!create) throw new Error('Isolated repository environment is not initialized. Run pnpm platform:start first.');
     const secret = () => randomBytes(24).toString('hex');
     const password = secret();
     const env = {

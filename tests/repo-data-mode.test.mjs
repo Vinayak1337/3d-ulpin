@@ -14,7 +14,7 @@ test('data selection is explicit and rejects misspelled values', () => {
 test('isolated credentials are created once and preserved on reruns', () => {
   const root = mkdtempSync(join(tmpdir(), 'ulpin repo mode '));
   try {
-    assert.throws(() => repositoryEnvironment(false, root), /repo:init/);
+    assert.throws(() => repositoryEnvironment(false, root), /platform:start/);
     assert.equal(existsSync(join(root, '.env')), false);
     const first = repositoryEnvironment(true, root);
     const bytes = readFileSync(join(root, '.runtime/repo-data.env'));

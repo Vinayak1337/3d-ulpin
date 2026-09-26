@@ -1,6 +1,8 @@
-# 24 — Product story, measurable claims and PPT plan
+# 24 · Backend method, measurement and presentation evidence
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+
+**Deliverable boundary:** This handoff records backend methodology, receipt-backed claims and limitations for a later user-owned presentation. Slide/video/UI production and scripted screen design below are retained narrative references, not scheduled work. No new feature or performance result is authorized or asserted.
 
 **Aligned 24 September 2026.** This is presentation guidance, not evidence of completed implementation. [H00](00-README.md) and [release-plan.json](release-plan.json) define release scope; H26–H28 define the technical/data/test claims. Present equal emphasis on adaptive ingestion and the officer outcome.
 
@@ -85,7 +87,7 @@ UX4G-guided interfaces and GIGW 3.0/WCAG 2.1 AA are design/review targets for de
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task card: [H29](29-agent-task-cards.md) LEAD-04.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task card: [H29](29-agent-task-cards.md) LEAD-04.
 
 ### Z1. Slide changes
 

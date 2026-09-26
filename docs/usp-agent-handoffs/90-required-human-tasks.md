@@ -1,6 +1,6 @@
 # 90 · Human inputs — the short list
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Rewritten 25 September 2026.** Agents do the data, labelling, oracle and verification work. The earlier human tasks H1–H10 are now agent task cards (table below). Any permitted geography is fine: Indian data is preferred where it exists, and foreign data is labelled `test_only`. There is no Delhi or single-locality requirement. The data sources are already documented in [H23](23-india-data-and-delivery-plan.md) and [H28](28-data-acquisition-and-finale-tests.md) (data.gov.in first).
 
@@ -29,12 +29,12 @@ Never paste keys into chat, Git, screenshots or logs.
 | H1b | Request an aligned block from a survey or revenue office | Not needed for the finale. Record D7 as `failed(permission_required)` citing `demo-data/real-block`; GF-T18/T20 need official-source truth; unavailable cases remain unqualified | DATA-01 |
 | H2 | Domain reviewer states rules and terminology | Review policy filled from public statute text (RERA 2016 s.2(k), s.17; apartment and co-operative acts), labelled "sourced policy, not a departmental rule" | READY-02 |
 | H3, H3a | Approve deployment accounts and provider funding | Finale runs `local_demo` and `local_demo_offline`. Provider: fake and replay adapters by default, one budget pool, rollover off. Short-list item 4 only if a live call is wanted | DEPLOY-01, DEPLOY-02 |
-| H4 | Observe a person using the workflow | Automated task-completion journeys, keyboard, focus and axe checks on desktop with keyboard and browser zoom. Human observation is optional and never claimed | UI-07 |
+| H4 | Observe a person using the workflow | User-owned UI integration remains unqualified; backend checks cover service lifecycle and access, never claim human usability | H99 external dependency |
 | H5 | Choose a site and get consent | Choose public licensed bundles instead; tenure cases (co-op, per-deed) require official records; missing coverage remains unqualified | LEAD-05 |
 | H6 | Independent person labels test data and hand-calculates oracles | Third-party human-labelled benchmarks with frozen, hashed holdouts; arithmetic oracles written by a different model family before the implementing commit | DATA-07, DATA-08 |
 | H7 | Fly a drone with ground control | Open drone datasets with published ground control points; hold some out as checkpoints | DATA-06 |
 | H8 | Sign-ups, access requests, GPU | Open-download sources only; drop request-access datasets; CPU ONNX routes already exist; fine-tuning optional | DATA-01 |
-| H9 | Timed human study and finale logistics | Scripted timing receipts (labelled "scripted, not a human study"); frozen-machine runs, local tile and font cache, recorded backup video, PPT export | UI-07, DEPLOY-04 |
+| H9 | Timed human study and finale logistics | Backend timing/recovery receipts only; user-owned browser rehearsal, backup media and presentation remain separate | DEPLOY-04, H99 external dependency |
 | H10 | Training permission, promotion policy, signing key, grievance contact, identity provider, SMS registration | Not used in the finale. Receipts stay "hashed"; learner auto-promotion default is "off". The rest are full-product prerequisites below | LEAD-01, full-product cards |
 | Gate sign-off | A named person approves every gate | A cross-family agent review completes GF0–GF4; the owner approves only waivers and the GF5 freeze (short-list item 3) | LEAD-01 |
 

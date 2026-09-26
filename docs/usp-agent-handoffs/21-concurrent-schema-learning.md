@@ -1,6 +1,6 @@
 # 21 — Concurrent schema learner and safe automatic handover
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Release: `full_product` (FP-LEARN).** Real training, qualification and pending-only same-import handover remain committed scope, after the finale. They do not block GF0–GF5. H27 domain AI is a different capability and stays in the finale.
 
@@ -93,7 +93,7 @@ Scikit-learn out-of-core classification and SGDClassifier documentation support 
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. This file is full_product (FP-LEARN). Task card: [H29](29-agent-task-cards.md) FP-LEARN-01.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. This file is full_product (FP-LEARN). Task card: [H29](29-agent-task-cards.md) FP-LEARN-01.
 
 - **Qualify offline first.** A same-import handover needs training, held-out qualification and a shadow run inside one import, with human corrections as the only labels; it will rarely pass. Qualify the learner offline on layout families A and B, then demonstrate handover only for a family inside the qualified domain. Otherwise report "candidate saved; no handover".
 - **Receipts are hashed, not signed**, unless a named signing key exists and its verification is tested (a full-product prerequisite in [H90](90-required-human-tasks.md)). Write "hashed `QualificationReceipt`".

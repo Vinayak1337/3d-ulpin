@@ -1,6 +1,5 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { coreRefKey, measureCoreCatalog } from "../packages/contracts/src/index";
 import { adaptReferenceScene, projectReferenceScene, toReferenceRenderScene } from "../apps/web/features/spatial/reference-import/index";
@@ -134,29 +133,6 @@ test("native XYZ alignment remains unavailable analytically, without flattening 
   assert.deepEqual(r.source.geometries[0].coordinates,coords);
   assert.equal(toReferenceRenderScene(r).scene.objects[0].geometryId,null);
 });
-
-test("dense reference scene compiles through canonical adapter while raw sources remain metadata-only", async () => {
-  const text=readFileSync("design/reference-map-v5/data/reference-scene.json","utf8"), r=await adaptReferenceScene(text);
-  const display=projectReferenceScene(r,{anchor}), result=compileSpatialSnapshot(display.snapshot,"/test");
-  assert.equal(r.input.identity.entities.length,196);
-  assert.equal(result.summary.renderedEntities,172);
-  assert.equal(r.diagnostics.filter(d=>d.code==="UNSUPPORTED_3D_ALIGNMENT").length,2);
-  assert.ok(r.input.sources.assets.every(a=>a.integrity==="metadata_only"&&a.storage.state==="unavailable"));
-  assert.ok(r.bindings.every(b=>b.sourceRevision==="fictional-dense-v2"));
-  assert.equal(r.input.identity.relations.find(r=>r.id==="REL-001")!.kind,"associated_parcel");
-});
-
-test("stale source records reject; revision token changes receive different immutable source bindings", async () => {
-  const f=JSON.parse(readFileSync("design/reference-map-v5/data/reference-scene.json","utf8"));
-  const r=await adaptReferenceScene(JSON.stringify(f));
-  f.sources[0].revision="new-source-token";
-  await assert.rejects(adaptReferenceScene(JSON.stringify(f)), /stale source revision/);
-  f.sourceRecords.filter((s:any)=>s.sourceId===f.sources[0].id).forEach((s:any)=>s.sourceRevision="new-source-token");
-  const changed=await adaptReferenceScene(JSON.stringify(f));
-  assert.notEqual(changed.bindings[0].canonicalSource.ref.id,r.bindings[0].canonicalSource.ref.id);
-  assert.equal(changed.bindings[0].sourceId,r.bindings[0].sourceId);
-});
-
 
 test("unqualified presentation cannot inject camera values or fabricated map extents", async () => {
   const f:any=fixture(); f.metadata.extent=[-1e30,-1e30,1e30,1e30];

@@ -1,6 +1,6 @@
 # 27 · Finale domain AI and cadastral checks
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **DOMAIN** for the bounded candidate/quantity leaves. **DATA** owns permitted sources, independent labels and expected results; **FND** owns shared receipts, source/geometry persistence and job fencing; **FIND** owns the one qualified spatial-operation service in [12](12-rights-aware-spatial-findings.md); **RIGHTS** owns declaration/share assertions in [16](16-shared-spaces-and-vertical-rights.md); **UI** mounts results in the retained Studio viewport in [99](99-ui-ux-and-integration.md). This is an implementation plan, not an implemented capability or accuracy claim. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [14](14-adaptive-ingestion-and-progressive-review.md), [H26's identity/exchange contract](26-identifiers-and-standard-exchange.md) and [28](28-data-acquisition-and-finale-tests.md).
 
@@ -66,7 +66,7 @@ Tests must prove source hash unchanged; candidate and accepted draft use separat
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) DOMAIN-01 to DOMAIN-03.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) DOMAIN-01 to DOMAIN-03.
 
 ### Z1. Site model pipeline, the Helsinki way
 

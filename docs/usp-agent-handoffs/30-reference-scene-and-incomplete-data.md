@@ -1,10 +1,10 @@
 # 30 — Real reference scene, incomplete data and every input family
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
-**Added 25 September 2026. Release: `finale_v1` for requirements R-SCENE and R-SUFFICIENCY (GF2); the parts marked full_product stay in FP-ENRICH and FP-FORMATS. Owners: DATA for the reference area, INGEST for intake and sufficiency decisions, UI for the scene, DOMAIN for reconstruction routes, FND for shared fields.** Everything here is planned; nothing in it has passed a runtime gate.
+**Added 25 September 2026. Release: `finale_v1` for requirements R-SCENE and R-SUFFICIENCY (GF2); the parts marked full_product stay in FP-ENRICH and FP-FORMATS. Owners: DATA for the reference area, INGEST for intake and sufficiency decisions, FND for derivative/asset contracts, DOMAIN for reconstruction routes, FND for shared fields.** Everything here is planned; nothing in it has passed a runtime gate.
 
-The finale map must look good and stay honest. It looks good because it is built from a real Indian area: its photoreal drone mesh where a permitted capture exists, and real open layers dressed by deterministic rules everywhere else. It stays honest because every generated visual is a labelled display derivative of the formal records, never a record. Incomplete input is handled one way everywhere: fill for display, ask one bounded question, park the object, or reject it for 3D. The ingestion agent accepts every data family (GIS, tables, plans, CAD/BIM, 3D models, LiDAR, elevation, imagery, survey, services) and mixes of them.
+The backend supplies traceable assets from a real Indian area: a photogrammetry context mesh only where a permitted capture exists, and deterministic derivatives of official layers elsewhere. It stays honest because every generated visual is a labelled display derivative of the formal records, never a record. Incomplete input is handled one way everywhere: fill for display, ask one bounded question, park the object, or reject it for 3D. The ingestion agent accepts every data family (GIS, tables, plans, CAD/BIM, 3D models, LiDAR, elevation, imagery, survey, services) and mixes of them.
 
 ## A. What already exists, and what this file adds
 
@@ -27,9 +27,9 @@ This file adds five things the plan lacked:
 4. One fill / ask / park / reject rule for incomplete data, with a question budget.
 5. An intake matrix for every data family, with precedence rules for mixed inputs.
 
-## B. Real reference area (DATA-09, then UI-08)
+## B. Real reference area and manifest (DATA-09)
 
-The Studio's area map, the 3D view and every capture use one real Indian reference area, not hard-coded arrays. DATA chooses the area by these criteria, in order:
+The reference-area API and scene manifest use one real Indian area with recorded provenance, not hard-coded arrays. DATA chooses the area by these criteria, in order:
 
 1. Permitted open context layers of useful resolution cover it.
 2. It contains or adjoins a real planned multi-unit building whose sanctioned drawings DATA already holds (D5). Use its location only when the source record states it (address, coordinates, khasra with a published map); never place a building by name or proximity.
@@ -58,7 +58,7 @@ Rules:
 
 ## C. Evidence view and Enhanced view
 
-H22's two views stay. The **Evidence view** is the default for recording, checks and measurement. The **Enhanced view** is a toggle, remembered per viewer. The finale Enhanced view uses only real capture and deterministic rules over real layers and records. Generative enrichment remains a future design option requiring a new explicit user scope decision; it is not authorized source data.
+H22's two views stay. The **Evidence view** is the default for recording, checks and measurement. The **Enhanced view** is a consumer option outside this backend plan; the service exposes its distinct derivative class and lineage. The finale Enhanced view uses only real capture and deterministic rules over real layers and records. Generative enrichment remains a future design option requiring a new explicit user scope decision; it is not authorized source data.
 
 **Two tiers of context, following the hardened plan review's Helsinki lesson (two models from one capture):**
 
@@ -195,21 +195,21 @@ FND owns the contracts and decides the final names:
 - a `sceneDerivative` record (derivative ID, input pins, generator version, seed, hash, stale flag);
 - `layerAttribution` per context layer.
 
-UI adds proposed Enhanced-view tokens (terrain, vegetation, façade and window tones) to UI-01. They are synced back to the team design system before use, so the repository and team copies stay identical.
+Expose layer classification, source attribution and deterministic derivative inputs; display tokens and controls belong to the user-owned UI and are not scheduled.
 
 ## I. Tests
 
-**GF-SCENE (UI, GF2).** On the DATA-09 reference area:
+**GF-SCENE (FND, GF2), backend scope.** On the DATA-09 reference area:
 
-- the scene is built only from manifests: no hard-coded arrays and no "fictional" strings;
-- every layer's attribution is shown;
-- switching the Enhanced view changes no hash, quantity, readiness value, finding, card or export;
-- the same inputs give byte-identical derivatives;
-- a new record revision marks the derivative stale and regenerates it;
-- a context building never opens a property inspector;
-- where a tier 1 mesh is loaded (DATA-06 scene at least), picks pass through it to `recordId`, floor isolation and underground mode clip it, and no measurement reads it;
-- screenshots keep the legend;
-- the H22 G frame and first-scene targets are met on declared hardware.
+- assets are built only from official-source manifests; no hard-coded operational arrays;
+- each layer returns its exact attribution, source dates and limitations;
+- derivative generation changes no canonical hash, quantity, readiness value, finding, card or exchange output;
+- identical inputs give byte-identical derivatives;
+- a new record revision invalidates/regenerates derivatives, and retired records remove current derivative eligibility;
+- context objects have no fabricated registry target or analytical eligibility;
+- tier 1 mesh dependencies and canonical identity mappings are authorized, traceable and bounded; measurement never reads context mesh data.
+
+Picking, clipping, screenshot legends, frame rate and user controls remain user-owned integration qualifications. These are neither backend pass claims nor UI work scheduled by this plan.
 
 **GF-SUFFICIENCY (INGEST, GF2).** One mixed batch of unchanged official-source inputs acquired by DATA-02, with independent source-derived expectations. Seek the cases below as naturally occurring source conditions; do not remove metadata or manufacture samples. Each unavailable case stays a named coverage gap:
 
@@ -239,7 +239,6 @@ UI adds proposed Enhanced-view tokens (terrain, vegetation, façade and window t
 In [H29](29-agent-task-cards.md):
 
 - DATA-09 reference area;
-- UI-08 (now on the real area);
-- UI-09 Enhanced view and scene sync;
+- FND-04 plus H99: authorized source/derivative contracts and invalidation (former UI-08/UI-09 frontend assignments retired);
 - INGEST-04 sufficiency decisions and question budget;
 - INGEST-05 one sample per finale input family.

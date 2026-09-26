@@ -7,16 +7,17 @@ contracts, the assigned feature A–K file, and
 Do not resume an old task merely because it is marked next in this folder.
 
 This retained tree contains dated T-number plans/results and machine-readable
-acceptance history. Its tools, reference catalogue, legacy source copies,
-backlog and crosswalks are still consumed by CI. They preserve earlier coverage;
-they do not override F0 → F1-min → V0 or D0–D7 in the adopted handoffs.
+acceptance history. Its validator, reference catalogue, legacy source copies,
+backlog and crosswalks still have local consumers. They preserve earlier coverage;
+the current gate and dependency order are in [H00](../usp-agent-handoffs/00-README.md)
+and [release-plan.json](../usp-agent-handoffs/release-plan.json).
 
 Do not delete this tree recursively or reset accepted statuses. Migrate each
 consumer and preserve source hashes before retiring its input. The fixed
 baseline material is historical, not proof that new features or datasets pass.
-[CURRENT_WORK.md](CURRENT_WORK.md) routes to the current assignment and selected
-historical results. [The previous entry point](https://github.com/Vinayak1337/3d-ulpin/blob/f623cff897f91bb3ebd4c225f700ac263f7beb72/docs/engineering-plan/00_START_HERE.md)
-is retained in Git history.
+The [historical current-work record](https://github.com/Vinayak1337/3d-ulpin/blob/eae7e7f418d72e4a36c526804380c35944e3809e/docs/engineering-plan/CURRENT_WORK.md)
+and [previous entry point](https://github.com/Vinayak1337/3d-ulpin/blob/f623cff897f91bb3ebd4c225f700ac263f7beb72/docs/engineering-plan/00_START_HERE.md)
+remain in pinned Git history. They do not establish a current runtime pass.
 
 Existing validation, from this directory:
 

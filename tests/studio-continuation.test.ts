@@ -1,14 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
 import {district,getBuilding} from '../apps/web/features/studio/data/district';
 import {rectangleDifference} from '../apps/web/features/studio/data/display-geometry';
 import {buildArchitecture} from '../apps/web/features/studio/scene/architecture';
 import {loadStudioDraft,saveStudioDraft,studioDraftKey,type StudioDraft} from '../apps/web/features/studio/data/workspace-draft';
-import {validatePreparedProperty,verifyPreparedProperty} from '../apps/web/features/studio/data/verify-property-source';
 import {readStudioRoute} from '../apps/web/features/studio/routing';
 import {sourceKind} from '../apps/web/features/officer/register/model';
-import type {StudioSourceManifest} from '../apps/web/features/studio/data/source-types';
 
 const b=getBuilding(district.defaultBuildingId);
 const square={x:0,z:0,width:10,depth:10};
@@ -54,17 +51,6 @@ test('source revision mismatch, crossed area, incomplete measure and foreign uni
  assert.throws(()=>saveStudioDraft(storage,{...saved,status:'ready_for_review',points:[[0,0]]}),/unfinished/);
  assert.throws(()=>saveStudioDraft(storage,{...saved,unitId:b.units.find(u=>u.floor===1)!.id}),/draft floor/);
  assert.equal(loadStudioDraft(storage,b.id,0)?.revision,1);
-});
-test('source validation tests real property/plan/occupancy links and rejects altered bytes',async()=>{
- const root='fixtures/studio/reference-v2',raw=await readFile(root+'/records.json'),manifest=JSON.parse(await readFile(root+'/manifest.json','utf8')) as StudioSourceManifest;
- const result=validatePreparedProperty(b,JSON.parse(raw.toString()),manifest);
- assert.deepEqual([result.floors,result.units,result.documents],[5,10,18]);
- const fakeFetch=(async()=>new Response(new Uint8Array(raw))) as typeof fetch;
- assert.equal((await verifyPreparedProperty(b,manifest,fakeFetch)).sha256,manifest.datasetSha256);
- const damagedFetch=(async()=>new Response('changed bytes')) as typeof fetch;
- await assert.rejects(()=>verifyPreparedProperty(b,manifest,damagedFetch),/checksum/);
- assert.throws(()=>validatePreparedProperty({...b,owner:'Different person'},JSON.parse(raw.toString()),manifest),/differs/);
- const incomplete={...manifest,documents:manifest.documents.filter(d=>d.id!=='plan-BLD-0413-F1')};assert.throws(()=>validatePreparedProperty(b,JSON.parse(raw.toString()),incomplete),/unique prepared plan/);
 });
 for(const query of ['selection=all','selection=','explode=yes','unit=','mode=','doc=','tab='])test(`malformed state ${query} is unavailable rather than silently normalized`,()=>assert(readStudioRoute('/studio/map/BLD-0413?'+query,district).error));
 test('image floor plans are drawings before generic image-photo classification',()=>{

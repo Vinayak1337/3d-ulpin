@@ -1,6 +1,6 @@
 # 19 · Governed AI and India-contained deployment
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Release boundary:** finale uses local isolated services and existing provider/no-key controls; production authentication, multiuser/public activation and India-hosted deployment are `full_product` gates. Local privacy and any permitted provider call still require their relevant checks.
 
@@ -94,12 +94,11 @@ Restore a consistent database, referenced immutable objects, permission/release 
 | Proposed `infra/deployment/{compose.india-private.yaml,policy.example.json,README.md}` | DEPLOY standalone reference, operational instructions and safe placeholders |
 | Proposed `infra/deployment/Dockerfile.web` and shared service entrypoints | FND build artifact owner, DEPLOY tests/consumes |
 | Proposed `scripts/usp/deployment-check.ts` | DEPLOY non-destructive inventory/preflight/isolated test orchestration |
-| Proposed `apps/web/features/usp/deployment/DeploymentStatus.tsx` | DEPLOY leaf; UI extends actual Shell workspace dialog |
 | Proposed `tests/usp-deployment.test.ts`, `tests/usp-deployment-integration.ts`, `tests/e2e/usp-deployment.spec.ts` | DEPLOY policy, real destination, scanner, launch and recovery tests |
 
-## G. UI placement and interaction
+## G. Backend contract for user-owned consumers
 
-The existing [Shell](../../apps/web/features/officer/shared/Shell.tsx) Local workspace dialog is the integration point; no assumed deployment settings page. UI extends it to show authorized profile/capability/qualification details and actionable missing configuration. Remove unconditional data-stays-here copy unless the tested profile supports it. Loading says not checked; missing service says unavailable; failed qualification blocks protected activation; successful status states exactly what was tested. No government-certified/India-only badge from a config variable. Ordinary users keep a brief manual-fallback explanation.
+Return authorized deployment profile/capability/qualification state and actionable missing configuration without secrets. Not checked, unavailable, failed and qualified are distinct. Failed qualification blocks protected activation. A config variable cannot establish India-only residency or government certification; name the exact tested scope and manual/exact fallback. No settings screen is assigned.
 
 ## H. Ownership and dependencies
 
@@ -126,13 +125,13 @@ Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:ai`, existing `pnpm platform:h
 
 **H20 is part of DEPLOY acceptance:** execute its G-01 through G-27 tests as applicable. Qualify local ledger/fake-provider behavior separately from live chat, live document billing and deployment residency. No public balance API, real key pool or permanent post-restore memory is assumed. Operator account evidence is required before funded calls, not before fixture implementation.
 
-## K. Copy-paste assignment
+## K. Assignment boundary
 
-> Implement DEPLOY using 00, 01 and this handoff on feat/usp-deployment. Use non-personal D0 to build default-deny policy, governed Sarvam/local adapters, hash-bound scanner and honest mail outcomes; keep no-AI local operation usable. FND owns shared config/build/auth/legacy patches and UI the existing workspace dialog. Inventory all routes/SSR/assets/browser calls, not just new model traffic. Build/test the standalone stack with correct web/dispatcher entrypoints in new isolated volumes, then run J egress/scanner/recovery tests. Actual approved service/account evidence is a separate gate; do not ask humans to code/provision by default, collect secrets in Git/chat, buy credits, claim configuration proves residency or launch/merge main without authorization.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) DEPLOY-02 and DEPLOY-03.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) DEPLOY-02 and DEPLOY-03.
 
 ### Z1. The finale build must not call non-Indian providers
 
