@@ -64,7 +64,11 @@ export class ApiError extends Error {
 }
 
 /** One typed client for the Nest API. The base URL is same-origin; Vite proxies `/api`. */
-export const api = createClient<paths>({ baseUrl: globalThis.location?.origin ?? 'http://localhost' });
+export const api = createClient<paths>({
+  baseUrl: globalThis.location?.origin ?? 'http://localhost',
+  // Resolve fetch at call time so a development interceptor installed after start-up still applies.
+  fetch: (request) => globalThis.fetch(request),
+});
 api.use(originMiddleware);
 
 /** Unwraps an openapi-fetch result, throwing ApiError so TanStack Query sees failures. */
