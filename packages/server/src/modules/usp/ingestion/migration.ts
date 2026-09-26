@@ -16,3 +16,7 @@ export async function migrateIngestionEventsTx(client: PoolClient) {
 export async function migrateProjectedVectorTx(client:PoolClient){
   await client.query(sql('ingestion.projected.schema'));
 }
+
+export async function migratePrivateMvtTx(client:PoolClient){
+  await client.query(sql('ingestion.mvt.schema'));
+}

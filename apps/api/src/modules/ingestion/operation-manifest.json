@@ -246,6 +246,71 @@
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
       "runtimeEvidence": "docs/evidence/usp/projected-vector-handoff.md"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt",
+      "batch": "TILE-01",
+      "disposition": "added",
+      "nativeController": "private-mvt",
+      "requestSchema": "PrivateMvtRequestSchema",
+      "responseSchema": "PrivateMvtStatusSchema",
+      "responseStatus": 202,
+      "transportProfile": "json",
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt",
+      "batch": "TILE-01",
+      "disposition": "added",
+      "nativeController": "private-mvt",
+      "requestSchema": null,
+      "responseSchema": "PrivateMvtStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version",
+      "batch": "TILE-01",
+      "disposition": "added",
+      "nativeController": "private-mvt",
+      "requestSchema": null,
+      "responseSchema": "PrivateMvtManifestResponseSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}/tiles/{z}/{x}/{y}.mvt",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_tiles_z_x_y",
+      "batch": "TILE-01",
+      "disposition": "added",
+      "nativeController": "private-mvt",
+      "requestSchema": null,
+      "responseSchema": "binary",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}/tiles/{z}/{x}/{y}/units/{unitId}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_tiles_z_x_y_units_unitId",
+      "batch": "TILE-01",
+      "disposition": "added",
+      "nativeController": "private-mvt",
+      "requestSchema": null,
+      "responseSchema": "PrivateMvtLookupSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
     }
   ]
 }
