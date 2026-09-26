@@ -19,17 +19,30 @@ The decisions live in [GOAL.md](GOAL.md); this file tracks what is built, in the
 
 ### M3 Scene engine + S4 Area map
 - [x] `packages/scene` engine with React adapter; render on demand outside React: `setFootprints`, `loadTileset`, `select`, `pick`, `project`, `frame` (600 ms eased, interruptible, cut under reduced motion), `setPreset`, `stats`
-- [ ] Engine `setMode` (building, level, findings, underground, deviation) and `clip` (section, trench) — with M4/M6
+- [x] Engine modes from the mockup: area, building, level, findings, underground (`setState`), halo, context fade, ghosted upper levels, Volumes light, grow-in
+- [ ] Engine `clip` (section, trench drawing) and the deviation split view
 - [x] One derived official layer: 62 NYC OTI footprints with source roof heights (local route, validated against the OpenAPI schema)
 - [ ] Load existing scene assets (`/areas/{id}/context` → `sceneAssets`) through `loadTileset` — no area with scene assets is installed yet
 - [x] Pick → inspector; URL holds the selection
 - [x] Frame time and memory measured (dev hook `window.__ulpinSceneStats`)
 - [ ] State-scale boundary layer with level of detail (NWIC districts: original outside Git, EPSG:7755, conditional local use; needs a derivation script and vector tiling)
-- [ ] Layers panel (base, Colour by, Model/Volumes) — add when there is more than one layer to control
+- [x] Layers panel (base, imagery with its no-data state, Colour by one at a time)
 
 ### M4 S5 Building and floors · S7 Evidence viewer · S12 Register
+- [x] URL-driven selection with the mockup's click and Escape transitions (`state/selection.ts`, tested)
+- [x] S5: level rail, level mode with the Swiss Dwellings floor (2 units, 6 rooms, unknown heights hatched), space inspector
+- [x] S7: evidence viewer over the retained originals (CSV rows, GeoJSON pointers) with a 3D still
+- [x] S12: register with a full-width units table, shares (Not assessed), history, gaps; register index
+
 ### M5 S2 Add files · S3 Live import (polling) · S9 review · S11 Assign
+- [x] S2: files profiled by the live `POST /import-packages/inspect`; mapping confirmed by the officer; Start import calls the live `POST /import-packages` (not exercised in verification: it writes to the linked database)
+- [x] S3: import tray polling `GET /import-packages/{id}`
+- [ ] S9 review of AI candidates (needs INGEST-02 candidates)
+- [x] S11: assign a proposed code with the real P3 generator (local workflow store until identity routes are wired)
+
 ### M6 Findings mode (S8/S10) · S6 Underground · S13 Deviation · S14 Card + P4L
+- [x] Findings mode shows Not assessed with the reason (no qualified geometry yet); S6 shows "No survey"; S13 shows Not assessed until a sanctioned and an observed source exist
+- [x] S14 Property Card with a real QR to the same-device link; P4L Verify with the recomputed hash chain
 ### M7 Rehearsal journeys (Playwright) and desktop light captures
 
 ## Local / live route table
@@ -44,6 +57,8 @@ Kept in `apps/studio/src/local/routes.ts`. Every endpoint the Studio calls is li
 | 26 Sep 2026 | `pnpm studio:test` | 19 tests pass (ui 4, scene 3, api-client 1, studio 11 incl. OpenAPI contract checks on local responses) |
 | 26 Sep 2026 | `pnpm studio:build` | Pass. Map route lazy-loaded (Three.js chunk 793 kB, 205 kB gzip); no MSW worker in `dist` |
 | 26 Sep 2026 | Live API (`API_ALLOWED_ORIGINS=http://127.0.0.1:5188`, local operator subject set) + Vite proxy | `health`, `workspace-capabilities`, `work-queue` answered live; Batches lists the 2 records the linked database holds |
+| 26 Sep 2026 | Mockup review: read `design-mockup/` code (app, screens, studio-panel, scene) and captured 23 states at 1440 × 900 | Direction recorded in GOAL section 12 |
+| 26 Sep 2026 | Journeys in headless Chromium: area → building → underground; Swiss area → level → room → record review → assign → card → verify; register → evidence viewer; Add files → inspect (live) → confirm | All ran without page errors |
 | 26 Sep 2026 | Headless Chromium (SwiftShader) 1440 × 900, area map, 62 buildings | 9.7–14.3 ms mean CPU per frame, 70–187 draw calls, ~93 MB JS heap; software GPU, so an upper bound |
 
 ## Backend requests raised
@@ -53,6 +68,10 @@ Kept in `apps/studio/src/local/routes.ts`. Every endpoint the Studio calls is li
 | Data (lead) | An official-source area installed in the linked environment through the real import route. Today the linked database holds only two legacy synthetic datasets and no areas, so the map runs on the local derived NYC OTI area | — |
 | READY-01 | Readiness per work item, for the compact readiness column in Batches (omitted until then) | pending |
 | TILE-01 | Per-feature 3D Tiles or batched geometry for city scale; the spike draws one mesh per footprint | pending |
+| Identity routes | Wire `POST /usp/identity/reviews` and `/assign` for register spaces so codes leave the browser store | local workflow in `apps/studio/src/local/workflow.ts` |
+| PACK-01 | Property Card subtype and a QR resolver; today the card and Verify page read the browser store | local |
+| HISTORY-02 | Sanctioned/observed pair for the deviation check | pending |
+| IMPACT-01 | Utility survey bands for underground screening | pending |
 
 ## Notes for the next session
 

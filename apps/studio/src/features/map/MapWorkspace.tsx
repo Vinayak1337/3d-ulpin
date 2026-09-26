@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { FilePlus } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { BuildingDetailInput, Pick, SceneEngine, SceneState } from '@ulpin/scene';
@@ -14,6 +14,7 @@ import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { toFootprints } from './footprints';
 import { LayersPanel } from './LayersPanel';
 import { MapToolbar } from './MapToolbar';
+import { ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
@@ -37,6 +38,8 @@ const ATTRIBUTION: Record<string, string> = {
  */
 export function MapWorkspace({ context }: { context: AreaContext }) {
   const { selection, dispatch, patch } = useSelection();
+  const [searchParams] = useSearchParams();
+  const packageId = searchParams.get('package');
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
@@ -175,7 +178,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
           />
         ) : null}
 
-        <section className={styles.canvasColumn} aria-label="Map">
+        <section className={`${styles.canvasColumn} ${packageId ? styles.withTray : ''}`} aria-label="Map">
           <div className={styles.canvasWrap}>
             <SceneView
               className={styles.canvas}
@@ -225,6 +228,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
             <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} /></div>
             <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns] ?? ns).join(' · ')}</p>
           </div>
+          {packageId ? <div className={styles.tray}><ImportTray packageId={packageId} /></div> : null}
         </section>
 
         <div className={styles.inspectorColumn}>{inspector}</div>

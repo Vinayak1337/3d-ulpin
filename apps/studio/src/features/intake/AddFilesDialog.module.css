@@ -1,0 +1,17 @@
+.drop {
+  display: grid; justify-items: center; gap: var(--ui-space-2); padding: var(--ui-space-8) var(--ui-space-6); text-align: center; cursor: pointer;
+  border: 1.5px dashed var(--ui-line-control); border-radius: var(--ui-radius-12); background: var(--ui-surface-tint); color: var(--ui-ink-soft);
+}
+.drop:focus-within { outline: 2px solid var(--ui-focus); outline-offset: 3px; }
+.question { display: flex; align-items: center; gap: var(--ui-space-3); padding: 12px 14px; border-radius: var(--ui-radius-12); background: var(--ui-info-soft); }
+.questionText { flex: 1; }
+.answered { display: flex; align-items: center; gap: var(--ui-space-2); font-size: 13px; color: var(--ui-ink-soft); }
+.mapping { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ui-space-4); margin: 0; padding: var(--ui-space-4); border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-12); }
+.mapping legend { padding: 0 6px; }
+.mapping :global(.ul-field) { max-width: none; }
+.stepper { display: flex; gap: var(--ui-space-4); margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ui-muted); }
+.stepper li { display: flex; align-items: center; gap: 6px; }
+.dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; background: var(--ui-surface-subtle); }
+.on { color: var(--ui-ink); font-weight: 600; }
+.on .dot { background: var(--ui-primary); color: var(--ui-on-primary); }
+.done .dot { background: var(--ui-primary-soft); color: var(--ui-primary); }

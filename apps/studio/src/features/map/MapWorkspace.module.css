@@ -4,6 +4,8 @@
 }
 .withPanel { grid-template-columns: var(--ui-left-rail-width) minmax(0, 1fr) var(--ui-right-rail-width); }
 .canvasColumn { min-width: 0; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr); gap: var(--ui-space-4); }
+.withTray { grid-template-rows: minmax(0, 1fr) var(--ui-bottom-tray-height); }
+.tray { min-height: 0; overflow: auto; }
 .canvasWrap { position: relative; min-height: 0; border-radius: var(--ui-radius-12); overflow: hidden; background: var(--ui-map-ground); }
 .canvas { position: absolute; inset: 0; }
 .inspectorColumn { min-height: 0; display: grid; }
@@ -40,7 +42,7 @@
   font: 500 11px/16px var(--ui-font-sans); background: var(--ui-surface); color: var(--ui-ink); box-shadow: var(--ui-shadow-floating); will-change: transform;
 }
 .label_selected, .label_space_selected { background: var(--ui-primary); color: var(--ui-on-primary); font-weight: 600; }
-.label_space { background: transparent; box-shadow: none; color: #fff; font-weight: 600; text-shadow: 0 1px 2px #0008; }
+.label_space { background: transparent; box-shadow: none; color: var(--ui-map-halo); font-weight: 600; text-shadow: 0 1px 2px color-mix(in srgb, var(--ui-ink) 55%, transparent); }
 .label_note { background: var(--ui-surface); color: var(--ui-ink-soft); }
 
 .leftPanel { min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }

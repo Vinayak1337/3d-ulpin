@@ -230,3 +230,16 @@ Metrics come only from real runs.
 - The public `apps/global` stays full product unless the user brings a thin version into the finale.
 - The backend's official large layer (DATA-10) permission is unresolved; the frontend scale work uses the district boundary layers locally until then.
 - The linked database holds only two legacy synthetic datasets and no areas. Batches shows them as recorded; the map uses the local derived NYC OTI area until an official-source area is installed through the real import route.
+
+## 12. The mockup's direction, as built (26 September 2026)
+
+The mockup code (`app.jsx`, `screens.jsx`, `studio-panel.jsx`, `scene.js`) and 23 captured states were reviewed. What the Studio takes from it, rebuilt in our own code with real records:
+
+- **One canvas, five modes.** Area → building → level → space, plus findings and underground, share one selection held in the URL. Click a building to select it, click again to explore it, pick a level on the rail, click a space; clicking the ground clears one step; **Escape unwinds one step at a time**. Dialogs swallow Escape and clicks.
+- **Scene look.** Neutral massing with edge lines; the selection in primary with a white halo; everything else at context opacity once something is selected; upper levels ghosted in level mode; unknown heights drawn flat and hatched; findings and Volumes use flat light without shadows; underground cuts the ground and shows "No survey" where no survey exists. Camera presets are computed from the bounds of what is shown and ease over 600 ms; content arriving never moves the camera.
+- **Chrome.** Floating toolbar (Layers, Select, Underground, 3D/2D, Model/Volumes, Reset), level rail on the right, legend bottom-left only for an active Colour by, scale and north bottom-right with the reference systems on hover, labels only for the selection, hover and the explored level.
+- **One inspector with variants:** area (building list), building, level (space list), space (status, code, facts, rights, evidence), findings, underground. Crumbs of the selection path sit in its header, replacing the scope strip.
+- **Flow:** Record reviewed details → Assign code (dialog) → toast → Property Card → Open local link (Verify). Evidence chips open the evidence viewer.
+
+Where we differ from the mockup on purpose: the section-5 overrides stand (no scope strip, language, More or theme menus; no Live pill; left panel is Layers only; Register is a table view; no readiness meter until READY-01; Batches shows no stage badge). Tools that cannot run yet (measure, section, trench drawing) are not shown. Screens whose data does not exist show their Empty, *Unknown* or *Not assessed* state instead of the mockup's worked example.
+
