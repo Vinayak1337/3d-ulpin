@@ -1,0 +1,8 @@
+.frame { min-height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.header { display: flex; align-items: center; flex-wrap: wrap; gap: var(--ui-space-3); padding: var(--ui-space-4) var(--ui-space-6); background: var(--ui-surface); border-bottom: 1px solid var(--ui-divider); }
+.identity { display: grid; gap: 2px; flex: 1; min-width: 280px; }
+.meta { font-size: 13px; line-height: 19px; color: var(--ui-muted); }
+.primary { display: grid; justify-items: end; gap: 2px; }
+.blocked { font-size: 12px; line-height: 16px; color: var(--ui-muted); }
+.page { max-width: 1600px; width: 100%; margin: 0 auto; padding: var(--ui-space-4) var(--ui-space-6) var(--ui-space-8); display: grid; gap: var(--ui-space-4); align-content: start; }
+.gaps { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; line-height: 19px; color: var(--ui-ink-soft); }

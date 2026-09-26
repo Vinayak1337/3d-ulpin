@@ -1,0 +1,10 @@
+{
+ "id": "48d02230-2c4a-5ff3-a34d-743e1ced1bcc",
+ "name": "nyc-bronx-353927-context/original.geojson",
+ "sha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+ "revision": 1,
+ "profile": "nyc-oti-building-geojson",
+ "createdAt": "2026-09-13T23:50:24.450967+00:00",
+ "url": "/api/v1/sources/48d02230-2c4a-5ff3-a34d-743e1ced1bcc/file",
+ "evidence": []
+}

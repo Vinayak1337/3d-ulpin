@@ -8,9 +8,13 @@ export function readPalette(element: Element = document.documentElement): SceneP
     ground: token('--ui-map-ground', '#e9eeec'),
     building: token('--ui-map-building', '#d5dbd9'),
     buildingEdge: token('--ui-map-building-edge', '#a9b5b2'),
-    selected: token('--ui-primary', '#235347'),
-    hover: token('--ui-primary', '#235347'),
+    selected: token('--ui-map-selected', '#235347'),
     halo: token('--ui-map-halo', '#ffffff'),
-    unknownHatch: token('--ui-muted', '#5b6a72'),
+    ink: token('--ui-ink', '#16272d'),
+    unknownHatch: token('--ui-map-building-edge', '#a9b5b2'),
+    readinessUnknown: token('--ui-readiness-unknown', '#b8c3c6'),
+    soilTop: token('--ui-map-soil-top', '#d9c9aa'),
+    soilDeep: token('--ui-map-soil-deep', '#b89f78'),
+    critical: token('--ui-mark-critical', '#d03b3b'),
   };
 }

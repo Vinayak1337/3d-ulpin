@@ -1,4 +1,14 @@
 {
   "extends": "../../tsconfig.frontend.json",
-  "include": ["src", "vite.config.ts"]
+  "include": [
+    "src",
+    "vite.config.ts"
+  ],
+  "compilerOptions": {
+    "paths": {
+      "@ulpin/contracts/usp": [
+        "./src/types/contracts-usp.d.ts"
+      ]
+    }
+  }
 }

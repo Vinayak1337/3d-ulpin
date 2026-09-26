@@ -22,7 +22,7 @@ describe('footprint geometry', () => {
     expect(hasKnownHeight({ ...input, heightM: 9, heightState: 'unresolved' })).toBe(false);
   });
   it('computes plan bounds from outer rings', () => {
-    expect(boundsOf([{ id: 'a', polygons: square, heightM: 1, heightState: 'reviewed' }])).toEqual({ minX: 0, minY: 0, maxX: 10, maxY: 10 });
+    expect(boundsOf([{ polygons: square }])).toEqual({ minX: 0, minY: 0, maxX: 10, maxY: 10 });
     expect(boundsOf([])).toBeNull();
   });
 });

@@ -102,3 +102,15 @@
 
 /* Unknown value */
 .ul-unknown { font-style: italic; color: var(--ui-muted); }
+
+/* Description lists never overflow their panel */
+.ul-dl { grid-template-columns: minmax(96px, 36%) minmax(0, 1fr); }
+.ul-dl dd { min-width: 0; overflow-wrap: anywhere; }
+.ul-evid { max-width: 100%; min-width: 0; }
+.ul-evid span { overflow: hidden; text-overflow: ellipsis; }
+
+/* Level rail fits source level names ("F7", "Ground, stilt parking", "Source floor 717") */
+.ul-levelrail { width: max-content; min-width: 132px; max-width: 240px; }
+.ul-level { grid-template-columns: minmax(34px, 1fr) auto; gap: var(--ui-space-3); }
+a.ul-btn { text-decoration: none; }
+.ul-evid b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

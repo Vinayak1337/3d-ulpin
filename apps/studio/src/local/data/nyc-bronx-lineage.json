@@ -18,6 +18,7 @@
  ],
  "outputs": {
   "nyc-bronx-areas.json": "bd6df1b9932a5f592957b2c262ba1addee7e08f3567a7d5a3750a75917dca4b9",
-  "nyc-bronx-context.json": "fe1cc37c82d4ff3a4c5a82970dfea7710ef1c4be386c085c78448f26ab3492e1"
+  "nyc-bronx-context.json": "fe1cc37c82d4ff3a4c5a82970dfea7710ef1c4be386c085c78448f26ab3492e1",
+  "nyc-bronx-source.json": "61e9cfca02789c302f13df26feaa229c8bc93629935b69dcec7601d9cdfe7147"
  }
 }
