@@ -28167,7 +28167,7 @@
   },
   "info": {
     "title": "3D ULPIN private backend",
-    "description": "Native NestJS API. Loopback single-operator boundary; not public or multiuser authentication. Source provenance, installed records and runtime qualification are separate. [Dataset catalogue](/api/docs/datasets.json). SQL authority: database/manifest.json in the repository. Nine operations carry bounded official-source runtime receipts in x-runtime-qualification; this does not qualify every input or workflow. All public-portal work remains full product.",
+    "description": "Native NestJS API. Loopback single-operator boundary; not public or multiuser authentication. Source provenance, installed records and runtime qualification are separate. [Dataset catalogue](/api/docs/datasets.json). SQL authority: database/manifest.json in the repository. Bounded official-source runtime receipts appear in x-runtime-qualification with their own code and environment pins; they do not qualify every input or workflow. All public-portal work remains full product.",
     "version": "1.0.0",
     "contact": {}
   },

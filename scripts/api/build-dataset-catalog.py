@@ -33,14 +33,18 @@ def catalogue():
     runtime = json.loads((ROOT / 'docs/api/runtime-qualification.json').read_text())
 
     def qualification(manifest):
-        observed = {key: entry['scope'] for key, entry in runtime['operations'].items()
-                    if manifest in entry['sourceManifests']}
-        if not observed:
+        evidence = []
+        for run in [runtime, *runtime.get('additionalRuns', [])]:
+            observed = {key: entry['scope'] for key, entry in run['operations'].items()
+                        if manifest in entry['sourceManifests']}
+            if observed:
+                evidence.append({"receipt": run['receipt'], "servedCodeCommit": run['servedCodeCommit'],
+                                 "operations": observed, "environment": run['environment'],
+                                 "qualification": run['qualification'], "unqualified": run['unqualified']})
+        if not evidence:
             return {"apiInstallation": "not-verified", "runtimeVerified": False}
         return {"apiInstallation": "verified-in-stopped-isolated-run", "runtimeVerified": True,
-                "runtimeEvidence": {"receipt": runtime['receipt'], "servedCodeCommit": runtime['servedCodeCommit'],
-                                    "operations": observed, "environment": runtime['environment'],
-                                    "qualification": runtime['qualification'], "unqualified": runtime['unqualified']}}
+                "runtimeEvidence": {**evidence[0], **({"additionalReceipts": evidence[1:]} if len(evidence) > 1 else {})}}
 
     packs = []
     for file in sorted((ROOT / "fixtures/usp").glob("**/manifest.json")):
