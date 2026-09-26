@@ -91,7 +91,8 @@ async function stage(job:any,attempt:UspJobAttempt,entry:ProjectedVectorEntry){
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,ST_SetSRID(ST_GeomFromGeoJSON($11),7755),
         CASE WHEN $12::text IS NULL THEN NULL ELSE ST_SetSRID(ST_GeomFromGeoJSON($12),4326) END,$13,$14) ON CONFLICT(job_id,feature_index) DO NOTHING`,
       [job.id,entry.index,unit.id,job.source_id,entry.disposition,entry.reason,{member:profile.member,start:entry.start,end:entry.end},native.properties,
-        entry.nativeBounds,entry.geographicBounds,JSON.stringify(native.geometry),geographic?JSON.stringify(geographic.geometry):null,entry.raw,entry.geographic]);
+        JSON.stringify(entry.nativeBounds),entry.geographicBounds?JSON.stringify(entry.geographicBounds):null,
+        JSON.stringify(native.geometry),geographic?JSON.stringify(geographic.geometry):null,entry.raw,entry.geographic]);
     if((entry.index+1)%25===0 || entry.index===profile.features-1){
       if(await projectedObservationBytesTx(client,job.id)>profile.observationGenerationBytes)
         throw new AppError(422,'PROJECTED_OBSERVATION_BUDGET','The staged observation generation exceeds its retained value-byte bound.');
