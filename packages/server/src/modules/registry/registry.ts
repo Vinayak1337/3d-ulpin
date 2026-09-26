@@ -1,4 +1,6 @@
 import { requireQualifiedGeometryRecords } from '../usp/geometry';
+import { RegistryMetadataSchema } from '@ulpin/contracts';
+import { assertRegistryMetadataTx } from './registry-metadata';
 import { readPreparationBuild } from "../cases/preparation-continuation";
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
@@ -73,6 +75,7 @@ export const recordBodySchema = z
     evidence: z.array(binding).max(30),
     officialUlpin: z.string().trim().min(1).max(100).optional(),
     synthetic: z.boolean(),
+    registryMetadata: RegistryMetadataSchema.optional(),
   })
   .strict();
 export const editDraftSchema = z
@@ -284,6 +287,7 @@ export async function createRegistryDraft(
 ) {
   return transaction(async (client) => {
     const site = siteFrom(await siteRow(client, siteId, true));
+    if (body) await assertRegistryMetadataTx(client, siteId, body.kind, body.registryMetadata);
     if (requestKey) {
       const previous = (
         await client.query(
@@ -291,7 +295,11 @@ export async function createRegistryDraft(
           [siteId, requestKey],
         )
       ).rows[0];
-      if (previous) return draftFrom(previous);
+      if (previous) {
+        for (const record of previous.records as RegistryRecord[])
+          await assertRegistryMetadataTx(client, siteId, record.kind, record.registryMetadata);
+        return draftFrom(previous);
+      }
     }
     let record: RegistryRecord;
     if (recordId) {
@@ -303,6 +311,7 @@ export async function createRegistryDraft(
           )
         ).rows[0] ?? notFound();
       record = recordFrom(row);
+      await assertRegistryMetadataTx(client, siteId, record.kind, record.registryMetadata);
       const existing = (
         await client.query(
           "SELECT * FROM registry_drafts WHERE site_id=$1 AND status='draft' AND records @> $2::jsonb ORDER BY created_at DESC LIMIT 1",
@@ -376,6 +385,7 @@ export async function editRegistryDraft(
         "RECORD_KIND",
         "A correction cannot change the record kind.",
       );
+    await assertRegistryMetadataTx(client, d.site_id, input.body.kind, input.body.registryMetadata);
     const value = {
       ...input.body,
       footprint: openRegistryRing(input.body.footprint),
@@ -417,6 +427,7 @@ async function evidenceChecks(
 ) {
   for (const r of records) {
     recordBodySchema.parse(bodyOnly(r));
+    await assertRegistryMetadataTx(client, site.id, r.kind, r.registryMetadata);
     if (site.synthetic && r.officialUlpin)
       throw new AppError(
         422,

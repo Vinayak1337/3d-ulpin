@@ -71,12 +71,14 @@ export class OfficerController {
   @ApiOperation({ operationId: 'GET_api_v1_buildings_buildingId_register', summary: 'Export a building, floor or space register' })
   @ApiQuery({ name: 'format', required: false, schema: { type: 'string', enum: ['json', 'csv', 'html', 'pdf', 'zip'] } })
   @ApiQuery({ name: 'record', required: false, schema: { type: 'string', format: 'uuid' } })
-  @doc.ApiExport(doc.propertyRegisterExport, ['csv', 'html', 'pdf', 'zip'])
+  @ApiQuery({ name: 'profile', required: false, schema: { type: 'string', enum: ['consolidated'] },
+    description: 'Opt-in facts-only registry summary. Supports json/html/pdf; omits drawings, measurements and findings.' })
+  @doc.ApiExport({ oneOf: [doc.propertyRegisterExport, doc.consolidatedRegistryReport] }, ['csv', 'html', 'pdf', 'zip'])
   async buildingRegister(@Param('buildingId') buildingId: string, @Query('format') format: string | undefined,
-    @Query('record') record: string | undefined, @Res() res: Response) {
+    @Query('record') record: string | undefined, @Query('profile') profile: string | undefined, @Res() res: Response) {
     await sendWebResponse(res, await this.service.registerExport(uuid.parse(buildingId),
       z.enum(['json', 'csv', 'html', 'pdf', 'zip']).parse(format ?? 'json'), undefined,
-      record === undefined ? undefined : uuid.parse(record)));
+      record === undefined ? undefined : uuid.parse(record), profile === undefined ? undefined : z.literal('consolidated').parse(profile)));
   }
 
   @Post('buildings/:buildingId/preparation-cases')
