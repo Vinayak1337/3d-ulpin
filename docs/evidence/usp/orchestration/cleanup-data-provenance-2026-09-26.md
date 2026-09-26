@@ -143,4 +143,4 @@ These can restore or re-create the synthetic data after a file/row retirement; l
 
 ## Evidence used
 
-`docs/evidence/usp/orchestration/cleanup-inventory-2026-09-26.md` and its JSONL; `repo-data/README.md`, manifest and custom dump; the Uttam transfer manifest and gzip rows; `fixtures/uttam-nagar/README.md`, `SOURCE_NOTES.md`, receipts and selection report; `fixtures/google-uttam/README.md`, `selection-report.json`; `docs/GOOGLE_UTTAM_NAGAR.md`; package scripts and the referenced seed/import entrypoints. No official-source acquisition or permission claim was added by this audit.
+the historical cleanup inventory (retired from the working tree; retained in Git at `14b0d89a4a1af77a5323bc20df31d033495e0134`) and its JSONL; `repo-data/README.md`, manifest and custom dump; the Uttam transfer manifest and gzip rows; `fixtures/uttam-nagar/README.md`, `SOURCE_NOTES.md`, receipts and selection report; `fixtures/google-uttam/README.md`, `selection-report.json`; `docs/GOOGLE_UTTAM_NAGAR.md`; package scripts and the referenced seed/import entrypoints. No official-source acquisition or permission claim was added by this audit.
