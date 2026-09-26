@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { exportConsolidatedRegister } from '@ulpin/server/modules/officer/consolidated-register';
 import type { z } from 'zod';
 import { preparationContinuation } from '@ulpin/server/modules/cases/preparation-continuation';
 import { buildingDossier, changeAssociation, createBlockGroup, openPreparation } from '@ulpin/server/modules/officer/officer';
@@ -26,7 +27,8 @@ export class OfficerService {
   propertyDirectory(areaId: string) { return propertyDirectory(areaId); }
   workspaceDirectory() { return workspaceDirectory(); }
   dossier(id: string) { return buildingDossier(id); }
-  registerExport(id: string, format: string, investigationId?: string, recordId?: string) {
+  registerExport(id: string, format: string, investigationId?: string, recordId?: string, profile?: 'consolidated') {
+    if (profile === 'consolidated') return exportConsolidatedRegister(id, format, recordId);
     return exportRegister(id, format, investigationId, recordId);
   }
   openPreparation(id: string, revision: number) { return openPreparation(id, revision); }

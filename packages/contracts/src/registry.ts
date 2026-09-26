@@ -6,6 +6,7 @@ import type {
   SourceBinding,
   SourceRevision,
 } from "./index";
+import type {RegistryMetadata} from './registry-metadata';
 export type RegistryKind = "parcel" | "building" | "floor" | "space";
 export type SpaceUse = "apartment" | "common" | "basement" | "utility" | "unspecified";
 export interface RegistryRight {
@@ -30,6 +31,7 @@ export interface RegistryBody {
   evidence: SourceBinding[];
   officialUlpin?: string;
   synthetic: boolean;
+  registryMetadata?: RegistryMetadata;
 }
 export interface RegistryRecord extends RegistryBody {
   id: string;
