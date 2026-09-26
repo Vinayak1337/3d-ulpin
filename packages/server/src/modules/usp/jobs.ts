@@ -4,17 +4,25 @@ import { UspJobProjectionSchema, UspAssetRefSchema, UspScopeSchema,
 import { transaction } from '../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx } from './commands';
+import { ProjectedVectorInputSchema } from '@ulpin/contracts/usp';
 
 const LEASE_SECONDS = 180;
 const MAX_ATTEMPTS = 3;
-type Attempt = { jobId: string; number: number; fence: number; owner: string; leaseUntil: string; inputSha256: string };
+export type UspJobAttempt = { jobId: string; number: number; fence: number; owner: string; leaseUntil: string; inputSha256: string };
+type Attempt = UspJobAttempt;
 
 /** Attach immutable USP input pins to an existing logical job, never creating a second broker. */
 export async function registerUspJobInputTx(client: PoolClient, jobId: string,
   scope: UspScope, inputManifestId: string, inputSha256: string) {
   UspScopeSchema.parse(scope);
-  const job = (await client.query('SELECT id,operation FROM jobs WHERE id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
-  if (job.operation !== 'usp:packet0') {
+  const job = (await client.query('SELECT * FROM jobs WHERE id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
+  if (job.operation === 'projected-vector') {
+    const input=ProjectedVectorInputSchema.parse(job.payload);
+    if(scope.kind!=='intake' || scope.workspaceId!==job.case_id || scope.version!==job.case_revision+1
+      || input.kind!=='retained_source' || input.sourceId!==job.source_id || input.caseId!==job.case_id
+      || input.caseRevision!==job.case_revision || inputManifestId!==job.source_id || inputSha256!==job.input_fingerprint)
+      throw new AppError(422,'PROJECTED_INPUT_SCOPE','The projected job must pin its existing retained source and intake revision.');
+  } else if (job.operation !== 'usp:packet0') {
     throw new AppError(422, 'USP_JOB_OPERATION', 'Only registered USP jobs can use fenced attempts.');
   }
   const prior = (await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1', [job.id])).rows[0];
@@ -24,6 +32,17 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
   }
   await client.query(`INSERT INTO usp_job_metadata(job_id,input_manifest_id,input_sha256,scope)
     VALUES($1,$2,$3,$4)`, [jobId, inputManifestId, inputSha256, scope]);
+}
+
+/** Reuse the fenced attempt authority after a domain owner has locked its case/source. */
+export async function assertUspJobAttemptTx(client:PoolClient,attempt:Attempt){
+  const job=(await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE',[attempt.jobId])).rows[0];
+  const meta=(await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE',[attempt.jobId])).rows[0];
+  const row=(await client.query('SELECT * FROM usp_job_attempts WHERE job_id=$1 AND number=$2 FOR UPDATE',[attempt.jobId,attempt.number])).rows[0];
+  if(!meta || !row || job?.status!=='running' || meta.logical_state!=='running' || row.state!=='active'
+    || Number(row.fence)!==attempt.fence || row.owner!==attempt.owner || row.input_sha256!==attempt.inputSha256
+    || meta.input_sha256!==attempt.inputSha256 || new Date(row.lease_until).getTime()<=Date.now())
+    conflict('This worker completion expired, changed inputs or was fenced.');
 }
 
 export async function claimUspJobAttempt(jobId: string, owner: string): Promise<Attempt> {
@@ -60,9 +79,11 @@ export async function heartbeatUspJobAttempt(attempt: Attempt) {
 
 /** Completion is accepted only through a registered operation's result validator. */
 export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
-  validateResult: (client: PoolClient, job: Record<string, unknown>, result: AssetRef) => Promise<void>) {
+  validateResult: (client: PoolClient, job: Record<string, unknown>, result: AssetRef) => Promise<void>,
+  beforeLocks?: (client:PoolClient)=>Promise<void>) {
   const asset = UspAssetRefSchema.parse(result);
   return transaction(async client => {
+    if(beforeLocks)await beforeLocks(client);
     const job = (await client.query('SELECT * FROM jobs WHERE id=$1 FOR UPDATE', [attempt.jobId])).rows[0] ?? notFound();
     const meta = (await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE', [attempt.jobId])).rows[0] ?? notFound();
     const row = (await client.query(`SELECT * FROM usp_job_attempts WHERE job_id=$1 AND number=$2 FOR UPDATE`,

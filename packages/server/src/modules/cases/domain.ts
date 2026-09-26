@@ -873,6 +873,8 @@ export async function retryJob(jobId: string) {
     if (original.operation === "spatial-inference")
       throw new AppError(422, "ML_ITEM_RETRY_REQUIRED", "Retry this extraction from its spatial batch item so its source, model and attempt history stay linked.");
     const current = await lockCase(client, original.case_id);
+    if(original.operation==='projected-vector')
+      throw new AppError(422,'PROJECTED_VECTOR_RETRY_REQUIRED','Retry this retained source through its scoped projected-vector admission operation.');
     if (original.status !== "failed")
       throw new AppError(
         409,

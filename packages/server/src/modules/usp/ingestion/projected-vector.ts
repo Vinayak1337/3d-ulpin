@@ -1,0 +1,136 @@
+import {randomUUID} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
+import type {PoolClient} from 'pg';
+import {z} from 'zod';
+import {PROJECTED_VECTOR_PROFILE as profile, ProjectedVectorRequestSchema, ProjectedVectorInputSchema,
+  ProjectedVectorStatusSchema, AdministrativeObservationSchema, AdministrativeObservationPageSchema,
+  ProjectedVectorArtifactSchema, type ProjectedVectorIndex} from '@ulpin/contracts/usp';
+import {query,transaction} from '../../../infrastructure/db';
+import {settings} from '../../../infrastructure/config';
+import {AppError,conflict,notFound} from '../../../infrastructure/errors';
+import {openObjectStream,sha256} from '../../../infrastructure/storage';
+import {fingerprint} from '../../cases/domain';
+import {localOperatorSubject} from '../principal';
+import {registerUspJobInputTx} from '../jobs';
+import {appendCaseIngestionTx,ingestionBinding} from './events';
+
+const uuid=z.string().uuid();
+export const projectedParserSha=()=>sha256(readFileSync(join(settings.repositoryRoot,'services/geo/geo/projected_vector.py')));
+export async function projectedContextTx(client:PoolClient,caseId:string,sourceId:string,lock=false){
+  const subject=localOperatorSubject();
+  const current=(await client.query(`SELECT id,revision,archived FROM cases WHERE id=$1${lock?' FOR UPDATE':''}`,[caseId])).rows[0]??notFound('Source case not found.');
+  if(current.archived)throw new AppError(403,'PROJECTED_CASE_ARCHIVED','Archived source context is unavailable.');
+  const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR UPDATE':''}`,[caseId,sourceId])).rows[0]??notFound('Retained source not found in this case.');
+  if(source.inspection?.largeOriginal?.operatorSubject!==subject)throw new AppError(403,'PROJECTED_SOURCE_OPERATOR','This original belongs to another configured local context.');
+  if(source.profile!=='large-original-v1' || source.sha256!==profile.zipSha256 || Number(source.bytes)!==profile.zipBytes)
+    throw new AppError(422,'PROJECTED_PROFILE','Only the exact qualified retained NWIC district ZIP is supported.');
+  const latest=(await client.query('SELECT max(revision)::int revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision;
+  if(latest!==source.revision)conflict('The retained source revision was superseded.');
+  return {current,source,access:ingestionBinding(caseId).access};
+}
+export function assertProjectedInput(ctx:Awaited<ReturnType<typeof projectedContextTx>>,payload:unknown){
+  const input=ProjectedVectorInputSchema.parse(payload);
+  const {inputFingerprint,...base}=input;
+  if(fingerprint(base)!==inputFingerprint || ctx.current.id!==input.caseId || ctx.current.revision!==input.caseRevision || ctx.source.id!==input.sourceId || ctx.source.revision!==input.sourceRevision
+    || ctx.source.family_id!==input.sourceFamilyId || ctx.source.sha256!==input.sha256 || ctx.source.object_key!==input.objectKey
+    || ctx.access!==input.accessBinding || input.parserSha256!==projectedParserSha())
+    throw new AppError(409,'PROJECTED_CONTEXT_STALE','The source, case, converter or private access context changed.');
+  return input;
+}
+export async function readProjectedArtifact(refValue:unknown,input: {parserSha256:string;sha256:string},bound:number){
+  const ref=ProjectedVectorArtifactSchema.parse(refValue),prefix=`projected-vectors/${input.parserSha256}/${input.sha256}/`;
+  if(ref.bytes>bound || !ref.key.startsWith(prefix) || !/^(native|geographic|index)\/[a-f0-9-]+-[a-f0-9]{64}\.json$/.test(ref.key.slice(prefix.length))
+    || !ref.key.endsWith(`-${ref.sha256}.json`))throw new AppError(422,'PROJECTED_ARTIFACT_SCOPE','The bounded artifact does not match its qualified source/converter.');
+  const object=await openObjectStream(ref.key,ref.bytes,10000),chunks:Buffer[]=[];let count=0;
+  try{for await(const value of object.body){const chunk=value as Buffer;count+=chunk.length;if(count>ref.bytes)throw new AppError(422,'PROJECTED_ARTIFACT_INTEGRITY','Artifact exceeds its pinned size.');chunks.push(chunk);}
+    const bytes=Buffer.concat(chunks,count);if(count!==ref.bytes || sha256(bytes)!==ref.sha256)throw new AppError(422,'PROJECTED_ARTIFACT_INTEGRITY','Artifact hash/size differs from its pin.');return bytes;
+  }finally{object.body.destroy();}
+}
+export async function projectedStatusTx(client:PoolClient,caseId:string,sourceId:string,jobId?:string){
+  const ctx=await projectedContextTx(client,caseId,sourceId),pointer=ctx.source.inspection.projectedVector;
+  const job=(await client.query("SELECT id,status,error FROM jobs WHERE id=$1 AND source_id=$2 AND operation='projected-vector'",[jobId??pointer?.currentJobId,sourceId])).rows[0]??notFound('No projected admission job exists for this retained source.');
+  const accepted=pointer?.accepted?.jobId===job.id?pointer.accepted:null;
+  return ProjectedVectorStatusSchema.parse({version:profile.version,caseId,sourceId,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,
+    currentCaseRevision:ctx.current.revision,jobId:job.id,status:job.status,totals:accepted?.totals??null,transform:accepted?.transform??null,errorCode:job.error??null});
+}
+export async function acceptedProjectedTx(client:PoolClient,caseId:string,sourceId:string,jobId?:string){
+  const ctx=await projectedContextTx(client,caseId,sourceId),pointer=ctx.source.inspection.projectedVector?.accepted;
+  if(!pointer || jobId && pointer.jobId!==jobId)throw new AppError(409,'PROJECTED_NOT_ACCEPTED','Refresh the current accepted source generation.');
+  const job=(await client.query(`SELECT j.*,m.accepted_fence,m.result_ref FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id
+    WHERE j.id=$1 AND j.source_id=$2 AND j.operation='projected-vector'`,[pointer.jobId,sourceId])).rows[0];
+  if(!job || job.status!=='succeeded' || Number(job.accepted_fence)!==pointer.fence || job.result_ref?.sha256!==pointer.index.sha256)
+    throw new AppError(409,'PROJECTED_NOT_ACCEPTED','This source generation is unavailable.');
+  const input=assertProjectedInput(ctx,job.payload);
+  return {ctx,pointer,job,input};
+}
+function observation(row:any,source:any){
+  return AdministrativeObservationSchema.parse({id:row.unit_id,kind:'district',namespace:profile.namespace,nativeKey:row.native_key,
+    sourceId:source.id,sourceRevision:source.revision,jobId:row.job_id,featureIndex:row.feature_index,locator:row.source_locator,
+    name:row.properties.district,code:row.properties.dtcode??null,disposition:row.disposition,reason:row.reason,
+    nativeBounds:row.native_bounds,geographicBounds:row.geographic_bounds,rawSha256:row.raw_ref.sha256,geographicSha256:row.geographic_ref?.sha256??null,
+    sourceCrs:'EPSG:7755',geographicCrs:'EPSG:4326',verticalReference:null,purpose:'administrative_context',
+    accuracyQualification:'source_boundary_accuracy_and_currentness_unqualified'});
+}
+
+export class ProjectedVectorService{
+  async enqueue(caseIdValue:string,sourceIdValue:string,value:unknown){
+    const caseId=uuid.parse(caseIdValue).toLowerCase(),sourceId=uuid.parse(sourceIdValue).toLowerCase(),request=ProjectedVectorRequestSchema.parse(value);
+    const digest=fingerprint({caseId,sourceId,request,access:ingestionBinding(caseId).access,parserSha256:projectedParserSha()}),key=`projected-vector:${request.requestKey}`;
+    return transaction(async client=>{
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('projected-vector-admission-v1',0))");
+      const ctx=await projectedContextTx(client,caseId,sourceId,true);
+      const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='projected-vector'",[caseId,key])).rows[0];
+      if(prior){if(prior.payload_hash!==digest)conflict('The request key names different projected source pins.');return projectedStatusTx(client,caseId,sourceId,prior.result.jobId);}
+      if(ctx.current.revision!==request.expectedCaseRevision || ctx.source.revision!==request.expectedSourceRevision || ctx.source.sha256!==request.sourceSha256)
+        conflict('Inspect the current case and retained source pins before admission.');
+      const existing=(await client.query("SELECT * FROM jobs WHERE id=$1 AND source_id=$2 AND operation='projected-vector'",[ctx.source.inspection.projectedVector?.currentJobId,sourceId])).rows[0];
+      if(existing && ['queued','running','succeeded'].includes(existing.status)){
+        assertProjectedInput(ctx,existing.payload);
+        await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'projected-vector',$3,$4)",[caseId,key,digest,{jobId:existing.id}]);
+        return projectedStatusTx(client,caseId,sourceId);
+      }
+      const quota=(await client.query("SELECT count(*)::int receipts,count(*) FILTER(WHERE status IN('queued','running'))::int active FROM jobs WHERE operation='projected-vector'")).rows[0];
+      if(quota.receipts>=profile.jobs || quota.active>=profile.active)throw new AppError(429,'PROJECTED_QUOTA','The qualified profile admits two lifetime job receipts and one active job in this environment.');
+      const jobId=randomUUID(),base={kind:'retained_source' as const,version:profile.version,jobId,caseId,caseRevision:ctx.current.revision,sourceId,
+        sourceRevision:ctx.source.revision,sourceFamilyId:ctx.source.family_id,sha256:profile.zipSha256,bytes:profile.zipBytes,
+        objectKey:ctx.source.object_key,parserSha256:projectedParserSha(),accessBinding:ctx.access};
+      const inputFingerprint=fingerprint(base),payload=ProjectedVectorInputSchema.parse({...base,inputFingerprint});
+      await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'projected-vector',$4,$5,$6)",[jobId,caseId,sourceId,ctx.current.revision,inputFingerprint,payload]);
+      await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:caseId,version:ctx.current.revision+1},sourceId,inputFingerprint);
+      const inspection={...ctx.source.inspection,projectedVector:{...ctx.source.inspection.projectedVector,currentJobId:jobId}};
+      await client.query('UPDATE sources SET inspection=$2 WHERE id=$1',[sourceId,inspection]);
+      await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'projected-vector',$3,$4)",[caseId,key,digest,{jobId}]);
+      await appendCaseIngestionTx(client,caseId,{kind:'projected-vector.changed',jobId,status:'queued'});
+      return projectedStatusTx(client,caseId,sourceId);
+    });
+  }
+  async status(caseIdValue:string,sourceIdValue:string){const caseId=uuid.parse(caseIdValue).toLowerCase(),sourceId=uuid.parse(sourceIdValue).toLowerCase();return transaction(client=>projectedStatusTx(client,caseId,sourceId));}
+  async page(caseIdValue:string,sourceIdValue:string,value:unknown){
+    const input=z.strictObject({cursor:z.number().int().min(0).max(733).default(0),limit:z.number().int().min(1).max(profile.page).default(profile.page),
+      jobId:uuid.optional(),bbox:z.tuple([z.number().min(-180).max(180),z.number().min(-90).max(90),z.number().min(-180).max(180),z.number().min(-90).max(90)]).optional()}).parse(value);
+    if(input.cursor && !input.jobId)throw new AppError(422,'PROJECTED_PAGE_PIN','Continuing pages require their accepted job ID.');
+    if(input.bbox && (input.bbox[0]>=input.bbox[2] || input.bbox[1]>=input.bbox[3]))throw new AppError(422,'PROJECTED_BOUNDS','Use an increasing finite geographic envelope.');
+    const caseId=uuid.parse(caseIdValue).toLowerCase(),sourceId=uuid.parse(sourceIdValue).toLowerCase();
+    return transaction(async client=>{
+      const accepted=await acceptedProjectedTx(client,caseId,sourceId,input.jobId),bbox=input.bbox??null;
+      const rows=(await client.query(`SELECT o.job_id,o.feature_index,o.unit_id,o.source_locator,o.properties,o.disposition,o.reason,o.native_bounds,o.geographic_bounds,o.raw_ref,o.geographic_ref,u.native_key
+        FROM administrative_unit_observations o JOIN administrative_units u ON u.id=o.unit_id WHERE o.job_id=$1 AND o.source_id=$2 AND o.feature_index>=$3
+        AND ($4::boolean OR (o.disposition='admitted' AND o.geographic_geometry && ST_MakeEnvelope($5,$6,$7,$8,4326))) ORDER BY o.feature_index LIMIT $9`,
+        [accepted.job.id,sourceId,input.cursor,!bbox,...(bbox??[0,0,0,0]),input.limit+1])).rows;
+      const records=rows.slice(0,input.limit);return AdministrativeObservationPageSchema.parse({jobId:accepted.job.id,records:records.map(row=>observation(row,accepted.ctx.source)),next:rows.length>input.limit?rows[input.limit].feature_index:null});
+    });
+  }
+  async geometry(caseIdValue:string,sourceIdValue:string,unitIdValue:string,representation:'native'|'geographic',jobId?:string){
+    if(jobId!==undefined)jobId=uuid.parse(jobId).toLowerCase();
+    const caseId=uuid.parse(caseIdValue).toLowerCase(),sourceId=uuid.parse(sourceIdValue).toLowerCase(),unitId=uuid.parse(unitIdValue).toLowerCase();
+    const pinned=await transaction(async client=>{
+      const accepted=await acceptedProjectedTx(client,caseId,sourceId,jobId),row=(await client.query('SELECT disposition,raw_ref,geographic_ref FROM administrative_unit_observations WHERE job_id=$1 AND source_id=$2 AND unit_id=$3',[accepted.job.id,sourceId,unitId])).rows[0]??notFound('Administrative observation not found in this accepted source.');
+      if(representation==='geographic' && row.disposition!=='admitted')throw new AppError(422,'PROJECTED_QUARANTINE','Quarantined native geometry has no globally readable derivative.');
+      return {accepted,ref:representation==='native'?row.raw_ref:row.geographic_ref};
+    });
+    const bytes=await readProjectedArtifact(pinned.ref,pinned.accepted.input,representation==='native'?profile.featureBytes:profile.geographicBytes);
+    await transaction(client=>acceptedProjectedTx(client,caseId,sourceId,pinned.accepted.job.id));
+    return {bytes,sha256:pinned.ref.sha256,sourceCrs:'EPSG:7755',targetCrs:representation==='native'?'EPSG:7755':'EPSG:4326'};
+  }
+}
