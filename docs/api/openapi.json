@@ -28297,6 +28297,102 @@
                 "type": "boolean"
               }
             }
+          },
+          "databaseReadiness": {
+            "type": "object",
+            "required": [
+              "status",
+              "schema"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "structurally_ready",
+                  "schema_missing",
+                  "unavailable"
+                ]
+              },
+              "schema": {
+                "type": "object",
+                "required": [
+                  "ready"
+                ],
+                "properties": {
+                  "ready": {
+                    "type": "boolean"
+                  },
+                  "manifestSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "targetToken": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Opaque API/database binding for reviewed loopback tooling."
+                  },
+                  "missingRelations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "missingColumns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "missingMigrations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "invalidIndexes": {
+                    "type": "integer"
+                  },
+                  "unvalidatedConstraints": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "table": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "sourceCount": {
+                    "type": "integer",
+                    "nullable": true
+                  },
+                  "importPackageCount": {
+                    "type": "integer",
+                    "nullable": true
+                  },
+                  "physicalFeatureCount": {
+                    "type": "integer",
+                    "nullable": true
+                  },
+                  "activeLegacyDatasetCount": {
+                    "type": "integer",
+                    "nullable": true
+                  }
+                }
+              },
+              "qualification": {
+                "type": "string"
+              }
+            }
           }
         }
       },

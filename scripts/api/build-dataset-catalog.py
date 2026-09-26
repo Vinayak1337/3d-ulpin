@@ -94,6 +94,7 @@ def catalogue():
         "guide": "docs/api/real-sources.md",
         "availabilityMeaning": "available refers to checked repository bytes; unavailable may mean retained outside Git. Neither proves an API import.",
         "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
+        "servingObservation": json.loads((ROOT / "docs/api/serving-observation.json").read_text()),
         "packs": packs, "retainedOfficialTestSources": retained,
     }
 
