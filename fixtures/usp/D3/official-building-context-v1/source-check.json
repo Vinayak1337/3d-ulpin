@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "official-building-context-source-check/1",
+  "status": "no_eligible_source_acquired",
+  "testId": "DATA-11/OFFICIAL-BUILDING-CONTEXT",
+  "runAt": "2026-09-26T11:17:43Z",
+  "baseCommit": "78f44217312ae6cb545e04d844e363ac1c230ab6",
+  "agent": {
+    "product": "Codex",
+    "assignedModel": "Luna",
+    "assignedEffort": "max",
+    "modelIdTelemetry": "not exposed in task telemetry",
+    "requestedTier": "Fast",
+    "configuredTier": "priority (repository operating guide)",
+    "observedPerTurnTier": "unobserved"
+  },
+  "scope": {
+    "candidateLimit": 3,
+    "candidatesScreened": 3,
+    "originalBytesAcquired": false,
+    "sourceBytesInspected": false,
+    "geometryFeatureQueries": false,
+    "permissionRequestsSent": false,
+    "providerCalls": false,
+    "servicesStarted": false
+  },
+  "dataGovInFirstPass": {
+    "queries": [
+      "site:data.gov.in \"building footprint\" GeoJSON OR Shapefile",
+      "site:data.gov.in India building footprints geospatial layer download",
+      "site:data.gov.in cadastral parcel geometry GIS data",
+      "site:data.gov.in cadastral map plot boundary Shapefile GeoJSON"
+    ],
+    "result": "No qualifying downloadable Indian building-footprint or cadastral parcel geometry was surfaced. Results inspected were a Bhuvan/NRSC/ISRO geoportal catalogue record with no listed result/resource on its page, GIS utility/public-facility location leads described as points, and administrative/statistical datasets.",
+    "catalogUrls": [
+      "https://kerala.data.gov.in/catalog/bhuvan-geoportal-nrscisro",
+      "https://www.data.gov.in/dataset-group-name/GIS"
+    ],
+    "access": "The Bhuvan OGD page opened and showed 'No Result Found'; opening the GIS group page returned a redirect-loop error in the web reader. Search result metadata was used only to reject non-polygon utility/location leads; no source bytes were obtained."
+  },
+  "candidates": [
+    {
+      "title": "Bhuvan Geoportal of NRSC/ISRO (OGD catalogue record)",
+      "issuer": "National Remote Sensing Centre / Indian Space Research Organisation, Department of Space",
+      "url": "https://kerala.data.gov.in/catalog/bhuvan-geoportal-nrscisro",
+      "observed": "The OGD page names NRSC/ISRO contributors and marks the catalogue entry as released under NDSAP, but the resource area displays 'No Result Found'. The page describes a geoportal, not a specific building or parcel vector layer.",
+      "terms": "No resource-level layer or licence attachment could be evaluated because no source resource was listed.",
+      "disposition": "not_a_geometry_source"
+    },
+    {
+      "title": "KDMC_BASEMAP_24_04_2025 / Building FootPrint",
+      "issuer": "Kalyan-Dombivli Municipal Corporation GIS service, hosted on maps.kdmc.gov.in",
+      "serviceUrls": [
+        "https://maps.kdmc.gov.in/agserver/rest/services/KDMC_BASEMAP_24_04_2025/MapServer",
+        "https://maps.kdmc.gov.in/agserver/rest/services/KDMC_BASEMAP_24_04_25/FeatureServer"
+      ],
+      "observed": "Search-indexed ArcGIS metadata labels the service 'GIS CELL PREPARED THE BASEMAP' and lists a Building_Footprint group / Building FootPrint layer. The indexed metadata reports EPSG:32643 and JSON/GeoJSON query formats. The 2025 MapServer and 24_04_25 FeatureServer names are distinct service URLs; no assumption was made that their layer IDs or contents are interchangeable.",
+      "access": "Opening the two indexed service roots returned HTTP 502 via the web reader. A bounded direct request to the 2025 FeatureServer/11 metadata URL returned no captured body or exit code. No feature query or geometry bytes were obtained.",
+      "terms": "No resource-specific licence or use terms were located in this bounded pass; the indexed FeatureServer metadata showed no copyright text. Permission scope remains unconfirmed.",
+      "disposition": "promising_official_lead_not_qualified"
+    },
+    {
+      "title": "Bhunaksha_Folder/Bhunaksha MapServer",
+      "issuer": "Telangana State Remote Sensing Applications Centre service host (tgrac.telangana.gov.in); underlying parcel-data publisher/lineage not stated on the service page",
+      "url": "https://tgrac.telangana.gov.in/arcgis/rest/services/Bhunaksha_Folder/Bhunaksha/MapServer",
+      "observed": "The service page lists ULB cadastral layers, reports spatial reference 4326, and supports JSON/AMF query formats. Service Description is 't' and Copyright Text is blank. No layer feature query was made.",
+      "terms": "The service page and indexed item metadata provide no usable source lineage/version or licence statement; permission scope remains unconfirmed.",
+      "disposition": "not_qualified_source_lineage_and_terms_unresolved"
+    }
+  ],
+  "existingSources": {
+    "nwicDistrictBoundaries": "Administrative boundary context only; not building footprints or cadastral parcels.",
+    "gmdaAndReraContext": "Previously recorded local context sources do not establish eligible building/parcel geometry or documented use permission; not requalified here.",
+    "foreignCitySources": "Existing NYC/3DBAG sources remain foreign and do not meet the Indian operational-source requirement."
+  },
+  "qualificationGaps": [
+    "No candidate supplied an accessible, bounded original vector response that could be retained byte-for-byte under the 16 MiB limit.",
+    "KDMC is the strongest official building-footprint lead, but the live service did not return metadata or feature bytes during this pass, and resource-specific reuse terms were not located.",
+    "The TGRAC service advertises cadastral layers, but its source lineage/version and licence scope are not stated in the available service metadata."
+  ],
+  "localArtifactChecks": {
+    "command": "python3 -m json.tool fixtures/usp/D3/official-building-context-v1/source-check.json >/dev/null",
+    "exit": 0,
+    "tests": "not run; source-discovery evidence only, no implementation changes"
+  },
+  "result": "No original acquired; no manifest, profile, semantic qualification, permission claim, or source index change made."
+}
