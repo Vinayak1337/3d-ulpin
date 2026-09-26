@@ -1,0 +1,176 @@
+{
+  "version": "document-package-authority-correction/1",
+  "status": "candidate_for_review",
+  "recordedAt": "2026-09-26T19:02:42.123Z",
+  "blockedCandidate": "2559b10224dd62ad2bf9382848530d6471f45926",
+  "codeCommit": "d400c79b9d2b7a563dbf4889aa620285b85c0fab",
+  "integrationHeadObserved": "1f6b0d80013695a596a0d5e2e6808b627f39734b",
+  "agent": {
+    "assignedModel": "gpt-6-sol",
+    "assignedEffort": "max",
+    "requestedTier": "DEFAULT",
+    "observedModelEffortTier": "not exposed"
+  },
+  "finding": "One shared retained-body guard covers package reads, replays, locked writers and creation/save boundaries. It invokes the accepted document/source lineage authority using the caller client, fails closed on mixed staged parts or absent sources and never returns or persists a filtered body. No additional case locks.",
+  "protocol": {
+    "scope": "Memory-only service/query controls using actual retained IDs and unchanged official text; state/context/lineage envelopes are protocol metadata, not retained database rows. No service startup, DB/object write, geometry, rights, association, original mutation or provider call.",
+    "passed": 82,
+    "denied": 74,
+    "entrypoints": [
+      "areaContext",
+      "correctionReplay",
+      "getPackage",
+      "lockedAnswer",
+      "lockedCommit",
+      "lockedPreparation",
+      "lockedRebase",
+      "preparationContinuation",
+      "rawWorkspace",
+      "workspaceReplay"
+    ],
+    "negativeStates": {
+      "marked": {
+        "status": 409,
+        "code": null,
+        "entrypoints": 10
+      },
+      "mixed": {
+        "status": 409,
+        "code": "DOCUMENT_STAGED_PACKAGE_PARTS",
+        "entrypoints": 9
+      },
+      "copiedPart": {
+        "status": 409,
+        "code": "DOCUMENT_STAGED_PACKAGE_PARTS",
+        "entrypoints": 9
+      },
+      "copiedSource": {
+        "status": 409,
+        "code": "DOCUMENT_STAGED_PACKAGE_PARTS",
+        "entrypoints": 9
+      },
+      "archived": {
+        "status": 403,
+        "code": "DOCUMENT_DENIED",
+        "entrypoints": 9
+      },
+      "operatorRevoked": {
+        "status": 403,
+        "code": "DOCUMENT_DENIED",
+        "entrypoints": 9
+      },
+      "staleAccepted": {
+        "status": 409,
+        "code": "STALE_REVISION",
+        "entrypoints": 9
+      },
+      "missingSource": {
+        "status": 403,
+        "code": "DOCUMENT_DENIED",
+        "entrypoints": 9
+      },
+      "revokedBeforeSave": {
+        "status": 403,
+        "code": "DOCUMENT_DENIED",
+        "entrypoints": 1
+      }
+    },
+    "deniedPackageWrites": 0,
+    "legacyCompatibility": "Original official text and raw bodies remain unchanged on reads/replays/context; representative legacy writers retain exact text and recheck before saving.",
+    "canonicalMembership": "Partless current canonical membership remains readable; current archive/subject/job pins are still required.",
+    "source": {
+      "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27",
+      "bytes": 12973,
+      "sourceId": "5cba281b-02e2-4462-813e-fcaeade70c88",
+      "caseId": "c89ea879-7335-4b90-a7c0-1e39eca3dfd5",
+      "jobId": "2a953c27-0f95-4ef7-a609-8e95f7984592"
+    },
+    "officialSourceUrl": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md"
+  },
+  "runtime": {
+    "newNonces": 0,
+    "serviceLifecycleActions": 0,
+    "liveDatabaseQueries": 0,
+    "providerCalls": 0,
+    "originalMutations": 0,
+    "preservation": "Prior accepted code69ce92c runtime/queue/native receipts and stopped-volume evidence unchanged. No lifecycle action or new runtime observation in this correction."
+  },
+  "commands": [
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec tsx scripts/usp/document-package-authority-proof.ts .runtime/run01/d546a4764d77205d/document-authority-completion.json .runtime/run01/d546a4764d77205d/run.env.json .runtime/document-package-authority-proof.json",
+      "exit": 0,
+      "passed": 82
+    },
+    {
+      "command": "pnpm exec tsx --test tests/spatial-ml-backend.test.ts",
+      "exit": 0,
+      "tests": 5
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "productionFileHashes": [
+    {
+      "path": "packages/server/src/modules/ai/officer-ai.ts",
+      "sha256": "eb0d27d7d194e807f09eea263bf97b35eb546cdb84d0f30e474410c62689494e"
+    },
+    {
+      "path": "packages/server/src/modules/areas/areas.ts",
+      "sha256": "ac108fa6c01afb3adcc55b72ef1fa3af09f7c8be53b5538893ca2b101cc1f780"
+    },
+    {
+      "path": "packages/server/src/modules/areas/package-authority.ts",
+      "sha256": "e7f78b7cae1f2b9e11e4083488559b319952c2229cbde236db600cc23b4b55a5"
+    },
+    {
+      "path": "packages/server/src/modules/cases/preparation-continuation.ts",
+      "sha256": "060564a9071aa54e6eba414262e8a03575324c01e1ce784adb05f067317ad125"
+    },
+    {
+      "path": "packages/server/src/modules/cases/source-workspaces.ts",
+      "sha256": "56e1ec707323b0ddde23ce95112ee300048c1a56b9e3182aa2b2caeeb73ff13f"
+    },
+    {
+      "path": "packages/server/src/modules/officer/officer-preparation.ts",
+      "sha256": "d736e7986166bb6e8f137de325148a595a806b56f52f22047332eba8564ddb84"
+    },
+    {
+      "path": "packages/server/src/modules/officer/officer.ts",
+      "sha256": "bc0ccc8ac40f1b0b3ce009a9c785df8d1f802afe5d3c508c42604a4ff13dc219"
+    },
+    {
+      "path": "packages/server/src/modules/spatial/spatial-ml-footprints.ts",
+      "sha256": "4bd4808f2703eb0a85187a9a6ab99b1020b8279f73fa55e6d4f063ede75a9d76"
+    },
+    {
+      "path": "packages/server/src/modules/spatial/spatial-ml.ts",
+      "sha256": "8feac5631646a017cc8f2bc136ba0ceb57025b4fb1b77c74bb5cab9f6a349e54"
+    }
+  ],
+  "mvtCodeSha256": "d581ad446fa799c1ca9123721df7bc95db0b80192f4188006bcfde717ad03b61",
+  "readerSha256": "f910f7f6a076a5f0018d228fda02f5d383326beee827b7716f52ded0049af7db",
+  "additionalMvtHashedFilesChanged": [],
+  "harness": {
+    "path": "scripts/usp/document-package-authority-proof.ts",
+    "sha256": "51ef96c9e2734da99afcf4ad485fa1f233216bf63d1d2e3b4c78045f23045a0d"
+  },
+  "privateReceipt": {
+    "path": "/Users/vinayak/.codex/worktrees/0bc6/3D Ulpin/.runtime/document-package-authority-proof.json",
+    "sha256": "5d3176ff4127691c2422dfd80a5d3bc4777b9d9130db3f229867d229885194c0"
+  },
+  "reviewerProbe": {
+    "sha256": "588d8f61e7062aa751a15eef8b87c7f274aadc9052c763d2f388e131a5c7e005",
+    "modified": false
+  },
+  "limits": [
+    "Service/query protocol controls are not a new HTTP, PostgreSQL, queue, inference, accuracy, rights, learning, rendering, scale or release runtime qualification.",
+    "No legitimate target-linked marked-source copy, packet or export success added; previous qualification gaps remain.",
+    "Paused sufficiency WIP f030aa0 remains excluded. No staging/index, serving3188, frontend, originals, accepted snapshots/evidence/copy code or provider changes."
+  ]
+}
