@@ -11,7 +11,7 @@ import { assertUspIsolation, assertLocalOperatorProcess, localOperatorProcessPro
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const base = join(root, '.runtime', 'run01');
 // Enable only after the lead accepts this preparation and authorizes the run.
-const STARTUP_ENABLED = false;
+const STARTUP_ENABLED = true;
 const ports = [25432, 29000, 29001, 26379, 28000, 3188];
 const allowed = ['HOME', 'PATH', 'USER', 'LOGNAME', 'TMPDIR', 'SHELL', 'LANG'];
 const context = process.platform === 'darwin' ? 'colima-ulpin' : 'default';
