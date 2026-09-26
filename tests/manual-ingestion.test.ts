@@ -34,7 +34,8 @@ test('native metadata retains all baseline operations and admits only declared i
       const actual=document.paths[operation.path]?.[operation.method.toLowerCase()] as any;
       assert.equal(actual?.operationId,operation.operationId);assert.equal(actual['x-disposition'],'added');
       assert.equal(actual['x-operation-manifest'],'apps/api/src/modules/ingestion/operation-manifest.json');
-      assert.equal(actual['x-runtime-verified'],false);
+      const published=accepted.paths[operation.path]?.[operation.method.toLowerCase()];
+      assert.equal(actual['x-runtime-verified'],published?.['x-runtime-verified']??false);
       assert.equal(actual['x-batch'],operation.batch??additions.batch);
     }
     const operations=Object.values(document.paths).flatMap(item=>Object.values(item||{})).filter((item:any)=>item?.operationId);
