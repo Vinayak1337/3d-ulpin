@@ -289,6 +289,18 @@ async function apiRestart(dir) {
   assert.notEqual(replacement.pid,previous.pid,'replacement API must have a new process identity');
   console.log(JSON.stringify({project:c.scope.project,apiRestart:'passed',previousGroup:previous,replacementGroup:replacement,services:after.services}));
 }
+async function dispatcherResume(dir) {
+  const c=config(dir);pinned(c);
+  const previous=readGroup(c,'dispatcher'),api=readGroup(c,'api');
+  assert(previous?.started,'recorded owned dispatcher is required');
+  assert.equal(groupMembers(previous.pgid).length,0,'previous dispatcher group must be gone');
+  assert(processAlive(c,'api'),'verified owned API must remain running');
+  await launch(c,'dispatcher',['dispatcher']);
+  const health=await waitHealth(c,20),replacement=readGroup(c,'dispatcher');
+  assert.deepEqual(readGroup(c,'api'),api,'API identity changed during dispatcher resume');
+  assert.notEqual(replacement.pid,previous.pid,'replacement dispatcher must have a new identity');
+  console.log(JSON.stringify({project:c.scope.project,dispatcherResume:'passed',previousGroup:previous,replacementGroup:replacement,services:health.services}));
+}
 async function stop(dir) {
   const c=config(dir);
   const unresolved=[];
@@ -338,8 +350,9 @@ try {
   else if(action==='processor-stop'&&dir)await processorStop(dir);
   else if(action==='processor-start'&&dir)await processorStart(dir);
   else if(action==='api-restart'&&dir)await apiRestart(dir);
+  else if(action==='dispatcher-resume'&&dir)await dispatcherResume(dir);
   else if(action==='stop'&&dir)await stop(dir);
-  else throw new Error('Usage: real-source-runtime.mjs prepare [--api-port <port>] | start|resume|status|migrate-repeat|recovery|processor-stop|processor-start|api-restart|stop <private-run-directory>');
+  else throw new Error('Usage: real-source-runtime.mjs prepare [--api-port <port>] | start|resume|status|migrate-repeat|recovery|processor-stop|processor-start|api-restart|dispatcher-resume|stop <private-run-directory>');
 } catch(error) {
   try {const env=action!=='prepare' && dir?JSON.parse(readFileSync(runFile(dir),'utf8')):{};
     const message=error instanceof AggregateError ? `${error.message}: ${error.errors.map(item=>item.message).join('; ')}` : error.message;
