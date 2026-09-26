@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { CaretDown, CheckCircle, FileArrowUp, Trash, Warning } from '@phosphor-icons/react';
-import type { ImportBatch } from '@ulpin/api-client/draft';
+import type { FileDetection, ImportBatch } from '@ulpin/api-client/draft';
 import { ApiError, api, type Schemas } from '@ulpin/api-client';
 import { Badge, Banner, Button, DataTable, Dialog, Icon, Skeleton, StatusBadge, formatCount, formatDateTime } from '@ulpin/ui';
-import { useImportBatch } from '../../api/queries';
+import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
 
@@ -36,11 +36,77 @@ const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
  * officer confirms the mapping; Start import sends the original to the real import endpoint. Other files
  * are listed and kept for a case upload; nothing is dropped silently.
  */
-export function AddFilesDialog({ onClose, batchId }: { onClose: () => void; batchId?: string | null }) {
-  return batchId ? <SavedBatch batchId={batchId} onClose={onClose} /> : <NewFiles onClose={onClose} />;
+export function AddFilesDialog({ onClose, batchId, buildingId }: { onClose: () => void; batchId?: string | null; buildingId?: string | null }) {
+  if (batchId) return <SavedBatch batchId={batchId} onClose={onClose} />;
+  if (buildingId) return <BuildingFiles buildingId={buildingId} onClose={onClose} />;
+  return <NewFiles onClose={onClose} />;
+}
+
+/**
+ * Add files to one building: plans, level schedules, unit inventories and deeds. Each file is recognised,
+ * then Start import records the building's levels and units, which appear on the map as they are read.
+ */
+function BuildingFiles({ buildingId, onClose }: { buildingId: string; onClose: () => void }) {
+  const register = useBuildingRegister(buildingId).data;
+  const navigate = useNavigate();
+  const client = useQueryClient();
+  const [files, setFiles] = useState<File[]>([]);
+  const [found, setFound] = useState<FileDetection[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const add = async (list: FileList | null) => {
+    if (!list?.length) return;
+    const next = [...files, ...list];
+    setFiles(next);
+    try { setFound(await detectBuildingFiles(buildingId, next)); } catch (e) { setError((e as Error).message); }
+  };
+  const start = useMutation({
+    mutationFn: () => startBuildingImport(buildingId, files),
+    onSuccess: async (imp) => {
+      await client.invalidateQueries();
+      onClose();
+      navigate(`/studio/areas/${register?.area.id}?feature=${buildingId}&mode=building&building-import=${imp.id}`);
+    },
+    onError: (e) => setError((e as Error).message),
+  });
+  const step = !files.length ? 0 : 1;
+  return (
+    <Dialog
+      title={`Add files · ${register?.property.name ?? 'building'}`}
+      onClose={onClose}
+      footer={(
+        <>
+          <Button variant="ghost" onClick={onClose}>Close</Button>
+          <Button variant="primary" disabled={!found.length || start.isPending || !register} onClick={() => start.mutate()}>Start import</Button>
+        </>
+      )}
+    >
+      <div className="ul-stack" style={{ gap: 20 }}>
+        <Stepper step={step} />
+        <label className={styles.drop} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); void add(event.dataTransfer.files); }}>
+          <Icon icon={FileArrowUp} size={32} />
+          <span className="ul-heading">Drop plans, level schedules, unit inventories or deeds</span>
+          <span className="ul-help">PDF, CSV and Excel. Floors and units are read from them and appear on the map.</span>
+          <input type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
+        </label>
+        {found.length ? (
+          <div className="ul-panel">
+            <DataTable caption="Files for this building" rows={found} rowKey={(f) => f.name} columns={[
+              { header: 'File', cell: (f) => <span className="ul-id">{f.name}</span> },
+              { header: 'Detected', cell: (f) => f.detected },
+              { header: 'Reads', cell: (f) => f.contents },
+              { header: 'Size', numeric: true, cell: (f) => `${Math.max(1, Math.round(f.bytes / 1024))} KB` },
+              { header: 'Mapping', cell: (f) => <Badge tone={f.role === 'other' ? 'neutral' : 'info'} icon={null}>{f.role === 'other' ? 'Kept as evidence' : 'Proposed'}</Badge> },
+            ]} />
+          </div>
+        ) : null}
+        {error ? <Banner tone="danger">{error}</Banner> : null}
+      </div>
+    </Dialog>
+  );
 }
 
 function NewFiles({ onClose }: { onClose: () => void }) {
+  const client = useQueryClient();
   const [files, setFiles] = useState<Picked[]>([]);
   const [step, setStep] = useState(0);
   const [mapping, setMapping] = useState<Mapping | null>(null);
@@ -90,7 +156,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
       if (!result.data) throw new ApiError(result.response.status, '', result.error);
       return result.data as { id: string; areaId: string };
     },
-    onSuccess: (pkg) => navigate(`/studio/areas/${pkg.areaId}?package=${pkg.id}`),
+    onSuccess: async (pkg) => { await client.invalidateQueries(); navigate(`/studio/areas/${pkg.areaId}?package=${pkg.id}`); },
   });
 
   const blocked = !gis ? 'add a GIS file (GeoJSON, GeoPackage or a zipped shapefile)'
@@ -152,7 +218,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
             {heightCandidate && question === 'open' && !mapping.heightField ? (
               <div className={styles.question} role="group" aria-label="Mapping question">
                 <span className={styles.questionText}><span className="ul-id">{heightCandidate.name}</span> may hold a height. Use it as the building height?</span>
-                <Button variant="soft" onClick={() => { setMapping({ ...mapping, heightField: heightCandidate.name }); setQuestion('yes'); }}>Yes</Button>
+                <Button variant="soft" onClick={() => { setMapping({ ...mapping, heightField: heightCandidate.name, heightUnit: /(_m|metres?|meters?)$/i.test(heightCandidate.name) ? 'm' : /(_ft|feet)$/i.test(heightCandidate.name) ? 'ft' : '', heightMeaning: mapping.heightMeaning || 'Roof height above ground' }); setQuestion('yes'); }}>Yes</Button>
                 <Button variant="ghost" onClick={() => setQuestion('no')}>No</Button>
               </div>
             ) : question !== 'open' ? (

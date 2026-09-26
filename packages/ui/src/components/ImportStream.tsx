@@ -12,12 +12,12 @@ export interface StreamRow {
 }
 
 /** Live list of an import: one row per file; only rows needing a person show an action. */
-export function ImportStream({ title, meta, rows }: { title: string; meta?: string; rows: StreamRow[] }) {
+export function ImportStream({ title, meta, rows, aside }: { title: string; meta?: string; rows: StreamRow[]; aside?: ReactNode }) {
   return (
     <section className="ul-panel" aria-live="polite">
       <header className="ul-panel__head">
         <h2 className="ul-panel__title">{title}</h2>
-        {meta ? <span className="ul-caption">{meta}</span> : null}
+        <span className="ul-row">{meta ? <span className="ul-caption">{meta}</span> : null}{aside}</span>
       </header>
       <div className="ul-stream">
         {rows.map((row) => (

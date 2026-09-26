@@ -1,30 +1,59 @@
 import { http, HttpResponse, passthrough } from 'msw';
 import { LOCAL_SOURCE_HEADER } from '@ulpin/api-client';
 import { localRoutes } from './routes';
+import { areaPackage, buildingImport, detect, inspectAreaFile, startAreaImport, startFloorsImport } from './imports';
+import { lake } from './sources';
+import { storyAreas, storyBoard, storyContext, storyLedger, storyQueueItems, storyRegister } from './story';
 import { publicAreas, publicBuilding, publicMap, publicRecord, publicSearch } from './public';
-import { LOCAL_SOURCE_LABELS, derivedAreas, derivedContexts, derivedRegister, derivedSourceFiles, documents, importBatches, ledgers, levelReviews, workBoard, workQueue } from './sources';
+import { LOCAL_SOURCE_LABELS, derivedContexts, derivedRegister, derivedSourceFiles, documents, importBatches, ledgers, levelReviews, workBoard, workQueue } from './sources';
 
 const ALL_LOCAL = Object.values(LOCAL_SOURCE_LABELS).join('; ');
 const json = (body: unknown, label: string) => HttpResponse.json(body as never, { headers: { [LOCAL_SOURCE_HEADER]: label } });
 
 type Params = Record<string, string | readonly string[] | undefined>;
 /** Local answers by route path. Returning undefined means "not held locally": fall through to the API. */
-const RESOLVERS: Record<string, (params: Params, url: URL) => Response | undefined | Promise<Response | undefined>> = {
+const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => Response | undefined | Promise<Response | undefined>> = {
   '/api/v1/work-queue': (_params, url) => {
     const q = url.searchParams.get('q')?.toLowerCase() ?? '';
     const status = url.searchParams.get('status') ?? 'all';
-    const items = workQueue.items.filter((item) => (!q || String(item.name).toLowerCase().includes(q) || String(item.id).includes(q))
+    const items = storyQueueItems(workQueue.items).filter((item) => (!q || String(item.name).toLowerCase().includes(q) || String(item.id).includes(q))
       && (status !== 'recorded' || item.currentRecorded) && (status !== 'processing' || item.jobStatus));
     return json({ ...workQueue, total: items.length, items }, LOCAL_SOURCE_LABELS.lake);
   },
-  '/api/v1/work-board': () => json(workBoard, LOCAL_SOURCE_LABELS.lake),
+  '/api/v1/work-board': () => json(storyBoard(workBoard as never, storyQueueItems(workQueue.items)), LOCAL_SOURCE_LABELS.lake),
   '/api/v1/buildings/:buildingId/ledger': ({ buildingId }) => {
-    const body = ledgers[String(buildingId)];
-    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
+    const raw = ledgers[String(buildingId)];
+    const body = raw ? storyLedger(raw) : undefined;
+    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : raw ? HttpResponse.json({ error: 'not_found' }, { status: 404 }) : undefined;
   },
   '/api/v1/buildings/:buildingId/levels/:levelId/review': ({ buildingId, levelId }) => {
     const body = levelReviews[String(levelId)];
     return body && body.buildingId === buildingId ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
+  },
+  '/api/v1/import-packages/inspect': async (_p, _u, request) => {
+    const file = (await request.formData()).get('file');
+    return file instanceof File ? json(await inspectAreaFile(file), LOCAL_SOURCE_LABELS.lake) : HttpResponse.json({ error: 'file_required' }, { status: 400 });
+  },
+  '/api/v1/import-packages': async (_p, _u, request) => {
+    const file = (await request.formData()).get('file');
+    return HttpResponse.json(startAreaImport(file instanceof File ? file.name : 'survey') as never, { status: 201, headers: { [LOCAL_SOURCE_HEADER]: LOCAL_SOURCE_LABELS.lake } });
+  },
+  '/api/v1/import-packages/:packageId': ({ packageId }) => {
+    const body = areaPackage(String(packageId));
+    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
+  },
+  '/api/v1/buildings/:buildingId/imports/inspect': async (_p, _u, request) => {
+    const files = (await request.formData()).getAll('file').filter((f): f is File => f instanceof File);
+    return json(files.map((f) => detect(f.name, f.size)), LOCAL_SOURCE_LABELS.lake);
+  },
+  '/api/v1/buildings/:buildingId/imports': async ({ buildingId }, _u, request) => {
+    if (String(buildingId) !== lake.register.property.id) return HttpResponse.json({ error: 'not_supported' }, { status: 400 });
+    const files = (await request.formData()).getAll('file').filter((f): f is File => f instanceof File);
+    return HttpResponse.json(startFloorsImport(String(buildingId), files.map((f) => f.name)) as never, { status: 201, headers: { [LOCAL_SOURCE_HEADER]: LOCAL_SOURCE_LABELS.lake } });
+  },
+  '/api/v1/building-imports/:importId': ({ importId }) => {
+    const body = buildingImport(String(importId));
+    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : HttpResponse.json({ error: 'not_found' }, { status: 404 });
   },
   '/api/v1/import-batches/:batchId': ({ batchId }) => {
     const body = importBatches[String(batchId)];
@@ -57,14 +86,18 @@ const RESOLVERS: Record<string, (params: Params, url: URL) => Response | undefin
     const body = await publicMap(String(areaId));
     return body ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
   },
-  '/api/v1/areas': () => json(derivedAreas, ALL_LOCAL),
+  '/api/v1/areas': () => json(storyAreas(), ALL_LOCAL),
   '/api/v1/areas/:areaId/context': ({ areaId }) => {
+    if (String(areaId) === lake.context.area.id) {
+      const body = storyContext(String(areaId));
+      return body ? json(body, ALL_LOCAL) : HttpResponse.json({ error: 'not_found' }, { status: 404 });
+    }
     const body = derivedContexts[String(areaId)];
     return body ? json(body, ALL_LOCAL) : undefined;
   },
   '/api/v1/buildings/:buildingId/register': ({ buildingId }) => {
     const found = derivedRegister(String(buildingId));
-    return found ? json(found.body, LOCAL_SOURCE_LABELS[found.source]) : undefined;
+    return found ? json(storyRegister(String(buildingId), found.body as never), LOCAL_SOURCE_LABELS[found.source]) : undefined;
   },
   '/api/v1/sources/:sourceId/file': ({ sourceId }) => {
     const file = derivedSourceFiles[String(sourceId)];
@@ -83,5 +116,5 @@ export const handlers = localRoutes().map((route) => {
   const resolver = RESOLVERS[route.path];
   if (!resolver) throw new Error(`Local route ${route.method} ${route.path} has no resolver`);
   const method = route.method.toLowerCase() as 'get' | 'post' | 'patch';
-  return http[method](route.path, async ({ params, request }) => (await resolver(params, new URL(request.url))) ?? passthrough());
+  return http[method](route.path, async ({ params, request }) => (await resolver(params, new URL(request.url), request)) ?? passthrough());
 });

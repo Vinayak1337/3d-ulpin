@@ -9,7 +9,7 @@ export function AddFilesRoute() {
   return (
     <>
       <BatchesPage />
-      <AddFilesDialog batchId={params.get('batch')} onClose={() => navigate('/studio/work')} />
+      <AddFilesDialog batchId={params.get('batch')} buildingId={params.get('feature')} onClose={() => navigate(-1)} />
     </>
   );
 }

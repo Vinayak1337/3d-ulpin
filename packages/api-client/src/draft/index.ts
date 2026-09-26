@@ -69,6 +69,7 @@ export interface BuildingLedger {
 /** Where a next action or count leads, resolved by the Studio to a route. */
 export type WorkTarget =
   | { kind: 'add-files'; batchId?: string }
+  | { kind: 'area'; areaId: string }
   | { kind: 'register'; buildingId: string }
   | { kind: 'finding'; areaId: string; buildingId: string; findingId: string }
   | { kind: 'review'; areaId: string; buildingId: string; levelId: string }
@@ -212,4 +213,19 @@ export interface PublicMap {
   /** Same feature shape as the area context, limited to buildings, parcels, roads and public land. */
   features: Array<Record<string, unknown> & { id: string; kind: string; name: string }>;
   released: Array<{ buildingId: string; records: number }>;
+}
+
+/** POST /api/v1/buildings/{buildingId}/imports/inspect — INGEST-04: what each building document is. */
+export interface FileDetection { name: string; bytes: number; detected: string; role: 'plan' | 'declaration' | 'deed' | 'levels' | 'units' | 'survey' | 'other'; contents: string }
+
+/** POST /api/v1/buildings/{buildingId}/imports and GET /api/v1/building-imports/{importId} — INGEST-04. */
+export interface BuildingImport {
+  id: string;
+  buildingId: string;
+  state: 'running' | 'done';
+  startedAt: string;
+  /** Levels and units recorded so far. */
+  levels: number;
+  units: number;
+  files: Array<{ name: string; detected: string; state: 'queued' | 'running' | 'saved'; detail: string }>;
 }
