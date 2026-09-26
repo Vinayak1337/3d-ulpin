@@ -27,6 +27,7 @@ import { propertyIdentifier } from "../../shared/identifiers";
 import { originalAttempt } from "../cases/original-attempt";
 import { checkAssociations, enrichFindings } from "../officer/officer";
 import { localOperatorSubject } from "../usp/principal";
+import { assertPackageDocumentAuthority } from "./package-authority";
 
 export type Mapping = {
   idField?: string;
@@ -202,10 +203,11 @@ export async function areaContext(id: string): Promise<AreaContext> {
   const area = await getArea(id);
   const [features, packages, checks] = await Promise.all([
     loadAreaFeatures(area),
-    query(
-      "SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30",
-      [id],
-    ),
+    transaction(async client => {
+      const rows = await client.query("SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30", [id]);
+      for (const row of rows.rows) await assertPackageDocumentAuthority(client, row.body);
+      return rows;
+    }),
     query(
       "SELECT body FROM area_check_runs WHERE area_id=$1 ORDER BY created_at DESC LIMIT 1",
       [id],
@@ -250,17 +252,12 @@ export async function areaContext(id: string): Promise<AreaContext> {
 export async function getPackage(id: string, client?: PoolClient): Promise<ImportPackage> {
   const read=async(current:PoolClient)=>{
     const pkg:ImportPackage=(await current.query("SELECT body FROM import_packages WHERE id=$1",[id])).rows[0]?.body||notFound('Import package not found.');
-    const ids=[...new Set([...pkg.sourceRevisionIds,...pkg.parts.flatMap(part=>[part.sourceRevisionId,...(part.copiedFrom?[part.copiedFrom.sourceRevisionId]:[])])])];
-    const sources=ids.length?(await current.query('SELECT * FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id',[ids])).rows:[];
-    const {documentAuthorityTx,assertDocumentPackageParts}=await import('../usp/ingestion/document-authority');
-    const marked=new Set<string>();for(const source of sources)if(await documentAuthorityTx(current,source))marked.add(source.id);
-    // Fail closed rather than letting a projected package be persisted by an
-    // existing writer. Retained package/revision history is never filtered away.
-    assertDocumentPackageParts(pkg,marked);return pkg;
+    return assertPackageDocumentAuthority(current,pkg);
   };
   return client?read(client):transaction(read);
 }
 async function savePackage(client: PoolClient, pkg: ImportPackage) {
+  await assertPackageDocumentAuthority(client, pkg);
   await client.query(
     "UPDATE import_packages SET revision=$2,state=$3,body=$4 WHERE id=$1",
     [pkg.id, pkg.revision, pkg.state, pkg],
@@ -282,6 +279,7 @@ async function lockedPackage(
     )
   ).rows[0]?.body as ImportPackage | undefined;
   if (!pkg) notFound("Import package not found.");
+  await assertPackageDocumentAuthority(client, pkg);
   if (pkg.revision !== expectedRevision)
     conflict("Package changed. Refresh before editing or reviewing.");
   if (pkg.state === "COMMITTED")
@@ -376,29 +374,33 @@ export async function ingestArea(input: {
     }),
   );
   // A source revision retry remains idempotent after recording and after area changes.
-  const retry = (
-    await run(
-      "SELECT body FROM import_packages WHERE body->>'sourceHash'=$1 AND body->>'importSignature'=$2 ORDER BY created_at LIMIT 1",
-      [
-        digest,
-        sha256(
-          JSON.stringify({
-            namespace: input.namespace,
-            format: input.format,
-            layer: input.layer ?? null,
-            normalization: "canonical-area-officer-v1",
-            name: input.name,
-            areaId: area?.id || null,
-            mapping: input.mapping,
-            retainedSourceId: input.retainedOriginal?.sourceId,
-            worldStatus: input.worldStatus || "observed",
-            sourceCrs: input.sourceCrs,
-          }),
-        ),
-      ],
-    )
-  ).rows[0];
-  if (retry) return retry.body;
+  const readRetry = async (client: PoolClient) => {
+    const retry = (
+      await client.query(
+        "SELECT body FROM import_packages WHERE body->>'sourceHash'=$1 AND body->>'importSignature'=$2 ORDER BY created_at LIMIT 1",
+        [
+          digest,
+          sha256(
+            JSON.stringify({
+              namespace: input.namespace,
+              format: input.format,
+              layer: input.layer ?? null,
+              normalization: "canonical-area-officer-v1",
+              name: input.name,
+              areaId: area?.id || null,
+              mapping: input.mapping,
+              retainedSourceId: input.retainedOriginal?.sourceId,
+              worldStatus: input.worldStatus || "observed",
+              sourceCrs: input.sourceCrs,
+            }),
+          ),
+        ],
+      )
+    ).rows[0];
+    return retry ? assertPackageDocumentAuthority(client, retry.body) : undefined;
+  };
+  const retry = externalClient ? await readRetry(externalClient) : await transaction(readRetry);
+  if (retry) return retry;
   if (
     area &&
     input.expectedAreaRevision !== undefined &&
@@ -496,7 +498,7 @@ export async function ingestArea(input: {
           [operationKey],
         )
       ).rows[0];
-      if (prior) return prior.body;
+      if (prior) return assertPackageDocumentAuthority(client, prior.body);
       let areaRow = area
         ? (
             await client.query(
@@ -845,6 +847,7 @@ export async function ingestArea(input: {
         extent: normalized.extent,
         geographicExtent: normalized.geographicExtent,
       };
+      await assertPackageDocumentAuthority(client, pkg);
       await client.query(
         "INSERT INTO import_packages(id,area_id,case_id,revision,state,body,operation_key) VALUES($1,$2,$3,1,$4,$5,$6)",
         [packageId, areaRow.id, caseId, pkg.state, pkg, operationKey],
@@ -1073,7 +1076,7 @@ export async function createPackageCorrection(id: string, requestKey: string) {
         [`correction:${id}:${requestKey}`],
       )
     ).rows[0];
-    if (retry) return retry.body as ImportPackage;
+    if (retry) return assertPackageDocumentAuthority(client, retry.body);
     const row =
       (
         await client.query(
@@ -1081,7 +1084,7 @@ export async function createPackageCorrection(id: string, requestKey: string) {
           [id],
         )
       ).rows[0] || notFound();
-    const original = row.body as ImportPackage;
+    const original = await assertPackageDocumentAuthority(client, row.body);
     if (original.state !== "COMMITTED")
       conflict(
         "Continue reviewing this package before creating a later correction.",
@@ -1161,6 +1164,7 @@ export async function createPackageCorrection(id: string, requestKey: string) {
       ...next.warnings,
       "Correction proposal prepared from current observations. Recording requires a new review; existing geometry remains current until then.",
     ];
+    await assertPackageDocumentAuthority(client, next);
     await client.query(
       "INSERT INTO import_packages(id,area_id,case_id,revision,state,body,operation_key) VALUES($1,$2,$3,1,$4,$5,$6)",
       [
@@ -1256,6 +1260,7 @@ export async function commitPackage(
       extent: Normalized["extent"];
       geographicExtent: Normalized["extent"];
     };
+    await assertPackageDocumentAuthority(client, pkg);
     if (pkg.sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Source workspaces cannot be recorded as physical features.");
     if (pkg.state === "COMMITTED") return pkg;
     if (
@@ -1878,6 +1883,7 @@ async function attachDocumentBatch(
         )
       ).rows[0];
       if (!row) notFound("Import package not found.");
+      await assertPackageDocumentAuthority(client, row.body);
       if (await replay(client)) return row.body as ImportPackage;
       if (copy) {
         const replay = await copiedOperation(client, row.case_id, copy);

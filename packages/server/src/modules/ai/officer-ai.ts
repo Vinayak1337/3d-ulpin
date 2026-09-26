@@ -167,14 +167,14 @@ async function applyRun(packageId:string,runId:string,expectedRevision:number,ca
     const unique=[...new Set(candidateIds)].sort();
     if(run.state==='applied') {
       if(JSON.stringify(unique)!==JSON.stringify(run.appliedCandidateIds)) conflict('This extraction already applied a different selection. Start a fresh extraction for more facts.');
-      return getPackage(packageId);
+      return getPackage(packageId,client);
     }
     if(!['succeeded','needs_input'].includes(run.state) || !run.model) throw new AppError(422,'AI_RUN_NOT_READY','Only a completed grounded extraction can add draft facts.');
     assertCurrentGatewayPolicy(run.gatewayPolicyHash);
     if(run.principalHash!==digest(localOperatorSubject())) throw new AppError(403,'AI_RUN_PRINCIPAL','This extraction belongs to a different principal.');
     if(run.packageRevision!==expectedRevision) conflict('Extraction belongs to an older preparation revision.');
     await client.query('SELECT id FROM import_packages WHERE id=$1 FOR UPDATE',[packageId]);
-    const pkg=await getPackage(packageId);
+    const pkg=await getPackage(packageId,client);
     await client.query('SELECT id FROM map_areas WHERE id=$1 FOR UPDATE',[pkg.areaId]);
     const snap=await snapshot(pkg,{expectedRevision,partIds:run.partIds,entityIds:run.entityIds,requestKey:run.requestKey,mode:'live',imageRegions:run.imageRegions,imageContentApproved:!!run.imageRegions?.length,answers:run.answers});
     if(snap.fingerprint!==run.inputFingerprint) conflict('Extraction inputs are stale. Extract again from current evidence.');
