@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { exportConsolidatedRegister } from '@ulpin/server/modules/officer/consolidated-register';
+import { AppError } from '@ulpin/server/infrastructure/errors';
 import type { z } from 'zod';
 import { preparationContinuation } from '@ulpin/server/modules/cases/preparation-continuation';
 import { buildingDossier, changeAssociation, createBlockGroup, openPreparation } from '@ulpin/server/modules/officer/officer';
@@ -26,7 +28,9 @@ export class OfficerService {
   propertyDirectory(areaId: string) { return propertyDirectory(areaId); }
   workspaceDirectory() { return workspaceDirectory(); }
   dossier(id: string) { return buildingDossier(id); }
-  registerExport(id: string, format: string, investigationId?: string, recordId?: string) {
+  registerExport(id: string, format: string, investigationId?: string, recordId?: string, profile?: 'consolidated', includeUnrecorded=false) {
+    if (profile === 'consolidated') return exportConsolidatedRegister(id, format, recordId, includeUnrecorded);
+    if (includeUnrecorded) throw new AppError(422, 'REGISTRY_REPORT_PROFILE', 'Use profile=consolidated for an unrecorded source summary.');
     return exportRegister(id, format, investigationId, recordId);
   }
   openPreparation(id: string, revision: number) { return openPreparation(id, revision); }

@@ -75,6 +75,8 @@ export async function exportRegistryRecord(identifier: string): Promise<Response
   return new Response(JSON.stringify({
     schema: '3d-ulpin-registry-v1',
     ...result,
+    record: legacyExportBody(result.record),
+    history: result.history.map(history => ({ ...history, body: legacyExportBody(history.body) })),
     provenance,
     classification: result.record.synthetic ? 'synthetic' : 'unknown',
     classificationBasis: result.record.synthetic ? 'recorded' : 'unavailable',
@@ -88,4 +90,9 @@ export async function exportRegistryRecord(identifier: string): Promise<Response
       'Content-Disposition': `attachment; filename="${result.record.identifier}.json"`,
     },
   });
+}
+
+function legacyExportBody<T extends { registryMetadata?: unknown }>(body: T): Omit<T, 'registryMetadata'> {
+  const { registryMetadata: _privateFacts, ...legacy } = body;
+  return legacy;
 }

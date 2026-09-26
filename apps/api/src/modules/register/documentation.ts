@@ -1,6 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { z } from 'zod';
+import { ConsolidatedRegistryReportSchema, RegistryMetadataSchema } from '@ulpin/contracts';
 
 type JsonSchema = Record<string, unknown>;
 const str = { type: 'string' };
@@ -22,6 +23,7 @@ export function requestSchema(schema: z.ZodType): JsonSchema {
   const { $schema: _dialect, ...json } = z.toJSONSchema(schema, { io: 'input', target: 'openapi-3.0' }) as JsonSchema;
   return json;
 }
+export const consolidatedRegistryReport = requestSchema(ConsolidatedRegistryReportSchema);
 export const apiError = object({ error: object({
   code: str, message: str, requestId: str, details: anyJson,
 }, ['code', 'message', 'requestId']) }, ['error']);
@@ -59,7 +61,7 @@ export const registryRight = object({ party: str, type: str, evidence: sourceBin
 export const registryLink = object({ targetId: str, type: str }, ['targetId', 'type']);
 export const registryBody = object({ alias: str, name: str, kind: str, use: str, footprint: ring,
   geometry: unitGeometry, links: array(registryLink), rights: array(registryRight),
-  evidence: array(sourceBinding), officialUlpin: str, synthetic: bool },
+  evidence: array(sourceBinding), officialUlpin: str, synthetic: bool, registryMetadata: requestSchema(RegistryMetadataSchema) },
   ['alias', 'name', 'kind', 'footprint', 'links', 'rights', 'evidence', 'synthetic']);
 export const registryRecord = object({ ...properties(registryBody), id: str, siteId: str, identifier: str, revision: integer },
   [...registryBody.required as string[], 'id', 'siteId', 'identifier', 'revision']);

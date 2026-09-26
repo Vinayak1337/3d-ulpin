@@ -599,13 +599,16 @@ export async function ingestArea(input: {
         )
       ).rows[0];
       await client.query(
-        "INSERT INTO cases(id,name,description,frame,site_id,archived) VALUES($1,$2,$3,$4,$5,true)",
+        "INSERT INTO cases(id,name,description,frame,site_id,archived) VALUES($1,$2,$3,$4,$5,$6)",
         [
           caseId,
           input.name,
           "Canonical v2 physical observations; no rights assertion.",
           site.frame,
           site.id,
+          // A fresh original needs an active source context. The unused package
+          // workspace for a retained original keeps its previous archived state.
+          Boolean(retained),
         ],
       );
       if (!retained) await client.query(
