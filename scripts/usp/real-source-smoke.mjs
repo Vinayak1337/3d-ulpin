@@ -1,3 +1,10 @@
+/** Archived RUN-01 work in progress: not a qualified runtime entrypoint.
+ * The architecture migration supersedes this Next-based runner. The original
+ * draft is preserved in Git history. Keep execution disabled until its isolation,
+ * app-profile shutdown and source-to-job lifecycle have been reviewed.
+ */
+throw new Error('RUN-01 is paused for backend extraction; this preserved draft is not enabled. No runtime action was taken.');
+
 /** RUN-01: unchanged NYC authority bytes plus the retained, separately labelled derivative. */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
