@@ -49,6 +49,7 @@ async function run(){
     const response=await fetch(base+uploadPath(upload)+`/parts/${number}`,{method:'PUT',headers:{Connection:'close','Content-Type':'application/octet-stream','X-Request-Key':input.requestKey,'X-Upload-Revision':String(input.expectedRevision),'X-Case-Revision':String(input.expectedCaseRevision),'X-Part-Sha256':input.sha256},body:bytes,signal:AbortSignal.timeout(45000)});
     const value=await response.json();assert.equal(response.status,200,`${phase} part ${number}: ${value.error?.code||response.status}`);return {value,input};
   }
+  async function fence(key,uploadId){const result=await s3.send(new HeadObjectCommand({Bucket:scope.bucket,Key:key}),{abortSignal:AbortSignal.timeout(5000)});return result.ContentLength===0 && result.Metadata?.['upload-tombstone']===uploadId;}
   async function missing(key){try{await s3.send(new HeadObjectCommand({Bucket:scope.bucket,Key:key}),{abortSignal:AbortSignal.timeout(5000)});return false;}catch(error){if(error.$metadata?.httpStatusCode===404)return true;throw error;}}
   try{
     const limits=await call('/ingestion/upload-limits');receipt.limits=limits.limits;assert.equal(limits.conversion,'unsupported');assert(source.bytes>64*1024*1024 && source.bytes<=receipt.limits.maxOriginalBytes);
@@ -83,10 +84,10 @@ async function run(){
     assert.deepEqual(await call(uploadPath(peer)+'/abort',200,guard(peer)),peer);
     assert.deepEqual(await call(uploadPath(main)),checkpoint);
     const peerKeys=(await pool.query('SELECT object_key FROM usp_source_upload_parts WHERE upload_id=$1',[peer.id])).rows;
-    for(const {object_key} of peerKeys)assert(await missing(object_key),'aborted peer temporary object remains');
+    for(const {object_key} of peerKeys)assert(await fence(object_key,peer.id),'aborted peer payload fence is absent');
     const mainKeys=(await pool.query('SELECT object_key FROM usp_source_upload_parts WHERE upload_id=$1',[main.id])).rows;
     for(const {object_key} of mainKeys)assert.equal(await missing(object_key),false,'peer abort affected another upload');
-    receipt.checks.push('all nine unchanged real parts under invalid declared whole digest reject finalization without source; scoped abort/replay reclaims only peer objects');
+    receipt.checks.push('all nine unchanged real parts under invalid declared whole digest reject finalization without source; scoped abort/replay reclaims only peer payloads and retains zero-byte fences');
     phase='resume-finalize';for(let number=3;number<=main.partCount;number++)main=(await part(main,number)).value;
     await call(uploadPath(main)+'/finalize',409,{...guard(main),expectedRevision:main.revision-1,sha256:source.sha256});
     const finalizeInput={...guard(main),sha256:source.sha256};main=await call(uploadPath(main)+'/finalize',200,finalizeInput);
@@ -99,9 +100,9 @@ async function run(){
     assert.equal(retained.profile,'large-original-v1');assert.equal(retained.status,'needs_input');assert.equal(retained.inspection.largeOriginal.provenance.state,'caller_declared');assert.equal(retained.inspection.largeOriginal.conversion,'unsupported');
     const sourceRow=(await pool.query('SELECT * FROM sources WHERE id=$1',[receipt.sourceId])).rows[0];
     const ownParts=(await pool.query('SELECT object_key FROM usp_source_upload_parts WHERE upload_id=$1',[main.id])).rows;
-    for(const {object_key} of ownParts)assert(await missing(object_key),'retained temporary part remains');assert.equal(await missing(sourceRow.object_key),false);
+    for(const {object_key} of ownParts)assert(await fence(object_key,main.id),'retained temporary payload fence is absent');assert.equal(await missing(sourceRow.object_key),false);
     const assemblies=await s3.send(new ListMultipartUploadsCommand({Bucket:scope.bucket,Prefix:sourceRow.object_key,MaxUploads:16}),{abortSignal:AbortSignal.timeout(5000)});assert(!assemblies.IsTruncated);assert.equal((assemblies.Uploads||[]).filter(x=>x.Key===sourceRow.object_key).length,0);
-    receipt.checks.push('resumed nine-part complete actual hash/size verification, one canonical unsupported source, finalize replay, retained abort denial and scoped temporary cleanup');
+    receipt.checks.push('resumed nine-part complete actual hash/size verification, one canonical unsupported source, finalize replay, retained abort denial and scoped temporary payload cleanup with permanent zero-byte fences');
     phase='private-stream';const response=await fetch(base+`/sources/${receipt.sourceId}/file`,{signal:AbortSignal.timeout(150000)});assert.equal(response.status,200);
     assert.equal(response.headers.get('cache-control'),'private, max-age=60');assert.equal(response.headers.get('x-content-type-options'),'nosniff');assert.equal(response.headers.get('content-length'),String(source.bytes));assert.equal(response.headers.get('x-source-sha256'),source.sha256);
     const downloaded=createHash('sha256');let downloadedBytes=0;for await(const chunk of response.body){downloadedBytes+=chunk.length;assert(downloadedBytes<=source.bytes);downloaded.update(chunk);}
