@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Param, Post, Req, Res, UseFilters } from '@nestjs/common';
+import { Controller, Get, HttpCode, Inject, Param, Post, Req, Res, UseFilters } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import type { Request, Response as ExpressResponse } from 'express';
@@ -15,7 +15,7 @@ import { CityJsonEvidenceService, DecisionEvidenceService, OriginalEvidenceServi
 @UseFilters(EvidenceExceptionFilter)
 @Controller('api/v1/usp')
 export class SnapshotEvidenceController {
-  constructor(private readonly service: SnapshotEvidenceService) {}
+  constructor(@Inject(SnapshotEvidenceService) private readonly service: SnapshotEvidenceService) {}
 
   @Post('snapshots')
   @HttpCode(200)
@@ -68,7 +68,7 @@ export class SnapshotEvidenceController {
 @UseFilters(EvidenceExceptionFilter)
 @Controller('api/v1/usp/evidence')
 export class OriginalEvidenceController {
-  constructor(private readonly service: OriginalEvidenceService) {}
+  constructor(@Inject(OriginalEvidenceService) private readonly service: OriginalEvidenceService) {}
 
   @Post('original')
   @HttpCode(200)
@@ -98,7 +98,7 @@ export class OriginalEvidenceController {
 @UseFilters(EvidenceExceptionFilter)
 @Controller('api/v1/usp')
 export class DecisionEvidenceController {
-  constructor(private readonly service: DecisionEvidenceService) {}
+  constructor(@Inject(DecisionEvidenceService) private readonly service: DecisionEvidenceService) {}
 
   @Post('proposals/prepare')
   @HttpCode(200)
@@ -162,7 +162,7 @@ export class DecisionEvidenceController {
 @UseFilters(EvidenceExceptionFilter)
 @Controller('api/v1/usp/exchange/cityjson')
 export class CityJsonEvidenceController {
-  constructor(private readonly service: CityJsonEvidenceService) {}
+  constructor(@Inject(CityJsonEvidenceService) private readonly service: CityJsonEvidenceService) {}
 
   @Post('export')
   @HttpCode(200)
@@ -187,7 +187,7 @@ export class CityJsonEvidenceController {
 @UseFilters(EvidenceExceptionFilter)
 @Controller('api/v1/usp/packets')
 export class PacketEvidenceController {
-  constructor(private readonly service: PacketEvidenceService) {}
+  constructor(@Inject(PacketEvidenceService) private readonly service: PacketEvidenceService) {}
 
   @Post()
   @HttpCode(200)
