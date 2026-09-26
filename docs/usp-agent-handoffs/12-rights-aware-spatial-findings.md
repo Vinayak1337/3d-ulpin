@@ -1,6 +1,6 @@
 # 12 · Explainable spatial findings and a complete review action
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **FIND**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), the RIGHTS projection in [16](16-shared-spaces-and-vertical-rights.md) when enabled and UI slots in [99](99-ui-ux-and-integration.md). ER-08/11/12/13/24 are incorporated. New code paths below must be implemented.
 

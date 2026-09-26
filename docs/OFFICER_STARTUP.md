@@ -6,10 +6,10 @@ The canonical application is Next.js/TypeScript plus PostgreSQL/PostGIS, private
 
 ## Before an assigned local run
 
-1. Pin the actual current `staging` revision and coordinate with other owners in the sole original checkout. Inspect current package/service configuration after cleanup; do not copy command sequences from historical reports.
+1. Pin the accepted `staging` revision in the assigned worker worktree and coordinate service/port ownership with the lead. Inspect current package/service configuration after cleanup; do not copy command sequences from historical reports.
 2. Preserve credentials and all populated volumes. Select the existing isolated test environment explicitly; `REPO_DATA=true` must not be treated as permission to restore a retired snapshot or synthesize a dataset. The linked environment is not a disposable test service.
 3. Use locked dependencies and existing build/server isolation guards. Start only the services needed for the assigned check, with providers disabled unless separately authorized. Record exact command, exit, process/container/volume identities and stop command without secrets.
-4. If a UI preview is specifically needed, follow the operating guide: check loopback port 3187 is free, do not kill unrelated listeners, and stop owned application processes afterward while preserving data. No preview or UI redesign is scheduled by plan cleanup.
+4. If a UI preview is specifically needed, follow the operating guide: check loopback port 3187 is free, do not kill unrelated listeners, and stop owned application processes afterward while preserving data. RUN-01 schedules backend API startup and real-source smoke checks; UI redesign is not part of that task.
 5. Import only explicitly selected unchanged official-source inputs through existing supported services, with provenance and permission. Missing source coverage stays unqualified; no implicit seeds, historical D0 replay or mixed-bundle restore.
 
 ## Retired instructions and preserved evidence

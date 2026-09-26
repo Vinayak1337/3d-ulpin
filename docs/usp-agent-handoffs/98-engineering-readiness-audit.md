@@ -1,6 +1,6 @@
 # Historical audit and remediation ledger
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Historical audit boundary:** Findings and dated “Applied” statements below preserve the decisions at that revision. Their UI cards, screen counts, visual-capture assignments and superseded section numbers are historical, not an active queue; current backend contracts are H01/H99 and the delivery policy. No historical pass is upgraded by this scope change.
 
@@ -85,3 +85,7 @@ Full-source catalogue access, licence confirmation, real same-property associati
 ## 4. Documentation revision boundary
 
 The earlier remediation edited instructions only. The 24 September alignment also adds plan-validation tooling and a read-only CI workflow; it does not change application code/configuration, database data, source archives or main. The complete historical audit remains accessible at its immutable link above. No claim is made that every possible edge case is eliminated; the specific audited risks now have adopted, locally discoverable implementation rules and tests instead of requiring agents to reconcile an additional proposal document themselves.
+
+## 26 September backend normalization
+
+The user-approved [backend streaming decisions](backend-streaming-plan.md) supersede older renderer-selection and sole-checkout instructions. Frontend technology remains user-owned and unchanged by this work. All public-portal delivery remains full product; one bounded official city/district backend scale rung is now required in the finale. Ordinary implementation/data tasks use separate worktrees; Luna uses xhigh/max. Historical findings and receipts above retain their original scope and do not pass the new GF-BACKEND, GF-STREAM or GF-SCALE-1 tests.

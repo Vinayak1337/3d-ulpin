@@ -1,12 +1,16 @@
 # 99 · Backend contracts for the user-owned Studio
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) supersedes older UI assignments and H97 addenda. This handoff plans only backend data, asset and API contracts. The user owns all screen design, frontend implementation and visual acceptance. No screen, theme, mobile, renderer replacement or screenshot work is scheduled here. Plan cleanup implements no feature and passes no runtime gate.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) supersedes older UI assignments and H97 addenda. This handoff plans only backend data, asset and API contracts. The user owns all screen design, frontend implementation and visual acceptance. No screen, theme, mobile, renderer replacement or screenshot work is scheduled here. Backend implementation occurs only through assigned cards; plan edits pass no runtime gate.
 
 Read [H01](01-shared-contracts-and-ownership.md), enabled feature producers and [H28](28-data-acquisition-and-finale-tests.md). Preserve the recorded [D0/PACK0 and single-D1 baseline](../evidence/usp/continuation-2026-09-23/README.md) without recreating authored inputs. New official-source qualification remains separate. Use the live pinned staging base; older branch names and first-deliverable instructions are historical.
 
+## Current frontend handoff boundary
+
+The user owns frontend technology and implementation. Backend workers supply compatible schema-first APIs, a current OpenAPI specification and a real-source dataset catalogue under API-DOC-01. Distinguish code availability, runtime verification and data availability; omit invented sample responses. Record access rules, errors, pagination, limits, revisions, source provenance and endpoint-to-dataset usage. Target `packages/server` gradually; thin API adapters remain backend-owned only when explicitly assigned. All public app delivery is full product. See [normalized decisions](backend-streaming-plan.md).
+
 ## 1. Existing consumer boundary
 
-Preserve the Studio catch-all and compatible saved routes, the canonical registry/import authorities and the shared map runtime. The current map path is BlockPage → SavedSceneViewport → MapViewport with existing provider/session/cache boundaries. Retain the qualified Cesium D0/D1 path; changing a backend contract is not authorization to add a per-feature viewer or replace the renderer. Keep unique document, GIS, raster and point-cloud inspection capabilities and access to retained originals.
+Preserve the Studio catch-all and compatible saved routes, the canonical registry/import authorities and the shared map runtime. The current map path is BlockPage → SavedSceneViewport → MapViewport with existing provider/session/cache boundaries. Preserve compatibility with current consumers and historical D0/D1 semantics; frontend technology and cutover choices remain entirely user-owned. A backend assignment does not change the renderer. Keep unique document, GIS, raster and point-cloud inspection capabilities and access to retained originals.
 
 Backend producers must support exact source → candidate → review → record → evidence/report → retained revision operations. Source-only records, unavailable interiors and missing geometry remain useful explicit states. Invalid/retired unit requests never silently broaden to a building, parcel or different dataset. Selection IDs, feature IDs, registry IDs, import batch IDs and import package IDs are not interchangeable.
 

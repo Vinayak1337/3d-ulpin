@@ -1,6 +1,6 @@
 # 90 · Human inputs — the short list
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Rewritten 25 September 2026.** Agents do the data, labelling, oracle and verification work. The earlier human tasks H1–H10 are now agent task cards (table below). Any permitted geography is fine: Indian data is preferred where it exists, and foreign data is labelled `test_only`. There is no Delhi or single-locality requirement. The data sources are already documented in [H23](23-india-data-and-delivery-plan.md) and [H28](28-data-acquisition-and-finale-tests.md) (data.gov.in first).
 

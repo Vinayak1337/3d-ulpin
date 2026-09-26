@@ -1,6 +1,6 @@
 # 21 — Concurrent schema learner and safe automatic handover
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Release: `full_product` (FP-LEARN).** Real training, qualification and pending-only same-import handover remain committed scope, after the finale. They do not block GF0–GF5. H27 domain AI is a different capability and stays in the finale.
 

@@ -2,7 +2,7 @@
 
 **26 September sequencing:** Planning-only cleanup. No card is dispatched by this document. Future explicitly assigned work is backend-only through [the backend cleanup plan](backend-cleanup-plan.md); the user owns all frontend work. Preserve shared contracts, runtime boundaries, unique inspection and saved URLs.
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Written 24 September 2026 with the review in [H97](97-review-findings-and-alignment.md). Each card is one pull-request-sized piece of work that Codex, Claude Code, Gemini CLI or any other user-authorized coding agent can pick up without reading all 25 handoffs. A card names what to read, what to build, where it goes, and how to prove it is done. The handoffs stay the specification; a card never overrides them, and a handoff's "Z. Hardening addendum (H97)" section overrides older text in that handoff.
 
@@ -10,7 +10,7 @@ Written 24 September 2026 with the review in [H97](97-review-findings-and-alignm
 
 1. Read [AGENTS.md](../../AGENTS.md), [H00](00-README.md) and the card's **Read** list. Nothing else is required to start.
 2. Check **Needs**: every listed card is merged to staging, or its interface is already in `packages/contracts`. Gates order qualification, not the start of implementation: a GF3 card may start as soon as its inputs exist.
-3. Claim the card with an explicit owner and pinned staging base. Use the sole original checkout and coordinate any branch change at a safe checkpoint; one writer owns each shared seam. Never merge to `main`.
+3. Claim the card with an explicit owner and pinned staging base. Use a separate pinned worker worktree/branch; one writer owns each shared seam and only the lead integrates to staging. Never merge to `main`.
 4. Record the H02 assignment fields, including `agent.product`, `agent.model` and `agent.effort` as the client reports them.
 5. Build only inside **Owns**. Needing a file owned by someone else means a patch request to that owner, not an edit.
 6. Finish when **Done when** is true. Runtime tests write receipts under `docs/evidence/usp/finale/<test-id>/` per [H28](28-data-acquisition-and-finale-tests.md). Ask for review from a different model family or a human.
@@ -20,18 +20,63 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ## Planning boundary and retired UI cards
 
-This is a dependency catalogue, not authorization to execute the cards now. FND-01 and the backend cleanup plan identify actual route/service consumers before any implementation assignment. Source discovery remains official-only; an old card or cleanup manifest is not permission to generate data, delete mixed assets or rerun retired scripts.
+The user authorizes lead-assigned backend cards after normalization. Execute only the bounded card/paths assigned in a separate worker worktree; the lead hardens plans directly. FND-01 and the backend cleanup plan identify actual route/service consumers before any implementation assignment. Source discovery remains official-only; an old card or cleanup manifest is not permission to generate data, delete mixed assets or rerun retired scripts.
 
 UI-01 through UI-09 are retired implementation assignments, retained only as historical IDs. They do not form a future agent queue. Their backend obligations live in H99 and the existing FND/INGEST/DATA/PACK cards: identity and scope validation, record-backed projections, durable event/asset manifests, sufficiency, provenance, exact-revision packets and service receipts. Token/font/frame/layout/screen/rehearsal-capture tasks belong to the user-owned UI and are not scheduled. Historical card text is recoverable at `92e4d04cdeaaa2d8ccc65680c6fea1675dcee88a`.
+
+## Backend migration and streaming execution cards
+
+These cards implement [the normalized decisions](backend-streaming-plan.md). Public delivery remains full product. Every task uses its own pinned worktree; Luna is xhigh/max. Frontend apps, scene/UI packages and `design-mockup/` are excluded.
+
+### API-DOC-01 · Implemented API and real dataset contract
+**Owner** FND · **Tier** T-work · **Test** GF-CONTRACT · **Needs** current route/code inventory
+- **Build:** a versioned OpenAPI 3.1 specification and concise frontend integration guide from actual route dispatch, request schemas and response producers. Include all current route families/methods, access/principal rules, status/error envelopes, limits, pagination, revision/idempotency headers and original/derivative download semantics. Mark endpoint code presence and actual runtime verification separately. Unsupported/unknown response details are explicitly unresolved, never guessed.
+- **Data:** index available real source packs with issuer, original URL, hash/provenance, geography/frame, permission, qualification and the real API flow that ingests/reads them. Do not ship real personal information or invented examples; bytes unavailable in the worktree are unavailable, not a working response example.
+- **Owns:** `docs/api/`, a bounded contract/route coverage check under `scripts/api/`, and directly necessary spec validation configuration. No app/UI code or broad new tests.
+- **Done when:** the frontend team can find an operation, its schema/access contract, real source availability and verification status; route coverage and local spec/link checks pass. A documentation UI is optional, local and read-only; public hosting is not authorized.
+
+### DATA-10 · Official city or district scale layer
+**Owner** DATA · **Tier** T-read (Luna xhigh/max) · **Tests** GF-DATA, GF-SCALE-1 · **Needs** none
+- **Build:** discover through data.gov.in first, then issuing authorities; acquire a usable official Indian city/district layer with original bytes/hash, access/use/redistribution permission, extent, actual feature/position/byte counts, source keys and CRS/vertical limits. Reuse prior qualified bytes where suitable. Bound the first search to three credible candidates and two access attempts per candidate; do not scrape around authentication or invent replacement geometry.
+- **Owns:** a new leaf `fixtures/usp/D3/official-scale-v1/`, its acquisition checker under `scripts/usp/data/`, and one compact DATA-10 receipt. Keep restricted/large originals outside Git; include reproducible source locators.
+- **Done when:** the pack is actually acquired and inspected with a precise supported profile, or an evidenced access/permission gap is reported. A vector context layer is not a 3D city or legal parcel qualification. Missing data leaves the mandatory scale gate open.
+
+### RUN-01 · Real-source local backend startup
+**Owner** DEPLOY with FND · **Tier** T-work · **Test** GF-BACKEND · **Needs** API-DOC-01 operation inventory; an existing inspected official source
+- **Build:** qualify a new guarded, nonce-owned local runtime using existing isolation guards, schema migrations, private object storage, Redis/Celery, dispatcher and the current app API. Keep providers disabled. No retired snapshot restore, implicit seed, borrowed linked environment, populated-volume reset or frontend change. Reuse actual existing code; implement only concrete startup/contract defects found.
+- **Owns:** the explicitly assigned real-source runner under `scripts/usp/`, directly affected service/startup configuration and `docs/OFFICER_STARTUP.md`; coordinate any shared lock/config edit with the lead.
+- **Done when:** cold startup and service health are observed; unchanged official bytes enter the supported API, a source/job/read lifecycle completes with pinned provenance and current record schemas, originals remain byte-identical, and one retry/restart or unavailable-processor state behaves honestly. Record exact loopback base URL, commands, service/process ownership, source hashes and stop/resume instructions. No fabricated successful response or UI screenshot is a substitute.
+- **Handoff:** stop owned failed/temp runs; a successful documented local API environment can be handed to the lead for frontend integration. Never kill another listener or remove volumes. Update API-DOC-01 runtime status from the actual receipt, not from static typechecks.
+
+### API-01 · Shared backend package with compatible adapters
+**Owner** FND · **Tier** T-work · **Test** GF-CONTRACT · **Needs** API-DOC-01 inventory
+- **Build:** establish server-only `packages/server`, move a bounded existing cohesive backend slice and retain old imports/route semantics via thin compatibility adapters. Begin with backend-only leaves and their error/privacy dependencies; select the slice from the actual dependency map. Keep canonical implementations in one place, with no duplicate store, service or credential initialization.
+- **Owns:** `packages/server`, explicitly assigned legacy backend shims and package/workspace wiring; the lead coordinates lockfile writes. No frontend stack/configuration changes, bulk directory move or storage rewrite.
+- **Done when:** real current consumers use the package through compatible adapters and the relevant existing checks/typecheck pass. A package shell alone does not complete this card; document which server modules remain at old paths.
+
+### INGEST-06 · Durable large original receipt
+**Owner** INGEST · **Tier** T-work · **Test** GF-RECOVERY · **Needs** DATA-10 profile, existing upload/job authority
+- **Build:** when needed by the source, add bounded multipart/object-store admission, original-hash finalization, companion completeness, resumable receipts, quotas and safe abort/orphan cleanup. Byte parts do not become semantic records. Preserve current small-upload behavior and per-parser bounds.
+- **Done when:** a real original can resume/finalize once without duplicate jobs or cross-upload cleanup, and unavailable/partial originals cannot enter conversion. No in-memory ceiling inflation.
+
+### TILE-01 · Private standard tile generation
+**Owner** INGEST with FND · **Tier** T-work · **Test** GF-STREAM · **Needs** DATA-10 inspected profile, qualified source transforms; INGEST-06 only where source size requires it
+- **Build:** one suitable pg2b3dm/Martin/TiTiler output profile over canonical publication views; explicit private auth/source allowlists, immutable artifacts, record mapping, versioned grid/transform metadata, generation fence/manifest/outbox, and old/new extent invalidation. Use existing jobs; do not add a parallel dispatcher. Terrain/point clouds require separate qualified processors.
+- **Done when:** official bytes yield authorized coherent generations progressively, with exact identity/source lookup, bounded resources and stale/retry/update behavior. Do not claim every candidate tool is integrated or a public projection exists.
+
+### SCALE-01 · Bounded backend scale acceptance
+**Owner** DATA with INGEST · **Tier** T-work · **Test** GF-SCALE-1 · **Needs** DATA-10, TILE-01
+- **Build:** pin the actual corpus/profile, hardware, budgets and cold/warm procedure before execution; measure first committed useful generation while import continues, completion, memory/storage, bounded spatial lookup and record lookup. Use the acceptance in the normalized plan; no invented benchmark corpus.
+- **Done when:** backend budgets and source/identity/recovery checks pass with a traceable receipt. Leave browser/frame-rate/picking acceptance to the frontend owner; absent data or failed budgets do not pass the required gate. No 100k/1M claim from one district layer.
 
 ## GF0 — data and contracts
 
 ### FND-01 · Contract and seam inventory
 **Owner** FND · **Tier** T-work · **Test** GF-CONTRACT · **Needs** none
 - **Read:** [H01](01-shared-contracts-and-ownership.md) sections 1–10 and Z; [H28](28-data-acquisition-and-finale-tests.md) Z1.
-- **Build:** a script that lists each shared seam (schema, registry, source, geometry, job, SSE, UI) with producer file, consumer file, contract type and the test that exercises it. Re-run the recorded D0/D1 regression commands at the current head.
+- **Build:** a script that lists each shared seam (schema, registry, source, geometry, job, SSE, UI) with producer file, consumer file, contract type and the test that exercises it. Reuse historical D0 receipts without recreating retired inputs; run only currently available real-source commands and report missing live coverage.
 - **Owns:** `scripts/usp/gf/GF-CONTRACT.*`, `docs/evidence/usp/finale/GF-CONTRACT/`.
-- **Done when:** `inventory.json` has one row per seam with status `works|partial|missing`; H01 section 10 items 1–6 are each `done@<sha>` or `remaining`; D0/D1 regression receipts exist at the current head.
+- **Done when:** `inventory.json` has one row per seam with status `works|partial|missing`; H01 section 10 items 1–6 are each `done@<sha>` or `remaining`; current real-source coverage and historical-only D0 evidence are explicitly distinguished.
 
 ### DATA-01 · Matched source bundle (any permitted geography)
 **Owner** DATA · **Tier** T-work · **Test** GF-DATA · **Needs** none
@@ -46,7 +91,7 @@ UI-01 through UI-09 are retired implementation assignments, retained only as his
 - **Read:** current delivery policy; H28 Z2–Z3; H16 Z1–Z2; H22 Z3; H30 I.
 - **Build:** discover official records that actually contain difficult CRS/axis metadata, mixed Indian units and scripts, privacy-sensitive fields, cross-site infrastructure, co-operative/per-deed rights, topology/contact/hole cases, roof structures, slopes, shared cores and sparse levels. Index real naturally incomplete inputs for H30. Never generate a source, corrupt metadata, insert hostile text, fabricate a clean twin or dummy identity to fill this list.
 - **Owns:** source-family pack manifests and permitted extracts under `fixtures/usp/`, acquisition checks under `scripts/usp/data/`, and `docs/evidence/usp/finale/GF-DATA/DATA-02/`. New leaf ownership is assigned explicitly; historical D0 is read-only.
-- **Done when:** every required case names official original bytes, issuer, permission and an independently source-derived expectation, or a specific unavailable reason. Freeze available expectations before implementation/evaluation; an unavailable row is not a runtime pass. Prior synthetic attempt branches remain unmerged historical work.
+- **Done when:** every required case names official original bytes, issuer, permission and an independently source-derived expectation, or a specific unavailable reason. Freeze available expectations before implementation/evaluation; an unavailable row is not a runtime pass. Prior synthetic attempt histories are integrated but their authored assets are retired; never restore them for new qualification.
 
 ### DATA-03 · Licences, India boundary and ID normalisation data
 **Owner** DATA · **Tier** T-read · **Test** GF-DATA · **Needs** none

@@ -1,8 +1,12 @@
 # 27 · Finale domain AI and cadastral checks
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **DOMAIN** for the bounded candidate/quantity leaves. **DATA** owns permitted sources, independent labels and expected results; **FND** owns shared receipts, source/geometry persistence and job fencing; **FIND** owns the one qualified spatial-operation service in [12](12-rights-aware-spatial-findings.md); **RIGHTS** owns declaration/share assertions in [16](16-shared-spaces-and-vertical-rights.md); **UI** mounts results in the retained Studio viewport in [99](99-ui-ux-and-integration.md). This is an implementation plan, not an implemented capability or accuracy claim. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [14](14-adaptive-ingestion-and-progressive-review.md), [H26's identity/exchange contract](26-identifiers-and-standard-exchange.md) and [28](28-data-acquisition-and-finale-tests.md).
+
+## Current publication boundary
+
+Publish qualified source-derived geometry through the existing job authority and the versioned private generation contract in [the normalized backend plan](backend-streaming-plan.md). Tile output does not establish analytical eligibility or permit guessing heights, roof forms or legal spaces. Model/provider availability never blocks the exact/manual source path. Frontend engine work is external.
 
 ## A. Outcome and release boundary
 

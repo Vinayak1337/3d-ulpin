@@ -1,6 +1,6 @@
 # 28 — Dataset acquisition and finale test plan
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Owner: DATA; contracts: FND; independent review: lead-appointed reviewer. Aligned 24 September 2026.** This restores the acquisition runbook previously in H00, preserving D0–D7 meanings. Catalogue research is not acquisition or runtime qualification. Use [release-plan.json](release-plan.json) for gate status; all new finale tests below are **planned**, not executed.
 
@@ -121,14 +121,14 @@ Added 24 September 2026 by the cross-family review in [H97](97-review-findings-a
 
 ### Z1. GF0 checklist with concrete outputs
 
-GF0 exits only when every row has its output committed (sanitized) or a named blocker in `release-plan.json`:
+GF0 exits only when every required row is qualified by its committed sanitized evidence. Record unavailable outputs as named blockers in `release-plan.json`; a blocker is not a passing exit:
 
 | # | Output | Owner |
 | --- | --- | --- |
 | 1 | `docs/evidence/usp/finale/GF-CONTRACT/inventory.json`: one row per seam (producer file, consumer file, contract, test command, status `works|partial|missing`) | FND |
 | 2 | H01 section 10 items 1–6 each marked `done@<sha>` or `remaining`, with the receipt link | FND |
 | 3 | The recorded D0/D1 regression commands re-run at the current head, with receipts | FND |
-| 4 | At least one Indian context resource (the existing Uttam Nagar OSM and Open Buildings pack qualifies once re-receipted) and one structured-code resource at stage `tested`; the D5 bundle recorded as `acquired` or `failed(<reason>)` | DATA |
+| 4 | At least one verified official Indian context resource (historical OSM/Open Buildings packs do not qualify under the current source policy) and one structured-code resource at stage `tested`; the D5 bundle recorded as `acquired` or `failed(<reason>)` | DATA |
 | 5 | `docs/evidence/usp/finale/GF-AI/preregistration.json`: frozen thresholds, holdout IDs and oracle authors, hashed before any evaluation | DATA + DOMAIN |
 | 6 | Demo dataset decision `site-decision.md`: chosen public bundles, licences and geography; no consent step (LEAD-05) | LEAD |
 | 7 | GF-DATA official CRS/messy-data coverage matrix below, with source-derived expectations and explicit gaps | DATA |
@@ -173,3 +173,9 @@ Write "Survey of India Open Series Map" in full; "OSM" alone means OpenStreetMap
 - Receipts also carry `limitations[]`, `unqualifiedClaims[]`, `agent{product, model, effort}` and `review{reviewer, kind: human|agent, modelFamily, independence, reviewedAt, verdict}` with reviewer different from producer. A case may be `not_applicable` with a reason instead of being silently dropped. (Validator enforcement is task card LEAD-01.)
 - **GF-REHEARSAL backend evidence** records reproducible cold-start/offline service runs, the exact source-to-card lifecycle and measured timings without manual database repair. The prior complete-product target (three cold runs at most 6:00, one offline run and backup-video hash) remains an external user-owned integration qualification; backend service receipts alone cannot mark the complete product release passed.
 - **GF5 freshness.** GF5 receipts must share one release-candidate commit and be run after GF4 completed; earlier receipts are history, not GF5 evidence.
+
+## Backend streaming and scale gate
+
+GF-STREAM (INGEST, GF2) and GF-SCALE-1 (DATA with INGEST, GF2) are required finale backend tests, specified in [the normalized plan](backend-streaming-plan.md#bounded-backend-acceptance) and H29 TILE-01/SCALE-01. DATA-10 records the real official corpus and supported profile; numerical service budgets and hardware are pinned before a measured run. Large extent alone, a library capability, a static tile file or a catalogue entry passes neither test. No eligible source leaves the gate open. Browser metrics remain an external frontend qualification; the larger load ladder stays FP-SCALE.
+
+GF-BACKEND (DEPLOY, GF0) requires RUN-01's current guarded local API/service and real-source lifecycle receipt; the source may be an already inspected official pack, so DATA-10 does not block backend startup. The historical snapshot launcher remains retired. This check supports the frontend API guide and does not qualify browser behavior, public deployment or model accuracy.

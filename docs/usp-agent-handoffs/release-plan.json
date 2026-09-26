@@ -64,7 +64,8 @@
       "dependsOn": [],
       "tests": [
         "GF-DATA",
-        "GF-CONTRACT"
+        "GF-CONTRACT",
+        "GF-BACKEND"
       ],
       "status": "pending",
       "evidence": [],
@@ -111,7 +112,9 @@
         "GF-RECOVERY",
         "GF-VIEW",
         "GF-SCENE",
-        "GF-SUFFICIENCY"
+        "GF-SUFFICIENCY",
+        "GF-STREAM",
+        "GF-SCALE-1"
       ],
       "status": "pending",
       "evidence": [],
@@ -299,7 +302,7 @@
     {
       "id": "FP-RENDER",
       "release": "full_product",
-      "title": "Measured renderer alternative",
+      "title": "User-owned renderer compatibility qualification; no backend frontend-stack task",
       "dependsOn": [
         "GF5"
       ],
@@ -486,7 +489,7 @@
     },
     {
       "id": "R-VIEW",
-      "title": "Authorized source-shaped geometry/assets, identity/frame and selection contracts for existing consumers",
+      "title": "Authorized standard assets, exact identity/frame and selection contracts for user-owned consumers",
       "owner": "FND",
       "gate": "GF2",
       "docs": [
@@ -495,7 +498,8 @@
         "docs/design-system/README.md",
         "docs/design-system/ui-brief.md",
         "docs/design-system/mockups/officer-studio/README.md",
-        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md",
+        "docs/usp-agent-handoffs/backend-streaming-plan.md"
       ],
       "tests": [
         "GF-VIEW"
@@ -772,7 +776,7 @@
     },
     {
       "id": "R-FP-RENDER",
-      "title": "Deferred asset/codec compatibility contracts; no renderer replacement authorized",
+      "title": "External frontend compatibility qualification; technology remains user-owned",
       "owner": "FND",
       "gate": "FP-RENDER",
       "docs": [
@@ -788,7 +792,7 @@
     },
     {
       "id": "R-FP-SCALE",
-      "title": "FP-SCALE retained full-product capability",
+      "title": "Larger real-corpus load ladder beyond the bounded finale rung",
       "owner": "DATA",
       "gate": "FP-SCALE",
       "docs": [
@@ -876,6 +880,51 @@
         "F01",
         "F02"
       ],
+      "acceptanceScope": "backend_only"
+    },
+    {
+      "id": "R-STREAM",
+      "title": "Qualified private progressive standard-tile generations",
+      "owner": "INGEST",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/backend-streaming-plan.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "tests": [
+        "GF-STREAM"
+      ],
+      "auditFindings": [],
+      "acceptanceScope": "backend_only"
+    },
+    {
+      "id": "R-SCALE-1",
+      "title": "One bounded official city/district backend streaming rung",
+      "owner": "DATA",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/backend-streaming-plan.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "tests": [
+        "GF-SCALE-1"
+      ],
+      "auditFindings": [],
+      "acceptanceScope": "backend_only"
+    },
+    {
+      "id": "R-BACKEND-RUN",
+      "title": "Guarded current local backend API with official-source lifecycle and recovery",
+      "owner": "DEPLOY",
+      "gate": "GF0",
+      "docs": [
+        "docs/usp-agent-handoffs/backend-streaming-plan.md",
+        "docs/OFFICER_STARTUP.md"
+      ],
+      "tests": [
+        "GF-BACKEND"
+      ],
+      "auditFindings": [],
       "acceptanceScope": "backend_only"
     }
   ],
@@ -1181,6 +1230,42 @@
       "status": "planned",
       "receipts": [],
       "attempts": []
+    },
+    "GF-STREAM": {
+      "kind": "runtime",
+      "owner": "INGEST",
+      "specs": [
+        "docs/usp-agent-handoffs/backend-streaming-plan.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": [],
+      "attempts": [],
+      "acceptanceScope": "backend_only; frontend consumption and GPU/frame-rate evidence external"
+    },
+    "GF-SCALE-1": {
+      "kind": "runtime",
+      "owner": "DATA",
+      "specs": [
+        "docs/usp-agent-handoffs/backend-streaming-plan.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": [],
+      "attempts": [],
+      "acceptanceScope": "backend_only; frontend consumption and GPU/frame-rate evidence external"
+    },
+    "GF-BACKEND": {
+      "kind": "runtime",
+      "owner": "DEPLOY",
+      "specs": [
+        "docs/usp-agent-handoffs/backend-streaming-plan.md",
+        "docs/OFFICER_STARTUP.md",
+        "docs/usp-agent-handoffs/29-agent-task-cards.md"
+      ],
+      "status": "planned",
+      "receipts": [],
+      "attempts": []
     }
   },
   "entryPoints": [
@@ -1258,15 +1343,34 @@
     },
     "execution": {
       "scope": "backend_only",
-      "currentAssignment": "planning_only",
-      "featureImplementationAuthorized": false,
-      "frontendOwner": "user",
+      "currentAssignment": "lead_normalization_then_assigned_backend_plan_tasks",
+      "featureImplementationAuthorized": true,
+      "frontendOwner": "user; frontend technology unchanged",
       "delegation": "ordinary_codex_tasks_not_subagents",
       "leadMayExecuteAssignedWork": true,
       "speedPreference": "Fast",
       "configuredServiceTier": "priority",
       "observedTurnServiceTier": null,
-      "newProductFeaturesScheduled": false
+      "newProductFeaturesScheduled": true,
+      "workerCheckoutPolicy": "separate_worktree_and_branch_per_model_task_from_pinned_accepted_staging",
+      "planHardeningOwner": "lead_direct",
+      "lunaReasoning": [
+        "xhigh",
+        "max"
+      ],
+      "firstTasks": [
+        "API-DOC-01",
+        "DATA-10"
+      ]
+    },
+    "architecture": {
+      "document": "docs/usp-agent-handoffs/backend-streaming-plan.md",
+      "canonicalAuthority": "existing_private_PostGIS_registry",
+      "backendDestination": "packages/server_incremental",
+      "frontendTechnologyDecision": "user_owned_unchanged",
+      "publicPortalRelease": "full_product_only",
+      "finaleScale": "one_qualified_official_city_or_district_backend_profile",
+      "designMockup": "preserve_unchanged"
     }
   },
   "waivers": [],
@@ -1327,5 +1431,9 @@
       "blocksCompleteProductReleaseClaim": true,
       "note": "No UI implementation tasks are scheduled; backend receipts cannot discharge this integration dependency."
     }
-  ]
+  ],
+  "integrationBase": {
+    "commit": "0ba58c511371d1a2d5aeddee4a36f15bf78b6ed1",
+    "purpose": "Normalization base only; reconcile live staging for assignments; historical baseline receipt unchanged"
+  }
 }
