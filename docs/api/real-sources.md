@@ -1,6 +1,6 @@
 # Official source index and retained dataset catalogue
 
-Use this index before source-dependent orchestration and frontend/API integration. Official discovery links and retained source packs are separate: an online listing is not a downloaded original, an inspected original is not an installed record, and a runtime receipt qualifies only its stated profile. Last discovery/status review: **26 September 2026**. Exact bytes, hashes and qualification history belong in the linked manifests/receipts, not duplicated here.
+Use this index before source-dependent orchestration and frontend/API integration. Official discovery links and retained source packs are separate: an online listing is not a downloaded original, an inspected original is not an installed record, and a runtime receipt qualifies only its stated profile. Last discovery/status review: **27 September 2026**. Exact bytes, hashes and qualification history belong in the linked manifests/receipts, not duplicated here.
 
 ## Official discovery entry points
 
@@ -20,6 +20,17 @@ Use this index before source-dependent orchestration and frontend/API integratio
 For already acquired LGD codes, GMDA context, RERA drawings and foreign official test inputs, start with the retained manifests below. They preserve the exact issuer URLs and source-specific limitations; generic search results or community mirrors do not replace that lineage.
 
 When assigning a source task, name the required profile and geography, link the existing manifest or exact official resource, and ask only for the missing acquisition/inspection/qualification step. Use the issuing portal when an OGD route fails. Evaluate the actual resource designation and applicable publisher policy together; do not invent an extra permission requirement merely because a metadata field is blank. Keep local testing, redistribution, provider egress and ML permissions distinct. Record uncertainty and move unrelated backend work forward.
+
+### Dense postal-area discovery (27 September)
+
+User preference is India; another country is acceptable. A complete **Census ZCTA 10013, New York** selection is now retained privately: **1,662 unique building features**, all with positive issuer-supplied roof heights, 1,103,282 bytes of unchanged GeoJSON. The full Census boundary is retained separately. Counts before and after acquisition both matched 1,662; all DOITT_ID values are unique. This is the complete query result for building class `2100` intersecting that boundary, with crossing footprints preserved whole; it is not every structure class or proof of absence of concurrent source edits.
+
+- Buildings: [NYC Open Data BUILDING](https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue), with an independently reachable [official NYC ArcGIS FeatureServer](https://services6.arcgis.com/yG5s3afENB5iO9fj/arcgis/rest/services/BUILDING_view/FeatureServer/0) linked by the [issuer metadata](https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md). Acquired bytes came from NYC Open Data, not a community rehost. Roof heights are feet above ground; a constant-height extrusion is an approximate exterior envelope, not floor/flat geometry.
+- Boundary: [Census TIGERweb ArcGIS layer 2](https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/2), `GEOID='10013'`, 2020 Census ZCTA. A ZCTA is a postal-area approximation, **not an exact current USPS ZIP boundary**. Both acquired GeoJSON files use longitude/latitude EPSG:4326.
+- Exact query URLs, unchanged bytes, acquisition times, hashes, count checks, source policies and limitations: `/Users/vinayak/.codex/task-data/nyc-zcta-10013/manifest.json`. This discovery pack is outside Git and has not been added to the runtime dataset catalogue, installed into serving3188 or rendered. No ownership, residents, official ULPIN, Indian placement or scale qualification is claimed.
+- India remains preferred. The KDMC sample above is acquired, but whole-PIN selection and useful heights remain unresolved. The alternate municipal ArcGIS Online item `ad3108094bc74acc84b47d1b95825312` (`Building_Footprint_Zone9`) returned disabled-subscription / token-required errors; do not bypass them.
+- [Esri India PIN boundary](https://www.arcgis.com/home/item.html?id=7fe4eec592004f5f992ed7492a50b18d) credits Department of Posts, but its item terms explicitly prohibit offline export. No geometry was exported from that service. Use the original Department of Posts/data.gov.in publication above when accessible.
+- [Esri 3D Buildings](https://www.arcgis.com/home/item.html?id=b8fec5af7dfe4866b1b8ac2d2800f282) has reachable public SceneServer metadata and mixed commercial/community sources. This does not establish local Indian coverage, official cadastral authority or permission to redistribute a downloaded mesh. Discovery metadata is retained at `/Users/vinayak/.codex/task-data/esri-kdmc-discovery-20260927`.
 
 ## Retained packs and API journeys
 
