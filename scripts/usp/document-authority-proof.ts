@@ -58,7 +58,7 @@ try{
     const calls=[()=>transaction(client=>captureDocumentSourceTx(client,historical)),()=>readManifest(ctx,scope),()=>readSnapshotBody(ctx,scope,pin),
       ()=>readSnapshotOriginal(ctx,scope,pin),()=>readRegistryEvidenceBytes(ctx,scope,pointer),()=>readExactPart(ctx,scope,pointer),
       ()=>createPacket0(ctx,{scope,target:pin,evidence:[pointer],format:'text',guard:{mode:'create',requestKey:jobId}} as any),
-      ()=>readPacket0(ctx,jobId),()=>exportCityJson(ctx,{scope,targets:[pin],licenceFamily:null}),
+      ()=>readPacket0(ctx,jobId),()=>exportCityJson(ctx,{scope,targets:[pin],licenceFamily:null,distribution:'private'}),
       ()=>copyCaseDocuments(caseId,{expectedRevision:1,caseId,sourceIds:[sourceId],buildingId:sourceId,reason:'Marked-source authority protocol check'})];
     for(const call of calls)await assert.rejects(call,(error:any)=>error.status===status);
     return calls.length;
@@ -83,6 +83,7 @@ try{
     process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='document-authority-denial-control';const actor=await denial(403);
     process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=subject;
     assert.equal(fingerprint(historical),before);
+    (db as any).connect=connect;
     const invariants=(await db.query(`SELECT (SELECT count(*)::int FROM registry_records) records,(SELECT count(*)::int FROM physical_features) features,
       (SELECT count(*)::int FROM usp_snapshots) snapshots,(SELECT count(*)::int FROM usp_packets) packets,(SELECT count(*)::int FROM usp_model_calls) model_calls`)).rows[0];
     assert(Object.values(invariants).every(value=>value===0));

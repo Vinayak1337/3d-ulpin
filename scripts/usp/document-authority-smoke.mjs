@@ -18,7 +18,8 @@ async function run(){
   const textPath=join(root,'fixtures/real-area',asset.file),text=readFileSync(textPath);assert.equal(hash(text),asset.sha256);
   const check=JSON.parse(readFileSync(join(root,'docs/evidence/usp/nest-migration/official-runtime-source/source-check.json'))),pdf=readFileSync(check.source.original.localPath);
   assert.equal(hash(pdf),check.source.original.sha256);
-  const base=env.ULPIN_TEST_URL+'api/v1',output=join(dir,'document-authority-proof.json');assert(!existsSync(output));
+  const resume=process.argv[3]==='resume',prior=resume?JSON.parse(readFileSync(join(dir,'document-authority-proof.json'))):null;
+  const base=env.ULPIN_TEST_URL+'api/v1',output=join(dir,resume?'document-authority-completion.json':'document-authority-proof.json');assert(!existsSync(output));
   const receipt={version:'document-authority-proof/1',status:'running',codeCommit:owner.baseCommit,nonce:owner.nonce,runAt:new Date().toISOString(),
     sources:[{sha256:hash(text),bytes:text.length,url:asset.url,terms:manifest.license.termsUrl},{sha256:hash(pdf),bytes:pdf.length,url:check.source.originalUrl,terms:check.source.sourcePermissionReference}],
     provider:'disabled; no model configuration/key/call',checks:[],proofs:[],jobs:[],
@@ -30,8 +31,9 @@ async function run(){
   async function original(id,expected){const r=await fetch(`${base}/sources/${id}/file`);assert.equal(r.status,200);const bytes=Buffer.from(await r.arrayBuffer());assert.equal(hash(bytes),hash(expected));assert.equal(bytes.length,expected.length);}
   function proof(retained,phase){const stdout=execFileSync('pnpm',['exec','tsx','scripts/usp/document-authority-proof.ts',retained.caseId,retained.sourceId,retained.jobId,textPath,phase],{cwd:root,env:{...inherited,...env},encoding:'utf8',timeout:60000,maxBuffer:1048576}).trim();const value=JSON.parse(stdout);assert.equal(value.status,'passed');receipt.proofs.push(value);}
   try{
-    const created=await call('/source-cases',201,{requestKey:randomUUID(),name:'Retained official document authority review'});
-    const retained=await call(`/ingestion/cases/${created.caseId}/documents`,201,form(text,'nyc-building-metadata.md',0));receipt.caseId=created.caseId;
+    const created=resume?{caseId:prior.caseId}:await call('/source-cases',201,{requestKey:randomUUID(),name:'Retained official document authority review'});
+    const retained=resume?{caseId:prior.caseId,sourceId:prior.jobs[0].sourceId,jobId:prior.jobs[0].jobId}:await call(`/ingestion/cases/${created.caseId}/documents`,201,form(text,'nyc-building-metadata.md',0));receipt.caseId=created.caseId;
+    if(resume)receipt.initialFailedReceiptSha256=hash(readFileSync(join(dir,'document-authority-proof.json')));
     const native=await wait(retained);assert.equal(native.native.status,'extracted');assert.equal(native.model.status,'disabled');assert(native.parts.length);
     await original(retained.sourceId,text);
     const generic=await call(`/cases/${created.caseId}`);const view=generic.sources.find(s=>s.id===retained.sourceId).inspection;
