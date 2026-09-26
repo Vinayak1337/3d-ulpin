@@ -4,7 +4,7 @@
 
 <!-- plan-next-gate: GF0 -->
 
-**Current execution focus, 26 September 2026:** Follow the [NestJS migration and delivery ledger](../orchestration/NESTJS_MIGRATION.md): reviewed modular backend extraction, explicit SQL, parallel Sol API batches, then isolated qualification and lead-owned OpenAPI/dataset handoff. API-DOC-01 and the bounded DATA-10 investigation are integrated; their runtime/permission gaps remain open. Resume the streaming/finale backend queue after migration. Frontend implementation and `design-mockup/` remain untouched.
+**Current execution focus, 26 September 2026:** The [NestJS migration and delivery ledger](../orchestration/NESTJS_MIGRATION.md) records the completed modular backend, executed SQL authority, 132-operation API/dataset handoff and merged task cleanup. RUN-01 passed bounded official PDF job/retry/read and separate NYC GIS workflows; GF0 remains pending. The DATA-10 follow-up still lacks an admitted Indian scale layer, so TILE-01/GF-SCALE-1 await permission and a qualified profile. INGEST-06 is conditional on a real source-size need. Resume dependency-ready backend work from this evidence; frontend implementation and `design-mockup/` remain untouched.
 
 **Compatibility and route cleanup:** Work the backend contracts and wiring needed for GF0 and subsequent gates through the [backend cleanup plan](backend-cleanup-plan.md). The user owns the UI redesign, so no UI implementation cards are scheduled in this backend work. Only their API/wiring requirements remain in active plans; user-owned visual implementation and validation are external dependencies. The backend plan includes an API route cleanup phase after a pinned route inventory; an inventory or route deletion alone does not pass a runtime gate.
 

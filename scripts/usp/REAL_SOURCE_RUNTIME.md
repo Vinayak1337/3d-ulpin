@@ -1,6 +1,6 @@
 # RUN-01 Nest runtime handoff
 
-Phase 2B preparation uses accepted native registration base `6d4d550b8680c43b4196bd2628a5fd81dfa2505a`, followed by the accepted schema/docs corrections at `cbc5174aadae33f5db89540cddad16813fb7d290`. The lead accepted preparation `33f9749` and authorized one fresh run after correcting the initial job observation race. Both execution gates are enabled in the runtime commit. Status and owned cleanup remain available for the retained phase 2A configuration. Preparation checks do not qualify source-to-job-to-record.
+Phase 2B preparation uses accepted native registration base `6d4d550b8680c43b4196bd2628a5fd81dfa2505a`, followed by the accepted schema/docs corrections at `cbc5174aadae33f5db89540cddad16813fb7d290`. The lead accepted preparation `33f9749` and authorized one fresh run after correcting the initial job observation race. Both execution gates are enabled in the runtime commit. The completed task checkout has since been retired; original receipt paths are historical. Preparation checks alone do not qualify source-to-job-to-record.
 
 The [26 September phase 2A receipt](../../docs/evidence/usp/nest-migration/runtime-foundation/README.md) records the observed foundation startup, same-database migration repeat, processor health recovery and completed owned shutdown. Its named volumes remain preserved. Source flow was not tested in phase 2A.
 
@@ -40,3 +40,7 @@ The smoke records two independent journeys:
 - **NYC GIS:** uses only unchanged `fixtures/real-nyc/original.geojson`, its recorded native key, hash and terms. The synchronous import/read checks a distinct source revision, candidate/evidence binding and area package read, plus original-byte and private-download checks. It claims no queued document job.
 
 Both sources are foreign `test_only`. The runtime receipt qualifies only the observed transport, queue/recovery, persistence and original-integrity behavior. It does not establish Indian source suitability, geometry/rights accuracy, ML, scale, frontend behavior or release-gate completion. Missing queue/parser support is a failing receipt and a defect callback to the lead.
+
+## Archived completed runs
+
+After integration, the lead removed the completed runtime worktree and preserved its entire private `.runtime/run01` tree at `/Users/vinayak/.codex/backups/ulpin-nest-consolidation-20260926-080116/runtime-0365/run01`. All 29 copied files were hash-checked. The old named service volumes remain intact and stopped. Historical ownership pins/checkout paths are not silently rewritten; archived configurations are recovery evidence, not a fresh-run input. Create a clean current checkout and a new nonce for subsequent code. See the [consolidation record](../../docs/orchestration/NESTJS_MIGRATION.md#consolidation-completed-26-september-2026).

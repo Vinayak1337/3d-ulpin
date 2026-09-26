@@ -13,6 +13,6 @@ The loopback OpenAPI and dataset catalogue returned 200 and matched committed JS
 
 ## Shutdown and qualification
 
-Owned stop exited 0. Both recorded process groups were empty, no nonce-labelled containers remained and all six loopback ports were free. The nonce's PostgreSQL, MinIO and Redis named volumes remain preserved. No reset, reseed, snapshot replacement or provider/model call was performed. Private logs and run receipts remain under `.runtime/run01/5060b8f6ecb57f0d/`.
+Owned stop exited 0. Both recorded process groups were empty, no nonce-labelled containers remained and all six loopback ports were free. The nonce's PostgreSQL, MinIO and Redis named volumes remain preserved. No reset, reseed, snapshot replacement or provider/model call was performed. After worktree consolidation, private logs and run receipts are preserved under `/Users/vinayak/.codex/backups/ulpin-nest-consolidation-20260926-080116/runtime-0365/run01/5060b8f6ecb57f0d/`. The immutable JSON retains its original historical checkout paths.
 
 The PDF check exercised the queued Python parser; the separate PDF.js rendering helper was not exercised. Both inputs remain foreign `test_only`. This receipt establishes only the observed local transport, canonical job/recovery, persistence and original-integrity behavior. Indian operational suitability, geometry/rights accuracy, ML, scale, frontend behavior, populated migration, deployment and release gates remain unqualified.
