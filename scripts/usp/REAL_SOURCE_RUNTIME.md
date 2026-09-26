@@ -2,7 +2,9 @@
 
 Phase 2B preparation uses accepted native registration base `6d4d550b8680c43b4196bd2628a5fd81dfa2505a`, followed by the accepted schema/docs corrections at `cbc5174aadae33f5db89540cddad16813fb7d290`. The lead accepted preparation `33f9749` and authorized one fresh run after correcting the initial job observation race. Both execution gates are enabled in the runtime commit. Status and owned cleanup remain available for the retained phase 2A configuration. Preparation checks do not qualify source-to-job-to-record.
 
-The [26 September phase 2A receipt](../../docs/evidence/usp/nest-migration/runtime-foundation/README.md) records the observed foundation startup, same-database migration repeat, processor health recovery and completed owned shutdown. Its named volumes remain preserved; the source-flow gate remains open.
+The [26 September phase 2A receipt](../../docs/evidence/usp/nest-migration/runtime-foundation/README.md) records the observed foundation startup, same-database migration repeat, processor health recovery and completed owned shutdown. Its named volumes remain preserved. Source flow was not tested in phase 2A.
+
+The [phase 2B receipt](../../docs/evidence/usp/nest-migration/runtime-source/README.md) records both passed source journeys, actual document-job failure/retry, same-key replay, private original integrity and completed owned shutdown on `5d80dd8`. The separate PDF.js helper and broader product/scale gates remain unqualified.
 
 `local-nest` uses `127.0.0.1:3188` and pins both `PORT` and `API_PORT` to 3188. The nonce, Compose project, database, bucket and service ports remain exact. New preparations derive `ULPIN_LOCAL_OPERATOR_SUBJECT=local-os:<uid>:<account>` from the actual `node:os` account, record that provenance and pass it explicitly to API and dispatcher. This attributes process writes; it does not authenticate a human. Historical actors are untouched.
 
