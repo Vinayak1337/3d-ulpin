@@ -7,13 +7,15 @@ Implementation `eaec89c831a7fd5504ef0f38ad85c3c88e11b6e3`, based on `d98e818d277
 | Measurement | Cold | Warm | Fixed budget |
 | --- | ---: | ---: | ---: |
 | Upload/finalization | 1,822ms | 1,879ms | 90,000ms |
-| Queue → committed whole-source preparation | 15,667ms | 14,656ms | Recorded separately |
+| Queue → preparation transaction creation | 15,667ms | 14,656ms | Recorded separately |
 | Processor execution | 14.328s | 13.731s | Existing processor profile unchanged |
 | Queue → actual first tile and canonical pick | 16,903ms | 16,057ms | 30,000ms |
 | Queue → semantic closure | 59,704ms | 68,450ms | 120,000ms |
 | Queue → final62-cell catalogue | 97,439ms | 120,119ms | 180,000ms |
 |20 sequential actual-cell tile reads, p95 | 212.668ms | 307.656ms | 750ms |
 |20 sequential canonical picks, p95 | 209.836ms | 314.795ms | 750ms |
+
+Preparation timestamps above come from SQL `created_at` (default `now()` in the transaction); they are not measured commit instants. The immutable private receipt retains its original misleading `committedAt` field name; interpret it using this disclosure. The [sanitized pair summary](semantic-scale-runtime.json) uses corrected labels and retains the overall failed-run status.
 
 Both first reads observed9/733 SQL records and one committed seal with the parent still running. Each actual2/2/1 tile was2,836B with SHA256 `bbc75fb404b57a452eabf1f1556fb91bcc260ad6b11bb943add46a6d68dd940d`. Complete original/member/index preparation preceded semantic publication; these timings do not qualify parsing overlap. Each normal source closed67 partitions/733 records/720 admissions/13 quarantines and its complete62-cell catalogue. The two POST replays returned their original jobs and were not counted as imports. The warm run used a separate upload/source/job intent; its733 canonical IDs,733 raw hashes and720 geographic hashes matched the cold records.
 
@@ -34,4 +36,4 @@ Private receipt directory: `/Users/vinayak/.codex/worktrees/0bc6/3D Ulpin/.runti
 
 Actual checks: `node --check` for all three edited harness files, `git diff --check`, `pnpm typecheck:backend`, guarded `prepare --api-port3191` and `start` all exited0. `node scripts/usp/semantic-chunks-smoke.mjs <owned-dir> --scale` exited1 at recovery admission. Guarded `stop` and `status` exited0: zero nonce containers/live leaders/group members; all three named volumes retained. API65792 and dispatcher65670 are gone. Earlier nonces, originals, linked serving and credentials remain intact. Sol/max, requested DEFAULT tier; observed per-turn tier unavailable.
 
-Natural180s expiry/recovery, dispatcher-only resume and stale-attempt denial remain untested in this run. A bounded correction should separate recovery into an empty retained-history context without increasing the eight-job cap or deleting this pair's history. Lead must reconcile this workload before another attempt. No complete GF-STREAM/GF-SCALE, deployment, browser/GPU, city/3D, changed official revision, positional/legal/currentness, property/rights, provider/training or privacy-fault qualification follows from these measurements.
+Natural180s expiry/recovery, dispatcher-only resume and stale-attempt denial remain untested in this run. A bounded correction should separate recovery into an empty retained-history context without increasing the eight-job cap or deleting this pair's history. Lead reconciled the workload: run natural recovery only in a separate fresh empty-history nonce; preserve this pair and do not repeat it or raise the cap. No complete GF-STREAM/GF-SCALE, deployment, browser/GPU, city/3D, changed official revision, positional/legal/currentness, property/rights, provider/training or privacy-fault qualification follows from these measurements.
