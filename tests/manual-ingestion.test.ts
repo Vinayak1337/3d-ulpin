@@ -14,7 +14,7 @@ test('manual operation contract rejects literals and expressions at the executab
   assert.equal(MappingOperationSchema.safeParse({...operation,conversionId:'eval@1'}).success,false);
 });
 
-test('native metadata retains all baseline operations and admits only the seven declared ingestion additions',async()=>{
+test('native metadata retains all baseline operations and admits only declared ingestion additions',async()=>{
   const requireApi=createRequire(new URL('../apps/api/package.json',import.meta.url));requireApi('reflect-metadata');
   const {NestFactory}=requireApi('@nestjs/core');
   const {AppModule}=await import('../apps/api/src/app.module');
@@ -35,8 +35,9 @@ test('native metadata retains all baseline operations and admits only the seven 
       assert.equal(actual?.operationId,operation.operationId);assert.equal(actual['x-disposition'],'added');
       assert.equal(actual['x-operation-manifest'],'apps/api/src/modules/ingestion/operation-manifest.json');
       assert.equal(actual['x-runtime-verified'],false);
+      assert.equal(actual['x-batch'],operation.batch??additions.batch);
     }
     const operations=Object.values(document.paths).flatMap(item=>Object.values(item||{})).filter((item:any)=>item?.operationId);
-    assert.equal(operations.length,baseline.operations.length+7);
+    assert.equal(operations.length,baseline.operations.length+additions.operations.length);
   }finally{await app.close();}
 });

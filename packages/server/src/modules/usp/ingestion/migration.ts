@@ -4,3 +4,7 @@ import { sql } from '../../../infrastructure/sql-loader';
 export async function migrateManualIngestionTx(client: PoolClient) {
   await client.query(sql('ingestion.manual.schema'));
 }
+
+export async function migrateLargeOriginalTx(client: PoolClient) {
+  await client.query(sql('ingestion.large.schema'));
+}

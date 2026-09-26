@@ -13,6 +13,7 @@ export type SourceProfile =
   | "plan-png-v1"
   | "plan-pdf-v1"
   | "geojson-manual-v1"
+  | "large-original-v1"
   | "pdf-reference-v2" | "png-reference-v2" | "jpeg-reference-v2" | "csv-reference-v2" | "text-reference-v2" | "docx-reference-v2";
 export interface Issue {
   code: string;
@@ -120,6 +121,7 @@ export interface ControlPoint {
   locator: string;
 }
 export interface InspectionResult {
+  largeOriginal?: import('./usp/ingestion').LargeOriginalEvidence;
   manualProfile?: Omit<import('./usp/ingestion').SourceProfile, 'source' | 'caseId' | 'workspaceRevision' | 'workspaceFingerprint'> & {schemaFingerprint: string};
   gis?: import('./gis-inspection').GisInspection;
   referenceParts?: import("./area").DocumentPart[];

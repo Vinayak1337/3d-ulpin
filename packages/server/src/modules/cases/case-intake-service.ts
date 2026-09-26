@@ -1,5 +1,6 @@
 import { AppError } from '../../infrastructure/errors';
 import { readObject, sha256 } from '../../infrastructure/storage';
+import { largeOriginalDownload } from '../usp/ingestion/download';
 import {
   addUnit, applyLevels, createCase, getCase, getSource, listCases,
   loadDemoInputs, prepareCase, readDemoFile, readRealDemoAsset,
@@ -29,5 +30,9 @@ export class CaseIntakeService {
       throw new AppError(422, 'SOURCE_INTEGRITY', 'The retained original does not match its source receipt.');
     }
     return {bytes, name: source.name, mimeType: source.mime_type};
+  }
+  async streamedSourceFile(id:string,signal:AbortSignal){
+    const source=await getSource(id);
+    return source.profile==='large-original-v1'?largeOriginalDownload(id,signal):null;
   }
 }

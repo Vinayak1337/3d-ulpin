@@ -90,6 +90,97 @@
       "responseStatus": 200,
       "transportProfile": "json",
       "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/upload-limits",
+      "operationId": "GET_api_v1_ingestion_upload_limits",
+      "batch": "INGEST-06",
+      "disposition": "added",
+      "nativeController": "large-original",
+      "requestSchema": null,
+      "responseSchema": "limitsSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/uploads",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_uploads",
+      "batch": "INGEST-06",
+      "disposition": "added",
+      "nativeController": "large-original",
+      "requestSchema": "LargeUploadCreateSchema",
+      "responseSchema": "LargeUploadStatusSchema",
+      "responseStatus": 201,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_uploads_uploadId",
+      "batch": "INGEST-06",
+      "disposition": "added",
+      "nativeController": "large-original",
+      "requestSchema": null,
+      "responseSchema": "LargeUploadStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/parts/{partNumber}",
+      "operationId": "PUT_api_v1_ingestion_cases_caseId_uploads_uploadId_parts_partNumber",
+      "batch": "INGEST-06",
+      "disposition": "added",
+      "nativeController": "large-original",
+      "requestSchema": "LargeUploadPartSchema headers + binary",
+      "responseSchema": "LargeUploadStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "raw-binary",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/finalize",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_uploads_uploadId_finalize",
+      "batch": "INGEST-06",
+      "disposition": "added",
+      "nativeController": "large-original",
+      "requestSchema": "LargeUploadFinalizeSchema",
+      "responseSchema": "LargeUploadStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/abort",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_uploads_uploadId_abort",
+      "batch": "INGEST-06",
+      "disposition": "added",
+      "nativeController": "large-original",
+      "requestSchema": "LargeUploadGuardSchema",
+      "responseSchema": "LargeUploadStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/cleanup",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_uploads_uploadId_cleanup",
+      "batch": "INGEST-06",
+      "disposition": "added",
+      "nativeController": "large-original",
+      "requestSchema": "LargeUploadGuardSchema",
+      "responseSchema": "LargeUploadStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
     }
   ]
 }

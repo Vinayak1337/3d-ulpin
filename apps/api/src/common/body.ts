@@ -6,7 +6,7 @@ export const MULTIPART_BODY_LIMIT = 17 * 1024 * 1024;
 export const RAW_BODY_LIMIT = 16 * 1024 * 1024;
 
 /** Enforces the received byte count, including chunked requests with no Content-Length. */
-export function readBoundedBytes(request: IncomingMessage, limit: number): Promise<Buffer> {
+export function readBoundedBytes(request: IncomingMessage, limit: number, timeoutMs?: number): Promise<Buffer> {
   if (!Number.isSafeInteger(limit) || limit < 0) throw new Error('Invalid body limit.');
   const declared = request.headers['content-length'];
   if (declared !== undefined && (!/^\d+$/.test(declared) || Number(declared) > limit)) {
@@ -15,7 +15,9 @@ export function readBoundedBytes(request: IncomingMessage, limit: number): Promi
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
     let total = 0;
+    const timer = timeoutMs ? setTimeout(() => {request.pause();cleanup();reject(new AppError(408,'BODY_TIMEOUT','The bounded request body timed out.'));},timeoutMs) : undefined;
     const cleanup = () => {
+      if(timer)clearTimeout(timer);
       request.off('data', onData);
       request.off('end', onEnd);
       request.off('error', onError);
