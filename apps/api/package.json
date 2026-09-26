@@ -1,0 +1,40 @@
+{
+  "name": "@ulpin/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:boundary": "tsx --test test/boundary.test.ts",
+    "build": "pnpm typecheck && node scripts/build.mjs",
+    "start:built": "node dist/main.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.900.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.0.0",
+    "@ulpin/server": "workspace:*",
+    "dotenv": "^17.2.0",
+    "earcut": "^3.0.2",
+    "fflate": "0.8.2",
+    "geotiff": "3.0.5",
+    "papaparse": "^5.7.0",
+    "pdfjs-dist": "^5.4.296",
+    "pg": "^8.16.0",
+    "playwright": "1.63.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

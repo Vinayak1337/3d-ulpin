@@ -1,10 +1,2 @@
-import type { ExternalRoofScene } from './external-scene';
-
-/** Exact retained-source display projection. This never represents recorded interiors. */
-export type ExternalSceneResource = {
-  areaId: string;
-  featureId: string;
-  featureRevision: number;
-  source: { id: string; revision: number; sha256: string; bytes: number };
-  scene: ExternalRoofScene;
-};
+/** Temporary compatibility export; implementation: packages/server/src/modules/usp/external/external-resource.ts. */
+export type { ExternalSceneResource } from "@ulpin/server/modules/usp/external/external-resource";

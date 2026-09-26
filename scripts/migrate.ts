@@ -1,9 +1,10 @@
-import { migrate, pool } from "../apps/web/lib/server/db";
-import { ensureBucket } from "../apps/web/lib/server/storage";
+import { migrate, closePool } from "@ulpin/server/infrastructure/db";
+import { ensureBucket, closeStorageClient } from "@ulpin/server/infrastructure/storage";
 try {
   await migrate();
   await ensureBucket();
   console.log("Database schema and private source bucket are ready.");
 } finally {
-  await pool().end();
+  try { await closePool(); }
+  finally { closeStorageClient(); }
 }

@@ -1,5 +1,6 @@
-import { dispatchTick } from "../apps/web/lib/server/processing";
-import { pool } from "../apps/web/lib/server/db";
+import { dispatchTick } from "@ulpin/server/modules/cases/processing";
+import { closePool } from "@ulpin/server/infrastructure/db";
+import { closeStorageClient } from "@ulpin/server/infrastructure/storage";
 
 let stopping = false;
 process.on("SIGINT", () => {
@@ -11,20 +12,24 @@ process.on("SIGTERM", () => {
 async function run() {
   console.log("Application job dispatcher running.");
   let reportedError = false;
-  while (!stopping) {
-    try {
-      await dispatchTick();
-      reportedError = false;
-    } catch {
-      if (!reportedError)
-        console.error(
-          "Dispatcher cannot reach the application database. Start the platform and run db:migrate.",
-        );
-      reportedError = true;
+  try {
+    while (!stopping) {
+      try {
+        await dispatchTick();
+        reportedError = false;
+      } catch {
+        if (!reportedError)
+          console.error(
+            "Dispatcher cannot reach the application database. Start the platform and run db:migrate.",
+          );
+        reportedError = true;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 750));
     }
-    await new Promise((resolve) => setTimeout(resolve, 750));
+  } finally {
+    try { await closePool(); }
+    finally { closeStorageClient(); }
   }
-  await pool().end();
 }
 run().catch(() => {
   console.error("Dispatcher stopped unexpectedly.");
