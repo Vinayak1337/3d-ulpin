@@ -12,6 +12,7 @@ import { sha256, putPartObject, readPartObject, verifyObjectStream, putOriginalS
 import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 import { lockUnassignedSourceCase } from './service';
+import { appendCaseIngestionTx } from './events';
 
 const uuid=z.string().uuid(),now=()=>new Date(),lease=()=>new Date(Date.now()+limits.leaseSeconds*1000);
 type Upload=Record<string,any>;
@@ -55,6 +56,10 @@ function receiving(upload:Upload){
 async function save(client:PoolClient,upload:Upload){
   await client.query('UPDATE usp_source_uploads SET revision=$2,case_revision=$3,state=$4,body=$5,lease_token=$6,lease_expires_at=$7,finalize_attempts=$8 WHERE id=$1',
     [upload.id,upload.revision,upload.case_revision,upload.state,upload.body,upload.lease_token||null,upload.lease_expires_at||null,upload.finalize_attempts]);
+  await uploadEvent(client,upload);
+}
+async function uploadEvent(client:PoolClient,upload:Upload){
+  await appendCaseIngestionTx(client,upload.case_id,{kind:'upload.changed',uploadId:upload.id,uploadRevision:upload.revision,status:upload.state},upload.operator_subject);
 }
 async function failure(id:string,token:string,code:string){
   await transaction(async client=>{
@@ -89,6 +94,7 @@ export class LargeOriginalService {
       const body={input,cleanupPending:true,lastError:null};
       const upload=(await client.query(`INSERT INTO usp_source_uploads(id,case_id,operator_subject,request_key,request_hash,revision,case_revision,state,source_id,original_bytes,body,expires_at)
         VALUES($1,$2,$3,$4,$5,1,$6,'receiving',$7,$8,$9,$10) RETURNING *`,[id,caseId,subject,input.requestKey,digest,current.revision,sourceId,input.bytes,body,expiresAt])).rows[0];
+      await uploadEvent(client,upload);
       return status(client,upload,current.revision);
     });
   }
