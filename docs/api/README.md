@@ -4,6 +4,16 @@ The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 docu
 
 After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs). Its [OpenAPI JSON](http://127.0.0.1:3188/api/docs/openapi.json) and [dataset catalogue](http://127.0.0.1:3188/api/docs/datasets.json) are served by the same loopback backend. Swagger is light-only and opens schemas first. Write execution and the external validator are disabled. These links describe the configured default address; they do not mean a server is currently running.
 
+## Consolidated building registry PDF
+
+`GET /api/v1/buildings/{buildingId}/register?profile=consolidated&format=pdf` downloads a private, deterministic A4 report. Use `format=json` for the same structured `building-registry-summary/1` data or `format=html` for printable HTML. Optional `record={floor-or-space-UUID}` narrows the existing recorded selection. CSV and ZIP are not supported for this profile; default exports remain unchanged.
+
+The report includes explicit parcel associations/official ULPIN assertions, separate application building/floor/unit IDs, source-backed address/PIN/locality, ownership claims and explicit residents/occupants. `groups` organizes the selected floor/unit links without inferring parents or repeating people. Optional `RegistryBody.registryMetadata.address` and `.occupancy` use the existing draft/edit/review/commit APIs; every fact carries a source UUID, revision, SHA-256 and locator. Ownership is not residency. Unknown, absent, null, withheld and conflicting remain distinct. Geometry, measurements, original pages and contact/identity numbers are excluded. See the OpenAPI schemas for exact fields.
+
+For a fresh active native GeoJSON import awaiting recording, explicitly add `includeUnrecorded=true`. The resulting **UNRECORDED / awaiting review** summary has `recordState=unrecorded`, revision 0, no recorded date, and unknown registry facts. It cannot include a selected floor/unit or claim owners, residents or official parcel identifiers. Historical archived sources remain denied; the option never records or qualifies geometry.
+
+[Verification and source references](../evidence/usp/registry-report-handoff.md): unchanged official NYC bytes produced JSON/PDF successfully in an isolated runtime; both PDF pages were visually inspected. Recorded-only rejection and archived-source denial were retained. No real recorded inhabited-building dataset is available, so populated owner/resident and floor/unit rendering remains unqualified. This export is a generated private summary, not a title certificate or the separately gated scoped evidence packet.
+
 ## Serving environment status
 
 **Sufficiency MVP upgrade verified:** serving code `71d3a30` exposes163operations/190schemas on port3188. Health, published OpenAPI/catalogue equality and a read-only needs-input request passed. The additive question table/index migration preserved every pre-existing row and original;122foreign keys have no orphans. Live providers remain disabled. The real source→question/Not sure and scanned-PDF tool-state journey is separately pinned isolated evidence. See the [serving observation](serving-observation.json).
