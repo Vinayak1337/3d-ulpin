@@ -1,0 +1,1195 @@
+{
+  "formatVersion": 1,
+  "phase": "NEST-01 phase 1",
+  "sourceCommit": "39a70488f44800567ff42ef175b94d42c2ee66b5",
+  "runtimeAuthority": "pending NEST-01 phase 2 wiring; existing TypeScript migration calls still execute",
+  "transactionScopes": {
+    "docker-init": "Existing compose initdb mount; only a fresh PostgreSQL data directory; separate from migrate().",
+    "query-batch": "Each original multi-statement SQL literal is one pool.query call. Keep one query/atomic batch and sequential call order; no explicit app transaction encloses all six calls.",
+    "usp": "One explicit transaction via db.transaction; acquire usp-migration-ledger advisory transaction lock before ledger checks and DDL; commit only after geometry marker.",
+    "spatial-datasets": "One explicit transaction via db.transaction, guarded by in-process ready promise; acquire spatial-dataset-schema-v1 advisory transaction lock first.",
+    "dataset-ml": "After ensureSpatialDatasets(), one explicit transaction via db.transaction, guarded by in-process ready promise; acquire dataset-ml-schema-v1 advisory transaction lock first."
+  },
+  "schemaProducers": [
+    {
+      "source": "infra/postgres/001-extensions.sql",
+      "function": "Docker initdb",
+      "timing": "fresh-cluster-init"
+    },
+    {
+      "source": "apps/web/lib/server/db.ts",
+      "function": "migrate",
+      "timing": "migration-command"
+    },
+    {
+      "source": "apps/web/lib/server/registry-db.ts",
+      "function": "migrateRegistry",
+      "timing": "migration-command"
+    },
+    {
+      "source": "apps/web/lib/server/area-db.ts",
+      "function": "migrateAreas",
+      "timing": "migration-command"
+    },
+    {
+      "source": "apps/web/lib/server/officer-db.ts",
+      "function": "migrateOfficer",
+      "timing": "migration-command"
+    },
+    {
+      "source": "apps/web/lib/server/officer-ai.ts",
+      "function": "migrateOfficerAi",
+      "timing": "migration-command"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-ml-db.ts",
+      "function": "migrateSpatialMl",
+      "timing": "migration-command"
+    },
+    {
+      "source": "apps/web/lib/server/usp/migrations.ts",
+      "function": "migrateUsp",
+      "timing": "migration-command"
+    },
+    {
+      "source": "apps/web/lib/server/usp/geometry-migration.ts",
+      "function": "migrateUspGeometryTx",
+      "timing": "migration-command"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-dataset-db.ts",
+      "function": "ensureSpatialDatasets",
+      "timing": "lazy-first-use"
+    },
+    {
+      "source": "apps/web/lib/server/dataset-ml-db.ts",
+      "function": "ensureDatasetMl",
+      "timing": "lazy-first-use-after-spatial-datasets"
+    }
+  ],
+  "steps": [
+    {
+      "id": "bootstrap.postgis",
+      "source": {
+        "path": "infra/postgres/001-extensions.sql",
+        "function": "Docker initdb",
+        "line": 1,
+        "kind": "file"
+      },
+      "file": "sql/00-bootstrap/postgis.sql",
+      "loadTiming": "fresh-cluster-init",
+      "transactionScope": "docker-init",
+      "advisoryLock": null,
+      "condition": "Only on new PostgreSQL data directory",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "docker-init-file",
+      "order": 0,
+      "sha256": "a6f930447ac37ac87795cfa0652ad6d44f6cf683422cb0226f00b181e33fb1bd",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "292b36a0ab84f6022c19fafc224ce4d2a090fa4a4df94a861480c5835ff6f864"
+        }
+      ]
+    },
+    {
+      "id": "core.schema",
+      "source": {
+        "path": "apps/web/lib/server/db.ts",
+        "function": "migrate",
+        "line": 51,
+        "kind": "query-literal"
+      },
+      "file": "sql/01-core/core.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 1,
+      "sha256": "38a57b979d74b45c95e6a38ba5be4af20f9bac45f754b2b72f099d984ea032e4",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "1cb12698f59fbbb8d17ccc2c878983129bf1ce252e0ea24375c93bdaf5a736f3"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "86b8dc047a27784bfbdc5f5372d2733a06be2a62f03a7dda95d344913427d380"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "fdc8a0d5218521869676a036253b310b001567ae2e72af7803f27742b68832f3"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "1621c9cdd576e9d0a8c55e0202fcdb7dc387c57ca92ce52aadaf6bb976bf0aa2"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "e03ab4a6e9c19fa31dd95899ecc3b2e0105da33e625f344b473c329736dd4d03"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "a6db266bc085f9f8b94dd2c3afd97f2b3c262ff106af21324fb8dc19b2afa6cc"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "ba8af18a8725e7aff1eefc2ab174b3ad3d990aa584628b90d4bcd1d934cc345f"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "471f0487df426b67c27a2e3b58a6193ef8a97681257b0792876336b9ac87b02a"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "da3a4eea041108075b8d7137c9fd0c0a4b854d20fc457e2442ee766cc7f812ed"
+        },
+        {
+          "ordinal": 10,
+          "sha256": "aef468b43a97ebd5c21c0f000895aaad4b3d6469521c15b17d0bcf8ac5803538"
+        },
+        {
+          "ordinal": 11,
+          "sha256": "9f9f67b5cfe94e5b881ed054e5038255e93dca7e70eadc17322d1a4b14b18e74"
+        },
+        {
+          "ordinal": 12,
+          "sha256": "8e12be053d816c474868f6a0ab82e641bdddc5682a11e8363858cfbff0bea195"
+        },
+        {
+          "ordinal": 13,
+          "sha256": "c1c23c91ba5b2da88b1dc63ec8b820205910994bef21cd63d143fd7d67beba15"
+        },
+        {
+          "ordinal": 14,
+          "sha256": "5ce5404e9d5c092093a6c2e1f5b33b9eb83377d342210dd9529cf3ba0db466d9"
+        },
+        {
+          "ordinal": 15,
+          "sha256": "a064612c9d1b0aa76f8d1f313200b190386527328f98d7c328957b81cc158606"
+        },
+        {
+          "ordinal": 16,
+          "sha256": "a2c5d75ddd840ae02f4f8bbe6c51327376d001de97c0a9cfac7a4f629c4295fb"
+        }
+      ],
+      "dataDependent": [
+        "Backfill identity_floors from all historical units whose case/label is absent, including inactive units.",
+        "Backfill identity_spaces for units without an identity-space row; ordinals derive from existing maximum and creation order."
+      ]
+    },
+    {
+      "id": "registry.schema",
+      "source": {
+        "path": "apps/web/lib/server/registry-db.ts",
+        "function": "migrateRegistry",
+        "line": 3,
+        "kind": "query-literal"
+      },
+      "file": "sql/10-registry/registry.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 2,
+      "sha256": "c7b95ad1b6b76009a7b3e0c113d0c157d709e5c11b4ba62cf56a9899ce3aa186",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "8d263cf0ee938729d466e3b2dd1ecdb783508ccfa22f1a96813c84632beb747f"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "d02c43d6f1eccf023562544d5765ef12d3fe9e3b51c6333aedca032eec92e22b"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "8eb9ea3ccefa2c995b8caf58d7736a6950022b2083480e1100f6920246e52d70"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "2faee653695944ff3044dc1c15531babd775614aed8f8c84f37ceff854dbf3f5"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "969d8a4cf318fc6ea95116eb90e2f1257f53c2cb8401523b97f30fd6b233dd36"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "01533ddec186986578b02a18b8158f4b83b6cd6fd0cf97c1a952597ba59f2462"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "197bb44734809466476f18bd989b6e5c78c01283beb17384b6b58a5feac6edf3"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "95ed92385f5f7c7c7d58203d2caeff590c2a0a0669f627d5c80c6a460145e960"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "8d61c794fe1b72200f05b1f967122122280f6576f5738bc6e63d75e8904ebe57"
+        },
+        {
+          "ordinal": 10,
+          "sha256": "22583ef611a8bfd32f1c1483a1bf90fcdea0f8c377159defc484a789a0c7c1da"
+        },
+        {
+          "ordinal": 11,
+          "sha256": "46db78c02fda170fb06d0b5030af22d38d99a40eca748f9cc5855a6aa767a1a9"
+        },
+        {
+          "ordinal": 12,
+          "sha256": "87d979ee158dcb56b37114807b59a61bce7024b4721487f3ae156eb201aa6e0a"
+        },
+        {
+          "ordinal": 13,
+          "sha256": "089e9979bdac619d59eea5027fe5188b960e7343adf314c23bef659216204ffd"
+        },
+        {
+          "ordinal": 14,
+          "sha256": "4994a794e438e5efba734b43fa9e5f4bcef930ba2bc0696cfa4797781ab3a837"
+        },
+        {
+          "ordinal": 15,
+          "sha256": "2599879810dac96f7abb2faf125d77b40f30c33a4d9750f51c9723b6fd1c7ec8"
+        }
+      ]
+    },
+    {
+      "id": "area.schema",
+      "source": {
+        "path": "apps/web/lib/server/area-db.ts",
+        "function": "migrateAreas",
+        "line": 5,
+        "kind": "query-literal"
+      },
+      "file": "sql/20-area/area.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 3,
+      "sha256": "d3f44a534ba6192046396eeaf6ba3b874b35e2fd59018508d7b6de9acd80b8db",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "0042e91eb59bb9aa60bf4dc9d1911c90e093e383056ac1e26f314a2fb33dc49e"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "28f6615b44b29f6da76aafbac355a8087e838d3d6597a501b286430d943d9ade"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "68320a46acdb5eeb0e7f0f30ae6195c6512273ebf3c4629a7225bc3e61ed9e3b"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "0bf1af4f426f3d3bc8ae4247127ff9a9f61372a3730f2fcf71669ee85da9e643"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "ba5848fe4adebeeadbc5472ab8320c15183b7911cc4a024a878f76a8636c6269"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "db9e9212fe397840378b3e8e0111436dbe8fc70d5bc33e5ca48af72e39a3c306"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "3cbff25e2e1c527287c43e30270dc999079cbd0d6d7c3276ba0ef396235f264e"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "c5864b4093683e4f638982a4457e6ba3c7552a22ee5b28b612c4c520a8f76e81"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "1ea019aae681cfd51c56829d9ab72b9692c8951d29181e62df8a84a0e9da56bb"
+        },
+        {
+          "ordinal": 10,
+          "sha256": "f2f2bd152da8606f9bb03724e88df1e7914200be070f6e8a0b0fcb8f2942dbb0"
+        },
+        {
+          "ordinal": 11,
+          "sha256": "72f283e0d65d92658ff9dd649b636fe1cbc68da71ab957006e48f1241efc1822"
+        },
+        {
+          "ordinal": 12,
+          "sha256": "ca37444d0816bfae1d77900729bd177e0f3fc73c4e46843aa6113672020735d2"
+        },
+        {
+          "ordinal": 13,
+          "sha256": "f946cb074d5d890379a69e3fdc5aa525076e547e696e85fb49ae65f10a9346b8"
+        },
+        {
+          "ordinal": 14,
+          "sha256": "74f03e1353b72c9f6774ecd0995ce72b1b7a22fb9ba25b2d50c71d3b003b9893"
+        },
+        {
+          "ordinal": 15,
+          "sha256": "b53f5e4312a003abe38016cfe630e4ddbcd18b375a4d62e592d473f7b85384bc"
+        },
+        {
+          "ordinal": 16,
+          "sha256": "99d5523e6bb10f16813e34315d1f887ab84a1025a31d9f979bc002c77a2898f0"
+        },
+        {
+          "ordinal": 17,
+          "sha256": "26718098448f1c18ea737740d52b9603c2172e2c1cce523097ba5fc9f0a988c5"
+        },
+        {
+          "ordinal": 18,
+          "sha256": "136b7606dc75f0d7527971e90c9837682811d6fa8cd38369bdf074d78595e2a7"
+        },
+        {
+          "ordinal": 19,
+          "sha256": "94a223c8aca8e3f10404a860eb43ef637c17558b4e4355547925b558b88c3f32"
+        },
+        {
+          "ordinal": 20,
+          "sha256": "74fcea2077f2055a34f5327763a31ccd38660383f7a38ebbd88f256d4c68dbfe"
+        },
+        {
+          "ordinal": 21,
+          "sha256": "8e379cf2fa8bb5d8cae0941b93db7aee98c8f0bc68c951626231de74c57f4c7f"
+        }
+      ],
+      "dataDependent": [
+        "Insert one map_areas row per existing registry_sites row when that site has no area; ON CONFLICT(site_id) DO NOTHING."
+      ]
+    },
+    {
+      "id": "officer.schema",
+      "source": {
+        "path": "apps/web/lib/server/officer-db.ts",
+        "function": "migrateOfficer",
+        "line": 3,
+        "kind": "query-literal"
+      },
+      "file": "sql/30-officer/officer.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 4,
+      "sha256": "04e5943b4b88acf6d158ea5e2e9b1f2d177b67a5396747455dc8ff7d8056b7fc",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "3b00e21d91205d390db4affc8c5f7771a91d4f81ec50df2e57f6a049b4c63042"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "99eb0aab27efaf81d49314783c2515e9740e5a24578557aef5ebc1ca50e4b3ab"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "a8a68f3c491b912950b20d5e02e2a18e53df7c6249dcf43e7c4a550a169c5c0b"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "1765fc0e788ce6cab26e5cbcc913083d86b7d47085d68ed183ea1b4b340056b9"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "ce3f63977c4544b7a34855d58dea4b7dfedc905c93bb681cba1bd09fc8c85859"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "70fad11be008db46ef4bf54b005c2152ec01512a82dfe31d49c14f3d35907d7c"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "33f9a3b15d2fbf2f5decb8ff0bd4b0bb3a06ed28f2a68320acbc16a513ee320c"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "a7c4ab4b14a0b000cf7a54b3bbf43eb6a283a372cb7b5414d7fd51c3331c77b1"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "1d2b347ef5cf50ba665a609fcf1da274336a5c94576685f8e0155d23f69ab398"
+        },
+        {
+          "ordinal": 10,
+          "sha256": "f104386c4fdb2313c0141fe4e3777a4e91a5e12d9ce876ad954acf0e01df80b9"
+        },
+        {
+          "ordinal": 11,
+          "sha256": "994b8ea129a301e1b67463de7eee29843c922abad64cad252962e8a439de91fc"
+        }
+      ]
+    },
+    {
+      "id": "officer-ai.schema",
+      "source": {
+        "path": "apps/web/lib/server/officer-ai.ts",
+        "function": "migrateOfficerAi",
+        "line": 15,
+        "kind": "query-literal"
+      },
+      "file": "sql/40-officer-ai/officer-ai.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 5,
+      "sha256": "d9f7b4d88657d4cecc5b075357c5f130075eaade1080d659dec796f309200bb1",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "7cd4aeae5ee97d08ca14f2c234504b6d1672f8b1a21cd7068c58b6c40ff2749f"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "62003e7b34a6264498a5b9c8fabcc06b563b80390bf6d60eafe0795f9eaff35e"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "0c72de72952b3781e3d5c05476ed9c21fdb7acd2497b09b3eee85c3800f7f760"
+        }
+      ]
+    },
+    {
+      "id": "spatial-ml.schema",
+      "source": {
+        "path": "apps/web/lib/server/spatial-ml-db.ts",
+        "function": "migrateSpatialMl",
+        "line": 5,
+        "kind": "query-literal"
+      },
+      "file": "sql/50-spatial-ml/spatial-ml.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 6,
+      "sha256": "8db14d3a8a1a1c5e9b653fccbd484544bc130a979e66aec70deda9982a09e796",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "836066677160096b413a2ba308a4e3234cd927e288bdccb55b4a6130f8b167b3"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "fcf76f619479e311f19310928279f31388ec664ee10e55901998362c69adf95c"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "9b24b52e94193639c62f947b45c9917b497064f57a050ce11bd0fed7433cb723"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "2c684a849907b00b04cf1537eedc66e262fc0d0f1fed7326855bde6e99723f7e"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "08125c88f1e71d689f957b4ade8fea00c377fab19664e80a84b51dfe120628b6"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "558c01d7df71912b6239eee4a99ce705c40c795dd22252ddb658a947df7dda8c"
+        }
+      ]
+    },
+    {
+      "id": "usp.lock",
+      "source": {
+        "path": "apps/web/lib/server/usp/migrations.ts",
+        "function": "migrateUsp",
+        "line": 7,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/00-lock.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 7,
+      "sha256": "7731379d10385815e92f6e9f8a1c180f3346b534cf6e7a82f3437a0b5313d2b8",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "7731379d10385815e92f6e9f8a1c180f3346b534cf6e7a82f3437a0b5313d2b8"
+        }
+      ]
+    },
+    {
+      "id": "usp.ledger",
+      "source": {
+        "path": "apps/web/lib/server/usp/migrations.ts",
+        "function": "migrateUsp",
+        "line": 8,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/01-ledger.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 8,
+      "sha256": "32ed7d9219781cf4dcfc76f7de268885e9b904236fdf65e030da14b8c90f5a40",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "32ed7d9219781cf4dcfc76f7de268885e9b904236fdf65e030da14b8c90f5a40"
+        }
+      ]
+    },
+    {
+      "id": "usp.f1.check",
+      "source": {
+        "path": "apps/web/lib/server/usp/migrations.ts",
+        "function": "migrateUsp",
+        "line": 12,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/02-f1-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "name",
+          "value": "usp_f1_min_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 9,
+      "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a"
+        }
+      ]
+    },
+    {
+      "id": "usp.f1.schema",
+      "source": {
+        "path": "apps/web/lib/server/usp/migrations.ts",
+        "function": "migrateUsp",
+        "line": 13,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/03-f1-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "if ledger has no usp_f1_min_001",
+      "parameters": [],
+      "guardedBy": "usp.f1.check",
+      "callMode": "one-query-call",
+      "order": 10,
+      "sha256": "a869eebc2fd716999c3101e8e766668b02aaa4605294e7c81df5462ee661fdd4",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "ce5c299a2fa228b4ed5efcabeaca3a4c22ffbee1f2e43e5d4d0f75e52eef49a1"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "0f1afbf01d247c1901ae4de1a4fd6d7abeed4543096a7e716b3ac465444b278d"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "47473f08695d25709b4b351ceaec8b54106f28b04831324da8a19c92e5f0bd0a"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "33a8d3ddb93238e45c7fcf9427eb1e942ab05534edb4e292dc0b4eda9ab067f0"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "8d246126e1db1d6ec742660145118ef5667234f7169238b65ad64154de6933c3"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "ec18c9894d53859c23f3d1b046df81b5131e7c07c49668be11fa3bd349540d53"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "48544047409cea8cdae3db613ca668d2b9e0298ab740973654781e6a0dc985ad"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "724c8d1c4e75a422df780450b6c2f601de8058bca4f87a32a48879f4deffab37"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "1e5034ba12328485c8819bf3dcc198727f18c23a38b2364b811a72415d08ae73"
+        },
+        {
+          "ordinal": 10,
+          "sha256": "4db011c3a49ba15271085fad36cb10851c7113cbc7f31eb85c53543a8ae8b679"
+        }
+      ]
+    },
+    {
+      "id": "usp.f1.mark",
+      "source": {
+        "path": "apps/web/lib/server/usp/migrations.ts",
+        "function": "migrateUsp",
+        "line": 64,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/04-f1-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.f1.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "name",
+          "value": "usp_f1_min_001"
+        }
+      ],
+      "guardedBy": "usp.f1.check",
+      "callMode": "one-query-call",
+      "order": 11,
+      "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04"
+        }
+      ]
+    },
+    {
+      "id": "usp.identity.check",
+      "source": {
+        "path": "apps/web/lib/server/usp/migrations.ts",
+        "function": "migrateUsp",
+        "line": 67,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/05-identity-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "identityName",
+          "value": "usp_identity_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 12,
+      "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a"
+        }
+      ]
+    },
+    {
+      "id": "usp.identity.schema",
+      "source": {
+        "path": "apps/web/lib/server/usp/migrations.ts",
+        "function": "migrateUsp",
+        "line": 68,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/06-identity-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "if ledger has no usp_identity_001",
+      "parameters": [],
+      "guardedBy": "usp.identity.check",
+      "callMode": "one-query-call",
+      "order": 13,
+      "sha256": "395dde7788b4a56f575791e815dc367407cce6879cd4860c878dc24d5df6d5c4",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "88ba2d094d1a11a0f2857daa21d9248713549056cfd52550899ac298d0dfb0af"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "a019bba72c6aa187a582b41c583e1aa8adb2af3a63226c774386cd81748a88a0"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "2ac5f5a9baf2f9e74017f51d9dd716b45de87c1e883b50d14b46c618d4120cab"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "78345fab4cd3a5dad4119840158cc7bdbcce7ce2bac184eb92b5f3ddb24250b5"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "0973d3a82ad251e557fedb10080d1dd2b8a6d4eea6f57e2e44f0954952d51a7a"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "a5a79be69b8301f1e4b7e2bb11fc4e2ad11137c79b427f27b2bd220217659e75"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "0f068bb46cd2fb9c1c962f47b670f44d63fd8e03583913546659461928f0ec6b"
+        }
+      ]
+    },
+    {
+      "id": "usp.identity.mark",
+      "source": {
+        "path": "apps/web/lib/server/usp/migrations.ts",
+        "function": "migrateUsp",
+        "line": 122,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/07-identity-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.identity.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "identityName",
+          "value": "usp_identity_001"
+        }
+      ],
+      "guardedBy": "usp.identity.check",
+      "callMode": "one-query-call",
+      "order": 14,
+      "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04"
+        }
+      ]
+    },
+    {
+      "id": "usp.geometry.check",
+      "source": {
+        "path": "apps/web/lib/server/usp/geometry-migration.ts",
+        "function": "migrateUspGeometryTx",
+        "line": 6,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/08-geometry-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "name",
+          "value": "usp_geometry_separation_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 15,
+      "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a"
+        }
+      ]
+    },
+    {
+      "id": "usp.geometry.schema",
+      "source": {
+        "path": "apps/web/lib/server/usp/geometry-migration.ts",
+        "function": "migrateUspGeometryTx",
+        "line": 7,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/09-geometry-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "if ledger has no usp_geometry_separation_001",
+      "parameters": [],
+      "guardedBy": "usp.geometry.check",
+      "callMode": "one-query-call",
+      "order": 16,
+      "sha256": "a392f73f2dd2be9b632355f2244eed2542c70f485c43aa2707013914a4441fb0",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "9bee579311b21f1bb0cc1d4c84635f990a1e0f72e0acb9cbcc4a0fc60f283336"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "707275ab3568ad15111e1349205ddc4dd360b9431916ec57b4a7c8723134c9d8"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "eaff0712d2a50742a189795a5014db206e09e3092087451c626dde847152e03b"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "330f882b3ee61a8a6f072e6bc5632cd081a8308495a6bc603e6cb931104060ef"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "5cf901e79f26467decfffc1aa51bcd3c34048e4aa07f72e92416976364253918"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "45dbf4415f4ea359c0477fab5116fe27e116e367f1527470cf2516a24928a350"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "67704d92fddb343e8b991b2604164e9f88c4e525a26185cb5cf6bb4b16db2800"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "7f35fd915f7e87b38c8952adca2fd0327d90c48a981f791a86b3d77095698ac1"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "4f6de76cbb6736111f5e09770a8b01d23cc0df08477d1b8e1413a9f671bc0c97"
+        },
+        {
+          "ordinal": 10,
+          "sha256": "c9b4a3de9c579511aaf493cec4f07f10c2a9bcda6d0d9d98a604f4b59e1fd2b3"
+        },
+        {
+          "ordinal": 11,
+          "sha256": "25752f36bdd93459f6c684328dacf2ae02d5adfd01ebe81963c583d1022c6782"
+        },
+        {
+          "ordinal": 12,
+          "sha256": "43ad14d374efed7da63b53dfa35012e83e0e7e05a1490b327421f2f913e8fda4"
+        },
+        {
+          "ordinal": 13,
+          "sha256": "986a8c555078c6f3bd5b1542167c2a52459c3efb9f0cfabd774708afc1e30eaa"
+        },
+        {
+          "ordinal": 14,
+          "sha256": "b3ffdc7ee27f65e5f597e6bde2f96d4bec84c92694be4082732876c5bdf6fd16"
+        },
+        {
+          "ordinal": 15,
+          "sha256": "85ed5854dfd136e73cb8d762b82193b4cc16182137eac0e02553601e786d3551"
+        },
+        {
+          "ordinal": 16,
+          "sha256": "4baf3545dee55a4611e9a0e5ff524a45fb3238013d3b935a7ac8dd0039344bfc"
+        },
+        {
+          "ordinal": 17,
+          "sha256": "52a30ab66cbcd9361129314a4b3d64cb9f8e9e2fe6a37678260b59835b24959c"
+        },
+        {
+          "ordinal": 18,
+          "sha256": "02aeed33c16d6f86624e38b699e13565fbddc561a52dd06466ecf384dee54883"
+        },
+        {
+          "ordinal": 19,
+          "sha256": "3bd94be76b4134b6fbd435846f76fd8d325ec3f2b53c52a9bdd17640580edb10"
+        },
+        {
+          "ordinal": 20,
+          "sha256": "205da4fa3541bf80611c62223010e59e0262df47617cbefef773bb5c17177377"
+        },
+        {
+          "ordinal": 21,
+          "sha256": "53f629ea8186840b354f6aa2bc3d762f84ec23a634eb0ff7a57996591e1581dc"
+        },
+        {
+          "ordinal": 22,
+          "sha256": "471f31f767f80a8f4001a9b606f98e3e803ef3dc028cfdcdbaf946f410390c4f"
+        },
+        {
+          "ordinal": 23,
+          "sha256": "f3ed4e40b58f9ebe00dbc3f54b59ca384ba9efecaf563d486995c9ec224b22ea"
+        },
+        {
+          "ordinal": 24,
+          "sha256": "e903ad0fa12c89389181c8abf1f191822287da8b5128244a5bd29d68efad32b0"
+        },
+        {
+          "ordinal": 25,
+          "sha256": "f5e674ec7dba80db4967409469e06dec71872bfd22c898336e77123d5038696b"
+        },
+        {
+          "ordinal": 26,
+          "sha256": "3c986550881ad8353eee50e9e5d6687ebe31f7ee2a6933793259c42ee4a7c873"
+        },
+        {
+          "ordinal": 27,
+          "sha256": "4cf524219159c87d4e29699b04297a5e62222c2733dfbd1606074345c429285e"
+        },
+        {
+          "ordinal": 28,
+          "sha256": "90f31b921652b4f9ed06c652eaf9f877186950253c959ae962d9b7ebac890ebb"
+        }
+      ],
+      "internalConditions": [
+        "DO block creates only absent USP reader/display roles, rejects unsafe pre-existing role attributes, then grants role membership to current_user.",
+        "Six NOT VALID constraints reject future incompatible writes without validating historical rows."
+      ]
+    },
+    {
+      "id": "usp.geometry.mark",
+      "source": {
+        "path": "apps/web/lib/server/usp/geometry-migration.ts",
+        "function": "migrateUspGeometryTx",
+        "line": 134,
+        "kind": "query-literal"
+      },
+      "file": "sql/60-usp/10-geometry-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.geometry.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "name",
+          "value": "usp_geometry_separation_001"
+        }
+      ],
+      "guardedBy": "usp.geometry.check",
+      "callMode": "one-query-call",
+      "order": 17,
+      "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04"
+        }
+      ]
+    },
+    {
+      "id": "datasets.lock",
+      "source": {
+        "path": "apps/web/lib/server/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets",
+        "line": 6,
+        "kind": "query-literal"
+      },
+      "file": "sql/70-spatial-datasets/00-lock.sql",
+      "loadTiming": "lazy-first-use",
+      "transactionScope": "spatial-datasets",
+      "advisoryLock": "spatial-dataset-schema-v1",
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 18,
+      "sha256": "627ee6b1294b388f440b94d8814669cf14d1155e1e50bdbe1b956bebb39bfc4e",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "627ee6b1294b388f440b94d8814669cf14d1155e1e50bdbe1b956bebb39bfc4e"
+        }
+      ]
+    },
+    {
+      "id": "datasets.schema",
+      "source": {
+        "path": "apps/web/lib/server/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets",
+        "line": 7,
+        "kind": "query-literal"
+      },
+      "file": "sql/70-spatial-datasets/01-schema.sql",
+      "loadTiming": "lazy-first-use",
+      "transactionScope": "spatial-datasets",
+      "advisoryLock": "spatial-dataset-schema-v1",
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 19,
+      "sha256": "c6656116378ff05b83412b29e671b1c03046724482357556d0932b29979fe4d3",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c6656116378ff05b83412b29e671b1c03046724482357556d0932b29979fe4d3"
+        }
+      ]
+    },
+    {
+      "id": "datasets.archived-column",
+      "source": {
+        "path": "apps/web/lib/server/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets",
+        "line": 18,
+        "kind": "query-literal"
+      },
+      "file": "sql/70-spatial-datasets/02-archived-column.sql",
+      "loadTiming": "lazy-first-use",
+      "transactionScope": "spatial-datasets",
+      "advisoryLock": "spatial-dataset-schema-v1",
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 20,
+      "sha256": "b8579a7d2dacda970c77c45739e249ef880e8ff9ea5e57052d79df701fb6f2a9",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "b8579a7d2dacda970c77c45739e249ef880e8ff9ea5e57052d79df701fb6f2a9"
+        }
+      ]
+    },
+    {
+      "id": "datasets.identifier-version-column",
+      "source": {
+        "path": "apps/web/lib/server/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets",
+        "line": 19,
+        "kind": "query-literal"
+      },
+      "file": "sql/70-spatial-datasets/03-identifier-version-column.sql",
+      "loadTiming": "lazy-first-use",
+      "transactionScope": "spatial-datasets",
+      "advisoryLock": "spatial-dataset-schema-v1",
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 21,
+      "sha256": "8c2d9cf455022bef5957acb09d23814db781ee3055911f1b20e39c31773d9dd2",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "8c2d9cf455022bef5957acb09d23814db781ee3055911f1b20e39c31773d9dd2"
+        }
+      ]
+    },
+    {
+      "id": "datasets.identifiers",
+      "source": {
+        "path": "apps/web/lib/server/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets",
+        "line": 20,
+        "kind": "query-literal"
+      },
+      "file": "sql/70-spatial-datasets/04-identifiers.sql",
+      "loadTiming": "lazy-first-use",
+      "transactionScope": "spatial-datasets",
+      "advisoryLock": "spatial-dataset-schema-v1",
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 22,
+      "sha256": "72e313c0e05d06eafb6b02e135972fac2d22e66f3085b65fe49bba1ff6f66924",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "72e313c0e05d06eafb6b02e135972fac2d22e66f3085b65fe49bba1ff6f66924"
+        }
+      ]
+    },
+    {
+      "id": "dataset-ml.lock",
+      "source": {
+        "path": "apps/web/lib/server/dataset-ml-db.ts",
+        "function": "ensureDatasetMl",
+        "line": 5,
+        "kind": "query-literal"
+      },
+      "file": "sql/80-dataset-ml/00-lock.sql",
+      "loadTiming": "lazy-first-use-after-spatial-datasets",
+      "transactionScope": "dataset-ml",
+      "advisoryLock": "dataset-ml-schema-v1",
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 23,
+      "sha256": "744c8b7121324dc341caabab9c9ec979361ffc6513045c1c46fa212e31ff383c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "744c8b7121324dc341caabab9c9ec979361ffc6513045c1c46fa212e31ff383c"
+        }
+      ]
+    },
+    {
+      "id": "dataset-ml.schema",
+      "source": {
+        "path": "apps/web/lib/server/dataset-ml-db.ts",
+        "function": "ensureDatasetMl",
+        "line": 6,
+        "kind": "query-literal"
+      },
+      "file": "sql/80-dataset-ml/01-schema.sql",
+      "loadTiming": "lazy-first-use-after-spatial-datasets",
+      "transactionScope": "dataset-ml",
+      "advisoryLock": "dataset-ml-schema-v1",
+      "condition": "always",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 24,
+      "sha256": "2fc48e3f085d120f6c9d1877e2ccee64e7aa1a549bbad512df3584b3da794a40",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "9c7e7dffafd7144a7f526cfd8c82480df261ba20bb0dc32f158f06461441ea62"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "cdfb1709c6892ec13a4ba3ec79bc31017bbd0ebf2e5d169e3afc7c744dcb8375"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "8ff9289b8ef475388fb944d7385f0e531ed0e7712ac2b5379c5fa69bd9c1d55b"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "626a0e2212a33a3be950642158bce9f11af9ac6e3a1241dffbf53d603009c95e"
+        }
+      ]
+    }
+  ],
+  "plannedButAbsent": [
+    {
+      "topic": "H20 provider budget, reservation and queue tables",
+      "status": "no schema-producing migration in the pinned source",
+      "existingCode": "apps/web/lib/server/officer-ai-provider.ts:aiBudget is an in-memory request bound; officer_ai_runs stores run bodies"
+    }
+  ]
+}
