@@ -8,6 +8,7 @@ import { failSpatialMlJob, ingestSpatialMlJob, markSpatialMlRunning } from "../s
 
 import {failDatasetMl,ingestDatasetMl,markDatasetMlRunning} from '../datasets/dataset-ml';
 import {failProjectedJob,ingestProjectedResult,markProjectedRunning} from '../usp/ingestion/projected-publication';
+import {runPrivateMvtJob,failPrivateMvtJob} from '../usp/tiles/publication';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 
 type WorkerReply = {
@@ -172,6 +173,12 @@ export async function dispatchTick(): Promise<number> {
   );
   await Promise.all(
     pending.rows.map(async (job) => {
+      if(job.operation==='private-mvt'){
+        // This allowlisted SQL runner owns fencing/recovery and never reaches geo
+        // or the generic retry/error mutation below.
+        try{await runPrivateMvtJob(job.id);}catch{await failPrivateMvtJob(job.id,'MVT_PROCESSING_FAILED');}
+        return;
+      }
       try {
         if (!job.dispatched_at) {
           const reply = await geo("/internal/jobs", {

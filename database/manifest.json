@@ -1498,6 +1498,96 @@
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateProjectedVectorTx"
       }
+    },
+    {
+      "id": "ingestion.mvt.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/private-mvt-schema.sql",
+        "function": "migratePrivateMvtTx",
+        "kind": "authored-sql",
+        "task": "TILE-01",
+        "acceptedBase": "4c8d7510168235bef04139196851f0aac0defa4a"
+      },
+      "file": "sql/95-ingestion/private-mvt-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 30,
+      "sha256": "a8375ab18ccc5cded91da5e4f4ff11660dd7ecdfce12bfa6f18c56544fbb1bd5",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "6ada6a54d42ea22e7808d7a95dcf29bbc5032c16ac1802b863f58d2a0e17f008"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "b5c72153da2870ce770fe56835a0e6eafb7a9003d3d05ed7705a627032df1a6a"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "90e8a4677e09e4104110f1a29007c98992a622133b3eb12287438ee6258650c2"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "6b1e2653bd8fcf0880a964eaf275f4591d3e16907481ce14fcd19859be3331d2"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "f9055e871511f5e9226115b063a8e317bba682744b502a21be3603ed82143037"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "283aa66508b60f060b41303c8c19ee8b0f4997d27f762b86504c3dfecbf36777"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "6b0f99dc7ca3cf5e3a0787840559e495004f9e5202f321a7583603d4c4893770"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migratePrivateMvtTx"
+      }
+    },
+    {
+      "id": "ingestion.mvt.cell",
+      "source": {
+        "path": "database/sql/95-ingestion/private-mvt-cell.sql",
+        "function": "compilePrivateMvtCellTx",
+        "kind": "authored-sql",
+        "task": "TILE-01",
+        "acceptedBase": "4c8d7510168235bef04139196851f0aac0defa4a"
+      },
+      "file": "sql/95-ingestion/private-mvt-cell.sql",
+      "loadTiming": "private-display-compilation",
+      "transactionScope": "private-mvt",
+      "advisoryLock": null,
+      "condition": "server-pinned admitted source only; least-privilege compiler role",
+      "parameters": [
+        "accepted admission job UUID",
+        "source UUID",
+        "zoom",
+        "x",
+        "y"
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 31,
+      "sha256": "946c755049ca0b6377c00af21894b4490a6361ee13353c9b9f27b16430924f79",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "0bf1b74fa2603f2a16ff3b00b23aec61d7e498a9a475488d8cac78fe636c88ef"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/tiles/compiler.ts",
+        "function": "compilePrivateMvtCellTx"
+      }
     }
   ],
   "plannedButAbsent": []

@@ -6,6 +6,8 @@ import { LargeOriginalService } from '@ulpin/server/modules/usp/ingestion/large-
 import { IngestionEventsController } from './events.controller';
 import {ProjectedVectorController} from './projected-vector.controller';
 import {ProjectedVectorService} from '@ulpin/server/modules/usp/ingestion/projected-vector';
+import {PrivateMvtController} from './private-mvt.controller';
+import {PrivateMvtService} from '@ulpin/server/modules/usp/tiles/service';
 
-@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService]})
+@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService]})
 export class IngestionModule {}
