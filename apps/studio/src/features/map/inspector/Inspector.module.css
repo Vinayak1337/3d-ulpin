@@ -37,7 +37,7 @@
 .rightsRow { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; align-items: center; gap: 10px; font-size: 13px; }
 .findingWrap { display: grid; gap: var(--ui-space-3); align-content: start; overflow: auto; min-height: 0; }
 
-/* The inspector column is 320 px: tighter tabs and a shorter label column so values keep one line. */
+/* The inspector column is 300 px: tighter tabs and a shorter label column so values keep one line. */
 .inspector :global(.ul-tabs) { padding: 0 var(--ui-space-1, 4px); scrollbar-width: none; }
 .inspector :global(.ul-tab) { padding: 0 6px; }
 .inspector :global(.ul-dl) { grid-template-columns: 84px minmax(0, 1fr); column-gap: var(--ui-space-2); }

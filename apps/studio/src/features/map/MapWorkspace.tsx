@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { FilePlus } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
-import type { FindingInput, Measurement, Pick, SceneEngine, SceneState, SceneTool, Trench } from '@ulpin/scene';
-import { Badge, Banner, Icon, Legend, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
+import type { FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
+import { Badge, Banner, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
 import { useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
 import { effectiveColour } from '../../state/selection';
@@ -14,7 +14,7 @@ import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { polygonsOf } from './footprints';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
-import { MapSidebar } from './MapSidebar';
+import { MapSidebar, type ViewKey } from './MapSidebar';
 import { ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { SceneLabels } from './SceneLabels';
@@ -35,7 +35,7 @@ const ATTRIBUTION: Record<string, string> = {
 
 /**
  * S4–S6, S8: one canvas whose modes (area, building, level, findings, underground) share one selection,
- * one inspector and one set of floating tools. The URL holds the selection; the tool is transient.
+ * one inspector and one left navigation. The URL holds the selection.
  */
 export function MapWorkspace({ context }: { context: AreaContext }) {
   const { selection, dispatch, patch } = useSelection();
@@ -46,9 +46,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [tick, setTick] = useState(0);
   const [dialog, setDialog] = useState<'assign' | 'card' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [tool, setTool] = useState<SceneTool>('select');
-  const [sectionM, setSectionM] = useState<number | null>(null);
-  const [measurement, setMeasurement] = useState<Measurement | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
 
   const buildings = useMemo(() => context.features.filter((f) => f.kind === 'building'), [context.features]);
@@ -73,8 +70,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   const sceneState = useMemo<SceneState>(() => ({
     mode: selection.mode, buildingId: selection.buildingId, levelId: selection.levelId, spaceId: selection.spaceId,
-    tool, sectionM: tool === 'section' ? sectionM : null, finding: findingInput,
-  }), [selection, tool, sectionM, findingInput]);
+    tool: 'select', finding: findingInput,
+  }), [selection, findingInput]);
 
   // Parcel code under the selected building (area mode), from the parcel the building is associated with.
   useEffect(() => {
@@ -93,18 +90,17 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     else dispatch({ type: 'pickGround' });
   }, [dispatch]);
 
-  // Escape: leave a tool first, then unwind the selection one step (dialogs catch their own Escape).
+  // Escape unwinds the selection one step (dialogs catch their own Escape).
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || dialog) return;
       const target = event.target as HTMLElement | null;
       if (target?.tagName === 'INPUT' && (target as HTMLInputElement).type !== 'range') return;
-      if (tool !== 'select') { setTool('select'); setMeasurement(null); return; }
       dispatch({ type: 'escape' });
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [dispatch, dialog, tool]);
+  }, [dispatch, dialog]);
 
   useEffect(() => {
     if (!import.meta.env.DEV || !engine) return;
@@ -116,33 +112,18 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   const onView = useCallback(() => setTick((t) => (t + 1) % 1_000_000), []);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
-  const chooseTool = (next: SceneTool) => {
-    if (next === 'section' && feature) setSectionM((m) => m ?? Math.round(((engine?.buildingTopM(feature.id) ?? 20) / 2) * 10) / 10);
-    if (next !== 'measure') setMeasurement(null);
-    setTool(next);
-  };
-  const toggleUnderground = () => { setTool('select'); dispatch(selection.mode === 'underground' ? { type: 'leaveMode' } : { type: 'openUnderground' }); };
   const chooseColour = (c: Exclude<typeof colour, never>) => {
     patch({ colourBy: c });
     if (c === 'rights' && selection.mode !== 'level') { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }
     if (c === 'utilities' && feature && selection.mode !== 'underground') dispatch({ type: 'openUnderground' });
   };
-  // Tool shortcuts, shown in the sidebar: V select, M measure, X section, U underground, R reset.
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (dialog || event.metaKey || event.ctrlKey || event.altKey) return;
-      const target = event.target as HTMLElement | null;
-      if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
-      const key = event.key.toLowerCase();
-      if (key === 'v') chooseTool('select');
-      else if (key === 'm') chooseTool(tool === 'measure' ? 'select' : 'measure');
-      else if (key === 'x' && feature) chooseTool(tool === 'section' ? 'select' : 'section');
-      else if (key === 'u' && feature) toggleUnderground();
-      else if (key === 'r') engine?.resetCamera();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  });
+  const chooseView = (key: ViewKey) => {
+    if (key === 'area') dispatch({ type: 'selectBuilding', id: null });
+    else if (key === 'building') dispatch({ type: 'exploreBuilding' });
+    else if (key === 'level') { const f = level ?? typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }
+    else if (key === 'findings') dispatch({ type: 'openFindings', findingId: null });
+    else dispatch({ type: 'openUnderground' });
+  };
   const typicalFloor = () => {
     const floors = model?.levels.filter((l) => /^F\d/i.test(l.label)) ?? [];
     return floors.length > 2 ? floors[Math.floor(floors.length / 4)] : floors[0] ?? model?.levels[0];
@@ -184,8 +165,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     }
     if (!utilities.length) labels.push({ id: 'no-survey', text: 'No survey', kind: 'hover' });
   }
-  if (tool === 'measure' && typeof measurement?.distanceM === 'number') labels.push({ id: 'measure-mid', text: `${measurement.distanceM.toFixed(2)} m`, kind: 'selected' });
-  if (tool === 'section' && sectionM !== null) labels.push({ id: 'section', text: `Cut at ${sectionM.toFixed(1)} m`, kind: 'selected' });
 
   // Legend: only the active Colour by, plus the evidence key on a floor.
   const legend: LegendSection[] = [];
@@ -225,7 +204,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ? `Horizontal: ${reference.analysisCrs} (source ${reference.sourceCrs}). Heights: ${reference.verticalReference}.`
     : 'No reference system: this area stays in its source’s local frame.';
   const hint = selection.mode === 'underground' && !trench?.ring ? (trench?.points.length === 1 ? 'Click the other end of the trench' : 'Click two points on the ground to draw a trench')
-    : tool === 'measure' ? (measurement?.points.length === 1 ? 'Click the second point' : 'Click two points to measure')
     : selection.mode === 'area' && !feature ? 'Select a building'
       : selection.mode === 'building' && model?.levels.length ? 'Select a floor'
         : selection.mode === 'level' && !space ? 'Select a unit' : null;
@@ -265,10 +243,16 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     <EvidenceProvider snapshot={snapshot}>
       <div className={styles.workspace}>
         <MapSidebar
-          tool={tool} underground={selection.mode === 'underground'} canSection={Boolean(feature)} canUnderground={Boolean(feature)}
-          onTool={chooseTool} onUnderground={toggleUnderground} onReset={() => engine?.resetCamera()}
-          section={tool === 'section' && feature && sectionM !== null ? { value: sectionM, max: engine?.buildingTopM(feature.id) ?? 30, onChange: setSectionM } : null}
-          measurement={measurement} onClearMeasure={() => engine?.clearMeasure()}
+          views={[
+            { key: 'area', label: 'Area' },
+            { key: 'building', label: 'Building', disabled: !feature },
+            { key: 'level', label: 'Floors', disabled: !model?.levels.length },
+            { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
+            { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
+          ]}
+          active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
+          onView={chooseView}
+          keySections={legend}
           colour={colour} onColour={chooseColour}
           colourOptions={[
             { value: 'none', label: 'None' },
@@ -293,7 +277,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               onPick={onPick}
               onHover={(pick) => setHovered(pick.kind === 'ground' ? null : pick.id)}
               onView={onView}
-              onMeasure={setMeasurement}
               onTrench={setTrench}
               onReady={setEngine}
               label={`3D map of ${context.area.name}. The inspector lists the same buildings and spaces.`}
@@ -323,7 +306,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               </div>
             ) : null}
             <SceneLabels engine={engine} labels={labels} tick={tick} />
-            {legend.length ? <div className={styles.legend}><Legend sections={legend} /></div> : null}
             {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
             <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} /></div>
             {namespaces.length ? <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns]).join(' · ')}</p> : null}
