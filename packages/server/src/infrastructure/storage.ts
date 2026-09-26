@@ -5,7 +5,7 @@ import {
   HeadBucketCommand,
   CreateBucketCommand,
   DeleteObjectCommand,
-  CreateMultipartUploadCommand, UploadPartCommand, CompleteMultipartUploadCommand,
+  GetBucketVersioningCommand,
   AbortMultipartUploadCommand, ListMultipartUploadsCommand,
 } from "@aws-sdk/client-s3";
 import { createHash } from "node:crypto";
@@ -138,6 +138,7 @@ export async function readPartObject(key:string,bytes:number,expectedHash:string
 export async function putPartObject(key:string,bytes:Uint8Array,expectedHash:string,maxBytes:number) {
   if(!key.startsWith('upload-parts/') || !bytes.length || bytes.length>maxBytes || sha256(bytes)!==expectedHash)
     throw new AppError(422,'PART_INTEGRITY','Received part hash/size is invalid.');
+  await assertLargeOriginalStorageProfile();
   try {
     await s3().send(new PutObjectCommand({Bucket:settings.s3Bucket,Key:key,Body:bytes,ContentLength:bytes.length,
       ContentType:'application/octet-stream',IfNoneMatch:'*',Metadata:{sha256:expectedHash}}),{abortSignal:AbortSignal.timeout(30000)});
@@ -145,21 +146,32 @@ export async function putPartObject(key:string,bytes:Uint8Array,expectedHash:str
   return verifyObjectStream(key,bytes.length,expectedHash,30000);
 }
 const assemblyKey=(key:string)=>{if(!/^large-originals\/[a-f0-9-]{36}\/[a-f0-9]{64}$/.test(key))throw new Error('Invalid server assembly key.');};
-export async function createOriginalAssembly(key:string,mime:string,hash:string,signal?:AbortSignal) {
-  assemblyKey(key);
-  const result=await s3().send(new CreateMultipartUploadCommand({Bucket:settings.s3Bucket,Key:key,ContentType:mime,Metadata:{sha256:hash}}),{abortSignal:AbortSignal.any([AbortSignal.timeout(30000),...(signal?[signal]:[])])});
-  if(!result.UploadId)throw new AppError(503,'STORAGE_UPLOAD','The storage upload could not be created.');return result.UploadId;
+/** This receipt profile reclaims payload by overwriting exact keys with permanent empty markers. */
+export async function assertLargeOriginalStorageProfile(signal?:AbortSignal) {
+  const result=await s3().send(new GetBucketVersioningCommand({Bucket:settings.s3Bucket}),{abortSignal:AbortSignal.any([AbortSignal.timeout(30000),...(signal?[signal]:[])])});
+  if(result.$metadata.httpStatusCode!==200 || result.Status)throw new AppError(503,'UPLOAD_STORAGE_PROFILE','Large-original receipts require a confirmed unversioned private bucket; version history reclamation is unsupported.');
 }
-export async function writeAssemblyPart(key:string,uploadId:string,number:number,bytes:Uint8Array,signal?:AbortSignal) {
+/** A single conditional streaming PUT has no independent multipart parts that can outlive abort. */
+export async function putOriginalStream(key:string,body:Readable,bytes:number,mime:string,hash:string,signal:AbortSignal) {
   assemblyKey(key);
-  const result=await s3().send(new UploadPartCommand({Bucket:settings.s3Bucket,Key:key,UploadId:uploadId,PartNumber:number,Body:bytes,ContentLength:bytes.length}),{abortSignal:AbortSignal.any([AbortSignal.timeout(30000),...(signal?[signal]:[])])});
-  if(!result.ETag)throw new AppError(503,'STORAGE_UPLOAD','A storage part lacks its completion receipt.');return {PartNumber:number,ETag:result.ETag};
+  if(!Number.isSafeInteger(bytes)||bytes<=0||bytes>128*1024*1024){body.destroy();throw new AppError(422,'UPLOAD_STREAM_LIMIT','The original stream exceeds its bounded storage profile.');}
+  try {
+    await assertLargeOriginalStorageProfile(signal);
+    await s3().send(new PutObjectCommand({Bucket:settings.s3Bucket,Key:key,Body:body,ContentLength:bytes,
+      ContentType:mime,IfNoneMatch:'*',Metadata:{sha256:hash}}),{abortSignal:signal});
+    return {alreadyExists:false};
+  }catch(error){if((error as {$metadata?:{httpStatusCode?:number}}).$metadata?.httpStatusCode!==412)throw error;return {alreadyExists:true};}
+  finally{body.destroy();}
 }
-export async function finishOriginalAssembly(key:string,uploadId:string,parts:{PartNumber:number;ETag:string}[],signal?:AbortSignal) {
-  assemblyKey(key);
-  return s3().send(new CompleteMultipartUploadCommand({Bucket:settings.s3Bucket,Key:key,UploadId:uploadId,MultipartUpload:{Parts:parts},IfNoneMatch:'*'}),{abortSignal:AbortSignal.any([AbortSignal.timeout(30000),...(signal?[signal]:[])])});
+/** Never delete this marker: conditional producers must continue to see an existing key. */
+export async function sealUploadObject(key:string,uploadId:string,signal:AbortSignal) {
+  if(!/^[a-f0-9-]{36}$/.test(uploadId))throw new Error('Invalid upload tombstone owner.');
+  if(!key.startsWith(`upload-parts/${uploadId}/`))assemblyKey(key);
+  await assertLargeOriginalStorageProfile(signal);
+  await s3().send(new PutObjectCommand({Bucket:settings.s3Bucket,Key:key,Body:Buffer.alloc(0),ContentLength:0,
+    ContentType:'application/octet-stream',Metadata:{'upload-tombstone':uploadId}}),{abortSignal:signal});
+  await verifyObjectStream(key,0,sha256(Buffer.alloc(0)),30000,undefined,signal);
 }
-export async function abortOriginalAssembly(key:string,uploadId:string){assemblyKey(key);await s3().send(new AbortMultipartUploadCommand({Bucket:settings.s3Bucket,Key:key,UploadId:uploadId}),{abortSignal:AbortSignal.timeout(30000)});}
 /** Exact server-key cleanup only; never lists a bucket or an arbitrary caller prefix. */
 export async function abortOriginalAssemblies(key:string,signal?:AbortSignal) {
   assemblyKey(key);

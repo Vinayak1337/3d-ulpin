@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
+import { Readable } from 'node:stream';
 import { z } from 'zod';
 import {
   LARGE_ORIGINAL_LIMITS as limits, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
@@ -7,8 +8,7 @@ import {
 } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { sha256, putPartObject, readPartObject, verifyObjectStream, createOriginalAssembly, writeAssemblyPart,
-  finishOriginalAssembly, abortOriginalAssembly, abortOriginalAssemblies, removeOrphan, objectMissing } from '../../../infrastructure/storage';
+import { sha256, putPartObject, readPartObject, verifyObjectStream, putOriginalStream, sealUploadObject, assertLargeOriginalStorageProfile, abortOriginalAssemblies, objectMissing } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 import { lockUnassignedSourceCase } from './service';
@@ -63,10 +63,14 @@ async function failure(id:string,token:string,code:string){
   });
 }
 
+export const largeOriginalStorage={putPartObject,readPartObject,verifyObjectStream,putOriginalStream,sealUploadObject,assertLargeOriginalStorageProfile,abortOriginalAssemblies};
+
 /** Durable byte-receipt metadata beside the existing source authority. No conversion or jobs. */
 export class LargeOriginalService {
+  constructor(private readonly storage=largeOriginalStorage){}
   async create(caseIdValue:string,value:unknown){
     const caseId=uuid.parse(caseIdValue),input=LargeUploadCreateSchema.parse(value),subject=localOperatorSubject(),digest=fingerprint(input);
+    await this.storage.assertLargeOriginalStorageProfile();
     return transaction(async client=>{
       await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
       const current=await caseRow(client,caseId);
@@ -74,11 +78,11 @@ export class LargeOriginalService {
       if(prior){if(prior.request_hash!==digest)conflict('This upload request key already names different original inputs.');return status(client,prior,current.revision);}
       const scope=await lockUnassignedSourceCase(client,caseId);
       if(scope.revision!==input.expectedCaseRevision)conflict('The source case changed before upload admission.');
-      const quota=(await client.query(`SELECT count(*) FILTER(WHERE state IN('receiving','finalizing','aborting'))::int active,
+      const quota=(await client.query(`SELECT count(*)::int receipts,count(*) FILTER(WHERE state IN('receiving','finalizing','aborting'))::int active,
         count(*) FILTER(WHERE state IN('receiving','finalizing','aborting') AND case_id=$1)::int case_active,
         count(*) FILTER(WHERE state IN('receiving','finalizing','aborting') AND operator_subject=$2)::int operator_active,
         COALESCE(sum(original_bytes) FILTER(WHERE state<>'aborted'),0)::bigint reserved FROM usp_source_uploads`,[caseId,subject])).rows[0];
-      if(quota.active>=limits.maxActiveGlobal || quota.case_active>=limits.maxActivePerCase || quota.operator_active>=limits.maxActivePerOperator
+      if(quota.receipts>=limits.maxUploadReceipts || quota.active>=limits.maxActiveGlobal || quota.case_active>=limits.maxActivePerCase || quota.operator_active>=limits.maxActivePerOperator
         || Number(quota.reserved)+input.bytes>limits.maxReservedOriginalBytes)
         throw new AppError(429,'UPLOAD_QUOTA','The bounded active-upload or retained/temporary storage allowance is full; finish or safely abort an owned receipt.');
       const id=randomUUID(),sourceId=randomUUID(),expiresAt=new Date(Date.now()+limits.uploadLifetimeSeconds*1000);
@@ -121,7 +125,17 @@ export class LargeOriginalService {
   }
   async receivePart(claim:Awaited<ReturnType<LargeOriginalService['claimPart']>>,bytes:Uint8Array){
     if(bytes.length!==claim.bytes || sha256(bytes)!==claim.input.sha256)throw new AppError(422,'PART_INTEGRITY','Actual received bytes/hash do not match this byte part.');
-    if(claim.token)await putPartObject(claim.key,bytes,claim.input.sha256,limits.partBytes);
+    if(claim.token){
+      // A stale admitted producer must revalidate before I/O. The subsequent storage condition
+      // also protects the check/write window: cleanup leaves an immutable zero-payload tombstone.
+      await transaction(async client=>{
+        const scope=await lockUnassignedSourceCase(client,claim.caseId),upload=await load(client,claim.caseId,claim.uploadId);receiving(upload);
+        if(scope.revision!==upload.case_revision)conflict('The source case changed before byte-part storage.');
+        if(!(await client.query("SELECT 1 FROM usp_source_upload_parts WHERE upload_id=$1 AND part_number=$2 AND state='writing' AND lease_token=$3 AND lease_expires_at>now()",[claim.uploadId,claim.input.partNumber,claim.token])).rowCount)
+          conflict('The byte-part producer lease expired or was superseded before storage.');
+      });
+      await this.storage.putPartObject(claim.key,bytes,claim.input.sha256,limits.partBytes);
+    }
     return transaction(async client=>{
       const current=await caseRow(client,claim.caseId),upload=await load(client,claim.caseId,claim.uploadId);receiving(upload);
       const scope=await lockUnassignedSourceCase(client,claim.caseId);
@@ -163,24 +177,36 @@ export class LargeOriginalService {
       upload.body.finalizeInputHash=inputHash;await save(client,upload);return {upload,parts,token};
     });
     if('receipt'in claim)return claim.receipt;
-    const {upload,parts,token}=claim,key=objectKey(upload),signal=AbortSignal.timeout(limits.finalizationSeconds*1000);let assemblyId:string|undefined;
+    const {upload,parts,token}=claim,key=objectKey(upload),signal=AbortSignal.timeout(limits.finalizationSeconds*1000);
     try{
       let verified;
       // A crash after object completion but before DB publication resumes by verifying the same immutable object.
-      try{verified=await verifyObjectStream(key,Number(upload.original_bytes),upload.body.input.sha256,limits.finalizationSeconds*1000,undefined,signal);}
+      try{verified=await this.storage.verifyObjectStream(key,Number(upload.original_bytes),upload.body.input.sha256,limits.finalizationSeconds*1000,undefined,signal);}
       catch(error){if(!objectMissing(error))throw error;}
       if(!verified){
-        await abortOriginalAssemblies(key,signal);
-        assemblyId=await createOriginalAssembly(key,upload.body.input.mediaType,upload.body.input.sha256,signal);
-        const hash=createHash('sha256'),completed:{PartNumber:number;ETag:string}[]=[];let total=0;
+        await this.storage.assertLargeOriginalStorageProfile(signal);
+        const hash=createHash('sha256');let total=0;
         for(const part of parts){
-          signal.throwIfAborted();const bytes=await readPartObject(part.object_key,part.bytes,part.sha256,limits.partBytes,signal);
-          hash.update(bytes);total+=bytes.length;completed.push(await writeAssemblyPart(key,assemblyId,part.part_number,bytes,signal));
+          signal.throwIfAborted();const bytes=await this.storage.readPartObject(part.object_key,part.bytes,part.sha256,limits.partBytes,signal);
+          hash.update(bytes);total+=bytes.length;
         }
         if(total!==Number(upload.original_bytes) || hash.digest('hex')!==upload.body.input.sha256)
           throw new AppError(422,'ORIGINAL_INTEGRITY','Server-computed original hash/size does not match the admitted original. No source was published.');
-        await finishOriginalAssembly(key,assemblyId,completed,signal);assemblyId=undefined;
-        verified=await verifyObjectStream(key,Number(upload.original_bytes),upload.body.input.sha256,limits.finalizationSeconds*1000,undefined,signal);
+        await transaction(async client=>{
+          const scope=await lockUnassignedSourceCase(client,caseId),fresh=await load(client,caseId,id);
+          if(fresh.state!=='finalizing'||fresh.lease_token!==token||new Date(fresh.lease_expires_at).getTime()<=Date.now()||scope.revision!==fresh.case_revision)
+            conflict('The upload/case fence changed before original storage.');
+        });
+        const storage=this.storage;
+        // Re-read bounded parts under backpressure; no complete original Buffer exists.
+        const body=Readable.from((async function*(){
+          const hash=createHash('sha256');let total=0;
+          for(const part of parts){const bytes=await storage.readPartObject(part.object_key,part.bytes,part.sha256,limits.partBytes,signal);total+=bytes.length;hash.update(bytes);yield bytes;}
+          if(total!==Number(upload.original_bytes)||hash.digest('hex')!==upload.body.input.sha256)
+            throw new AppError(422,'ORIGINAL_INTEGRITY','The streaming original changed after preflight.');
+        })(),{objectMode:false,highWaterMark:64*1024});
+        await storage.putOriginalStream(key,body,Number(upload.original_bytes),upload.body.input.mediaType,upload.body.input.sha256,signal);
+        verified=await storage.verifyObjectStream(key,Number(upload.original_bytes),upload.body.input.sha256,limits.finalizationSeconds*1000,undefined,signal);
       }
       const receipt=await transaction(async client=>{
         const scope=await lockUnassignedSourceCase(client,caseId),fresh=await load(client,caseId,id);
@@ -198,7 +224,6 @@ export class LargeOriginalService {
       // Temporary parts are never source originals. Failed reclamation remains explicitly pending.
       try{return await this.cleanup(caseId,id,{requestKey:randomUUID(),expectedRevision:receipt.revision,expectedCaseRevision:receipt.currentCaseRevision});}catch{return receipt;}
     }catch(error){
-      if(assemblyId)await abortOriginalAssembly(key,assemblyId).catch(()=>{});
       await failure(id,token,error instanceof AppError?error.code:'FINALIZATION_INTERRUPTED');throw error;
     }
   }
@@ -219,13 +244,16 @@ export class LargeOriginalService {
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadGuardSchema.parse(value),digest=fingerprint(input);
     const claim=await transaction(async client=>{
       const current=await caseRow(client,caseId),upload=await load(client,caseId,id);
-      if(upload.body.cleanupInputHash===digest)return {receipt:await status(client,upload,current.revision)};
-      await guard(client,upload,input,current.revision,false);
+      if(upload.body.cleanupRequestKey===input.requestKey && upload.body.cleanupInputHash!==digest)
+        conflict('This cleanup request key already names a different immutable request.');
+      const retry=upload.body.cleanupInputHash===digest;
+      if(retry && !upload.body.cleanupPending)return {receipt:await status(client,upload,current.revision)};
+      if(!retry)await guard(client,upload,input,current.revision,false);
       if(!['retained','aborting','aborted'].includes(upload.state))throw new AppError(409,'UPLOAD_CLEANUP','Abort an incomplete receipt before reclaiming its temporary objects.');
       if(!upload.body.cleanupPending)return {receipt:await status(client,upload,current.revision)};
       const writing=(await client.query("SELECT 1 FROM usp_source_upload_parts WHERE upload_id=$1 AND state='writing' AND lease_expires_at>now()",[id])).rowCount;
       if(writing || upload.lease_expires_at && new Date(upload.lease_expires_at).getTime()>Date.now())return {receipt:await status(client,upload,current.revision)};
-      const token=randomUUID();upload.lease_token=token;upload.lease_expires_at=lease();upload.body.cleanupInputHash=digest;upload.revision++;await save(client,upload);
+      const token=randomUUID();upload.lease_token=token;upload.lease_expires_at=lease();upload.body.cleanupInputHash=digest;upload.body.cleanupRequestKey=input.requestKey;upload.revision++;await save(client,upload);
       const parts=(await client.query('SELECT object_key FROM usp_source_upload_parts WHERE upload_id=$1',[id])).rows;
       return {upload,parts,token};
     });
@@ -233,21 +261,25 @@ export class LargeOriginalService {
     const {upload,parts,token}=claim;
     const signal=AbortSignal.timeout(limits.cleanupSeconds*1000);
     try{
-      await abortOriginalAssemblies(objectKey(upload),signal);
+      await this.storage.assertLargeOriginalStorageProfile(signal);
+      if(parts.length && (await query('SELECT id FROM sources WHERE object_key=ANY($1::text[])',[parts.map(p=>p.object_key)])).rowCount)
+        throw new AppError(409,'ORIGINAL_RETAINED','Cleanup cannot replace a canonical original with a tombstone.');
       for(const part of parts){
         if(!part.object_key.startsWith(`upload-parts/${id}/`))throw new AppError(503,'UPLOAD_CLEANUP','Temporary object ownership does not match this receipt.');
-        await removeOrphan(part.object_key,AbortSignal.any([signal,AbortSignal.timeout(limits.storageRequestSeconds*1000)]));
+        await this.storage.sealUploadObject(part.object_key,id,AbortSignal.any([signal,AbortSignal.timeout(limits.storageRequestSeconds*1000)]));
       }
       if(upload.state!=='retained'){
         if((await query('SELECT id FROM sources WHERE id=$1 OR object_key=$2',[upload.source_id,objectKey(upload)])).rowCount)
-          throw new AppError(409,'ORIGINAL_RETAINED','Cleanup cannot delete a canonical retained original.');
-        await removeOrphan(objectKey(upload),AbortSignal.any([signal,AbortSignal.timeout(limits.storageRequestSeconds*1000)]));
+          throw new AppError(409,'ORIGINAL_RETAINED','Cleanup cannot replace a canonical retained original.');
+        await this.storage.sealUploadObject(objectKey(upload),id,AbortSignal.any([signal,AbortSignal.timeout(limits.storageRequestSeconds*1000)]));
       }
+      // Old pinned implementations used MPU. Its exact key remains durably owned and fenced.
+      await this.storage.abortOriginalAssemblies(objectKey(upload),signal);
       return transaction(async client=>{
         const current=await caseRow(client,caseId),fresh=await load(client,caseId,id);
         if(fresh.lease_token!==token)conflict('This cleanup attempt was superseded.');
         if(fresh.state==='aborting')fresh.state='aborted';
-        fresh.body.cleanupPending=false;fresh.lease_token=null;fresh.lease_expires_at=null;fresh.revision++;await save(client,fresh);return status(client,fresh,current.revision);
+        fresh.body.cleanupPending=false;fresh.body.lastError=null;fresh.lease_token=null;fresh.lease_expires_at=null;fresh.revision++;await save(client,fresh);return status(client,fresh,current.revision);
       });
     }catch(error){
       await transaction(async client=>{const fresh=(await client.query('SELECT * FROM usp_source_uploads WHERE id=$1 FOR UPDATE',[id])).rows[0];if(fresh.lease_token===token){fresh.lease_token=null;fresh.lease_expires_at=null;fresh.body.lastError='CLEANUP_PENDING';fresh.revision++;await save(client,fresh);}});throw error;

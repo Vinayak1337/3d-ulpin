@@ -66,10 +66,12 @@ export type MappingDestination = z.infer<typeof MappingDestinationSchema>;
 export const LARGE_ORIGINAL_LIMITS = {
   version: 'large-original/1', partBytes: 8 * 1024 * 1024, maxOriginalBytes: 128 * 1024 * 1024,
   maxParts: 16, maxActivePerCase: 2, maxActivePerOperator: 2, maxActiveGlobal: 4,
+  maxUploadReceipts: 128, maxZeroPayloadFenceObjectsPerReceipt: 17,
   maxReservedOriginalBytes: 512 * 1024 * 1024, maxStoredBytesIncludingTemporaryCopies: 1024 * 1024 * 1024,
   uploadLifetimeSeconds: 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 30,
   leaseSeconds: 180, finalizationSeconds: 120, cleanupSeconds: 120, maxFinalizationAttempts: 3, maxPartAttempts: 3,
   maxConcurrentDownloads: 2, downloadSeconds: 120,
+  storageProfile: 'unversioned_private_conditional_put', cleanupProtection: 'permanent_zero_payload_fences',
 } as const;
 const caseRevision = z.number().int().nonnegative();
 const url = z.string().url().max(2048).refine(value => /^https?:\/\//.test(value));
