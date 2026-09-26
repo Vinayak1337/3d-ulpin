@@ -1,0 +1,194 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D3",
+  "version": 1,
+  "profile": "nwic-india-districts-vector-inspected",
+  "description": "Official NWIC/GSI India District Boundary GeoJSON acquired and format-profiled from unchanged source bytes. The original and expanded member remain outside Git. The source is available for bounded local deterministic test use under the documented attribution/accuracy conditions; this receipt does not qualify runtime, scale, boundary accuracy, currentness, or legal/property facts.",
+  "assets": [
+    {
+      "id": "nwic-district-boundaries-original",
+      "mediaType": "application/zip",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://nwdp.nwic.gov.in/dataset/6c1af675-1dec-4927-882c-c1ba9d73f76b/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d/download/district_nwic_geojson.zip"
+      },
+      "sourceVersion": "NWIC resource updated 2025-05-01; dataset page updated 2025-05-05; HTTP Last-Modified 2026-06-23 (none establishes boundary validity)",
+      "attribution": "Geological Survey of India (GSI), listed as data producer by NWIC; National Water Informatics Centre (NWIC), dataset District Boundary; per-feature src_agency value Survey of India (SOI). See NWIC resource and copyright policy URLs in source-observations.json.",
+      "permission": {
+        "state": "documented",
+        "reference": "https://www.nwdp.nwic.gov.in/dataset/district-boundary/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d (License: Other (Open)); https://www.nwdp.nwic.gov.in/footer/copyrightPolicy",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:7755 (WGS 84 / India NSF LCC); literal source URN urn:ogc:def:crs:EPSG::7755",
+        "verticalReference": null,
+        "horizontalUnit": "metre",
+        "verticalUnit": null,
+        "sourceDate": "NWIC resource update 2025-05-01; dataset page updated 2025-05-05"
+      },
+      "content": {
+        "state": "unavailable",
+        "reason": "Original retained unchanged outside Git at /Users/vinayak/.codex/task-data/ulpin-nwic-boundaries-v1/district_nwic_geojson.zip; local private bytes and hash are pinned in docs/evidence/usp/nest-migration/nwic-boundaries/source-check.json."
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/nest-migration/nwic-boundaries/source-check.json"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Geological Survey of India / National Water Informatics Centre District Boundary",
+        "sourceRelease": "NWIC resource update 2025-05-01; dataset page update 2025-05-05; HTTP Last-Modified 2026-06-23; archive member timestamp 2025-01-13 (none establishes boundary validity)",
+        "resourceId": "8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d",
+        "nativeIds": [],
+        "acquiredAt": "2026-09-26T08:44:40+00:00",
+        "original": {
+          "sha256": "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37",
+          "bytes": 71238839
+        },
+        "parser": {
+          "name": "Python standard-library JSON per-feature stream scanner",
+          "version": "3.9.6"
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "NWIC advertises 733 India district boundaries; 733 source MultiPolygon features, 3,125,505 2D positions, 36 state_name values; projected extent [2818369.546553203, 2177948.4534365367, 5679118.542969628, 5444563.235709688] in EPSG:7755 easting/northing metres. Attribute id/objectid candidates are not treated as stable property identities.",
+        "licenceFamily": "Other (Open)",
+        "trainingPermission": {
+          "state": "unconfirmed",
+          "reason": "Reviewed NWIC resource/site terms do not explicitly address ML training. No model training use occurred."
+        },
+        "purpose": "test_only",
+        "privacy": null,
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "training_permission",
+          "boundary_accuracy_validation",
+          "boundary_currentness_validation",
+          "topological_validity",
+          "building_or_3d_geometry",
+          "parcel_or_site_geometry",
+          "ownership_or_title_truth",
+          "vertical_coordinates",
+          "authorized_runtime_scale_profile",
+          "gf_scale_1_measurement"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/nest-migration/nwic-boundaries/source-check.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/nest-migration/nwic-boundaries/source-check.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/nest-migration/nwic-boundaries/source-check.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    },
+    {
+      "id": "nwic-district-boundaries-source-observations",
+      "mediaType": "application/json",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "DATA-10 profile computed from unchanged NWIC GeoJSON member; source-check.json records the exact original hash and inspection receipt"
+      },
+      "sourceVersion": "data-10-source-observations/2",
+      "attribution": "Inspection metadata derived from Geological Survey of India / NWIC District Boundary bytes; source citation and terms are recorded in this file.",
+      "permission": {
+        "state": "documented",
+        "reference": "https://www.nwdp.nwic.gov.in/footer/copyrightPolicy (attributed, accurate, non-misleading reproduction conditions); https://www.nwdp.nwic.gov.in/dataset/district-boundary/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:7755 (WGS 84 / India NSF LCC); literal source URN urn:ogc:def:crs:EPSG::7755",
+        "verticalReference": null,
+        "horizontalUnit": "metre",
+        "verticalUnit": null,
+        "sourceDate": "NWIC resource metadata updated 2025-05-01; dataset page updated 2025-05-05"
+      },
+      "content": {
+        "state": "available",
+        "path": "source-observations.json",
+        "sha256": "2bcc5dc1d66a29383a83510bcb29bed94ba17849cf28316823f341fb52b9ec67",
+        "bytes": 18243
+      },
+      "dependencies": [
+        "nwic-district-boundaries-original"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Source observation receipt is not a source catalogue entry."
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/nest-migration/nwic-boundaries/source-check.json"
+        },
+        "parsed": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/nest-migration/nwic-boundaries/source-check.json"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    }
+  ],
+  "expectedPath": "source-observations.json",
+  "expectedCapabilities": [
+    "official_nwic_gsi_district_layer_inspected",
+    "unchanged_original_acquired_and_hash_pinned_private",
+    "bounded_geojson_archive_profile",
+    "733_multipolygon_features_and_2d_positions_profiled",
+    "literal_epsg7755_crs_extent_and_axis_order_recorded"
+  ],
+  "missingCapabilities": [
+    "boundary_accuracy_or_currentness_validation",
+    "source_topology_validation",
+    "training_permission",
+    "building_or_3d_geometry",
+    "parcel_or_site_or_ownership_facts",
+    "vertical_reference_or_measurement",
+    "runtime_ingestion_or_publication",
+    "gf_stream_qualification",
+    "gf_scale_1_performance_and_service_budgets"
+  ]
+}
