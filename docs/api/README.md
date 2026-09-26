@@ -6,7 +6,17 @@ After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs).
 
 ## Serving environment status
 
-Read-only observation on 26 September 2026: the existing root API on port 3188 reports all five dependencies healthy in linked mode, but its database has no map areas, physical features, registry records or block groups, and the newer USP/ingestion tables are absent. Two legacy saved datasets are marked `synthetic`; the retired writer assigned that classification by construction, so it does not by itself establish the provenance of their originals. Do not use those rows as qualified real map inputs. DB-READY-01 is preparing the safe schema/lineage/import upgrade; accepted isolated test receipts below do not mean their records exist in this environment. The [delivery ledger](../orchestration/NESTJS_MIGRATION.md#active-delivery-after-consolidation) tracks that work and official projected-vector ingestion separately.
+Observed on 26 September 2026 at 11:38 UTC: the linked database was upgraded safely to accepted serving code `34adbd2`, then the upgrade was repeated. All pre-existing records and original bytes were preserved. Health reports `structurally_ready`; 106 foreign keys have no orphans. There are now 62 verified originals, one import package and one physical feature. The two individually reviewed obsolete legacy scenes are absent from active directories, while historical reads, original downloads and classifications remain unchanged.
+
+The API and dispatcher run from a separate clean pinned checkout at `http://127.0.0.1:3188/api/v1`, with live model providers disabled. This is a local single-operator backend, not a public deployment. The [serving observation](serving-observation.json), embedded in the dataset catalogue, records actual installed IDs, links and receipt hashes. Check health for current availability; this observation does not automatically apply to another environment.
+
+| Real input | Working native read |
+| --- | --- |
+| NYC OTI footprint, DOITT 353927 | [Package](http://127.0.0.1:3188/api/v1/import-packages/98751233-40a3-4b61-bae6-18cee9584a2e) |
+| Its geographic map area | [Area context](http://127.0.0.1:3188/api/v1/areas/d89d6d4a-36a0-490f-a7e9-2c382d59553f/context) |
+| Unchanged official source | [Private original](http://127.0.0.1:3188/api/v1/sources/318ea100-c171-4152-8686-c8441f04ef74/file) |
+
+This is one foreign 2D footprint, with height unknown and package `NEEDS_INPUT`; it supplies real geometry for a basic API integration, not an Indian building/block, interior, ownership record or scale result. Import replay returned the same IDs. Retained NWIC district vectors remain under INGEST-07 publication/recovery review and are not installed in this serving environment. The [delivery ledger](../orchestration/NESTJS_MIGRATION.md#active-delivery-after-consolidation) tracks that separate work.
 
 ## Start and connect
 
