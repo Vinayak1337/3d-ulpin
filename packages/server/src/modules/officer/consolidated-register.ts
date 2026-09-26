@@ -12,6 +12,7 @@ import {localRequestContext} from '../usp/principal';
 import {selectRegisterScope} from '../../shared/register-scope';
 import {registerPdf} from './register-pdf';
 import {consolidatedRegisterHtml} from './consolidated-register-html';
+import {registryReportGroups} from './registry-report-groups';
 
 type Field=ConsolidatedRegistryReport['building']['name'];
 type Row=Record<string,any>;
@@ -25,14 +26,50 @@ function textField(value:unknown,sources:string[]=[]):Field {
 const date=(value:unknown)=>value?new Date(String(value)).toISOString():null;
 const limit=()=>{throw new AppError(422,'REGISTRY_REPORT_LIMIT','Select a recorded floor or space to produce a smaller report.');};
 
+async function captureUnrecordedTx(client:PoolClient,root:Row,generatedAt:string,recordId?:string) {
+  if(recordId!==undefined)throw new AppError(422,'REGISTRY_SOURCE_SUMMARY_SELECTION','An unrecorded summary has no registry record selection.');
+  const pkg=(await client.query(`SELECT p.id,p.revision,p.state,p.body,p.case_id,c.archived,c.site_id,c.revision case_revision
+    FROM import_packages p JOIN cases c ON c.id=p.case_id WHERE p.area_id=$1
+      AND p.body->'features' @> $2::jsonb ORDER BY p.created_at DESC LIMIT 1`,
+    [root.area_id,JSON.stringify([{id:root.id}])])).rows[0];
+  if(!pkg)notFound('The unrecorded building has no current source import package.');
+  if(pkg.archived||pkg.site_id!==root.site_id)throw new AppError(403,'REGISTRY_SOURCE_DENIED','This registry source context is unavailable.');
+  const feature=pkg.body.features.find((f:Row)=>f.id===root.id);
+  if(!['NEEDS_INPUT','READY_FOR_REVIEW','REVIEWED'].includes(pkg.state)||pkg.body.sourceWorkspace||
+    pkg.body.sourceRevisionIds?.length!==1||pkg.body.parts?.length||!feature||fingerprint(feature)!==fingerprint(root.body))
+    throw new AppError(409,'REGISTRY_SOURCE_SUMMARY_UNAVAILABLE','A current unchanged native source/import building is required.');
+  await assertPackageDocumentAuthority(client,pkg.body);
+  const refs=sourceIds([...(root.body.evidence??[]),{sourceRevisionId:root.body.sourceRevisionId}]);
+  const sources:Row[]=[];
+  for(const id of [...new Set([...refs,...pkg.body.sourceRevisionIds])].sort())sources.push(await registrySourceTx(client,root.site_id,id));
+  const primary=sources.find(source=>source.id===root.body.sourceRevisionId);
+  if(!primary||primary.profile!=='geojson-area-v2'||primary.case_id!==pkg.case_id||primary.sha256!==pkg.body.sourceHash)
+    throw new AppError(409,'REGISTRY_SOURCE_SUMMARY_UNAVAILABLE','This summary currently supports a fresh native GeoJSON original in its own active import context.');
+  const report=ConsolidatedRegistryReportSchema.parse({schemaVersion:'building-registry-summary/1',generatedAt,
+    selection:{id:root.id,kind:'building'},recordState:'unrecorded',sourcePackage:{id:pkg.id,revision:pkg.revision,state:pkg.state},
+    unrecordedFacts:{address:'unknown',ownership:'unknown',residents:'unknown',parcelAssociations:'unknown',officialUlpin:'unknown'},
+    building:{id:root.id,applicationId:root.identifier,kind:'building',revision:0,recordedAt:null,
+      name:textField(root.body.name,refs),areaName:textField(root.area_name),areaRevision:root.area_revision,siteRevision:root.site_revision},
+    records:[],groups:[],parcels:[],sources:sources.map(source=>({id:source.id,revision:source.revision,sha256:source.sha256,
+      profile:source.profile,receivedAt:date(source.created_at)})),omissions:[
+      'UNRECORDED / awaiting review. This is a private source/import summary, not a recorded building registry or a reviewed ownership record.',
+      'The building label and application ID belong to the current native import; the area name is application context. Source reference receipts do not establish official issuance.',
+      'Address, ownership, residents, occupants, parcel associations and official parcel ULPIN are unknown here. Unapproved registry metadata and legal assertions are excluded.',
+      'No floor or unit selection, drawings, measurements, elevations, analytical findings, original pages or extracted source text are included.',
+      'Geometry qualification remains unknown. This summary does not qualify or record the feature.',
+    ]});
+  return {report,pin:fingerprint({root,pkg,sources,access:localRequestContext('consolidated-register').principal})};
+}
+
 /** Same canonical recorded graph as the dossier. This facts reader never projects
  * geometry, calls getArea (which writes), or treats spatial intersection as a link. */
-async function captureTx(client:PoolClient,buildingId:string,recordId:string|undefined,generatedAt:string) {
+async function captureTx(client:PoolClient,buildingId:string,recordId:string|undefined,generatedAt:string,includeUnrecorded:boolean) {
   const root=(await client.query(`SELECT f.id,f.identifier,f.revision,f.body,a.id area_id,a.site_id,a.name area_name,
     a.revision area_revision,s.revision site_revision,
     (SELECT created_at FROM physical_feature_revisions WHERE feature_id=f.id AND revision=f.revision) recorded_at
     FROM physical_features f JOIN map_areas a ON a.id=f.area_id JOIN registry_sites s ON s.id=a.site_id
-    WHERE f.id=$1 AND f.revision>0 AND f.body->>'kind'='building' AND a.archived_at IS NULL`,[buildingId])).rows[0]??notFound('Building not found.');
+    WHERE f.id=$1 AND (f.revision>0 OR ($2 AND f.revision=0)) AND f.body->>'kind'='building' AND a.archived_at IS NULL`,[buildingId,includeUnrecorded])).rows[0]??notFound('Building not found.');
+  if(root.revision===0)return captureUnrecordedTx(client,root,generatedAt,recordId);
   const associations=(await client.query('SELECT * FROM property_associations WHERE from_id=$1 ORDER BY id',[buildingId])).rows;
   const recordRows=(await client.query(`WITH RECURSIVE related AS (
     SELECT r.id FROM registry_records r WHERE r.site_id=$3 AND (r.id=$1 OR r.id IN (
@@ -137,6 +174,7 @@ async function captureTx(client:PoolClient,buildingId:string,recordId:string|und
   const sources:Row[]=[];
   for(const id of [...referenced].sort())sources.push(await registrySourceTx(client,root.site_id,id));
   const report=ConsolidatedRegistryReportSchema.parse({schemaVersion:'building-registry-summary/1',generatedAt,
+    recordState:'recorded',sourcePackage:null,unrecordedFacts:null,groups:registryReportGroups(projectedRecords),
     selection:{id:scope.selection.id,kind:scope.selection.kind},
     building:{id:root.id,applicationId:root.identifier,kind:'building',revision:root.revision,
       name:textField(root.body.name,rootSources),areaName:textField(root.area_name),areaRevision:root.area_revision,
@@ -154,18 +192,18 @@ async function captureTx(client:PoolClient,buildingId:string,recordId:string|und
   return {report,pin:fingerprint({root,associations,selectedRows,parcelRows,registryParcelRows,assertions,packages,sources,
     selection:report.selection,access:{principal:context.principal,accessViewId:context.accessViewId,policyVersion:context.policyVersion}})};
 }
-async function capture(buildingId:string,recordId:string|undefined,generatedAt:string) {
+async function capture(buildingId:string,recordId:string|undefined,generatedAt:string,includeUnrecorded:boolean) {
   const client=await pool().connect();
   try {
     await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
     await client.query("SET LOCAL statement_timeout='5s'");
-    const result=await captureTx(client,buildingId,recordId,generatedAt);
+    const result=await captureTx(client,buildingId,recordId,generatedAt,includeUnrecorded);
     await client.query('COMMIT');return result;
   }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}finally{client.release();}
 }
-export async function exportConsolidatedRegister(buildingId:string,format:string,recordId?:string):Promise<Response> {
+export async function exportConsolidatedRegister(buildingId:string,format:string,recordId?:string,includeUnrecorded=false):Promise<Response> {
   if(!['json','html','pdf'].includes(format))throw new AppError(422,'REGISTRY_REPORT_FORMAT','The consolidated profile supports json, html and pdf.');
-  const generatedAt=new Date().toISOString(),snapshot=await capture(buildingId,recordId,generatedAt);
+  const generatedAt=new Date().toISOString(),snapshot=await capture(buildingId,recordId,generatedAt,includeUnrecorded);
   let body:BodyInit,mime:string;
   if(format==='json'){body=JSON.stringify(snapshot.report,null,2);mime='application/json';}
   else {
@@ -174,7 +212,7 @@ export async function exportConsolidatedRegister(buildingId:string,format:string
     else{body=await (await registerPdf(html)).arrayBuffer();mime='application/pdf';}
   }
   // Access, document lineage, facts and membership must still match after rendering.
-  const current=await capture(buildingId,recordId,generatedAt);
+  const current=await capture(buildingId,recordId,generatedAt,includeUnrecorded);
   if(current.pin!==snapshot.pin)conflict('The registry or its source authority changed during report preparation. Retry.');
   return new Response(body,{headers:{'Content-Type':mime,'Cache-Control':'no-store',
     'Content-Disposition':`attachment; filename="building-${buildingId}-registry.${format}"`,
