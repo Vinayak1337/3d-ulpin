@@ -1,0 +1,1206 @@
+{
+  "version": "document-ingestion-evidence/1",
+  "status": "candidate_for_review",
+  "task": "DOC-INGEST-01",
+  "recordedAt": "2026-09-26T17:51:41.115Z",
+  "baseCommit": "352ce6a30cab9d97c37c2d080ba3219ff01bd5cc",
+  "runtimeCodeCommit": "db985b95fdd785a2531589ba425dac44df976e92",
+  "finalCodeCommit": "16cc71aa24e1508d4fa92e83107bfcdbe6805e6d",
+  "agent": {
+    "assignedModel": "gpt-6-sol",
+    "assignedEffort": "max",
+    "requestedTier": "DEFAULT",
+    "observedModelEffortTier": "not exposed; no Fast request or usage polling"
+  },
+  "runtime": {
+    "project": "ulpin-usptest-b59ef011e66e0f1b",
+    "nonce": "b59ef011e66e0f1b",
+    "apiPort": 3191,
+    "profile": "local-nest",
+    "freshNonces": 1,
+    "caseCount": 4,
+    "sourceCount": 5,
+    "jobCount": 7,
+    "apiChecks": [
+      "Original receipt precedes native work; official text native line locators and exact text/source hashes; provider-disabled output remains usable without a package or entity",
+      "Exact upload replay and same-hash dedup; concurrent same-key retry creates one new job on the unchanged original; incorrect source pins and cross-site access denied",
+      "Actual scanned official USGS PDF returns needs_ocr without invented text; its 9,344,939 original bytes download exactly",
+      "Unsupported genuine GeoJSON preserves original and emits no placeholders; adding a distinct genuine source changes case pins and hides the older result without rewriting either source",
+      "Stopped native tool returns a retained tool_error derivative; restoring the owned tool and explicitly retrying extracts the same unchanged original"
+    ],
+    "jobs": [
+      {
+        "jobId": "c6ec31af-fc33-4242-ae75-459f622844c4",
+        "caseId": "509f89ea-0050-41a0-859d-58df4620c1c5",
+        "sourceId": "d12c275a-6e03-40f9-9dc0-7ba3d49bf08b",
+        "resultSha256": "549bb46e6ed406d035e9caf08719378189efa1811a2424518b11b1a9485e2e54",
+        "native": {
+          "status": "extracted",
+          "format": "text",
+          "readerSha256": "f910f7f6a076a5f0018d228fda02f5d383326beee827b7716f52ded0049af7db",
+          "code": null,
+          "warnings": [
+            "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed."
+          ]
+        },
+        "model": {
+          "status": "disabled",
+          "code": "MODEL_DISABLED",
+          "candidates": [],
+          "validationErrors": [],
+          "calls": []
+        },
+        "partCount": 25,
+        "parts": [
+          {
+            "sha256": "ef72a2c3551038f3796ddb31e3b4495f50a65e01838f1f80a8a3bfa06e1b9b4b",
+            "locator": {
+              "label": "line 1",
+              "line": 1,
+              "characterStart": 0,
+              "characterEnd": 21
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "f3cba3c8b618b12ea397ed75a37493be42fd4242864258f57c5d86114c9a79e2",
+            "locator": {
+              "label": "line 2",
+              "line": 2,
+              "characterStart": 0,
+              "characterEnd": 134
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "b2399973a375b076684d50a8e721a73a0baabb9289222e6be68dbd1772f3378e",
+            "locator": {
+              "label": "line 4",
+              "line": 4,
+              "characterStart": 0,
+              "characterEnd": 381
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "d35f792118136b63cd742e78755aba03c1243d61b9c49c9b8dca4d7274633a53",
+            "locator": {
+              "label": "line 5",
+              "line": 5,
+              "characterStart": 0,
+              "characterEnd": 20
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "75c19136795dc12740279c6aa2225b926c9a3da098b8d0ec7371add44c2c3241",
+            "locator": {
+              "label": "line 6",
+              "line": 6,
+              "characterStart": 0,
+              "characterEnd": 45
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "6d735bd4ab70f9b38dc5384333ee0f1e160e7b9094c26b8d866c2e5c631ad04e",
+            "locator": {
+              "label": "line 7",
+              "line": 7,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "831f11e7d7026bc2402e464ae6714a93218f622321805bfb5339d48bd550dfde",
+            "locator": {
+              "label": "line 8",
+              "line": 8,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "990050f9eb7ba67018bab32afb1320d584ce19d79dd12779f6dfc2fb16b888a2",
+            "locator": {
+              "label": "line 9",
+              "line": 9,
+              "characterStart": 0,
+              "characterEnd": 252
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "8b4cc6c04b832b5f892caaeddffd7c8683099295cb787b9575d2cb2d0090a443",
+            "locator": {
+              "label": "line 10",
+              "line": 10,
+              "characterStart": 0,
+              "characterEnd": 381
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "7393170c99b6f57951eafa1db3763cc707e8106a20ccf7a811ffc5fa5fa6d3f7",
+            "locator": {
+              "label": "line 11",
+              "line": 11,
+              "characterStart": 0,
+              "characterEnd": 176
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "3ca7612c3647f538e90948734406049b6f86f2647e1e3b05975c639339333db2",
+            "locator": {
+              "label": "line 12",
+              "line": 12,
+              "characterStart": 0,
+              "characterEnd": 269
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "5c17499934756206d2af22470c57392433ed2d226a1a144742521726f340c29e",
+            "locator": {
+              "label": "line 13",
+              "line": 13,
+              "characterStart": 0,
+              "characterEnd": 121
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "5a04823455be8b91bc82adda9affa48d1cd5f21e820b5530b92ce787350857d5",
+            "locator": {
+              "label": "line 14",
+              "line": 14,
+              "characterStart": 0,
+              "characterEnd": 138
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "ce60739f1d232fb5c24c674c81caeeac471a7683dff96662a4ac0dd40cb1bf4b",
+            "locator": {
+              "label": "line 15",
+              "line": 15,
+              "characterStart": 0,
+              "characterEnd": 25
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "4a36f76356a7fd9cecb0e01c6a4edb1c9e3c5894743aa5ebfeb967acde0587c7",
+            "locator": {
+              "label": "line 16",
+              "line": 16,
+              "characterStart": 0,
+              "characterEnd": 318
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "dc7cbff1d916844adf9972780b52082a9883f452153fcffdc37b172224ea8078",
+            "locator": {
+              "label": "line 17",
+              "line": 17,
+              "characterStart": 0,
+              "characterEnd": 343
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "481caf3b5ce8a02a8dc3e67385e08128250c42ab5336f3c769244944626e7bcf",
+            "locator": {
+              "label": "line 18",
+              "line": 18,
+              "characterStart": 0,
+              "characterEnd": 67
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "55015502100c5dc7c03c435bfb30bbc8930b1dc3cd4f2287fa003ac609966ef2",
+            "locator": {
+              "label": "line 19",
+              "line": 19,
+              "characterStart": 0,
+              "characterEnd": 37
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "75c19136795dc12740279c6aa2225b926c9a3da098b8d0ec7371add44c2c3241",
+            "locator": {
+              "label": "line 20",
+              "line": 20,
+              "characterStart": 0,
+              "characterEnd": 45
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "6d735bd4ab70f9b38dc5384333ee0f1e160e7b9094c26b8d866c2e5c631ad04e",
+            "locator": {
+              "label": "line 21",
+              "line": 21,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "831f11e7d7026bc2402e464ae6714a93218f622321805bfb5339d48bd550dfde",
+            "locator": {
+              "label": "line 22",
+              "line": 22,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "707acd002670cdee1772377b242dc3bcb4e65dae4a93303e8cb5753ef4e4fcc9",
+            "locator": {
+              "label": "line 23",
+              "line": 23,
+              "characterStart": 0,
+              "characterEnd": 958
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "2be7efa6f35be04b26a448164f57f2c1fbe365c257ea2fefe2e79d82168da476",
+            "locator": {
+              "label": "line 24",
+              "line": 24,
+              "characterStart": 0,
+              "characterEnd": 18
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "c764b0a0d47692412dd71c52c3b19d410fc6e990fe5cfbf9451043c0ad6fa12c",
+            "locator": {
+              "label": "line 25",
+              "line": 25,
+              "characterStart": 0,
+              "characterEnd": 39
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "d7c09d33c19c5c67a82c74a7f574f613fb73bb92ddc08931e0768bdaeaa176da",
+            "locator": {
+              "label": "line 26",
+              "line": 26,
+              "characterStart": 0,
+              "characterEnd": 793
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          }
+        ]
+      },
+      {
+        "jobId": "8e7a5fc2-945d-4c14-a91e-f80ff54b6545",
+        "caseId": "509f89ea-0050-41a0-859d-58df4620c1c5",
+        "sourceId": "d12c275a-6e03-40f9-9dc0-7ba3d49bf08b",
+        "resultSha256": "faac14a97f7beb3fb877b7b5e5fe0762574407bf6c3c4055b5d301b2b4ac6d88",
+        "native": {
+          "status": "extracted",
+          "format": "text",
+          "readerSha256": "f910f7f6a076a5f0018d228fda02f5d383326beee827b7716f52ded0049af7db",
+          "code": null,
+          "warnings": [
+            "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed."
+          ]
+        },
+        "model": {
+          "status": "disabled",
+          "code": "MODEL_DISABLED",
+          "candidates": [],
+          "validationErrors": [],
+          "calls": []
+        },
+        "partCount": 25,
+        "parts": [
+          {
+            "sha256": "ef72a2c3551038f3796ddb31e3b4495f50a65e01838f1f80a8a3bfa06e1b9b4b",
+            "locator": {
+              "label": "line 1",
+              "line": 1,
+              "characterStart": 0,
+              "characterEnd": 21
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "f3cba3c8b618b12ea397ed75a37493be42fd4242864258f57c5d86114c9a79e2",
+            "locator": {
+              "label": "line 2",
+              "line": 2,
+              "characterStart": 0,
+              "characterEnd": 134
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "b2399973a375b076684d50a8e721a73a0baabb9289222e6be68dbd1772f3378e",
+            "locator": {
+              "label": "line 4",
+              "line": 4,
+              "characterStart": 0,
+              "characterEnd": 381
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "d35f792118136b63cd742e78755aba03c1243d61b9c49c9b8dca4d7274633a53",
+            "locator": {
+              "label": "line 5",
+              "line": 5,
+              "characterStart": 0,
+              "characterEnd": 20
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "75c19136795dc12740279c6aa2225b926c9a3da098b8d0ec7371add44c2c3241",
+            "locator": {
+              "label": "line 6",
+              "line": 6,
+              "characterStart": 0,
+              "characterEnd": 45
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "6d735bd4ab70f9b38dc5384333ee0f1e160e7b9094c26b8d866c2e5c631ad04e",
+            "locator": {
+              "label": "line 7",
+              "line": 7,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "831f11e7d7026bc2402e464ae6714a93218f622321805bfb5339d48bd550dfde",
+            "locator": {
+              "label": "line 8",
+              "line": 8,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "990050f9eb7ba67018bab32afb1320d584ce19d79dd12779f6dfc2fb16b888a2",
+            "locator": {
+              "label": "line 9",
+              "line": 9,
+              "characterStart": 0,
+              "characterEnd": 252
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "8b4cc6c04b832b5f892caaeddffd7c8683099295cb787b9575d2cb2d0090a443",
+            "locator": {
+              "label": "line 10",
+              "line": 10,
+              "characterStart": 0,
+              "characterEnd": 381
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "7393170c99b6f57951eafa1db3763cc707e8106a20ccf7a811ffc5fa5fa6d3f7",
+            "locator": {
+              "label": "line 11",
+              "line": 11,
+              "characterStart": 0,
+              "characterEnd": 176
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "3ca7612c3647f538e90948734406049b6f86f2647e1e3b05975c639339333db2",
+            "locator": {
+              "label": "line 12",
+              "line": 12,
+              "characterStart": 0,
+              "characterEnd": 269
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "5c17499934756206d2af22470c57392433ed2d226a1a144742521726f340c29e",
+            "locator": {
+              "label": "line 13",
+              "line": 13,
+              "characterStart": 0,
+              "characterEnd": 121
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "5a04823455be8b91bc82adda9affa48d1cd5f21e820b5530b92ce787350857d5",
+            "locator": {
+              "label": "line 14",
+              "line": 14,
+              "characterStart": 0,
+              "characterEnd": 138
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "ce60739f1d232fb5c24c674c81caeeac471a7683dff96662a4ac0dd40cb1bf4b",
+            "locator": {
+              "label": "line 15",
+              "line": 15,
+              "characterStart": 0,
+              "characterEnd": 25
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "4a36f76356a7fd9cecb0e01c6a4edb1c9e3c5894743aa5ebfeb967acde0587c7",
+            "locator": {
+              "label": "line 16",
+              "line": 16,
+              "characterStart": 0,
+              "characterEnd": 318
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "dc7cbff1d916844adf9972780b52082a9883f452153fcffdc37b172224ea8078",
+            "locator": {
+              "label": "line 17",
+              "line": 17,
+              "characterStart": 0,
+              "characterEnd": 343
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "481caf3b5ce8a02a8dc3e67385e08128250c42ab5336f3c769244944626e7bcf",
+            "locator": {
+              "label": "line 18",
+              "line": 18,
+              "characterStart": 0,
+              "characterEnd": 67
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "55015502100c5dc7c03c435bfb30bbc8930b1dc3cd4f2287fa003ac609966ef2",
+            "locator": {
+              "label": "line 19",
+              "line": 19,
+              "characterStart": 0,
+              "characterEnd": 37
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "75c19136795dc12740279c6aa2225b926c9a3da098b8d0ec7371add44c2c3241",
+            "locator": {
+              "label": "line 20",
+              "line": 20,
+              "characterStart": 0,
+              "characterEnd": 45
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "6d735bd4ab70f9b38dc5384333ee0f1e160e7b9094c26b8d866c2e5c631ad04e",
+            "locator": {
+              "label": "line 21",
+              "line": 21,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "831f11e7d7026bc2402e464ae6714a93218f622321805bfb5339d48bd550dfde",
+            "locator": {
+              "label": "line 22",
+              "line": 22,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "707acd002670cdee1772377b242dc3bcb4e65dae4a93303e8cb5753ef4e4fcc9",
+            "locator": {
+              "label": "line 23",
+              "line": 23,
+              "characterStart": 0,
+              "characterEnd": 958
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "2be7efa6f35be04b26a448164f57f2c1fbe365c257ea2fefe2e79d82168da476",
+            "locator": {
+              "label": "line 24",
+              "line": 24,
+              "characterStart": 0,
+              "characterEnd": 18
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "c764b0a0d47692412dd71c52c3b19d410fc6e990fe5cfbf9451043c0ad6fa12c",
+            "locator": {
+              "label": "line 25",
+              "line": 25,
+              "characterStart": 0,
+              "characterEnd": 39
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "d7c09d33c19c5c67a82c74a7f574f613fb73bb92ddc08931e0768bdaeaa176da",
+            "locator": {
+              "label": "line 26",
+              "line": 26,
+              "characterStart": 0,
+              "characterEnd": 793
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          }
+        ]
+      },
+      {
+        "jobId": "e1b223e6-ff4f-4795-96a2-11657c3e431b",
+        "caseId": "1474e2e6-8378-41e8-985a-645b53b971c2",
+        "sourceId": "c100966d-3672-46ec-a155-5318b0c8deaa",
+        "resultSha256": "6e5abfe17fb47e2c08e215df9fccc01d53e8d7d38b9a7e65abb91d1737db5d4d",
+        "native": {
+          "status": "needs_ocr",
+          "format": "pdf",
+          "readerSha256": "f910f7f6a076a5f0018d228fda02f5d383326beee827b7716f52ded0049af7db",
+          "code": "NATIVE_TEXT_UNAVAILABLE",
+          "warnings": [
+            "PDF page 1 has no native text; image interpretation/OCR remains unresolved.",
+            "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed."
+          ]
+        },
+        "model": {
+          "status": "unavailable",
+          "code": "MODEL_NATIVE_EVIDENCE_UNAVAILABLE",
+          "candidates": [],
+          "validationErrors": [],
+          "calls": []
+        },
+        "partCount": 0,
+        "parts": []
+      },
+      {
+        "jobId": "adb9c472-1afc-4e82-bc65-a6cf91f6b0f4",
+        "caseId": "26776690-f381-46d3-9d42-bff00a333936",
+        "sourceId": "eb473e50-1d3c-4e19-8fce-1104508abc3f",
+        "resultSha256": "536491e73e71a5897f8ec0fc653780e6038fa8ac0551d5ecf4b379124cded27b",
+        "native": {
+          "status": "unsupported",
+          "format": "unsupported",
+          "readerSha256": "f910f7f6a076a5f0018d228fda02f5d383326beee827b7716f52ded0049af7db",
+          "code": "DOCUMENT_FORMAT_UNSUPPORTED",
+          "warnings": []
+        },
+        "model": {
+          "status": "unavailable",
+          "code": "MODEL_NATIVE_EVIDENCE_UNAVAILABLE",
+          "candidates": [],
+          "validationErrors": [],
+          "calls": []
+        },
+        "partCount": 0,
+        "parts": []
+      },
+      {
+        "jobId": "7e5657b0-ef27-4ed5-ac02-a2f4a039ef0c",
+        "caseId": "26776690-f381-46d3-9d42-bff00a333936",
+        "sourceId": "36efe5fe-c86a-4794-8ab1-42acb889d9ac",
+        "resultSha256": "81579a70c329f9acedfe93085cba1e4fa72f26b0e1d49d3d7f6ad0cba5717d87",
+        "native": {
+          "status": "unsupported",
+          "format": "unsupported",
+          "readerSha256": "f910f7f6a076a5f0018d228fda02f5d383326beee827b7716f52ded0049af7db",
+          "code": "DOCUMENT_FORMAT_UNSUPPORTED",
+          "warnings": []
+        },
+        "model": {
+          "status": "unavailable",
+          "code": "MODEL_NATIVE_EVIDENCE_UNAVAILABLE",
+          "candidates": [],
+          "validationErrors": [],
+          "calls": []
+        },
+        "partCount": 0,
+        "parts": []
+      },
+      {
+        "jobId": "938bae9b-c31e-4ab3-9fbe-548988670115",
+        "caseId": "7443ca21-1b24-4d2b-8dbb-5e8ebfece12c",
+        "sourceId": "de687cc7-ecb2-4815-9c16-61ec5d00cdc4",
+        "resultSha256": "e42019cb24729b3560e5447d163e3a4e22891d239aab6bfb55b924d1393e655d",
+        "native": {
+          "status": "tool_error",
+          "format": "text",
+          "readerSha256": "f910f7f6a076a5f0018d228fda02f5d383326beee827b7716f52ded0049af7db",
+          "code": "NATIVE_EXTRACTION_FAILED",
+          "warnings": []
+        },
+        "model": {
+          "status": "not_requested",
+          "code": null,
+          "candidates": [],
+          "validationErrors": [],
+          "calls": []
+        },
+        "partCount": 0,
+        "parts": []
+      },
+      {
+        "jobId": "8ccd0f17-52ff-45a2-a633-ff1c0234acfb",
+        "caseId": "7443ca21-1b24-4d2b-8dbb-5e8ebfece12c",
+        "sourceId": "de687cc7-ecb2-4815-9c16-61ec5d00cdc4",
+        "resultSha256": "278c2d4fa067ee58a4dae092a73891f9272331aec13b0aefbbac1a602bf8342f",
+        "native": {
+          "status": "extracted",
+          "format": "text",
+          "readerSha256": "f910f7f6a076a5f0018d228fda02f5d383326beee827b7716f52ded0049af7db",
+          "code": null,
+          "warnings": [
+            "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed."
+          ]
+        },
+        "model": {
+          "status": "not_requested",
+          "code": null,
+          "candidates": [],
+          "validationErrors": [],
+          "calls": []
+        },
+        "partCount": 25,
+        "parts": [
+          {
+            "sha256": "ef72a2c3551038f3796ddb31e3b4495f50a65e01838f1f80a8a3bfa06e1b9b4b",
+            "locator": {
+              "label": "line 1",
+              "line": 1,
+              "characterStart": 0,
+              "characterEnd": 21
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "f3cba3c8b618b12ea397ed75a37493be42fd4242864258f57c5d86114c9a79e2",
+            "locator": {
+              "label": "line 2",
+              "line": 2,
+              "characterStart": 0,
+              "characterEnd": 134
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "b2399973a375b076684d50a8e721a73a0baabb9289222e6be68dbd1772f3378e",
+            "locator": {
+              "label": "line 4",
+              "line": 4,
+              "characterStart": 0,
+              "characterEnd": 381
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "d35f792118136b63cd742e78755aba03c1243d61b9c49c9b8dca4d7274633a53",
+            "locator": {
+              "label": "line 5",
+              "line": 5,
+              "characterStart": 0,
+              "characterEnd": 20
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "75c19136795dc12740279c6aa2225b926c9a3da098b8d0ec7371add44c2c3241",
+            "locator": {
+              "label": "line 6",
+              "line": 6,
+              "characterStart": 0,
+              "characterEnd": 45
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "6d735bd4ab70f9b38dc5384333ee0f1e160e7b9094c26b8d866c2e5c631ad04e",
+            "locator": {
+              "label": "line 7",
+              "line": 7,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "831f11e7d7026bc2402e464ae6714a93218f622321805bfb5339d48bd550dfde",
+            "locator": {
+              "label": "line 8",
+              "line": 8,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "990050f9eb7ba67018bab32afb1320d584ce19d79dd12779f6dfc2fb16b888a2",
+            "locator": {
+              "label": "line 9",
+              "line": 9,
+              "characterStart": 0,
+              "characterEnd": 252
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "8b4cc6c04b832b5f892caaeddffd7c8683099295cb787b9575d2cb2d0090a443",
+            "locator": {
+              "label": "line 10",
+              "line": 10,
+              "characterStart": 0,
+              "characterEnd": 381
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "7393170c99b6f57951eafa1db3763cc707e8106a20ccf7a811ffc5fa5fa6d3f7",
+            "locator": {
+              "label": "line 11",
+              "line": 11,
+              "characterStart": 0,
+              "characterEnd": 176
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "3ca7612c3647f538e90948734406049b6f86f2647e1e3b05975c639339333db2",
+            "locator": {
+              "label": "line 12",
+              "line": 12,
+              "characterStart": 0,
+              "characterEnd": 269
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "5c17499934756206d2af22470c57392433ed2d226a1a144742521726f340c29e",
+            "locator": {
+              "label": "line 13",
+              "line": 13,
+              "characterStart": 0,
+              "characterEnd": 121
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "5a04823455be8b91bc82adda9affa48d1cd5f21e820b5530b92ce787350857d5",
+            "locator": {
+              "label": "line 14",
+              "line": 14,
+              "characterStart": 0,
+              "characterEnd": 138
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "ce60739f1d232fb5c24c674c81caeeac471a7683dff96662a4ac0dd40cb1bf4b",
+            "locator": {
+              "label": "line 15",
+              "line": 15,
+              "characterStart": 0,
+              "characterEnd": 25
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "4a36f76356a7fd9cecb0e01c6a4edb1c9e3c5894743aa5ebfeb967acde0587c7",
+            "locator": {
+              "label": "line 16",
+              "line": 16,
+              "characterStart": 0,
+              "characterEnd": 318
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "dc7cbff1d916844adf9972780b52082a9883f452153fcffdc37b172224ea8078",
+            "locator": {
+              "label": "line 17",
+              "line": 17,
+              "characterStart": 0,
+              "characterEnd": 343
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "481caf3b5ce8a02a8dc3e67385e08128250c42ab5336f3c769244944626e7bcf",
+            "locator": {
+              "label": "line 18",
+              "line": 18,
+              "characterStart": 0,
+              "characterEnd": 67
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "55015502100c5dc7c03c435bfb30bbc8930b1dc3cd4f2287fa003ac609966ef2",
+            "locator": {
+              "label": "line 19",
+              "line": 19,
+              "characterStart": 0,
+              "characterEnd": 37
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "75c19136795dc12740279c6aa2225b926c9a3da098b8d0ec7371add44c2c3241",
+            "locator": {
+              "label": "line 20",
+              "line": 20,
+              "characterStart": 0,
+              "characterEnd": 45
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "6d735bd4ab70f9b38dc5384333ee0f1e160e7b9094c26b8d866c2e5c631ad04e",
+            "locator": {
+              "label": "line 21",
+              "line": 21,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "831f11e7d7026bc2402e464ae6714a93218f622321805bfb5339d48bd550dfde",
+            "locator": {
+              "label": "line 22",
+              "line": 22,
+              "characterStart": 0,
+              "characterEnd": 13
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "707acd002670cdee1772377b242dc3bcb4e65dae4a93303e8cb5753ef4e4fcc9",
+            "locator": {
+              "label": "line 23",
+              "line": 23,
+              "characterStart": 0,
+              "characterEnd": 958
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "2be7efa6f35be04b26a448164f57f2c1fbe365c257ea2fefe2e79d82168da476",
+            "locator": {
+              "label": "line 24",
+              "line": 24,
+              "characterStart": 0,
+              "characterEnd": 18
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "c764b0a0d47692412dd71c52c3b19d410fc6e990fe5cfbf9451043c0ad6fa12c",
+            "locator": {
+              "label": "line 25",
+              "line": 25,
+              "characterStart": 0,
+              "characterEnd": 39
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          },
+          {
+            "sha256": "d7c09d33c19c5c67a82c74a7f574f613fb73bb92ddc08931e0768bdaeaa176da",
+            "locator": {
+              "label": "line 26",
+              "line": 26,
+              "characterStart": 0,
+              "characterEnd": 793
+            },
+            "sourceSha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+          }
+        ]
+      }
+    ],
+    "controls": {
+      "status": "passed",
+      "checks": [
+        "actual-source native failure control",
+        "ControlAdapter grounded/unquoted/foreign-part/tool rejection",
+        "source ownership and archive denial",
+        "six concurrent same-layout reservations yield one record; a distinct retained original is denied at cap one"
+      ],
+      "invariants": {
+        "model_calls": 0,
+        "registry_records": 0,
+        "physical_features": 0
+      },
+      "limits": [
+        "Model control is quotation validation only, not extraction accuracy or live gateway proof",
+        "Cap is an isolated protocol control on actual retained originals, not live model-policy qualification"
+      ]
+    },
+    "familyAndPagination": {
+      "status": "passed",
+      "checks": [
+        "same-byte explicit-family receipt reuses source revision and job",
+        "native result second page remains bounded under current pins"
+      ]
+    },
+    "initialHarness": {
+      "exit": 1,
+      "status": "failed",
+      "phase": "source-bound-protocol-controls",
+      "reason": "Root script could not resolve @ulpin/contracts/usp after all five API journeys passed. Existing canonical model/source data was unchanged. Supplemental control runner used explicit tsconfig paths and exited 0."
+    },
+    "correctedTestDriverSha256": "b4db7388329903ac728b9ca8dc43614d704fa4cce4b1946d003f050200715ab4",
+    "sources": [
+      {
+        "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+        "bytes": 9344939,
+        "issuer": "U.S. Geological Survey, U.S. Department of the Interior",
+        "url": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Maps/HistoricalTopo/PDF/CO/62500/CO_Central%20City_232520_1910_62500_geo.pdf",
+        "permission": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted",
+        "geography": "Central City quadrangle, Colorado, United States (foreign test_only)",
+        "purpose": "test_only"
+      },
+      {
+        "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+        "bytes": 1763,
+        "issuer": "City of New York Office of Technology and Innovation (OTI)",
+        "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?doitt_id=353927",
+        "terms": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+        "geography": "New York City, USA",
+        "purpose": "test_only"
+      },
+      {
+        "sha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+        "bytes": 41792,
+        "issuer": "City of New York Office of Technology and Innovation (OTI)",
+        "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?%24select=the_geom%2Cdoitt_id%2Cbin%2Cbase_bbl%2Cheight_roof%2Cground_elevation%2Cfeature_code%2Cgeom_source%2Clast_edited_date&%24where=within_box%28the_geom%2C40.90125%2C-73.8715%2C40.8993%2C-73.8688%29+AND+feature_code+%3D+%272100%27&%24order=doitt_id+ASC&%24limit=100&%24offset=0",
+        "terms": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+        "geography": "New York City, USA",
+        "purpose": "test_only"
+      },
+      {
+        "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27",
+        "bytes": 12973,
+        "issuer": "City of New York Office of Technology and Innovation (OTI)",
+        "url": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+        "terms": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+        "geography": "New York City, USA",
+        "purpose": "test_only; native reference text without inferred facts"
+      }
+    ]
+  },
+  "finalPrivacyPatch": {
+    "commit": "16cc71aa24e1508d4fa92e83107bfcdbe6805e6d",
+    "runtimeVerified": false,
+    "codeAndControlProof": {
+      "status": "passed",
+      "scope": "Pure projection control on retained official text and already-created isolated application IDs; no services or new source records",
+      "checks": [
+        "generic source view excludes staged native parts and private job markers",
+        "package view cannot copy staged document text",
+        "historical reference parts remain compatible"
+      ]
+    },
+    "limitation": "Patch was made after the single owned runtime was stopped. It removes the generic native-text mirror, masks staged/private inspection fields and excludes staged text from package parts; runtime evidence remains pinned to db985b9."
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0,
+      "scope": "runtime candidate and final privacy code"
+    },
+    {
+      "command": "pnpm exec tsx --test tests/usp-private-mvt-read.test.ts",
+      "exit": 0,
+      "tests": 6
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-intake.test.ts tests/ingestion-events.test.ts",
+      "exit": 0,
+      "tests": 5
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs prepare --api-port 3191",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs start <owned nonce>",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/document-ingestion-native-smoke.mjs <owned nonce>",
+      "exit": 1,
+      "scope": "five API journey assertions passed; auxiliary import failure"
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig <owned alias configuration> scripts/usp/document-ingestion-state.ts <existing actual source/job IDs>",
+      "exit": 0
+    },
+    {
+      "command": "pure family/pagination control on same isolated records",
+      "exit": 0
+    },
+    {
+      "command": "pure generic source/package projection control on retained original text and actual isolated IDs",
+      "exit": 0
+    },
+    {
+      "command": "node --check scripts/usp/document-ingestion-smoke.mjs",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs stop <owned nonce>",
+      "exit": 0
+    }
+  ],
+  "sourceFileHashes": [
+    {
+      "path": "apps/api/src/modules/ingestion/documents.controller.ts",
+      "sha256": "6aa44486b132b2ccbd013e575a81d531774628c5a76f6fb73e28c3076b41c2c9"
+    },
+    {
+      "path": "packages/contracts/src/usp/document-ingestion.ts",
+      "sha256": "03d5af28c4824742f9405aaa4a3a9ca95f5476e2e6708b6d0ba1ed59b179445d"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/document-context.ts",
+      "sha256": "7cd276b1c8ede9935000d099d67b32ddaa46ed287850e48c3273b7383530a1bf"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/document-model.ts",
+      "sha256": "689c7559f175dc77e9ed6bb1f2a2e9c2a346d21f303948376968ecdcad2403fe"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/document-native.ts",
+      "sha256": "4a130b643bda019bd18500ad9624daa7a47248a553358ba6d3383d08536bd18c"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/document-worker.ts",
+      "sha256": "7d0a5ac27689abf3916da2a6467485b56efbf6bd6cb7a6946ca745c14f6d13ac"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/documents.ts",
+      "sha256": "53fea7573c474c14e7ac25999825faca147d0d82a03b283647943b2d06d78a6d"
+    },
+    {
+      "path": "packages/server/src/modules/cases/domain.ts",
+      "sha256": "7327c91681787f237a96190695f591d0dd7bf0360284ef9b026061bbafbaa9a6"
+    },
+    {
+      "path": "packages/server/src/modules/cases/source-workspaces.ts",
+      "sha256": "189a90bb07ee8ae93da80937d902e7f7d6ba0b1cca12d0607022f3767c61de8d"
+    }
+  ],
+  "originals": [
+    {
+      "path": "/Users/vinayak/.codex/task-data/ulpin-official-runtime-pdf-v1/usgs-central-city-co-1910-topographic-map.pdf",
+      "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+      "bytes": 9344939
+    },
+    {
+      "path": "fixtures/real-nyc/original.geojson",
+      "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+      "bytes": 1763
+    },
+    {
+      "path": "fixtures/real-area/original.geojson",
+      "sha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+      "bytes": 41792
+    },
+    {
+      "path": "fixtures/real-area/evidence/nyc-building-metadata.md",
+      "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27",
+      "bytes": 12973
+    }
+  ],
+  "hashes": {
+    "mvtCodeSha256": "d581ad446fa799c1ca9123721df7bc95db0b80192f4188006bcfde717ad03b61",
+    "readerSha256": "f910f7f6a076a5f0018d228fda02f5d383326beee827b7716f52ded0049af7db",
+    "proposalCodeSha256": "689c7559f175dc77e9ed6bb1f2a2e9c2a346d21f303948376968ecdcad2403fe",
+    "providerModelHash": null,
+    "providerModelHashReason": "Provider disabled; no provider response or weights used"
+  },
+  "receipts": [
+    {
+      "file": "document-ingestion-smoke.json",
+      "sha256": "a52a3f31ab6cda42d71315bd3d078fddda48849c39a59650ddb789252c6c4c50"
+    },
+    {
+      "file": "document-ingestion-controls.json",
+      "sha256": "49f588c6d34444d25314959c0a9841cb27a3583b3220dffa68b23444680547ff"
+    },
+    {
+      "file": "document-family-pagination.json",
+      "sha256": "e1d064245a05ea30ba218b1f54c267fa7474386987055ed407298857a55040fc"
+    },
+    {
+      "file": "document-projection-boundary.json",
+      "sha256": "c98270332b3953077dd73caffd59bfb04f37d743e33bbe9ce4c27ee726ae98d4"
+    }
+  ],
+  "shutdown": {
+    "verified": true,
+    "status": {
+      "project": "ulpin-usptest-b59ef011e66e0f1b",
+      "containers": [],
+      "processes": {
+        "api": {
+          "pid": 80474,
+          "pgid": 80474,
+          "ownedLeaderAlive": false,
+          "memberPids": []
+        },
+        "dispatcher": {
+          "pid": 80352,
+          "pgid": 80352,
+          "ownedLeaderAlive": false,
+          "memberPids": []
+        }
+      }
+    },
+    "volumes": [
+      "ulpin-usptest-b59ef011e66e0f1b_minio-data",
+      "ulpin-usptest-b59ef011e66e0f1b_postgres-data",
+      "ulpin-usptest-b59ef011e66e0f1b_redis-data"
+    ],
+    "preserved": true
+  },
+  "notQualified": [
+    "CSV/DOCX/image/encrypted runtime source accuracy; scanned PDF OCR",
+    "Live model/gateway funding, permission, key or policy",
+    "Field extraction accuracy, familiar-layout recipes and held-out evaluation",
+    "OCR, generative geometry, domain approval, rights, learning, Indian operational data, scale, release gates or deployment"
+  ]
+}

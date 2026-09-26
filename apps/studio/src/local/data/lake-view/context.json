@@ -1,0 +1,7698 @@
+{
+ "area": {
+  "id": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+  "siteId": "e6b9b9fc-1d09-5771-bbbe-ca1197f1b336",
+  "name": "Lake View",
+  "revision": 3,
+  "reference": {
+   "sourceCrs": "EPSG:32643",
+   "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+   "origin": [
+    373420,
+    2046180
+   ],
+   "anchor": [
+    73.79842,
+    18.50316
+   ],
+   "transformVersion": "utm43n-local/1",
+   "verticalReference": "Site datum SD-1; ground 212.40 m"
+  },
+  "extent": [
+   -150,
+   -120,
+   128,
+   100
+  ],
+  "geographicExtent": [
+   73.79699908,
+   18.50207442,
+   73.799632518,
+   18.50406465
+  ],
+  "administrativeUnits": [
+   {
+    "id": "ff3637dd-891c-5f2e-bfab-413bce48e443",
+    "kind": "village",
+    "name": "Lake View",
+    "code": "556734",
+    "authority": "Revenue department"
+   },
+   {
+    "id": "3cefe2b7-4df1-561f-b735-9539730ea166",
+    "kind": "district",
+    "name": "Pune",
+    "code": "521",
+    "authority": "Revenue department"
+   }
+  ],
+  "dataKind": "demonstration",
+  "featureCount": 54
+ },
+ "features": [
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3C4D5",
+    "survey_no": "118/2B",
+    "village": "Lake View"
+   },
+   "id": "ec6d379a-588b-5d72-a6d9-a55873d86813",
+   "identifier": "MH2507A1B3C4D5",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 118",
+   "name": "Parcel MH2507A1B3C4D5",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -22,
+       -23
+      ],
+      [
+       22,
+       -23
+      ],
+      [
+       22,
+       12.5
+      ],
+      [
+       -22,
+       12.5
+      ],
+      [
+       -22,
+       -23
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798211598,
+       18.502951931
+      ],
+      [
+       73.798628402,
+       18.502951931
+      ],
+      [
+       73.798628402,
+       18.503273081
+      ],
+      [
+       73.798211598,
+       18.503273081
+      ],
+      [
+       73.798211598,
+       18.502951931
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -22,
+       -23
+      ],
+      [
+       22,
+       -23
+      ],
+      [
+       22,
+       12.5
+      ],
+      [
+       -22,
+       12.5
+      ],
+      [
+       -22,
+       -23
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 1562,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 118"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3C4D5"
+   },
+   "id": "2f468cc7-ba69-5375-be18-b12e796e8be0",
+   "identifier": "MH2507A1B3C4D5",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 120",
+   "name": "Parcel MH2507A1B3C4D5",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -33,
+       -69
+      ],
+      [
+       -7,
+       -69
+      ],
+      [
+       -7,
+       -47
+      ],
+      [
+       -33,
+       -47
+      ],
+      [
+       -33,
+       -69
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798107398,
+       18.502535792
+      ],
+      [
+       73.79835369,
+       18.502535792
+      ],
+      [
+       73.79835369,
+       18.502734815
+      ],
+      [
+       73.798107398,
+       18.502734815
+      ],
+      [
+       73.798107398,
+       18.502535792
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -33,
+       -69
+      ],
+      [
+       -7,
+       -69
+      ],
+      [
+       -7,
+       -47
+      ],
+      [
+       -33,
+       -47
+      ],
+      [
+       -33,
+       -69
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 572,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 120"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 5,
+    "parcel_ulpin": "MH2507A1B3C4D5"
+   },
+   "id": "5a1636fa-0191-5e14-b698-5266da94744c",
+   "identifier": "MH2507A1B3C4D5/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 301",
+   "name": "Building 301",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -29,
+       -65
+      ],
+      [
+       -11,
+       -65
+      ],
+      [
+       -11,
+       -51
+      ],
+      [
+       -29,
+       -51
+      ],
+      [
+       -29,
+       -65
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798145289,
+       18.502571978
+      ],
+      [
+       73.798315799,
+       18.502571978
+      ],
+      [
+       73.798315799,
+       18.502698629
+      ],
+      [
+       73.798145289,
+       18.502698629
+      ],
+      [
+       73.798145289,
+       18.502571978
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -29,
+       -65
+      ],
+      [
+       -11,
+       -65
+      ],
+      [
+       -11,
+       -51
+      ],
+      [
+       -29,
+       -51
+      ],
+      [
+       -29,
+       -65
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 15,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 301"
+     }
+    ]
+   },
+   "areaM2": 252,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 301"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 5
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3C55E"
+   },
+   "id": "bd4d33e5-cb32-5626-8ea6-82cc862e0b82",
+   "identifier": "MH2507A1B3C55E",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 121",
+   "name": "Parcel MH2507A1B3C55E",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6,
+       -68
+      ],
+      [
+       16,
+       -68
+      ],
+      [
+       16,
+       -44
+      ],
+      [
+       -6,
+       -44
+      ],
+      [
+       -6,
+       -68
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798363163,
+       18.502544838
+      ],
+      [
+       73.798571565,
+       18.502544838
+      ],
+      [
+       73.798571565,
+       18.502761954
+      ],
+      [
+       73.798363163,
+       18.502761954
+      ],
+      [
+       73.798363163,
+       18.502544838
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6,
+       -68
+      ],
+      [
+       16,
+       -68
+      ],
+      [
+       16,
+       -44
+      ],
+      [
+       -6,
+       -44
+      ],
+      [
+       -6,
+       -68
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 528,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 121"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 8,
+    "parcel_ulpin": "MH2507A1B3C55E"
+   },
+   "id": "c13322e5-0646-563a-a75a-3f6ca09ae2c3",
+   "identifier": "MH2507A1B3C55E/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 302",
+   "name": "Building 302",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -2,
+       -64
+      ],
+      [
+       12,
+       -64
+      ],
+      [
+       12,
+       -48
+      ],
+      [
+       -2,
+       -48
+      ],
+      [
+       -2,
+       -64
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798401054,
+       18.502581024
+      ],
+      [
+       73.798533674,
+       18.502581024
+      ],
+      [
+       73.798533674,
+       18.502725768
+      ],
+      [
+       73.798401054,
+       18.502725768
+      ],
+      [
+       73.798401054,
+       18.502581024
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -2,
+       -64
+      ],
+      [
+       12,
+       -64
+      ],
+      [
+       12,
+       -48
+      ],
+      [
+       -2,
+       -48
+      ],
+      [
+       -2,
+       -64
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 24,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 302"
+     }
+    ]
+   },
+   "areaM2": 224,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 302"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 8
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3C6E6"
+   },
+   "id": "a983bbb3-1098-5580-9af4-766aa750804c",
+   "identifier": "MH2507A1B3C6E6",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 122",
+   "name": "Parcel MH2507A1B3C6E6",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       15,
+       -70
+      ],
+      [
+       35,
+       -70
+      ],
+      [
+       35,
+       -50
+      ],
+      [
+       15,
+       -50
+      ],
+      [
+       15,
+       -70
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798562092,
+       18.502526745
+      ],
+      [
+       73.798751548,
+       18.502526745
+      ],
+      [
+       73.798751548,
+       18.502707675
+      ],
+      [
+       73.798562092,
+       18.502707675
+      ],
+      [
+       73.798562092,
+       18.502526745
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       15,
+       -70
+      ],
+      [
+       35,
+       -70
+      ],
+      [
+       35,
+       -50
+      ],
+      [
+       15,
+       -50
+      ],
+      [
+       15,
+       -70
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 400,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 122"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 3,
+    "parcel_ulpin": "MH2507A1B3C6E6"
+   },
+   "id": "84f0bece-bdd2-5265-903e-3d73618573a4",
+   "identifier": "MH2507A1B3C6E6/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 303",
+   "name": "Building 303",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       19,
+       -66
+      ],
+      [
+       31,
+       -66
+      ],
+      [
+       31,
+       -54
+      ],
+      [
+       19,
+       -54
+      ],
+      [
+       19,
+       -66
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798599983,
+       18.502562931
+      ],
+      [
+       73.798713657,
+       18.502562931
+      ],
+      [
+       73.798713657,
+       18.502671489
+      ],
+      [
+       73.798599983,
+       18.502671489
+      ],
+      [
+       73.798599983,
+       18.502562931
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       19,
+       -66
+      ],
+      [
+       31,
+       -66
+      ],
+      [
+       31,
+       -54
+      ],
+      [
+       19,
+       -54
+      ],
+      [
+       19,
+       -66
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 9,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 303"
+     }
+    ]
+   },
+   "areaM2": 144,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 303"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 3
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3C76F"
+   },
+   "id": "73d75ee6-e505-5fa5-9164-8ee3caa8596b",
+   "identifier": "MH2507A1B3C76F",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 123",
+   "name": "Parcel MH2507A1B3C76F",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -38,
+       -102
+      ],
+      [
+       -10,
+       -102
+      ],
+      [
+       -10,
+       -78
+      ],
+      [
+       -38,
+       -78
+      ],
+      [
+       -38,
+       -102
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798060034,
+       18.502237257
+      ],
+      [
+       73.798325272,
+       18.502237257
+      ],
+      [
+       73.798325272,
+       18.502454373
+      ],
+      [
+       73.798060034,
+       18.502454373
+      ],
+      [
+       73.798060034,
+       18.502237257
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -38,
+       -102
+      ],
+      [
+       -10,
+       -102
+      ],
+      [
+       -10,
+       -78
+      ],
+      [
+       -38,
+       -78
+      ],
+      [
+       -38,
+       -102
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 672,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 123"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 10,
+    "parcel_ulpin": "MH2507A1B3C76F"
+   },
+   "id": "8c52f452-1e23-54cf-94af-2c1134055ea0",
+   "identifier": "MH2507A1B3C76F/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 304",
+   "name": "Building 304",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -34,
+       -98
+      ],
+      [
+       -14,
+       -98
+      ],
+      [
+       -14,
+       -82
+      ],
+      [
+       -34,
+       -82
+      ],
+      [
+       -34,
+       -98
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798097925,
+       18.502273443
+      ],
+      [
+       73.798287381,
+       18.502273443
+      ],
+      [
+       73.798287381,
+       18.502418187
+      ],
+      [
+       73.798097925,
+       18.502418187
+      ],
+      [
+       73.798097925,
+       18.502273443
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -34,
+       -98
+      ],
+      [
+       -14,
+       -98
+      ],
+      [
+       -14,
+       -82
+      ],
+      [
+       -34,
+       -82
+      ],
+      [
+       -34,
+       -98
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 30,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 304"
+     }
+    ]
+   },
+   "areaM2": 320,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 304"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 10
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3C8F7"
+   },
+   "id": "634b125d-5007-59ac-9d86-d63ca4a9f42a",
+   "identifier": "MH2507A1B3C8F7",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 124",
+   "name": "Parcel MH2507A1B3C8F7",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6,
+       -98
+      ],
+      [
+       18,
+       -98
+      ],
+      [
+       18,
+       -78
+      ],
+      [
+       -6,
+       -78
+      ],
+      [
+       -6,
+       -98
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798363163,
+       18.502273443
+      ],
+      [
+       73.79859051,
+       18.502273443
+      ],
+      [
+       73.79859051,
+       18.502454373
+      ],
+      [
+       73.798363163,
+       18.502454373
+      ],
+      [
+       73.798363163,
+       18.502273443
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6,
+       -98
+      ],
+      [
+       18,
+       -98
+      ],
+      [
+       18,
+       -78
+      ],
+      [
+       -6,
+       -78
+      ],
+      [
+       -6,
+       -98
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 480,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 124"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 4,
+    "parcel_ulpin": "MH2507A1B3C8F7"
+   },
+   "id": "e751fe34-382d-52db-a06f-b2c56ff6dafa",
+   "identifier": "MH2507A1B3C8F7/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 305",
+   "name": "Building 305",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -2,
+       -94
+      ],
+      [
+       14,
+       -94
+      ],
+      [
+       14,
+       -82
+      ],
+      [
+       -2,
+       -82
+      ],
+      [
+       -2,
+       -94
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798401054,
+       18.502309629
+      ],
+      [
+       73.798552619,
+       18.502309629
+      ],
+      [
+       73.798552619,
+       18.502418187
+      ],
+      [
+       73.798401054,
+       18.502418187
+      ],
+      [
+       73.798401054,
+       18.502309629
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -2,
+       -94
+      ],
+      [
+       14,
+       -94
+      ],
+      [
+       14,
+       -82
+      ],
+      [
+       -2,
+       -82
+      ],
+      [
+       -2,
+       -94
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 12,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 305"
+     }
+    ]
+   },
+   "areaM2": 192,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 305"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 4
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3C97G"
+   },
+   "id": "718a9f75-5e29-5864-be77-67de99d10169",
+   "identifier": "MH2507A1B3C97G",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 125",
+   "name": "Parcel MH2507A1B3C97G",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       15,
+       -103
+      ],
+      [
+       33,
+       -103
+      ],
+      [
+       33,
+       -81
+      ],
+      [
+       15,
+       -81
+      ],
+      [
+       15,
+       -103
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798562092,
+       18.502228211
+      ],
+      [
+       73.798732602,
+       18.502228211
+      ],
+      [
+       73.798732602,
+       18.502427234
+      ],
+      [
+       73.798562092,
+       18.502427234
+      ],
+      [
+       73.798562092,
+       18.502228211
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       15,
+       -103
+      ],
+      [
+       33,
+       -103
+      ],
+      [
+       33,
+       -81
+      ],
+      [
+       15,
+       -81
+      ],
+      [
+       15,
+       -103
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 396,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 125"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 6,
+    "parcel_ulpin": "MH2507A1B3C97G"
+   },
+   "id": "28f430b5-852a-5088-b821-0af31e30660f",
+   "identifier": "MH2507A1B3C97G/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 306",
+   "name": "Building 306",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       19,
+       -99
+      ],
+      [
+       29,
+       -99
+      ],
+      [
+       29,
+       -85
+      ],
+      [
+       19,
+       -85
+      ],
+      [
+       19,
+       -99
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798599983,
+       18.502264397
+      ],
+      [
+       73.798694711,
+       18.502264397
+      ],
+      [
+       73.798694711,
+       18.502391048
+      ],
+      [
+       73.798599983,
+       18.502391048
+      ],
+      [
+       73.798599983,
+       18.502264397
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       19,
+       -99
+      ],
+      [
+       29,
+       -99
+      ],
+      [
+       29,
+       -85
+      ],
+      [
+       19,
+       -85
+      ],
+      [
+       19,
+       -99
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 18,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 306"
+     }
+    ]
+   },
+   "areaM2": 140,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 306"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 6
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3C0G8"
+   },
+   "id": "78162d27-978d-5c32-a178-37fb76593e1a",
+   "identifier": "MH2507A1B3C0G8",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 126",
+   "name": "Parcel MH2507A1B3C0G8",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       49,
+       -13
+      ],
+      [
+       75,
+       -13
+      ],
+      [
+       75,
+       17
+      ],
+      [
+       49,
+       17
+      ],
+      [
+       49,
+       -13
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798884167,
+       18.503042396
+      ],
+      [
+       73.79913046,
+       18.503042396
+      ],
+      [
+       73.79913046,
+       18.50331379
+      ],
+      [
+       73.798884167,
+       18.50331379
+      ],
+      [
+       73.798884167,
+       18.503042396
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       49,
+       -13
+      ],
+      [
+       75,
+       -13
+      ],
+      [
+       75,
+       17
+      ],
+      [
+       49,
+       17
+      ],
+      [
+       49,
+       -13
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 780,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 126"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 7,
+    "parcel_ulpin": "MH2507A1B3C0G8"
+   },
+   "id": "6ba8a864-5bd1-54e0-b072-b0225fbb2d76",
+   "identifier": "MH2507A1B3C0G8/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 307",
+   "name": "Building 307",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       53,
+       -9
+      ],
+      [
+       71,
+       -9
+      ],
+      [
+       71,
+       13
+      ],
+      [
+       53,
+       13
+      ],
+      [
+       53,
+       -9
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798922058,
+       18.503078582
+      ],
+      [
+       73.799092569,
+       18.503078582
+      ],
+      [
+       73.799092569,
+       18.503277604
+      ],
+      [
+       73.798922058,
+       18.503277604
+      ],
+      [
+       73.798922058,
+       18.503078582
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       53,
+       -9
+      ],
+      [
+       71,
+       -9
+      ],
+      [
+       71,
+       13
+      ],
+      [
+       53,
+       13
+      ],
+      [
+       53,
+       -9
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 21,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 307"
+     }
+    ]
+   },
+   "areaM2": 396,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 307"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 7
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CA8H"
+   },
+   "id": "11717fa5-3372-53b0-96f8-50c3e0f7e6f9",
+   "identifier": "MH2507A1B3CA8H",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 127",
+   "name": "Parcel MH2507A1B3CA8H",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       54,
+       -69
+      ],
+      [
+       78,
+       -69
+      ],
+      [
+       78,
+       -47
+      ],
+      [
+       54,
+       -47
+      ],
+      [
+       54,
+       -69
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798931531,
+       18.502535792
+      ],
+      [
+       73.799158878,
+       18.502535792
+      ],
+      [
+       73.799158878,
+       18.502734815
+      ],
+      [
+       73.798931531,
+       18.502734815
+      ],
+      [
+       73.798931531,
+       18.502535792
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       54,
+       -69
+      ],
+      [
+       78,
+       -69
+      ],
+      [
+       78,
+       -47
+      ],
+      [
+       54,
+       -47
+      ],
+      [
+       54,
+       -69
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 528,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 127"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 4,
+    "parcel_ulpin": "MH2507A1B3CA8H"
+   },
+   "id": "5fcf33fa-d909-5f60-bdfe-4db2bc06317f",
+   "identifier": "MH2507A1B3CA8H/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 308",
+   "name": "Building 308",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       58,
+       -65
+      ],
+      [
+       74,
+       -65
+      ],
+      [
+       74,
+       -51
+      ],
+      [
+       58,
+       -51
+      ],
+      [
+       58,
+       -65
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798969422,
+       18.502571978
+      ],
+      [
+       73.799120987,
+       18.502571978
+      ],
+      [
+       73.799120987,
+       18.502698629
+      ],
+      [
+       73.798969422,
+       18.502698629
+      ],
+      [
+       73.798969422,
+       18.502571978
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       58,
+       -65
+      ],
+      [
+       74,
+       -65
+      ],
+      [
+       74,
+       -51
+      ],
+      [
+       58,
+       -51
+      ],
+      [
+       58,
+       -65
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 12,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 308"
+     }
+    ]
+   },
+   "areaM2": 224,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 308"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 4
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CBH9"
+   },
+   "id": "966c39e8-c1bd-5c94-a5b3-28d4a653007b",
+   "identifier": "MH2507A1B3CBH9",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 128",
+   "name": "Parcel MH2507A1B3CBH9",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       50,
+       -103
+      ],
+      [
+       78,
+       -103
+      ],
+      [
+       78,
+       -81
+      ],
+      [
+       50,
+       -81
+      ],
+      [
+       50,
+       -103
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.79889364,
+       18.502228211
+      ],
+      [
+       73.799158878,
+       18.502228211
+      ],
+      [
+       73.799158878,
+       18.502427234
+      ],
+      [
+       73.79889364,
+       18.502427234
+      ],
+      [
+       73.79889364,
+       18.502228211
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       50,
+       -103
+      ],
+      [
+       78,
+       -103
+      ],
+      [
+       78,
+       -81
+      ],
+      [
+       50,
+       -81
+      ],
+      [
+       50,
+       -103
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 616,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 128"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 9,
+    "parcel_ulpin": "MH2507A1B3CBH9"
+   },
+   "id": "97e8163b-61f9-55ac-91d5-ed3bfd10ee90",
+   "identifier": "MH2507A1B3CBH9/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 309",
+   "name": "Building 309",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       54,
+       -99
+      ],
+      [
+       74,
+       -99
+      ],
+      [
+       74,
+       -85
+      ],
+      [
+       54,
+       -85
+      ],
+      [
+       54,
+       -99
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798931531,
+       18.502264397
+      ],
+      [
+       73.799120987,
+       18.502264397
+      ],
+      [
+       73.799120987,
+       18.502391048
+      ],
+      [
+       73.798931531,
+       18.502391048
+      ],
+      [
+       73.798931531,
+       18.502264397
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       54,
+       -99
+      ],
+      [
+       74,
+       -99
+      ],
+      [
+       74,
+       -85
+      ],
+      [
+       54,
+       -85
+      ],
+      [
+       54,
+       -99
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 27,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 309"
+     }
+    ]
+   },
+   "areaM2": 280,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 309"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 9
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CC9J"
+   },
+   "id": "ab2b91ff-4586-53c9-a968-229efbb4462f",
+   "identifier": "MH2507A1B3CC9J",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 129",
+   "name": "Parcel MH2507A1B3CC9J",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79,
+       -33
+      ],
+      [
+       101,
+       -33
+      ],
+      [
+       101,
+       -7
+      ],
+      [
+       79,
+       -7
+      ],
+      [
+       79,
+       -33
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.799168351,
+       18.502861466
+      ],
+      [
+       73.799376753,
+       18.502861466
+      ],
+      [
+       73.799376753,
+       18.503096675
+      ],
+      [
+       73.799168351,
+       18.503096675
+      ],
+      [
+       73.799168351,
+       18.502861466
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79,
+       -33
+      ],
+      [
+       101,
+       -33
+      ],
+      [
+       101,
+       -7
+      ],
+      [
+       79,
+       -7
+      ],
+      [
+       79,
+       -33
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 572,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 129"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 3,
+    "parcel_ulpin": "MH2507A1B3CC9J"
+   },
+   "id": "60f3cede-5bd2-569e-9843-0ee7154dd48e",
+   "identifier": "MH2507A1B3CC9J/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 310",
+   "name": "Building 310",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       83,
+       -29
+      ],
+      [
+       97,
+       -29
+      ],
+      [
+       97,
+       -11
+      ],
+      [
+       83,
+       -11
+      ],
+      [
+       83,
+       -29
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.799206242,
+       18.502897652
+      ],
+      [
+       73.799338861,
+       18.502897652
+      ],
+      [
+       73.799338861,
+       18.503060489
+      ],
+      [
+       73.799206242,
+       18.503060489
+      ],
+      [
+       73.799206242,
+       18.502897652
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       83,
+       -29
+      ],
+      [
+       97,
+       -29
+      ],
+      [
+       97,
+       -11
+      ],
+      [
+       83,
+       -11
+      ],
+      [
+       83,
+       -29
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 9,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 310"
+     }
+    ]
+   },
+   "areaM2": 252,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 310"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 3
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CDJ2"
+   },
+   "id": "a7f6ce30-1294-5470-bea0-a8cdee18efa6",
+   "identifier": "MH2507A1B3CDJ2",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 130",
+   "name": "Parcel MH2507A1B3CDJ2",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       80,
+       19
+      ],
+      [
+       104,
+       19
+      ],
+      [
+       104,
+       41
+      ],
+      [
+       80,
+       41
+      ],
+      [
+       80,
+       19
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.799177824,
+       18.503331883
+      ],
+      [
+       73.799405171,
+       18.503331883
+      ],
+      [
+       73.799405171,
+       18.503530906
+      ],
+      [
+       73.799177824,
+       18.503530906
+      ],
+      [
+       73.799177824,
+       18.503331883
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       80,
+       19
+      ],
+      [
+       104,
+       19
+      ],
+      [
+       104,
+       41
+      ],
+      [
+       80,
+       41
+      ],
+      [
+       80,
+       19
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 528,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 130"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 5,
+    "parcel_ulpin": "MH2507A1B3CDJ2"
+   },
+   "id": "943ee1a4-a6b3-57d4-9266-2a7415aaaecb",
+   "identifier": "MH2507A1B3CDJ2/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 311",
+   "name": "Building 311",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       84,
+       23
+      ],
+      [
+       100,
+       23
+      ],
+      [
+       100,
+       37
+      ],
+      [
+       84,
+       37
+      ],
+      [
+       84,
+       23
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.799215715,
+       18.503368069
+      ],
+      [
+       73.79936728,
+       18.503368069
+      ],
+      [
+       73.79936728,
+       18.50349472
+      ],
+      [
+       73.799215715,
+       18.50349472
+      ],
+      [
+       73.799215715,
+       18.503368069
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       84,
+       23
+      ],
+      [
+       100,
+       23
+      ],
+      [
+       100,
+       37
+      ],
+      [
+       84,
+       37
+      ],
+      [
+       84,
+       23
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 15,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 311"
+     }
+    ]
+   },
+   "areaM2": 224,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 311"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 5
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CE2K"
+   },
+   "id": "3fc967bc-3313-5493-b36b-3b60dd55a48a",
+   "identifier": "MH2507A1B3CE2K",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 131",
+   "name": "Parcel MH2507A1B3CE2K",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       49,
+       32
+      ],
+      [
+       75,
+       32
+      ],
+      [
+       75,
+       56
+      ],
+      [
+       49,
+       56
+      ],
+      [
+       49,
+       32
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798884167,
+       18.503449488
+      ],
+      [
+       73.79913046,
+       18.503449488
+      ],
+      [
+       73.79913046,
+       18.503666604
+      ],
+      [
+       73.798884167,
+       18.503666604
+      ],
+      [
+       73.798884167,
+       18.503449488
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       49,
+       32
+      ],
+      [
+       75,
+       32
+      ],
+      [
+       75,
+       56
+      ],
+      [
+       49,
+       56
+      ],
+      [
+       49,
+       32
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 624,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 131"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 11,
+    "parcel_ulpin": "MH2507A1B3CE2K"
+   },
+   "id": "b8e4729e-99dd-5bef-ba6a-ee308bb8d3d0",
+   "identifier": "MH2507A1B3CE2K/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 312",
+   "name": "Building 312",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       53,
+       36
+      ],
+      [
+       71,
+       36
+      ],
+      [
+       71,
+       52
+      ],
+      [
+       53,
+       52
+      ],
+      [
+       53,
+       36
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798922058,
+       18.503485674
+      ],
+      [
+       73.799092569,
+       18.503485674
+      ],
+      [
+       73.799092569,
+       18.503630418
+      ],
+      [
+       73.798922058,
+       18.503630418
+      ],
+      [
+       73.798922058,
+       18.503485674
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       53,
+       36
+      ],
+      [
+       71,
+       36
+      ],
+      [
+       71,
+       52
+      ],
+      [
+       53,
+       52
+      ],
+      [
+       53,
+       36
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 33,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 312"
+     }
+    ]
+   },
+   "areaM2": 288,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 312"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 11
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CFK3"
+   },
+   "id": "8d803964-3435-5b81-bac3-a9ffafd0f6d4",
+   "identifier": "MH2507A1B3CFK3",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 132",
+   "name": "Parcel MH2507A1B3CFK3",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -34,
+       25
+      ],
+      [
+       -10,
+       25
+      ],
+      [
+       -10,
+       47
+      ],
+      [
+       -34,
+       47
+      ],
+      [
+       -34,
+       25
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798097925,
+       18.503386162
+      ],
+      [
+       73.798325272,
+       18.503386162
+      ],
+      [
+       73.798325272,
+       18.503585185
+      ],
+      [
+       73.798097925,
+       18.503585185
+      ],
+      [
+       73.798097925,
+       18.503386162
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -34,
+       25
+      ],
+      [
+       -10,
+       25
+      ],
+      [
+       -10,
+       47
+      ],
+      [
+       -34,
+       47
+      ],
+      [
+       -34,
+       25
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 528,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 132"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 6,
+    "parcel_ulpin": "MH2507A1B3CFK3"
+   },
+   "id": "79b00563-fe3d-5eb6-8848-7017ddac765c",
+   "identifier": "MH2507A1B3CFK3/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 313",
+   "name": "Building 313",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -30,
+       29
+      ],
+      [
+       -14,
+       29
+      ],
+      [
+       -14,
+       43
+      ],
+      [
+       -30,
+       43
+      ],
+      [
+       -30,
+       29
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798135816,
+       18.503422348
+      ],
+      [
+       73.798287381,
+       18.503422348
+      ],
+      [
+       73.798287381,
+       18.503548999
+      ],
+      [
+       73.798135816,
+       18.503548999
+      ],
+      [
+       73.798135816,
+       18.503422348
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -30,
+       29
+      ],
+      [
+       -14,
+       29
+      ],
+      [
+       -14,
+       43
+      ],
+      [
+       -30,
+       43
+      ],
+      [
+       -30,
+       29
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 18,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 313"
+     }
+    ]
+   },
+   "areaM2": 224,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 313"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 6
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CG3L"
+   },
+   "id": "0b6d2b23-cb6f-5dcb-81f0-08de963ea53e",
+   "identifier": "MH2507A1B3CG3L",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 133",
+   "name": "Parcel MH2507A1B3CG3L",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -9,
+       27
+      ],
+      [
+       17,
+       27
+      ],
+      [
+       17,
+       49
+      ],
+      [
+       -9,
+       49
+      ],
+      [
+       -9,
+       27
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798334745,
+       18.503404255
+      ],
+      [
+       73.798581038,
+       18.503404255
+      ],
+      [
+       73.798581038,
+       18.503603278
+      ],
+      [
+       73.798334745,
+       18.503603278
+      ],
+      [
+       73.798334745,
+       18.503404255
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -9,
+       27
+      ],
+      [
+       17,
+       27
+      ],
+      [
+       17,
+       49
+      ],
+      [
+       -9,
+       49
+      ],
+      [
+       -9,
+       27
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 572,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 133"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 4,
+    "parcel_ulpin": "MH2507A1B3CG3L"
+   },
+   "id": "3c07f473-2639-5352-b37d-6a0bdd6af72b",
+   "identifier": "MH2507A1B3CG3L/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 314",
+   "name": "Building 314",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -5,
+       31
+      ],
+      [
+       13,
+       31
+      ],
+      [
+       13,
+       45
+      ],
+      [
+       -5,
+       45
+      ],
+      [
+       -5,
+       31
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798372636,
+       18.503440441
+      ],
+      [
+       73.798543146,
+       18.503440441
+      ],
+      [
+       73.798543146,
+       18.503567092
+      ],
+      [
+       73.798372636,
+       18.503567092
+      ],
+      [
+       73.798372636,
+       18.503440441
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -5,
+       31
+      ],
+      [
+       13,
+       31
+      ],
+      [
+       13,
+       45
+      ],
+      [
+       -5,
+       45
+      ],
+      [
+       -5,
+       31
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 12,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 314"
+     }
+    ]
+   },
+   "areaM2": 252,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 314"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 4
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CHL4"
+   },
+   "id": "8434a876-0b68-5666-adb4-9701c85e7668",
+   "identifier": "MH2507A1B3CHL4",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 134",
+   "name": "Parcel MH2507A1B3CHL4",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       14,
+       24
+      ],
+      [
+       34,
+       24
+      ],
+      [
+       34,
+       44
+      ],
+      [
+       14,
+       44
+      ],
+      [
+       14,
+       24
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798552619,
+       18.503377116
+      ],
+      [
+       73.798742075,
+       18.503377116
+      ],
+      [
+       73.798742075,
+       18.503558046
+      ],
+      [
+       73.798552619,
+       18.503558046
+      ],
+      [
+       73.798552619,
+       18.503377116
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       14,
+       24
+      ],
+      [
+       34,
+       24
+      ],
+      [
+       34,
+       44
+      ],
+      [
+       14,
+       44
+      ],
+      [
+       14,
+       24
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 400,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 134"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 8,
+    "parcel_ulpin": "MH2507A1B3CHL4"
+   },
+   "id": "6f4afa62-1b1b-5954-82dd-a09d480e93fc",
+   "identifier": "MH2507A1B3CHL4/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 315",
+   "name": "Building 315",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       18,
+       28
+      ],
+      [
+       30,
+       28
+      ],
+      [
+       30,
+       40
+      ],
+      [
+       18,
+       40
+      ],
+      [
+       18,
+       28
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.79859051,
+       18.503413302
+      ],
+      [
+       73.798704184,
+       18.503413302
+      ],
+      [
+       73.798704184,
+       18.50352186
+      ],
+      [
+       73.79859051,
+       18.50352186
+      ],
+      [
+       73.79859051,
+       18.503413302
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       18,
+       28
+      ],
+      [
+       30,
+       28
+      ],
+      [
+       30,
+       40
+      ],
+      [
+       18,
+       40
+      ],
+      [
+       18,
+       28
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 24,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 315"
+     }
+    ]
+   },
+   "areaM2": 144,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 315"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 8
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CJ4M"
+   },
+   "id": "a60713f7-3bde-5ae4-9b6b-7715623015c2",
+   "identifier": "MH2507A1B3CJ4M",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 135",
+   "name": "Parcel MH2507A1B3CJ4M",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -32,
+       59
+      ],
+      [
+       -4,
+       59
+      ],
+      [
+       -4,
+       85
+      ],
+      [
+       -32,
+       85
+      ],
+      [
+       -32,
+       59
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.79811687,
+       18.503693743
+      ],
+      [
+       73.798382109,
+       18.503693743
+      ],
+      [
+       73.798382109,
+       18.503928952
+      ],
+      [
+       73.79811687,
+       18.503928952
+      ],
+      [
+       73.79811687,
+       18.503693743
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -32,
+       59
+      ],
+      [
+       -4,
+       59
+      ],
+      [
+       -4,
+       85
+      ],
+      [
+       -32,
+       85
+      ],
+      [
+       -32,
+       59
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 728,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 135"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 3,
+    "parcel_ulpin": "MH2507A1B3CJ4M"
+   },
+   "id": "65b611da-0569-52a4-99d1-927e51d54676",
+   "identifier": "MH2507A1B3CJ4M/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 316",
+   "name": "Building 316",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -28,
+       63
+      ],
+      [
+       -8,
+       63
+      ],
+      [
+       -8,
+       81
+      ],
+      [
+       -28,
+       81
+      ],
+      [
+       -28,
+       63
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798154762,
+       18.503729929
+      ],
+      [
+       73.798344218,
+       18.503729929
+      ],
+      [
+       73.798344218,
+       18.503892766
+      ],
+      [
+       73.798154762,
+       18.503892766
+      ],
+      [
+       73.798154762,
+       18.503729929
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -28,
+       63
+      ],
+      [
+       -8,
+       63
+      ],
+      [
+       -8,
+       81
+      ],
+      [
+       -28,
+       81
+      ],
+      [
+       -28,
+       63
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 9,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 316"
+     }
+    ]
+   },
+   "areaM2": 360,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 316"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 3
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CKM5"
+   },
+   "id": "23058c7b-72e0-53c4-bd7a-a99fb2579daa",
+   "identifier": "MH2507A1B3CKM5",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 136",
+   "name": "Parcel MH2507A1B3CKM5",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -2,
+       62
+      ],
+      [
+       22,
+       62
+      ],
+      [
+       22,
+       86
+      ],
+      [
+       -2,
+       86
+      ],
+      [
+       -2,
+       62
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798401054,
+       18.503720883
+      ],
+      [
+       73.798628402,
+       18.503720883
+      ],
+      [
+       73.798628402,
+       18.503937999
+      ],
+      [
+       73.798401054,
+       18.503937999
+      ],
+      [
+       73.798401054,
+       18.503720883
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -2,
+       62
+      ],
+      [
+       22,
+       62
+      ],
+      [
+       22,
+       86
+      ],
+      [
+       -2,
+       86
+      ],
+      [
+       -2,
+       62
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 576,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 136"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 7,
+    "parcel_ulpin": "MH2507A1B3CKM5"
+   },
+   "id": "d3c6c090-660f-5065-9a6a-79786894360e",
+   "identifier": "MH2507A1B3CKM5/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 317",
+   "name": "Building 317",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       2,
+       66
+      ],
+      [
+       18,
+       66
+      ],
+      [
+       18,
+       82
+      ],
+      [
+       2,
+       82
+      ],
+      [
+       2,
+       66
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798438946,
+       18.503757069
+      ],
+      [
+       73.79859051,
+       18.503757069
+      ],
+      [
+       73.79859051,
+       18.503901813
+      ],
+      [
+       73.798438946,
+       18.503901813
+      ],
+      [
+       73.798438946,
+       18.503757069
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       2,
+       66
+      ],
+      [
+       18,
+       66
+      ],
+      [
+       18,
+       82
+      ],
+      [
+       2,
+       82
+      ],
+      [
+       2,
+       66
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 21,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 317"
+     }
+    ]
+   },
+   "areaM2": 256,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 317"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 7
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CL5N"
+   },
+   "id": "9f7722ff-6435-5a76-9c75-78d29a80303b",
+   "identifier": "MH2507A1B3CL5N",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 137",
+   "name": "Parcel MH2507A1B3CL5N",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77,
+       -8
+      ],
+      [
+       -51,
+       -8
+      ],
+      [
+       -51,
+       20
+      ],
+      [
+       -77,
+       20
+      ],
+      [
+       -77,
+       -8
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797690595,
+       18.503087628
+      ],
+      [
+       73.797936887,
+       18.503087628
+      ],
+      [
+       73.797936887,
+       18.50334093
+      ],
+      [
+       73.797690595,
+       18.50334093
+      ],
+      [
+       73.797690595,
+       18.503087628
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77,
+       -8
+      ],
+      [
+       -51,
+       -8
+      ],
+      [
+       -51,
+       20
+      ],
+      [
+       -77,
+       20
+      ],
+      [
+       -77,
+       -8
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 728,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 137"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 4,
+    "parcel_ulpin": "MH2507A1B3CL5N"
+   },
+   "id": "2b7ff34a-412a-5ab1-bc46-9782a310701f",
+   "identifier": "MH2507A1B3CL5N/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 318",
+   "name": "Building 318",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73,
+       -4
+      ],
+      [
+       -55,
+       -4
+      ],
+      [
+       -55,
+       16
+      ],
+      [
+       -73,
+       16
+      ],
+      [
+       -73,
+       -4
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797728486,
+       18.503123814
+      ],
+      [
+       73.797898996,
+       18.503123814
+      ],
+      [
+       73.797898996,
+       18.503304744
+      ],
+      [
+       73.797728486,
+       18.503304744
+      ],
+      [
+       73.797728486,
+       18.503123814
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73,
+       -4
+      ],
+      [
+       -55,
+       -4
+      ],
+      [
+       -55,
+       16
+      ],
+      [
+       -73,
+       16
+      ],
+      [
+       -73,
+       -4
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 12,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 318"
+     }
+    ]
+   },
+   "areaM2": 360,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 318"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 4
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CMN6"
+   },
+   "id": "39864400-5964-50d7-b1ce-08b1dc071ff4",
+   "identifier": "MH2507A1B3CMN6",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 138",
+   "name": "Parcel MH2507A1B3CMN6",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -74,
+       33
+      ],
+      [
+       -50,
+       33
+      ],
+      [
+       -50,
+       55
+      ],
+      [
+       -74,
+       55
+      ],
+      [
+       -74,
+       33
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797719013,
+       18.503458534
+      ],
+      [
+       73.79794636,
+       18.503458534
+      ],
+      [
+       73.79794636,
+       18.503657557
+      ],
+      [
+       73.797719013,
+       18.503657557
+      ],
+      [
+       73.797719013,
+       18.503458534
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -74,
+       33
+      ],
+      [
+       -50,
+       33
+      ],
+      [
+       -50,
+       55
+      ],
+      [
+       -74,
+       55
+      ],
+      [
+       -74,
+       33
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 528,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 138"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 9,
+    "parcel_ulpin": "MH2507A1B3CMN6"
+   },
+   "id": "317b929e-23b2-5c69-a33c-bdbe7520d20c",
+   "identifier": "MH2507A1B3CMN6/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 319",
+   "name": "Building 319",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -70,
+       37
+      ],
+      [
+       -54,
+       37
+      ],
+      [
+       -54,
+       51
+      ],
+      [
+       -70,
+       51
+      ],
+      [
+       -70,
+       37
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797756904,
+       18.50349472
+      ],
+      [
+       73.797908469,
+       18.50349472
+      ],
+      [
+       73.797908469,
+       18.503621371
+      ],
+      [
+       73.797756904,
+       18.503621371
+      ],
+      [
+       73.797756904,
+       18.50349472
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -70,
+       37
+      ],
+      [
+       -54,
+       37
+      ],
+      [
+       -54,
+       51
+      ],
+      [
+       -70,
+       51
+      ],
+      [
+       -70,
+       37
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 27,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 319"
+     }
+    ]
+   },
+   "areaM2": 224,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 319"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 9
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CN6P"
+   },
+   "id": "e74e15b3-c5ed-560d-a380-7ed8d632a3f8",
+   "identifier": "MH2507A1B3CN6P",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 139",
+   "name": "Parcel MH2507A1B3CN6P",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -101,
+       29
+      ],
+      [
+       -79,
+       29
+      ],
+      [
+       -79,
+       51
+      ],
+      [
+       -101,
+       51
+      ],
+      [
+       -101,
+       29
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797463247,
+       18.503422348
+      ],
+      [
+       73.797671649,
+       18.503422348
+      ],
+      [
+       73.797671649,
+       18.503621371
+      ],
+      [
+       73.797463247,
+       18.503621371
+      ],
+      [
+       73.797463247,
+       18.503422348
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -101,
+       29
+      ],
+      [
+       -79,
+       29
+      ],
+      [
+       -79,
+       51
+      ],
+      [
+       -101,
+       51
+      ],
+      [
+       -101,
+       29
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 484,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 139"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 5,
+    "parcel_ulpin": "MH2507A1B3CN6P"
+   },
+   "id": "83b37970-4c7d-5ffa-9cba-ff060feea185",
+   "identifier": "MH2507A1B3CN6P/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 320",
+   "name": "Building 320",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -97,
+       33
+      ],
+      [
+       -83,
+       33
+      ],
+      [
+       -83,
+       47
+      ],
+      [
+       -97,
+       47
+      ],
+      [
+       -97,
+       33
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797501139,
+       18.503458534
+      ],
+      [
+       73.797633758,
+       18.503458534
+      ],
+      [
+       73.797633758,
+       18.503585185
+      ],
+      [
+       73.797501139,
+       18.503585185
+      ],
+      [
+       73.797501139,
+       18.503458534
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -97,
+       33
+      ],
+      [
+       -83,
+       33
+      ],
+      [
+       -83,
+       47
+      ],
+      [
+       -97,
+       47
+      ],
+      [
+       -97,
+       33
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 15,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 320"
+     }
+    ]
+   },
+   "areaM2": 196,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 320"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 5
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "ulpin": "MH2507A1B3CPD5"
+   },
+   "id": "b72820ea-027a-5a30-833c-0203769612d4",
+   "identifier": "MH2507A1B3CPD5",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-parcels",
+   "sourceKey": "fid 140",
+   "name": "Parcel MH2507A1B3CPD5",
+   "kind": "parcel",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77,
+       -32
+      ],
+      [
+       -55,
+       -32
+      ],
+      [
+       -55,
+       -12
+      ],
+      [
+       -77,
+       -12
+      ],
+      [
+       -77,
+       -32
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797690595,
+       18.502870512
+      ],
+      [
+       73.797898996,
+       18.502870512
+      ],
+      [
+       73.797898996,
+       18.503051442
+      ],
+      [
+       73.797690595,
+       18.503051442
+      ],
+      [
+       73.797690595,
+       18.502870512
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77,
+       -32
+      ],
+      [
+       -55,
+       -32
+      ],
+      [
+       -55,
+       -12
+      ],
+      [
+       -77,
+       -12
+      ],
+      [
+       -77,
+       -32
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable to a parcel",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 440,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "fid 140"
+    }
+   ],
+   "geometryRole": "parcel_boundary"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "storeys": 3,
+    "parcel_ulpin": "MH2507A1B3CPD5"
+   },
+   "id": "f19e297e-dfd3-56f3-8162-2f2733167bfd",
+   "identifier": "MH2507A1B3CPD5/B01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 321",
+   "name": "Building 321",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73,
+       -28
+      ],
+      [
+       -59,
+       -28
+      ],
+      [
+       -59,
+       -16
+      ],
+      [
+       -73,
+       -16
+      ],
+      [
+       -73,
+       -28
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797728486,
+       18.502906698
+      ],
+      [
+       73.797861105,
+       18.502906698
+      ],
+      [
+       73.797861105,
+       18.503015256
+      ],
+      [
+       73.797728486,
+       18.503015256
+      ],
+      [
+       73.797728486,
+       18.502906698
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73,
+       -28
+      ],
+      [
+       -59,
+       -28
+      ],
+      [
+       -59,
+       -16
+      ],
+      [
+       -73,
+       -16
+      ],
+      [
+       -73,
+       -28
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "source_supported",
+    "value": 9,
+    "unit": "m",
+    "meaning": "roof height above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+      "featureId": "bldg 321"
+     }
+    ]
+   },
+   "areaM2": 168,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 321"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "source_supported",
+    "floorCount": 3
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_exterior",
+   "worldStatus": "observed",
+   "properties": {
+    "address": "12 Lake View Road",
+    "parcel_ulpin": "MH2507A1B3C4D5",
+    "use": "Residential apartments"
+   },
+   "id": "e8e17f26-e098-5caa-92e9-49948df1816a",
+   "identifier": "MH2507A1B3C4D5/S01",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-building-footprints",
+   "sourceKey": "bldg 300",
+   "name": "Lake View Residence",
+   "kind": "building",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -15,
+       -10
+      ],
+      [
+       15,
+       -10
+      ],
+      [
+       15,
+       10
+      ],
+      [
+       -15,
+       10
+      ],
+      [
+       -15,
+       -10
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798277908,
+       18.503069535
+      ],
+      [
+       73.798562092,
+       18.503069535
+      ],
+      [
+       73.798562092,
+       18.503250465
+      ],
+      [
+       73.798277908,
+       18.503250465
+      ],
+      [
+       73.798277908,
+       18.503069535
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -15,
+       -10
+      ],
+      [
+       15,
+       -10
+      ],
+      [
+       15,
+       10
+      ],
+      [
+       -15,
+       10
+      ],
+      [
+       -15,
+       -10
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "reviewed",
+    "value": 28.4,
+    "unit": "m",
+    "meaning": "roof parapet above ground",
+    "reference": "site datum SD-1 (m)",
+    "evidence": [
+     {
+      "sourceRevisionId": "6c9caabe-9861-5299-8677-acfddbfb2d4f",
+      "row": 2
+     }
+    ]
+   },
+   "areaM2": 600,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "bldg 300"
+    }
+   ],
+   "geometryRole": "footprint",
+   "semantics": {
+    "geometryRole": "footprint",
+    "evidenceState": "reviewed",
+    "floorCount": 9,
+    "approvalStatus": "sanctioned"
+   },
+   "verticalExtent": {
+    "lower": -6.6,
+    "upper": 28.4,
+    "unit": "m",
+    "reference": "site datum SD-1 (m)",
+    "evidenceState": "reviewed",
+    "evidence": [
+     {
+      "sourceRevisionId": "6c9caabe-9861-5299-8677-acfddbfb2d4f"
+     }
+    ]
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {},
+   "id": "3d45ef46-4d24-5db0-a03a-79fe1ef4d8ac",
+   "identifier": "ROAD-1",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-roads",
+   "sourceKey": "road 1",
+   "name": "Lake View Road",
+   "kind": "road",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -400,
+       -36
+      ],
+      [
+       400,
+       -36
+      ],
+      [
+       400,
+       -24
+      ],
+      [
+       -400,
+       -24
+      ],
+      [
+       -400,
+       -36
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.794630881,
+       18.502834326
+      ],
+      [
+       73.802209119,
+       18.502834326
+      ],
+      [
+       73.802209119,
+       18.502942884
+      ],
+      [
+       73.794630881,
+       18.502942884
+      ],
+      [
+       73.794630881,
+       18.502834326
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -400,
+       -36
+      ],
+      [
+       400,
+       -36
+      ],
+      [
+       400,
+       -24
+      ],
+      [
+       -400,
+       -24
+      ],
+      [
+       -400,
+       -36
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 9600,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "road 1"
+    }
+   ],
+   "geometryRole": "carriageway"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {},
+   "id": "ab730e0b-5b0e-5d70-9ce8-df213de44cee",
+   "identifier": "ROAD-2",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-roads",
+   "sourceKey": "road 2",
+   "name": "Service lane",
+   "kind": "road",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -40,
+       11
+      ],
+      [
+       40,
+       11
+      ],
+      [
+       40,
+       17
+      ],
+      [
+       -40,
+       17
+      ],
+      [
+       -40,
+       11
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798041088,
+       18.503259511
+      ],
+      [
+       73.798798912,
+       18.503259511
+      ],
+      [
+       73.798798912,
+       18.50331379
+      ],
+      [
+       73.798041088,
+       18.50331379
+      ],
+      [
+       73.798041088,
+       18.503259511
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -40,
+       11
+      ],
+      [
+       40,
+       11
+      ],
+      [
+       40,
+       17
+      ],
+      [
+       -40,
+       17
+      ],
+      [
+       -40,
+       11
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 480,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "road 2"
+    }
+   ],
+   "geometryRole": "carriageway"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {},
+   "id": "fdd51de1-719f-5504-bd7f-e53835f400f0",
+   "identifier": "ROAD-3",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-roads",
+   "sourceKey": "road 3",
+   "name": "Link Road 2",
+   "kind": "road",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -45,
+       -400
+      ],
+      [
+       -35,
+       -400
+      ],
+      [
+       -35,
+       400
+      ],
+      [
+       -45,
+       400
+      ],
+      [
+       -45,
+       -400
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797993724,
+       18.4995414
+      ],
+      [
+       73.798088452,
+       18.4995414
+      ],
+      [
+       73.798088452,
+       18.5067786
+      ],
+      [
+       73.797993724,
+       18.5067786
+      ],
+      [
+       73.797993724,
+       18.4995414
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -45,
+       -400
+      ],
+      [
+       -35,
+       -400
+      ],
+      [
+       -35,
+       400
+      ],
+      [
+       -45,
+       400
+      ],
+      [
+       -45,
+       -400
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 8000,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "road 3"
+    }
+   ],
+   "geometryRole": "carriageway"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {},
+   "id": "5db7ed1d-3544-5792-947e-00b933d6434f",
+   "identifier": "ROAD-4",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-roads",
+   "sourceKey": "road 4",
+   "name": "Link Road 3",
+   "kind": "road",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       35,
+       -400
+      ],
+      [
+       45,
+       -400
+      ],
+      [
+       45,
+       400
+      ],
+      [
+       35,
+       400
+      ],
+      [
+       35,
+       -400
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798751548,
+       18.4995414
+      ],
+      [
+       73.798846276,
+       18.4995414
+      ],
+      [
+       73.798846276,
+       18.5067786
+      ],
+      [
+       73.798751548,
+       18.5067786
+      ],
+      [
+       73.798751548,
+       18.4995414
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       35,
+       -400
+      ],
+      [
+       45,
+       -400
+      ],
+      [
+       45,
+       400
+      ],
+      [
+       35,
+       400
+      ],
+      [
+       35,
+       -400
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 8000,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "road 4"
+    }
+   ],
+   "geometryRole": "carriageway"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "land_cover": "open"
+   },
+   "id": "3bb657e4-ca11-5bdf-83d7-71e2d3fec6d4",
+   "identifier": "PL-1",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-public-land",
+   "sourceKey": "pl 1",
+   "name": "Garden reserve",
+   "kind": "public_land",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -33,
+       -20
+      ],
+      [
+       -19,
+       -20
+      ],
+      [
+       -19,
+       4
+      ],
+      [
+       -33,
+       4
+      ],
+      [
+       -33,
+       -20
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.798107398,
+       18.50297907
+      ],
+      [
+       73.798240017,
+       18.50297907
+      ],
+      [
+       73.798240017,
+       18.503196186
+      ],
+      [
+       73.798107398,
+       18.503196186
+      ],
+      [
+       73.798107398,
+       18.50297907
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -33,
+       -20
+      ],
+      [
+       -19,
+       -20
+      ],
+      [
+       -19,
+       4
+      ],
+      [
+       -33,
+       4
+      ],
+      [
+       -33,
+       -20
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 336,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "pl 1"
+    }
+   ],
+   "geometryRole": "land_parcel"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "land_cover": "open"
+   },
+   "id": "bfe1d3fc-c64a-5afb-abe0-3ae6a7762320",
+   "identifier": "PL-2",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-public-land",
+   "sourceKey": "pl 2",
+   "name": "Municipal school ground",
+   "kind": "public_land",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       78,
+       60
+      ],
+      [
+       128,
+       60
+      ],
+      [
+       128,
+       100
+      ],
+      [
+       78,
+       100
+      ],
+      [
+       78,
+       60
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.799158878,
+       18.50370279
+      ],
+      [
+       73.799632518,
+       18.50370279
+      ],
+      [
+       73.799632518,
+       18.50406465
+      ],
+      [
+       73.799158878,
+       18.50406465
+      ],
+      [
+       73.799158878,
+       18.50370279
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       78,
+       60
+      ],
+      [
+       128,
+       60
+      ],
+      [
+       128,
+       100
+      ],
+      [
+       78,
+       100
+      ],
+      [
+       78,
+       60
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 2000,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "pl 2"
+    }
+   ],
+   "geometryRole": "land_parcel"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "land_cover": "open"
+   },
+   "id": "237943ba-db50-5c41-897a-31df30a8b0be",
+   "identifier": "PL-3",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-public-land",
+   "sourceKey": "pl 3",
+   "name": "Lake park",
+   "kind": "public_land",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -150,
+       -120
+      ],
+      [
+       -60,
+       -120
+      ],
+      [
+       -60,
+       -40
+      ],
+      [
+       -150,
+       -40
+      ],
+      [
+       -150,
+       -120
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.79699908,
+       18.50207442
+      ],
+      [
+       73.797851632,
+       18.50207442
+      ],
+      [
+       73.797851632,
+       18.50279814
+      ],
+      [
+       73.79699908,
+       18.50279814
+      ],
+      [
+       73.79699908,
+       18.50207442
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -150,
+       -120
+      ],
+      [
+       -60,
+       -120
+      ],
+      [
+       -60,
+       -40
+      ],
+      [
+       -150,
+       -40
+      ],
+      [
+       -150,
+       -120
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 7200,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "pl 3"
+    }
+   ],
+   "geometryRole": "land_parcel"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {
+    "land_cover": "water"
+   },
+   "id": "e80d64ff-470c-5a55-b88e-9872cff64b88",
+   "identifier": "PL-LAKE",
+   "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+   "datasetNamespace": "mh-public-land",
+   "sourceKey": "pl lake",
+   "name": "Lake View lake",
+   "kind": "public_land",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -65,
+       -80
+      ],
+      [
+       -65.334,
+       -76.672
+      ],
+      [
+       -66.329,
+       -73.4
+      ],
+      [
+       -67.969,
+       -70.242
+      ],
+      [
+       -70.225,
+       -67.25
+      ],
+      [
+       -73.059,
+       -64.477
+      ],
+      [
+       -76.423,
+       -61.969
+      ],
+      [
+       -80.258,
+       -59.769
+      ],
+      [
+       -84.5,
+       -57.916
+      ],
+      [
+       -89.075,
+       -56.441
+      ],
+      [
+       -93.906,
+       -55.369
+      ],
+      [
+       -98.909,
+       -54.718
+      ],
+      [
+       -104,
+       -54.5
+      ],
+      [
+       -109.091,
+       -54.718
+      ],
+      [
+       -114.094,
+       -55.369
+      ],
+      [
+       -118.925,
+       -56.441
+      ],
+      [
+       -123.5,
+       -57.916
+      ],
+      [
+       -127.742,
+       -59.769
+      ],
+      [
+       -131.577,
+       -61.969
+      ],
+      [
+       -134.941,
+       -64.477
+      ],
+      [
+       -137.775,
+       -67.25
+      ],
+      [
+       -140.031,
+       -70.242
+      ],
+      [
+       -141.671,
+       -73.4
+      ],
+      [
+       -142.666,
+       -76.672
+      ],
+      [
+       -143,
+       -80
+      ],
+      [
+       -142.666,
+       -83.328
+      ],
+      [
+       -141.671,
+       -86.6
+      ],
+      [
+       -140.031,
+       -89.758
+      ],
+      [
+       -137.775,
+       -92.75
+      ],
+      [
+       -134.941,
+       -95.523
+      ],
+      [
+       -131.577,
+       -98.031
+      ],
+      [
+       -127.742,
+       -100.231
+      ],
+      [
+       -123.5,
+       -102.084
+      ],
+      [
+       -118.925,
+       -103.559
+      ],
+      [
+       -114.094,
+       -104.631
+      ],
+      [
+       -109.091,
+       -105.282
+      ],
+      [
+       -104,
+       -105.5
+      ],
+      [
+       -98.909,
+       -105.282
+      ],
+      [
+       -93.906,
+       -104.631
+      ],
+      [
+       -89.075,
+       -103.559
+      ],
+      [
+       -84.5,
+       -102.084
+      ],
+      [
+       -80.258,
+       -100.231
+      ],
+      [
+       -76.423,
+       -98.031
+      ],
+      [
+       -73.059,
+       -95.523
+      ],
+      [
+       -70.225,
+       -92.75
+      ],
+      [
+       -67.969,
+       -89.758
+      ],
+      [
+       -66.329,
+       -86.6
+      ],
+      [
+       -65.334,
+       -83.328
+      ],
+      [
+       -65,
+       -80
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797804268,
+       18.50243628
+      ],
+      [
+       73.797801104,
+       18.502466387
+      ],
+      [
+       73.797791679,
+       18.502495987
+      ],
+      [
+       73.797776143,
+       18.502524556
+      ],
+      [
+       73.797754773,
+       18.502551623
+      ],
+      [
+       73.797727927,
+       18.502576709
+      ],
+      [
+       73.79769606,
+       18.502599398
+      ],
+      [
+       73.797659732,
+       18.5026193
+      ],
+      [
+       73.797619549,
+       18.502636063
+      ],
+      [
+       73.797576211,
+       18.502649407
+      ],
+      [
+       73.797530448,
+       18.502659104
+      ],
+      [
+       73.797483055,
+       18.502664994
+      ],
+      [
+       73.797434829,
+       18.502666966
+      ],
+      [
+       73.797386603,
+       18.502664994
+      ],
+      [
+       73.797339211,
+       18.502659104
+      ],
+      [
+       73.797293448,
+       18.502649407
+      ],
+      [
+       73.79725011,
+       18.502636063
+      ],
+      [
+       73.797209926,
+       18.5026193
+      ],
+      [
+       73.797173598,
+       18.502599398
+      ],
+      [
+       73.797141731,
+       18.502576709
+      ],
+      [
+       73.797114885,
+       18.502551623
+      ],
+      [
+       73.797093515,
+       18.502524556
+      ],
+      [
+       73.797077979,
+       18.502495987
+      ],
+      [
+       73.797068554,
+       18.502466387
+      ],
+      [
+       73.79706539,
+       18.50243628
+      ],
+      [
+       73.797068554,
+       18.502406173
+      ],
+      [
+       73.797077979,
+       18.502376573
+      ],
+      [
+       73.797093515,
+       18.502348004
+      ],
+      [
+       73.797114885,
+       18.502320937
+      ],
+      [
+       73.797141731,
+       18.502295851
+      ],
+      [
+       73.797173598,
+       18.502273163
+      ],
+      [
+       73.797209926,
+       18.50225326
+      ],
+      [
+       73.79725011,
+       18.502236497
+      ],
+      [
+       73.797293448,
+       18.502223154
+      ],
+      [
+       73.797339211,
+       18.502213456
+      ],
+      [
+       73.797386603,
+       18.502207566
+      ],
+      [
+       73.797434829,
+       18.502205594
+      ],
+      [
+       73.797483055,
+       18.502207566
+      ],
+      [
+       73.797530448,
+       18.502213456
+      ],
+      [
+       73.797576211,
+       18.502223154
+      ],
+      [
+       73.797619549,
+       18.502236497
+      ],
+      [
+       73.797659732,
+       18.50225326
+      ],
+      [
+       73.79769606,
+       18.502273163
+      ],
+      [
+       73.797727927,
+       18.502295851
+      ],
+      [
+       73.797754773,
+       18.502320937
+      ],
+      [
+       73.797776143,
+       18.502348004
+      ],
+      [
+       73.797791679,
+       18.502376573
+      ],
+      [
+       73.797801104,
+       18.502406173
+      ],
+      [
+       73.797804268,
+       18.50243628
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -65,
+       -80
+      ],
+      [
+       -65.334,
+       -76.672
+      ],
+      [
+       -66.329,
+       -73.4
+      ],
+      [
+       -67.969,
+       -70.242
+      ],
+      [
+       -70.225,
+       -67.25
+      ],
+      [
+       -73.059,
+       -64.477
+      ],
+      [
+       -76.423,
+       -61.969
+      ],
+      [
+       -80.258,
+       -59.769
+      ],
+      [
+       -84.5,
+       -57.916
+      ],
+      [
+       -89.075,
+       -56.441
+      ],
+      [
+       -93.906,
+       -55.369
+      ],
+      [
+       -98.909,
+       -54.718
+      ],
+      [
+       -104,
+       -54.5
+      ],
+      [
+       -109.091,
+       -54.718
+      ],
+      [
+       -114.094,
+       -55.369
+      ],
+      [
+       -118.925,
+       -56.441
+      ],
+      [
+       -123.5,
+       -57.916
+      ],
+      [
+       -127.742,
+       -59.769
+      ],
+      [
+       -131.577,
+       -61.969
+      ],
+      [
+       -134.941,
+       -64.477
+      ],
+      [
+       -137.775,
+       -67.25
+      ],
+      [
+       -140.031,
+       -70.242
+      ],
+      [
+       -141.671,
+       -73.4
+      ],
+      [
+       -142.666,
+       -76.672
+      ],
+      [
+       -143,
+       -80
+      ],
+      [
+       -142.666,
+       -83.328
+      ],
+      [
+       -141.671,
+       -86.6
+      ],
+      [
+       -140.031,
+       -89.758
+      ],
+      [
+       -137.775,
+       -92.75
+      ],
+      [
+       -134.941,
+       -95.523
+      ],
+      [
+       -131.577,
+       -98.031
+      ],
+      [
+       -127.742,
+       -100.231
+      ],
+      [
+       -123.5,
+       -102.084
+      ],
+      [
+       -118.925,
+       -103.559
+      ],
+      [
+       -114.094,
+       -104.631
+      ],
+      [
+       -109.091,
+       -105.282
+      ],
+      [
+       -104,
+       -105.5
+      ],
+      [
+       -98.909,
+       -105.282
+      ],
+      [
+       -93.906,
+       -104.631
+      ],
+      [
+       -89.075,
+       -103.559
+      ],
+      [
+       -84.5,
+       -102.084
+      ],
+      [
+       -80.258,
+       -100.231
+      ],
+      [
+       -76.423,
+       -98.031
+      ],
+      [
+       -73.059,
+       -95.523
+      ],
+      [
+       -70.225,
+       -92.75
+      ],
+      [
+       -67.969,
+       -89.758
+      ],
+      [
+       -66.329,
+       -86.6
+      ],
+      [
+       -65.334,
+       -83.328
+      ],
+      [
+       -65,
+       -80
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "not applicable",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 3115.4,
+   "evidence": [
+    {
+     "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+     "featureId": "pl lake"
+    }
+   ],
+   "geometryRole": "water_body"
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {},
+   "id": "8b7cf9ba-4579-51f2-8cbe-fc3af21cb2b5",
+   "identifier": "UT-WATER",
+   "sourceRevisionId": "44310b6e-e228-5231-a8c5-2355bb78d910",
+   "datasetNamespace": "utility-survey",
+   "sourceKey": "water",
+   "name": "Water main DN300",
+   "kind": "utility",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -45,
+       13.85
+      ],
+      [
+       45,
+       13.85
+      ],
+      [
+       45,
+       14.15
+      ],
+      [
+       -45,
+       14.15
+      ],
+      [
+       -45,
+       13.85
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797993724,
+       18.503285294
+      ],
+      [
+       73.798846276,
+       18.503285294
+      ],
+      [
+       73.798846276,
+       18.503288008
+      ],
+      [
+       73.797993724,
+       18.503288008
+      ],
+      [
+       73.797993724,
+       18.503285294
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -45,
+       13.85
+      ],
+      [
+       45,
+       13.85
+      ],
+      [
+       45,
+       14.15
+      ],
+      [
+       -45,
+       14.15
+      ],
+      [
+       -45,
+       13.85
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "see vertical extent",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 27,
+   "evidence": [
+    {
+     "sourceRevisionId": "44310b6e-e228-5231-a8c5-2355bb78d910",
+     "featureId": "water"
+    }
+   ],
+   "geometryRole": "utility_envelope",
+   "verticalExtent": {
+    "lower": -1.2,
+    "upper": -0.9,
+    "unit": "m",
+    "reference": "metres below ground",
+    "evidenceState": "source_supported",
+    "evidence": [
+     {
+      "sourceRevisionId": "44310b6e-e228-5231-a8c5-2355bb78d910",
+      "featureId": "water"
+     }
+    ]
+   },
+   "utilityProfile": {
+    "network": "water",
+    "diameter_mm": 300,
+    "quality_level": "B",
+    "tolerance": null,
+    "owner": "Municipal water department"
+   }
+  },
+  {
+   "revision": 1,
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "sourceReference": {
+    "sourceCrs": "EPSG:32643",
+    "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+    "origin": [
+     373420,
+     2046180
+    ],
+    "anchor": [
+     73.79842,
+     18.50316
+    ],
+    "transformVersion": "utm43n-local/1",
+    "verticalReference": "Site datum SD-1; ground 212.40 m"
+   },
+   "representation": "physical_context",
+   "worldStatus": "observed",
+   "properties": {},
+   "id": "37e5b3aa-0c29-5c2d-96c9-b1ffb9ed896e",
+   "identifier": "UT-METRO",
+   "sourceRevisionId": "44310b6e-e228-5231-a8c5-2355bb78d910",
+   "datasetNamespace": "utility-survey",
+   "sourceKey": "metro",
+   "name": "Metro corridor",
+   "kind": "utility",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -45,
+       12
+      ],
+      [
+       45,
+       12
+      ],
+      [
+       45,
+       16
+      ],
+      [
+       -45,
+       16
+      ],
+      [
+       -45,
+       12
+      ]
+     ]
+    ]
+   },
+   "geographicGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.797993724,
+       18.503268558
+      ],
+      [
+       73.798846276,
+       18.503268558
+      ],
+      [
+       73.798846276,
+       18.503304744
+      ],
+      [
+       73.797993724,
+       18.503304744
+      ],
+      [
+       73.797993724,
+       18.503268558
+      ]
+     ]
+    ]
+   },
+   "sourceGeometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -45,
+       12
+      ],
+      [
+       45,
+       12
+      ],
+      [
+       45,
+       16
+      ],
+      [
+       -45,
+       16
+      ],
+      [
+       -45,
+       12
+      ]
+     ]
+    ]
+   },
+   "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": "m",
+    "meaning": "see vertical extent",
+    "reference": "site datum SD-1 (m)"
+   },
+   "areaM2": 360,
+   "evidence": [
+    {
+     "sourceRevisionId": "44310b6e-e228-5231-a8c5-2355bb78d910",
+     "featureId": "metro"
+    }
+   ],
+   "geometryRole": "utility_envelope",
+   "verticalExtent": {
+    "lower": -18.4,
+    "upper": -14.4,
+    "unit": "m",
+    "reference": "metres below ground",
+    "evidenceState": "source_supported",
+    "evidence": [
+     {
+      "sourceRevisionId": "44310b6e-e228-5231-a8c5-2355bb78d910",
+      "featureId": "metro"
+     }
+    ]
+   },
+   "utilityProfile": {
+    "network": "metro",
+    "protection": "Reserved corridor",
+    "owner": "Metro rail corporation",
+    "tolerance": null
+   }
+  }
+ ],
+ "packages": [],
+ "latestCheck": null,
+ "parcelAssociations": [],
+ "parcelIdentifiers": [],
+ "sceneAssets": []
+}

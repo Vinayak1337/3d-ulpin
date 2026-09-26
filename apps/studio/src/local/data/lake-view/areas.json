@@ -1,0 +1,52 @@
+[
+ {
+  "id": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+  "siteId": "e6b9b9fc-1d09-5771-bbbe-ca1197f1b336",
+  "name": "Lake View",
+  "revision": 3,
+  "reference": {
+   "sourceCrs": "EPSG:32643",
+   "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+   "origin": [
+    373420,
+    2046180
+   ],
+   "anchor": [
+    73.79842,
+    18.50316
+   ],
+   "transformVersion": "utm43n-local/1",
+   "verticalReference": "Site datum SD-1; ground 212.40 m"
+  },
+  "extent": [
+   -150,
+   -120,
+   128,
+   100
+  ],
+  "geographicExtent": [
+   73.79699908,
+   18.50207442,
+   73.799632518,
+   18.50406465
+  ],
+  "administrativeUnits": [
+   {
+    "id": "ff3637dd-891c-5f2e-bfab-413bce48e443",
+    "kind": "village",
+    "name": "Lake View",
+    "code": "556734",
+    "authority": "Revenue department"
+   },
+   {
+    "id": "3cefe2b7-4df1-561f-b735-9539730ea166",
+    "kind": "district",
+    "name": "Pune",
+    "code": "521",
+    "authority": "Revenue department"
+   }
+  ],
+  "dataKind": "demonstration",
+  "featureCount": 54
+ }
+]

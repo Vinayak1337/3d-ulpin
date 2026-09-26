@@ -11,6 +11,7 @@ import { settings } from "../../infrastructure/config";
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { fingerprint } from "../cases/domain";
 import { getPackage } from "../areas/areas";
+import { assertPackageDocumentAuthority } from "../areas/package-authority";
 import { appendPreparationFacts, type PreparationFactInput } from "../officer/officer-preparation";
 import { putOriginal, readObject, sha256 } from "../../infrastructure/storage";
 import { transformPoint } from "../../shared/geometry";
@@ -132,6 +133,7 @@ export async function createSpatialMlBatch(value: unknown): Promise<SpatialMlBat
   const batchId = await transaction(async client => {
     const row = (await client.query("SELECT case_id,body FROM import_packages WHERE id=$1 FOR UPDATE", [input.packageId])).rows[0];
     if (!row) notFound("Preparation not found.");
+    await assertPackageDocumentAuthority(client, row.body);
     const replay = (await client.query("SELECT id,request_digest FROM spatial_ml_batches WHERE package_id=$1 AND request_key=$2", [input.packageId, input.requestKey])).rows[0];
     if (replay) {
       if (replay.request_digest !== requestDigest) throw new AppError(409, "ML_REQUEST_KEY", "This batch key was already used for different inputs.");
@@ -193,7 +195,9 @@ export async function retrySpatialMlItem(id: string, requestKey: string): Promis
     if (privateInput.retryRequests[requestKey]) return item;
     if (!["failed", "blocked", "cancelled"].includes(item.state)) throw new AppError(409, "ML_RETRY_STATE", "Only a failed, blocked or cancelled item needs a retry.");
     const row = (await client.query("SELECT case_id,body FROM import_packages WHERE id=$1", [item.packageId])).rows[0];
-    if (!row || row.body.state === "COMMITTED") conflict("Open a correction before retrying extraction.");
+    if (!row) conflict("Open a correction before retrying extraction.");
+    await assertPackageDocumentAuthority(client, row.body);
+    if (row.body.state === "COMMITTED") conflict("Open a correction before retrying extraction.");
     await assertSpatialMlSourceCurrent(record, row.body, client);
     const model = status.models.find(m => m.id === item.modelId && m.sha256 === item.modelSha256 && m.profileVersion === privateInput.payload.expectedProfileVersion);
     if (!model?.ready) throw new AppError(422, "MODEL_UNAVAILABLE", model?.reason ?? "The pinned model is unavailable or changed. Select the current model in a new batch.");
@@ -349,6 +353,7 @@ export async function applySpatialMlItem(id: string, value: unknown): Promise<Sp
     await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
     const row = (await client.query("SELECT body FROM import_packages WHERE id=$1 FOR UPDATE", [initial.item.packageId])).rows[0];
     if (!row) notFound("Preparation not found.");
+    await assertPackageDocumentAuthority(client, row.body);
     const pkg = row.body as ImportPackage, record = await getSpatialMlItemRecord(id, client, true), { item, privateInput } = record;
     if (privateInput.applyDigests[input.requestKey]) {
       if (privateInput.applyDigests[input.requestKey] !== requestDigest) throw new AppError(409, "ML_APPLY_KEY", "This application key was already used for a different selection or calibration.");

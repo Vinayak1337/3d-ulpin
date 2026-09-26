@@ -14,6 +14,7 @@ export type SourceProfile =
   | "plan-pdf-v1"
   | "geojson-manual-v1"
   | "large-original-v1"
+  | "document-original-v1"
   | "pdf-reference-v2" | "png-reference-v2" | "jpeg-reference-v2" | "csv-reference-v2" | "text-reference-v2" | "docx-reference-v2";
 export interface Issue {
   code: string;

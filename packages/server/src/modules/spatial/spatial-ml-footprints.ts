@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { ImportPackage, SpatialMlComponent } from "@ulpin/contracts";
 import { transaction } from "../../infrastructure/db";
 import { getArea, getPackage, ingestArea } from "../areas/areas";
+import { assertPackageDocumentAuthority } from "../areas/package-authority";
 import { AppError, conflict } from "../../infrastructure/errors";
 import { fingerprint } from "../cases/domain";
 import {
@@ -96,6 +97,7 @@ export async function createSpatialMlFootprintDraft(
         [initial.item.packageId],
       )
     ).rows[0];
+    if (sourceRow) await assertPackageDocumentAuthority(client, sourceRow.body);
     const record = await getSpatialMlItemRecord(id, client, true),
       item = record.item;
     if (item.task !== "building")

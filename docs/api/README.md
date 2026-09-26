@@ -1,12 +1,12 @@
 # Native NestJS API for frontend integration
 
-The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 157 operations and 181 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and twenty-five added ingestion operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
+The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 160 operations and 185 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and twenty-eight added ingestion operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
 
 After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs). Its [OpenAPI JSON](http://127.0.0.1:3188/api/docs/openapi.json) and [dataset catalogue](http://127.0.0.1:3188/api/docs/datasets.json) are served by the same loopback backend. Swagger is light-only and opens schemas first. Write execution and the external validator are disabled. These links describe the configured default address; they do not mean a server is currently running.
 
 ## Serving environment status
 
-**Upgrade verified:** serving code `89cd51b` exposes the157-operation/181-schema API. The exact reviewed historical full-admission compiler profile remains readable with unchanged source/access/artifact checks; stored fingerprints and tile bytes were not rewritten. Other historical compiler profiles remain unapproved. See the [serving observation](serving-observation.json).
+**Document API upgrade verified:** serving code `21f93c6` exposes 160 operations and 185 schemas on port3188. Health, served OpenAPI/catalogue equality and retained NWIC generation/tile/pick reads passed. Read-only audits before/after the code switch found unchanged records, originals and schema; no migration was needed. Live providers remain disabled, and no document test source was installed into this linked database. See the [serving observation](serving-observation.json).
 
 Observed on 26 September 2026 at15:25UTC on accepted serving code `89cd51b20003f836e6cf1294822aaf4fbfdaad51`: health reports `structurally_ready`; 120 foreign keys have no orphans, and the read-only audit found no geometry violations. There are 63 verified originals (75,416,144 bytes), one import package, one physical feature, and 733 source-linked NWIC administrative observations. All pre-existing records and originals survived the reviewed schema upgrades. Six historical constraints remain marked unvalidated; structural readiness does not assert blanket historical-data qualification. The two individually reviewed obsolete legacy scenes remain absent from active directories, with historical reads and originals preserved.
 
@@ -44,6 +44,7 @@ For Vite, proxy `/api` to the local API and configure `API_ALLOWED_ORIGINS` with
 | Spatial/AI | 28 | Private area/scene reads, saved dataset history/originals/search, existing ML lifecycle and officer extraction services |
 | Manual ingestion | 7 added | Retained GeoJSON profile, constrained conversion registry, source-pinned recipes, explicit approval and atomic execution through existing GIS intake |
 | Large original receipt | 7 added | Durable byte parts, resume/status, whole-original verification, one source publication and scoped abort/retry cleanup; conversion remains unsupported |
+| Source document intake | 3 added | Original-first queued extraction, bounded source-linked parts/status and current-pin retry; model proposals remain separately configured |
 | Private ingestion events | 1 added | Committed case-ingestion notifications with scoped SSE cursors, bounded replay and explicit context resync |
 | Private administrative tiles | 5 added | Standard MVT, source-bound coherent generations, canonical pick lookup and fenced recovery over admitted NWIC observations |
 | Projected-vector admission | 5 added | Exact NWIC district ZIP through canonical jobs;733 dispositions,720 geographic admissions,13 quarantined native geometries, bounded private metadata/geometry reads |
@@ -57,6 +58,22 @@ Use the operation's exact media type, status and schema. Case uploads accept mul
 Preserve `Idempotency-Key`, request keys, expected revisions, exact source/manifest pins and selected IDs across retries. Do not generate a new intent when retrying the same one. USP results have `{data,meta}`; ordinary domain results retain their own shapes. Errors carry operation-family-specific envelopes. Inspect the published error models rather than assuming all failures have the same fields.
 
 Source downloads verify retained size/hash before returning bytes. Original-source hash headers, packet artifact hash headers, ETags, content disposition and cache policy are separate contracts. Binary replies use the source/artifact media type; do not parse them as a JSON error/result blindly. Private data is not eligible for shared public caches. Unknown/withheld/conflicting values remain distinct; source geometry is not ownership, an issued parcel ULPIN or verified global placement.
+
+## Source document intake
+
+Use this path for raw documents without creating a package or associated property first. The original is saved unchanged before extraction; failed tools, unsupported formats and unavailable OCR retain the original. The agent/worker produces separate source-linked parts and proposed fields, never edits the input or approves facts.
+
+| Relative to `/api/v1/ingestion` | Request / result |
+| --- | --- |
+| `POST /cases/{caseId}/documents` | Multipart `file`, UUID `requestKey`, `expectedCaseRevision`; optional `mode` (`native_only` or `propose`) (default `propose`). A family revision supplies `familyId` and `expectedSourceRevision`. Returns 201 `DocumentReceipt` with case/source revisions, original SHA and job ID. |
+| `GET /cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}` | `DocumentStatus` with separate native/model statuses, current pins and at most 25 parts per zero-based `page`. Each part has an exact source hash/revision, locator and text hash. Use `hasMore`; a completed job does not mean OCR or model extraction succeeded. |
+| `POST /cases/{caseId}/sources/{sourceId}/documents/retry` | JSON UUID `requestKey`, current `expectedCaseRevision`, `expectedSourceRevision`, `sourceSha256` and optional mode; returns 201 receipt. Reuse the key for the same retry intent; never alter the original to satisfy extraction. |
+
+Download the original through the existing private `/api/v1/sources/{sourceId}/file` route. Source/access/context changes can stale a result; refresh the current pins before explicitly retrying. Native parts remain behind the document job route. Staged documents cannot be copied into packages through the legacy re-extraction route (`DOCUMENT_CANONICAL_COPY_REQUIRED`); retained mixed packages fail closed instead of being rewritten. Later property association/conversion is not delivered by these endpoints.
+
+Admission is 16 MiB per original; existing native readers are bounded to 10 MiB/250,000 characters and PDFs to 100 pages. Larger accepted originals remain retained but report the native reader limit. Byte/container detection selects PDF native text, UTF-8 text, CSV references or DOCX readers. JSON/GIS belongs to its existing separate authority. Native status is `extracted`, `needs_ocr`, `unsupported`, `encrypted` or `tool_error`; this is not unrestricted-format support. Model status is separately `not_requested`, `disabled`, `unavailable`, `blocked`, `needs_input` or `proposed`. Proposals are literal cited source strings, not recorded facts. Live proposals require an approved gateway configuration, source/egress permission, explicit `ULPIN_DOCUMENT_MODEL_LAYOUT_CAP` and live-call authorization. Current serving configuration keeps providers disabled; no live inference is qualified.
+
+The [official NYC metadata](../../fixtures/real-area/evidence/nyc-building-metadata.md), linked from its [issuing-source manifest](../../fixtures/real-area/manifest.json), produced native text; the retained [USGS scanned PDF](../../fixtures/usp/D5/official-runtime-pdf-v1/manifest.json) honestly returned `needs_ocr` with an unchanged download. The [runtime correction proof](../evidence/usp/document-authority-correction.md) binds `69ce92c`; the later [package-access correction](../evidence/usp/document-package-authority-correction.md) at `d400c79` has independently repeated service/query protocol checks, not another HTTP runtime pass. These stopped-run IDs are not installed serving records. Native PDF/DOCX/CSV accuracy, OCR, live models, legitimate property-linked copy/packet/export success and release gates remain unqualified.
 
 ## Manual source mapping
 

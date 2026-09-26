@@ -1,0 +1,23 @@
+{
+ "derivation": "apps/studio/scripts/derive-swiss-floor.mjs",
+ "source": {
+  "pack": "fixtures/usp/D5/gf0-multiunit-v1/manifest.json",
+  "file": "fixtures/usp/D5/gf0-multiunit-v1/swiss-floor-127-164-717.csv",
+  "sha256": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd",
+  "record": "Zenodo 7070952 v1.0.0",
+  "attribution": "Swiss Dwellings authors; Zenodo 10.5281/zenodo.7070952; CC BY 4.0",
+  "licence": "CC BY 4.0",
+  "geography": "Switzerland (foreign test geography; never placed on Indian coordinates)"
+ },
+ "limits": [
+  "Level elevations and heights are not stated by the source.",
+  "The source states no coordinate reference system or unit, so the building is not placed on a map and areas are not assessed.",
+  "No rights, parties or parcel association are in the source.",
+  "The sample holds one floor (717) of building 164; other floors were not acquired."
+ ],
+ "outputs": {
+  "swiss-floor-area.json": "618ad536bdb3e3508d0484930705d83ce6e1dc9868ed078e0da555dab7b7d80d",
+  "swiss-floor-context.json": "a3a1927c838e8a6e5f96dcab02e7e9c4fb8d25756ffe06011dfec4f26301a361",
+  "swiss-floor-register.json": "872800545416a86c7927bc940b242c70bab91daff97c7c4190f0d12e945954d8"
+ }
+}

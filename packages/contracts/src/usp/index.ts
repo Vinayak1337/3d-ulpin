@@ -14,3 +14,4 @@ export * from './projected-vector';
 export * from './private-mvt';
 export * from './semantic-chunks';
 export * from './sufficiency';
+export * from './document-ingestion';
