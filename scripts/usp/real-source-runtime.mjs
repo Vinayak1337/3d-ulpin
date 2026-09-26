@@ -1,4 +1,4 @@
-/** RUN-01 Nest runtime preparation. Phase 1: service actions stay disabled. */
+/** RUN-01 guarded Nest foundation runtime. Source smoke remains separately gated. */
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
@@ -10,8 +10,8 @@ import { assertUspIsolation } from './local-isolation.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const base = join(root, '.runtime', 'run01');
-// Change this only after the integrated Nest foundation and intake contracts are reviewed.
-const RUNTIME_ENABLED = false;
+// Foundation/SQL startup is authorized at the accepted integration revision.
+const RUNTIME_ENABLED = true;
 const ports = [25432, 29000, 29001, 26379, 28000, 3188];
 const allowed = ['HOME', 'PATH', 'USER', 'LOGNAME', 'TMPDIR', 'SHELL', 'LANG'];
 const context = process.platform === 'darwin' ? 'colima-ulpin' : 'default';
@@ -207,6 +207,14 @@ function status(dir) {
   }));
   console.log(JSON.stringify({project:c.scope.project,containers:ids,processes}));
 }
+async function migrateRepeat(dir) {
+  const c=config(dir);
+  assert.equal(command('git',['rev-parse','HEAD'],{}),c.ownership.baseCommit,'checkout changed since prepare');
+  await waitHealth(c,20);
+  command('pnpm',['db:migrate'],c.env,{timeout:180000});
+  const health=await waitHealth(c,20);
+  console.log(JSON.stringify({project:c.scope.project,migrationRepeat:'passed',services:health.services}));
+}
 async function recovery(dir) {
   const c=config(dir), url=c.env.ULPIN_TEST_URL+'api/v1/health';
   assert(!existsSync(join(c.dir,'recovery.json')),'recovery receipt already exists for this run');
@@ -270,9 +278,10 @@ try {
   else if(action==='start'&&dir)await start(dir);
   else if(action==='resume'&&dir)await start(dir,true);
   else if(action==='status'&&dir)status(dir);
+  else if(action==='migrate-repeat'&&dir)await migrateRepeat(dir);
   else if(action==='recovery'&&dir)await recovery(dir);
   else if(action==='stop'&&dir)await stop(dir);
-  else throw new Error('Usage: real-source-runtime.mjs prepare | start|resume|status|recovery|stop <private-run-directory>');
+  else throw new Error('Usage: real-source-runtime.mjs prepare | start|resume|status|migrate-repeat|recovery|stop <private-run-directory>');
 } catch(error) {
   try {const env=RUNTIME_ENABLED&&dir?JSON.parse(readFileSync(runFile(dir),'utf8')):{};
     const message=error instanceof AggregateError ? `${error.message}: ${error.errors.map(item=>item.message).join('; ')}` : error.message;
