@@ -2,7 +2,7 @@
 
 Phase 1 at base `316d645c02b6b516f37e32ffda812b7c2534b41f`: these scripts are **static preparation only**. Both runtime entrypoints have hard-coded closed gates. No Docker service, database, API, dispatcher, processor, provider or source upload is started by this phase.
 
-`local-nest` adds a separate isolation profile at `127.0.0.1:3188`. The existing nonce, Compose project, database, bucket, storage and processor ports remain exact. The proposed launcher uses `@ulpin/api` rather than Next, checks the owned process group, includes `--profile app` on shutdown, and preserves named volumes. Private run files and logs live under `.runtime/run01/<nonce>/` with restricted permissions. It does not load `.env`, restore a snapshot, seed records or enable providers.
+`local-nest` adds a separate isolation profile at `127.0.0.1:3188` and pins both `PORT` and Nest's `API_PORT` to 3188. The existing nonce, Compose project, database, bucket, storage and processor ports remain exact. The proposed launcher uses `@ulpin/api` rather than Next, records each process group's nonce, leader PID, PGID and start time, and checks its actual members after SIGTERM. If ownership is unverified or members remain, shutdown reports unresolved cleanup without signalling a reused group. Compose shutdown includes `--profile app` and preserves named volumes. Private run files and logs live under `.runtime/run01/<nonce>/` with restricted permissions. It does not load `.env`, restore a snapshot, seed records or enable providers.
 
 ## Phase 2, after the lead supplies an accepted integrated commit
 

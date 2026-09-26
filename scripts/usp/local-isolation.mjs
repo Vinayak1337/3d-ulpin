@@ -57,6 +57,7 @@ export function assertUspIsolation(env) {
     assert.equal(env.ULPIN_LOOPBACK_PORTS, '3188');
     assert.equal(env.HOST, '127.0.0.1');
     assert.equal(env.PORT, '3188');
+    assert.equal(env.API_PORT, '3188');
   }
   if (preview || nest) for (const key of localProviderKeys)
     assert(!env[key], `${key} is forbidden in this isolated local runtime`);
