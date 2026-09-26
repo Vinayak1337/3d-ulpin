@@ -53,6 +53,8 @@ Current checkout policy, updated by explicit user direction: the lead integrates
 
 ## Lean verification
 
+User clarification,27 September: verification must not become the deliverable. Finish the smallest usable feature first. Default to one final typecheck, one real-input API journey and the specific failure/access boundary changed. Add small concurrency/integrity checks only when the new mutation requires them. Do not build expansive protocol matrices or new harness frameworks, repeat accepted unrelated campaigns, or keep growing reports. When a concrete defect is found, fix it and repeat only the affected check. This limits scope; it does not excuse an unresolved privacy/integrity defect or turn missing evidence into a pass.
+
 Default for backend work: inspect the actual producer/consumer contract, verify the affected operation and one relevant failure/recovery state, then fix concrete defects. Plan-only work uses document/link/schema checks. UI design and browser acceptance are a separately assigned user-owned integration dependency; do not turn backend validation into a redesign or screenshot project.
 
 Workers run typecheck and directly relevant existing checks once. Prefer fixing/updating a directly affected existing test to adding a new suite. Add an automated test only for a concrete high-impact failure that manual UI inspection cannot establish, such as authorization, privacy/egress, identifier uniqueness, transactions, geometry calculations or data integrity. State the reason in one sentence.
