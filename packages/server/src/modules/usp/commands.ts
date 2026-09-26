@@ -10,6 +10,8 @@ import { canonical, fingerprint } from '../cases/domain';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { commitRegistryReviewTx } from '../registry/registry';
 import { assertLocalUsp, captureRegistrySnapshotTx } from './snapshots';
+import { appendUspOutboxTx } from './outbox';
+export { appendUspOutboxTx } from './outbox';
 
 export async function scopedManifestTx(client: PoolClient, ctx: RequestContext, scope: CommitProposal['scope']) {
   z.uuid().parse(scope.scopeId);
@@ -33,17 +35,6 @@ export async function requestReceiptTx(client: PoolClient, ctx: RequestContext, 
   )).rows[0];
   if (previous && previous.command_sha256 !== commandSha256) conflict('This request key was used with different inputs.');
   return previous?.body;
-}
-
-export async function appendUspOutboxTx(client: PoolClient, streamId: string, body: object) {
-  await client.query('INSERT INTO usp_outbox_streams(stream_id) VALUES($1) ON CONFLICT DO NOTHING', [streamId]);
-  const row = (await client.query(
-    'UPDATE usp_outbox_streams SET last_sequence=last_sequence+1 WHERE stream_id=$1 RETURNING last_sequence::text AS sequence',
-    [streamId],
-  )).rows[0];
-  const sequence = String(row.sequence);
-  await client.query('INSERT INTO usp_outbox(stream_id,sequence,body) VALUES($1,$2,$3)', [streamId, sequence, body]);
-  return { streamId, sequence };
 }
 
 export async function prepareProposalTx(client: PoolClient, ctx: RequestContext, raw: PrepareProposal) {
