@@ -1,0 +1,360 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
+import { FilePlus } from '@phosphor-icons/react';
+import { SceneView } from '@ulpin/scene/react';
+import type { FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
+import { Badge, Banner, Button, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
+import { useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
+import { buildingModel } from '../../model/building';
+import { effectiveColour } from '../../state/selection';
+import { useSelection } from '../../state/useSelection';
+import { EvidenceProvider } from '../evidence/EvidenceContext';
+import { AssignDialog } from '../identity/AssignDialog';
+import { AddFilesDialog } from '../intake/AddFilesDialog';
+import { DeleteDialog } from '../manage/DeleteDialog';
+import { CardDialog } from '../identity/CardDialog';
+import { useSpaceWorkflow } from '../workflow/useWorkflow';
+import { polygonsOf } from './footprints';
+import { findingVolume, useBuildingScene } from './useBuildingScene';
+import { MapSidebar, type ViewKey } from './MapSidebar';
+import { BuildingImportTray, ImportTray } from './ImportTray';
+import { ScaleAndNorth } from './ScaleAndNorth';
+import { SceneLabels } from './SceneLabels';
+import type { SceneLabel } from './labels';
+import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
+import { AreaInspector } from './inspector/AreaInspector';
+import { BuildingInspector } from './inspector/BuildingInspector';
+import { FindingsInspector } from './inspector/FindingsInspector';
+import { SpaceInspector } from './inspector/SpaceInspector';
+import { UndergroundInspector } from './inspector/UndergroundInspector';
+import type { Crumb } from './inspector/InspectorShell';
+import styles from './MapWorkspace.module.css';
+
+const ATTRIBUTION: Record<string, string> = {
+  'nyc-building-footprints': 'City of New York Office of Technology and Innovation (OTI), BUILDING via NYC Open Data',
+  'swiss-dwellings': 'Swiss Dwellings (Zenodo 7070952), CC BY 4.0',
+};
+
+/**
+ * S4–S6, S8: one canvas whose modes (area, building, level, findings, underground) share one selection,
+ * one inspector and one left navigation. The URL holds the selection.
+ */
+export function MapWorkspace({ context }: { context: AreaContext }) {
+  const { selection, dispatch, patch } = useSelection();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const packageId = searchParams.get('package');
+  const buildingImportId = searchParams.get('building-import');
+  const buildingImport = useBuildingImport(buildingImportId);
+  const floorsLive = Boolean(buildingImportId) && buildingImport.data?.state !== 'done';
+  const [engine, setEngine] = useState<SceneEngine | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
+  const [dialog, setDialog] = useState<'assign' | 'card' | 'files' | 'delete-building' | 'delete-area' | null>(null);
+  const navigate = useNavigate();
+  const [toast, setToast] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [trench, setTrench] = useState<Trench | null>(null);
+
+  const buildings = useMemo(() => context.features.filter((f) => f.kind === 'building'), [context.features]);
+  const utilities = useMemo(() => context.features.filter((f) => f.kind === 'utility'), [context.features]);
+  const feature = selection.buildingId ? buildings.find((b) => b.id === selection.buildingId) ?? null : null;
+  const registerQuery = useBuildingRegister(feature?.id, floorsLive);
+  const register = registerQuery.data;
+  const ledger = useBuildingLedger(feature?.id, floorsLive).data;
+  const model = useMemo(() => (register ? buildingModel(register) : null), [register]);
+  const level = model?.levels.find((l) => l.id === selection.levelId) ?? null;
+  const space = selection.spaceId ? model?.spaceById.get(selection.spaceId) ?? null : null;
+  const spaceWorkflow = useSpaceWorkflow(space?.id ?? null);
+  const reference = context.area.reference;
+  const groundM = ledger?.groundElevationM ?? null;
+  const colour = effectiveColour(selection);
+  const findings = register?.findings ?? [];
+  const finding = selection.mode === 'findings' ? findings.find((f) => f.id === selection.findingId) ?? findings[0] ?? null : null;
+
+  const { base, footprints, detail } = useBuildingScene(context.features, feature, model, ledger, colour);
+
+  const findingInput = useMemo<FindingInput | null>(() => (finding ? findingVolume(finding, groundM) : null), [finding, groundM]);
+
+  const sceneState = useMemo<SceneState>(() => ({
+    mode: selection.mode, buildingId: selection.buildingId, levelId: selection.levelId, spaceId: selection.spaceId,
+    tool: 'select', finding: findingInput,
+  }), [selection, findingInput]);
+
+  // Parcel code under the selected building (area mode), from the parcel the building is associated with.
+  useEffect(() => {
+    if (!engine) return;
+    const parcelId = register?.parcelIdentifiers[0]?.parcelId;
+    const parcel = parcelId ? context.features.find((f) => f.id === parcelId) : null;
+    const ring = parcel ? polygonsOf(parcel.geometry)[0]?.[0] : null;
+    if (!ring?.length) { engine.setAnchor('parcel', null); return; }
+    const xs = ring.map(([x]) => x), ys = ring.map(([, y]) => y);
+    engine.setAnchor('parcel', [(Math.min(...xs) + Math.max(...xs)) / 2, Math.min(...ys) + 3, 0.3]);
+  }, [engine, register, context.features]);
+
+  const onPick = useCallback((pick: Pick) => {
+    if (pick.kind === 'building') dispatch({ type: 'pickBuilding', id: pick.id, levelId: pick.levelId });
+    else if (pick.kind === 'space') dispatch({ type: 'pickSpace', id: pick.id, levelId: pick.levelId });
+    else dispatch({ type: 'pickGround' });
+  }, [dispatch]);
+
+  // Escape unwinds the selection one step (dialogs catch their own Escape).
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || dialog) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.tagName === 'INPUT' && (target as HTMLInputElement).type !== 'range') return;
+      dispatch({ type: 'escape' });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dispatch, dialog]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !engine) return;
+    const target = window as unknown as { __ulpinSceneStats?: () => unknown; __ulpinScene?: SceneEngine };
+    target.__ulpinSceneStats = () => engine.stats();
+    target.__ulpinScene = engine;
+    return () => { delete target.__ulpinSceneStats; delete target.__ulpinScene; };
+  }, [engine]);
+
+  // While an area import streams, the view pulls back to keep every arriving building in frame.
+  const buildingCount = buildings.length;
+  useEffect(() => {
+    if (packageId && engine && buildingCount && selection.mode === 'area' && !selection.buildingId) engine.resetCamera();
+  }, [packageId, engine, buildingCount, selection.mode, selection.buildingId]);
+
+  const onView = useCallback(() => setTick((t) => (t + 1) % 1_000_000), []);
+  const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
+  const chooseColour = (c: Exclude<typeof colour, never>) => {
+    patch({ colourBy: c });
+    if (c === 'rights' && selection.mode !== 'level') { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }
+    if (c === 'utilities' && feature && selection.mode !== 'underground') dispatch({ type: 'openUnderground' });
+  };
+  const chooseView = (key: ViewKey) => {
+    if (key === 'area') dispatch({ type: 'selectBuilding', id: null });
+    else if (key === 'building') dispatch({ type: 'exploreBuilding' });
+    else if (key === 'level') { const f = level ?? typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }
+    else if (key === 'findings') dispatch({ type: 'openFindings', findingId: null });
+    else dispatch({ type: 'openUnderground' });
+  };
+  const typicalFloor = () => {
+    const floors = model?.levels.filter((l) => /^F\d/i.test(l.label)) ?? [];
+    return floors.length > 2 ? floors[Math.floor(floors.length / 4)] : floors[0] ?? model?.levels[0];
+  };
+
+  // Crumbs of the selection path.
+  const crumbs: Crumb[] = [{ label: context.area.name, onSelect: () => dispatch({ type: 'selectBuilding', id: null }) }];
+  if (feature) crumbs.push({ label: feature.name, onSelect: selection.mode === 'area' ? undefined : () => dispatch({ type: 'exploreBuilding' }) });
+  if (selection.mode === 'level' && level) crumbs.push({ label: level.label, onSelect: space ? () => dispatch({ type: 'selectSpace', id: null }) : undefined });
+  if (selection.mode === 'findings') crumbs.push({ label: 'Findings' });
+  if (selection.mode === 'underground') crumbs.push({ label: 'Underground' });
+
+  // Labels: selection and hover; the explored level's spaces; findings, utilities and tools.
+  const labels: SceneLabel[] = [];
+  if (selection.mode === 'area' || selection.mode === 'building') {
+    if (feature) labels.push({ id: feature.id, text: feature.name, kind: 'selected' });
+    if (feature && selection.mode === 'area' && register?.parcelIdentifiers[0]) labels.push({ id: 'parcel', text: register.parcelIdentifiers[0].value, kind: 'code' });
+    const hover = hovered && hovered !== feature?.id ? buildings.find((b) => b.id === hovered) : null;
+    if (hover) labels.push({ id: hover.id, text: hover.name, kind: 'hover' });
+  }
+  if (selection.mode === 'level' && model) {
+    for (const s of model.spaces) {
+      if (s.levelId !== selection.levelId || !s.polygons.length || s.parentId) continue;
+      const small = s.use === 'stair' || s.use === 'lift';
+      labels.push({ id: s.id, text: small ? s.name.split(' ').pop()! : s.shortName, kind: s.id === space?.id ? 'space-selected' : 'space' });
+    }
+  }
+  if (selection.mode === 'findings' && finding && model) {
+    if (findingInput?.polygons.length && typeof finding.volumeM3 === 'number') {
+      labels.push({ id: 'finding', text: `${finding.volumeM3.toFixed(1)} m³ ${finding.code === 'partition_void' ? 'void' : 'overlap'}`, kind: 'critical' });
+    }
+    for (const id of finding.featureIds) { const s = model.spaceById.get(id); if (s) labels.push({ id: s.id, text: s.name, kind: 'hover' }); }
+  }
+  if (selection.mode === 'underground') {
+    for (const u of utilities) labels.push({ id: `utility:${u.id}`, text: u.name, kind: 'hover' });
+    if (trench?.ring) {
+      labels.push({ id: 'trench', text: `Trench · ${trench.lengthM?.toFixed(0)} m`, kind: 'selected' });
+      for (let d = 0; d <= 20; d += 5) labels.push({ id: `depth:${d}`, text: `${d} m`, kind: 'tick' });
+    }
+    if (!utilities.length) labels.push({ id: 'no-survey', text: 'No survey', kind: 'hover' });
+  }
+
+  // Legend: only the active Colour by, plus the evidence key on a floor.
+  const legend: LegendSection[] = [];
+  if (selection.mode === 'level' && model && colour === 'rights') {
+    const onLevel = model.spaces.filter((s) => s.levelId === selection.levelId && s.polygons.length);
+    const count = (r: string) => onLevel.filter((s) => (ledgerSpace(ledger, s.id)?.rights ?? 'unknown') === r).length;
+    legend.push({ title: 'Rights', items: (['exclusive', 'shared', 'public', 'unknown'] as const).map((r) => ({ label: RIGHTS_LABEL[r], count: count(r), color: `var(${RIGHTS_TOKEN[r]})`, hatch: r === 'unknown' })) });
+  }
+  if (selection.mode === 'level') {
+    legend.push({ title: 'Evidence', items: [
+      { label: 'Measured or documented', color: 'var(--ui-map-building)' },
+      { label: 'Estimated', color: 'var(--ui-map-building)', hatch: true },
+    ] });
+  }
+  if (selection.mode === 'underground' && colour !== 'none') {
+    legend.push({ title: 'Utilities', items: [
+      ...utilities.map((u) => {
+        const network = String((u.utilityProfile as Record<string, unknown> | undefined)?.network ?? '');
+        return { label: u.name, color: `var(${network === 'metro' ? '--ui-rights-public' : `--ui-utility-${network || 'water'}`})` };
+      }),
+      { label: 'No survey', color: 'var(--ui-readiness-unknown)', hatch: true },
+    ] });
+  }
+  if (selection.mode === 'findings' && findings.length) {
+    const blocking = findings.filter((f) => f.category === 'blocking').length;
+    legend.push({ title: 'Findings', items: [
+      { label: 'Blocking', count: blocking, color: 'var(--ui-mark-critical)', hatch: true },
+      { label: 'Needs review', count: findings.length - blocking, color: 'var(--ui-mark-warning)' },
+    ] });
+  }
+
+  const showRail = (selection.mode === 'building' || selection.mode === 'level') && Boolean(model?.levels.length);
+  const noFloors = selection.mode === 'building' && register && !model?.levels.length;
+  const namespaces = [...new Set(context.features.map((f) => f.datasetNamespace))].filter((ns) => ATTRIBUTION[ns]);
+  const readout = [reference?.sourceCrs, groundM !== null ? `${groundM.toFixed(2)} m` : null, ledger?.siteDatum].filter(Boolean).join(' · ');
+  const readoutTitle = reference
+    ? `Horizontal: ${reference.analysisCrs} (source ${reference.sourceCrs}). Heights: ${reference.verticalReference}.`
+    : 'No reference system: this area stays in its source’s local frame.';
+  const hint = selection.mode === 'underground' && !trench?.ring ? (trench?.points.length === 1 ? 'Click the other end of the trench' : 'Click two points on the ground to draw a trench')
+    : selection.mode === 'area' && !feature ? 'Select a building'
+      : selection.mode === 'building' && model?.levels.length ? 'Select a floor'
+        : selection.mode === 'level' && !space ? 'Select a unit' : null;
+
+  let inspector;
+  if (selection.mode === 'underground' && feature) inspector = <UndergroundInspector utilities={utilities} trench={trench} onClear={() => engine?.clearTrench()} />;
+  else if (selection.mode === 'findings' && feature) {
+    inspector = <FindingsInspector register={register} ledger={ledger} findingId={finding?.id ?? null} buildingId={feature.id} crumbs={crumbs}
+      onOpenSpace={(id) => { const s = model?.spaceById.get(id); if (s?.levelId) dispatch({ type: 'pickSpace', id, levelId: s.levelId }); }} />;
+  } else if (selection.mode === 'level' && space && model && register && feature) {
+    inspector = (
+      <SpaceInspector space={space} level={level} model={model} register={register} ledger={ledger} buildingId={feature.id} crumbs={crumbs}
+        datum={ledger?.siteDatum ?? null} onSelectSpace={(id) => dispatch({ type: 'selectSpace', id })}
+        onAssign={() => setDialog('assign')} onCard={() => setDialog('card')} onFinding={(id) => dispatch({ type: 'openFindings', findingId: id })} />
+    );
+  } else if (feature) {
+    inspector = (
+      <BuildingInspector feature={feature} register={register} model={model} ledger={ledger} registerPending={registerQuery.isPending} crumbs={crumbs}
+        exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')} onDelete={() => setDialog('delete-building')}
+        onExplore={() => { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }}
+        onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })} />
+    );
+  } else inspector = <AreaInspector area={context.area} buildings={buildings} onSelect={(id) => dispatch({ type: 'selectBuilding', id })} onDelete={() => setDialog('delete-area')} />;
+
+  const closeParam = (key: string) => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete(key); return n; }, { replace: true });
+  const tray = packageId ? <ImportTray packageId={packageId} onClose={() => closeParam('package')} />
+    : buildingImportId ? <BuildingImportTray importId={buildingImportId} onClose={() => closeParam('building-import')} /> : selection.mode === 'findings' && findings.length ? (
+    <div className={`ul-panel ${styles.findingTray}`} role="listbox" aria-label="Findings">
+      {findings.map((f) => (
+        <button key={f.id} type="button" role="option" aria-selected={f.id === finding?.id} onClick={() => dispatch({ type: 'openFindings', findingId: f.id })}>
+          <SeverityBadge severity={f.category === 'blocking' ? 'blocking' : 'needs-review'} />
+          <span>{f.message}</span>
+        </button>
+      ))}
+    </div>
+  ) : null;
+
+  return (
+    <EvidenceProvider snapshot={snapshot}>
+      <div className={styles.workspace}>
+        <MapSidebar
+          views={[
+            { key: 'area', label: 'Area' },
+            { key: 'building', label: 'Building', disabled: !feature },
+            { key: 'level', label: 'Floors', disabled: !model?.levels.length },
+            { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
+            { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
+          ]}
+          active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
+          onView={chooseView}
+          keySections={legend}
+          colour={colour} onColour={chooseColour}
+          colourOptions={[
+            { value: 'none', label: 'None' },
+            { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
+            { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
+          ]}
+          floor={selection.mode === 'level' && level ? level.label : null}
+          spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
+          rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
+          selectedSpaceId={selection.spaceId}
+          onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
+        />
+
+        <section className={`${styles.canvasColumn} ${tray ? styles.withTray : ''}`} aria-label="Map">
+          <div className={styles.canvasWrap}>
+            <SceneView
+              className={styles.canvas}
+              base={base}
+              buildings={footprints}
+              detail={detail}
+              state={sceneState}
+              growNew={Boolean(packageId)}
+              onPick={onPick}
+              onHover={(pick) => setHovered(pick.kind === 'ground' ? null : pick.id)}
+              onView={onView}
+              onTrench={setTrench}
+              onReady={setEngine}
+              label={`3D map of ${context.area.name}. The inspector lists the same buildings and spaces.`}
+            />
+            {!reference ? (
+              <div className={styles.banner}>
+                <Banner tone="info">This area stays in its source’s local frame: the source states no coordinate reference system, so it is not placed on the map.</Banner>
+              </div>
+            ) : null}
+            {showRail && model ? (
+              <div className={styles.rail}>
+                <LevelRail
+                  levels={model.levels.map((l) => ({ id: l.id, label: l.label, lower: l.lower, estimated: l.estimated, belowGround: l.belowGround }))}
+                  reference={ledger?.siteDatum ?? reference?.verticalReference ?? null}
+                  ground={groundM}
+                  selected={selection.levelId}
+                  onSelect={(id) => dispatch({ type: 'selectLevel', id })}
+                />
+              </div>
+            ) : null}
+            {noFloors ? (
+              <div className={styles.emptyOverlay}>
+                <div className={`ul-float ${styles.emptyCard}`}>
+                  <span>No floors recorded for this building. Add a plan or level schedule.</span>
+                  <Button variant="primary" icon={FilePlus} onClick={() => setDialog('files')}>Add files</Button>
+                </div>
+              </div>
+            ) : null}
+            <SceneLabels engine={engine} labels={labels} tick={tick} />
+            {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
+            <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} /></div>
+            {namespaces.length ? <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns]).join(' · ')}</p> : null}
+          </div>
+          {tray ? <div className={styles.tray}>{tray}</div> : null}
+        </section>
+
+        <div className={styles.inspectorColumn}>{inspector}</div>
+      </div>
+
+      {dialog === 'files' && feature ? <AddFilesDialog buildingId={feature.id} onClose={() => setDialog(null)} /> : null}
+      {dialog === 'delete-building' && feature ? (
+        <DeleteDialog target={{ kind: 'building', id: feature.id, name: feature.name, detail: `${feature.name} and its register (floors, units, findings and history) are deleted from ${context.area.name}.` }}
+          onClose={() => setDialog(null)} onDeleted={() => { setDialog(null); dispatch({ type: 'selectBuilding', id: null }); setNotice(`${feature.name} deleted`); }} />
+      ) : null}
+      {dialog === 'delete-area' ? (
+        <DeleteDialog target={{ kind: 'area', id: context.area.id, name: context.area.name, detail: `${context.area.name} and its ${buildings.length} buildings, parcels, roads and utilities are deleted, with every building register in it.` }}
+          onClose={() => setDialog(null)} onDeleted={() => navigate('/studio/map', { replace: true })} />
+      ) : null}
+      {dialog === 'assign' && space && register ? (
+        <AssignDialog space={space} register={register} onClose={() => setDialog(null)} onAssigned={(code) => { setDialog(null); setToast(code); }} />
+      ) : null}
+      {dialog === 'card' && space && spaceWorkflow.data?.code && feature ? (
+        <CardDialog workflow={spaceWorkflow.data} space={space} level={level} buildingName={feature.name} onClose={() => setDialog(null)} />
+      ) : null}
+      {toast ? (
+        <Toast onDone={() => setToast(null)}>
+          <Badge tone="primary">Assigned</Badge>
+          <span className="ul-id">{toast.slice(0, 7)}…{toast.slice(-3)}</span>
+          <button type="button" className="ul-btn ul-btn--soft" onClick={() => { setToast(null); setDialog('card'); }}>Make Property Card</button>
+        </Toast>
+      ) : null}
+      {notice ? <Toast onDone={() => setNotice(null)}>{notice}</Toast> : null}
+    </EvidenceProvider>
+  );
+}

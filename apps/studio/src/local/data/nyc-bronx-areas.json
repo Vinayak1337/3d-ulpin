@@ -1,0 +1,37 @@
+[
+ {
+  "id": "4d757bf5-a896-5719-a04c-0417a91942c5",
+  "siteId": "2e30227d-1c32-5e2b-8fe5-6cefe5f21f04",
+  "name": "Bronx building context around OTI 353927",
+  "revision": 1,
+  "reference": {
+   "sourceCrs": "EPSG:4326",
+   "analysisCrs": "local east/north metres, tangent plane at -73.870622292, 40.900158312 (WGS 84)",
+   "origin": [
+    0,
+    0
+   ],
+   "anchor": [
+    -73.870622292,
+    40.900158312
+   ],
+   "transformVersion": "studio-local/wgs84-enu-tangent/1",
+   "verticalReference": "building ground (per-feature datum not stated by the source)"
+  },
+  "extent": [
+   -67.02,
+   -88.698,
+   152.925,
+   109.004
+  ],
+  "geographicExtent": [
+   -73.871417671461,
+   40.899359607558,
+   -73.868807417351,
+   40.90113986786
+  ],
+  "administrativeUnits": [],
+  "dataKind": "real",
+  "featureCount": 62
+ }
+]
