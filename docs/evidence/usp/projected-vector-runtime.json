@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "ulpin-projected-vector-runtime/1",
+  "status": "passed",
+  "servedCodeCommit": "6e85ae679207c8e8fce6df6a3879f8ccc9eafa79",
+  "environment": {
+    "kind": "stopped-isolated",
+    "project": "ulpin-usptest-e0c00ba88a5b1a20",
+    "nonce": "e0c00ba88a5b1a20"
+  },
+  "original": {
+    "bytes": 71238839,
+    "sha256": "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37"
+  },
+  "member": {
+    "bytes": 168356689,
+    "sha256": "2b27a478e24d8c51b0655e74ce3f4f880e75c752e4597550d6fc925ed06ac201"
+  },
+  "totals": {
+    "features": 733,
+    "positions": 3125505,
+    "nativeValid": 720,
+    "nativeInvalid": 13,
+    "admitted": 720,
+    "quarantined": 13
+  },
+  "checks": {
+    "staleAttemptRecovery": "unchanged retained source reaches Celery; exact replay preserves the job; expired publisher A cannot fail or retire real staged rows while newer fenced owner B is active; a real case revision still authoritatively fences the job and exactly retires only its never-accepted staging, retaining compact retirement/job history",
+    "privateReads": "retry from the same retained source atomically adopts all 733 immutable dispositions; typed numeric id namespace preserves both real duplicated dtcode rows; bounded private metadata/native/geographic reads and quarantine exclusion pass",
+    "readmission": "a third current-context job successfully re-admits the unchanged original after an accepted generation becomes context-stale; all 733 earlier accepted observations and logical receipts survive, canonical identities and immutable feature artifacts are reused",
+    "database": "database has 13 preserved native-invalid dispositions and no invalid global geometry per accepted generation; one original, three existing-authority jobs and exactly nine committed compact lifecycle events; originals remain byte-identical and no model call occurred"
+  },
+  "attemptHandover": {
+    "oldNumber": 1,
+    "newNumber": 2,
+    "oldFence": 1,
+    "newFence": 2,
+    "protectedStagingRows": 8
+  },
+  "acceptedHistory": {
+    "observations": 733,
+    "shared_artifacts": 733
+  },
+  "database": {
+    "observations": 733,
+    "admitted": 720,
+    "native_invalid": 13,
+    "invalid_geographic": 0,
+    "stale_observations": 0,
+    "originals": 1,
+    "model_calls": 0,
+    "jobs": 3
+  },
+  "execution": {
+    "outputBytes": 286637282,
+    "peakResidentBytes": 94658560,
+    "seconds": 22.688215611000487
+  },
+  "retainedArtifactBytes": 288107734,
+  "retainedObservationValueBytes": 200004498,
+  "notQualified": [
+    "Boundary positional/legal/currentness accuracy, parcels/rights/height or survey controls",
+    "Generic archives/CRS/format coverage",
+    "Tiles/progressive scene generations/GF-STREAM/GF-SCALE/UI",
+    "Multiuser/replica authorization or provider/learning qualification"
+  ],
+  "handoff": "docs/evidence/usp/projected-vector-handoff.md",
+  "privateReceiptHashes": {
+    "projected-vector-smoke.json": "852011d75921beac4c9e7288923bf0e928f37c5b400349c15f53fecbe42ac16a",
+    "projected-vector-retention.json": "fac3b47079969a997516895235454e7444b25419dbc7f08eefa7dd7b7ce24823",
+    "ownership.json": "5a60f77d76ac8d3ddc14aaf0761c66197a9f3fac615175e3e5359892650c0ffc"
+  }
+}
