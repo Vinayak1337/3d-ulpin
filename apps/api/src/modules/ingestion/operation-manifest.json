@@ -181,6 +181,19 @@
       "responseStatus": 200,
       "transportProfile": "json",
       "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/events",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_events",
+      "batch": "INGEST-03B",
+      "disposition": "added",
+      "nativeController": "events",
+      "requestSchema": "CaseIngestionCursorSchema query/header",
+      "responseSchema": "CaseIngestionEventSchema + CaseIngestionControlSchema SSE data",
+      "responseStatus": 200,
+      "transportProfile": "private-sse",
+      "runtimeEvidence": "pending"
     }
   ]
 }
