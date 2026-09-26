@@ -76,6 +76,12 @@
       "source": "database/sql/95-ingestion/manual-mapping.sql",
       "function": "migrateManualIngestionTx",
       "timing": "migration-command"
+    },
+    {
+      "source": "database/sql/95-ingestion/large-original.sql",
+      "function": "migrateLargeOriginalTx",
+      "timing": "migration-command",
+      "task": "INGEST-06"
     }
   ],
   "steps": [
@@ -1377,6 +1383,40 @@
       "runtime": {
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateManualIngestionTx"
+      }
+    },
+    {
+      "id": "ingestion.large.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/large-original.sql",
+        "function": "migrateLargeOriginalTx",
+        "kind": "authored-sql",
+        "task": "INGEST-06",
+        "acceptedBase": "ac4d47b783886a4c39cdd45c270058a4691a6a05"
+      },
+      "file": "sql/95-ingestion/large-original.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 27,
+      "sha256": "d2c2cfd914818e5bbcc2c1b334cc630c4e871875cf4421852acf52ca1152aaf0",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "94789b1bd7fd59cd1dea539752be0aee7dbbd4cb7c59cf2fdc3ccf76431c72ef"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "1db86e3fc4532e35944ef3da8e451aa65c2e78e2a224fbf0cf0e587d4090d3f3"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateLargeOriginalTx"
       }
     }
   ],

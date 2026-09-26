@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Inject, Param, Patch, Post, Req, Res } from '@nestjs/common';
+import { Controller, Get, HttpCode, Inject, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import type { Request, Response as ExpressResponse } from 'express';
 import { AppError } from '@ulpin/server/infrastructure/errors';
@@ -14,6 +14,8 @@ import {
   sourceRevision, unit, wireResponse,
 } from './wire-schemas';
 import { z } from 'zod';
+import { pipeline } from 'node:stream/promises';
+import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 
 function uploadFile(form: FormData, message: string): File {
   const file = form.get('file');
@@ -52,12 +54,32 @@ export class CasesController {
   }
 
   @Get('sources/:sourceId/file')
+  @UseGuards(PrivateSpatialGuard)
   @ApiOperation({operationId: 'GET_api_v1_sources_sourceId_file', summary: 'Download an unchanged private source original'})
   @ApiParam({name: 'sourceId', schema: {type: 'string', format: 'uuid'}})
-  @wireResponse(200, binary)
-  async sourceFile(@Param('sourceId') sourceId: string, @Res() response: ExpressResponse) {
-    const file = await this.cases.sourceFile(idSchema.parse(sourceId));
-    await sendWebResponse(response, download(file.bytes, file.mimeType, `inline; filename*=UTF-8''${encodeURIComponent(file.name)}`));
+  @wireResponse(200, binary, [416,429])
+  async sourceFile(@Param('sourceId') sourceId: string, @Res() response: ExpressResponse, @Req() request:Request) {
+    const id=idSchema.parse(sourceId),controller=new AbortController();
+    const disconnect=()=>{if(!response.writableFinished)controller.abort();};
+    response.once('close',disconnect);
+    let streamed:Awaited<ReturnType<CaseIntakeService['streamedSourceFile']>>=null;
+    try{
+      streamed=await this.cases.streamedSourceFile(id,controller.signal);
+      if(streamed){
+        if(request.headers.range)throw new AppError(416,'SOURCE_RANGE_UNSUPPORTED','This integrity-checked original download supports the complete bounded object only.');
+        response.set({'Content-Type':streamed.mimeType,'Content-Length':String(streamed.bytes),
+          'Content-Disposition':`inline; filename*=UTF-8''${encodeURIComponent(streamed.name)}`,'Cache-Control':'private, max-age=60',
+          'X-Content-Type-Options':'nosniff','X-Source-Sha256':streamed.sha256,
+          'X-Source-Integrity':'recomputed-before-response; conditional-sealed-read; checked-at-stream-end','Accept-Ranges':'none'});
+        try{await pipeline(streamed.body,streamed.integrity,response,{signal:controller.signal});}
+        catch(error){console.warn(JSON.stringify({event:'large-original-transfer-failed',sourceId:id,
+          code:error instanceof AppError?error.code:'STREAM_INTERRUPTED',headersSent:response.headersSent,
+          bytesMayHaveBeenSent:response.headersSent}));response.destroy();throw error;}
+        return;
+      }
+      const file = await this.cases.sourceFile(id);
+      await sendWebResponse(response, download(file.bytes, file.mimeType, `inline; filename*=UTF-8''${encodeURIComponent(file.name)}`));
+    }finally{streamed?.close();response.off('close',disconnect);controller.abort();}
   }
 
   @Post('jobs/:jobId/retry')

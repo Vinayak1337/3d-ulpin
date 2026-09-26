@@ -269,6 +269,25 @@ async function processorStart(dir) {
   const after=await waitHealth(c,60);
   console.log(JSON.stringify({project:c.scope.project,after:after.services,processor:'started'}));
 }
+async function apiRestart(dir) {
+  const c=config(dir);
+  pinned(c);
+  await waitHealth(c,20);
+  const previous=readGroup(c,'api'),dispatcher=readGroup(c,'dispatcher');
+  assert(previous && processAlive(c,'api'),'verified owned API leader is required');
+  assert(groupMembers(previous.pgid).includes(previous.pid),'owned API group leader is absent');
+  // Only this nonce's verified API group is signalled. All other services stay running.
+  process.kill(-previous.pgid,'SIGTERM');
+  assert.equal((await waitGroupGone(previous.pgid)).length,0,'previous owned API group did not exit');
+  await free(Number(c.env.API_PORT));
+  pinned(c);
+  assert(processAlive(c,'dispatcher'),'owned dispatcher must remain running');
+  assert.deepEqual(readGroup(c,'dispatcher'),dispatcher,'dispatcher identity changed during API restart');
+  await launch(c,'api',['--filter','@ulpin/api','start']);
+  const after=await waitHealth(c,60),replacement=readGroup(c,'api');
+  assert.notEqual(replacement.pid,previous.pid,'replacement API must have a new process identity');
+  console.log(JSON.stringify({project:c.scope.project,apiRestart:'passed',previousGroup:previous,replacementGroup:replacement,services:after.services}));
+}
 async function stop(dir) {
   const c=config(dir);
   const unresolved=[];
@@ -316,8 +335,9 @@ try {
   else if(action==='recovery'&&dir)await recovery(dir);
   else if(action==='processor-stop'&&dir)await processorStop(dir);
   else if(action==='processor-start'&&dir)await processorStart(dir);
+  else if(action==='api-restart'&&dir)await apiRestart(dir);
   else if(action==='stop'&&dir)await stop(dir);
-  else throw new Error('Usage: real-source-runtime.mjs prepare | start|resume|status|migrate-repeat|recovery|processor-stop|processor-start|stop <private-run-directory>');
+  else throw new Error('Usage: real-source-runtime.mjs prepare | start|resume|status|migrate-repeat|recovery|processor-stop|processor-start|api-restart|stop <private-run-directory>');
 } catch(error) {
   try {const env=dir?JSON.parse(readFileSync(runFile(dir),'utf8')):{};
     const message=error instanceof AggregateError ? `${error.message}: ${error.errors.map(item=>item.message).join('; ')}` : error.message;
