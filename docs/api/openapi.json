@@ -129420,7 +129420,8 @@
           "provider": {
             "type": "string",
             "enum": [
-              "nous"
+              "nous",
+              "sarvam"
             ]
           },
           "configured": {
@@ -129541,13 +129542,20 @@
             "provider": {
               "type": "string",
               "enum": [
-                "nous"
+                "nous",
+                "sarvam"
               ]
             },
             "model": {
               "type": "string"
             },
             "inputFingerprint": {
+              "type": "string"
+            },
+            "gatewayPolicyHash": {
+              "type": "string"
+            },
+            "principalHash": {
               "type": "string"
             },
             "sourceHashes": {
@@ -130023,6 +130031,24 @@
                   },
                   "outputHash": {
                     "type": "string"
+                  },
+                  "callId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "actualMicroInr": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)$"
+                  },
+                  "priceVersion": {
+                    "type": "string"
+                  },
+                  "semanticError": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_output",
+                      "truncated_output"
+                    ]
                   }
                 }
               }
@@ -130250,13 +130276,20 @@
           "provider": {
             "type": "string",
             "enum": [
-              "nous"
+              "nous",
+              "sarvam"
             ]
           },
           "model": {
             "type": "string"
           },
           "inputFingerprint": {
+            "type": "string"
+          },
+          "gatewayPolicyHash": {
+            "type": "string"
+          },
+          "principalHash": {
             "type": "string"
           },
           "sourceHashes": {
@@ -130732,6 +130765,24 @@
                 },
                 "outputHash": {
                   "type": "string"
+                },
+                "callId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "actualMicroInr": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]*)$"
+                },
+                "priceVersion": {
+                  "type": "string"
+                },
+                "semanticError": {
+                  "type": "string",
+                  "enum": [
+                    "invalid_output",
+                    "truncated_output"
+                  ]
                 }
               }
             }
