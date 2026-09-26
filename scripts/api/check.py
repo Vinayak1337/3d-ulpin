@@ -51,6 +51,8 @@ def main():
             for child in value:
                 refs(child)
         elif isinstance(value, dict):
+            require(value.get('type') != 'array' or 'items' in value,
+                    'OpenAPI 3.0 array schema is missing items')
             for key, child in value.items():
                 if key == '$ref':
                     require(isinstance(child, str) and child.startswith('#/'), f'external/malformed ref {child}')

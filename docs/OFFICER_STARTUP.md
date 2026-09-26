@@ -1,8 +1,10 @@
 # Local backend startup boundary
 
-Updated 26 September 2026. Active planning is [backend-only](usp-agent-handoffs/current-delivery-policy.md); the user owns the UI. This page replaces old synthetic-demo and snapshot-bootstrap instructions. It makes no fresh startup or runtime-pass claim.
+Updated 26 September 2026. Active planning is [backend-only](usp-agent-handoffs/current-delivery-policy.md); the user owns the UI. This page replaces old synthetic-demo and snapshot-bootstrap instructions. See the [native API guide](api/README.md) for current commands, Swagger, schemas, dataset links and bounded runtime receipts. A standing preview is not maintained.
 
-The canonical application is Next.js/TypeScript plus PostgreSQL/PostGIS, private object storage, the application dispatcher, a private Python job API, Redis/Celery and processing workers. The dispatcher is required for queued application work to reach the private worker. Keep one registry, source store and job authority. See [architecture](ARCHITECTURE.md), [H01](usp-agent-handoffs/01-shared-contracts-and-ownership.md) and the [backend route/cleanup plan](usp-agent-handoffs/backend-cleanup-plan.md).
+The independent application backend is NestJS in `apps/api`, domain modules in `packages/server`, and visible SQL in `database`, with PostgreSQL/PostGIS, private object storage, the application dispatcher, a private Python job API, Redis/Celery and processing workers. The dispatcher is required for queued application work to reach the private worker. Keep one registry, source store and job authority. See [architecture](ARCHITECTURE.md), [H01](usp-agent-handoffs/01-shared-contracts-and-ownership.md) and the [backend route/cleanup plan](usp-agent-handoffs/backend-cleanup-plan.md).
+
+The API defaults to `127.0.0.1:3188`. Use the [guarded nonce runtime](../scripts/usp/REAL_SOURCE_RUNTIME.md) for fresh isolated service checks. Root `pnpm build` builds the backend; `pnpm dev`/`pnpm start` run the API and dispatcher. Both require an explicit `ULPIN_LOCAL_OPERATOR_SUBJECT` before startup. The temporary Next UI has separate `web:*` commands and is not required by the backend.
 
 ## Before an assigned local run
 

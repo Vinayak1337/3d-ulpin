@@ -2,13 +2,15 @@
 
 All active plans follow the [26 September backend-only scope](docs/usp-agent-handoffs/current-delivery-policy.md): services, processing, data, security and API contracts for the user-owned UI; official sources only and no synthetic substitutes.
 
+The implemented backend is **NestJS (`apps/api`) + domain modules (`packages/server`) + PostgreSQL/PostGIS (`database/`)**. Start with the [API and dataset guide](docs/api/README.md), [SQL schema guide](database/README.md), and [delivery ledger](docs/orchestration/NESTJS_MIGRATION.md). The backend runs without the temporary Next UI.
+
 <!-- plan-next-gate: GF0 -->
 
 **Current plan: [start here](docs/usp-agent-handoffs/00-README.md). Revised 26 September 2026.**
 
 Build an evidence-linked 3D property workbench: **Identify → Prove → Govern**. Give equal weight to AI-assisted integration of fragmented inputs and the officer outcome: traceable vertical property records, discrepancies and scoped evidence cards.
 
-The [current roadmap](docs/usp-agent-handoffs/00-README.md) separates `finale_v1` from `full_product`. The sequence is data/contracts, proposed IDs/exchange, domain AI/spaces, governance/impact, card/QR and rehearsal; the manifest selects the current gate. Concurrent learning, a privacy-preserving public request dashboard, MCP, enrichment, renderer experiments and scale remain full-product commitments rather than finale prerequisites.
+The [current roadmap](docs/usp-agent-handoffs/00-README.md) separates `finale_v1` from `full_product`. The sequence is data/contracts, proposed IDs/exchange, domain AI/spaces, governance/impact, card/QR and rehearsal; the manifest selects the current gate. Concurrent learning, a privacy-preserving public request dashboard, MCP, enrichment, renderer experiments and larger scale ladders remain full-product commitments rather than finale prerequisites.
 
 | Topic | Authority |
 | --- | --- |
@@ -22,7 +24,7 @@ The [current roadmap](docs/usp-agent-handoffs/00-README.md) separates `finale_v1
 
 Operational data is Indian, data.gov.in first, with no mandatory locality. Tests may use any permitted geography separately. Preserve existing sources/identities/revisions. Generated visuals cannot establish survey quantities or legal rights; project IDs are not official issuance.
 
-The [recorded local milestone](docs/evidence/usp/continuation-2026-09-23/README.md) covers bounded D0/PACK0 and one real D1 exterior in the current shared Cesium workflow. It does not pass new finale gates. Use [AGENTS.md](AGENTS.md), current code and isolated services. This alignment changes plans only; main remains unchanged.
+The [recorded local milestone](docs/evidence/usp/continuation-2026-09-23/README.md) covers bounded D0/PACK0 and one real D1 exterior in the current shared Cesium workflow. It does not pass new finale gates. Use [AGENTS.md](AGENTS.md), current code and isolated services. Current implementation and runtime qualification are recorded separately in the delivery ledger; main remains unchanged.
 
 ## Local operation and current cleanup
 
