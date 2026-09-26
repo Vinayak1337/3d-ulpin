@@ -4,7 +4,7 @@ import { UspJobProjectionSchema, UspAssetRefSchema, UspScopeSchema,
 import { transaction } from '../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx } from './commands';
-import { ProjectedVectorInputSchema } from '@ulpin/contracts/usp';
+import { ProjectedVectorInputSchema, PrivateMvtInputSchema } from '@ulpin/contracts/usp';
 
 const LEASE_SECONDS = 180;
 const MAX_ATTEMPTS = 3;
@@ -22,6 +22,12 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       || input.kind!=='retained_source' || input.sourceId!==job.source_id || input.caseId!==job.case_id
       || input.caseRevision!==job.case_revision || inputManifestId!==job.source_id || inputSha256!==job.input_fingerprint)
       throw new AppError(422,'PROJECTED_INPUT_SCOPE','The projected job must pin its existing retained source and intake revision.');
+  } else if(job.operation==='private-mvt'){
+    const input=PrivateMvtInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.source.caseId!==job.case_id||input.source.sourceId!==job.source_id||input.source.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
+      throw new AppError(422,'MVT_INPUT_SCOPE','Tile jobs must pin their existing accepted source and intake context.');
   } else if (job.operation !== 'usp:packet0') {
     throw new AppError(422, 'USP_JOB_OPERATION', 'Only registered USP jobs can use fenced attempts.');
   }
@@ -45,9 +51,10 @@ export async function assertUspJobAttemptTx(client:PoolClient,attempt:Attempt){
     conflict('This worker completion expired, changed inputs or was fenced.');
 }
 
-export async function claimUspJobAttempt(jobId: string, owner: string): Promise<Attempt> {
+export async function claimUspJobAttempt(jobId: string, owner: string,beforeLocks?:(client:PoolClient)=>Promise<void>): Promise<Attempt> {
   if (!owner || owner.length > 128) throw new AppError(400, 'USP_JOB_OWNER', 'A bounded worker identity is required.');
   return transaction(async client => {
+    if(beforeLocks)await beforeLocks(client);
     const job = (await client.query('SELECT * FROM jobs WHERE id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
     const meta = (await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
     if (['cancelled', 'paused', 'succeeded'].includes(meta.logical_state)) conflict('The logical job cannot be claimed.');
@@ -66,8 +73,9 @@ export async function claimUspJobAttempt(jobId: string, owner: string): Promise<
   });
 }
 
-export async function heartbeatUspJobAttempt(attempt: Attempt) {
+export async function heartbeatUspJobAttempt(attempt: Attempt,beforeLocks?:(client:PoolClient)=>Promise<void>) {
   return transaction(async client => {
+    if(beforeLocks)await beforeLocks(client);
     const row = (await client.query(`UPDATE usp_job_attempts SET lease_until=now()+interval '180 seconds'
       WHERE job_id=$1 AND number=$2 AND fence=$3 AND owner=$4 AND input_sha256=$5
       AND state='active' AND lease_until>now() RETURNING lease_until`,
@@ -80,7 +88,7 @@ export async function heartbeatUspJobAttempt(attempt: Attempt) {
 /** Completion is accepted only through a registered operation's result validator. */
 export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
   validateResult: (client: PoolClient, job: Record<string, unknown>, result: AssetRef) => Promise<void>,
-  beforeLocks?: (client:PoolClient)=>Promise<void>) {
+  beforeLocks?: (client:PoolClient)=>Promise<void>,beforeCommit?:()=>void) {
   const asset = UspAssetRefSchema.parse(result);
   return transaction(async client => {
     if(beforeLocks)await beforeLocks(client);
@@ -102,6 +110,7 @@ export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
     await client.query(`UPDATE jobs SET status='succeeded',completed_at=now(),error=NULL WHERE id=$1`, [attempt.jobId]);
     await appendUspOutboxTx(client, `job:${attempt.jobId}`, { type: 'job.succeeded', jobId: attempt.jobId,
       fence: attempt.fence, result: asset, inputManifestId: meta.input_manifest_id });
+    if(beforeCommit)beforeCommit();
     return asset;
   });
 }

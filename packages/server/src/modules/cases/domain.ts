@@ -875,6 +875,8 @@ export async function retryJob(jobId: string) {
     const current = await lockCase(client, original.case_id);
     if(original.operation==='projected-vector')
       throw new AppError(422,'PROJECTED_VECTOR_RETRY_REQUIRED','Retry this retained source through its scoped projected-vector admission operation.');
+    if(original.operation==='private-mvt')
+      throw new AppError(422,'PRIVATE_MVT_RETRY_REQUIRED','Retry this private display through its scoped source operation with current admission and generation pins.');
     if (original.status !== "failed")
       throw new AppError(
         409,
