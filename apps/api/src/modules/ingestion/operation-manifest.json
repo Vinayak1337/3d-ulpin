@@ -363,6 +363,45 @@
       "responseStatus": 201,
       "transportProfile": "json",
       "runtimeEvidence": "docs/evidence/usp/document-authority-correction.md"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/sufficiency",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_sufficiency",
+      "batch": "INGEST-04A",
+      "disposition": "added",
+      "nativeController": "sufficiency",
+      "requestSchema": "EvaluateSufficiencySchema",
+      "responseSchema": "SufficiencyResultSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-handoff.md"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/needs-input",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_needs_input",
+      "batch": "INGEST-04A",
+      "disposition": "added",
+      "nativeController": "sufficiency",
+      "requestSchema": null,
+      "responseSchema": "NeedsInputSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-handoff.md"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/questions/{questionId}/answers",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_questions_questionId_answers",
+      "batch": "INGEST-04A",
+      "disposition": "added",
+      "nativeController": "sufficiency",
+      "requestSchema": "SufficiencyAnswerSchema",
+      "responseSchema": "SufficiencyQuestionSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-handoff.md"
     }
   ]
 }
