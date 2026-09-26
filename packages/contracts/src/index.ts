@@ -219,6 +219,8 @@ export interface BuildResult {
 }
 
 export * from './registry';
+export * from './registry-metadata';
+export * from './building-registry-report';
 export * from './area';
 
 export * from "./spatial";
