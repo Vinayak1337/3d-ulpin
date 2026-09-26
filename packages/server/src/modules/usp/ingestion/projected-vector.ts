@@ -51,8 +51,9 @@ export async function projectedStatusTx(client:PoolClient,caseId:string,sourceId
   const ctx=await projectedContextTx(client,caseId,sourceId),pointer=ctx.source.inspection.projectedVector;
   const job=(await client.query("SELECT id,status,error FROM jobs WHERE id=$1 AND source_id=$2 AND operation='projected-vector'",[jobId??pointer?.currentJobId,sourceId])).rows[0]??notFound('No projected admission job exists for this retained source.');
   const accepted=pointer?.accepted?.jobId===job.id?pointer.accepted:null;
+  const errorCode=job.error ? /^[A-Z][A-Z0-9_]{0,79}$/.test(job.error)?job.error:'PROJECTED_PROCESSING_FAILED' : null;
   return ProjectedVectorStatusSchema.parse({version:profile.version,caseId,sourceId,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,
-    currentCaseRevision:ctx.current.revision,jobId:job.id,status:job.status,totals:accepted?.totals??null,transform:accepted?.transform??null,errorCode:job.error??null});
+    currentCaseRevision:ctx.current.revision,jobId:job.id,status:job.status,totals:accepted?.totals??null,transform:accepted?.transform??null,errorCode});
 }
 export async function acceptedProjectedTx(client:PoolClient,caseId:string,sourceId:string,jobId?:string){
   const ctx=await projectedContextTx(client,caseId,sourceId),pointer=ctx.source.inspection.projectedVector?.accepted;

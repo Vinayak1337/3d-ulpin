@@ -12,7 +12,7 @@ import {projectedContextTx,assertProjectedInput,readProjectedArtifact,projectedO
 /** Callers take the admission/retirement advisory lock before case/source/job locks. */
 async function terminalTx(client:PoolClient,job:any,status:'failed'|'stale',code:string){
   const current=(await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE',[job.id])).rows[0];
-  if(!current || !['queued','running'].includes(current.status))return;
+  if(!current || !['queued','running'].includes(current.status))return false;
   await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1 AND logical_state<>'succeeded'",[job.id]);
   await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[job.id]);
   await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[job.id,status,code]);
@@ -26,18 +26,37 @@ async function terminalTx(client:PoolClient,job:any,status:'failed'|'stale',code
   if(retired.length){
     const policy='never_accepted_terminal_staging/1';
     await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
-      VALUES($1,$2,'projected-vector-staging-retired',$3,$4) ON CONFLICT(case_id,operation_key) DO NOTHING`,
+      VALUES($1,$2,'projected-vector-staging-retired',$3,$4) ON CONFLICT(case_id,operation_key,kind) DO NOTHING`,
       [job.case_id,`projected-vector-retired:${job.id}`,fingerprint({jobId:job.id,policy}),
         {jobId:job.id,sourceId:job.source_id,policy,rows:retired.length,retiredAt:new Date().toISOString()}]);
   }
   const originalSubject=(await client.query("SELECT inspection->'largeOriginal'->>'operatorSubject' subject FROM sources WHERE id=$1",[job.source_id])).rows[0]?.subject;
   await appendCaseIngestionTx(client,job.case_id,{kind:'projected-vector.changed',jobId:job.id,status},originalSubject);
+  return true;
 }
-export async function failProjectedJob(id:string,code='PROJECTED_PROCESSING_FAILED',status:'failed'|'stale'='failed'){
-  const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='projected-vector'",[id])).rows[0];if(!job)return;
-  await transaction(async client=>{
+/** Worker failure is authoritative; publisher failure must still own its current live attempt. */
+export async function failProjectedJob(id:string,code='PROJECTED_PROCESSING_FAILED',status:'failed'|'stale'='failed',expected?:UspJobAttempt){
+  const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='projected-vector'",[id])).rows[0];if(!job || expected && expected.jobId!==id)return false;
+  return transaction(async client=>{
     await client.query("SELECT pg_advisory_xact_lock(hashtextextended('projected-vector-admission-v1',0))");
-    await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE',[job.case_id]);await terminalTx(client,job,status,code);
+    await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE',[job.case_id]);
+    if(expected){
+      // A real context change invalidates the entire logical job, independently
+      // of attempt ownership. Recheck it under the case/source locks first.
+      try{await currentTx(client,job);}catch(error){
+        if(error instanceof AppError && [403,404,409].includes(error.status))
+          return terminalTx(client,job,'stale','PROJECTED_CONTEXT_STALE');
+        throw error;
+      }
+      try{
+        await assertUspJobAttemptTx(client,expected);
+        const latest=(await client.query('SELECT number,fence,owner FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1 FOR UPDATE',[id])).rows[0];
+        if(!latest || latest.number!==expected.number || Number(latest.fence)!==expected.fence || latest.owner!==expected.owner)return false;
+      }catch(error){if(error instanceof AppError && error.status===409)return false;throw error;}
+      // A stale-attempt exception with a current source is not source staleness.
+      if(status==='stale'){status='failed';code='PROJECTED_PUBLICATION_FAILED';}
+    }
+    return terminalTx(client,job,status,code);
   });
 }
 async function currentTx(client:PoolClient,job:any){
@@ -140,8 +159,9 @@ export async function ingestProjectedResult(id:string,value:unknown){
       await appendCaseIngestionTx(client,job.case_id,{kind:'projected-vector.changed',jobId:id,status:'succeeded'});
     },async client=>{await currentTx(client,job);});
   }catch(error){
-    if(error instanceof AppError && [403,404,409].includes(error.status))await failProjectedJob(id,'PROJECTED_CONTEXT_STALE','stale');
-    else await failProjectedJob(id,error instanceof AppError?error.code:'PROJECTED_PUBLICATION_FAILED');
-    throw error;
+    if(error instanceof AppError && [403,404,409].includes(error.status))await failProjectedJob(id,'PROJECTED_CONTEXT_STALE','stale',attempt);
+    else await failProjectedJob(id,error instanceof AppError?error.code:'PROJECTED_PUBLICATION_FAILED','failed',attempt);
+    // A superseded publisher also returns without triggering the generic
+    // dispatcher's job/error update against a newer attempt owner.
   }
 }
