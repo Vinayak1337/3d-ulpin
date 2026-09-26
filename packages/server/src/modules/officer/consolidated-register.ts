@@ -36,20 +36,22 @@ async function captureUnrecordedTx(client:PoolClient,root:Row,generatedAt:string
   if(pkg.archived||pkg.site_id!==root.site_id)throw new AppError(403,'REGISTRY_SOURCE_DENIED','This registry source context is unavailable.');
   const feature=pkg.body.features.find((f:Row)=>f.id===root.id);
   if(!['NEEDS_INPUT','READY_FOR_REVIEW','REVIEWED'].includes(pkg.state)||pkg.body.sourceWorkspace||
-    pkg.body.sourceRevisionIds?.length!==1||pkg.body.parts?.length||!feature||fingerprint(feature)!==fingerprint(root.body))
-    throw new AppError(409,'REGISTRY_SOURCE_SUMMARY_UNAVAILABLE','A current unchanged native source/import building is required.');
+    pkg.body.sourceRevisionIds?.length!==1||pkg.body.parts?.length||!feature||feature.revision!==0||
+    feature.areaId!==root.area_id||feature.identifier!==root.identifier||feature.kind!=='building'||
+    feature.sourceKey!==root.body.sourceKey||feature.datasetNamespace!==root.body.datasetNamespace)
+    throw new AppError(409,'REGISTRY_SOURCE_SUMMARY_UNAVAILABLE','A current native source/import proposal for this unrecorded building is required.');
   await assertPackageDocumentAuthority(client,pkg.body);
-  const refs=sourceIds([...(root.body.evidence??[]),{sourceRevisionId:root.body.sourceRevisionId}]);
+  const refs=sourceIds([...(feature.evidence??[]),{sourceRevisionId:feature.sourceRevisionId}]);
   const sources:Row[]=[];
   for(const id of [...new Set([...refs,...pkg.body.sourceRevisionIds])].sort())sources.push(await registrySourceTx(client,root.site_id,id));
-  const primary=sources.find(source=>source.id===root.body.sourceRevisionId);
+  const primary=sources.find(source=>source.id===feature.sourceRevisionId);
   if(!primary||primary.profile!=='geojson-area-v2'||primary.case_id!==pkg.case_id||primary.sha256!==pkg.body.sourceHash)
     throw new AppError(409,'REGISTRY_SOURCE_SUMMARY_UNAVAILABLE','This summary currently supports a fresh native GeoJSON original in its own active import context.');
   const report=ConsolidatedRegistryReportSchema.parse({schemaVersion:'building-registry-summary/1',generatedAt,
     selection:{id:root.id,kind:'building'},recordState:'unrecorded',sourcePackage:{id:pkg.id,revision:pkg.revision,state:pkg.state},
     unrecordedFacts:{address:'unknown',ownership:'unknown',residents:'unknown',parcelAssociations:'unknown',officialUlpin:'unknown'},
     building:{id:root.id,applicationId:root.identifier,kind:'building',revision:0,recordedAt:null,
-      name:textField(root.body.name,refs),areaName:textField(root.area_name),areaRevision:root.area_revision,siteRevision:root.site_revision},
+      name:textField(feature.name,refs),areaName:textField(root.area_name),areaRevision:root.area_revision,siteRevision:root.site_revision},
     records:[],groups:[],parcels:[],sources:sources.map(source=>({id:source.id,revision:source.revision,sha256:source.sha256,
       profile:source.profile,receivedAt:date(source.created_at)})),omissions:[
       'UNRECORDED / awaiting review. This is a private source/import summary, not a recorded building registry or a reviewed ownership record.',
