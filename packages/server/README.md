@@ -56,8 +56,9 @@ Backend scripts and unit tests import canonical server modules. Remaining
   their backend imports use this package.
 - Source audit and historical receipts: `scripts/usp/gf/GF-CONTRACT.mjs`
   checks canonical server producers while retaining actual UI consumer rows.
-  Its historical inventory receipt is preserved and must be deliberately
-  refreshed by the lead before it can qualify current code. The lead-owned
+  Its historical inventory receipt is preserved; the current source-only
+  inventory is `docs/engineering-plan/contract-inventory.json`. Neither
+  refresh establishes new runtime qualification. The lead-owned
   `scripts/api/**` checker is being migrated separately; `scripts/db/**`
   intentionally reads the original Git tree to verify SQL lineage.
 

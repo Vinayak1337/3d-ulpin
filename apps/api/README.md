@@ -1,9 +1,14 @@
 # Nest API foundation
 
-This app is a loopback modular Nest application. It currently owns only
-`GET /api`, `GET /api/v1/workspace-capabilities`, and `GET /api/v1/health`.
-The remaining operation families are separate controller batches. The current
-Next routes remain compatibility callers until those batches are integrated.
+This is the independent native backend. Its registered intake, registry/officer,
+evidence, spatial and AI modules cover all 132 baseline operations, including
+explicit retired-operation responses. Shared domain logic lives in
+`packages/server`; readable executed SQL lives in `database`.
+
+See [the frontend API guide](../../docs/api/README.md) for models, source datasets,
+startup, scope and actual qualification. `/api/docs` serves loopback Swagger;
+`/api/docs/datasets.json` serves linked source metadata. Documentation does not
+execute writes or establish that source records are installed.
 
 Run `pnpm --filter @ulpin/api start` from the repository after a frozen install.
 It binds `127.0.0.1:3188` by default; `API_PORT` changes only the port. Check
