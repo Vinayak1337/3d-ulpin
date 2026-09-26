@@ -8,7 +8,7 @@ type Json = Record<string, any>;
 const root = settings.repositoryRoot;
 const readJson = (path: string): Json => JSON.parse(readFileSync(join(root, path), 'utf8'));
 const methods = new Set(['get', 'post', 'put', 'patch', 'delete', 'head', 'options']);
-const modules = ['intake', 'register', 'evidence', 'spatial', 'ai'];
+const modules = ['intake', 'register', 'evidence', 'spatial', 'ai', 'ingestion'];
 
 export function datasetCatalogue(): Json { return readJson('docs/api/datasets.json'); }
 
@@ -46,6 +46,12 @@ export function createApiDocument(app: INestApplication): OpenAPIObject {
     inventory.set(`${operation.method} ${operation.path}`, {...operation, disposition: 'retained'});
   }
   const expected = new Set<string>(baseline.operations.map((o: Json) => `${o.method} ${o.path}`));
+  for (const [key, operation] of inventory) {
+    if (!expected.has(key)) {
+      if (operation.disposition !== 'added') throw new Error(`Undeclared additive operation: ${key}`);
+      expected.add(key);
+    }
+  }
   const sources = controllerFiles(join(root, 'apps/api/src')).map(path => ({path: relative(root, path), text: readFileSync(path, 'utf8')}));
   const seen = new Set<string>();
   const schemas = document.components!.schemas ??= {};

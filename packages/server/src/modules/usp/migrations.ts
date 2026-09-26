@@ -1,6 +1,7 @@
 import { sql } from '../../infrastructure/sql-loader';
 import { transaction } from '../../infrastructure/db';
 import { migrateUspGeometryTx } from './geometry-migration';
+import { migrateManualIngestionTx } from './ingestion/migration';
 
 /** Additive metadata beside the existing registry/source/job authorities. */
 export async function migrateUsp() {
@@ -18,5 +19,6 @@ export async function migrateUsp() {
       await client.query(sql('usp.identity.mark'), [identityName]);
     }
     await migrateUspGeometryTx(client);
+    await migrateManualIngestionTx(client);
   });
 }

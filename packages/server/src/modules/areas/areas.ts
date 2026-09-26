@@ -311,6 +311,9 @@ export async function ingestArea(input: {
   worldStatus?: PhysicalFeature["worldStatus"];
   administrativeUnits?: Omit<AdministrativeUnit, "id">[];
   acquisitionId?: string;
+  /** Manual ingestion only: reuse the pinned retained original, never copy or replace it. */
+  retainedOriginal?: { sourceId: string; sourceSha256: string };
+  requireNewArea?: boolean;
   /** Internal derived-source adapter only; original image evidence remains linked. */
   derivedObservation?: {
     sourceRevisionId: string;
@@ -353,6 +356,7 @@ export async function ingestArea(input: {
       format: input.format,
       layer: input.layer ?? null,
       digest,
+      retainedSourceId: input.retainedOriginal?.sourceId,
       mapping: input.mapping,
       worldStatus: input.worldStatus || "observed",
       sourceCrs: input.sourceCrs,
@@ -380,6 +384,7 @@ export async function ingestArea(input: {
             name: input.name,
             areaId: area?.id || null,
             mapping: input.mapping,
+            retainedSourceId: input.retainedOriginal?.sourceId,
             worldStatus: input.worldStatus || "observed",
             sourceCrs: input.sourceCrs,
           }),
@@ -417,8 +422,13 @@ export async function ingestArea(input: {
         ? { reference: { sourceCrs: input.sourceCrs } }
         : {}),
   });
-  const sourceId = randomUUID(),
-    objectKey = `areas/${sourceId}/${digest}`;
+  const retained = input.retainedOriginal
+    ? (await run("SELECT id,sha256,object_key FROM sources WHERE id=$1 FOR SHARE", [input.retainedOriginal.sourceId])).rows[0]
+    : undefined;
+  if (input.retainedOriginal && (!externalClient || !retained || retained.sha256 !== digest || digest !== input.retainedOriginal.sourceSha256))
+    conflict("The retained GIS original does not match this transaction's source pin.");
+  const sourceId = retained?.id || randomUUID(),
+    objectKey = retained?.object_key || `areas/${sourceId}/${digest}`;
   const utilityCandidates = normalized.features.filter(
     (f) => f.kind === "utility" && f.utilityProfile,
   );
@@ -450,8 +460,9 @@ export async function ingestArea(input: {
       )!.utilityProfile;
   }
   return originalAttempt("sources", sourceId, async (remember) => {
-    remember(objectKey);
-    await putOriginal(
+    if (!retained) {
+      remember(objectKey);
+      await putOriginal(
       objectKey,
       input.bytes,
       input.format === "geojson"
@@ -461,7 +472,8 @@ export async function ingestArea(input: {
           : input.format === "shapefile_zip"
             ? "application/zip"
             : "application/json",
-    );
+      );
+    }
     const persist = async (client: PoolClient) => {
       if (input.derivedObservation) {
         const original = (await client.query("SELECT sha256 FROM sources WHERE id=$1 FOR SHARE", [input.derivedObservation.sourceRevisionId])).rows[0];
@@ -492,6 +504,7 @@ export async function ingestArea(input: {
               [seedKey],
             )
           ).rows[0];
+      if (input.requireNewArea && areaRow) conflict("The destination was created before execution; pin its current area explicitly.");
       if (
         areaRow &&
         input.expectedAreaRevision !== undefined &&
@@ -587,7 +600,7 @@ export async function ingestArea(input: {
           site.id,
         ],
       );
-      await client.query(
+      if (!retained) await client.query(
         "INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,$4,$5,$6,$7,$8,'inspected',$9)",
         [
           sourceId,
@@ -818,6 +831,7 @@ export async function ingestArea(input: {
             name: input.name,
             areaId: areaRow.id,
             mapping: input.mapping,
+            retainedSourceId: input.retainedOriginal?.sourceId,
             worldStatus: input.worldStatus || "observed",
             sourceCrs: input.sourceCrs,
           }),

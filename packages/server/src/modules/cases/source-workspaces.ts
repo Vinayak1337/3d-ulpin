@@ -28,17 +28,20 @@ export async function createSourceWorkspace(value: unknown): Promise<ImportPacka
       if (prior.datasetNamespace !== `source-workspace:${digest}`) conflict("This request key already names different source workspace inputs.");
       return prior;
     }
+    const caseId = input.caseId || randomUUID();
+    // Existing cases lock before their destination, matching manual ingestion.
+    // Holding the area first while waiting for this case can deadlock execution.
+    if (input.caseId) {
+      if (!(await client.query("SELECT id FROM cases WHERE id=$1 FOR UPDATE", [caseId])).rowCount) notFound("Workspace not found.");
+      if ((await client.query("SELECT case_id FROM registry_case_feature_mappings WHERE case_id=$1", [caseId])).rowCount) conflict("This case is already associated with a physical record. Open its property workspace.");
+      if ((await client.query("SELECT id FROM import_packages WHERE case_id=$1", [caseId])).rowCount) conflict("This case already has a package. Reopen its retained workspace.");
+    }
     await client.query("SELECT id FROM map_areas WHERE id=$1 FOR SHARE", [input.areaId]);
     const area = await getArea(input.areaId, client);
     if (area.revision !== input.expectedAreaRevision) conflict("The destination changed. Refresh before retaining sources.");
     const frame = (await client.query("SELECT frame FROM registry_sites WHERE id=$1 FOR SHARE", [area.siteId])).rows[0]?.frame;
     if (!frame?.id || frame.horizontalUnit !== "m") throw new AppError(422, "SOURCE_FRAME", "Choose a block with a retained named metre frame.");
-    const caseId = input.caseId || randomUUID();
-    if (input.caseId) {
-      if (!(await client.query("SELECT id FROM cases WHERE id=$1 FOR UPDATE", [caseId])).rowCount) notFound("Workspace not found.");
-      if ((await client.query("SELECT case_id FROM registry_case_feature_mappings WHERE case_id=$1", [caseId])).rowCount) conflict("This case is already associated with a physical record. Open its property workspace.");
-      if ((await client.query("SELECT id FROM import_packages WHERE case_id=$1", [caseId])).rowCount) conflict("This case already has a package. Reopen its retained workspace.");
-    } else await client.query("INSERT INTO cases(id,name,description,frame,site_id) VALUES($1,$2,$3,$4,$5)", [caseId,input.name,"Source workspace. No physical property assigned.",frame,area.siteId]);
+    if (!input.caseId) await client.query("INSERT INTO cases(id,name,description,frame,site_id) VALUES($1,$2,$3,$4,$5)", [caseId,input.name,"Source workspace. No physical property assigned.",frame,area.siteId]);
     const sources = (await client.query("SELECT id,name,profile,inspection FROM sources WHERE case_id=$1 ORDER BY created_at", [caseId])).rows;
     const pkg: ImportPackage = {
       id: randomUUID(), schemaVersion: "ulpin-canonical/2", areaId: area.id, name: input.name,
