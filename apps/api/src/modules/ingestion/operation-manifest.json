@@ -258,7 +258,7 @@
       "responseSchema": "PrivateMvtStatusSchema",
       "responseStatus": 202,
       "transportProfile": "json",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
     },
     {
       "method": "GET",
@@ -271,7 +271,7 @@
       "responseSchema": "PrivateMvtStatusSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
     },
     {
       "method": "GET",
@@ -284,7 +284,7 @@
       "responseSchema": "PrivateMvtManifestResponseSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
     },
     {
       "method": "GET",
@@ -297,7 +297,7 @@
       "responseSchema": "binary",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
     },
     {
       "method": "GET",
@@ -310,7 +310,7 @@
       "responseSchema": "PrivateMvtLookupSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
     }
   ]
 }
