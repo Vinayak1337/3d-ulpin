@@ -58,7 +58,7 @@ async function run(){
     assert.equal((await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count,0);
     await api(path+'/units',409);
     await barrier.query('COMMIT');held=false;
-    await until(async()=>{const count=(await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count;return count>0?count:null;});
+    await until(async()=>{const job=await api(path);if(['failed','stale'].includes(job.status))throw new Error('Initial staging failed: '+job.errorCode);const count=(await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count;return count>0?count:null;});
     await barrier.query('BEGIN');held=true;await barrier.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE',[caseId]);
     receipt.retiredStagingRows=(await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count;
     assert(receipt.retiredStagingRows>0&&receipt.retiredStagingRows<733);await api(path+'/units',409);
