@@ -3,8 +3,8 @@ import styles from './MapWorkspace.module.css';
 
 const STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
 
-/** Readout = scale bar and N only; reference systems on hover (GOAL override 3). */
-export function ScaleAndNorth({ engine, tick, title }: { engine: SceneEngine | null; tick: number; title: string }) {
+/** Readout: reference system, ground and datum when recorded, then the scale bar and north arrow. */
+export function ScaleAndNorth({ engine, tick, title, prefix }: { engine: SceneEngine | null; tick: number; title: string; prefix?: string }) {
   void tick;
   if (!engine) return null;
   const mpp = engine.metresPerPixel();
@@ -14,6 +14,7 @@ export function ScaleAndNorth({ engine, tick, title }: { engine: SceneEngine | n
   const text = metres >= 1000 ? `${metres / 1000} km` : `${metres} m`;
   return (
     <div className={styles.scale} title={title}>
+      {prefix ? <span className="ul-num">{prefix}</span> : null}
       <span className={styles.north} role="img" aria-label={`North arrow, view heading ${Math.round(heading)}°`}>
         <svg viewBox="0 0 16 16" width="16" height="16" style={{ transform: `rotate(${-heading}deg)` }} aria-hidden="true">
           <path d="M8 1.5 12 13 8 10.5 4 13Z" fill="currentColor" />

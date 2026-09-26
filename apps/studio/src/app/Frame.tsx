@@ -1,27 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet, useMatch, useNavigate, useSearchParams } from 'react-router';
-import { CaretDown, Database, MagnifyingGlass, UserCircle } from '@phosphor-icons/react';
+import { Link, NavLink, Outlet, useMatch, useNavigate, useSearchParams } from 'react-router';
+import { CaretDown, FilePlus, MagnifyingGlass, UserCircle } from '@phosphor-icons/react';
 import { Icon } from '@ulpin/ui';
 import { useAreas, useCapabilities, type Area } from '../api/queries';
-import { useLocalSources } from './useResponseOrigins';
 import { readLastArea, writeLastArea } from './lastArea';
 import styles from './Frame.module.css';
 
-/** GOAL override 1: one 56 px header, no scope strip, no language/More/theme menus, no Live pill. */
+/**
+ * One 56 px header with fixed-width slots, so nothing shifts between pages: wordmark · Batches / Map /
+ * Register · search · Add files · area · operator. No theme or language menus (light, English only).
+ */
 export function Frame() {
   return (
     <div className={styles.frame}>
       <a className={styles.skip} href="#main">Skip to content</a>
       <header className={styles.header}>
-        <span className={styles.wordmark}>3D ULPIN <small>Studio</small></span>
+        <Link to="/studio/work" className={styles.wordmark} aria-label="BhuAayam Studio, Batches">BhuAayam <small>Studio</small></Link>
         <nav className={styles.nav} aria-label="Studio">
           <NavLink to="/studio/work">Batches</NavLink>
           <MapNavLink />
           <NavLink to="/studio/registry">Register</NavLink>
         </nav>
         <HeaderSearch />
+        <span className={styles.spacer} />
+        <Link to="/studio/add-files" className={`ul-btn ul-btn--ghost ${styles.addFiles}`}><Icon icon={FilePlus} />Add files</Link>
         <AreaSwitcher />
-        <LocalDataBadge />
         <OperatorMenu />
       </header>
       <main id="main" className={styles.main}>
@@ -32,12 +35,15 @@ export function Frame() {
 }
 
 function MapNavLink() {
+  // NavLink would compute "active" from its own `to`, which is /studio/map until an area is remembered;
+  // a plain link with an explicit current state keeps the tab highlighted on every area page.
   const onArea = useMatch('/studio/areas/:areaId');
-  const lastArea = readLastArea();
+  const onIndex = useMatch('/studio/map');
+  const lastArea = onArea?.params.areaId ?? readLastArea();
   return (
-    <NavLink to={lastArea ? `/studio/areas/${lastArea}` : '/studio/map'} aria-current={onArea ? 'page' : undefined}>
+    <Link to={lastArea ? `/studio/areas/${lastArea}` : '/studio/map'} aria-current={onArea || onIndex ? 'page' : undefined}>
       Map
-    </NavLink>
+    </Link>
   );
 }
 
@@ -76,7 +82,7 @@ function HeaderSearch() {
         id="studio-search"
         ref={inputRef}
         type="search"
-        placeholder="Search batches by name or ID"
+        placeholder="Search batches, buildings, codes"
         value={value}
         maxLength={150}
         onChange={(event) => setValue(event.target.value)}
@@ -87,11 +93,7 @@ function HeaderSearch() {
 }
 
 function areaSubtitle(area: Area): string {
-  const kind = area.dataKind;
-  const classification =
-    kind === 'real' ? 'Observed source' : kind === 'demonstration' ? 'Synthetic source' : kind === 'mixed' ? 'Mixed source'
-      : kind === 'empty' ? 'No features' : 'Unknown source classification';
-  return `Revision ${area.revision} · ${classification}`;
+  return `Revision ${area.revision}${area.featureCount ? ` · ${area.featureCount} features` : ''}`;
 }
 
 function AreaSwitcher() {
@@ -156,18 +158,6 @@ function AreaSwitcher() {
         </ul>
       ) : null}
     </div>
-  );
-}
-
-/** Shown whenever a local route answered (GOAL section 7). Names the local sources on hover. */
-function LocalDataBadge() {
-  const sources = useLocalSources();
-  if (!sources.length) return null;
-  return (
-    <span className={`ul-badge ul-badge--info ${styles.localBadge}`} title={`Answered locally: ${sources.join('; ')}`}>
-      <Icon icon={Database} size={16} />
-      Local data
-    </span>
   );
 }
 

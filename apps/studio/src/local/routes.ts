@@ -16,15 +16,28 @@ export interface RouteEntry {
   mode: RouteMode;
   /** Why the route is local, or which backend card it waits for. */
   reason?: string;
+  /** Not in docs/api/openapi.json yet: a draft contract in @ulpin/api-client/draft. */
+  draft?: boolean;
 }
 
 export const ROUTES: RouteEntry[] = [
   { method: 'GET', path: '/api/v1/health', mode: 'live' },
   { method: 'GET', path: '/api/v1/workspace-capabilities', mode: 'live' },
-  { method: 'GET', path: '/api/v1/work-queue', mode: 'live' },
+  {
+    method: 'GET', path: '/api/v1/work-queue', mode: 'local',
+    reason: 'The linked database holds no current area work; answers with the Lake View batches.',
+  },
+  {
+    method: 'GET', path: '/api/v1/work-board', mode: 'local', draft: true,
+    reason: 'READY-01: stage, next action and readiness per work item.',
+  },
+  {
+    method: 'GET', path: '/api/v1/buildings/:buildingId/ledger', mode: 'local', draft: true,
+    reason: 'READY-01, RIGHTS-01, HISTORY-02: rights, areas, shares, readiness, checks and revisions per building.',
+  },
   {
     method: 'GET', path: '/api/v1/areas', mode: 'local',
-    reason: 'No official-source area is installed in the running API. Answers with the area derived from retained official sources (NYC OTI Bronx crop; Swiss Dwellings site 127 area record).',
+    reason: 'No area is installed in the running API. Answers with Lake View and the areas derived from retained official sources (NYC OTI Bronx crop; Swiss Dwellings site 127).',
   },
   {
     method: 'GET', path: '/api/v1/areas/:areaId/context', mode: 'local',

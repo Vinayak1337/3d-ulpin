@@ -1,0 +1,184 @@
+{
+ "items": [
+  {
+   "id": "1492aa36-e7dc-5971-8b40-d8bfce483f76",
+   "stage": "add_files",
+   "detail": "5 files",
+   "nextAction": {
+    "label": "Review 1 mapping",
+    "target": {
+     "kind": "add-files"
+    }
+   },
+   "readiness": {
+    "met": 3,
+    "unknown": 1,
+    "of": 6
+   }
+  },
+  {
+   "id": "1cde88c3-98c1-5295-b270-520d7ae64274",
+   "stage": "check",
+   "detail": null,
+   "nextAction": {
+    "label": "Resolve 16.3 m³ overlap",
+    "target": {
+     "kind": "finding",
+     "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+     "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "findingId": "f22c3139-c0f2-5544-a191-3263e9ac9993"
+    }
+   },
+   "readiness": {
+    "met": 4,
+    "unknown": 1,
+    "of": 6
+   }
+  },
+  {
+   "id": "d1f16d7d-e833-5be3-9241-48c57f169c30",
+   "stage": "review",
+   "detail": null,
+   "nextAction": {
+    "label": "Review 6 room candidates",
+    "target": {
+     "kind": "review",
+     "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+     "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "levelId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb"
+    }
+   },
+   "readiness": {
+    "met": 3,
+    "unknown": 1,
+    "of": 6
+   }
+  },
+  {
+   "id": "561bb559-c923-540d-9e14-3f2a216e4bb4",
+   "stage": "recorded",
+   "detail": null,
+   "nextAction": {
+    "label": "Assign codes for 6 units",
+    "target": {
+     "kind": "level",
+     "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+     "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "levelId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb"
+    }
+   },
+   "readiness": {
+    "met": 6,
+    "unknown": 0,
+    "of": 6
+   }
+  },
+  {
+   "id": "55a022e4-9cf2-509e-9078-d1f8322a9368",
+   "stage": "check",
+   "detail": null,
+   "nextAction": {
+    "label": "Resolve 3.0 m³ void",
+    "target": {
+     "kind": "finding",
+     "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+     "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "findingId": "4961749b-ddc8-5e56-840c-1b6aa586d479"
+    }
+   },
+   "readiness": {
+    "met": 4,
+    "unknown": 1,
+    "of": 6
+   }
+  },
+  {
+   "id": "ac2fb2d0-4a51-547f-805b-adbde01ab2d5",
+   "stage": "check",
+   "detail": null,
+   "nextAction": {
+    "label": "Explain 0.50 % in shares",
+    "target": {
+     "kind": "register",
+     "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a"
+    }
+   },
+   "readiness": {
+    "met": 5,
+    "unknown": 0,
+    "of": 6
+   }
+  },
+  {
+   "id": "27cf2fef-d84b-5114-9638-523a502e5d25",
+   "stage": "review",
+   "detail": null,
+   "nextAction": {
+    "label": "Review carpet area +3.9 %",
+    "target": {
+     "kind": "space",
+     "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+     "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "levelId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "spaceId": "155764d2-a90b-5a73-b313-65103a4ccd78"
+    }
+   },
+   "readiness": {
+    "met": 5,
+    "unknown": 0,
+    "of": 6
+   }
+  },
+  {
+   "id": "081b3b43-186b-5297-bfca-e3184a103dc0",
+   "stage": "review",
+   "detail": null,
+   "nextAction": {
+    "label": "Confirm B2 levels",
+    "target": {
+     "kind": "review",
+     "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+     "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "levelId": "e11c7076-5b32-5d89-a9d7-6e2cd64b2930"
+    }
+   },
+   "readiness": {
+    "met": 4,
+    "unknown": 2,
+    "of": 6
+   }
+  }
+ ],
+ "counts": [
+  {
+   "key": "imports_running",
+   "value": 2,
+   "label": "imports running",
+   "target": {
+    "kind": "add-files"
+   }
+  },
+  {
+   "key": "findings_open",
+   "value": 5,
+   "label": "findings need review",
+   "target": {
+    "kind": "finding",
+    "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+    "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+    "findingId": "f22c3139-c0f2-5544-a191-3263e9ac9993"
+   }
+  },
+  {
+   "key": "units_ready",
+   "value": 6,
+   "label": "units ready",
+   "target": {
+    "kind": "level",
+    "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+    "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+    "levelId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb"
+   }
+  }
+ ]
+}

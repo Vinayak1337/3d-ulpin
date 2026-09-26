@@ -2,26 +2,28 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { FilePlus } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
-import type { BuildingDetailInput, Pick, SceneEngine, SceneState } from '@ulpin/scene';
-import { Banner, Badge, Icon, Legend, LevelRail, Toast, type LegendSection } from '@ulpin/ui';
-import { useBuildingRegister, type AreaContext } from '../../api/queries';
+import type { BuildingDetailInput, FindingInput, Measurement, MultiPolygon, Pick, SceneEngine, SceneState, SceneTool, StoreyInput, Trench } from '@ulpin/scene';
+import { Badge, Banner, Icon, Legend, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
+import { useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
+import { effectiveColour } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AssignDialog } from '../identity/AssignDialog';
 import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
-import { toFootprints } from './footprints';
-import { LayersPanel } from './LayersPanel';
+import { polygonsOf, storeysFrom, toBase, toFootprints } from './footprints';
+import { LeftPanel } from './LeftPanel';
 import { MapToolbar } from './MapToolbar';
+import { PanelRail } from './PanelRail';
 import { ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
+import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace, tokenColour } from './ledger';
 import { AreaInspector } from './inspector/AreaInspector';
 import { BuildingInspector } from './inspector/BuildingInspector';
 import { FindingsInspector } from './inspector/FindingsInspector';
-import { LevelInspector } from './inspector/LevelInspector';
 import { SpaceInspector } from './inspector/SpaceInspector';
 import { UndergroundInspector } from './inspector/UndergroundInspector';
 import type { Crumb } from './inspector/InspectorShell';
@@ -34,7 +36,7 @@ const ATTRIBUTION: Record<string, string> = {
 
 /**
  * S4–S6, S8: one canvas whose modes (area, building, level, findings, underground) share one selection,
- * one inspector and one set of floating tools. The URL holds the selection.
+ * one inspector and one set of floating tools. The URL holds the selection; the tool is transient.
  */
 export function MapWorkspace({ context }: { context: AreaContext }) {
   const { selection, dispatch, patch } = useSelection();
@@ -45,54 +47,102 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [tick, setTick] = useState(0);
   const [dialog, setDialog] = useState<'assign' | 'card' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [tool, setTool] = useState<SceneTool>('select');
+  const [sectionM, setSectionM] = useState<number | null>(null);
+  const [measurement, setMeasurement] = useState<Measurement | null>(null);
+  const [trench, setTrench] = useState<Trench | null>(null);
 
   const buildings = useMemo(() => context.features.filter((f) => f.kind === 'building'), [context.features]);
-  const footprints = useMemo(() => toFootprints(context.features), [context.features]);
+  const utilities = useMemo(() => context.features.filter((f) => f.kind === 'utility'), [context.features]);
+  const base = useMemo(() => toBase(context.features), [context.features]);
   const feature = selection.buildingId ? buildings.find((b) => b.id === selection.buildingId) ?? null : null;
   const registerQuery = useBuildingRegister(feature?.id);
   const register = registerQuery.data;
+  const ledger = useBuildingLedger(feature?.id).data;
   const model = useMemo(() => (register ? buildingModel(register) : null), [register]);
   const level = model?.levels.find((l) => l.id === selection.levelId) ?? null;
   const space = selection.spaceId ? model?.spaceById.get(selection.spaceId) ?? null : null;
   const spaceWorkflow = useSpaceWorkflow(space?.id ?? null);
-  const verticalReference = context.area.reference?.verticalReference ?? null;
+  const reference = context.area.reference;
+  const groundM = ledger?.groundElevationM ?? null;
+  const colour = effectiveColour(selection);
+  const findings = register?.findings ?? [];
+  const finding = selection.mode === 'findings' ? findings.find((f) => f.id === selection.findingId) ?? findings[0] ?? null : null;
+
+  // The explored building is drawn storey by storey once its levels and ground elevation are known.
+  const storeys = useMemo(() => {
+    const map = new Map<string, StoreyInput[]>();
+    if (feature && model) {
+      const s = storeysFrom(model, groundM, polygonsOf(feature.geometry));
+      if (s) map.set(feature.id, s);
+    }
+    return map;
+  }, [feature, model, groundM]);
+  const footprints = useMemo(() => toFootprints(context.features, storeys), [context.features, storeys]);
 
   const detail = useMemo<BuildingDetailInput | null>(() => {
     if (!model || !feature) return null;
-    const fill = selection.colourBy === 'rights' ? { color: undefined, hatch: true } : {};
+    const rel = (v: number | null) => (v === null ? null : groundM === null ? v : v - groundM);
+    const colours = { exclusive: tokenColour(RIGHTS_TOKEN.exclusive), shared: tokenColour(RIGHTS_TOKEN.shared), public: tokenColour(RIGHTS_TOKEN.public) };
     return {
       buildingId: feature.id,
       levels: model.levels.map((l) => ({
-        id: l.id, order: l.order, lowerM: l.lower, upperM: l.upper,
-        spaces: model.spaces.filter((s) => s.levelId === l.id && s.polygons.length).map((s) => ({ id: s.id, polygons: s.polygons, lowerM: s.lower, upperM: s.upper, fill })),
+        id: l.id, order: l.order, lowerM: rel(l.lower), upperM: rel(l.upper),
+        spaces: model.spaces.filter((s) => s.levelId === l.id && s.polygons.length).map((s) => {
+          const rights = ledgerSpace(ledger, s.id)?.rights ?? 'unknown';
+          const unverified = s.record.geometry ? !s.record.geometry.lowerVerified || !s.record.geometry.upperVerified : false;
+          const fill = colour === 'rights'
+            ? { color: rights === 'unknown' ? tokenColour(RIGHTS_TOKEN.unknown) : colours[rights], hatch: rights === 'unknown' || unverified }
+            : { hatch: unverified };
+          return { id: s.id, polygons: s.polygons, lowerM: rel(s.lower), upperM: rel(s.upper), fill };
+        }),
       })),
     };
-  }, [model, feature, selection.colourBy]);
+  }, [model, feature, ledger, colour, groundM]);
+
+  const findingInput = useMemo<FindingInput | null>(() => {
+    if (!finding) return null;
+    const q = (finding.quantities ?? {}) as Record<string, number>;
+    const polygons = finding.geometry ? polygonsOf(finding.geometry as never) : [];
+    const lower = typeof q.lowerM === 'number' ? q.lowerM - (groundM ?? 0) : 0;
+    const upper = typeof q.upperM === 'number' ? q.upperM - (groundM ?? 0) : lower;
+    return { id: finding.id, polygons: polygons as MultiPolygon, lowerM: lower, upperM: upper, participants: finding.featureIds };
+  }, [finding, groundM]);
 
   const sceneState = useMemo<SceneState>(() => ({
     mode: selection.mode, buildingId: selection.buildingId, levelId: selection.levelId, spaceId: selection.spaceId,
-    render: selection.render, view: selection.view, participants: register?.findings.flatMap((f) => f.featureIds) ?? [],
-  }), [selection, register]);
+    tool, sectionM: tool === 'section' ? sectionM : null, finding: findingInput,
+  }), [selection, tool, sectionM, findingInput]);
+
+  // Parcel code under the selected building (area mode), from the parcel the building is associated with.
+  useEffect(() => {
+    if (!engine) return;
+    const parcelId = register?.parcelIdentifiers[0]?.parcelId;
+    const parcel = parcelId ? context.features.find((f) => f.id === parcelId) : null;
+    const ring = parcel ? polygonsOf(parcel.geometry)[0]?.[0] : null;
+    if (!ring?.length) { engine.setAnchor('parcel', null); return; }
+    const xs = ring.map(([x]) => x), ys = ring.map(([, y]) => y);
+    engine.setAnchor('parcel', [(Math.min(...xs) + Math.max(...xs)) / 2, Math.min(...ys) + 3, 0.3]);
+  }, [engine, register, context.features]);
 
   const onPick = useCallback((pick: Pick) => {
-    if (pick.kind === 'building') dispatch({ type: 'pickBuilding', id: pick.id });
-    else if (pick.kind === 'space') {
-      const target = model?.spaceById.get(pick.id);
-      dispatch({ type: 'pickSpace', id: target?.id ?? pick.id, levelId: pick.levelId });
-    } else dispatch({ type: 'pickGround' });
-  }, [dispatch, model]);
+    if (pick.kind === 'building') dispatch({ type: 'pickBuilding', id: pick.id, levelId: pick.levelId });
+    else if (pick.kind === 'space') dispatch({ type: 'pickSpace', id: pick.id, levelId: pick.levelId });
+    else dispatch({ type: 'pickGround' });
+  }, [dispatch]);
 
-  // Escape unwinds one step (dialogs catch their own Escape first).
+  // Escape: leave a tool first, then unwind the selection one step (dialogs catch their own Escape).
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || dialog) return;
       const target = event.target as HTMLElement | null;
-      if (target?.tagName === 'INPUT') return;
+      if (target?.tagName === 'INPUT' && (target as HTMLInputElement).type !== 'range') return;
+      if (tool !== 'select') { setTool('select'); setMeasurement(null); return; }
       dispatch({ type: 'escape' });
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [dispatch, dialog]);
+  }, [dispatch, dialog, tool]);
 
   useEffect(() => {
     if (!import.meta.env.DEV || !engine) return;
@@ -104,102 +154,183 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   const onView = useCallback(() => setTick((t) => (t + 1) % 1_000_000), []);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
+  const chooseTool = (next: SceneTool) => {
+    if (next === 'section' && feature) setSectionM((m) => m ?? Math.round(((engine?.buildingTopM(feature.id) ?? 20) / 2) * 10) / 10);
+    if (next !== 'measure') setMeasurement(null);
+    setTool(next);
+  };
+  const typicalFloor = () => {
+    const floors = model?.levels.filter((l) => /^F\d/i.test(l.label)) ?? [];
+    return floors.length > 2 ? floors[Math.floor(floors.length / 4)] : floors[0] ?? model?.levels[0];
+  };
 
-  // Crumbs of the selection path (they replace the scope strip's crumbs, GOAL override 1).
-  const crumbs: Crumb[] = [{ label: 'Area', onSelect: () => dispatch({ type: 'selectBuilding', id: null }) }];
+  // Crumbs of the selection path.
+  const crumbs: Crumb[] = [{ label: context.area.name, onSelect: () => dispatch({ type: 'selectBuilding', id: null }) }];
   if (feature) crumbs.push({ label: feature.name, onSelect: selection.mode === 'area' ? undefined : () => dispatch({ type: 'exploreBuilding' }) });
   if (selection.mode === 'level' && level) crumbs.push({ label: level.label, onSelect: space ? () => dispatch({ type: 'selectSpace', id: null }) : undefined });
   if (selection.mode === 'findings') crumbs.push({ label: 'Findings' });
   if (selection.mode === 'underground') crumbs.push({ label: 'Underground' });
 
+  // Labels: selection and hover; the explored level's spaces; findings, utilities and tools.
   const labels: SceneLabel[] = [];
   if (selection.mode === 'area' || selection.mode === 'building') {
     if (feature) labels.push({ id: feature.id, text: feature.name, kind: 'selected' });
+    if (feature && selection.mode === 'area' && register?.parcelIdentifiers[0]) labels.push({ id: 'parcel', text: register.parcelIdentifiers[0].value, kind: 'code' });
     const hover = hovered && hovered !== feature?.id ? buildings.find((b) => b.id === hovered) : null;
     if (hover) labels.push({ id: hover.id, text: hover.name, kind: 'hover' });
   }
   if (selection.mode === 'level' && model) {
     for (const s of model.spaces) {
-      if (s.levelId !== selection.levelId || !s.polygons.length) continue;
-      const selectedHere = s.id === space?.id || s.parentId === space?.id;
-      labels.push({ id: s.id, text: s.shortName, kind: s.id === space?.id ? 'space-selected' : selectedHere ? 'space-selected' : 'space' });
+      if (s.levelId !== selection.levelId || !s.polygons.length || s.parentId) continue;
+      const small = s.use === 'stair' || s.use === 'lift';
+      labels.push({ id: s.id, text: small ? s.name.split(' ').pop()! : s.shortName, kind: s.id === space?.id ? 'space-selected' : 'space' });
     }
   }
-  if (selection.mode === 'underground') labels.push({ id: 'no-survey', text: 'No survey', kind: 'note' });
-
-  const legend: LegendSection[] = [];
-  if (selection.mode === 'level' && selection.colourBy === 'rights' && model) {
-    const count = model.spaces.filter((s) => s.levelId === selection.levelId && s.polygons.length).length;
-    legend.push({ title: 'Rights', items: [{ label: 'Unknown', count, hatch: true, color: 'var(--ui-readiness-unknown)' }] });
+  if (selection.mode === 'findings' && finding && model) {
+    if (findingInput?.polygons.length && typeof finding.volumeM3 === 'number') {
+      labels.push({ id: 'finding', text: `${finding.volumeM3.toFixed(1)} m³ ${finding.code === 'partition_void' ? 'void' : 'overlap'}`, kind: 'critical' });
+    }
+    for (const id of finding.featureIds) { const s = model.spaceById.get(id); if (s) labels.push({ id: s.id, text: s.name, kind: 'hover' }); }
   }
-  if (selection.mode === 'level') legend.push({ title: 'Evidence', items: [{ label: 'Height unknown: drawn flat', hatch: true, color: 'var(--ui-map-building)' }] });
-  if (selection.mode === 'underground') legend.push({ title: 'Utilities', items: [{ label: 'No survey', hatch: true, color: 'var(--ui-readiness-unknown)' }] });
+  if (selection.mode === 'underground') {
+    for (const u of utilities) labels.push({ id: `utility:${u.id}`, text: u.name, kind: 'hover' });
+    if (trench?.ring) {
+      labels.push({ id: 'trench', text: `Trench · ${trench.lengthM?.toFixed(0)} m`, kind: 'selected' });
+      for (let d = 0; d <= 20; d += 5) labels.push({ id: `depth:${d}`, text: `${d} m`, kind: 'tick' });
+    }
+    if (!utilities.length) labels.push({ id: 'no-survey', text: 'No survey', kind: 'hover' });
+  }
+  if (tool === 'measure' && typeof measurement?.distanceM === 'number') labels.push({ id: 'measure-mid', text: `${measurement.distanceM.toFixed(2)} m`, kind: 'selected' });
+  if (tool === 'section' && sectionM !== null) labels.push({ id: 'section', text: `Cut at ${sectionM.toFixed(1)} m`, kind: 'selected' });
+
+  // Legend: only the active Colour by, plus the evidence key on a floor.
+  const legend: LegendSection[] = [];
+  if (selection.mode === 'level' && model && colour === 'rights') {
+    const onLevel = model.spaces.filter((s) => s.levelId === selection.levelId && s.polygons.length);
+    const count = (r: string) => onLevel.filter((s) => (ledgerSpace(ledger, s.id)?.rights ?? 'unknown') === r).length;
+    legend.push({ title: 'Rights', items: (['exclusive', 'shared', 'public', 'unknown'] as const).map((r) => ({ label: RIGHTS_LABEL[r], count: count(r), color: `var(${RIGHTS_TOKEN[r]})`, hatch: r === 'unknown' })) });
+  }
+  if (selection.mode === 'level') {
+    legend.push({ title: 'Evidence', items: [
+      { label: 'Measured or documented', color: 'var(--ui-map-building)' },
+      { label: 'Estimated', color: 'var(--ui-map-building)', hatch: true },
+    ] });
+  }
+  if (selection.mode === 'underground' && colour !== 'none') {
+    legend.push({ title: 'Utilities', items: [
+      ...utilities.map((u) => {
+        const network = String((u.utilityProfile as Record<string, unknown> | undefined)?.network ?? '');
+        return { label: u.name, color: `var(${network === 'metro' ? '--ui-rights-public' : `--ui-utility-${network || 'water'}`})` };
+      }),
+      { label: 'No survey', color: 'var(--ui-readiness-unknown)', hatch: true },
+    ] });
+  }
+  if (selection.mode === 'findings' && findings.length) {
+    const blocking = findings.filter((f) => f.category === 'blocking').length;
+    legend.push({ title: 'Findings', items: [
+      { label: 'Blocking', count: blocking, color: 'var(--ui-mark-critical)', hatch: true },
+      { label: 'Needs review', count: findings.length - blocking, color: 'var(--ui-mark-warning)' },
+    ] });
+  }
 
   const showRail = (selection.mode === 'building' || selection.mode === 'level') && Boolean(model?.levels.length);
   const noFloors = selection.mode === 'building' && register && !model?.levels.length;
-  const namespaces = [...new Set(context.features.map((f) => f.datasetNamespace))];
-  const reference = context.area.reference;
+  const namespaces = [...new Set(context.features.map((f) => f.datasetNamespace))].filter((ns) => ATTRIBUTION[ns]);
+  const readout = [reference?.sourceCrs, groundM !== null ? `${groundM.toFixed(2)} m` : null, ledger?.siteDatum].filter(Boolean).join(' · ');
   const readoutTitle = reference
     ? `Horizontal: ${reference.analysisCrs} (source ${reference.sourceCrs}). Heights: ${reference.verticalReference}.`
     : 'No reference system: this area stays in its source’s local frame.';
+  const hint = selection.mode === 'underground' && !trench?.ring ? (trench?.points.length === 1 ? 'Click the other end of the trench' : 'Click two points on the ground to draw a trench')
+    : tool === 'measure' ? (measurement?.points.length === 1 ? 'Click the second point' : 'Click two points to measure')
+    : selection.mode === 'area' && !feature ? 'Select a building'
+      : selection.mode === 'building' && model?.levels.length ? 'Select a floor'
+        : selection.mode === 'level' && !space ? 'Select a unit' : null;
 
   let inspector;
-  if (selection.mode === 'underground' && feature) inspector = <UndergroundInspector />;
-  else if (selection.mode === 'findings' && feature) inspector = <FindingsInspector register={register} crumbs={crumbs} />;
-  else if (selection.mode === 'level' && space && model && register && feature) {
+  if (selection.mode === 'underground' && feature) inspector = <UndergroundInspector utilities={utilities} trench={trench} onClear={() => engine?.clearTrench()} />;
+  else if (selection.mode === 'findings' && feature) {
+    inspector = <FindingsInspector register={register} ledger={ledger} findingId={finding?.id ?? null} buildingId={feature.id} crumbs={crumbs}
+      onOpenSpace={(id) => { const s = model?.spaceById.get(id); if (s?.levelId) dispatch({ type: 'pickSpace', id, levelId: s.levelId }); }} />;
+  } else if (selection.mode === 'level' && space && model && register && feature) {
     inspector = (
-      <SpaceInspector space={space} level={level} model={model} register={register} buildingId={feature.id} crumbs={crumbs}
-        areaUnitStated={Boolean(reference)} onSelectSpace={(id) => dispatch({ type: 'selectSpace', id })}
-        onAssign={() => setDialog('assign')} onCard={() => setDialog('card')} />
+      <SpaceInspector space={space} level={level} model={model} register={register} ledger={ledger} buildingId={feature.id} crumbs={crumbs}
+        datum={ledger?.siteDatum ?? null} onSelectSpace={(id) => dispatch({ type: 'selectSpace', id })}
+        onAssign={() => setDialog('assign')} onCard={() => setDialog('card')} onFinding={(id) => dispatch({ type: 'openFindings', findingId: id })} />
     );
-  } else if (selection.mode === 'level' && level && model) {
-    inspector = <LevelInspector level={level} model={model} crumbs={crumbs} verticalReference={verticalReference} onSelectSpace={(id) => dispatch({ type: 'selectSpace', id })} />;
   } else if (feature) {
     inspector = (
-      <BuildingInspector feature={feature} register={register} model={model} registerPending={registerQuery.isPending} crumbs={crumbs}
-        onExplore={() => {
-          const first = model?.levels[0];
-          if (first) dispatch({ type: 'selectLevel', id: first.id });
-        }}
-        onFindings={() => dispatch({ type: 'openFindings' })} />
+      <BuildingInspector feature={feature} register={register} model={model} ledger={ledger} registerPending={registerQuery.isPending} crumbs={crumbs}
+        exploring={selection.mode === 'level'}
+        onExplore={() => { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }}
+        onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })} />
     );
   } else inspector = <AreaInspector area={context.area} buildings={buildings} onSelect={(id) => dispatch({ type: 'selectBuilding', id })} />;
+
+  const tray = packageId ? <ImportTray packageId={packageId} /> : selection.mode === 'findings' && findings.length ? (
+    <div className={`ul-panel ${styles.findingTray}`} role="listbox" aria-label="Findings">
+      {findings.map((f) => (
+        <button key={f.id} type="button" role="option" aria-selected={f.id === finding?.id} onClick={() => dispatch({ type: 'openFindings', findingId: f.id })}>
+          <SeverityBadge severity={f.category === 'blocking' ? 'blocking' : 'needs-review'} />
+          <span>{f.message}</span>
+        </button>
+      ))}
+    </div>
+  ) : null;
 
   return (
     <EvidenceProvider snapshot={snapshot}>
       <div className={`${styles.workspace} ${selection.panel ? styles.withPanel : ''}`}>
-        {selection.panel === 'layers' ? (
-          <LayersPanel
-            colourBy={selection.colourBy}
-            onColourBy={(colourBy) => patch({ colourBy })}
+        <PanelRail panel={selection.panel} onPanel={(panel) => patch({ panel })}
+          counts={{ checks: ledger?.checks.filter((c) => c.state === 'blocking' || c.state === 'needs_review').length }} />
+        {selection.panel ? (
+          <LeftPanel panel={selection.panel} selection={selection} context={context} register={register} model={model} ledger={ledger}
             onClose={() => patch({ panel: null })}
-            baseLayers={[`${buildings.length} building footprints`]}
-            canColourRights={selection.mode === 'level'}
-          />
+            onColour={(c) => {
+              patch({ colourBy: c });
+              if (c === 'rights' && selection.mode !== 'level') { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }
+              if (c === 'utilities' && feature && selection.mode !== 'underground') dispatch({ type: 'openUnderground' });
+            }}
+            onSelectLevel={(id) => dispatch({ type: 'selectLevel', id })}
+            onSelectSpace={(id, levelId) => dispatch({ type: 'pickSpace', id, levelId })}
+            onOpenFinding={(id) => dispatch({ type: 'openFindings', findingId: id })} />
         ) : null}
 
-        <section className={`${styles.canvasColumn} ${packageId ? styles.withTray : ''}`} aria-label="Map">
+        <section className={`${styles.canvasColumn} ${tray ? styles.withTray : ''}`} aria-label="Map">
           <div className={styles.canvasWrap}>
             <SceneView
               className={styles.canvas}
+              base={base}
               buildings={footprints}
               detail={detail}
               state={sceneState}
               onPick={onPick}
               onHover={(pick) => setHovered(pick.kind === 'ground' ? null : pick.id)}
               onView={onView}
+              onMeasure={setMeasurement}
+              onTrench={setTrench}
               onReady={setEngine}
               label={`3D map of ${context.area.name}. The inspector lists the same buildings and spaces.`}
             />
-            <MapToolbar
-              selection={selection}
-              onLayers={() => patch({ panel: selection.panel ? null : 'layers' })}
-              onSelectTool={() => { if (selection.mode === 'underground') dispatch({ type: 'leaveMode' }); }}
-              onUnderground={() => dispatch(selection.mode === 'underground' ? { type: 'leaveMode' } : { type: 'openUnderground' })}
-              onView={(view) => patch({ view })}
-              onRender={(render) => patch({ render })}
-              onReset={() => engine?.resetCamera()}
-            />
+            <div className={styles.topLeft}>
+              <MapToolbar tool={tool} underground={selection.mode === 'underground'} canUnderground={Boolean(feature)} canSection={Boolean(feature)}
+                onTool={chooseTool}
+                onUnderground={() => { setTool('select'); dispatch(selection.mode === 'underground' ? { type: 'leaveMode' } : { type: 'openUnderground' }); }}
+                onReset={() => engine?.resetCamera()} />
+              {tool === 'section' && feature && sectionM !== null ? (
+                <label className={`ul-float ${styles.toolPanel}`}>
+                  <span>Cut at <b className="ul-num">{sectionM.toFixed(1)} m</b> above ground</span>
+                  <input type="range" min={0.5} max={engine?.buildingTopM(feature.id) ?? 30} step={0.1} value={sectionM}
+                    onChange={(e) => setSectionM(Number(e.target.value))} aria-label="Section height" />
+                </label>
+              ) : null}
+              {tool === 'measure' && typeof measurement?.distanceM === 'number' ? (
+                <div className={`ul-float ${styles.toolPanel}`} role="status">
+                  <span>Distance <b className="ul-num">{measurement.distanceM.toFixed(2)} m</b></span>
+                  <span className="ul-muted ul-num">Horizontal {measurement.horizontalM!.toFixed(2)} m · Vertical {Math.abs(measurement.verticalM!).toFixed(2)} m</span>
+                  <button type="button" className="ul-btn ul-btn--ghost" onClick={() => engine?.clearMeasure()}>Clear</button>
+                </div>
+              ) : null}
+            </div>
             {!reference ? (
               <div className={styles.banner}>
                 <Banner tone="info">This area stays in its source’s local frame: the source states no coordinate reference system, so it is not placed on the map.</Banner>
@@ -209,7 +340,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               <div className={styles.rail}>
                 <LevelRail
                   levels={model.levels.map((l) => ({ id: l.id, label: l.label, lower: l.lower, estimated: l.estimated, belowGround: l.belowGround }))}
-                  reference={verticalReference}
+                  reference={ledger?.siteDatum ?? reference?.verticalReference ?? null}
+                  ground={groundM}
                   selected={selection.levelId}
                   onSelect={(id) => dispatch({ type: 'selectLevel', id })}
                 />
@@ -225,10 +357,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
             ) : null}
             <SceneLabels engine={engine} labels={labels} tick={tick} />
             {legend.length ? <div className={styles.legend}><Legend sections={legend} /></div> : null}
-            <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} /></div>
-            <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns] ?? ns).join(' · ')}</p>
+            {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
+            <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} /></div>
+            {namespaces.length ? <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns]).join(' · ')}</p> : null}
           </div>
-          {packageId ? <div className={styles.tray}><ImportTray packageId={packageId} /></div> : null}
+          {tray ? <div className={styles.tray}>{tray}</div> : null}
         </section>
 
         <div className={styles.inspectorColumn}>{inspector}</div>

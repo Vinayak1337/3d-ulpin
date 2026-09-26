@@ -1,11 +1,14 @@
 /**
  * The Studio selection: {mode, building, level, space, finding, view, render, colourBy, panel}
  * (mockup reference "Interaction model"). The URL is its source of truth (H99), so saved links reopen
- * the same view: /studio/areas/:areaId?feature=&mode=&level=&record=&finding=&view=&render=&colour=&panel=
+ * the same view: /studio/areas/:areaId?feature=&mode=&level=&record=&finding=&colour=&panel=
+ * (older links with view= and render= still open; those parameters are ignored).
  */
 export type MapMode = 'area' | 'building' | 'level' | 'findings' | 'underground';
-export type ColourBy = 'none' | 'rights';
-export type LeftPanel = 'layers' | null;
+/** `auto` follows the mode: Rights on a level, Utilities underground, None elsewhere. */
+export type ColourBy = 'auto' | 'none' | 'rights' | 'utilities';
+export type LeftPanel = 'layers' | 'spaces' | 'sources' | 'checks' | null;
+const PANELS: Exclude<LeftPanel, null>[] = ['layers', 'spaces', 'sources', 'checks'];
 
 export interface Selection {
   mode: MapMode;
@@ -13,8 +16,6 @@ export interface Selection {
   levelId: string | null;
   spaceId: string | null;
   findingId: string | null;
-  view: '3d' | '2d';
-  render: 'model' | 'volumes';
   colourBy: ColourBy;
   panel: LeftPanel;
 }
@@ -34,10 +35,8 @@ export function readSelection(params: URLSearchParams): Selection {
     levelId: mode === 'level' ? levelId : null,
     spaceId: mode === 'level' ? params.get('record') : null,
     findingId: mode === 'findings' ? params.get('finding') : null,
-    view: params.get('view') === '2d' ? '2d' : '3d',
-    render: params.get('render') === 'volumes' ? 'volumes' : 'model',
-    colourBy: params.get('colour') === 'rights' ? 'rights' : 'none',
-    panel: params.get('panel') === 'layers' ? 'layers' : null,
+    colourBy: (['none', 'rights', 'utilities'] as const).find((c) => c === params.get('colour')) ?? 'auto',
+    panel: PANELS.find((p) => p === params.get('panel')) ?? null,
   };
 }
 
@@ -51,15 +50,15 @@ export function writeSelection(selection: Selection, base = new URLSearchParams(
   set('level', selection.levelId);
   set('record', selection.spaceId);
   set('finding', selection.findingId);
-  set('view', selection.view, '3d');
-  set('render', selection.render, 'model');
-  set('colour', selection.colourBy, 'none');
+  params.delete('view');
+  params.delete('render');
+  set('colour', selection.colourBy, 'auto');
   set('panel', selection.panel);
   return params;
 }
 
 export type SelectionEvent =
-  | { type: 'pickBuilding'; id: string }
+  | { type: 'pickBuilding'; id: string; levelId?: string }
   | { type: 'pickSpace'; id: string; levelId: string }
   | { type: 'pickGround' }
   | { type: 'selectBuilding'; id: string | null }
@@ -71,12 +70,20 @@ export type SelectionEvent =
   | { type: 'leaveMode' }
   | { type: 'escape' };
 
+/** The Colour by in effect: `auto` follows the mode. */
+export function effectiveColour(s: Selection): Exclude<ColourBy, 'auto'> {
+  if (s.colourBy !== 'auto') return s.colourBy;
+  return s.mode === 'level' ? 'rights' : s.mode === 'underground' ? 'utilities' : 'none';
+}
+
 /** The interaction table as a pure transition, so the map, lists, inspector and keyboard agree. */
 export function transition(s: Selection, event: SelectionEvent): Selection {
   const clear = { levelId: null, spaceId: null, findingId: null };
   switch (event.type) {
     case 'pickBuilding':
       if (s.mode === 'area' && s.buildingId === event.id) return { ...s, mode: 'building', ...clear };
+      // In building mode a click on one of its storeys opens that floor.
+      if (s.mode === 'building' && s.buildingId === event.id && event.levelId) return { ...s, mode: 'level', levelId: event.levelId, spaceId: null, findingId: null };
       if (s.mode === 'underground' || s.mode === 'findings') return { ...s, buildingId: event.id, ...clear, findingId: null };
       return { ...s, mode: s.mode === 'area' ? 'area' : 'building', buildingId: event.id, ...clear };
     case 'pickSpace':

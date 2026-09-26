@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { api, unwrap, type GetResponse } from '@ulpin/api-client';
+import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
+import type { BuildingLedger, WorkBoard } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
@@ -19,7 +20,31 @@ export const queryKeys = {
   areaContext: (areaId: string) => ['areas', areaId, 'context'] as const,
   capabilities: ['workspace-capabilities'] as const,
   register: (buildingId: string) => ['buildings', buildingId, 'register'] as const,
+  ledger: (buildingId: string) => ['buildings', buildingId, 'ledger'] as const,
+  workBoard: ['work-board'] as const,
 };
+
+/** Draft routes (not in the OpenAPI document yet): same client conventions, typed by the draft contract. */
+async function getDraft<T>(path: string): Promise<T | null> {
+  const response = await globalThis.fetch(path, { headers: { accept: 'application/json' } });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new ApiError(response.status, path, await response.json().catch(() => null));
+  return (await response.json()) as T;
+}
+
+/** Rights, areas, shares, readiness, checks and history of a building. Null when the backend has none. */
+export function useBuildingLedger(buildingId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.ledger(buildingId ?? ''),
+    enabled: Boolean(buildingId),
+    queryFn: () => getDraft<BuildingLedger>(`/api/v1/buildings/${buildingId}/ledger`),
+    staleTime: 60_000,
+  });
+}
+
+export function useWorkBoard() {
+  return useQuery({ queryKey: queryKeys.workBoard, queryFn: () => getDraft<WorkBoard>('/api/v1/work-board'), staleTime: 30_000 });
+}
 
 export function useWorkQueue(status: WorkStatusFilter, q: string, page: number) {
   return useQuery({

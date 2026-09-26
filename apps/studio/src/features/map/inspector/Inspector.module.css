@@ -30,3 +30,9 @@
 @media (prefers-reduced-motion: no-preference) {
   .rekey { animation: ul-in 220ms cubic-bezier(.23, 1, .32, 1); }
 }
+.list button:disabled { cursor: default; }
+.checkText { display: grid; font-size: 13px; line-height: 18px; }
+.checkText b { font-weight: 500; }
+.rightsList { display: grid; gap: 6px; }
+.rightsRow { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; align-items: center; gap: 10px; font-size: 13px; }
+.findingWrap { display: grid; gap: var(--ui-space-3); align-content: start; overflow: auto; min-height: 0; }

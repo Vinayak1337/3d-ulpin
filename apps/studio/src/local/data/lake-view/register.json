@@ -1,0 +1,8592 @@
+{
+ "schemaVersion": "ulpin-officer-export/1",
+ "exportedAt": "2026-09-24T14:10:00.000+05:30",
+ "property": {
+  "id": "e8e17f26-e098-5caa-92e9-49948df1816a",
+  "identifier": "MH2507A1B3C4D5/S01",
+  "ulpin3d": "MH2507A1B3C4D5/S01",
+  "name": "Lake View Residence",
+  "revision": 3,
+  "geometryRole": "footprint",
+  "worldStatus": "observed",
+  "geometry": {
+   "type": "Polygon",
+   "coordinates": [
+    [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ]
+   ]
+  },
+  "geographicGeometry": {
+   "type": "Polygon",
+   "coordinates": [
+    [
+     [
+      73.798277908,
+      18.503069535
+     ],
+     [
+      73.798562092,
+      18.503069535
+     ],
+     [
+      73.798562092,
+      18.503250465
+     ],
+     [
+      73.798277908,
+      18.503250465
+     ],
+     [
+      73.798277908,
+      18.503069535
+     ]
+    ]
+   ]
+  },
+  "height": {
+   "state": "reviewed",
+   "value": 28.4,
+   "unit": "m",
+   "meaning": "roof parapet above ground",
+   "reference": "site datum SD-1 (m)",
+   "evidence": [
+    {
+     "sourceRevisionId": "6c9caabe-9861-5299-8677-acfddbfb2d4f",
+     "row": 2
+    }
+   ]
+  }
+ },
+ "area": {
+  "id": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+  "siteId": "e6b9b9fc-1d09-5771-bbbe-ca1197f1b336",
+  "name": "Lake View",
+  "revision": 3,
+  "reference": {
+   "sourceCrs": "EPSG:32643",
+   "analysisCrs": "EPSG:32643 local metres from 373420 E, 2046180 N",
+   "origin": [
+    373420,
+    2046180
+   ],
+   "anchor": [
+    73.79842,
+    18.50316
+   ],
+   "transformVersion": "utm43n-local/1",
+   "verticalReference": "Site datum SD-1; ground 212.40 m"
+  },
+  "extent": [
+   -150,
+   -120,
+   128,
+   100
+  ],
+  "geographicExtent": [
+   73.79699908,
+   18.50207442,
+   73.799632518,
+   18.50406465
+  ],
+  "administrativeUnits": [
+   {
+    "id": "ff3637dd-891c-5f2e-bfab-413bce48e443",
+    "kind": "village",
+    "name": "Lake View",
+    "code": "556734",
+    "authority": "Revenue department"
+   },
+   {
+    "id": "3cefe2b7-4df1-561f-b735-9539730ea166",
+    "kind": "district",
+    "name": "Pune",
+    "code": "521",
+    "authority": "Revenue department"
+   }
+  ],
+  "dataKind": "demonstration",
+  "featureCount": 54
+ },
+ "associations": [
+  {
+   "id": "cd720140-7f0e-5fbe-9773-19d2068ed76a",
+   "revision": 1,
+   "fromId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+   "toId": "ec6d379a-588b-5d72-a6d9-a55873d86813",
+   "relationship": "on_parcel",
+   "status": "reviewed",
+   "evidence": [],
+   "reason": "Footprint lies within the parcel boundary",
+   "actor": "R. Iyer",
+   "updatedAt": "2026-09-24T14:10:00.000+05:30",
+   "fromRevision": 3,
+   "toRevision": 1
+  }
+ ],
+ "parcelIdentifiers": [
+  {
+   "parcelId": "ec6d379a-588b-5d72-a6d9-a55873d86813",
+   "scheme": "ULPIN",
+   "value": "MH2507A1B3C4D5",
+   "issuer": "Land records department",
+   "evidence": {
+    "sourceRevisionId": "bc50254a-d8cf-5d7b-bac3-f97dab22c225",
+    "locator": "fid 118"
+   }
+  }
+ ],
+ "register": [
+  {
+   "id": "b60c6f07-1328-51a4-9e01-93bd339f9e85",
+   "identifier": "MH2507A1B3C4D5/S01/Roof",
+   "ulpin3d": "MH2507A1B3C4D5/S01/Roof",
+   "name": "Roof",
+   "kind": "floor",
+   "revision": 3,
+   "use": "roof",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "b60c6f07-1328-51a4-9e01-93bd339f9e85",
+    "alias": "Roof",
+    "name": "Roof",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 239.8,
+    "upper": 240.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 2"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 2"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "Roof"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 2"
+    }
+   ]
+  },
+  {
+   "id": "7fb10f23-af7d-5df1-a66f-695b6f6008f1",
+   "identifier": "MH2507A1B3C4D5/S01/Roof/Roof-terrace",
+   "ulpin3d": "MH2507A1B3C4D5/S01/Roof/Roof-terrace",
+   "name": "Roof terrace",
+   "kind": "space",
+   "revision": 3,
+   "use": "terrace",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "7fb10f23-af7d-5df1-a66f-695b6f6008f1",
+    "alias": "Roof terrace",
+    "name": "Roof terrace",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 239.8,
+    "upper": 242.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 1"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 2"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "Roof",
+    "area": 590.04,
+    "height": 3,
+    "volume": 1770.12
+   },
+   "links": [
+    {
+     "targetId": "b60c6f07-1328-51a4-9e01-93bd339f9e85",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Roof terrace"
+    }
+   ]
+  },
+  {
+   "id": "6371d7b6-0df5-56f5-8be8-387762d25072",
+   "identifier": "MH2507A1B3C4D5/S01/F8",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8",
+   "name": "F8",
+   "kind": "floor",
+   "revision": 3,
+   "use": "residential floor",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "6371d7b6-0df5-56f5-8be8-387762d25072",
+    "alias": "F8",
+    "name": "F8",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 3"
+    }
+   ]
+  },
+  {
+   "id": "c72fee7d-cbac-503c-94b1-b9102ca324da",
+   "identifier": "MH2507A1B3C4D5/S01/F8/Flat-801",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8/Flat-801",
+   "name": "Flat 801",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     1.6
+    ],
+    [
+     -5.1,
+     1.6
+    ],
+    [
+     -5.1,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "c72fee7d-cbac-503c-94b1-b9102ca324da",
+    "alias": "Flat 801",
+    "name": "Flat 801",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      1.6
+     ],
+     [
+      -5.1,
+      1.6
+     ],
+     [
+      -5.1,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      1.6
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 3"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "6371d7b6-0df5-56f5-8be8-387762d25072",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 801"
+    }
+   ]
+  },
+  {
+   "id": "8317504c-d04e-52cc-8616-7e15131fb041",
+   "identifier": "MH2507A1B3C4D5/S01/F8/Flat-802",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8/Flat-802",
+   "name": "Flat 802",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     1.6
+    ],
+    [
+     4.9,
+     1.6
+    ],
+    [
+     4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "8317504c-d04e-52cc-8616-7e15131fb041",
+    "alias": "Flat 802",
+    "name": "Flat 802",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      1.6
+     ],
+     [
+      4.9,
+      1.6
+     ],
+     [
+      4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      1.6
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 4"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "6371d7b6-0df5-56f5-8be8-387762d25072",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 802"
+    }
+   ]
+  },
+  {
+   "id": "531e4467-5e5f-5080-aead-0b805fd0dc3b",
+   "identifier": "MH2507A1B3C4D5/S01/F8/Flat-803",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8/Flat-803",
+   "name": "Flat 803",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     1.6
+    ],
+    [
+     14.9,
+     1.6
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     5.1,
+     9.9
+    ],
+    [
+     5.1,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "531e4467-5e5f-5080-aead-0b805fd0dc3b",
+    "alias": "Flat 803",
+    "name": "Flat 803",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      1.6
+     ],
+     [
+      14.9,
+      1.6
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      5.1,
+      9.9
+     ],
+     [
+      5.1,
+      1.6
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 5"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "6371d7b6-0df5-56f5-8be8-387762d25072",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 803"
+    }
+   ]
+  },
+  {
+   "id": "9ee7950f-e54d-536b-8981-ea918fe00922",
+   "identifier": "MH2507A1B3C4D5/S01/F8/Flat-804",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8/Flat-804",
+   "name": "Flat 804",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     -5.1,
+     -9.9
+    ],
+    [
+     -5.1,
+     -1.6
+    ],
+    [
+     -14.9,
+     -1.6
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "9ee7950f-e54d-536b-8981-ea918fe00922",
+    "alias": "Flat 804",
+    "name": "Flat 804",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      -5.1,
+      -9.9
+     ],
+     [
+      -5.1,
+      -1.6
+     ],
+     [
+      -14.9,
+      -1.6
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 6"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "6371d7b6-0df5-56f5-8be8-387762d25072",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 804"
+    }
+   ]
+  },
+  {
+   "id": "dfb265e5-0797-5249-aa39-2f7191c3b54a",
+   "identifier": "MH2507A1B3C4D5/S01/F8/Flat-805",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8/Flat-805",
+   "name": "Flat 805",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "dfb265e5-0797-5249-aa39-2f7191c3b54a",
+    "alias": "Flat 805",
+    "name": "Flat 805",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -9.9
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 7"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "6371d7b6-0df5-56f5-8be8-387762d25072",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 805"
+    }
+   ]
+  },
+  {
+   "id": "ad7b8d57-e808-5380-b0db-995c409f300d",
+   "identifier": "MH2507A1B3C4D5/S01/F8/Flat-806",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8/Flat-806",
+   "name": "Flat 806",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -1.6
+    ],
+    [
+     5.1,
+     -1.6
+    ],
+    [
+     5.1,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "ad7b8d57-e808-5380-b0db-995c409f300d",
+    "alias": "Flat 806",
+    "name": "Flat 806",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -1.6
+     ],
+     [
+      5.1,
+      -1.6
+     ],
+     [
+      5.1,
+      -9.9
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 8"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "6371d7b6-0df5-56f5-8be8-387762d25072",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 806"
+    }
+   ]
+  },
+  {
+   "id": "bc42c0f5-cd55-511b-9cb6-4cadaaa97159",
+   "identifier": "MH2507A1B3C4D5/S01/F8/Stair-S1-F8",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8/Stair-S1-F8",
+   "name": "Stair S1",
+   "kind": "space",
+   "revision": 3,
+   "use": "stair",
+   "footprint": [
+    [
+     -14.9,
+     -1.4
+    ],
+    [
+     -11,
+     -1.4
+    ],
+    [
+     -11,
+     1.4
+    ],
+    [
+     -14.9,
+     1.4
+    ],
+    [
+     -14.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "bc42c0f5-cd55-511b-9cb6-4cadaaa97159",
+    "alias": "Stair S1 F8",
+    "name": "Stair S1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -1.4
+     ],
+     [
+      -11,
+      -1.4
+     ],
+     [
+      -11,
+      1.4
+     ],
+     [
+      -14.9,
+      1.4
+     ],
+     [
+      -14.9,
+      -1.4
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 9"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8",
+    "area": 10.92,
+    "height": 3,
+    "volume": 32.76
+   },
+   "links": [
+    {
+     "targetId": "6371d7b6-0df5-56f5-8be8-387762d25072",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Stair S1 F8"
+    }
+   ]
+  },
+  {
+   "id": "a6737bce-e95b-5a27-b57f-5ca0d545b83b",
+   "identifier": "MH2507A1B3C4D5/S01/F8/Lift-L1-F8",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8/Lift-L1-F8",
+   "name": "Lift L1",
+   "kind": "space",
+   "revision": 3,
+   "use": "lift",
+   "footprint": [
+    [
+     -10.9,
+     -1.4
+    ],
+    [
+     -8.5,
+     -1.4
+    ],
+    [
+     -8.5,
+     1.4
+    ],
+    [
+     -10.9,
+     1.4
+    ],
+    [
+     -10.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "a6737bce-e95b-5a27-b57f-5ca0d545b83b",
+    "alias": "Lift L1 F8",
+    "name": "Lift L1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -10.9,
+      -1.4
+     ],
+     [
+      -8.5,
+      -1.4
+     ],
+     [
+      -8.5,
+      1.4
+     ],
+     [
+      -10.9,
+      1.4
+     ],
+     [
+      -10.9,
+      -1.4
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 10"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8",
+    "area": 6.72,
+    "height": 3,
+    "volume": 20.16
+   },
+   "links": [
+    {
+     "targetId": "6371d7b6-0df5-56f5-8be8-387762d25072",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Lift L1 F8"
+    }
+   ]
+  },
+  {
+   "id": "c3c0e0fb-6998-5495-80ea-5ceda411e6d8",
+   "identifier": "MH2507A1B3C4D5/S01/F8/Corridor-F8",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F8/Corridor-F8",
+   "name": "Corridor",
+   "kind": "space",
+   "revision": 3,
+   "use": "corridor",
+   "footprint": [
+    [
+     -8.4,
+     -1.4
+    ],
+    [
+     14.544,
+     -1.4
+    ],
+    [
+     14.544,
+     1.4
+    ],
+    [
+     -8.4,
+     1.4
+    ],
+    [
+     -8.4,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "c3c0e0fb-6998-5495-80ea-5ceda411e6d8",
+    "alias": "Corridor F8",
+    "name": "Corridor",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -8.4,
+      -1.4
+     ],
+     [
+      14.544,
+      -1.4
+     ],
+     [
+      14.544,
+      1.4
+     ],
+     [
+      -8.4,
+      1.4
+     ],
+     [
+      -8.4,
+      -1.4
+     ]
+    ],
+    "lower": 236.8,
+    "upper": 239.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 11"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 3"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F8",
+    "area": 64.24,
+    "height": 3,
+    "volume": 192.73
+   },
+   "links": [
+    {
+     "targetId": "6371d7b6-0df5-56f5-8be8-387762d25072",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Corridor F8"
+    }
+   ]
+  },
+  {
+   "id": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+   "identifier": "MH2507A1B3C4D5/S01/F7",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7",
+   "name": "F7",
+   "kind": "floor",
+   "revision": 3,
+   "use": "residential floor",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+    "alias": "F7",
+    "name": "F7",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 4"
+    }
+   ]
+  },
+  {
+   "id": "6ea4f525-c7c8-573c-9cca-8764f65c14c2",
+   "identifier": "MH2507A1B3C4D5/S01/F7/Flat-701",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7/Flat-701",
+   "name": "Flat 701",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     1.6
+    ],
+    [
+     -5.1,
+     1.6
+    ],
+    [
+     -5.1,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "6ea4f525-c7c8-573c-9cca-8764f65c14c2",
+    "alias": "Flat 701",
+    "name": "Flat 701",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      1.6
+     ],
+     [
+      -5.1,
+      1.6
+     ],
+     [
+      -5.1,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      1.6
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.3 · r2"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.3 · r2"
+    }
+   ]
+  },
+  {
+   "id": "a0446c20-bc3c-50c5-b14c-3c185080dc1d",
+   "identifier": "MH2507A1B3C4D5/S01/F7/Flat-702",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7/Flat-702",
+   "name": "Flat 702",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     1.6
+    ],
+    [
+     4.9,
+     1.6
+    ],
+    [
+     4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "a0446c20-bc3c-50c5-b14c-3c185080dc1d",
+    "alias": "Flat 702",
+    "name": "Flat 702",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      1.6
+     ],
+     [
+      4.9,
+      1.6
+     ],
+     [
+      4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      1.6
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.3 · r2"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.3 · r2"
+    }
+   ]
+  },
+  {
+   "id": "484df396-6206-51aa-bf31-c9cd767489b6",
+   "identifier": "MH2507A1B3C4D5/S01/F7/Flat-703",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7/Flat-703",
+   "name": "Flat 703",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     1.6
+    ],
+    [
+     14.9,
+     1.6
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     5.1,
+     9.9
+    ],
+    [
+     5.1,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "484df396-6206-51aa-bf31-c9cd767489b6",
+    "alias": "Flat 703",
+    "name": "Flat 703",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      1.6
+     ],
+     [
+      14.9,
+      1.6
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      5.1,
+      9.9
+     ],
+     [
+      5.1,
+      1.6
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.3 · r2"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.3 · r2"
+    }
+   ]
+  },
+  {
+   "id": "155764d2-a90b-5a73-b313-65103a4ccd78",
+   "identifier": "MH2507A1B3C4D5/S01/F7/Flat-704",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7/Flat-704",
+   "name": "Flat 704",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     -5.1,
+     -9.9
+    ],
+    [
+     -5.1,
+     -1.6
+    ],
+    [
+     -14.9,
+     -1.6
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "155764d2-a90b-5a73-b313-65103a4ccd78",
+    "alias": "Flat 704",
+    "name": "Flat 704",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      -5.1,
+      -9.9
+     ],
+     [
+      -5.1,
+      -1.6
+     ],
+     [
+      -14.9,
+      -1.6
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.3 · r2"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.3 · r2"
+    }
+   ]
+  },
+  {
+   "id": "2af535d4-eb64-5836-8ed1-4e0e65e42b30",
+   "identifier": "MH2507A1B3C4D5/S01/F7/Flat-705",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7/Flat-705",
+   "name": "Flat 705",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "2af535d4-eb64-5836-8ed1-4e0e65e42b30",
+    "alias": "Flat 705",
+    "name": "Flat 705",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -9.9
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.3 · r2"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.3 · r2"
+    }
+   ]
+  },
+  {
+   "id": "44fcd7a9-438e-51da-b483-b9871a91ba37",
+   "identifier": "MH2507A1B3C4D5/S01/F7/Flat-706",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7/Flat-706",
+   "name": "Flat 706",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -1.6
+    ],
+    [
+     5.1,
+     -1.6
+    ],
+    [
+     5.1,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "44fcd7a9-438e-51da-b483-b9871a91ba37",
+    "alias": "Flat 706",
+    "name": "Flat 706",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -1.6
+     ],
+     [
+      5.1,
+      -1.6
+     ],
+     [
+      5.1,
+      -9.9
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.3 · r2"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.3 · r2"
+    }
+   ]
+  },
+  {
+   "id": "170d9586-e8e7-5a54-b044-6e9c04ec3f77",
+   "identifier": "MH2507A1B3C4D5/S01/F7/Stair-S1-F7",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7/Stair-S1-F7",
+   "name": "Stair S1",
+   "kind": "space",
+   "revision": 3,
+   "use": "stair",
+   "footprint": [
+    [
+     -14.9,
+     -1.4
+    ],
+    [
+     -11,
+     -1.4
+    ],
+    [
+     -11,
+     1.4
+    ],
+    [
+     -14.9,
+     1.4
+    ],
+    [
+     -14.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "170d9586-e8e7-5a54-b044-6e9c04ec3f77",
+    "alias": "Stair S1 F7",
+    "name": "Stair S1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -1.4
+     ],
+     [
+      -11,
+      -1.4
+     ],
+     [
+      -11,
+      1.4
+     ],
+     [
+      -14.9,
+      1.4
+     ],
+     [
+      -14.9,
+      -1.4
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.3 · r2"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7",
+    "area": 10.92,
+    "height": 3,
+    "volume": 32.76
+   },
+   "links": [
+    {
+     "targetId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.3 · r2"
+    }
+   ]
+  },
+  {
+   "id": "042af691-821a-58d5-ba96-52376e082368",
+   "identifier": "MH2507A1B3C4D5/S01/F7/Lift-L1-F7",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7/Lift-L1-F7",
+   "name": "Lift L1",
+   "kind": "space",
+   "revision": 3,
+   "use": "lift",
+   "footprint": [
+    [
+     -10.9,
+     -1.4
+    ],
+    [
+     -8.5,
+     -1.4
+    ],
+    [
+     -8.5,
+     1.4
+    ],
+    [
+     -10.9,
+     1.4
+    ],
+    [
+     -10.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "042af691-821a-58d5-ba96-52376e082368",
+    "alias": "Lift L1 F7",
+    "name": "Lift L1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -10.9,
+      -1.4
+     ],
+     [
+      -8.5,
+      -1.4
+     ],
+     [
+      -8.5,
+      1.4
+     ],
+     [
+      -10.9,
+      1.4
+     ],
+     [
+      -10.9,
+      -1.4
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.3 · r2"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7",
+    "area": 6.72,
+    "height": 3,
+    "volume": 20.16
+   },
+   "links": [
+    {
+     "targetId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.3 · r2"
+    }
+   ]
+  },
+  {
+   "id": "76373069-000f-5185-82a5-aa53788d482f",
+   "identifier": "MH2507A1B3C4D5/S01/F7/Corridor-F7",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F7/Corridor-F7",
+   "name": "Corridor",
+   "kind": "space",
+   "revision": 3,
+   "use": "corridor",
+   "footprint": [
+    [
+     -8.4,
+     -1.4
+    ],
+    [
+     14.9,
+     -1.4
+    ],
+    [
+     14.9,
+     1.4
+    ],
+    [
+     -8.4,
+     1.4
+    ],
+    [
+     -8.4,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "76373069-000f-5185-82a5-aa53788d482f",
+    "alias": "Corridor F7",
+    "name": "Corridor",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -8.4,
+      -1.4
+     ],
+     [
+      14.9,
+      -1.4
+     ],
+     [
+      14.9,
+      1.4
+     ],
+     [
+      -8.4,
+      1.4
+     ],
+     [
+      -8.4,
+      -1.4
+     ]
+    ],
+    "lower": 233.8,
+    "upper": 236.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.3 · r2"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 4"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F7",
+    "area": 65.24,
+    "height": 3,
+    "volume": 195.72
+   },
+   "links": [
+    {
+     "targetId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.3 · r2"
+    }
+   ]
+  },
+  {
+   "id": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+   "identifier": "MH2507A1B3C4D5/S01/F6",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6",
+   "name": "F6",
+   "kind": "floor",
+   "revision": 3,
+   "use": "residential floor",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+    "alias": "F6",
+    "name": "F6",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 5"
+    }
+   ]
+  },
+  {
+   "id": "b96e9440-94c6-520f-b2b7-94bb1161fe6e",
+   "identifier": "MH2507A1B3C4D5/S01/F6/Flat-601",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6/Flat-601",
+   "name": "Flat 601",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     1.6
+    ],
+    [
+     -5.1,
+     1.6
+    ],
+    [
+     -5.1,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "b96e9440-94c6-520f-b2b7-94bb1161fe6e",
+    "alias": "Flat 601",
+    "name": "Flat 601",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      1.6
+     ],
+     [
+      -5.1,
+      1.6
+     ],
+     [
+      -5.1,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      1.6
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 23"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 601"
+    }
+   ]
+  },
+  {
+   "id": "18bf0ecb-ce8a-516e-9f53-a280f2fb5de0",
+   "identifier": "MH2507A1B3C4D5/S01/F6/Flat-602",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6/Flat-602",
+   "name": "Flat 602",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     1.6
+    ],
+    [
+     4.9,
+     1.6
+    ],
+    [
+     4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "18bf0ecb-ce8a-516e-9f53-a280f2fb5de0",
+    "alias": "Flat 602",
+    "name": "Flat 602",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      1.6
+     ],
+     [
+      4.9,
+      1.6
+     ],
+     [
+      4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      1.6
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 24"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 602"
+    }
+   ]
+  },
+  {
+   "id": "d5c333db-9b3c-582a-bba7-7fb9a1e0002d",
+   "identifier": "MH2507A1B3C4D5/S01/F6/Flat-603",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6/Flat-603",
+   "name": "Flat 603",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     1.6
+    ],
+    [
+     14.9,
+     1.6
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     5.1,
+     9.9
+    ],
+    [
+     5.1,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "d5c333db-9b3c-582a-bba7-7fb9a1e0002d",
+    "alias": "Flat 603",
+    "name": "Flat 603",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      1.6
+     ],
+     [
+      14.9,
+      1.6
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      5.1,
+      9.9
+     ],
+     [
+      5.1,
+      1.6
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 25"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 603"
+    }
+   ]
+  },
+  {
+   "id": "71b90385-da22-5685-9baa-a83b1356e1fe",
+   "identifier": "MH2507A1B3C4D5/S01/F6/Flat-604",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6/Flat-604",
+   "name": "Flat 604",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     -5.1,
+     -9.9
+    ],
+    [
+     -5.1,
+     -1.6
+    ],
+    [
+     -14.9,
+     -1.6
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "71b90385-da22-5685-9baa-a83b1356e1fe",
+    "alias": "Flat 604",
+    "name": "Flat 604",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      -5.1,
+      -9.9
+     ],
+     [
+      -5.1,
+      -1.6
+     ],
+     [
+      -14.9,
+      -1.6
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 26"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 604"
+    }
+   ]
+  },
+  {
+   "id": "3fdabff3-6e09-5f54-a0ea-0f7be7b3d993",
+   "identifier": "MH2507A1B3C4D5/S01/F6/Flat-605",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6/Flat-605",
+   "name": "Flat 605",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "3fdabff3-6e09-5f54-a0ea-0f7be7b3d993",
+    "alias": "Flat 605",
+    "name": "Flat 605",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -9.9
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 27"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 605"
+    }
+   ]
+  },
+  {
+   "id": "f8bcf7e6-ff4a-5ebb-9562-8c91ccab0b3d",
+   "identifier": "MH2507A1B3C4D5/S01/F6/Flat-606",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6/Flat-606",
+   "name": "Flat 606",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -1.6
+    ],
+    [
+     5.1,
+     -1.6
+    ],
+    [
+     5.1,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "f8bcf7e6-ff4a-5ebb-9562-8c91ccab0b3d",
+    "alias": "Flat 606",
+    "name": "Flat 606",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -1.6
+     ],
+     [
+      5.1,
+      -1.6
+     ],
+     [
+      5.1,
+      -9.9
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 28"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 606"
+    }
+   ]
+  },
+  {
+   "id": "15385580-4164-5170-a5c7-0d9b62219dbc",
+   "identifier": "MH2507A1B3C4D5/S01/F6/Stair-S1-F6",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6/Stair-S1-F6",
+   "name": "Stair S1",
+   "kind": "space",
+   "revision": 3,
+   "use": "stair",
+   "footprint": [
+    [
+     -14.9,
+     -1.4
+    ],
+    [
+     -11,
+     -1.4
+    ],
+    [
+     -11,
+     1.4
+    ],
+    [
+     -14.9,
+     1.4
+    ],
+    [
+     -14.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "15385580-4164-5170-a5c7-0d9b62219dbc",
+    "alias": "Stair S1 F6",
+    "name": "Stair S1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -1.4
+     ],
+     [
+      -11,
+      -1.4
+     ],
+     [
+      -11,
+      1.4
+     ],
+     [
+      -14.9,
+      1.4
+     ],
+     [
+      -14.9,
+      -1.4
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 29"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6",
+    "area": 10.92,
+    "height": 3,
+    "volume": 32.76
+   },
+   "links": [
+    {
+     "targetId": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Stair S1 F6"
+    }
+   ]
+  },
+  {
+   "id": "8c37e2b7-71bd-5051-b9b5-97f041984699",
+   "identifier": "MH2507A1B3C4D5/S01/F6/Lift-L1-F6",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6/Lift-L1-F6",
+   "name": "Lift L1",
+   "kind": "space",
+   "revision": 3,
+   "use": "lift",
+   "footprint": [
+    [
+     -10.9,
+     -1.4
+    ],
+    [
+     -8.5,
+     -1.4
+    ],
+    [
+     -8.5,
+     1.4
+    ],
+    [
+     -10.9,
+     1.4
+    ],
+    [
+     -10.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "8c37e2b7-71bd-5051-b9b5-97f041984699",
+    "alias": "Lift L1 F6",
+    "name": "Lift L1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -10.9,
+      -1.4
+     ],
+     [
+      -8.5,
+      -1.4
+     ],
+     [
+      -8.5,
+      1.4
+     ],
+     [
+      -10.9,
+      1.4
+     ],
+     [
+      -10.9,
+      -1.4
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 30"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6",
+    "area": 6.72,
+    "height": 3,
+    "volume": 20.16
+   },
+   "links": [
+    {
+     "targetId": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Lift L1 F6"
+    }
+   ]
+  },
+  {
+   "id": "5e8bed8e-9e26-51cf-b95b-9205cf16bd46",
+   "identifier": "MH2507A1B3C4D5/S01/F6/Corridor-F6",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F6/Corridor-F6",
+   "name": "Corridor",
+   "kind": "space",
+   "revision": 3,
+   "use": "corridor",
+   "footprint": [
+    [
+     -8.4,
+     -1.4
+    ],
+    [
+     14.9,
+     -1.4
+    ],
+    [
+     14.9,
+     1.4
+    ],
+    [
+     -8.4,
+     1.4
+    ],
+    [
+     -8.4,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "5e8bed8e-9e26-51cf-b95b-9205cf16bd46",
+    "alias": "Corridor F6",
+    "name": "Corridor",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -8.4,
+      -1.4
+     ],
+     [
+      14.9,
+      -1.4
+     ],
+     [
+      14.9,
+      1.4
+     ],
+     [
+      -8.4,
+      1.4
+     ],
+     [
+      -8.4,
+      -1.4
+     ]
+    ],
+    "lower": 230.8,
+    "upper": 233.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 31"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 5"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F6",
+    "area": 65.24,
+    "height": 3,
+    "volume": 195.72
+   },
+   "links": [
+    {
+     "targetId": "11d81afa-96eb-5152-9227-ccbbf5e7ef83",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Corridor F6"
+    }
+   ]
+  },
+  {
+   "id": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+   "identifier": "MH2507A1B3C4D5/S01/F5",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5",
+   "name": "F5",
+   "kind": "floor",
+   "revision": 3,
+   "use": "residential floor",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+    "alias": "F5",
+    "name": "F5",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 6"
+    }
+   ]
+  },
+  {
+   "id": "cf771106-5d75-5fc4-ac8a-d2b19e70885a",
+   "identifier": "MH2507A1B3C4D5/S01/F5/Flat-501",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5/Flat-501",
+   "name": "Flat 501",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     1.6
+    ],
+    [
+     -5.1,
+     1.6
+    ],
+    [
+     -5.1,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "cf771106-5d75-5fc4-ac8a-d2b19e70885a",
+    "alias": "Flat 501",
+    "name": "Flat 501",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      1.6
+     ],
+     [
+      -5.1,
+      1.6
+     ],
+     [
+      -5.1,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      1.6
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 33"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 501"
+    }
+   ]
+  },
+  {
+   "id": "c925f791-c3ef-561f-8b56-3b019a3b55d8",
+   "identifier": "MH2507A1B3C4D5/S01/F5/Flat-502",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5/Flat-502",
+   "name": "Flat 502",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     1.6
+    ],
+    [
+     4.9,
+     1.6
+    ],
+    [
+     4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "c925f791-c3ef-561f-8b56-3b019a3b55d8",
+    "alias": "Flat 502",
+    "name": "Flat 502",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      1.6
+     ],
+     [
+      4.9,
+      1.6
+     ],
+     [
+      4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      1.6
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 34"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 502"
+    }
+   ]
+  },
+  {
+   "id": "50f8d765-1f85-533d-b09f-1c59152b762e",
+   "identifier": "MH2507A1B3C4D5/S01/F5/Flat-503",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5/Flat-503",
+   "name": "Flat 503",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     1.6
+    ],
+    [
+     14.9,
+     1.6
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     5.1,
+     9.9
+    ],
+    [
+     5.1,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "50f8d765-1f85-533d-b09f-1c59152b762e",
+    "alias": "Flat 503",
+    "name": "Flat 503",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      1.6
+     ],
+     [
+      14.9,
+      1.6
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      5.1,
+      9.9
+     ],
+     [
+      5.1,
+      1.6
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 35"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 503"
+    }
+   ]
+  },
+  {
+   "id": "da62714e-c7ab-514c-ba8c-f7640522d658",
+   "identifier": "MH2507A1B3C4D5/S01/F5/Flat-504",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5/Flat-504",
+   "name": "Flat 504",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     -5.1,
+     -9.9
+    ],
+    [
+     -5.1,
+     -1.6
+    ],
+    [
+     -14.9,
+     -1.6
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "da62714e-c7ab-514c-ba8c-f7640522d658",
+    "alias": "Flat 504",
+    "name": "Flat 504",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      -5.1,
+      -9.9
+     ],
+     [
+      -5.1,
+      -1.6
+     ],
+     [
+      -14.9,
+      -1.6
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 36"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 504"
+    }
+   ]
+  },
+  {
+   "id": "2bc5d424-d1c9-505f-b092-d75a99fee004",
+   "identifier": "MH2507A1B3C4D5/S01/F5/Flat-505",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5/Flat-505",
+   "name": "Flat 505",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "2bc5d424-d1c9-505f-b092-d75a99fee004",
+    "alias": "Flat 505",
+    "name": "Flat 505",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -9.9
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 37"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 505"
+    }
+   ]
+  },
+  {
+   "id": "bed1445e-9fc2-534b-af66-a590e32b027c",
+   "identifier": "MH2507A1B3C4D5/S01/F5/Flat-506",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5/Flat-506",
+   "name": "Flat 506",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -1.6
+    ],
+    [
+     5.1,
+     -1.6
+    ],
+    [
+     5.1,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "bed1445e-9fc2-534b-af66-a590e32b027c",
+    "alias": "Flat 506",
+    "name": "Flat 506",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -1.6
+     ],
+     [
+      5.1,
+      -1.6
+     ],
+     [
+      5.1,
+      -9.9
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 38"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 506"
+    }
+   ]
+  },
+  {
+   "id": "3c60b955-93dd-5b30-a42b-ed846b7b7d4c",
+   "identifier": "MH2507A1B3C4D5/S01/F5/Stair-S1-F5",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5/Stair-S1-F5",
+   "name": "Stair S1",
+   "kind": "space",
+   "revision": 3,
+   "use": "stair",
+   "footprint": [
+    [
+     -14.9,
+     -1.4
+    ],
+    [
+     -11,
+     -1.4
+    ],
+    [
+     -11,
+     1.4
+    ],
+    [
+     -14.9,
+     1.4
+    ],
+    [
+     -14.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "3c60b955-93dd-5b30-a42b-ed846b7b7d4c",
+    "alias": "Stair S1 F5",
+    "name": "Stair S1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -1.4
+     ],
+     [
+      -11,
+      -1.4
+     ],
+     [
+      -11,
+      1.4
+     ],
+     [
+      -14.9,
+      1.4
+     ],
+     [
+      -14.9,
+      -1.4
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 39"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5",
+    "area": 10.92,
+    "height": 3,
+    "volume": 32.76
+   },
+   "links": [
+    {
+     "targetId": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Stair S1 F5"
+    }
+   ]
+  },
+  {
+   "id": "5d2e5816-220c-5cc1-83e0-8cc2750ccabc",
+   "identifier": "MH2507A1B3C4D5/S01/F5/Lift-L1-F5",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5/Lift-L1-F5",
+   "name": "Lift L1",
+   "kind": "space",
+   "revision": 3,
+   "use": "lift",
+   "footprint": [
+    [
+     -10.9,
+     -1.4
+    ],
+    [
+     -8.5,
+     -1.4
+    ],
+    [
+     -8.5,
+     1.4
+    ],
+    [
+     -10.9,
+     1.4
+    ],
+    [
+     -10.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "5d2e5816-220c-5cc1-83e0-8cc2750ccabc",
+    "alias": "Lift L1 F5",
+    "name": "Lift L1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -10.9,
+      -1.4
+     ],
+     [
+      -8.5,
+      -1.4
+     ],
+     [
+      -8.5,
+      1.4
+     ],
+     [
+      -10.9,
+      1.4
+     ],
+     [
+      -10.9,
+      -1.4
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 40"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5",
+    "area": 6.72,
+    "height": 3,
+    "volume": 20.16
+   },
+   "links": [
+    {
+     "targetId": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Lift L1 F5"
+    }
+   ]
+  },
+  {
+   "id": "30cb89f5-48a1-5f99-a77e-220b774fd228",
+   "identifier": "MH2507A1B3C4D5/S01/F5/Corridor-F5",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F5/Corridor-F5",
+   "name": "Corridor",
+   "kind": "space",
+   "revision": 3,
+   "use": "corridor",
+   "footprint": [
+    [
+     -8.4,
+     -1.4
+    ],
+    [
+     14.9,
+     -1.4
+    ],
+    [
+     14.9,
+     1.4
+    ],
+    [
+     -8.4,
+     1.4
+    ],
+    [
+     -8.4,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "30cb89f5-48a1-5f99-a77e-220b774fd228",
+    "alias": "Corridor F5",
+    "name": "Corridor",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -8.4,
+      -1.4
+     ],
+     [
+      14.9,
+      -1.4
+     ],
+     [
+      14.9,
+      1.4
+     ],
+     [
+      -8.4,
+      1.4
+     ],
+     [
+      -8.4,
+      -1.4
+     ]
+    ],
+    "lower": 227.8,
+    "upper": 230.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 41"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 6"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F5",
+    "area": 65.24,
+    "height": 3,
+    "volume": 195.72
+   },
+   "links": [
+    {
+     "targetId": "73de80f5-0dcb-585b-b3dc-33b30f473cbd",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Corridor F5"
+    }
+   ]
+  },
+  {
+   "id": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+   "identifier": "MH2507A1B3C4D5/S01/F4",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4",
+   "name": "F4",
+   "kind": "floor",
+   "revision": 3,
+   "use": "residential floor",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+    "alias": "F4",
+    "name": "F4",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 7"
+    }
+   ]
+  },
+  {
+   "id": "c1d74b07-f385-5ef3-b095-bdfb2ed77e35",
+   "identifier": "MH2507A1B3C4D5/S01/F4/Flat-401",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4/Flat-401",
+   "name": "Flat 401",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     1.6
+    ],
+    [
+     -5.1,
+     1.6
+    ],
+    [
+     -5.1,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "c1d74b07-f385-5ef3-b095-bdfb2ed77e35",
+    "alias": "Flat 401",
+    "name": "Flat 401",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      1.6
+     ],
+     [
+      -5.1,
+      1.6
+     ],
+     [
+      -5.1,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      1.6
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 43"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 401"
+    }
+   ]
+  },
+  {
+   "id": "ac880326-3b1c-587e-b12a-165c187e01d5",
+   "identifier": "MH2507A1B3C4D5/S01/F4/Flat-402",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4/Flat-402",
+   "name": "Flat 402",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     1.6
+    ],
+    [
+     4.9,
+     1.6
+    ],
+    [
+     4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "ac880326-3b1c-587e-b12a-165c187e01d5",
+    "alias": "Flat 402",
+    "name": "Flat 402",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      1.6
+     ],
+     [
+      4.9,
+      1.6
+     ],
+     [
+      4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      1.6
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 44"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 402"
+    }
+   ]
+  },
+  {
+   "id": "e8e72107-46d4-5d3b-b4b1-9c379f37723f",
+   "identifier": "MH2507A1B3C4D5/S01/F4/Flat-403",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4/Flat-403",
+   "name": "Flat 403",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     1.6
+    ],
+    [
+     14.9,
+     1.6
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     5.1,
+     9.9
+    ],
+    [
+     5.1,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "e8e72107-46d4-5d3b-b4b1-9c379f37723f",
+    "alias": "Flat 403",
+    "name": "Flat 403",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      1.6
+     ],
+     [
+      14.9,
+      1.6
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      5.1,
+      9.9
+     ],
+     [
+      5.1,
+      1.6
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 45"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 403"
+    }
+   ]
+  },
+  {
+   "id": "d8051e98-80d3-5ec6-b7f2-402ba56721bc",
+   "identifier": "MH2507A1B3C4D5/S01/F4/Flat-404",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4/Flat-404",
+   "name": "Flat 404",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     -5.1,
+     -9.9
+    ],
+    [
+     -5.1,
+     -1.6
+    ],
+    [
+     -14.9,
+     -1.6
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "d8051e98-80d3-5ec6-b7f2-402ba56721bc",
+    "alias": "Flat 404",
+    "name": "Flat 404",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      -5.1,
+      -9.9
+     ],
+     [
+      -5.1,
+      -1.6
+     ],
+     [
+      -14.9,
+      -1.6
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 46"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 404"
+    }
+   ]
+  },
+  {
+   "id": "36741e46-59d9-5b8c-9c76-f42f65474045",
+   "identifier": "MH2507A1B3C4D5/S01/F4/Flat-405",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4/Flat-405",
+   "name": "Flat 405",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "36741e46-59d9-5b8c-9c76-f42f65474045",
+    "alias": "Flat 405",
+    "name": "Flat 405",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -9.9
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 47"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 405"
+    }
+   ]
+  },
+  {
+   "id": "7379b7ed-9478-5e4b-b7ff-65c6551370cf",
+   "identifier": "MH2507A1B3C4D5/S01/F4/Flat-406",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4/Flat-406",
+   "name": "Flat 406",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -1.6
+    ],
+    [
+     5.1,
+     -1.6
+    ],
+    [
+     5.1,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "7379b7ed-9478-5e4b-b7ff-65c6551370cf",
+    "alias": "Flat 406",
+    "name": "Flat 406",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -1.6
+     ],
+     [
+      5.1,
+      -1.6
+     ],
+     [
+      5.1,
+      -9.9
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 48"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 406"
+    }
+   ]
+  },
+  {
+   "id": "d08a28c8-89c4-5377-98b3-db19a0814caf",
+   "identifier": "MH2507A1B3C4D5/S01/F4/Stair-S1-F4",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4/Stair-S1-F4",
+   "name": "Stair S1",
+   "kind": "space",
+   "revision": 3,
+   "use": "stair",
+   "footprint": [
+    [
+     -14.9,
+     -1.4
+    ],
+    [
+     -11,
+     -1.4
+    ],
+    [
+     -11,
+     1.4
+    ],
+    [
+     -14.9,
+     1.4
+    ],
+    [
+     -14.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "d08a28c8-89c4-5377-98b3-db19a0814caf",
+    "alias": "Stair S1 F4",
+    "name": "Stair S1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -1.4
+     ],
+     [
+      -11,
+      -1.4
+     ],
+     [
+      -11,
+      1.4
+     ],
+     [
+      -14.9,
+      1.4
+     ],
+     [
+      -14.9,
+      -1.4
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 49"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4",
+    "area": 10.92,
+    "height": 3,
+    "volume": 32.76
+   },
+   "links": [
+    {
+     "targetId": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Stair S1 F4"
+    }
+   ]
+  },
+  {
+   "id": "3b115055-d9b8-5496-9d68-1932b81cb78a",
+   "identifier": "MH2507A1B3C4D5/S01/F4/Lift-L1-F4",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4/Lift-L1-F4",
+   "name": "Lift L1",
+   "kind": "space",
+   "revision": 3,
+   "use": "lift",
+   "footprint": [
+    [
+     -10.9,
+     -1.4
+    ],
+    [
+     -8.5,
+     -1.4
+    ],
+    [
+     -8.5,
+     1.4
+    ],
+    [
+     -10.9,
+     1.4
+    ],
+    [
+     -10.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "3b115055-d9b8-5496-9d68-1932b81cb78a",
+    "alias": "Lift L1 F4",
+    "name": "Lift L1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -10.9,
+      -1.4
+     ],
+     [
+      -8.5,
+      -1.4
+     ],
+     [
+      -8.5,
+      1.4
+     ],
+     [
+      -10.9,
+      1.4
+     ],
+     [
+      -10.9,
+      -1.4
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 50"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4",
+    "area": 6.72,
+    "height": 3,
+    "volume": 20.16
+   },
+   "links": [
+    {
+     "targetId": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Lift L1 F4"
+    }
+   ]
+  },
+  {
+   "id": "9b33376e-aec2-545f-b3b8-8cbefaa3f025",
+   "identifier": "MH2507A1B3C4D5/S01/F4/Corridor-F4",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F4/Corridor-F4",
+   "name": "Corridor",
+   "kind": "space",
+   "revision": 3,
+   "use": "corridor",
+   "footprint": [
+    [
+     -8.4,
+     -1.4
+    ],
+    [
+     14.9,
+     -1.4
+    ],
+    [
+     14.9,
+     1.4
+    ],
+    [
+     -8.4,
+     1.4
+    ],
+    [
+     -8.4,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "9b33376e-aec2-545f-b3b8-8cbefaa3f025",
+    "alias": "Corridor F4",
+    "name": "Corridor",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -8.4,
+      -1.4
+     ],
+     [
+      14.9,
+      -1.4
+     ],
+     [
+      14.9,
+      1.4
+     ],
+     [
+      -8.4,
+      1.4
+     ],
+     [
+      -8.4,
+      -1.4
+     ]
+    ],
+    "lower": 224.8,
+    "upper": 227.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 51"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 7"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F4",
+    "area": 65.24,
+    "height": 3,
+    "volume": 195.72
+   },
+   "links": [
+    {
+     "targetId": "2ed87bda-cdf4-58f5-b5b8-a306b1b860dc",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Corridor F4"
+    }
+   ]
+  },
+  {
+   "id": "296af474-62f9-58c7-afd7-a49d28c315cf",
+   "identifier": "MH2507A1B3C4D5/S01/F3",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3",
+   "name": "F3",
+   "kind": "floor",
+   "revision": 3,
+   "use": "residential floor",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "296af474-62f9-58c7-afd7-a49d28c315cf",
+    "alias": "F3",
+    "name": "F3",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 8"
+    }
+   ]
+  },
+  {
+   "id": "dd52cf12-5704-566f-a204-9f024fbf19ab",
+   "identifier": "MH2507A1B3C4D5/S01/F3/Flat-301",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3/Flat-301",
+   "name": "Flat 301",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     1.6
+    ],
+    [
+     -5.1,
+     1.6
+    ],
+    [
+     -5.1,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "dd52cf12-5704-566f-a204-9f024fbf19ab",
+    "alias": "Flat 301",
+    "name": "Flat 301",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      1.6
+     ],
+     [
+      -5.1,
+      1.6
+     ],
+     [
+      -5.1,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      1.6
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 53"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "296af474-62f9-58c7-afd7-a49d28c315cf",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 301"
+    }
+   ]
+  },
+  {
+   "id": "1cfb8842-1ffb-54f0-99e9-01723d1b9247",
+   "identifier": "MH2507A1B3C4D5/S01/F3/Flat-302",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3/Flat-302",
+   "name": "Flat 302",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     1.6
+    ],
+    [
+     4.9,
+     1.6
+    ],
+    [
+     4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "1cfb8842-1ffb-54f0-99e9-01723d1b9247",
+    "alias": "Flat 302",
+    "name": "Flat 302",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      1.6
+     ],
+     [
+      4.9,
+      1.6
+     ],
+     [
+      4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      1.6
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 54"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "296af474-62f9-58c7-afd7-a49d28c315cf",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 302"
+    }
+   ]
+  },
+  {
+   "id": "f2ef89ca-04a4-5515-9d97-c2fe2c42da12",
+   "identifier": "MH2507A1B3C4D5/S01/F3/Flat-303",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3/Flat-303",
+   "name": "Flat 303",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     1.6
+    ],
+    [
+     14.9,
+     1.6
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     5.1,
+     9.9
+    ],
+    [
+     5.1,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "f2ef89ca-04a4-5515-9d97-c2fe2c42da12",
+    "alias": "Flat 303",
+    "name": "Flat 303",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      1.6
+     ],
+     [
+      14.9,
+      1.6
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      5.1,
+      9.9
+     ],
+     [
+      5.1,
+      1.6
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 55"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "296af474-62f9-58c7-afd7-a49d28c315cf",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 303"
+    }
+   ]
+  },
+  {
+   "id": "bbd14ac3-c47b-57f3-8d38-5275e9cef53e",
+   "identifier": "MH2507A1B3C4D5/S01/F3/Flat-304",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3/Flat-304",
+   "name": "Flat 304",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     -5.1,
+     -9.9
+    ],
+    [
+     -5.1,
+     -1.6
+    ],
+    [
+     -14.9,
+     -1.6
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "bbd14ac3-c47b-57f3-8d38-5275e9cef53e",
+    "alias": "Flat 304",
+    "name": "Flat 304",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      -5.1,
+      -9.9
+     ],
+     [
+      -5.1,
+      -1.6
+     ],
+     [
+      -14.9,
+      -1.6
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 56"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "296af474-62f9-58c7-afd7-a49d28c315cf",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 304"
+    }
+   ]
+  },
+  {
+   "id": "51a72723-4945-5ce1-9a62-b6466284a4e2",
+   "identifier": "MH2507A1B3C4D5/S01/F3/Flat-305",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3/Flat-305",
+   "name": "Flat 305",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "51a72723-4945-5ce1-9a62-b6466284a4e2",
+    "alias": "Flat 305",
+    "name": "Flat 305",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -9.9
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 57"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "296af474-62f9-58c7-afd7-a49d28c315cf",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 305"
+    }
+   ]
+  },
+  {
+   "id": "c0a3a6a5-1af8-52a9-812b-77173313cd5d",
+   "identifier": "MH2507A1B3C4D5/S01/F3/Flat-306",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3/Flat-306",
+   "name": "Flat 306",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -1.6
+    ],
+    [
+     5.1,
+     -1.6
+    ],
+    [
+     5.1,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "c0a3a6a5-1af8-52a9-812b-77173313cd5d",
+    "alias": "Flat 306",
+    "name": "Flat 306",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -1.6
+     ],
+     [
+      5.1,
+      -1.6
+     ],
+     [
+      5.1,
+      -9.9
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 58"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "296af474-62f9-58c7-afd7-a49d28c315cf",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 306"
+    }
+   ]
+  },
+  {
+   "id": "d7def19e-ca9f-54b7-98a7-1a670a000f5a",
+   "identifier": "MH2507A1B3C4D5/S01/F3/Stair-S1-F3",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3/Stair-S1-F3",
+   "name": "Stair S1",
+   "kind": "space",
+   "revision": 3,
+   "use": "stair",
+   "footprint": [
+    [
+     -14.9,
+     -1.4
+    ],
+    [
+     -11,
+     -1.4
+    ],
+    [
+     -11,
+     1.4
+    ],
+    [
+     -14.9,
+     1.4
+    ],
+    [
+     -14.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "d7def19e-ca9f-54b7-98a7-1a670a000f5a",
+    "alias": "Stair S1 F3",
+    "name": "Stair S1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -1.4
+     ],
+     [
+      -11,
+      -1.4
+     ],
+     [
+      -11,
+      1.4
+     ],
+     [
+      -14.9,
+      1.4
+     ],
+     [
+      -14.9,
+      -1.4
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 59"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3",
+    "area": 10.92,
+    "height": 3,
+    "volume": 32.76
+   },
+   "links": [
+    {
+     "targetId": "296af474-62f9-58c7-afd7-a49d28c315cf",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Stair S1 F3"
+    }
+   ]
+  },
+  {
+   "id": "8b8bd27d-25ba-56a0-9696-47885198bc3f",
+   "identifier": "MH2507A1B3C4D5/S01/F3/Lift-L1-F3",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3/Lift-L1-F3",
+   "name": "Lift L1",
+   "kind": "space",
+   "revision": 3,
+   "use": "lift",
+   "footprint": [
+    [
+     -10.9,
+     -1.4
+    ],
+    [
+     -8.5,
+     -1.4
+    ],
+    [
+     -8.5,
+     1.4
+    ],
+    [
+     -10.9,
+     1.4
+    ],
+    [
+     -10.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "8b8bd27d-25ba-56a0-9696-47885198bc3f",
+    "alias": "Lift L1 F3",
+    "name": "Lift L1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -10.9,
+      -1.4
+     ],
+     [
+      -8.5,
+      -1.4
+     ],
+     [
+      -8.5,
+      1.4
+     ],
+     [
+      -10.9,
+      1.4
+     ],
+     [
+      -10.9,
+      -1.4
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 60"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3",
+    "area": 6.72,
+    "height": 3,
+    "volume": 20.16
+   },
+   "links": [
+    {
+     "targetId": "296af474-62f9-58c7-afd7-a49d28c315cf",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Lift L1 F3"
+    }
+   ]
+  },
+  {
+   "id": "e47d55ea-fb20-53f0-8f07-fb1743d6810a",
+   "identifier": "MH2507A1B3C4D5/S01/F3/Corridor-F3",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F3/Corridor-F3",
+   "name": "Corridor",
+   "kind": "space",
+   "revision": 3,
+   "use": "corridor",
+   "footprint": [
+    [
+     -8.4,
+     -1.4
+    ],
+    [
+     14.9,
+     -1.4
+    ],
+    [
+     14.9,
+     1.4
+    ],
+    [
+     -8.4,
+     1.4
+    ],
+    [
+     -8.4,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "e47d55ea-fb20-53f0-8f07-fb1743d6810a",
+    "alias": "Corridor F3",
+    "name": "Corridor",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -8.4,
+      -1.4
+     ],
+     [
+      14.9,
+      -1.4
+     ],
+     [
+      14.9,
+      1.4
+     ],
+     [
+      -8.4,
+      1.4
+     ],
+     [
+      -8.4,
+      -1.4
+     ]
+    ],
+    "lower": 221.8,
+    "upper": 224.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 61"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 8"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F3",
+    "area": 65.24,
+    "height": 3,
+    "volume": 195.72
+   },
+   "links": [
+    {
+     "targetId": "296af474-62f9-58c7-afd7-a49d28c315cf",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Corridor F3"
+    }
+   ]
+  },
+  {
+   "id": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+   "identifier": "MH2507A1B3C4D5/S01/F2",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2",
+   "name": "F2",
+   "kind": "floor",
+   "revision": 3,
+   "use": "residential floor",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+    "alias": "F2",
+    "name": "F2",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 218.8,
+    "upper": 221.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 9"
+    }
+   ]
+  },
+  {
+   "id": "9474dac4-851a-52a0-9689-d4ca39ebdc1b",
+   "identifier": "MH2507A1B3C4D5/S01/F2/Flat-201",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2/Flat-201",
+   "name": "Flat 201",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     1.6
+    ],
+    [
+     -5.1,
+     1.6
+    ],
+    [
+     -5.1,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "9474dac4-851a-52a0-9689-d4ca39ebdc1b",
+    "alias": "Flat 201",
+    "name": "Flat 201",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      1.6
+     ],
+     [
+      -5.1,
+      1.6
+     ],
+     [
+      -5.1,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      1.6
+     ]
+    ],
+    "lower": 218.7,
+    "upper": 221.8,
+    "lowerVerified": false,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 63"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2",
+    "area": 81.34,
+    "height": 3.1,
+    "volume": 252.15
+   },
+   "links": [
+    {
+     "targetId": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 201"
+    }
+   ]
+  },
+  {
+   "id": "45f3384d-58bf-5427-ad50-47c5298c27a0",
+   "identifier": "MH2507A1B3C4D5/S01/F2/Flat-202",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2/Flat-202",
+   "name": "Flat 202",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     1.6
+    ],
+    [
+     4.9,
+     1.6
+    ],
+    [
+     4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "45f3384d-58bf-5427-ad50-47c5298c27a0",
+    "alias": "Flat 202",
+    "name": "Flat 202",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      1.6
+     ],
+     [
+      4.9,
+      1.6
+     ],
+     [
+      4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      1.6
+     ]
+    ],
+    "lower": 218.8,
+    "upper": 221.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 64"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 202"
+    }
+   ]
+  },
+  {
+   "id": "f2ccf445-0dc4-524f-a664-3df7babd0c8c",
+   "identifier": "MH2507A1B3C4D5/S01/F2/Flat-203",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2/Flat-203",
+   "name": "Flat 203",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     1.6
+    ],
+    [
+     14.9,
+     1.6
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     5.1,
+     9.9
+    ],
+    [
+     5.1,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "f2ccf445-0dc4-524f-a664-3df7babd0c8c",
+    "alias": "Flat 203",
+    "name": "Flat 203",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      1.6
+     ],
+     [
+      14.9,
+      1.6
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      5.1,
+      9.9
+     ],
+     [
+      5.1,
+      1.6
+     ]
+    ],
+    "lower": 218.8,
+    "upper": 221.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 65"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 203"
+    }
+   ]
+  },
+  {
+   "id": "e4e7f74a-89cd-5ed5-a7ae-28420cab51f5",
+   "identifier": "MH2507A1B3C4D5/S01/F2/Flat-204",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2/Flat-204",
+   "name": "Flat 204",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     -5.1,
+     -9.9
+    ],
+    [
+     -5.1,
+     -1.6
+    ],
+    [
+     -14.9,
+     -1.6
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "e4e7f74a-89cd-5ed5-a7ae-28420cab51f5",
+    "alias": "Flat 204",
+    "name": "Flat 204",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      -5.1,
+      -9.9
+     ],
+     [
+      -5.1,
+      -1.6
+     ],
+     [
+      -14.9,
+      -1.6
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 218.8,
+    "upper": 221.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 66"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 204"
+    }
+   ]
+  },
+  {
+   "id": "3bc9f079-e16f-5479-8942-717990636799",
+   "identifier": "MH2507A1B3C4D5/S01/F2/Flat-205",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2/Flat-205",
+   "name": "Flat 205",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "3bc9f079-e16f-5479-8942-717990636799",
+    "alias": "Flat 205",
+    "name": "Flat 205",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -9.9
+     ]
+    ],
+    "lower": 218.8,
+    "upper": 221.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 67"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 205"
+    }
+   ]
+  },
+  {
+   "id": "6644fac5-9945-5cac-85d1-c46158fddd37",
+   "identifier": "MH2507A1B3C4D5/S01/F2/Flat-206",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2/Flat-206",
+   "name": "Flat 206",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -1.6
+    ],
+    [
+     5.1,
+     -1.6
+    ],
+    [
+     5.1,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "6644fac5-9945-5cac-85d1-c46158fddd37",
+    "alias": "Flat 206",
+    "name": "Flat 206",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -1.6
+     ],
+     [
+      5.1,
+      -1.6
+     ],
+     [
+      5.1,
+      -9.9
+     ]
+    ],
+    "lower": 218.8,
+    "upper": 221.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 68"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 206"
+    }
+   ]
+  },
+  {
+   "id": "5cdceb48-d66f-5785-b90c-98a91ff0100b",
+   "identifier": "MH2507A1B3C4D5/S01/F2/Stair-S1-F2",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2/Stair-S1-F2",
+   "name": "Stair S1",
+   "kind": "space",
+   "revision": 3,
+   "use": "stair",
+   "footprint": [
+    [
+     -14.9,
+     -1.4
+    ],
+    [
+     -11,
+     -1.4
+    ],
+    [
+     -11,
+     1.4
+    ],
+    [
+     -14.9,
+     1.4
+    ],
+    [
+     -14.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "5cdceb48-d66f-5785-b90c-98a91ff0100b",
+    "alias": "Stair S1 F2",
+    "name": "Stair S1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -1.4
+     ],
+     [
+      -11,
+      -1.4
+     ],
+     [
+      -11,
+      1.4
+     ],
+     [
+      -14.9,
+      1.4
+     ],
+     [
+      -14.9,
+      -1.4
+     ]
+    ],
+    "lower": 218.8,
+    "upper": 221.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 69"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2",
+    "area": 10.92,
+    "height": 3,
+    "volume": 32.76
+   },
+   "links": [
+    {
+     "targetId": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Stair S1 F2"
+    }
+   ]
+  },
+  {
+   "id": "ee421f46-6b97-5049-932f-66e12c2ae073",
+   "identifier": "MH2507A1B3C4D5/S01/F2/Lift-L1-F2",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2/Lift-L1-F2",
+   "name": "Lift L1",
+   "kind": "space",
+   "revision": 3,
+   "use": "lift",
+   "footprint": [
+    [
+     -10.9,
+     -1.4
+    ],
+    [
+     -8.5,
+     -1.4
+    ],
+    [
+     -8.5,
+     1.4
+    ],
+    [
+     -10.9,
+     1.4
+    ],
+    [
+     -10.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "ee421f46-6b97-5049-932f-66e12c2ae073",
+    "alias": "Lift L1 F2",
+    "name": "Lift L1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -10.9,
+      -1.4
+     ],
+     [
+      -8.5,
+      -1.4
+     ],
+     [
+      -8.5,
+      1.4
+     ],
+     [
+      -10.9,
+      1.4
+     ],
+     [
+      -10.9,
+      -1.4
+     ]
+    ],
+    "lower": 218.8,
+    "upper": 221.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 70"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2",
+    "area": 6.72,
+    "height": 3,
+    "volume": 20.16
+   },
+   "links": [
+    {
+     "targetId": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Lift L1 F2"
+    }
+   ]
+  },
+  {
+   "id": "8c1e011a-6f45-58cd-8f36-be76ba68b9fe",
+   "identifier": "MH2507A1B3C4D5/S01/F2/Corridor-F2",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F2/Corridor-F2",
+   "name": "Corridor",
+   "kind": "space",
+   "revision": 3,
+   "use": "corridor",
+   "footprint": [
+    [
+     -8.4,
+     -1.4
+    ],
+    [
+     14.9,
+     -1.4
+    ],
+    [
+     14.9,
+     1.4
+    ],
+    [
+     -8.4,
+     1.4
+    ],
+    [
+     -8.4,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "8c1e011a-6f45-58cd-8f36-be76ba68b9fe",
+    "alias": "Corridor F2",
+    "name": "Corridor",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -8.4,
+      -1.4
+     ],
+     [
+      14.9,
+      -1.4
+     ],
+     [
+      14.9,
+      1.4
+     ],
+     [
+      -8.4,
+      1.4
+     ],
+     [
+      -8.4,
+      -1.4
+     ]
+    ],
+    "lower": 218.8,
+    "upper": 221.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 71"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 9"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F2",
+    "area": 65.24,
+    "height": 3,
+    "volume": 195.72
+   },
+   "links": [
+    {
+     "targetId": "b0f01241-acbe-5ce1-bb8a-deb18894a16a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Corridor F2"
+    }
+   ]
+  },
+  {
+   "id": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+   "identifier": "MH2507A1B3C4D5/S01/F1",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1",
+   "name": "F1",
+   "kind": "floor",
+   "revision": 3,
+   "use": "residential floor",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+    "alias": "F1",
+    "name": "F1",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 10"
+    }
+   ]
+  },
+  {
+   "id": "b6a6b9a7-aa2a-535f-b873-7dc9ad0147b3",
+   "identifier": "MH2507A1B3C4D5/S01/F1/Flat-101",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1/Flat-101",
+   "name": "Flat 101",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     1.6
+    ],
+    [
+     -5.1,
+     1.6
+    ],
+    [
+     -5.1,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "b6a6b9a7-aa2a-535f-b873-7dc9ad0147b3",
+    "alias": "Flat 101",
+    "name": "Flat 101",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      1.6
+     ],
+     [
+      -5.1,
+      1.6
+     ],
+     [
+      -5.1,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      1.6
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.9,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 73"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1",
+    "area": 81.34,
+    "height": 3.1,
+    "volume": 252.15
+   },
+   "links": [
+    {
+     "targetId": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 101"
+    }
+   ]
+  },
+  {
+   "id": "ad88da3d-672d-50fd-9d3a-5300a63b0f06",
+   "identifier": "MH2507A1B3C4D5/S01/F1/Flat-102",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1/Flat-102",
+   "name": "Flat 102",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     1.6
+    ],
+    [
+     4.9,
+     1.6
+    ],
+    [
+     4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     9.9
+    ],
+    [
+     -4.9,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "ad88da3d-672d-50fd-9d3a-5300a63b0f06",
+    "alias": "Flat 102",
+    "name": "Flat 102",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      1.6
+     ],
+     [
+      4.9,
+      1.6
+     ],
+     [
+      4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      9.9
+     ],
+     [
+      -4.9,
+      1.6
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 74"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 102"
+    }
+   ]
+  },
+  {
+   "id": "6c8d6dca-9051-5b62-8949-3ef9991f4a1d",
+   "identifier": "MH2507A1B3C4D5/S01/F1/Flat-103",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1/Flat-103",
+   "name": "Flat 103",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     1.6
+    ],
+    [
+     14.9,
+     1.6
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     5.1,
+     9.9
+    ],
+    [
+     5.1,
+     1.6
+    ]
+   ],
+   "geometry": {
+    "id": "6c8d6dca-9051-5b62-8949-3ef9991f4a1d",
+    "alias": "Flat 103",
+    "name": "Flat 103",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      1.6
+     ],
+     [
+      14.9,
+      1.6
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      5.1,
+      9.9
+     ],
+     [
+      5.1,
+      1.6
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 75"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 103"
+    }
+   ]
+  },
+  {
+   "id": "d2a91915-237f-5fff-86c5-b9f1a70d3931",
+   "identifier": "MH2507A1B3C4D5/S01/F1/Flat-104",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1/Flat-104",
+   "name": "Flat 104",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     -5.1,
+     -9.9
+    ],
+    [
+     -5.1,
+     -1.6
+    ],
+    [
+     -14.9,
+     -1.6
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "d2a91915-237f-5fff-86c5-b9f1a70d3931",
+    "alias": "Flat 104",
+    "name": "Flat 104",
+    "kind": "unit",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      -5.1,
+      -9.9
+     ],
+     [
+      -5.1,
+      -1.6
+     ],
+     [
+      -14.9,
+      -1.6
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 76"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 104"
+    }
+   ]
+  },
+  {
+   "id": "ad2abde5-4453-5eb0-9f5b-093d34a1adc3",
+   "identifier": "MH2507A1B3C4D5/S01/F1/Flat-105",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1/Flat-105",
+   "name": "Flat 105",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     -4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -9.9
+    ],
+    [
+     4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -1.6
+    ],
+    [
+     -4.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "ad2abde5-4453-5eb0-9f5b-093d34a1adc3",
+    "alias": "Flat 105",
+    "name": "Flat 105",
+    "kind": "unit",
+    "footprint": [
+     [
+      -4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -9.9
+     ],
+     [
+      4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -1.6
+     ],
+     [
+      -4.9,
+      -9.9
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 77"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 105"
+    }
+   ]
+  },
+  {
+   "id": "18d27093-8b5e-5a97-aee1-f8d547b2e10f",
+   "identifier": "MH2507A1B3C4D5/S01/F1/Flat-106",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1/Flat-106",
+   "name": "Flat 106",
+   "kind": "space",
+   "revision": 3,
+   "use": "apartment",
+   "footprint": [
+    [
+     5.1,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -1.6
+    ],
+    [
+     5.1,
+     -1.6
+    ],
+    [
+     5.1,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "18d27093-8b5e-5a97-aee1-f8d547b2e10f",
+    "alias": "Flat 106",
+    "name": "Flat 106",
+    "kind": "unit",
+    "footprint": [
+     [
+      5.1,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -1.6
+     ],
+     [
+      5.1,
+      -1.6
+     ],
+     [
+      5.1,
+      -9.9
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 78"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1",
+    "area": 81.34,
+    "height": 3,
+    "volume": 244.02
+   },
+   "links": [
+    {
+     "targetId": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Flat 106"
+    }
+   ]
+  },
+  {
+   "id": "e81f8250-005c-56db-ad69-0f3f7eb1556a",
+   "identifier": "MH2507A1B3C4D5/S01/F1/Stair-S1-F1",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1/Stair-S1-F1",
+   "name": "Stair S1",
+   "kind": "space",
+   "revision": 3,
+   "use": "stair",
+   "footprint": [
+    [
+     -14.9,
+     -1.4
+    ],
+    [
+     -11,
+     -1.4
+    ],
+    [
+     -11,
+     1.4
+    ],
+    [
+     -14.9,
+     1.4
+    ],
+    [
+     -14.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "e81f8250-005c-56db-ad69-0f3f7eb1556a",
+    "alias": "Stair S1 F1",
+    "name": "Stair S1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -1.4
+     ],
+     [
+      -11,
+      -1.4
+     ],
+     [
+      -11,
+      1.4
+     ],
+     [
+      -14.9,
+      1.4
+     ],
+     [
+      -14.9,
+      -1.4
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 79"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1",
+    "area": 10.92,
+    "height": 3,
+    "volume": 32.76
+   },
+   "links": [
+    {
+     "targetId": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Stair S1 F1"
+    }
+   ]
+  },
+  {
+   "id": "9a2461ef-f74d-59d2-9143-8f6a6753256d",
+   "identifier": "MH2507A1B3C4D5/S01/F1/Lift-L1-F1",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1/Lift-L1-F1",
+   "name": "Lift L1",
+   "kind": "space",
+   "revision": 3,
+   "use": "lift",
+   "footprint": [
+    [
+     -10.9,
+     -1.4
+    ],
+    [
+     -8.5,
+     -1.4
+    ],
+    [
+     -8.5,
+     1.4
+    ],
+    [
+     -10.9,
+     1.4
+    ],
+    [
+     -10.9,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "9a2461ef-f74d-59d2-9143-8f6a6753256d",
+    "alias": "Lift L1 F1",
+    "name": "Lift L1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -10.9,
+      -1.4
+     ],
+     [
+      -8.5,
+      -1.4
+     ],
+     [
+      -8.5,
+      1.4
+     ],
+     [
+      -10.9,
+      1.4
+     ],
+     [
+      -10.9,
+      -1.4
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 80"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1",
+    "area": 6.72,
+    "height": 3,
+    "volume": 20.16
+   },
+   "links": [
+    {
+     "targetId": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Lift L1 F1"
+    }
+   ]
+  },
+  {
+   "id": "27417b84-9a97-597a-90f8-547c50ede3db",
+   "identifier": "MH2507A1B3C4D5/S01/F1/Corridor-F1",
+   "ulpin3d": "MH2507A1B3C4D5/S01/F1/Corridor-F1",
+   "name": "Corridor",
+   "kind": "space",
+   "revision": 3,
+   "use": "corridor",
+   "footprint": [
+    [
+     -8.4,
+     -1.4
+    ],
+    [
+     14.9,
+     -1.4
+    ],
+    [
+     14.9,
+     1.4
+    ],
+    [
+     -8.4,
+     1.4
+    ],
+    [
+     -8.4,
+     -1.4
+    ]
+   ],
+   "geometry": {
+    "id": "27417b84-9a97-597a-90f8-547c50ede3db",
+    "alias": "Corridor F1",
+    "name": "Corridor",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -8.4,
+      -1.4
+     ],
+     [
+      14.9,
+      -1.4
+     ],
+     [
+      14.9,
+      1.4
+     ],
+     [
+      -8.4,
+      1.4
+     ],
+     [
+      -8.4,
+      -1.4
+     ]
+    ],
+    "lower": 215.8,
+    "upper": 218.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 81"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 10"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "F1",
+    "area": 65.24,
+    "height": 3,
+    "volume": 195.72
+   },
+   "links": [
+    {
+     "targetId": "016f30d1-6bf2-501d-b337-66e9469ef6c8",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Corridor F1"
+    }
+   ]
+  },
+  {
+   "id": "c7c139db-96cd-507c-8d1d-1b40e9c7dc72",
+   "identifier": "MH2507A1B3C4D5/S01/G",
+   "ulpin3d": "MH2507A1B3C4D5/S01/G",
+   "name": "G",
+   "kind": "floor",
+   "revision": 3,
+   "use": "Ground, stilt parking",
+   "footprint": [
+    [
+     -15,
+     -10
+    ],
+    [
+     15,
+     -10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     -15,
+     10
+    ],
+    [
+     -15,
+     -10
+    ]
+   ],
+   "geometry": {
+    "id": "c7c139db-96cd-507c-8d1d-1b40e9c7dc72",
+    "alias": "G",
+    "name": "Ground, stilt parking",
+    "kind": "level",
+    "footprint": [
+     [
+      -15,
+      -10
+     ],
+     [
+      15,
+      -10
+     ],
+     [
+      15,
+      10
+     ],
+     [
+      -15,
+      10
+     ],
+     [
+      -15,
+      -10
+     ]
+    ],
+    "lower": 212.8,
+    "upper": 215.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.1"
+     },
+     "upper": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.1"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "G"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "locator": "p.1"
+    }
+   ]
+  },
+  {
+   "id": "4120c1f6-e385-5655-addd-29d1b91d6d9a",
+   "identifier": "MH2507A1B3C4D5/S01/G/Stilt-parking",
+   "ulpin3d": "MH2507A1B3C4D5/S01/G/Stilt-parking",
+   "name": "Stilt parking",
+   "kind": "space",
+   "revision": 3,
+   "use": "parking",
+   "footprint": [
+    [
+     -14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     -9.9
+    ],
+    [
+     14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     9.9
+    ],
+    [
+     -14.9,
+     -9.9
+    ]
+   ],
+   "geometry": {
+    "id": "4120c1f6-e385-5655-addd-29d1b91d6d9a",
+    "alias": "Stilt parking",
+    "name": "Stilt parking",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      -9.9
+     ],
+     [
+      14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      9.9
+     ],
+     [
+      -14.9,
+      -9.9
+     ]
+    ],
+    "lower": 212.8,
+    "upper": 215.8,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 83"
+     },
+     "lower": {
+      "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+      "locator": "p.1"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "G",
+    "area": 590.04,
+    "height": 3,
+    "volume": 1770.12
+   },
+   "links": [
+    {
+     "targetId": "c7c139db-96cd-507c-8d1d-1b40e9c7dc72",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Stilt parking"
+    }
+   ]
+  },
+  {
+   "id": "a744401d-ad7c-5b27-9bff-9aa9910e483a",
+   "identifier": "MH2507A1B3C4D5/S01/B1",
+   "ulpin3d": "MH2507A1B3C4D5/S01/B1",
+   "name": "B1",
+   "kind": "floor",
+   "revision": 3,
+   "use": "basement parking",
+   "footprint": [
+    [
+     -17,
+     -12
+    ],
+    [
+     17,
+     -12
+    ],
+    [
+     17,
+     12
+    ],
+    [
+     -17,
+     12
+    ],
+    [
+     -17,
+     -12
+    ]
+   ],
+   "geometry": {
+    "id": "a744401d-ad7c-5b27-9bff-9aa9910e483a",
+    "alias": "B1",
+    "name": "B1",
+    "kind": "level",
+    "footprint": [
+     [
+      -17,
+      -12
+     ],
+     [
+      17,
+      -12
+     ],
+     [
+      17,
+      12
+     ],
+     [
+      -17,
+      12
+     ],
+     [
+      -17,
+      -12
+     ]
+    ],
+    "lower": 209.1,
+    "upper": 212.4,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 11"
+     },
+     "upper": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 11"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "B1"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "locator": "row 11"
+    }
+   ]
+  },
+  {
+   "id": "2297adc5-ef09-562e-a6d6-b3a1e5e26f64",
+   "identifier": "MH2507A1B3C4D5/S01/B1/Parking-B1",
+   "ulpin3d": "MH2507A1B3C4D5/S01/B1/Parking-B1",
+   "name": "Parking B1",
+   "kind": "space",
+   "revision": 3,
+   "use": "parking",
+   "footprint": [
+    [
+     -16.9,
+     -11.9
+    ],
+    [
+     16.9,
+     -11.9
+    ],
+    [
+     16.9,
+     11.9
+    ],
+    [
+     -16.9,
+     11.9
+    ],
+    [
+     -16.9,
+     -11.9
+    ]
+   ],
+   "geometry": {
+    "id": "2297adc5-ef09-562e-a6d6-b3a1e5e26f64",
+    "alias": "Parking B1",
+    "name": "Parking B1",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -16.9,
+      -11.9
+     ],
+     [
+      16.9,
+      -11.9
+     ],
+     [
+      16.9,
+      11.9
+     ],
+     [
+      -16.9,
+      11.9
+     ],
+     [
+      -16.9,
+      -11.9
+     ]
+    ],
+    "lower": 209.1,
+    "upper": 212.4,
+    "lowerVerified": true,
+    "upperVerified": true,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 85"
+     },
+     "lower": {
+      "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+      "locator": "row 11"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "B1",
+    "area": 804.44,
+    "height": 3.3,
+    "volume": 2654.65
+   },
+   "links": [
+    {
+     "targetId": "a744401d-ad7c-5b27-9bff-9aa9910e483a",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Parking B1"
+    }
+   ]
+  },
+  {
+   "id": "e11c7076-5b32-5d89-a9d7-6e2cd64b2930",
+   "identifier": "MH2507A1B3C4D5/S01/B2",
+   "ulpin3d": "MH2507A1B3C4D5/S01/B2",
+   "name": "B2",
+   "kind": "floor",
+   "revision": 3,
+   "use": "basement parking",
+   "footprint": [
+    [
+     -17,
+     -12
+    ],
+    [
+     17,
+     -12
+    ],
+    [
+     17,
+     12
+    ],
+    [
+     -17,
+     12
+    ],
+    [
+     -17,
+     -12
+    ]
+   ],
+   "geometry": {
+    "id": "e11c7076-5b32-5d89-a9d7-6e2cd64b2930",
+    "alias": "B2",
+    "name": "B2",
+    "kind": "level",
+    "footprint": [
+     [
+      -17,
+      -12
+     ],
+     [
+      17,
+      -12
+     ],
+     [
+      17,
+      12
+     ],
+     [
+      -17,
+      12
+     ],
+     [
+      -17,
+      -12
+     ]
+    ],
+    "lower": 205.8,
+    "upper": 209.1,
+    "lowerVerified": false,
+    "upperVerified": false,
+    "bindings": {},
+    "revision": 3,
+    "levelLabel": "B2"
+   },
+   "links": [
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": []
+  },
+  {
+   "id": "07528ab6-d6e3-5a24-a861-00e0aacccf4b",
+   "identifier": "MH2507A1B3C4D5/S01/B2/Parking-B2",
+   "ulpin3d": "MH2507A1B3C4D5/S01/B2/Parking-B2",
+   "name": "Parking B2",
+   "kind": "space",
+   "revision": 3,
+   "use": "parking",
+   "footprint": [
+    [
+     -16.9,
+     -11.9
+    ],
+    [
+     16.9,
+     -11.9
+    ],
+    [
+     16.9,
+     11.9
+    ],
+    [
+     -16.9,
+     11.9
+    ],
+    [
+     -16.9,
+     -11.9
+    ]
+   ],
+   "geometry": {
+    "id": "07528ab6-d6e3-5a24-a861-00e0aacccf4b",
+    "alias": "Parking B2",
+    "name": "Parking B2",
+    "kind": "shared_space",
+    "footprint": [
+     [
+      -16.9,
+      -11.9
+     ],
+     [
+      16.9,
+      -11.9
+     ],
+     [
+      16.9,
+      11.9
+     ],
+     [
+      -16.9,
+      11.9
+     ],
+     [
+      -16.9,
+      -11.9
+     ]
+    ],
+    "lower": 205.8,
+    "upper": 209.1,
+    "lowerVerified": false,
+    "upperVerified": false,
+    "bindings": {
+     "footprint": {
+      "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+      "locator": "row 87"
+     }
+    },
+    "revision": 3,
+    "levelLabel": "B2",
+    "area": 804.44,
+    "height": 3.3,
+    "volume": 2654.65
+   },
+   "links": [
+    {
+     "targetId": "e11c7076-5b32-5d89-a9d7-6e2cd64b2930",
+     "type": "floor"
+    },
+    {
+     "targetId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+     "type": "within"
+    }
+   ],
+   "evidence": [
+    {
+     "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+     "locator": "unit Parking B2"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "id": "3aaf3b46-4f24-523b-96ef-bae1b28bd25e",
+   "name": "parcels.gpkg",
+   "sha256": "14681865a9546c68bf2e09e5b4099eac3930a67d7b38cf6fb835e25107c8d51a",
+   "revision": 1,
+   "profile": "geopackage-parcels",
+   "createdAt": "2026-09-24T11:02:00.000+05:30",
+   "url": "/api/v1/sources/3aaf3b46-4f24-523b-96ef-bae1b28bd25e/file",
+   "evidence": []
+  },
+  {
+   "id": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+   "name": "unit_inventory.xlsx",
+   "sha256": "bd097d687881c0fbdbc47ead031d54287b426e24effe77c073eda004e4f93efa",
+   "revision": 1,
+   "profile": "excel-unit-inventory",
+   "createdAt": "2026-09-24T11:03:00.000+05:30",
+   "url": "/api/v1/sources/0e2c19a4-3424-5ea1-b104-3701c52bf4f6/file",
+   "evidence": []
+  },
+  {
+   "id": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+   "name": "levels.csv",
+   "sha256": "dbe082503a553a937c9ba8d66ed2394cf3fc29f8aff863a6ebfe6be3c5062dfc",
+   "revision": 1,
+   "profile": "csv-level-schedule",
+   "createdAt": "2026-09-24T11:03:30.000+05:30",
+   "url": "/api/v1/sources/17c3ad59-8cf6-5471-a46c-41d5d676d18a/file",
+   "evidence": []
+  },
+  {
+   "id": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+   "name": "plan_F7.pdf",
+   "sha256": "485461e03773101077333e676db262c8f22aa010010a35fdc2e8ae32cfee2a77",
+   "revision": 2,
+   "profile": "sanctioned-plan-pdf",
+   "createdAt": "2026-09-24T11:04:00.000+05:30",
+   "url": "/api/v1/sources/6baaa3cd-4919-5d57-9885-f21c909448b6/file",
+   "evidence": []
+  },
+  {
+   "id": "222af5a2-09fd-5b29-bc26-89c5bc950562",
+   "name": "sale_deed_704.pdf",
+   "sha256": "c881cf8510cc9e2e9b39783fe07fb133d9f1ca67fc08b194961cdfaf9f680540",
+   "revision": 1,
+   "profile": "registered-deed-pdf",
+   "createdAt": "2026-09-24T11:04:30.000+05:30",
+   "url": "/api/v1/sources/222af5a2-09fd-5b29-bc26-89c5bc950562/file",
+   "evidence": []
+  },
+  {
+   "id": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+   "name": "deed_of_declaration.pdf",
+   "sha256": "bc7fa9b4023d0227f599e12fabea36709199f2a97497e44cb8e49be8eb16b044",
+   "revision": 1,
+   "profile": "registered-deed-pdf",
+   "createdAt": "2026-09-24T11:05:00.000+05:30",
+   "url": "/api/v1/sources/d0fee6be-0d27-5ea2-8033-f61f1dc84681/file",
+   "evidence": []
+  },
+  {
+   "id": "be23ff05-6446-5473-8346-6231e84b030c",
+   "name": "utility_survey_2026.csv",
+   "sha256": "853c0f3b88a00aa97a32a2734448fcdb4aef6d3db499109443dbebf26382d6e4",
+   "revision": 1,
+   "profile": "utility-survey-csv",
+   "createdAt": "2026-09-24T11:05:30.000+05:30",
+   "url": "/api/v1/sources/be23ff05-6446-5473-8346-6231e84b030c/file",
+   "evidence": []
+  }
+ ],
+ "missing": [],
+ "selection": {
+  "id": "e8e17f26-e098-5caa-92e9-49948df1816a",
+  "kind": "building",
+  "name": "Lake View Residence",
+  "ulpin3d": "MH2507A1B3C4D5/S01"
+ },
+ "ulpin3d": "MH2507A1B3C4D5/S01",
+ "buildingUlpin3d": "MH2507A1B3C4D5/S01",
+ "findingsScope": "building",
+ "geometryQualification": {
+  "state": "qualified",
+  "purpose": "identity_assignment",
+  "missing": []
+ },
+ "findings": [
+  {
+   "id": "f22c3139-c0f2-5544-a191-3263e9ac9993",
+   "category": "blocking",
+   "code": "exclusive_overlap",
+   "message": "Flat 101 / Flat 201: 16.3 m³ overlap",
+   "featureIds": [
+    "b6a6b9a7-aa2a-535f-b873-7dc9ad0147b3",
+    "9474dac4-851a-52a0-9689-d4ca39ebdc1b"
+   ],
+   "areaM2": 81.3,
+   "volumeM3": 16.3,
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -14.9,
+       1.6
+      ],
+      [
+       -5.1,
+       1.6
+      ],
+      [
+       -5.1,
+       9.9
+      ],
+      [
+       -14.9,
+       9.9
+      ],
+      [
+       -14.9,
+       1.6
+      ]
+     ]
+    ]
+   },
+   "method": "Check v1.4",
+   "quantities": {
+    "lowerM": 218.7,
+    "upperM": 218.9,
+    "depthM": 0.2
+   },
+   "evidence": [
+    {
+     "sourceRevisionId": "6c9caabe-9861-5299-8677-acfddbfb2d4f",
+     "row": 10
+    }
+   ],
+   "limitations": [
+    "Flat 201 lower limit is estimated and not verified"
+   ]
+  },
+  {
+   "id": "4961749b-ddc8-5e56-840c-1b6aa586d479",
+   "category": "blocking",
+   "code": "partition_void",
+   "message": "F8: 3.0 m³ unexplained void",
+   "featureIds": [
+    "6371d7b6-0df5-56f5-8be8-387762d25072"
+   ],
+   "areaM2": 1,
+   "volumeM3": 3,
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       14.544,
+       -1.4
+      ],
+      [
+       14.9,
+       -1.4
+      ],
+      [
+       14.9,
+       1.4
+      ],
+      [
+       14.544,
+       1.4
+      ],
+      [
+       14.544,
+       -1.4
+      ]
+     ]
+    ]
+   },
+   "method": "Check v1.4",
+   "quantities": {
+    "lowerM": 236.8,
+    "upperM": 239.8
+   },
+   "evidence": [],
+   "limitations": []
+  },
+  {
+   "id": "321a1cfd-2790-5c6a-92cc-3793cd0c737d",
+   "category": "needs_review",
+   "code": "carpet_area_deviation",
+   "message": "Flat 704: carpet area +3.9 %",
+   "featureIds": [
+    "155764d2-a90b-5a73-b313-65103a4ccd78"
+   ],
+   "method": "Check v1.4",
+   "quantities": {
+    "carpetM2": 69.3,
+    "declaredM2": 72,
+    "deviationPct": 3.9,
+    "thresholdPct": 2
+   },
+   "evidence": [
+    {
+     "sourceRevisionId": "a90df899-9112-5d58-8012-2a2c56f6f46e",
+     "page": 3
+    },
+    {
+     "sourceRevisionId": "182889de-cb05-540c-823d-6e17cce3273c",
+     "page": 2
+    }
+   ],
+   "limitations": []
+  },
+  {
+   "id": "a0248863-a40b-51cf-9c54-360f76c10f26",
+   "category": "needs_review",
+   "code": "share_total",
+   "message": "Shares total 99.50 %",
+   "featureIds": [
+    "e8e17f26-e098-5caa-92e9-49948df1816a"
+   ],
+   "method": "Check v1.4",
+   "quantities": {
+    "unitsDeclared": 48,
+    "units": 48,
+    "totalPct": 99.5
+   },
+   "evidence": [
+    {
+     "sourceRevisionId": "0b4fb624-7b09-55c3-a4f7-a7ec4230613b"
+    }
+   ],
+   "limitations": []
+  },
+  {
+   "id": "5e89e356-3b34-5f3b-bf28-ba5eeaf02744",
+   "category": "needs_review",
+   "code": "missing_evidence",
+   "message": "Flat 704 parking: needs evidence",
+   "featureIds": [
+    "155764d2-a90b-5a73-b313-65103a4ccd78"
+   ],
+   "method": "Check v1.4",
+   "quantities": {},
+   "evidence": [],
+   "limitations": [
+    "No source linked"
+   ]
+  }
+ ],
+ "findingQualification": {
+  "state": "partial",
+  "missing": [
+   {
+    "findingId": "exclusive_overlap:F3",
+    "participantId": "51a72723-4945-5ce1-9a62-b6466284a4e2",
+    "reason": "Not assessed: open shell on Flat 305"
+   }
+  ]
+ },
+ "scope": "Technical record of the building. Not a title, certificate or legal order."
+}
