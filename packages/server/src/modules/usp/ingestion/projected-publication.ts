@@ -9,6 +9,7 @@ import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUs
 import {appendCaseIngestionTx} from './events';
 import {projectedContextTx,assertProjectedInput,readProjectedArtifact,projectedObservationBytesTx} from './projected-vector';
 
+/** Callers take the admission/retirement advisory lock before case/source/job locks. */
 async function terminalTx(client:PoolClient,job:any,status:'failed'|'stale',code:string){
   const current=(await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE',[job.id])).rows[0];
   if(!current || !['queued','running'].includes(current.status))return;
@@ -34,7 +35,10 @@ async function terminalTx(client:PoolClient,job:any,status:'failed'|'stale',code
 }
 export async function failProjectedJob(id:string,code='PROJECTED_PROCESSING_FAILED',status:'failed'|'stale'='failed'){
   const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='projected-vector'",[id])).rows[0];if(!job)return;
-  await transaction(async client=>{await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE',[job.case_id]);await terminalTx(client,job,status,code);});
+  await transaction(async client=>{
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended('projected-vector-admission-v1',0))");
+    await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE',[job.case_id]);await terminalTx(client,job,status,code);
+  });
 }
 async function currentTx(client:PoolClient,job:any){
   const ctx=await projectedContextTx(client,job.case_id,job.source_id,true),input=assertProjectedInput(ctx,job.payload);
@@ -45,6 +49,7 @@ async function currentTx(client:PoolClient,job:any){
 export async function markProjectedRunning(id:string){
   const job=(await query('SELECT * FROM jobs WHERE id=$1',[id])).rows[0];if(!job || !['queued','running'].includes(job.status))return;
   await transaction(async client=>{
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended('projected-vector-admission-v1',0))");
     try{await currentTx(client,job);}catch(error){if(!(error instanceof AppError))throw error;await terminalTx(client,job,'stale','PROJECTED_CONTEXT_STALE');return;}
     const row=(await client.query("UPDATE jobs SET status='running',dispatched_at=COALESCE(dispatched_at,now()),error=NULL WHERE id=$1 AND status='queued' RETURNING id",[id])).rows[0];
     if(row)await appendCaseIngestionTx(client,job.case_id,{kind:'projected-vector.changed',jobId:id,status:'running'});
