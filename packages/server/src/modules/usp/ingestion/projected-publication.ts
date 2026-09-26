@@ -9,7 +9,7 @@ import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUs
 import {appendCaseIngestionTx} from './events';
 import {mvtBoundsTx,mvtTransaction,assertMvtDeadline} from '../tiles/bounds';
 import {semanticPartitions,prepareSemanticTx,sealSemanticTx,releaseSemanticDisplaysTx,sealedPrefixTx} from './semantic-chunks';
-import {runSemanticDisplay,createSemanticDisplayTx} from './semantic-display';
+import {runSemanticDisplay,createFinalSemanticDisplayTx} from './semantic-display';
 import {projectedContextTx,assertProjectedInput,readProjectedArtifact,projectedObservationBytesTx} from './projected-vector';
 
 /** Callers take the admission/retirement advisory lock before case/source/job locks. */
@@ -189,7 +189,7 @@ export async function ingestProjectedResult(id:string,value:unknown){
       await projectedPublicationContextTx(client,job);
     },async client=>{
       assertMvtDeadline(deadline);
-      if(input.semanticChunks){await createSemanticDisplayTx(client,job,'final',undefined,deadline);await releaseSemanticDisplaysTx(client,job,'MVT_MILESTONE_UNUSED');}
+      if(input.semanticChunks){await createFinalSemanticDisplayTx(client,job,deadline);await releaseSemanticDisplaysTx(client,job,'MVT_MILESTONE_UNUSED');}
       assertMvtDeadline(deadline);
     });
   }catch(error){

@@ -58,7 +58,7 @@ export async function projectedStatusTx(client:PoolClient,caseId:string,sourceId
   let displayMilestones;
   if(reservationRow){const reservation=SemanticDisplayReservationSchema.parse(reservationRow.result);displayMilestones=[];
     for(const phase of ['early','middle','final'] as const){const outcome=reservation.outcomes[phase],child=outcome.state==='created'?(await client.query('SELECT status,error FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3',[outcome.jobId,caseId,sourceId])).rows[0]:null;
-      displayMilestones.push({phase,jobId:outcome.state==='created'?outcome.jobId:null,state:outcome.state==='created'?(child?.status??'unavailable'):outcome.state,errorCode:outcome.state==='unavailable'?outcome.code:child?.error??null});}
+      displayMilestones.push({phase,jobId:outcome.state==='created'?outcome.jobId:null,state:outcome.state==='created'?(outcome.errorCode&&['queued','running'].includes(child?.status)?'unavailable':child?.status??'unavailable'):outcome.state,errorCode:outcome.state==='unavailable'?outcome.code:outcome.state==='created'&&child?.status!=='succeeded'?outcome.errorCode??child?.error??null:null});}
   }
   const errorCode=job.error ? /^[A-Z][A-Z0-9_]{0,79}$/.test(job.error)?job.error:'PROJECTED_PROCESSING_FAILED' : null;
   return ProjectedVectorStatusSchema.parse({version:profile.version,caseId,sourceId,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,

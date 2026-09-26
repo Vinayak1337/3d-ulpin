@@ -13,6 +13,7 @@ import {acceptedProjectedTx,projectedContextTx,observation} from '../ingestion/p
 import {appendCaseIngestionTx,ingestionBinding} from '../ingestion/events';
 import {mvtCompilerPinsTx} from './compiler';
 import {cellKey,sortedCells,boundsCells,windowCells,extentOf,type Bounds} from './grid';
+import {privateMvtCapacityTx} from './capacity';
 import {readMvtArtifact} from './storage';
 import {sealedPrefixTx,reservedDisplayCountTx} from '../ingestion/semantic-chunks';
 const uuid=(value:string)=>z.string().uuid().parse(value).toLowerCase();
@@ -83,11 +84,12 @@ export async function mvtStatusTx(client:PoolClient,caseId:string,sourceId:strin
     generation:row?{jobId:job.id,version:row.version,sha256:row.sha256}:null,preparedCells:row?.body.cells.length??0,
     plannedCells:job.payload.catalog.length,errorCode:job.error?/^[A-Z][A-Z0-9_]{0,79}$/.test(job.error)?job.error:'MVT_PROCESSING_FAILED':null});
 }
-export async function enqueuePrivateMvtTx(client:PoolClient,caseId:string,sourceId:string,value:unknown,reservedSlot?:{parentJobId:string;phase:SemanticDisplayPhase;jobId:string}){
+export async function enqueuePrivateMvtTx(client:PoolClient,caseId:string,sourceId:string,value:unknown,reservedSlot?:{parentJobId:string;phase:SemanticDisplayPhase;jobId:string;publicationMs:number}){
   const request=PrivateMvtRequestSchema.parse(value);
+  await client.query("SELECT pg_advisory_xact_lock(hashtextextended('private-mvt-admission-retirement-v1',0))");
   if(reservedSlot){const row=(await client.query("SELECT o.result,j.source_id,j.payload FROM operations o JOIN jobs j ON j.id=$3 WHERE o.case_id=$1 AND o.operation_key=$2 AND o.kind='stream-display-capacity' AND j.case_id=o.case_id AND j.operation='projected-vector' FOR UPDATE OF o",[caseId,`stream-display:${reservedSlot.parentJobId}`,reservedSlot.parentJobId])).rows[0];
     const reservation=row?SemanticDisplayReservationSchema.parse(row.result):null;
-    if(!reservation||row.source_id!==sourceId||!row.payload.semanticChunks||reservation.slots[reservedSlot.phase]!==reservedSlot.jobId||reservation.outcomes[reservedSlot.phase].state!=='reserved'||request.requestKey!==reservedSlot.jobId||request.admissionJobId!==reservedSlot.parentJobId)
+    if(!reservation||row.source_id!==sourceId||!row.payload.semanticChunks||reservation.slots[reservedSlot.phase]!==reservedSlot.jobId||reservation.outcomes[reservedSlot.phase].state!=='reserved'||request.requestKey!==reservedSlot.jobId||request.admissionJobId!==reservedSlot.parentJobId||reservedSlot.publicationMs!==60000)
       throw new AppError(409,'MVT_CAPACITY_RESERVATION','A canonical parent must own this exact unconsumed milestone slot.');
   }
   await client.query("SELECT pg_advisory_xact_lock(hashtextextended('private-mvt-admission-retirement-v1',0))");
@@ -99,11 +101,10 @@ export async function enqueuePrivateMvtTx(client:PoolClient,caseId:string,source
   if(request.expectedCaseRevision!==ctx.source.caseRevision||request.expectedSourceRevision!==ctx.source.sourceRevision)conflict('Refresh the current case/source revision before tiling.');
   const actual=ctx.accepted.ctx.source.inspection.privateMvt?.accepted??null;
   if(fingerprint(request.expectedGeneration)!==fingerprint(actual))throw new AppError(409,'MVT_BASE_PIN','Pin the current accepted generation before changing its catalog.');
-  const quota=(await client.query(`SELECT count(*)::int jobs,count(*) FILTER(WHERE status IN('queued','running'))::int active,
-    count(*) FILTER(WHERE status IN('queued','running','succeeded'))::int completed FROM jobs WHERE operation='private-mvt'`)).rows[0],
+  const quota=await privateMvtCapacityTx(client),
     aliases=(await client.query("SELECT count(*)::int count FROM operations WHERE kind='private-mvt'")).rows[0].count;
   const reserved=await reservedDisplayCountTx(client),consumed=reservedSlot?1:0;
-  if(quota.active>=p.active||quota.jobs+reserved-consumed>=p.jobs||quota.completed+reserved-consumed>=p.completed||aliases+reserved-consumed>=p.requests)
+  if(quota.active>=p.active||quota.jobs+reserved-consumed>=p.jobs||quota.history+reserved-consumed>=p.completed||aliases+reserved-consumed>=p.requests)
     throw new AppError(429,'MVT_RETENTION_BUDGET','The finite private tile job/request/history capacity is occupied; exact existing keys remain replayable.');
   const base=actual?await generationRowTx(client,sourceId,PrivateMvtGenerationPinSchema.parse(actual)):null,
     old=base?await mvtObservationsTx(client,base.manifest.source.admissionJobId,sourceId,base.manifest.source.chunk):[],oldMap=new Map(old.map(row=>[row.unitId,row])),newMap=new Map(ctx.observations.map(row=>[row.unitId,row]));
@@ -123,7 +124,7 @@ export async function enqueuePrivateMvtTx(client:PoolClient,caseId:string,source
   const plan=sortedCells(catalog.filter(cell=>!oldCells.has(cellKey(cell))||dirty.has(cellKey(cell))||base?.manifest.compiler.sha256!==ctx.compiler.sha256));
   if(!plan.length&&base&&fingerprint(base.manifest.source)===fingerprint(ctx.source))
     throw new AppError(409,'MVT_NO_CHANGE','The requested window and current source pins are already prepared; pin a real unit revalidation to rebuild it.');
-  const jobId=reservedSlot?.jobId??randomUUID(),payloadBase={kind:'retained_administrative_observations' as const,version:p.version,jobId,source:ctx.source,compiler:ctx.compiler,
+  const jobId=reservedSlot?.jobId??randomUUID(),payloadBase={...(reservedSlot?{publicationMs:reservedSlot.publicationMs}:{}),kind:'retained_administrative_observations' as const,version:p.version,jobId,source:ctx.source,compiler:ctx.compiler,
     base:request.expectedGeneration,window:request.window,catalog,plan,invalidation:{version:p.grid,cells:invalidated,changes,includeHalo:true as const,includeParents:true as const}},
     payload=PrivateMvtInputSchema.parse({...payloadBase,inputFingerprint:fingerprint(payloadBase)});
   if(Buffer.byteLength(JSON.stringify(payload))>512*1024)throw new AppError(422,'MVT_INPUT_BUDGET','The immutable tile input exceeds its bounded metadata profile.');
