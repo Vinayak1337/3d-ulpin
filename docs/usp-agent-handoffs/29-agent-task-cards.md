@@ -26,7 +26,7 @@ UI-01 through UI-09 are retired implementation assignments, retained only as his
 
 ## Backend migration and streaming execution cards
 
-These cards implement [the normalized decisions](backend-streaming-plan.md). Public delivery remains full product. Every task uses its own pinned worktree; Luna is xhigh/max. Frontend apps, scene/UI packages and `design-mockup/` are excluded.
+These cards implement [the normalized decisions](backend-streaming-plan.md). Public delivery remains full product. Every task uses its own pinned worktree; Luna is max only. Frontend apps, scene/UI packages and `design-mockup/` are excluded.
 
 ### API-DOC-01 · Implemented API and real dataset contract
 **Owner** FND · **Tier** T-work · **Test** GF-CONTRACT · **Needs** current route/code inventory
@@ -36,7 +36,7 @@ These cards implement [the normalized decisions](backend-streaming-plan.md). Pub
 - **Done when:** the frontend team can find an operation, its schema/access contract, real source availability and verification status; route coverage and local spec/link checks pass. A documentation UI is optional, local and read-only; public hosting is not authorized.
 
 ### DATA-10 · Official city or district scale layer
-**Owner** DATA · **Tier** T-read (Luna xhigh/max) · **Tests** GF-DATA, GF-SCALE-1 · **Needs** none
+**Owner** DATA · **Tier** T-read (Luna max only) · **Tests** GF-DATA, GF-SCALE-1 · **Needs** none
 - **Build:** discover through data.gov.in first, then issuing authorities; acquire a usable official Indian city/district layer with original bytes/hash, access/use/redistribution permission, extent, actual feature/position/byte counts, source keys and CRS/vertical limits. Reuse prior qualified bytes where suitable. Bound the first search to three credible candidates and two access attempts per candidate; do not scrape around authentication or invent replacement geometry.
 - **Owns:** a new leaf `fixtures/usp/D3/official-scale-v1/`, its acquisition checker under `scripts/usp/data/`, and one compact DATA-10 receipt. Keep restricted/large originals outside Git; include reproducible source locators.
 - **Done when:** the pack is actually acquired and inspected with a precise supported profile, or an evidenced access/permission gap is reported. A vector context layer is not a 3D city or legal parcel qualification. Missing data leaves the mandatory scale gate open.

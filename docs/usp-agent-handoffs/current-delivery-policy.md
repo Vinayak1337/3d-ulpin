@@ -30,7 +30,7 @@ GF-VIEW, GF-SCENE and GF-REHEARSAL retain their existing IDs and safety/processi
 
 ## Tasks, worktrees and Fast preference
 
-The lead owns plan hardening directly. Ordinary workers execute backend/data tasks in separate pinned worktrees, one writer per shared seam. Every Luna task uses xhigh or max; other model efforts are chosen per assignment. Preserve `design-mockup/` unchanged.
+The lead owns plan hardening directly. Ordinary workers execute backend/data tasks in separate pinned worktrees, one writer per shared seam. Every Luna task uses max only; higher-effort Sol and Astra workers are authorized where they improve quality, with effort chosen per assignment. Preserve `design-mockup/` unchanged.
 
 Use the user's configured Fast preference. `service_tier = "priority"` was observed in the local Codex configuration on 26 September; task creation has no speed parameter. Record requested Fast, configured tier and any actually observed per-turn tier separately. Do not infer observed service tier from effort, task title or configuration alone, and do not alter credentials/configuration to force it. Report an authentication/start failure once; do not retry in a loop. Model/effort and ownership rules live in the operating guide.
 

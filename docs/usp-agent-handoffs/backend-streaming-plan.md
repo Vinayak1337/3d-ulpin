@@ -4,7 +4,7 @@ Owner: LEAD; implementation: FND, INGEST and DATA. Adopted from the user's 26 Se
 
 ## Decisions and source normalization
 
-- Implement backend plan tasks in separate worker worktrees. The lead hardens and integrates plans directly. Ordinary Codex tasks are reused by model; every Luna assignment uses xhigh or max. Fast is requested, with actual turn tier reported only when observable.
+- Implement backend plan tasks in separate worker worktrees. The lead hardens and integrates plans directly. Ordinary Codex tasks are reused by model; every Luna assignment uses max only. Fast is requested, with actual turn tier reported only when observable.
 - Keep every public-portal capability in `full_product`: public tiles, search, records, verify, corrections, submissions and sign-in. Finale card verification remains the authorized same-device workflow. No public service activation or deployment is authorized.
 - Adopt `packages/server` as the gradual backend destination and keep `packages/contracts` as the wire contract. `apps/studio`, its role-gated admin routes, `apps/global`, shared scene and shared UI are user-owned target boundaries. This plan chooses or changes no frontend framework, renderer, dependency or component. Do not create those apps as a backend scaffolding task.
 - Keep existing clients and saved URLs working through thin adapters and compatibility exports. Freeze new frontend work in `apps/web`; permit assigned backend extraction and security fixes there. Do not bulk-move its server directory or delete it before consumers migrate.
@@ -62,7 +62,7 @@ Frontend consumption, pick-to-record interaction and frame-rate evidence are sep
 
 1. **API-DOC-01**, Sol: publish the implemented OpenAPI specification and frontend/data guide from actual code, with schemas and honest runtime/data availability. Run alongside DATA-10.
 2. **RUN-01**, Sol: qualify a guarded real-source local backend startup, health, import/job/read flow and recovery; provide API base URL and exact frontend startup instructions. Reuse an existing inspected official source independently of DATA-10 when possible.
-3. **DATA-10**, Luna xhigh/max: acquire and pin an eligible large official layer, or document a concrete access/permission gap. Starts alongside API-DOC-01 and may continue alongside API-01; select by official availability rather than imposing a new locality.
+3. **DATA-10**, Luna max only: acquire and pin an eligible large official layer, or document a concrete access/permission gap. Starts alongside API-DOC-01 and may continue alongside API-01; select by official availability rather than imposing a new locality.
 4. **API-01**, Sol: establish a server-only package and extract a bounded existing backend slice with compatibility exports, current API behavior and existing checks preserved. No new UI, database replacement or second authority.
 5. **INGEST-06**, Sol: durable large-original receipt and bounded admission, only where the selected source requires it.
 6. **TILE-01**, Sol: one qualified source/output profile, canonical identity mapping, private generation/outbox semantics and versioned cell invalidation. Reuse the existing jobs/guards; no parallel tiling control plane.
