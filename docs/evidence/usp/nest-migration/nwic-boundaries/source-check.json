@@ -233,6 +233,28 @@
       "command": "pnpm exec tsx -e UspDataPackSchema.safeParse(manifest.json)",
       "exit": 254,
       "reason": "tsx not found by pnpm in this worktree; no dependency installation attempted."
+    },
+    {
+      "operation": "Pack verification after sourceDate length correction",
+      "command": "pnpm exec tsx scripts/usp/data/verify-pack.ts '/Users/vinayak/.codex/worktrees/f017/3D Ulpin/fixtures/usp/D3/nwic-boundaries-v1/manifest.json'",
+      "workingDirectory": "/Users/vinayak/Desktop/3D Ulpin",
+      "exit": 0,
+      "resultSchema": "usp-pack-byte-check/1",
+      "result": "available source-observations.json hash/size verified; unchanged original correctly remains unavailable from the checked-in pack and is pinned in the receipt; no parsing, rendering, permission or workflow qualification."
+    }
+  ],
+  "correctionHistory": [
+    {
+      "recordedAtUtc": "2026-09-26T09:06:48Z",
+      "reviewFinding": "The initial assets[0].reference.sourceDate was 139 characters, exceeding coreText(128).",
+      "correction": "Shortened assets[0].reference.sourceDate to \"NWIC resource update 2025-05-01; dataset page updated 2025-05-05\" (64 characters). Full resource, dataset and HTTP Last-Modified dates and validity caveats remain in sourceVersion, provenance.sourceRelease and acquisition receipt.",
+      "originalsOrProfileChanged": false,
+      "priorSchemaAttemptPreserved": {
+        "exit": 254,
+        "reason": "Earlier worktree pnpm exec tsx attempt found no local tsx; retained unchanged in metadataChecks as historical failure."
+      },
+      "correctedManifestSha256": "c99b2a33c96707a608eb740543b3db9db7009c3ab71e53a7a890cbd6c2ee4e70",
+      "correctedManifestBytes": 8531
     }
   ]
 }
