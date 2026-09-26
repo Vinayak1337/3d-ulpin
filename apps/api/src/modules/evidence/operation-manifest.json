@@ -1,0 +1,34 @@
+{
+  "batch": "NEST-12",
+  "baseline": "fd7d3e3973e886deab5925eb4d61e9fed8a50f5e",
+  "module": "EvidenceModule",
+  "moduleImport": "./modules/evidence/evidence.module",
+  "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+  "schemaSource": ["apps/api/src/modules/evidence/evidence.schemas.ts", "apps/api/src/modules/evidence/evidence.http.ts"],
+  "runtimeEvidence": {
+    "openApi": "18 native method/path/operationId entries generated in memory without a listener",
+    "transport": "1 MiB received-byte and malformed-body tests passed",
+    "statefulServices": "not run in this batch; integrated owned-service acceptance pending",
+    "sourceAccuracy": "not qualified by these code checks"
+  },
+  "operations": [
+    { "method": "POST", "path": "/api/v1/usp/snapshots", "operationId": "POST_api_v1_usp_snapshots", "disposition": "retained", "controller": "SnapshotEvidenceController.capture", "schemaKey": "snapshots", "runtimeEvidence": "metadata-and-transport-only" },
+    { "method": "POST", "path": "/api/v1/usp/snapshots/read", "operationId": "POST_api_v1_usp_snapshots_read", "disposition": "retained", "controller": "SnapshotEvidenceController.read", "schemaKey": "snapshotRead", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/scope/read", "operationId": "POST_api_v1_usp_scope_read", "disposition": "retained", "controller": "SnapshotEvidenceController.scope", "schemaKey": "scopeRead", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/targets/resolve", "operationId": "POST_api_v1_usp_targets_resolve", "disposition": "retained", "controller": "SnapshotEvidenceController.resolve", "schemaKey": "targetResolve", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/targets/vertical", "operationId": "POST_api_v1_usp_targets_vertical", "disposition": "retained", "controller": "SnapshotEvidenceController.vertical", "schemaKey": "targetVertical", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/evidence/original", "operationId": "POST_api_v1_usp_evidence_original", "disposition": "retained", "controller": "OriginalEvidenceController.original", "schemaKey": "original", "runtimeEvidence": "metadata-and-binary-helper-only" },
+    { "method": "POST", "path": "/api/v1/usp/evidence/part", "operationId": "POST_api_v1_usp_evidence_part", "disposition": "retained", "controller": "OriginalEvidenceController.part", "schemaKey": "exactPart", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/proposals/prepare", "operationId": "POST_api_v1_usp_proposals_prepare", "disposition": "retained", "controller": "DecisionEvidenceController.prepare", "schemaKey": "prepare", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/proposals/commit", "operationId": "POST_api_v1_usp_proposals_commit", "disposition": "retained", "controller": "DecisionEvidenceController.commit", "schemaKey": "commit", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/identity/reviews", "operationId": "POST_api_v1_usp_identity_reviews", "disposition": "retained", "controller": "DecisionEvidenceController.review", "schemaKey": "identityReview", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/identity/assign", "operationId": "POST_api_v1_usp_identity_assign", "disposition": "retained", "controller": "DecisionEvidenceController.assign", "schemaKey": "identityAssign", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/identity/mutate", "operationId": "POST_api_v1_usp_identity_mutate", "disposition": "retained", "controller": "DecisionEvidenceController.mutate", "schemaKey": "identityMutate", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/identity/resolve", "operationId": "POST_api_v1_usp_identity_resolve", "disposition": "retained", "controller": "DecisionEvidenceController.resolve", "schemaKey": "identityResolve", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/exchange/cityjson/export", "operationId": "POST_api_v1_usp_exchange_cityjson_export", "disposition": "retained", "controller": "CityJsonEvidenceController.export", "schemaKey": "cityJsonExport", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/exchange/cityjson/compare", "operationId": "POST_api_v1_usp_exchange_cityjson_compare", "disposition": "retained", "controller": "CityJsonEvidenceController.compare", "schemaKey": "cityJsonCompare", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/packets", "operationId": "POST_api_v1_usp_packets", "disposition": "retained", "controller": "PacketEvidenceController.create", "schemaKey": "packetCreate", "runtimeEvidence": "metadata-only" },
+    { "method": "GET", "path": "/api/v1/usp/packets/{packetId}", "operationId": "GET_api_v1_usp_packets_packetId", "disposition": "retained", "controller": "PacketEvidenceController.download", "schemaKey": "packetBinary", "runtimeEvidence": "metadata-and-binary-helper-only" },
+    { "method": "GET", "path": "/api/v1/usp/packets/{packetId}/receipt", "operationId": "GET_api_v1_usp_packets_packetId_receipt", "disposition": "retained", "controller": "PacketEvidenceController.receipt", "schemaKey": "packetReceipt", "runtimeEvidence": "metadata-only" }
+  ]
+}
