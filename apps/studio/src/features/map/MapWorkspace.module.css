@@ -19,9 +19,12 @@
 .mapTools { position: absolute; top: var(--ui-space-4); left: var(--ui-space-4); z-index: calc(var(--ui-z-map-overlay) + 3); max-height: calc(100% - 80px); max-width: calc(100% - 32px); overflow: auto; border-radius: var(--ui-radius-12); background: var(--ui-surface); box-shadow: var(--ui-shadow-floating); }
 .mapTools > summary { display: flex; align-items: center; gap: 8px; padding: 12px 14px; cursor: pointer; list-style: none; font: 500 13px/20px var(--ui-font-sans); color: var(--ui-ink-soft); }
 .mapTools > summary::-webkit-details-marker { display: none; }
-.mapTools[open] { width: 220px; }
+.mapTools[open] { width: 280px; }
 .mapTools[open] > summary { border-bottom: 1px solid var(--ui-divider); margin-bottom: var(--ui-space-2); }
-.mapTools > nav { padding: 4px 10px 16px; gap: 20px; }
+.mapTools > nav { min-height: 0; }
+.mapTools { scrollbar-width: none; }
+.mapTools::-webkit-scrollbar { display: none; }
+.mapTools > summary { position: sticky; top: 0; z-index: 1; background: var(--ui-surface); }
 .deleteArea { margin: 0 10px 10px; color: var(--ui-danger); }
 .viewNote { display: grid; max-width: min(38rem, calc(100% - 20rem)); overflow-wrap: anywhere; position: absolute; left: var(--ui-space-4); bottom: var(--ui-space-4); z-index: var(--ui-z-map-overlay); margin: 0; padding: 4px 8px; border-radius: var(--ui-radius-4); background: color-mix(in srgb, var(--ui-surface) 90%, transparent); color: var(--ui-ink-soft); font: 400 11px/16px var(--ui-font-sans); pointer-events: none; }
 @media (prefers-reduced-motion: no-preference) {
