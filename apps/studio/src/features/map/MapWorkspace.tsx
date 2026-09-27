@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { FilePlus, SlidersHorizontal, Trash, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
-import type { FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
+import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
 import { Badge, Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
 import { useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
@@ -16,6 +16,8 @@ import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { polygonsOf } from './footprints';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
+import { PlanCheck, type MapPlanCheck } from './PlanCheck';
+import { isDemoId } from '../../api/demo-import';
 import { MapSidebar, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
@@ -62,6 +64,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
   const [focusSearch, setFocusSearch] = useState(false);
+  const [planResult, setPlanResult] = useState<MapPlanCheck | null>(null);
+  const activePlan = planResult?.areaId === context.area.id ? planResult : null;
 
   useEffect(() => {
     const pkg = packageId ? context.packages.find((p) => p.id === packageId) : context.packages.find((p) => p.quarantine);
@@ -99,7 +103,13 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const overlayQuery = useOverlays(context.area.id, supplemental, context.area.reference as AreaReference | null);
   const loadedOverlays = overlayQuery.data?.overlays ?? NO_LOADED_OVERLAYS;
   const showContextOverlays = (selection.mode === 'area' || selection.mode === 'building');
-  const overlayInputs = useMemo(() => loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]).map((o) => o.input), [loadedOverlays, mapView.overlays, showContextOverlays]);
+  const overlayInputs = useMemo<OverlayInput[]>(() => [
+    ...loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]).map((o) => o.input),
+    ...(activePlan && showContextOverlays ? [
+      { id: 'simulated-area-plan', kind: 'comparison' as const, role: 'plan' as const, polygons: activePlan.plan, heightM: 0 },
+      ...activePlan.findings.map(f => ({ id: `simulated-difference:${f.buildingId}`, kind: 'comparison' as const, role: 'conflict' as const, polygons: f.outside, heightM: f.heightM })),
+    ] : []),
+  ], [loadedOverlays, mapView.overlays, showContextOverlays, activePlan]);
   const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]);
   const overlayNotes = visibleOverlays.map((o) => o.note);
   const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view' : null, ...visibleOverlays.map((o) => o.caption), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
@@ -364,6 +374,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
             <details className={styles.mapTools}>
               <summary><Icon icon={SlidersHorizontal} size={20} />Tools</summary>
               <MapSidebar
+                planCheck={isDemoId(context.area.id) ? <PlanCheck key={context.area.id} areaId={context.area.id} result={activePlan} onResult={(result) => { setPlanResult(result); if (result) dispatch({ type: 'selectBuilding', id: null }); }} /> : undefined}
                 views={[
                   { key: 'area', label: 'Area' },
                   { key: 'building', label: 'Building', disabled: !feature },

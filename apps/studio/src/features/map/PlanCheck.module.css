@@ -1,0 +1,5 @@
+.panel { display: grid; gap: 12px; padding: 0 6px; font: 400 13px/18px var(--ui-font-sans); color: var(--ui-ink-soft); }
+.panel select { min-width: 0; width: 100%; min-height: 36px; padding: 6px 10px; border: 1px solid var(--ui-divider); border-radius: var(--ui-radius-8); background: var(--ui-surface); color: var(--ui-ink); font: inherit; }
+.panel select:focus-visible { outline: none; box-shadow: var(--ui-focus-ring); }
+.actions { display: flex; align-items: center; gap: 6px; }
+.error { margin: 0; color: var(--ui-danger); overflow-wrap: anywhere; }

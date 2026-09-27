@@ -1,5 +1,5 @@
 .sidebar { min-height: 0; display: flex; flex-direction: column; gap: 12px; padding: 0 12px 12px; }
-.sections { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; flex: none; }
+.sections { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; flex: none; }
 .sections button { min-height: 36px; border: 0; border-radius: var(--ui-radius-8); background: transparent; color: var(--ui-ink-soft); font: 500 13px/20px var(--ui-font-sans); cursor: pointer; }
 .sections button[aria-pressed="true"] { background: var(--ui-primary-soft); color: var(--ui-primary); }
 .sections button:hover { background: var(--ui-surface-tint); }
