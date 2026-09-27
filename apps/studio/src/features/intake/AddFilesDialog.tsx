@@ -222,7 +222,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           </div>
         ) : null}
 
-        {demoImportEnabled && files.length ? <Banner tone="info">Local demo import: all selected layers are normalized together with the fixed NYC profile and streamed into a new map. Original attributes are retained; no AI or registry recording is performed. Sidewalks and courts use the existing paved-surface style. Verified LAZ and GeoTIFF extracts are linked as spatial evidence; raw points and rasters are not drawn by the current map.</Banner> : null}
+        {demoImportEnabled && files.length ? <Banner tone="info">Local demo import: all selected layers are normalized together with the fixed NYC profile and streamed into a new map. Original attributes are retained; no AI or registry recording is performed. Sidewalks and courts use the existing paved-surface style. Verified LAZ and GeoTIFF extracts are linked as spatial evidence. Available aerial imagery and the derived LiDAR surface can be shown as context overlays; DEM samples remain evidence.</Banner> : null}
         {!demoImportEnabled && gis?.inspection && mapping && step >= 1 ? (
           <section className={styles.readAs} aria-label="How the file is read">
             <header className={styles.readAsHead}>

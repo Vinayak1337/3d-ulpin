@@ -23,6 +23,9 @@ export function toFootprints(features: AreaFeature[], storeys?: Map<string, Stor
 }
 
 /** Parcels, roads, public land, water and utilities: the flat base map and underground envelopes. */
+/** Source surface subtypes the renderer draws distinctly; others fall back to the feature kind. */
+const SURFACES: Record<string, string> = { roadbed: 'roadbed', sidewalk: 'sidewalk', court: 'court', parks: 'park', park: 'park', greenstreet: 'greenstreet' };
+
 export function toBase(features: AreaFeature[]): BaseFeatureInput[] {
   const out: BaseFeatureInput[] = [];
   for (const feature of features) {
@@ -37,10 +40,40 @@ export function toBase(features: AreaFeature[]): BaseFeatureInput[] {
       out.push({ id: feature.id, kind: 'utility', polygons, lowerM: extent ? extent.lower : undefined, upperM: extent ? extent.upper : undefined, network: typeof profile.network === 'string' ? profile.network : undefined });
     } else {
       const named = (feature.kind === 'road' || feature.kind === 'public_land') && feature.name ? { name: feature.name } : {};
-      out.push({ id: feature.id, kind: feature.kind === 'public_land' && props.land_cover === 'water' ? 'water' : feature.kind, polygons, ...named });
+      const surface = SURFACES[String(props.sourceSubtype ?? '').toLowerCase()];
+      out.push({ id: feature.id, kind: feature.kind === 'public_land' && props.land_cover === 'water' ? 'water' : feature.kind, polygons, ...named, ...(surface ? { surface } : {}) });
     }
   }
-  return out;
+  return dedupeNames(out);
+}
+
+/**
+ * One label per place: features sharing a name (case-insensitive) keep it only on the largest piece and on
+ * pieces more than 150 m from every kept piece (a name used across the area, such as a street-tree strip,
+ * stays on each separate place). Names are never changed, only not repeated.
+ */
+function dedupeNames(features: BaseFeatureInput[]): BaseFeatureInput[] {
+  const groups = new Map<string, { f: BaseFeatureInput; x: number; y: number; area: number }[]>();
+  for (const f of features) {
+    if (!f.name) continue;
+    const ring = f.polygons[0]?.[0] ?? [];
+    if (!ring.length) continue;
+    let area = 0;
+    for (let i = 0; i < ring.length - 1; i++) area += ring[i]![0] * ring[i + 1]![1] - ring[i + 1]![0] * ring[i]![1];
+    const x = ring.reduce((s, p) => s + p[0], 0) / ring.length, y = ring.reduce((s, p) => s + p[1], 0) / ring.length;
+    const key = f.name.trim().toLowerCase();
+    groups.set(key, [...(groups.get(key) ?? []), { f, x, y, area: Math.abs(area) / 2 }]);
+  }
+  const drop = new Set<string>();
+  for (const members of groups.values()) {
+    members.sort((a, b) => b.area - a.area);
+    const kept: typeof members = [];
+    for (const m of members) {
+      if (kept.some((k) => Math.hypot(k.x - m.x, k.y - m.y) < 150)) drop.add(m.f.id);
+      else kept.push(m);
+    }
+  }
+  return drop.size ? features.map((f) => (drop.has(f.id) ? { ...f, name: undefined } : f)) : features;
 }
 
 /**
