@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { FilePlus } from '@phosphor-icons/react';
+import { FilePlus, SlidersHorizontal, Trash, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
-import { Badge, Banner, Button, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
+import { Badge, Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
 import { useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
 import { effectiveColour } from '../../state/selection';
@@ -19,12 +19,11 @@ import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { MapSidebar, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
-import { BlockOverview, MapControls } from './MapControls';
+import { BuildingSearch } from './BuildingSearch';
 import { useMapView } from './useMapView';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
-import { AreaInspector } from './inspector/AreaInspector';
 import { BuildingInspector } from './inspector/BuildingInspector';
 import { FindingsInspector } from './inspector/FindingsInspector';
 import { SpaceInspector } from './inspector/SpaceInspector';
@@ -58,6 +57,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [toast, setToast] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
+  const [focusSearch, setFocusSearch] = useState(false);
 
   useEffect(() => {
     const pkg = packageId ? context.packages.find((p) => p.id === packageId) : context.packages.find((p) => p.quarantine);
@@ -255,7 +255,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ? `Horizontal: ${reference.analysisCrs} (source ${reference.sourceCrs}). Heights: ${reference.verticalReference}.`
     : 'No reference system: this area stays in its source’s local frame.';
   const hint = selection.mode === 'underground' && !trench?.ring ? (trench?.points.length === 1 ? 'Click the other end of the trench' : 'Click two points on the ground to draw a trench')
-    : selection.mode === 'area' && !feature ? 'Select a building'
+    : selection.mode === 'area' && !feature ? null
       : selection.mode === 'building' && model?.levels.length ? 'Select a floor'
         : selection.mode === 'level' && !space ? 'Select a unit' : null;
 
@@ -277,7 +277,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
         onExplore={() => { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }}
         onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })} />
     );
-  } else inspector = <AreaInspector area={context.area} buildings={buildings} onSelect={(id) => dispatch({ type: 'selectBuilding', id })} onDelete={() => setDialog('delete-area')} />;
+  } else inspector = null;
 
   const closeParam = (key: string) => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete(key); return n; }, { replace: true });
   const tray = packageId ? <ImportTray packageId={packageId} onClose={() => closeParam('package')} />
@@ -295,32 +295,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   return (
     <EvidenceProvider snapshot={snapshot}>
       <div className={styles.workspace}>
-        <MapSidebar
-          views={[
-            { key: 'area', label: 'Area' },
-            { key: 'building', label: 'Building', disabled: !feature },
-            { key: 'level', label: 'Floors', disabled: !model?.levels.length },
-            { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
-            { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
-          ]}
-          active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
-          onView={chooseView}
-          keySections={legend}
-          layers={layerSwitches} onLayer={onLayer}
-          layersNote={mapView.look === 'enhanced' ? 'Enhanced view adds illustrative colours, windows and trees. Footprints, heights and records are unchanged.' : null}
-          colour={colour} onColour={chooseColour}
-          colourOptions={[
-            { value: 'none', label: 'None' },
-            { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
-            { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
-          ]}
-          floor={selection.mode === 'level' && level ? level.label : null}
-          spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
-          rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
-          selectedSpaceId={selection.spaceId}
-          onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
-        />
-
         <section className={`${styles.canvasColumn} ${tray ? styles.withTray : ''}`} aria-label="Map">
           <div className={styles.canvasWrap}>
             <SceneView
@@ -336,9 +310,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               onTrench={setTrench}
               onReady={setEngine}
               look={mapView.look}
-              flat={mapView.flat}
+              flat={false}
               layers={mapView.layers}
-              label={`3D map of ${context.area.name}. The inspector lists the same buildings and spaces.`}
+              label={`3D map of ${context.area.name}. Search offers the same buildings; selected details open in the inspector.`}
             />
             {!reference ? (
               <div className={styles.banner}>
@@ -365,19 +339,59 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               </div>
             ) : null}
             <SceneLabels engine={engine} labels={labels} tick={tick} />
-            <MapControls flat={mapView.flat} onFlat={(flat) => setMapView({ flat })} onFit={() => engine?.resetCamera()} />
-            {!showRail ? (
-              <BlockOverview engine={engine} buildings={footprints} base={base} selectedId={feature?.id ?? null} tick={tick}
-                open={mapView.overview} onToggle={() => setMapView({ overview: !mapView.overview })} />
-            ) : null}
+            <details className={styles.mapTools}>
+              <summary><Icon icon={SlidersHorizontal} size={20} />Map tools</summary>
+              <MapSidebar
+                views={[
+                  { key: 'area', label: 'Area' },
+                  { key: 'building', label: 'Building', disabled: !feature },
+                  { key: 'level', label: 'Floors', disabled: !model?.levels.length },
+                  { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
+                  { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
+                ]}
+                active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
+                onView={chooseView}
+                keySections={legend}
+                layers={layerSwitches} onLayer={onLayer}
+                layersNote={mapView.look === 'enhanced' ? 'Enhanced view adds illustrative colours, windows and trees. Footprints, heights and records are unchanged.' : null}
+                colour={colour} onColour={chooseColour}
+                colourOptions={[
+                  { value: 'none', label: 'None' },
+                  { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
+                  { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
+                ]}
+                floor={selection.mode === 'level' && level ? level.label : null}
+                spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
+                rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
+                selectedSpaceId={selection.spaceId}
+                onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
+              />
+              {!feature ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
+            </details>
+            {feature ? (
+              <div className={styles.inspectorColumn} key={feature.id}>
+                <button type="button" className={styles.closeInspector} aria-label="Close building details" onClick={() => {
+                  setFocusSearch(true); dispatch({ type: 'selectBuilding', id: null });
+                }}><Icon icon={X} size={20} /></button>
+                {inspector}
+              </div>
+            ) : (
+              <div className={styles.searchPosition}>
+                <BuildingSearch buildings={buildings} areaId={context.area.id} autoFocus={focusSearch} onSelect={(id, areaId) => {
+                  setFocusSearch(false);
+                  if (areaId === context.area.id) dispatch({ type: 'selectBuilding', id });
+                  else navigate(`/studio/areas/${encodeURIComponent(areaId)}?feature=${encodeURIComponent(id)}`);
+                }} />
+              </div>
+            )}
             {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
+            {mapView.look === 'enhanced' ? <p className={styles.viewNote}>Enhanced view · illustrative details</p> : null}
             <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} /></div>
             {namespaces.length ? <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns]).join(' · ')}</p> : null}
           </div>
           {tray ? <div className={styles.tray}>{tray}</div> : null}
         </section>
 
-        <div className={styles.inspectorColumn}>{inspector}</div>
       </div>
 
       {dialog === 'files' && feature ? <AddFilesDialog buildingId={feature.id} onClose={() => setDialog(null)} /> : null}
