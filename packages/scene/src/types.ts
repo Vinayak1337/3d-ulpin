@@ -47,6 +47,17 @@ export interface BaseFeatureInput {
   upperM?: number;
   /** Utilities: network key for the colour ('water', 'metro', …). */
   network?: string;
+  /** Recorded name (roads, parks), for map labels. */
+  name?: string;
+}
+
+/** Base-map layers the viewer can switch off. Buildings and the selection always stay. */
+export interface SceneLayers {
+  parcels: boolean;
+  roads: boolean;
+  publicLand: boolean;
+  /** Illustrative trees in public land (enhanced view). */
+  trees: boolean;
 }
 
 /** Fill of a space in level mode, decided by the active Colour by. */

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { SceneEngine, type SceneEngineOptions } from './engine';
 import { readPalette } from './palette';
-import type { BaseFeatureInput, BuildingDetailInput, FootprintInput, Measurement, Pick, SceneState, Trench } from './types';
+import type { SceneLook } from './look';
+import type { BaseFeatureInput, BuildingDetailInput, FootprintInput, Measurement, Pick, SceneLayers, SceneState, Trench } from './types';
 
 export interface SceneViewProps {
   base?: BaseFeatureInput[];
@@ -10,6 +11,11 @@ export interface SceneViewProps {
   state: SceneState;
   /** Grow newly added buildings in (live import). */
   growNew?: boolean;
+  /** Enhanced (default) or plain look. */
+  look?: SceneLook;
+  /** Top-down camera. */
+  flat?: boolean;
+  layers?: Partial<SceneLayers>;
   onPick?: (pick: Pick) => void;
   onHover?: (pick: Pick) => void;
   onView?: () => void;
@@ -28,7 +34,7 @@ const NO_BASE: BaseFeatureInput[] = [];
  * Thin React adapter: one engine per mount, props forwarded as imperative calls.
  * Callbacks go through a ref so a new closure never rebuilds the scene.
  */
-export function SceneView({ base = NO_BASE, buildings, detail, state, growNew, onPick, onHover, onView, onMeasure, onTrench, onReady, className, style, label }: SceneViewProps) {
+export function SceneView({ base = NO_BASE, buildings, detail, state, growNew, look = 'enhanced', flat = false, layers, onPick, onHover, onView, onMeasure, onTrench, onReady, className, style, label }: SceneViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const callbacks = useRef({ onPick, onHover, onView, onMeasure, onTrench });
@@ -57,6 +63,11 @@ export function SceneView({ base = NO_BASE, buildings, detail, state, growNew, o
   useEffect(() => { engine?.setBuildings(buildings, { growNew }); }, [engine, buildings, growNew]);
   useEffect(() => { engine?.setBuildingDetail(detail); }, [engine, detail]);
   useEffect(() => { engine?.setState(state); }, [engine, state]);
+  useEffect(() => { engine?.setLook(look); }, [engine, look]);
+  useEffect(() => { engine?.setFlat(flat); }, [engine, flat]);
+  const layerKey = JSON.stringify(layers ?? {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (layers) engine?.setLayers(layers); }, [engine, layerKey]);
 
   return <div ref={containerRef} className={className} style={style} role="img" aria-label={label} />;
 }

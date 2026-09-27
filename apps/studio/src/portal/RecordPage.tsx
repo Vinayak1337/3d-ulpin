@@ -48,7 +48,7 @@ export function RecordPage() {
         <div className={styles.stack}>
           <div className={styles.sceneBox}>
             {map && building ? <PublicScene className={styles.canvas} map={map} building={building} levelId={r.levelId} spaceId={r.id} label={`${r.name} on ${r.level}, view only`} /> : null}
-            <span className={styles.viewOnly}>View only</span>
+            <span className={styles.viewOnly}>View only · illustrative look</span>
           </div>
           {building ? (
             <StrataSection parcel={building.parcelUlpin} ground={building.groundM} datum={building.datum} selectedId={r.levelId} selectedLabel={`${r.level} · ${r.name}`}
