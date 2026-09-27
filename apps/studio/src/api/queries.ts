@@ -1,3 +1,4 @@
+import { demoAreas, isDemoId, useDemoAreaStream } from './demo-import';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
 import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard } from '@ulpin/api-client/draft';
@@ -117,17 +118,18 @@ export function useWorkQueue(status: WorkStatusFilter, q: string, page: number) 
 }
 
 export function useAreas() {
-  return useQuery({ queryKey: queryKeys.areas, queryFn: async () => unwrap(await api.GET('/api/v1/areas')), staleTime: 60_000 });
+  return useQuery({ queryKey: queryKeys.areas, queryFn: async () => [...unwrap(await api.GET('/api/v1/areas')), ...await demoAreas()], staleTime: 60_000 });
 }
 
 /** `live`: an import into this area is streaming, so poll until it settles (SSE replaces this later). */
 export function useAreaContext(areaId: string | undefined, live = false) {
+  useDemoAreaStream(areaId);
   return useQuery({
     queryKey: queryKeys.areaContext(areaId ?? ''),
-    enabled: Boolean(areaId),
+    enabled: Boolean(areaId) && !isDemoId(areaId),
     queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: areaId! } } })),
     staleTime: 60_000,
-    refetchInterval: live ? 700 : false,
+    refetchInterval: live && !isDemoId(areaId) ? 700 : false,
   });
 }
 

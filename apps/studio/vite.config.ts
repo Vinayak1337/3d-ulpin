@@ -2,11 +2,13 @@ import { defineConfig } from 'vitest/config';
 import { rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
+import { studioDemoImport } from '../../scripts/demo-import/plugin.mjs';
 
 const API_TARGET = process.env.ULPIN_API_TARGET ?? 'http://127.0.0.1:3188';
 
 export default defineConfig({
   plugins: [
+    studioDemoImport(),
     react(),
     {
       // The local data layer is development-only: keep its service worker out of production output.

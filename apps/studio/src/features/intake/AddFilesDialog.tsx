@@ -5,6 +5,7 @@ import { CaretDown, CheckCircle, FileArrowUp, Trash, Warning } from '@phosphor-i
 import type { FileDetection, ImportBatch } from '@ulpin/api-client/draft';
 import { ApiError, api, type Schemas } from '@ulpin/api-client';
 import { Badge, Banner, Button, DataTable, Dialog, Icon, Skeleton, StatusBadge, formatCount, formatDateTime } from '@ulpin/ui';
+import { demoImportEnabled, inspectDemoFile, startDemoImport } from '../../api/demo-import';
 import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
@@ -127,7 +128,9 @@ function NewFiles({ onClose }: { onClose: () => void }) {
     for (const item of picked.filter((p) => p.state === 'inspecting')) {
       const body = new FormData();
       body.set('file', item.file);
-      const result = await api.POST('/api/v1/import-packages/inspect', { body: body as never, bodySerializer: (b) => b as unknown as FormData });
+      const result = demoImportEnabled
+        ? await inspectDemoFile(item.file).then(data => ({ data, error: undefined, response: new Response() })).catch(error => ({ data: undefined, error: { message: error.message }, response: new Response(null, { status: 400 }) }))
+        : await api.POST('/api/v1/import-packages/inspect', { body: body as never, bodySerializer: (b) => b as unknown as FormData });
       setFiles((current) => current.map((f) => (f.file !== item.file ? f
         : result.data ? { ...f, state: 'ready', inspection: result.data } : { ...f, state: 'failed', error: new ApiError(result.response.status, '', result.error).message })));
       if (result.data) {
@@ -137,13 +140,14 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           heightField: height?.name ?? '', heightUnit: '',
           heightMeaning: '',
         });
-        setSummary(await kindSummary(item.file));
+        if (!demoImportEnabled) setSummary(await kindSummary(item.file));
       }
     }
   };
 
   const importFile = useMutation({
     mutationFn: async () => {
+      if (demoImportEnabled) return startDemoImport(files.map(item => item.file));
       if (!gis?.inspection || !mapping) throw new Error('Choose a GIS file first.');
       const body = new FormData();
       body.set('file', gis.file);
@@ -163,7 +167,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
     onSuccess: async (pkg) => { await client.invalidateQueries(); navigate(`/studio/areas/${pkg.areaId}?package=${pkg.id}`); },
   });
 
-  const blocked = !gis ? 'add a GIS file (GeoJSON, GeoPackage or a zipped shapefile)'
+  const blocked = demoImportEnabled ? (!files.length ? 'add the NYC layer files or their ZIP' : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null) : !gis ? 'add a GIS file (GeoJSON, GeoPackage or a zipped shapefile)'
     : gis.inspection?.quarantine?.accepted === 0 ? 'no source geometries were accepted'
     : !gis.inspection?.sourceCrs ? 'the file states no coordinate reference system'
       : !mapping?.idField ? 'choose the field that identifies each feature'
@@ -218,7 +222,8 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           </div>
         ) : null}
 
-        {gis?.inspection && mapping && step >= 1 ? (
+        {demoImportEnabled && files.length ? <Banner tone="info">Local demo import: all selected layers are normalized together with the fixed NYC profile and streamed into a new map. Original attributes are retained; no AI or registry recording is performed. Sidewalks and courts use the existing paved-surface style.</Banner> : null}
+        {!demoImportEnabled && gis?.inspection && mapping && step >= 1 ? (
           <section className={styles.readAs} aria-label="How the file is read">
             <header className={styles.readAsHead}>
               <span className="ul-heading">{step === 2 ? 'It will be read like this' : 'We propose to read it like this'}</span>
@@ -277,7 +282,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           </section>
         ) : null}
 
-        {step === 2 && gis?.inspection ? (
+        {!demoImportEnabled && step === 2 && gis?.inspection ? (
           <Banner tone="info">
             Start import retains <span className="ul-id">{gis.file.name}</span> unchanged (SHA-256 <span className="ul-mono">{gis.inspection.sourceSha256.slice(0, 12)}…</span>) and creates an import to review. Nothing is recorded until you review and record it.
           </Banner>

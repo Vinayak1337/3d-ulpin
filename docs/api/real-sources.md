@@ -1,5 +1,7 @@
 # Official source index and retained dataset catalogue
 
+Local full-map demo upload: [fixed NYC normalization, SSE and runbook](demo-import.md). This opt-in display adapter is separate from the real registry and does not qualify production ingestion.
+
 Use this index before source-dependent orchestration and frontend/API integration. Official discovery links and retained source packs are separate: an online listing is not a downloaded original, an inspected original is not an installed record, and a runtime receipt qualifies only its stated profile. Last discovery/status review: **27 September 2026**. Exact bytes, hashes and qualification history belong in the linked manifests/receipts, not duplicated here.
 
 ## Official discovery entry points
