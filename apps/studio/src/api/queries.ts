@@ -14,6 +14,19 @@ export type BuildingRegister = Extract<GetResponse<'/api/v1/buildings/{buildingI
 export type RegisterRecord = BuildingRegister['register'][number];
 export type RegisterSource = BuildingRegister['sources'][number];
 
+/** Published identifier resolver; keeps ULPIN and registry associations on the backend. */
+export function useMapIdentifierSearch(identifier: string) {
+  return useQuery({
+    queryKey: ['map-identifier-search', identifier],
+    enabled: identifier.length >= 3,
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/resolve', {
+      params: { query: { identifier } }, signal,
+    })),
+    staleTime: 30_000,
+    retry: false,
+  });
+}
+
 export const queryKeys = {
   workQueue: (status: WorkStatusFilter, q: string, page: number) => ['work-queue', status, q, page] as const,
   areas: ['areas'] as const,
