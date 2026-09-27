@@ -31,3 +31,5 @@
 .spaces button:hover { background: var(--ui-surface-tint); }
 .spaces button[aria-current="true"] { background: var(--ui-primary-soft); font-weight: 600; }
 .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; background-color: var(--ui-border-strong); }
+.layers { display: grid; gap: 2px; padding: 0 2px; font-size: 13px; color: var(--ui-ink-soft); }
+.note { margin: 0; padding: 0 10px; font: 400 12px/16px var(--ui-font-sans); color: var(--ui-muted); }

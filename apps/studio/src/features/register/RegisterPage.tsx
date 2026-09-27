@@ -21,6 +21,7 @@ import { useBuildingScene } from '../map/useBuildingScene';
 import { CheckGroups } from '../review/CheckGroups';
 import { useBuildingActions, useBuildingWorkflow, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { cityJson, download, fileStem, unitsCsv } from './exporters';
+import { useMapView } from '../map/useMapView';
 import styles from './RegisterPage.module.css';
 
 type Tab = 'units' | 'shares' | 'documents' | 'checks' | 'history';
@@ -53,6 +54,7 @@ export function unitStatus(workflow: SpaceWorkflow | undefined, ledger: Building
 }
 
 function Register({ register }: { register: BuildingRegister }) {
+  const [{ look: mapLook, layers: mapLayers }] = useMapView();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const tab = (TABS.includes(params.get('tab') as Tab) ? params.get('tab') : 'units') as Tab;
@@ -151,7 +153,7 @@ function Register({ register }: { register: BuildingRegister }) {
         <div className={styles.body}>
           <div className={styles.sceneColumn}>
             <div className={styles.canvasWrap}>
-              {context ? <SceneView className={styles.canvas} base={base} buildings={footprints} detail={detail} state={sceneState}
+              {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={sceneState}
                 onPick={onPick} onView={() => setTick((t) => (t + 1) % 1_000_000)} onReady={setEngine}
                 label={`3D view of ${property.name}. The tables beside it list the same levels and units.`} /> : null}
               {compare && ledger?.deviation ? (

@@ -1,16 +1,17 @@
 import {
   BackSide, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
   Group, HemisphereLight, LineBasicMaterial, LineDashedMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial,
-  MeshStandardMaterial, PCFShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
+  MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
   SphereGeometry, Vector2, Vector3, WebGLRenderer, type Material, type Object3D,
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
 import { FLAT_THICKNESS_M, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
+import { enhanceFacade, facadeTint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
-  ScenePalette, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
+  ScenePalette, SceneLayers, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
 } from './types';
 
 export interface SceneEngineOptions {
@@ -22,6 +23,8 @@ export interface SceneEngineOptions {
   onMeasure?: (measurement: Measurement) => void;
   onTrench?: (trench: Trench) => void;
   reducedMotion?: boolean;
+  /** Enhanced (illustrative dressing, the default) or plain massing. */
+  look?: SceneLook;
 }
 
 interface Entry {
@@ -40,6 +43,9 @@ interface Entry {
 
 const CAMERA_MS = 600;
 const GROW_MS = 220;
+/** Sun direction (towards the sun) in scene axes: from the south-west, high. */
+const SUN_DIR = new Vector3(-0.5, 0.95, 0.55).normalize();
+
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
 
 /**
@@ -102,6 +108,18 @@ export class SceneEngine {
   private readonly trenchGroup = new Group();
   private areaBox = new Box3();
   private haloOwned = false;
+  private readonly dressing = new Group();
+  private readonly kerbs = new Group();
+  private readonly plate: Mesh;
+  private readonly look = lookUniforms();
+  private lookName: SceneLook;
+  private flat = false;
+  private readonly sky: CanvasTexture;
+  private readonly footprintPolygons = new Map<string, MultiPolygon>();
+  private lands: { id: string; polygons: MultiPolygon }[] = [];
+  private dressingKey = '';
+  private hasRoads = false;
+  private layers: SceneLayers = { parcels: true, roads: true, publicLand: true, trees: true };
 
   constructor(container: HTMLElement, options: SceneEngineOptions) {
     this.container = container;
@@ -112,7 +130,7 @@ export class SceneEngine {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFShadowMap;
+    this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.localClippingEnabled = true;
     this.renderer.setClearColor(new Color(palette.ground));
     this.renderer.domElement.style.display = 'block';
@@ -135,12 +153,21 @@ export class SceneEngine {
     this.hemi = new HemisphereLight(0xffffff, 0xcfd6d4, 1.6);
     this.sun = new DirectionalLight(0xffffff, 1.35);
     this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
+    this.sun.shadow.mapSize.set(4096, 4096);
     this.sun.shadow.bias = -0.0005;
     this.sun.shadow.normalBias = 0.4;
     this.scene.add(this.hemi, this.sun, this.sun.target);
+    this.sky = skyTexture('#dfe9f0', '#f3f5f2');
 
     this.m = makeMaterials(palette, this.clip);
+    enhanceFacade(this.m.bldg, this.look, { windows: true, tint: true });
+    enhanceFacade(this.m.bldgContext, this.look, { windows: true, tint: true });
+    enhanceFacade(this.m.selected, this.look, { windows: true, tint: false, glass: '#8fb3a8' });
+    this.plate = new Mesh(new BufferGeometry(), this.m.plate);
+    this.plate.visible = false;
+    this.plate.renderOrder = -2;
+    this.plate.raycast = () => {};
+    this.lookName = options.look ?? 'enhanced';
     this.ground = new Mesh(new PlaneGeometry(1, 1), this.m.ground);
     this.ground.rotation.x = -Math.PI / 2;
     this.ground.receiveShadow = true;
@@ -149,7 +176,8 @@ export class SceneEngine {
     this.halo.renderOrder = -1;
     this.halo.visible = false;
     this.underground.add(this.utilities, this.trenchGroup);
-    this.scene.add(this.ground, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.deviationGroup, this.halo);
+    this.base.add(this.kerbs);
+    this.scene.add(this.ground, this.dressing, this.plate, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.deviationGroup, this.halo);
 
     const canvas = this.renderer.domElement;
     canvas.addEventListener('pointerdown', this.onPointerDown);
@@ -160,6 +188,97 @@ export class SceneEngine {
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(container);
     this.resize();
+    this.setLook(this.lookName);
+  }
+
+  // ------------------------------------------------------------------- look
+
+  /** Enhanced view (illustrative tints, windows, pads, trees, sky) or plain massing. Records are unchanged either way. */
+  setLook(look: SceneLook): void {
+    this.lookName = look;
+    const on = look === 'enhanced';
+    const p = this.options.palette;
+    const m = this.m;
+    this.look.uLook.value = on ? 1 : 0;
+    m.bldg.color.set(on ? '#ffffff' : p.building);
+    m.bldgContext.color.set(on ? '#dfe2df' : new Color(p.ground).lerp(new Color(p.building), 0.35).getStyle());
+    // With recorded roads the land between them is light and the roads dark; without, the open ground reads as street.
+    m.ground.color.set(on ? (this.hasRoads ? '#dfe2dc' : '#b9bebd') : p.ground);
+    m.road.color.set(on ? '#a4a9ab' : p.road);
+    m.publicLand.color.set(on ? '#c9dcb8' : p.publicLand);
+    m.water.color.set(on ? '#a9cbe0' : p.water);
+    m.edge.color.set(on ? '#cfc9bf' : p.buildingEdge);
+    m.edgeContext.color.set(on ? '#cfc9bf' : p.buildingEdge);
+    const horizon = new Color(on ? '#eef1ee' : p.ground);
+    this.scene.background = on ? this.sky : new Color(p.ground);
+    (this.scene.fog as Fog).color.copy(horizon);
+    this.renderer.setClearColor(horizon);
+    this.hemi.color.set(on ? '#f3f7fb' : '#ffffff');
+    this.hemi.groundColor.set(on ? '#d6cfbf' : '#cfd6d4');
+    this.sun.color.set(on ? '#fff3e0' : '#ffffff');
+    this.dressing.visible = on;
+    this.applyLayers();
+    this.apply();
+  }
+
+  /** Shows or hides base-map layers. */
+  setLayers(layers: Partial<SceneLayers>): void {
+    this.layers = { ...this.layers, ...layers };
+    this.applyLayers();
+    this.requestRender();
+  }
+
+  private applyLayers() {
+    const on = (layer: unknown) => {
+      if (layer === 'parcel') return this.layers.parcels;
+      if (layer === 'road') return this.layers.roads;
+      if (layer === 'public_land' || layer === 'water') return this.layers.publicLand;
+      if (layer === 'trees') return this.layers.trees && this.layers.publicLand;
+      return true;
+    };
+    for (const child of this.base.children) child.visible = on(child.userData.layer);
+    this.kerbs.visible = this.lookName === 'enhanced' && this.layers.roads;
+    for (const child of this.dressing.children) child.visible = on(child.userData.layer);
+  }
+
+  /** Top-down (2D) or oblique (3D) camera. */
+  setFlat(flat: boolean): void {
+    if (flat === this.flat) return;
+    this.flat = flat;
+    this.controls.maxPolarAngle = flat ? 0 : Math.PI * 0.62;
+    this.controls.minPolarAngle = 0;
+    this.cameraKey = '';
+    this.applyCamera(false);
+  }
+
+  /** The ground area in view (local east, north), for the overview map. */
+  viewFootprint(): [number, number][] {
+    const out: [number, number][] = [];
+    const reach = this.camera.position.distanceTo(this.controls.target) * 4;
+    for (const [x, y] of [[-1, -1], [1, -1], [1, 1], [-1, 1]] as const) {
+      this.raycaster.setFromCamera(new Vector2(x, y), this.camera);
+      const { origin, direction } = this.raycaster.ray;
+      const t = direction.y < -1e-4 ? Math.min(-origin.y / direction.y, reach) : reach;
+      out.push([origin.x + direction.x * t, -(origin.z + direction.z * t)]);
+    }
+    return out;
+  }
+
+  /** Orbit target in local east, north. */
+  targetXY(): [number, number] {
+    return [this.controls.target.x, -this.controls.target.z];
+  }
+
+  /** Moves the view so it centres on a point (local east, north), keeping the angle and distance. */
+  panTo(x: number, y: number): void {
+    const delta = new Vector3(x - this.controls.target.x, 0, -y - this.controls.target.z);
+    const to: [Vector3, Vector3] = [this.camera.position.clone().add(delta), this.controls.target.clone().add(delta)];
+    if (this.options.reducedMotion) {
+      this.camera.position.copy(to[0]); this.controls.target.copy(to[1]); this.controls.update(); this.requestRender();
+      return;
+    }
+    this.flight = { from: [this.camera.position.clone(), this.controls.target.clone()], to, start: performance.now() };
+    this.requestRender();
   }
 
   // ---------------------------------------------------------------- content
@@ -167,7 +286,12 @@ export class SceneEngine {
   /** Base map: roads, public land, water and parcel lines; utilities are kept for underground mode. */
   setBase(features: BaseFeatureInput[]): void {
     disposeGroup(this.base);
+    disposeGroup(this.kerbs);
+    this.base.add(this.kerbs);
+    for (const key of [...this.anchors.keys()]) if (key.startsWith('name:')) this.anchors.delete(key);
     const m = this.m;
+    const kerbLines: number[] = [];
+    const laneLines: number[] = [];
     const lift: Record<string, number> = { public_land: 0.019, road: 0.021, water: 0.03 };
     const parcelLines: number[] = [];
     for (const f of features) {
@@ -178,11 +302,29 @@ export class SceneEngine {
       }
       const shapes = shapesFor(f.polygons);
       if (!shapes.length) continue;
+      if (f.kind === 'road') {
+        for (const polygon of f.polygons) for (const ring of polygon) kerbLines.push(...ringLines(ring, 0.05));
+        laneLines.push(...laneDashes(f.polygons, 0.05));
+      }
       const mesh = new Mesh(prismGeometry(f.polygons, lift[f.kind] ?? 0.02, 0.001), f.kind === 'road' ? m.road : f.kind === 'water' ? m.water : m.publicLand);
       mesh.receiveShadow = true;
+      mesh.userData.layer = f.kind;
+      if (f.name) {
+        const box = mesh.geometry.boundingBox!;
+        this.anchors.set(`name:${f.id}`, new Vector3((box.min.x + box.max.x) / 2, 0.2, (box.min.z + box.max.z) / 2));
+      }
       this.base.add(mesh);
     }
-    if (parcelLines.length) this.base.add(lines(parcelLines, m.parcel));
+    if (parcelLines.length) { const l = lines(parcelLines, m.parcel); l.userData.layer = 'parcel'; this.base.add(l); }
+    if (kerbLines.length) this.kerbs.add(lines(kerbLines, m.kerb));
+    if (laneLines.length) this.kerbs.add(lines(laneLines, m.kerb));
+    const hadRoads = this.hasRoads;
+    this.hasRoads = features.some((f) => f.kind === 'road');
+    if (hadRoads !== this.hasRoads) this.setLook(this.lookName);
+    this.lands = features.filter((f) => f.kind === 'public_land').map((f) => ({ id: f.id, polygons: f.polygons }));
+    this.dressingKey = '';
+    this.buildDressing();
+    this.applyLayers();
     this.utilityInputs = features.filter((f) => f.kind === 'utility');
     this.buildUtilities();
     this.apply();
@@ -197,6 +339,9 @@ export class SceneEngine {
     this.clearEntries(this.buildings, (e) => e.kind === 'building' || e.kind === 'storey');
     this.buildingBounds.clear();
     this.storeyBuildings.clear();
+    this.footprintPolygons.clear();
+    this.plateFor = null;
+    for (const input of inputs) this.footprintPolygons.set(input.id, input.polygons);
     const now = performance.now();
     for (const input of inputs) {
       if (input.storeys?.length) this.addStoreyBuilding(input);
@@ -205,6 +350,7 @@ export class SceneEngine {
     this.areaBox = new Box3();
     for (const [, box] of this.buildingBounds) this.areaBox.union(box);
     this.fitGroundAndShadow();
+    this.buildDressing();
     this.apply();
     if (!this.cameraKey && inputs.length) this.applyCamera(true);
   }
@@ -371,6 +517,7 @@ export class SceneEngine {
       (material as MeshBasicMaterial).map?.dispose();
       material.dispose();
     }
+    this.sky.dispose();
     this.controls.dispose();
     this.renderer.dispose();
     canvas.remove();
@@ -382,6 +529,7 @@ export class SceneEngine {
     const known = hasKnownHeight(input);
     const geometry = prismGeometry(input.polygons, input.baseM ?? 0, known ? input.heightM! : FLAT_THICKNESS_M);
     if (!known) applyPlanarUV(geometry);
+    paintGeometry(geometry, facadeTint(input.id, known ? input.heightM : null));
     const mesh = new Mesh(geometry, known ? this.m.bldg : this.m.unknown);
     mesh.castShadow = known;
     mesh.receiveShadow = true;
@@ -412,8 +560,10 @@ export class SceneEngine {
       const bounds = new Box3();
       const id = `${input.id}::${storey.levelId}`;
       const entry: Entry = { kind: 'storey', id, buildingId: input.id, levelId: storey.levelId, storey, meshes, edges, known: true, bounds };
+      const tint = facadeTint(input.id, input.heightM);
       for (const geometry of parts) {
         if (storey.estimated) applyPlanarUV(geometry);
+        paintGeometry(geometry, tint);
         const mesh = new Mesh(geometry, storey.estimated ? this.m.estimated : this.m.bldg);
         mesh.castShadow = mesh.receiveShadow = true;
         mesh.userData.entry = entry;
@@ -428,6 +578,29 @@ export class SceneEngine {
       if (!storey.belowGround) above.union(bounds);
     }
     if (!above.isEmpty()) this.buildingBounds.set(input.id, above);
+  }
+
+  /** Sidewalk pads around every footprint and trees in public land (enhanced view only). */
+  private buildDressing() {
+    const footprints = [...this.footprintPolygons.values()];
+    const key = `${footprints.length}|${this.lands.length}|${[...this.footprintPolygons.keys()].slice(0, 50).join(',')}|${this.lands.map((l) => l.id).join(',')}`;
+    if (key === this.dressingKey) return;
+    this.dressingKey = key;
+    disposeGroup(this.dressing);
+    const pads = padGeometry(footprints, 2.2, 0.004);
+    if (pads) {
+      const mesh = new Mesh(pads, this.m.pad);
+      mesh.receiveShadow = true;
+      mesh.raycast = () => {};
+      this.dressing.add(mesh);
+    }
+    for (const tree of treeMeshes(this.lands, footprints, this.m.crown, this.m.trunk)) { tree.userData.layer = 'trees'; this.dressing.add(tree); }
+    this.applyLayers();
+  }
+
+  /** Whether the area has any trees to show (public land large enough). */
+  hasTrees(): boolean {
+    return this.dressing.children.some((c) => c.userData.layer === 'trees');
   }
 
   private buildUtilities() {
@@ -569,8 +742,9 @@ export class SceneEngine {
     // Findings use Volumes light: flat, even, no shadows.
     const volumes = mode === 'findings';
     this.sun.castShadow = !volumes;
-    this.hemi.intensity = volumes ? 2 : 1.6;
-    this.sun.intensity = volumes ? 0.7 : 1.35;
+    const enhanced = this.lookName === 'enhanced';
+    this.hemi.intensity = volumes ? 2 : enhanced ? 1.95 : 1.6;
+    this.sun.intensity = volumes ? 0.7 : enhanced ? 1.55 : 1.35;
 
     this.applySection();
     this.requestRender();
@@ -609,6 +783,7 @@ export class SceneEngine {
 
   private updateHalo(mode: SceneMode, buildingId: string | null, spaceId: string | null) {
     this.halo.visible = false;
+    this.updatePlate((mode === 'area' || mode === 'building') ? buildingId : null);
     let polygons: MultiPolygon | null = null, lower = 0, upper = 0;
     if ((mode === 'area' || mode === 'building') && buildingId) {
       const box = this.buildingBounds.get(buildingId);
@@ -623,6 +798,18 @@ export class SceneEngine {
     if (!polygons) return;
     const geometry = prismGeometry(polygons, lower, upper - lower);
     this.haloFromGeometry(geometry, geometry.boundingBox!, true);
+  }
+
+  /** Enhanced view: a tinted ground plate under the selected building. */
+  private plateFor: string | null = null;
+  private updatePlate(buildingId: string | null) {
+    const polygons = buildingId ? this.footprintPolygons.get(buildingId) : undefined;
+    this.plate.visible = Boolean(polygons) && this.lookName === 'enhanced';
+    if (!polygons || this.plateFor === buildingId) return;
+    this.plateFor = buildingId;
+    const geometry = padGeometry([polygons], 1.6, 0.03);
+    this.plate.geometry.dispose();
+    this.plate.geometry = geometry ?? new BufferGeometry();
   }
 
   private haloFromGeometry(geometry: BufferGeometry, b: Box3, owned = false) {
@@ -775,6 +962,11 @@ export class SceneEngine {
     const hFov = (2 * Math.atan(Math.tan((this.camera.fov * Math.PI) / 360) * aspect) * 180) / Math.PI;
     const pose = presetFor(mode, target.bounds, target.focusY, target.extentY, Math.min(this.camera.fov, hFov));
     const to: [Vector3, Vector3] = [new Vector3(...pose.position), new Vector3(...pose.target)];
+    if (this.flat) {
+      // Top-down, north up, at the same distance.
+      const distance = to[0].distanceTo(to[1]);
+      to[0].set(to[1].x, to[1].y + distance, to[1].z + distance * 1e-4);
+    }
     if (instant || this.options.reducedMotion) {
       this.camera.position.copy(to[0]);
       this.controls.target.copy(to[1]);
@@ -864,6 +1056,7 @@ export class SceneEngine {
     if (this.flight) animating = this.stepFlight(performance.now());
     animating = this.stepGrow(now) || animating;
     for (const tiles of this.tilesets) tiles.update();
+    this.followSun();
     if (this.state.mode === 'deviation') this.renderSplit();
     else this.renderer.render(this.scene, this.camera);
     this.recordFrameTime(performance.now() - started);
@@ -934,6 +1127,28 @@ export class SceneEngine {
     this.requestRender();
   }
 
+  /** Keeps the shadow frustum around what is in view, so shadows stay sharp close up and cover the area far out. */
+  private followSun() {
+    const box = this.areaBox;
+    if (box.isEmpty()) return;
+    const span = Math.max(box.max.x - box.min.x, box.max.z - box.min.z, 60);
+    const distance = this.camera.position.distanceTo(this.controls.target);
+    const half = Math.min(Math.max(distance * 0.85, 40), span * 0.75);
+    const texel = (half * 2) / this.sun.shadow.mapSize.x;
+    const t = this.controls.target;
+    const cx = Math.round(t.x / texel) * texel, cz = Math.round(t.z / texel) * texel;
+    const reach = half * 3 + (box.max.y || 0);
+    this.sun.position.set(cx + SUN_DIR.x * reach, SUN_DIR.y * reach, cz + SUN_DIR.z * reach);
+    this.sun.target.position.set(cx, 0, cz);
+    this.sun.target.updateMatrixWorld();
+    const cam = this.sun.shadow.camera;
+    if (cam.right !== half) {
+      cam.left = -half; cam.right = half; cam.top = half; cam.bottom = -half;
+      cam.near = 1; cam.far = reach * 2.2;
+      cam.updateProjectionMatrix();
+    }
+  }
+
   private fitGroundAndShadow() {
     const box = this.areaBox;
     if (box.isEmpty()) return;
@@ -1001,11 +1216,18 @@ function makeMaterials(p: ScenePalette, clip: Plane) {
   void clip;
   const contextColor = new Color(p.ground).lerp(new Color(p.building), 0.35);
   const std = (color: string | Color, extra: Partial<MeshStandardMaterial> = {}) => new MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, ...extra });
+  // Flat layers are separated by polygon offset, not height alone, so they never shimmer from far away.
+  const layer = (color: string, units: number, extra: Partial<MeshStandardMaterial> = {}) => std(color, { polygonOffset: true, polygonOffsetFactor: units, polygonOffsetUnits: units, ...extra });
   return {
-    ground: std(p.ground, { roughness: 0.95 }),
-    road: std(p.road),
-    publicLand: std(p.publicLand),
-    water: std(p.water, { roughness: 0.4 }),
+    ground: layer(p.ground, 4, { roughness: 0.95 }),
+    pad: layer('#e4e3dd', 2, { roughness: 0.95 }),
+    road: layer(p.road, 0),
+    publicLand: layer(p.publicLand, -1),
+    water: layer(p.water, -2, { roughness: 0.4 }),
+    kerb: new LineBasicMaterial({ color: '#f7f7f4', transparent: true, opacity: 0.9 }),
+    plate: new MeshBasicMaterial({ color: p.selected, transparent: true, opacity: 0.28, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
+    crown: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 }),
+    trunk: new MeshStandardMaterial({ color: '#8a7560', roughness: 1 }),
     parcel: new LineBasicMaterial({ color: p.parcelLine, transparent: true, opacity: 0.7 }),
     bldg: std(p.building),
     bldgContext: std(contextColor),
