@@ -1,0 +1,47 @@
+{
+  "version": "nyc-context-demo/1",
+  "title": "NYC Census ZCTA 10013 \u2014 city layers",
+  "issuer": "NYC Office of Technology and Innovation",
+  "layers": [
+    {
+      "layer": "building",
+      "name": "buildings-original.geojson",
+      "dataset": "5zhs-2jue",
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "url": "https://data.cityofnewyork.us/d/5zhs-2jue",
+      "count": 1662
+    },
+    {
+      "layer": "roadbed",
+      "name": "roadbed.geojson",
+      "dataset": "i36f-5ih7",
+      "sha256": "caf05fa5c76cc3eb1d6d2fb43c494ce0bd6416b97946012adddba623e203cf7f",
+      "url": "https://data.cityofnewyork.us/d/i36f-5ih7",
+      "count": 446
+    },
+    {
+      "layer": "sidewalk",
+      "name": "sidewalk.geojson",
+      "dataset": "52n9-sdep",
+      "sha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9",
+      "url": "https://data.cityofnewyork.us/d/52n9-sdep",
+      "count": 213
+    },
+    {
+      "layer": "parks",
+      "name": "parks.geojson",
+      "dataset": "y6ja-fw4f",
+      "sha256": "e1711a90ad63d9cbac4a9320e09b15ac91b9fa3995920ff4c06dbafd68977d13",
+      "url": "https://data.cityofnewyork.us/d/y6ja-fw4f",
+      "count": 41
+    },
+    {
+      "layer": "water",
+      "name": "hydrography.geojson",
+      "dataset": "pjs3-c3z5",
+      "sha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
+      "url": "https://data.cityofnewyork.us/d/pjs3-c3z5",
+      "count": 1
+    }
+  ]
+}

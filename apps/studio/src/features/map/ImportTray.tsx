@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@ulpin/api-client';
 import { Button, ImportStream, Skeleton, formatCount, type StreamRow } from '@ulpin/ui';
+import { isDemoId } from '../../api/demo-import';
 import { useBuildingImport } from '../../api/queries';
 
 const RUNNING = new Set(['RECEIVED']);
@@ -30,11 +31,12 @@ export function ImportTray({ packageId, onClose }: { packageId: string; onClose:
   const pkg = useQuery({
     queryKey: ['import-packages', packageId],
     queryFn: async () => unwrap(await api.GET('/api/v1/import-packages/{packageId}', { params: { path: { packageId } } })),
-    refetchInterval: (query) => (!query.state.data || RUNNING.has(query.state.data.state) ? 700 : false),
+    refetchInterval: (query) => isDemoId(packageId) ? false : (!query.state.data || RUNNING.has(query.state.data.state) ? 700 : false),
   });
   const running = !pkg.data || RUNNING.has(pkg.data.state);
   useSettled(!running);
   if (pkg.isPending) return <div className="ul-panel ul-pad"><Skeleton /></div>;
+  if ((pkg.data?.state as string) === 'FAILED') return <div className="ul-panel ul-pad ul-help">Import failed: {pkg.data?.warnings.join('; ')}. Upload the same files to retry; originals are retained.</div>;
   if (pkg.error || !pkg.data) return <div className="ul-panel ul-pad ul-help">The import could not be read: {pkg.error?.message}</div>;
   const features = pkg.data.features as { kind?: string }[];
   const quarantine = pkg.data.quarantine;
