@@ -14,6 +14,7 @@ import { levelSummary } from '../map/inspector/BuildingInspector';
 import { findingVolume, useBuildingScene } from '../map/useBuildingScene';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { CheckGroups } from './CheckGroups';
+import { useMapView } from '../map/useMapView';
 import styles from './Workspace.module.css';
 
 type Stage = 'review' | 'check';
@@ -258,6 +259,7 @@ function LevelRegister({ model, selected, onSelect, datum }: { model: BuildingMo
 // ------------------------------------------------------------------ Check and record
 
 function CheckStage({ register, model, ledger, actions }: { register: BuildingRegister; model: BuildingModel; ledger: BuildingLedger | null | undefined; actions: BuildingAction[] }) {
+  const [{ look: mapLook, layers: mapLayers }] = useMapView();
   const context = useAreaContext(register.area.id).data;
   const features = context?.features ?? NONE;
   const feature = features.find((f) => f.id === register.property.id) ?? null;
@@ -278,7 +280,7 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
   return (
     <div className={styles.check}>
       <div className={styles.canvasWrap}>
-        {context ? <SceneView className={styles.canvas} base={base} buildings={footprints} detail={detail} state={state} label={`3D view of ${register.property.name} with the open finding`} /> : null}
+        {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={state} label={`3D view of ${register.property.name} with the open finding`} /> : null}
         {finding ? <span className={`ul-float ${styles.findingPill}`}>{finding.message}</span> : null}
       </div>
       <div className={styles.side}>

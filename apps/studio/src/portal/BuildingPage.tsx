@@ -48,7 +48,7 @@ export function BuildingPage() {
         <div className={styles.stack}>
           <div className={styles.sceneBox}>
             {map ? <PublicScene className={styles.canvas} map={map} building={b} levelId={null} spaceId={null} label={`3D view of ${b.name}, view only`} /> : null}
-            <span className={styles.viewOnly}>View only</span>
+            <span className={styles.viewOnly}>View only · illustrative look</span>
           </div>
           {levels ? (
             <StrataSection parcel={b.parcelUlpin} ground={b.groundM} datum={b.datum} selectedId={null}

@@ -125,7 +125,7 @@ export function PublicMapPage() {
         id: r.buildingId, text: `${map.data!.features.find((f) => f.id === r.buildingId)?.name ?? 'Building'} · ${r.records} released`,
         onSelect: () => set({ building: r.buildingId }),
       }))} /> : null}
-      <span className={styles.viewOnlyMap}>View only</span>
+      <span className={styles.viewOnlyMap}>View only · illustrative look</span>
     </div>
   );
 }

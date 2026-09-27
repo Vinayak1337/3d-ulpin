@@ -19,6 +19,8 @@ import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { MapSidebar, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
+import { BlockOverview, MapControls } from './MapControls';
+import { useMapView } from './useMapView';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
@@ -87,6 +89,21 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const finding = selection.mode === 'findings' ? findings.find((f) => f.id === selection.findingId) ?? findings[0] ?? null : null;
 
   const { base, footprints, detail } = useBuildingScene(context.features, feature, model, ledger, colour);
+  const [mapView, setMapView] = useMapView();
+  const baseKinds = useMemo(() => new Set(base.map((f) => f.kind)), [base]);
+  const layerSwitches = [
+    { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
+    ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
+    ...(baseKinds.has('public_land') || baseKinds.has('water') ? [{ key: 'publicLand', label: 'Public land', checked: mapView.layers.publicLand }] : []),
+    ...(baseKinds.has('public_land') ? [{ key: 'trees', label: 'Trees', checked: mapView.layers.trees, disabled: mapView.look !== 'enhanced' || !mapView.layers.publicLand }] : []),
+    ...(baseKinds.has('parcel') ? [{ key: 'parcels', label: 'Parcels', checked: mapView.layers.parcels }] : []),
+    ...(base.some((f) => f.name) ? [{ key: 'labels', label: 'Names', checked: mapView.labels }] : []),
+  ];
+  const onLayer = (key: string, on: boolean) => {
+    if (key === 'look') setMapView({ look: on ? 'enhanced' : 'plain' });
+    else if (key === 'labels') setMapView({ labels: on });
+    else setMapView({ layers: { ...mapView.layers, [key]: on } });
+  };
 
   const findingInput = useMemo<FindingInput | null>(() => (finding ? findingVolume(finding, groundM) : null), [finding, groundM]);
 
@@ -171,6 +188,12 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     if (feature && selection.mode === 'area' && register?.parcelIdentifiers[0]) labels.push({ id: 'parcel', text: register.parcelIdentifiers[0].value, kind: 'code' });
     const hover = hovered && hovered !== feature?.id ? buildings.find((b) => b.id === hovered) : null;
     if (hover) labels.push({ id: hover.id, text: hover.name, kind: 'hover' });
+    if (mapView.labels) {
+      for (const f of base) {
+        if (!f.name || (f.kind === 'road' && !mapView.layers.roads) || (f.kind !== 'road' && !mapView.layers.publicLand)) continue;
+        labels.unshift({ id: `name:${f.id}`, text: f.name, kind: 'street' });
+      }
+    }
   }
   if (selection.mode === 'level' && model) {
     for (const s of model.spaces) {
@@ -283,6 +306,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
           active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
           onView={chooseView}
           keySections={legend}
+          layers={layerSwitches} onLayer={onLayer}
+          layersNote={mapView.look === 'enhanced' ? 'Enhanced view adds illustrative colours, windows and trees. Footprints, heights and records are unchanged.' : null}
           colour={colour} onColour={chooseColour}
           colourOptions={[
             { value: 'none', label: 'None' },
@@ -310,6 +335,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               onView={onView}
               onTrench={setTrench}
               onReady={setEngine}
+              look={mapView.look}
+              flat={mapView.flat}
+              layers={mapView.layers}
               label={`3D map of ${context.area.name}. The inspector lists the same buildings and spaces.`}
             />
             {!reference ? (
@@ -337,6 +365,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               </div>
             ) : null}
             <SceneLabels engine={engine} labels={labels} tick={tick} />
+            <MapControls flat={mapView.flat} onFlat={(flat) => setMapView({ flat })} onFit={() => engine?.resetCamera()} />
+            {!showRail ? (
+              <BlockOverview engine={engine} buildings={footprints} base={base} selectedId={feature?.id ?? null} tick={tick}
+                open={mapView.overview} onToggle={() => setMapView({ overview: !mapView.overview })} />
+            ) : null}
             {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
             <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} /></div>
             {namespaces.length ? <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns]).join(' · ')}</p> : null}
