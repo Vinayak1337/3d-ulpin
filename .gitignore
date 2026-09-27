@@ -27,3 +27,6 @@ fixtures/reference-neighborhood/installed.json
 
 # Reproducible historical comparison output is not a public runtime asset.
 output/studio-review/
+
+# Local official NYC upload pack; canonical originals stay in task-data.
+/apps/studio/datasets/nyc-10013/
