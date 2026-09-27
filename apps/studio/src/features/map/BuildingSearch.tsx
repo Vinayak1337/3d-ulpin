@@ -62,7 +62,7 @@ export function BuildingSearch({ buildings, areaId, onSelect, autoFocus = false 
       }}>
         <Icon icon={MagnifyingGlass} size={20} />
         <input ref={input} type="search" aria-label="Search buildings by ULPIN, name or registry ID"
-          placeholder="ULPIN, building name or registry ID" maxLength={150} value={query}
+          placeholder="Find building…" maxLength={150} value={query}
           aria-controls={open && term ? listId : undefined} autoComplete="off"
           onFocus={() => setOpen(true)} onChange={(event) => { setQuery(event.target.value); setOpen(true); }}
           onKeyDown={(event) => {
