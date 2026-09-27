@@ -1,12 +1,20 @@
 import type { ReactNode } from 'react';
 import { Buildings, MapTrifold, Shovel, Stack, WarningOctagon, type Icon as PhosphorIcon } from '@phosphor-icons/react';
-import { Icon, type LegendSection } from '@ulpin/ui';
+import { Icon, Toggle, type LegendSection } from '@ulpin/ui';
 import type { ColourBy } from '../../state/selection';
 import type { SpaceModel } from '../../model/building';
 import styles from './MapSidebar.module.css';
 
 type Colour = Exclude<ColourBy, 'auto'>;
 export type ViewKey = 'area' | 'building' | 'level' | 'findings' | 'underground';
+
+export interface LayerSwitch {
+  key: string;
+  label: string;
+  hint?: string;
+  checked: boolean;
+  disabled?: boolean;
+}
 
 export interface SidebarView {
   key: ViewKey;
@@ -23,10 +31,11 @@ const ICONS: Record<ViewKey, PhosphorIcon> = { area: MapTrifold, building: Build
  * The map's left navigation: which view the canvas shows, what it is coloured by (with its key), and on a
  * floor its spaces as a list. Facts about the selection live only in the inspector on the right.
  */
-export function MapSidebar({ views, active, onView, colour, colourOptions, onColour, keySections, floor, spaces, rightsColour, selectedSpaceId, onSelectSpace }: {
+export function MapSidebar({ views, active, onView, colour, colourOptions, onColour, keySections, layers, onLayer, layersNote, floor, spaces, rightsColour, selectedSpaceId, onSelectSpace }: {
   views: SidebarView[]; active: ViewKey; onView: (key: ViewKey) => void;
   colour: Colour; colourOptions: { value: Colour; label: string; disabled?: boolean }[]; onColour: (c: Colour) => void;
   keySections: LegendSection[];
+  layers: LayerSwitch[]; onLayer: (key: string, on: boolean) => void; layersNote?: string | null;
   floor: string | null; spaces: SpaceModel[]; rightsColour: (id: string) => string | null; selectedSpaceId: string | null; onSelectSpace: (s: SpaceModel) => void;
 }) {
   return (
@@ -65,6 +74,16 @@ export function MapSidebar({ views, active, onView, colour, colourOptions, onCol
           </ul>
         ))}
       </section>
+
+      {layers.length ? (
+        <section className={styles.group} aria-label="Layers">
+          <h2 className={styles.heading}>Layers</h2>
+          <div className={styles.layers}>
+            {layers.map((l) => <Toggle key={l.key} label={l.label} hint={l.hint} checked={l.checked} disabled={l.disabled} onChange={(on) => onLayer(l.key, on)} />)}
+          </div>
+          {layersNote ? <p className={styles.note}>{layersNote}</p> : null}
+        </section>
+      ) : null}
 
       {floor && spaces.length ? (
         <section className={`${styles.group} ${styles.fill}`} aria-label={`Spaces on ${floor}`}>

@@ -36,7 +36,8 @@ export function toBase(features: AreaFeature[]): BaseFeatureInput[] {
       // Depths are recorded as metres below ground; the scene's ground is 0.
       out.push({ id: feature.id, kind: 'utility', polygons, lowerM: extent ? extent.lower : undefined, upperM: extent ? extent.upper : undefined, network: typeof profile.network === 'string' ? profile.network : undefined });
     } else {
-      out.push({ id: feature.id, kind: feature.kind === 'public_land' && props.land_cover === 'water' ? 'water' : feature.kind, polygons });
+      const named = (feature.kind === 'road' || feature.kind === 'public_land') && feature.name ? { name: feature.name } : {};
+      out.push({ id: feature.id, kind: feature.kind === 'public_land' && props.land_cover === 'water' ? 'water' : feature.kind, polygons, ...named });
     }
   }
   return out;

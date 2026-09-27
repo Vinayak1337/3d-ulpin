@@ -49,6 +49,15 @@
   font: 500 11px/16px var(--ui-font-sans); background: var(--ui-surface); color: var(--ui-ink); box-shadow: var(--ui-shadow-floating); will-change: transform;
 }
 .label_selected, .label_space_selected { background: var(--ui-primary); color: var(--ui-on-primary); font-weight: 600; }
+.label_selected { padding: 4px 10px; border-radius: var(--ui-radius-8); font-size: 12px; }
+.label_selected::after {
+  content: ""; position: absolute; left: 50%; bottom: -5px; width: 10px; height: 10px; transform: translateX(-50%) rotate(45deg);
+  background: inherit; border-radius: 0 0 2px 0;
+}
+.label_street {
+  background: transparent; box-shadow: none; padding: 0; color: var(--ui-ink-soft); font: 600 11px/14px var(--ui-font-sans); letter-spacing: 0.02em;
+  text-shadow: 0 0 3px var(--ui-surface), 0 0 3px var(--ui-surface), 0 0 2px var(--ui-surface);
+}
 .label_space { background: transparent; box-shadow: none; color: var(--ui-map-halo); font-weight: 600; text-shadow: 0 1px 2px color-mix(in srgb, var(--ui-ink) 55%, transparent); }
 .label_note { background: var(--ui-surface); color: var(--ui-ink-soft); }
 .label_code { font: 500 10px/14px var(--ui-font-mono); color: var(--ui-ink-soft); }
