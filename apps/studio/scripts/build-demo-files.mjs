@@ -11,7 +11,7 @@ import { chromium } from '@playwright/test';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const data = join(here, '../src/local/data/lake-view');
-const out = join(here, '../demo-files');
+const out = join(here, '../datasets');
 mkdirSync(join(out, '1-area'), { recursive: true });
 mkdirSync(join(out, '2-building'), { recursive: true });
 const read = (f) => JSON.parse(readFileSync(join(data, f), 'utf8'));
