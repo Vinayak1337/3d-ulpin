@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Buildings, MapTrifold, Shovel, Stack, WarningOctagon, type Icon as PhosphorIcon } from '@phosphor-icons/react';
 import { Icon, Toggle, type LegendSection } from '@ulpin/ui';
 import type { ColourBy } from '../../state/selection';
@@ -38,29 +38,37 @@ export function MapSidebar({ views, active, onView, colour, colourOptions, onCol
   layers: LayerSwitch[]; onLayer: (key: string, on: boolean) => void; layersNote?: string | null;
   floor: string | null; spaces: SpaceModel[]; rightsColour: (id: string) => string | null; selectedSpaceId: string | null; onSelectSpace: (s: SpaceModel) => void;
 }) {
+  const [section, setSection] = useState<'view' | 'layers' | 'colour'>('layers');
   return (
     <nav className={styles.sidebar} aria-label="Map">
-      <ul className={styles.views}>
-        {views.map((v) => (
-          <li key={v.key}>
-            <button type="button" className={styles.view} aria-current={v.key === active ? 'page' : undefined} disabled={v.disabled} onClick={() => onView(v.key)}>
-              <Icon icon={ICONS[v.key]} size={20} />
-              <span className={styles.viewText}>
-                <span>{v.label}</span>
-                {v.detail ? <span className={styles.detail}>{v.detail}</span> : null}
-              </span>
-              {v.badge}
-            </button>
-          </li>
+      <div className={styles.sections} role="group" aria-label="Map tool sections">
+        {(['view', 'layers', 'colour'] as const).map((key) => (
+          <button key={key} type="button" aria-pressed={section === key} onClick={() => setSection(key)}>
+            {key === 'view' ? 'View' : key === 'layers' ? 'Layers' : 'Colour'}
+          </button>
         ))}
-      </ul>
-
-      <section className={styles.group} aria-label="Colour by">
-        <h2 className={styles.heading}>Colour by</h2>
-        <div role="radiogroup" aria-label="Colour by" className={styles.segments}>
-          {colourOptions.map((o) => (
-            <button key={o.value} type="button" role="radio" aria-checked={colour === o.value} disabled={o.disabled} onClick={() => onColour(o.value)}>{o.label}</button>
+      </div>
+      <div className={styles.content}>
+        {section === 'view' ? <ul className={styles.views}>
+          {views.map((v) => (
+            <li key={v.key}>
+              <button type="button" className={styles.view} aria-current={v.key === active ? 'page' : undefined} disabled={v.disabled} onClick={() => onView(v.key)}>
+                <Icon icon={ICONS[v.key]} size={20} />
+                <span className={styles.viewText}>
+                  <span>{v.label}</span>
+                  {v.detail ? <span className={styles.detail}>{v.detail}</span> : null}
+                </span>
+                {v.badge}
+              </button>
+            </li>
           ))}
+        </ul> : null}
+
+        {section === 'colour' ? <section className={styles.group} aria-label="Colour by">
+          <div role="radiogroup" aria-label="Colour by" className={styles.segments}>
+            {colourOptions.map((o) => (
+              <button key={o.value} type="button" role="radio" aria-checked={colour === o.value} disabled={o.disabled} onClick={() => onColour(o.value)}>{o.label}</button>
+            ))}
         </div>
         {keySections.map((section) => (
           <ul key={section.title} className={styles.key} aria-label={section.title}>
@@ -73,19 +81,21 @@ export function MapSidebar({ views, active, onView, colour, colourOptions, onCol
             ))}
           </ul>
         ))}
-      </section>
+      </section> : null}
 
-      {layers.length ? (
+      {section === 'layers' && layers.length ? (
         <section className={styles.group} aria-label="Layers">
-          <h2 className={styles.heading}>Layers</h2>
           <div className={styles.layers}>
             {layers.map((l) => <Toggle key={l.key} label={l.label} hint={l.hint} checked={l.checked} disabled={l.disabled} onChange={(on) => onLayer(l.key, on)} />)}
           </div>
-          {layersNote ? <p className={styles.note}>{layersNote}</p> : null}
+          {layersNote ? <details className={styles.notes}>
+            <summary>About these layers</summary>
+            <p className={styles.note}>{layersNote}</p>
+          </details> : null}
         </section>
       ) : null}
 
-      {floor && spaces.length ? (
+      {section === 'view' && floor && spaces.length ? (
         <section className={`${styles.group} ${styles.fill}`} aria-label={`Spaces on ${floor}`}>
           <h2 className={styles.heading}>Spaces on {floor}</h2>
           <ul className={styles.spaces}>
@@ -103,6 +113,7 @@ export function MapSidebar({ views, active, onView, colour, colourOptions, onCol
           </ul>
         </section>
       ) : null}
+      </div>
     </nav>
   );
 }
