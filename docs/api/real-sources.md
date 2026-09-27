@@ -85,3 +85,14 @@ The separate [natural-lease recovery handoff](../evidence/usp/natural-lease-reco
 ## Source-document worker evidence (27 September 2026)
 
 DOC-INGEST-01 reuses [NYC's unchanged official metadata text](../../fixtures/real-area/evidence/nyc-building-metadata.md), 12,973 bytes, SHA `520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27`. Its issuer URL, acquisition and terms remain in the [original area manifest](../../fixtures/real-area/manifest.json); the dataset catalogue now exposes this document separately from the geometry asset. It verifies native-text intake with the provider disabled, not property facts. The existing USGS1910 scanned PDF verifies honest `needs_ocr` and unchanged original download, not OCR. See [the document API guide](README.md#source-document-intake) and [pinned runtime proof](../evidence/usp/document-authority-correction.md). Final retained-package privacy checks are [service/query controls](../evidence/usp/document-package-authority-correction.md), separate from runtime qualification. All are foreign test inputs; no new original was acquired, installed into serving3188 or altered by this work.
+
+## NYC same-area LiDAR and imagery discovery (27 September 2026)
+
+For the ZCTA 10013 demo, these official collections cover NYC/Manhattan. Individual overlapping tiles, sizes, source references and terms still need acquisition checks. **Discovered online; not downloaded into the demo pack or qualified through its importer.**
+
+- [NYC 2017 topobathymetric LiDAR](https://data.cityofnewyork.us/City-Government/Topobathymetric-LiDAR-Data-2017-/7sc8-jtbz/about_data): citywide airborne point clouds; use selected tiles rather than the whole collection.
+- [NYC issuing-agency LiDAR guide](https://storymaps.arcgis.com/stories/f6758ce6248645e2859de5448019185e): point clouds, bare-earth DEM and highest-hit DSM products and tile download guidance.
+- [NOAA official NYC 2017 DEM distribution](https://coast.noaa.gov/htdata/raster5/elevation/NYC_topobathy_BE_DEM_2017_9307/): another official acquisition route for the NYC product.
+- [NYC Manhattan 2018 orthoimagery](https://data.cityofnewyork.us/City-Government/2018-Orthoimagery-Manhattan/hxws-3mbm): aerial imagery, not verified drone capture; JP2 distribution. [NYC tile services](https://maps.nyc.gov/tiles/) document imagery access.
+
+No same-area official drone capture was verified in this discovery. LiDAR/DEM/DSM capture dates differ from the footprint/context snapshots, so alignment and changes require qualification. The fixed [demo adapter](demo-import.md) accepts its pinned GeoJSON/ZIP profile only; raw LAS/LAZ, raster imagery and DEM uploads still require actual conversion/viewer work. Do not use dataset availability as proof of implemented support.
