@@ -99,9 +99,9 @@ async function imageryOverlay(d: SupplementalDataset, ref: AreaReference, signal
   };
   return {
     layer: 'imagery',
-    label: `Aerial imagery ${d.captureYear ?? ''}`.trim(),
+    label: `Aerial${d.captureYear ? ` · ${d.captureYear}` : ''}`,
     caption: `Aerial ${d.captureYear ?? 'date unknown'} · georeferenced`,
-    note: `${d.name}: uploaded imagery draped only within its source coverage; this is a flat image, not a 3D surface.`,
+    note: `${d.name}: georeferenced image; source coverage only.`,
     input: { id: d.sourceId, kind: 'image', corners: [local(west, south), local(east, south), local(east, north), local(west, north)], image: canvas },
   };
 }
@@ -137,9 +137,9 @@ async function lidarOverlay(d: SupplementalDataset, ref: AreaReference, signal: 
   });
   return {
     layer: 'lidar',
-    label: `LiDAR surface ${d.captureYear ?? ''}`.trim(),
+    label: `LiDAR${d.captureYear ? ` · ${d.captureYear}` : ''}`,
     caption: `LiDAR ${d.captureYear ?? "date unknown"} · approximate alignment`,
-    note: `Highest measured return per ${surface.resolutionM} m cell (${cells.length.toLocaleString('en-IN')} cells), coloured by source elevation. Display uses a constant ${(-floor).toFixed(2)} m vertical offset; original elevations and gaps are retained. Horizontal datum alignment is approximate and the surface is not tied to building bases or used for measurement.`,
+    note: `${surface.resolutionM} m surface · ${cells.length.toLocaleString('en-IN')} cells · Z offset ${(-floor).toFixed(2)} m. Approximate alignment; display only. Source elevations and gaps retained.`,
     input: { id: `${d.sourceId}:surface`, kind: 'points', positions, colors, sizeM: surface.resolutionM * 0.9 },
   };
 }

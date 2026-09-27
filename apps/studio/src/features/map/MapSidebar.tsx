@@ -89,7 +89,7 @@ export function MapSidebar({ views, active, onView, colour, colourOptions, onCol
             {layers.map((l) => <Toggle key={l.key} label={l.label} hint={l.hint} checked={l.checked} disabled={l.disabled} onChange={(on) => onLayer(l.key, on)} />)}
           </div>
           {layersNote ? <details className={styles.notes}>
-            <summary>About these layers</summary>
+            <summary>Details</summary>
             <p className={styles.note}>{layersNote}</p>
           </details> : null}
         </section>

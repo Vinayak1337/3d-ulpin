@@ -102,7 +102,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const overlayInputs = useMemo(() => loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]).map((o) => o.input), [loadedOverlays, mapView.overlays, showContextOverlays]);
   const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]);
   const overlayNotes = visibleOverlays.map((o) => o.note);
-  const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view · illustrative details' : null, ...visibleOverlays.map((o) => o.caption), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
+  const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view' : null, ...visibleOverlays.map((o) => o.caption), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
@@ -355,14 +355,14 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
             {noFloors ? (
               <div className={styles.emptyOverlay}>
                 <div className={`ul-float ${styles.emptyCard}`}>
-                  <span>No floors recorded for this building. Add a plan or level schedule.</span>
+                  <span>No floors recorded. Add a plan.</span>
                   <Button variant="primary" icon={FilePlus} onClick={() => setDialog('files')}>Add files</Button>
                 </div>
               </div>
             ) : null}
             <SceneLabels engine={engine} labels={labels} tick={tick} />
             <details className={styles.mapTools}>
-              <summary><Icon icon={SlidersHorizontal} size={20} />Map tools</summary>
+              <summary><Icon icon={SlidersHorizontal} size={20} />Tools</summary>
               <MapSidebar
                 views={[
                   { key: 'area', label: 'Area' },
@@ -375,7 +375,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 onView={chooseView}
                 keySections={legend}
                 layers={layerSwitches} onLayer={onLayer}
-                layersNote={[mapView.look === 'enhanced' ? 'Enhanced view adds illustrative colours, windows, kerbs and trees. Footprints, heights and records are unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
+                layersNote={[mapView.look === 'enhanced' ? 'Illustrative styling. Geometry and records unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
                 colour={colour} onColour={chooseColour}
                 colourOptions={[
                   { value: 'none', label: 'None' },
