@@ -1,5 +1,5 @@
 {
-  "version": "nyc-context-demo/1",
+  "version": "nyc-context-demo/2",
   "title": "NYC Census ZCTA 10013 \u2014 city layers",
   "issuer": "NYC Office of Technology and Innovation",
   "layers": [
@@ -42,6 +42,45 @@
       "sha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
       "url": "https://data.cityofnewyork.us/d/pjs3-c3z5",
       "count": 1
+    },
+    {
+      "layer": "point_cloud",
+      "name": "nyc-10013-lidar-2017.laz",
+      "dataset": "nyc-point_cloud-2017",
+      "format": "laz",
+      "sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790",
+      "url": "https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9306/20170504_980200.copc.laz",
+      "count": 1726222,
+      "crs": "EPSG:6347 + EPSG:5703",
+      "verticalReference": "NAVD88 height, metres, NOAA GEOID18 distribution",
+      "captureYear": 2017,
+      "recipe": "Bounding-box selection of unchanged point records; no decimation, reconstruction or interpolation"
+    },
+    {
+      "layer": "dem",
+      "name": "nyc-10013-dem-2017.tif",
+      "dataset": "nyc-dem-2017",
+      "format": "geotiff",
+      "sha256": "955d7f051c26cc2a26b7a1e9c00bacb9f4e96b6b5611c716d56be6d91e11d317",
+      "url": "https://gisdata.ny.gov/elevation/DEM/NYC_TopoBathymetric2017/be_NYC_025.tif",
+      "count": 757952,
+      "crs": "EPSG:2263",
+      "verticalReference": "Not qualified from raster header; raw sample units are not assumed",
+      "captureYear": 2017,
+      "recipe": "Native-grid window copied without resampling or filling nodata"
+    },
+    {
+      "layer": "imagery",
+      "name": "nyc-10013-ortho-2018.tif",
+      "dataset": "nyc-imagery-2018",
+      "format": "geotiff",
+      "sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716",
+      "url": "https://maps.nyc.gov/tiles/",
+      "count": 589824,
+      "crs": "EPSG:3857",
+      "verticalReference": null,
+      "captureYear": 2018,
+      "recipe": "Exact XYZ tile mosaic; PNG palette expanded to RGBA, georeferenced using Web Mercator tile grid; no resampling"
     }
   ]
 }

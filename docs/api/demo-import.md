@@ -6,7 +6,7 @@ User-scoped demonstration adapter, 27 September 2026. **Real uploaded source dat
 
 1. Keep Docker and the existing `ulpin-geo-1` container running (Shapely 2.0.7, pyproj 3.6.1). Keep the ordinary API on 3188 for the surrounding Studio shell. No database reset or reseed is needed.
 2. From the repository root run `pnpm studio:demo`. It binds Studio to **127.0.0.1:5188**. Stop any previous owned Studio listener first; do not kill Claude's separate preview.
-3. Open **Add files**. Select all five files below at once, or their ZIP. Continue → Start import. A fresh area opens; surfaces arrive first, then buildings. The import notice reports repairs/rejections. Click Done to reclaim the map height.
+3. Open **Add files**. Select the five GeoJSON files below, optionally with the three registered multimodal extracts, or use the combined ZIP. Continue → Start import. A fresh area opens; surfaces arrive first, then buildings. The import notice reports repairs/rejections. Click Done to reclaim the map height.
 4. Search `751920` to show the repaired building. Its source roof height is 47.00969814 ft (14.32856 m). Windows/trees/markings in Enhanced view remain illustrative.
 5. Reloading the area's URL restores the saved local projection. Uploading again creates a fresh area so the streaming demonstration can be repeated.
 
@@ -53,3 +53,32 @@ This separate development contract intentionally does not change the production 
 - ZIP run: 25 real feature chunks, 96 features in the first chunk, 2,363 unique final IDs; metadata to completion approximately 6.1 seconds on this machine. This is a demo observation, not a performance qualification.
 - All five retained source hashes match the uploaded profile. Unsupported official boundary file returns HTTP 400 with a clear profile error.
 - UI design scan (adapted to Studio) found no candidates; no renderer or styles changed.
+
+## Same-area multimodal upload (27 September)
+
+Prepared download: `/Users/vinayak/.codex/task-data/nyc-10013-multimodal/nyc-10013-multimodal.zip` (14,621,643 bytes). It contains the five existing vector layers and three bounded extracts. Separate-file upload also works: select those five GeoJSONs plus the three files in `nyc-10013-multimodal/upload/` together.
+
+| Input | Actual contents | Normalization / fusion |
+| --- | --- | --- |
+| `nyc-10013-lidar-2017.laz` | 1,726,222 measured returns; classes 1 (unclassified), 2 (ground), 17 (bridge deck); EPSG:6347 + NAVD88 metres | Chunked LAZ reading; footprint spatial join; measured Z/count summaries for 90 buildings. These mixed returns are not roof heights. |
+| `nyc-10013-dem-2017.tif` | 757,952 native pixels, 1 US-survey-foot horizontal grid, EPSG:2263 | Ground samples at 82 footprint interior points. Vertical unit/datum remains unqualified from the header; raw values never replace building heights. |
+| `nyc-10013-ortho-2018.tif` | 768 × 768 RGBA pixels, EPSG:3857, nine official NYC imagery tiles | Source-pixel samples at 93 footprint interior points. No invented facade textures or geometry. |
+
+Coverage is approximately `[-74.0125, 40.7165, -74.0095, 40.719]`, with native rectangular/tile-grid extents recorded per asset. **It is a small overlapping subset, not full-ZCTA LiDAR/DEM coverage.** Capture vintages differ. No official same-area drone acquisition was found.
+
+The point reader also emits a downloadable 2 m maximum-observed-Z raster (18,189 populated cells, 271 empty). Withheld/noise classes are excluded, empty cells stay nodata, and no interpolation occurs. This is a derived observed-surface grid, not an independently acquired official DSM or a certified terrain/roof model.
+
+`scripts/demo-import/multimodal.py` reads the uploaded binary bytes. It adds `properties.spatialObservations[]` to existing buildings and `supplementalDatasets[]` to area context/SSE metadata. Existing vector geometry and source heights remain unchanged. **The current map does not draw raw point clouds, terrain or draped imagery.** Binary assets are served as downloads through the dataset catalogue, not sent into the existing text evidence viewer. Upload and completion notices explain this limit.
+
+Additional local API contracts:
+
+- `GET /api/demo/areas/{areaId}/datasets` → `{areaId, state, datasets, sources}`. Each dataset has its uploaded hash, source/download URLs, role/format, survey year, actual CRS/bounds, matched-building count and point/raster metrics. Point-cloud reports include `derivedSurface` with its hash, recipe, resolution, nodata counts and download URL.
+- `GET /api/demo/areas/{areaId}/surface` → derived GeoTIFF attachment (404 when absent).
+- `GET /api/v1/sources/{sourceId}/file` → unchanged uploaded bytes with a binary attachment content type for LAZ/TIFF.
+- `spatialObservations[]` records `sourceId`, `kind`, `captureYear`, and either point counts/Z statistics, a raw DEM sample with unqualified vertical reference, or an RGB source pixel. All are evidence observations, never canonical rights, floor or height facts.
+
+Binary processing uses an isolated Python environment, already installed at `~/.codex/task-data/nyc-10013-multimodal/venv/bin/python`. Set `ULPIN_DEMO_PYTHON` to override. Recreate it with `python3 -m venv <path>` and `<path>/bin/pip install -r scripts/demo-import/requirements.txt`. Ordinary vector-only uploads retain the existing Docker reader. Production builds still exclude this module.
+
+Acquisition recipe: `scripts/demo-import/prepare-multimodal.py <private-output-directory>`. Retained manifest contains original URLs, bytes/hashes, acquisition date, coordinate systems and recipes. Full NOAA source tile and original NYC PNG tiles are retained unchanged. The 674 MB DEM was accessed by HTTP byte ranges; only its exact native-grid crop is retained locally, **not the whole original TIFF**. No broader public redistribution licence is asserted.
+
+Checked: eight-layer ZIP through HTTP/SSE (25 chunks, 2,363 unique vector features, approximately 10 seconds locally); binary-only import rejects with an instruction to include map geometry; Studio build/typecheck; separate-file browser upload. These are bounded demo checks, not production ingestion/scale qualification.

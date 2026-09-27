@@ -10,7 +10,7 @@ import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImpor
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
 
-type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'];
+type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'] & { demoContents?: string };
 type Kind = 'building' | 'parcel' | 'road' | 'public_land' | 'utility';
 
 interface Picked {
@@ -122,7 +122,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
 
   const add = async (list: FileList | null) => {
     if (!list?.length) return;
-    const picked = [...list].map<Picked>((file) => ({ file, state: GIS.test(file.name) ? 'inspecting' : 'not-gis' }));
+    const picked = [...list].map<Picked>((file) => ({ file, state: (GIS.test(file.name) || demoImportEnabled && /\.(laz|tif|tiff)$/i.test(file.name)) ? 'inspecting' : 'not-gis' }));
     setFiles((current) => [...current, ...picked]);
     setStep(1);
     for (const item of picked.filter((p) => p.state === 'inspecting')) {
@@ -214,7 +214,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
                 { header: 'File', cell: (f) => <span className="ul-id">{f.file.name}</span> },
                 { header: 'Detected', cell: (f) => (f.state === 'ready' ? formatLabel(f.inspection!.format) : f.state === 'inspecting' ? 'Reading…' : f.state === 'not-gis' ? 'Document or table' : <span className="ul-error"><Icon icon={Warning} size={16} />{f.error}</span>) },
                 { header: 'CRS', cell: (f) => (f.inspection ? (f.inspection.sourceCrs ?? <Badge tone="warning" icon={Warning}>CRS unverified</Badge>) : '—') },
-                { header: 'Contents', numeric: true, cell: (f) => (f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—' : `${formatCount(f.inspection.featureCount)} features`) },
+                { header: 'Contents', numeric: true, cell: (f) => demoImportEnabled && f.inspection?.demoContents ? f.inspection.demoContents : (f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—' : `${formatCount(f.inspection.featureCount)} features`) },
                 { header: 'Mapping', cell: (f) => (f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : f.state === 'not-gis' ? <Badge icon={null}>Kept as evidence</Badge> : '—') },
                 ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash} aria-label={`Remove ${f.file.name}`} onClick={() => setFiles((c) => c.filter((x) => x !== f))} /> }] : []),
               ]}
@@ -222,7 +222,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           </div>
         ) : null}
 
-        {demoImportEnabled && files.length ? <Banner tone="info">Local demo import: all selected layers are normalized together with the fixed NYC profile and streamed into a new map. Original attributes are retained; no AI or registry recording is performed. Sidewalks and courts use the existing paved-surface style.</Banner> : null}
+        {demoImportEnabled && files.length ? <Banner tone="info">Local demo import: all selected layers are normalized together with the fixed NYC profile and streamed into a new map. Original attributes are retained; no AI or registry recording is performed. Sidewalks and courts use the existing paved-surface style. Verified LAZ and GeoTIFF extracts are linked as spatial evidence; raw points and rasters are not drawn by the current map.</Banner> : null}
         {!demoImportEnabled && gis?.inspection && mapping && step >= 1 ? (
           <section className={styles.readAs} aria-label="How the file is read">
             <header className={styles.readAsHead}>
@@ -428,4 +428,4 @@ function Stepper({ step }: { step: number }) {
   );
 }
 
-const formatLabel = (format: string) => ({ geojson: 'GeoJSON', arcgis: 'ArcGIS JSON', gpkg: 'GeoPackage', shapefile_zip: 'Shapefile (zip)' }[format] ?? format);
+const formatLabel = (format: string) => ({ geojson: 'GeoJSON', arcgis: 'ArcGIS JSON', gpkg: 'GeoPackage', shapefile_zip: 'Shapefile (zip)', laz: 'LiDAR (LAZ)', geotiff: 'GeoTIFF', mixed: 'Mixed layers' }[format] ?? format);

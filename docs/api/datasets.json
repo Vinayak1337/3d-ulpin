@@ -3678,5 +3678,62 @@
         }
       ]
     }
+  ],
+  "localDemoSources": [
+    {
+      "manifest": "/Users/vinayak/.codex/task-data/nyc-10013-multimodal/manifest.json",
+      "manifestSha256": "0a382828c60e5b519da2e7a313f6e26202e511ed2d90e862f6550f4307bd10f5",
+      "guide": "docs/api/demo-import.md",
+      "geography": "Bounded lower Manhattan subset within NYC ZCTA 10013, United States",
+      "apiInstallation": "local-opt-in-demo-only",
+      "productionRuntimeVerified": false,
+      "assets": [
+        {
+          "name": "nyc-10013-lidar-2017.laz",
+          "role": "point_cloud",
+          "format": "laz",
+          "sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790",
+          "bytes": 11110715,
+          "count": 1726222,
+          "crs": "COMPD_CS[\"NAD83(2011) / UTM zone 18N + NAVD88 height\",PROJCS[\"NAD83(2011) / UTM zone 18N\",GEOGCS[\"NAD83(2011)\",DATUM[\"NAD83_National_Spatial_Reference_System_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101],AUTHORITY[\"EPSG\",\"1116\"]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6318\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",-75],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"6347\"]],VERT_CS[\"NAVD88 height\",VERT_DATUM[\"North American Vertical Datum 1988\",2005],UNIT[\"metre\",1],AXIS[\"Gravity-related height\",UP],AUTHORITY[\"EPSG\",\"5703\"]]]",
+          "verticalReference": "NAVD88 height, metres, NOAA GEOID18 distribution",
+          "source": "https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9306/20170504_980200.copc.laz",
+          "recipe": "Bounding-box selection of unchanged point records; no decimation, reconstruction or interpolation",
+          "captureYear": 2017
+        },
+        {
+          "name": "nyc-10013-dem-2017.tif",
+          "role": "dem",
+          "format": "geotiff",
+          "sha256": "955d7f051c26cc2a26b7a1e9c00bacb9f4e96b6b5611c716d56be6d91e11d317",
+          "bytes": 989186,
+          "count": 757952,
+          "crs": "EPSG:2263",
+          "verticalReference": "Not qualified from raster header; raw sample units are not assumed",
+          "source": "https://gisdata.ny.gov/elevation/DEM/NYC_TopoBathymetric2017/be_NYC_025.tif",
+          "recipe": "Native-grid window copied without resampling or filling nodata",
+          "captureYear": 2017
+        },
+        {
+          "name": "nyc-10013-ortho-2018.tif",
+          "role": "imagery",
+          "format": "geotiff",
+          "sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716",
+          "bytes": 1036134,
+          "count": 589824,
+          "crs": "EPSG:3857",
+          "verticalReference": null,
+          "source": "https://maps.nyc.gov/tiles/",
+          "recipe": "Exact XYZ tile mosaic; PNG palette expanded to RGBA, georeferenced using Web Mercator tile grid; no resampling",
+          "captureYear": 2018
+        }
+      ],
+      "limitations": [
+        "No verified drone acquisition",
+        "Different survey vintages; no claim of contemporary ground truth",
+        "DEM vertical unit/datum not qualified; no LiDAR minus DEM height calculation",
+        "Imagery and point-cloud evidence do not create ownership, units or new building geometry"
+      ]
+    }
   ]
 }
