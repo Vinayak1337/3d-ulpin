@@ -1,5 +1,5 @@
 """Bounded NYC profile only. stdin JSON -> actual normalized batches as NDJSON.
-Run with the existing geo image's Shapely/PROJ, not an AI provider.
+Vectors use the geo image; mixed uploads use the isolated requirements.txt environment. No AI provider.
 """
 import sys, json, uuid, math
 from shapely.geometry import shape, mapping
@@ -22,6 +22,7 @@ layers = payload['layers']
 projection = Transformer.from_crs('EPSG:4326', 'EPSG:32618', always_xy=True)
 valid = []; rejected = []; repaired = []; total = 0; bounds = []
 for layer in layers:
+    if layer.get('format') in ('laz', 'geotiff'): continue
     seen = set()
     for index, feature in enumerate(layer['document']['features']):
         total += 1
@@ -53,8 +54,14 @@ if not valid: raise ValueError('No valid polygon features in the upload')
 ox = min(b[0] for b in bounds); oy = min(b[1] for b in bounds)
 anchor = Transformer.from_crs('EPSG:32618','EPSG:4326',always_xy=True).transform(ox,oy)
 reference = dict(sourceCrs='EPSG:4326',analysisCrs='EPSG:32618',origin=[ox,oy],anchor=list(anchor),transformVersion='nyc-context-demo/1; pyproj '+proj_version,verticalReference='building-relative roof heights; context surfaces have no qualified elevation')
+reports=[]; observations={}
+binary=[layer for layer in layers if layer.get('format') in ('laz','geotiff')]
+if binary:
+    from multimodal import fuse
+    reports,observations=fuse(binary,valid,payload['outputDir'])
 message = f'{len(valid)} of {total} uploaded features accepted; {len(rejected)} skipped; {len(repaired)} repaired for display. Originals retained unchanged.'
-emit(dict(type='metadata',reference=reference,total=total,quarantine=dict(version='gis-quarantine/1',total=total,accepted=len(valid),rejected=len(rejected),complete=not rejected,message=message,rejections=rejected,repairs=repaired,sourceSha256=payload['hash'],sourceId=payload['packageId'],sourceRevision=1)))
+if reports: message += ' LiDAR/raster evidence linked to overlapping buildings; raw point clouds and rasters are not drawn by this renderer.'
+emit(dict(type='metadata',reference=reference,datasets=reports,total=total,quarantine=dict(version='gis-quarantine/1',total=total,accepted=len(valid),rejected=len(rejected),complete=not rejected,message=message,rejections=rejected,repairs=repaired,sourceSha256=payload['hash'],sourceId=payload['packageId'],sourceRevision=1)))
 batch=[]
 # Surfaces first; building batches then grow onto them. No invented delay or geometry.
 valid.sort(key=lambda row: row[0]['layer']=='building')
@@ -76,6 +83,7 @@ for layer,index,feature,key,geom,repair in valid:
     p=dict(props); p.update(sourceLayer=family,sourceSubtype=subtype,displayClass=kind)
     if family=='water': p['land_cover']='water'
     if repair: p['geometryRepair']=repair
+    if (family,key) in observations: p['spatialObservations']=observations[(family,key)]
     row=dict(id=fid,areaId=area_id,kind=kind,name=str(name),identifier=('DOITT ' if family=='building' else layer['dataset']+' / ')+key,sourceKey=key,revision=0,geometry=mapping(local),sourceGeometry=feature['geometry'],sourceFeatureIndex=index,sourceRevisionId=source_id,datasetNamespace='nyc-oti-'+layer['dataset'],sourceReference=reference,properties=p,height=height_info,areaM2=geom.area,evidence=evidence,worldStatus='observed',geometryRole='observed_roof_projection' if family=='building' else 'context_surface',representation='physical_exterior',semantics=dict(sourceDate=props.get('last_edited_date'),evidenceState='source_supported'),displayState='unrecorded_proposal',proposalPackageId=payload['packageId'])
     batch.append(row)
     if len(batch)>=96:

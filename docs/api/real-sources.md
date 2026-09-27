@@ -88,7 +88,7 @@ DOC-INGEST-01 reuses [NYC's unchanged official metadata text](../../fixtures/rea
 
 ## NYC same-area LiDAR and imagery discovery (27 September 2026)
 
-For the ZCTA 10013 demo, these official collections cover NYC/Manhattan. Individual overlapping tiles, sizes, source references and terms still need acquisition checks. **Discovered online; not downloaded into the demo pack or qualified through its importer.**
+For the ZCTA 10013 demo, these official collections cover NYC/Manhattan. A bounded overlapping subset is now downloaded and parsed by the opt-in demo importer; production Nest ingestion remains unqualified. See the [multimodal runbook](demo-import.md#same-area-multimodal-upload-27-september).
 
 - [NYC 2017 topobathymetric LiDAR](https://data.cityofnewyork.us/City-Government/Topobathymetric-LiDAR-Data-2017-/7sc8-jtbz/about_data): citywide airborne point clouds; use selected tiles rather than the whole collection.
 - [NYC issuing-agency LiDAR guide](https://storymaps.arcgis.com/stories/f6758ce6248645e2859de5448019185e): point clouds, bare-earth DEM and highest-hit DSM products and tile download guidance.
@@ -96,3 +96,5 @@ For the ZCTA 10013 demo, these official collections cover NYC/Manhattan. Individ
 - [NYC Manhattan 2018 orthoimagery](https://data.cityofnewyork.us/City-Government/2018-Orthoimagery-Manhattan/hxws-3mbm): aerial imagery, not verified drone capture; JP2 distribution. [NYC tile services](https://maps.nyc.gov/tiles/) document imagery access.
 
 No same-area official drone capture was verified in this discovery. LiDAR/DEM/DSM capture dates differ from the footprint/context snapshots, so alignment and changes require qualification. The fixed [demo adapter](demo-import.md) accepts its pinned GeoJSON/ZIP profile only; raw LAS/LAZ, raster imagery and DEM uploads still require actual conversion/viewer work. Do not use dataset availability as proof of implemented support.
+
+Acquired pack: `/Users/vinayak/.codex/task-data/nyc-10013-multimodal/manifest.json`; upload ZIP and separate LAZ/TIFF extracts are beside it. NOAA tile `20170504_980200.copc.laz` is retained whole; 1,726,222 unchanged points were cropped for upload. The NYS `be_NYC_025.tif` DEM was read by byte range into a native-grid crop (whole source TIFF not retained); nine NYC 2018 PNG imagery tiles were retained and mosaicked without resampling. Hash pins and counts are in `scripts/demo-import/nyc-profile.json`. The new inputs cover a bounded part of 10013; they add evidence to existing buildings, not invented map features. A measured maximum-Z surface is derived, with nodata gaps preserved. No drone claim, whole-area point-cloud coverage, public redistribution clearance, raw raster/point-cloud rendering or production ML support follows.
