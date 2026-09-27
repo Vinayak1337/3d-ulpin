@@ -23,7 +23,7 @@
 .mapTools[open] > summary { border-bottom: 1px solid var(--ui-divider); margin-bottom: var(--ui-space-2); }
 .mapTools > nav { padding: 4px 10px 16px; gap: 20px; }
 .deleteArea { margin: 0 10px 10px; color: var(--ui-danger); }
-.viewNote { position: absolute; left: var(--ui-space-4); bottom: var(--ui-space-4); z-index: var(--ui-z-map-overlay); margin: 0; padding: 4px 8px; border-radius: var(--ui-radius-4); background: color-mix(in srgb, var(--ui-surface) 90%, transparent); color: var(--ui-ink-soft); font: 400 11px/16px var(--ui-font-sans); pointer-events: none; }
+.viewNote { display: grid; max-width: min(38rem, calc(100% - 20rem)); overflow-wrap: anywhere; position: absolute; left: var(--ui-space-4); bottom: var(--ui-space-4); z-index: var(--ui-z-map-overlay); margin: 0; padding: 4px 8px; border-radius: var(--ui-radius-4); background: color-mix(in srgb, var(--ui-surface) 90%, transparent); color: var(--ui-ink-soft); font: 400 11px/16px var(--ui-font-sans); pointer-events: none; }
 @media (prefers-reduced-motion: no-preference) {
   .inspectorColumn { animation: map-inspector-in 240ms cubic-bezier(.23, 1, .32, 1); }
   @keyframes map-inspector-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }

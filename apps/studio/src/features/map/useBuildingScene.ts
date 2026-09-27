@@ -6,6 +6,7 @@ import type { BuildingModel } from '../../model/building';
 import type { ColourBy } from '../../state/selection';
 import { polygonsOf, storeysFrom, toBase, toFootprints } from './footprints';
 import { RIGHTS_TOKEN, ledgerSpace, tokenColour } from './ledger';
+import { heightColour } from './heightBands';
 
 /**
  * Scene inputs for an area with one building explored: the base map, every building (the explored one
@@ -24,7 +25,11 @@ export function useBuildingScene(features: AreaFeature[], feature: AreaFeature |
     }
     return map;
   }, [feature, model, groundM]);
-  const footprints = useMemo(() => toFootprints(features, storeys), [features, storeys]);
+  const footprints = useMemo(() => {
+    const out = toFootprints(features, storeys);
+    if (colour !== 'height') return out;
+    return out.map((f) => { const color = f.heightState === 'unknown' || f.heightState === 'unresolved' ? null : heightColour(f.heightM); return color ? { ...f, color } : f; });
+  }, [features, storeys, colour]);
 
   const detail = useMemo<BuildingDetailInput | null>(() => {
     if (!model || !feature) return null;

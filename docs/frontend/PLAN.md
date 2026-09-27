@@ -93,3 +93,7 @@ Kept in `apps/studio/src/local/routes.ts`. Every endpoint the Studio calls is li
 - `pnpm studio:derive` regenerates the local area from `fixtures/real-area` after checking its SHA-256.
 - Capture at 1440 × 900 with headless Playwright; the in-app browser pane crops wide viewports.
 - `ui-design-check` is staged, not committed, in the staging checkout's index (the user's index; leave it alone). Retarget it to `apps/studio` once it is committed.
+
+## 27 September — continued interrupted overlay work
+
+User requested Codex take over Claude's unfinished `frontend/studio` changes. Completed source-driven sidewalk/court materials, height colouring and legend, optional official aerial/derived-LiDAR overlays, and place-label deduplication/zoom/overlap filtering. Corrected double-flipped imagery, preserved source Z differences under a labelled display offset, exposed load/frame failures and released overlay GPU resources. Raw LiDAR and DEM remain evidence; no generic terrain or building reconstruction claim. Details and dataset links: [demo import guide](../api/demo-import.md#studio-overlay-completion). Build/typecheck and the existing nine scene tests pass; browser checked on the real NYC 10013 area. The user's staged skills and protected mockups remain untouched.

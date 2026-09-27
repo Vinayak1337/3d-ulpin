@@ -1,6 +1,6 @@
 # NYC full-map demo upload
 
-User-scoped demonstration adapter, 27 September 2026. **Real uploaded source data; fixed normalization rules; real SSE delivery.** This is not the production ingestion, ML, registry or scale gate. No real registry writes or provider calls occur. `packages/scene` and the map geometry adapter are unchanged.
+User-scoped demonstration adapter, 27 September 2026. **Real uploaded source data; fixed normalization rules; real SSE delivery.** This is not the production ingestion, ML, registry or scale gate. No real registry writes or provider calls occur. The import preserves source geometry and heights; the Studio renderer now supports optional imagery and derived-surface context overlays.
 
 ## Run tomorrow
 
@@ -68,7 +68,7 @@ Coverage is approximately `[-74.0125, 40.7165, -74.0095, 40.719]`, with native r
 
 The point reader also emits a downloadable 2 m maximum-observed-Z raster (18,189 populated cells, 271 empty). Withheld/noise classes are excluded, empty cells stay nodata, and no interpolation occurs. This is a derived observed-surface grid, not an independently acquired official DSM or a certified terrain/roof model.
 
-`scripts/demo-import/multimodal.py` reads the uploaded binary bytes. It adds `properties.spatialObservations[]` to existing buildings and `supplementalDatasets[]` to area context/SSE metadata. Existing vector geometry and source heights remain unchanged. **The current map does not draw raw point clouds, terrain or draped imagery.** Binary assets are served as downloads through the dataset catalogue, not sent into the existing text evidence viewer. Upload and completion notices explain this limit.
+`scripts/demo-import/multimodal.py` reads the uploaded binary bytes. It adds `properties.spatialObservations[]` to existing buildings and `supplementalDatasets[]` to area context/SSE metadata. Existing vector geometry and source heights remain unchanged. **Studio now draws the aerial image and the derived LiDAR surface as optional context overlays.** It does not render the full raw point cloud, reconstruct buildings or generate DEM terrain. Binary assets are served as downloads through the dataset catalogue, not sent into the existing text evidence viewer. Upload and completion notices explain this limit.
 
 Additional local API contracts:
 
@@ -82,3 +82,13 @@ Binary processing uses an isolated Python environment, already installed at `~/.
 Acquisition recipe: `scripts/demo-import/prepare-multimodal.py <private-output-directory>`. Retained manifest contains original URLs, bytes/hashes, acquisition date, coordinate systems and recipes. Full NOAA source tile and original NYC PNG tiles are retained unchanged. The 674 MB DEM was accessed by HTTP byte ranges; only its exact native-grid crop is retained locally, **not the whole original TIFF**. No broader public redistribution licence is asserted.
 
 Checked: eight-layer ZIP through HTTP/SSE (25 chunks, 2,363 unique vector features, approximately 10 seconds locally); binary-only import rejects with an instruction to include map geometry; Studio build/typecheck; separate-file browser upload. These are bounded demo checks, not production ingestion/scale qualification.
+
+## Studio overlay completion
+
+Continued the interrupted frontend work on 27 September. Map tools now offers **Aerial imagery 2018**, **LiDAR surface 2017** and **Colour by → Height**, using source dates and counts from the area context. The height legend counts the 1,662 actual source-supported building heights. Sidewalk/court styling uses recorded source subtypes. Repeated place names are deduplicated and labels hide when their projected place is too small or overlaps another label.
+
+The aerial is north-up RGB/RGBA Web Mercator, projected into the area's WGS84 UTM frame and draped on a ground plane. The LiDAR overlay displays 18,189 maximum-observed-Z cells, not all 1,726,222 source returns. It preserves nodata gaps, applies one labelled display-only vertical offset (−2.66 m for this subset), and explicitly flags approximate NAD83(2011)/WGS84 datum alignment. This is contextual visualization, not a qualified datum tie or height replacement. Both overlays are non-pickable, disappear in analytical/underground/floor modes and cannot establish rights or measurements. DEM vertical qualification remains open, so DEM observations stay evidence only.
+
+Frame/source metadata participates in cache identity. Unsupported frames and failed downloads show an explanation instead of silently disappearing. Overlay GPU resources are released on replacement/unmount. Plain view disables illustrative windows/kerbs while retaining a selected thematic height colour.
+
+Checks: Studio production build/typecheck, nine existing scene tests, browser overlay toggles/height legend/selection and plain-view behavior on the real area. UI design scan and manual review cover the changed Studio components; no sample records or source edits were introduced.

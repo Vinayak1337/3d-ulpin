@@ -58,6 +58,8 @@ interface FacadeOptions {
   windows: boolean;
   /** Use the per-building vertex tint (materials shared by the area's massing). */
   tint: boolean;
+  /** Keep thematic vertex colours when illustrative facade details are disabled. */
+  alwaysTint?: boolean;
   /** Glass colour of the windows. */
   glass?: string;
 }
@@ -70,7 +72,7 @@ interface FacadeOptions {
 export function enhanceFacade(material: MeshStandardMaterial, uniforms: LookUniforms, options: FacadeOptions): void {
   if (options.tint) material.vertexColors = true;
   const glass = new Color(options.glass ?? '#8c9daa');
-  material.customProgramCacheKey = () => `facade-${options.windows}-${options.tint}`;
+  material.customProgramCacheKey = () => `facade-${options.windows}-${options.tint}-${options.alwaysTint ?? false}`;
   material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
     shader.uniforms.uLook = uniforms.uLook;
     shader.uniforms.uGlass = { value: glass };
@@ -81,7 +83,7 @@ export function enhanceFacade(material: MeshStandardMaterial, uniforms: LookUnif
       .replace('#include <common>', '#include <common>\nuniform float uLook;\nuniform vec3 uGlass;\nvarying vec3 vWPos;\nvarying vec3 vWNormal;')
       .replace('#include <color_fragment>', `
 #if defined( USE_COLOR ) || defined( USE_COLOR_ALPHA )
-  diffuseColor.rgb *= mix(vec3(1.0), vColor.rgb, uLook);
+  diffuseColor.rgb *= mix(vec3(1.0), vColor.rgb, ${options.alwaysTint ? '1.0' : 'uLook'});
 #endif
 {
   vec3 n = normalize(vWNormal);
@@ -283,4 +285,40 @@ export function laneDashes(polygons: MultiPolygon, y: number): number[] {
     }
   }
   return out;
+}
+
+function ringArea(ring: Ring): number {
+  let a = 0;
+  for (let i = 0; i < ring.length - 1; i++) a += ring[i]![0] * ring[i + 1]![1] - ring[i + 1]![0] * ring[i]![1];
+  return a / 2;
+}
+
+/**
+ * A point inside the feature's largest polygon for its name label, and the polygon's size (square root of
+ * its area, metres) so labels can be hidden when the feature is too small on screen.
+ */
+export function labelPoint(polygons: MultiPolygon): { x: number; y: number; sizeM: number } | null {
+  let best: MultiPolygon[number] | null = null, bestArea = 0;
+  for (const polygon of polygons) { const a = Math.abs(ringArea(polygon[0] ?? [])); if (a > bestArea) { bestArea = a; best = polygon; } }
+  const outer = best?.[0];
+  if (!best || !outer || outer.length < 4) return null;
+  let cx = 0, cy = 0, a2 = 0;
+  for (let i = 0; i < outer.length - 1; i++) {
+    const [x0, y0] = outer[i]!, [x1, y1] = outer[i + 1]!;
+    const f = x0 * y1 - x1 * y0;
+    cx += (x0 + x1) * f; cy += (y0 + y1) * f; a2 += f;
+  }
+  if (a2) { cx /= 3 * a2; cy /= 3 * a2; }
+  const sizeM = Math.sqrt(bestArea);
+  if (inPolygons(cx, cy, [best])) return { x: cx, y: cy, sizeM };
+  // Centroid outside (an L or a ring): the middle of the widest inside span on the centroid's row.
+  const xs: number[] = [];
+  for (const ring of best) for (let i = 0; i < ring.length - 1; i++) {
+    const [x0, y0] = ring[i]!, [x1, y1] = ring[i + 1]!;
+    if ((y0 > cy) !== (y1 > cy)) xs.push(x0 + ((cy - y0) / (y1 - y0)) * (x1 - x0));
+  }
+  xs.sort((p, q) => p - q);
+  let bx = outer[0]![0], by = outer[0]![1], width = -1;
+  for (let i = 0; i + 1 < xs.length; i += 2) if (xs[i + 1]! - xs[i]! > width && inPolygons((xs[i]! + xs[i + 1]!) / 2, cy, [best])) { width = xs[i + 1]! - xs[i]!; bx = (xs[i]! + xs[i + 1]!) / 2; by = cy; }
+  return width > 0 ? { x: bx, y: by, sizeM } : null;
 }

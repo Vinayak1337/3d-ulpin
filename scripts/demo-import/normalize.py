@@ -60,7 +60,7 @@ if binary:
     from multimodal import fuse
     reports,observations=fuse(binary,valid,payload['outputDir'])
 message = f'{len(valid)} of {total} uploaded features accepted; {len(rejected)} skipped; {len(repaired)} repaired for display. Originals retained unchanged.'
-if reports: message += ' LiDAR/raster evidence linked to overlapping buildings; raw point clouds and rasters are not drawn by this renderer.'
+if reports: message += ' LiDAR/raster evidence linked to overlapping buildings. Available imagery and derived-surface previews are context only; original points and DEM samples remain evidence.'
 emit(dict(type='metadata',reference=reference,datasets=reports,total=total,quarantine=dict(version='gis-quarantine/1',total=total,accepted=len(valid),rejected=len(rejected),complete=not rejected,message=message,rejections=rejected,repairs=repaired,sourceSha256=payload['hash'],sourceId=payload['packageId'],sourceRevision=1)))
 batch=[]
 # Surfaces first; building batches then grow onto them. No invented delay or geometry.

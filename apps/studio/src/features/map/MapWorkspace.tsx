@@ -21,6 +21,8 @@ import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { BuildingSearch } from './BuildingSearch';
 import { useMapView } from './useMapView';
+import { useOverlays, type AreaReference, type SupplementalDataset, type LoadedOverlay } from './overlays';
+import { HEIGHT_BANDS, heightCounts } from './heightBands';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
@@ -41,6 +43,8 @@ const shownQuarantine = new Set<string>();
  * S4–S6, S8: one canvas whose modes (area, building, level, findings, underground) share one selection,
  * one inspector and one left navigation. The URL holds the selection.
  */
+const NO_LOADED_OVERLAYS: LoadedOverlay[] = [];
+
 export function MapWorkspace({ context }: { context: AreaContext }) {
   context = { ...context, features: context.displayFeatures ?? context.features };
   const { selection, dispatch, patch } = useSelection();
@@ -91,6 +95,14 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const { base, footprints, detail } = useBuildingScene(context.features, feature, model, ledger, colour);
   const [mapView, setMapView] = useMapView();
   const baseKinds = useMemo(() => new Set(base.map((f) => f.kind)), [base]);
+  const supplemental = (context as unknown as { supplementalDatasets?: SupplementalDataset[] }).supplementalDatasets;
+  const overlayQuery = useOverlays(context.area.id, supplemental, context.area.reference as AreaReference | null);
+  const loadedOverlays = overlayQuery.data?.overlays ?? NO_LOADED_OVERLAYS;
+  const showContextOverlays = (selection.mode === 'area' || selection.mode === 'building');
+  const overlayInputs = useMemo(() => loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]).map((o) => o.input), [loadedOverlays, mapView.overlays, showContextOverlays]);
+  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]);
+  const overlayNotes = visibleOverlays.map((o) => o.note);
+  const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view · illustrative details' : null, ...visibleOverlays.map((o) => o.caption), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
@@ -98,10 +110,12 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ...(baseKinds.has('public_land') ? [{ key: 'trees', label: 'Trees', checked: mapView.layers.trees, disabled: mapView.look !== 'enhanced' || !mapView.layers.publicLand }] : []),
     ...(baseKinds.has('parcel') ? [{ key: 'parcels', label: 'Parcels', checked: mapView.layers.parcels }] : []),
     ...(base.some((f) => f.name) ? [{ key: 'labels', label: 'Names', checked: mapView.labels }] : []),
+    ...loadedOverlays.map((o) => ({ key: `overlay:${o.layer}`, label: o.label, checked: mapView.overlays[o.layer] })),
   ];
   const onLayer = (key: string, on: boolean) => {
     if (key === 'look') setMapView({ look: on ? 'enhanced' : 'plain' });
     else if (key === 'labels') setMapView({ labels: on });
+    else if (key.startsWith('overlay:')) setMapView({ overlays: { ...mapView.overlays, [key.slice(8)]: on } });
     else setMapView({ layers: { ...mapView.layers, [key]: on } });
   };
 
@@ -219,6 +233,13 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   // Legend: only the active Colour by, plus the evidence key on a floor.
   const legend: LegendSection[] = [];
+  if (colour === 'height') {
+    const { counts, unknown } = heightCounts(buildings);
+    legend.push({ title: 'Roof height', items: [
+      ...HEIGHT_BANDS.map((b, i) => ({ label: b.label, count: counts[i], color: b.color })).filter((item) => item.count),
+      ...(unknown ? [{ label: 'Unknown', count: unknown, color: 'var(--ui-map-building)', hatch: true }] : []),
+    ] });
+  }
   if (selection.mode === 'level' && model && colour === 'rights') {
     const onLevel = model.spaces.filter((s) => s.levelId === selection.levelId && s.polygons.length);
     const count = (r: string) => onLevel.filter((s) => (ledgerSpace(ledger, s.id)?.rights ?? 'unknown') === r).length;
@@ -312,6 +333,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               look={mapView.look}
               flat={false}
               layers={mapView.layers}
+              overlays={overlayInputs}
               label={`3D map of ${context.area.name}. Search offers the same buildings; selected details open in the inspector.`}
             />
             {!reference ? (
@@ -353,12 +375,13 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 onView={chooseView}
                 keySections={legend}
                 layers={layerSwitches} onLayer={onLayer}
-                layersNote={mapView.look === 'enhanced' ? 'Enhanced view adds illustrative colours, windows and trees. Footprints, heights and records are unchanged.' : null}
+                layersNote={[mapView.look === 'enhanced' ? 'Enhanced view adds illustrative colours, windows, kerbs and trees. Footprints, heights and records are unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
                 colour={colour} onColour={chooseColour}
                 colourOptions={[
                   { value: 'none', label: 'None' },
                   { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
                   { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
+                  { value: 'height', label: 'Height', disabled: !buildings.length },
                 ]}
                 floor={selection.mode === 'level' && level ? level.label : null}
                 spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
@@ -385,7 +408,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               </div>
             )}
             {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
-            {mapView.look === 'enhanced' ? <p className={styles.viewNote}>Enhanced view · illustrative details</p> : null}
+            {viewNotes.length ? <p className={styles.viewNote}>{viewNotes.map((note, i) => <span key={i}>{note}</span>)}</p> : null}
             <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} /></div>
             {namespaces.length ? <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns]).join(' · ')}</p> : null}
           </div>

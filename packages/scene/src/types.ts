@@ -35,6 +35,8 @@ export interface FootprintInput {
   slabsM?: number[];
   /** Recorded storeys: when present the building is drawn storey by storey and picks name the level. */
   storeys?: StoreyInput[];
+  /** Thematic colour (Colour by height and similar), replacing the facade tint. */
+  color?: string;
 }
 
 /** Flat base-map features and underground envelopes, drawn under the massing. */
@@ -49,7 +51,29 @@ export interface BaseFeatureInput {
   network?: string;
   /** Recorded name (roads, parks), for map labels. */
   name?: string;
+  /** Recorded surface subtype when the source classifies it: 'roadbed', 'sidewalk', 'court', 'park', 'greenstreet'. */
+  surface?: string;
 }
+
+/** Georeferenced source image draped on the ground (corners in local metres: SW, SE, NE, NW). */
+export interface ImageOverlayInput {
+  id: string;
+  kind: 'image';
+  corners: [LocalXY, LocalXY, LocalXY, LocalXY];
+  image: HTMLCanvasElement;
+}
+
+/** Measured points (local east, north, up), coloured per point. */
+export interface PointOverlayInput {
+  id: string;
+  kind: 'points';
+  positions: Float32Array;
+  colors: Float32Array;
+  /** Point size in metres. */
+  sizeM: number;
+}
+
+export type OverlayInput = ImageOverlayInput | PointOverlayInput;
 
 /** Base-map layers the viewer can switch off. Buildings and the selection always stay. */
 export interface SceneLayers {

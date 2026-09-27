@@ -17,6 +17,7 @@
     "@ulpin/contracts": "workspace:*",
     "@ulpin/scene": "workspace:*",
     "@ulpin/ui": "workspace:*",
+    "geotiff": "2.1.3",
     "idb": "8.0.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",

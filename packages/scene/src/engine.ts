@@ -1,5 +1,5 @@
 import {
-  BackSide, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
+  BackSide, BufferAttribute, Points, PointsMaterial, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
   Group, HemisphereLight, LineBasicMaterial, LineDashedMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial,
   MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
   SphereGeometry, Vector2, Vector3, WebGLRenderer, type Material, type Object3D,
@@ -8,10 +8,10 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
 import { FLAT_THICKNESS_M, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
-import { enhanceFacade, facadeTint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
+import { enhanceFacade, facadeTint, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
-  ScenePalette, SceneLayers, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
+  OverlayInput, ScenePalette, SceneLayers, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
 } from './types';
 
 export interface SceneEngineOptions {
@@ -39,12 +39,17 @@ interface Entry {
   known: boolean;
   bounds: Box3;
   grow?: number;
+  /** Drawn with a thematic colour (Colour by). */
+  themed?: boolean;
 }
 
 const CAMERA_MS = 600;
 const GROW_MS = 220;
 /** Sun direction (towards the sun) in scene axes: from the south-west, high. */
 const SUN_DIR = new Vector3(-0.5, 0.95, 0.55).normalize();
+
+/** Illustrative kerb height of raised sidewalks, metres (enhanced view only). */
+const SIDEWALK_M = 0.15;
 
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
 
@@ -119,6 +124,9 @@ export class SceneEngine {
   private lands: { id: string; polygons: MultiPolygon }[] = [];
   private dressingKey = '';
   private hasRoads = false;
+  private readonly raised: Mesh[] = [];
+  private readonly anchorSizes = new Map<string, number>();
+  private readonly overlays = new Group();
   private layers: SceneLayers = { parcels: true, roads: true, publicLand: true, trees: true };
 
   constructor(container: HTMLElement, options: SceneEngineOptions) {
@@ -162,6 +170,8 @@ export class SceneEngine {
     this.m = makeMaterials(palette, this.clip);
     enhanceFacade(this.m.bldg, this.look, { windows: true, tint: true });
     enhanceFacade(this.m.bldgContext, this.look, { windows: true, tint: true });
+    // Thematic colours show in both looks: their tint is always on.
+    enhanceFacade(this.m.themed, this.look, { windows: true, tint: true, alwaysTint: true, glass: '#9aa7ae' });
     enhanceFacade(this.m.selected, this.look, { windows: true, tint: false, glass: '#8fb3a8' });
     this.plate = new Mesh(new BufferGeometry(), this.m.plate);
     this.plate.visible = false;
@@ -177,7 +187,7 @@ export class SceneEngine {
     this.halo.visible = false;
     this.underground.add(this.utilities, this.trenchGroup);
     this.base.add(this.kerbs);
-    this.scene.add(this.ground, this.dressing, this.plate, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.deviationGroup, this.halo);
+    this.scene.add(this.ground, this.overlays, this.dressing, this.plate, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.deviationGroup, this.halo);
 
     const canvas = this.renderer.domElement;
     canvas.addEventListener('pointerdown', this.onPointerDown);
@@ -207,6 +217,8 @@ export class SceneEngine {
     m.road.color.set(on ? '#a4a9ab' : p.road);
     m.publicLand.color.set(on ? '#c9dcb8' : p.publicLand);
     m.water.color.set(on ? '#a9cbe0' : p.water);
+    m.sidewalk.color.set(on ? '#d9d8d2' : p.road);
+    m.court.color.set(on ? '#b7c9b5' : p.road);
     m.edge.color.set(on ? '#cfc9bf' : p.buildingEdge);
     m.edgeContext.color.set(on ? '#cfc9bf' : p.buildingEdge);
     const horizon = new Color(on ? '#eef1ee' : p.ground);
@@ -217,8 +229,71 @@ export class SceneEngine {
     this.hemi.groundColor.set(on ? '#d6cfbf' : '#cfd6d4');
     this.sun.color.set(on ? '#fff3e0' : '#ffffff');
     this.dressing.visible = on;
+    this.applyRaise();
     this.applyLayers();
     this.apply();
+  }
+
+  private applyRaise() {
+    const k = this.lookName === 'enhanced' ? 1 : 0.02;
+    for (const mesh of this.raised) mesh.scale.y = k;
+    for (const line of this.kerbs.children) line.scale.y = this.hasSidewalkKerbs() ? k : 1;
+  }
+
+  private hasSidewalkKerbs(): boolean {
+    return this.raised.length > 0;
+  }
+
+  /**
+   * On-screen size (CSS px) of the feature a name anchor belongs to, so its label can be hidden while the
+   * feature is too small to read; null for anchors without a size.
+   */
+  anchorPixelSize(id: string): number | null {
+    const size = this.anchorSizes.get(id), point = this.anchors.get(id);
+    if (size === undefined || !point) return null;
+    const distance = this.camera.position.distanceTo(point);
+    const metresPerPx = (2 * distance * Math.tan((this.camera.fov * Math.PI) / 360)) / Math.max(1, this.container.clientHeight);
+    return size / metresPerPx;
+  }
+
+  /** Georeferenced imagery and measured point sets, drawn over the base map. Replaces the previous set. */
+  setOverlays(overlays: OverlayInput[]): void {
+    for (const child of [...this.overlays.children]) {
+      disposeObject(child);
+      const material = (child as Mesh).material as Material & { map?: { dispose(): void } | null };
+      material.map?.dispose();
+      material.dispose();
+    }
+    this.overlays.clear();
+    for (const o of overlays) {
+      if (o.kind === 'image') {
+        const [sw, se, ne, nw] = o.corners;
+        const g = new BufferGeometry();
+        const y = 0.2;
+        g.setAttribute('position', new Float32BufferAttribute([sw[0], y, -sw[1], se[0], y, -se[1], ne[0], y, -ne[1], nw[0], y, -nw[1]], 3));
+        g.setAttribute('uv', new Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2));
+        g.setIndex([0, 1, 2, 0, 2, 3]);
+        g.computeVertexNormals();
+        const texture = new CanvasTexture(o.image);
+        texture.colorSpace = SRGBColorSpace;
+        texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+        const mesh = new Mesh(g, new MeshBasicMaterial({ map: texture, transparent: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
+        mesh.raycast = () => {};
+        mesh.userData.overlay = o.id;
+        this.overlays.add(mesh);
+      } else {
+        const g = new BufferGeometry();
+        const positions = new Float32Array(o.positions.length);
+        for (let i = 0; i < o.positions.length; i += 3) { positions[i] = o.positions[i]!; positions[i + 1] = o.positions[i + 2]!; positions[i + 2] = -o.positions[i + 1]!; }
+        g.setAttribute('position', new BufferAttribute(positions, 3));
+        g.setAttribute('color', new BufferAttribute(o.colors, 3));
+        const points = new Points(g, new PointsMaterial({ size: o.sizeM, vertexColors: true, sizeAttenuation: true }));
+        points.raycast = () => {};
+        points.userData.overlay = o.id;
+        this.overlays.add(points);
+      }
+    }
+    this.requestRender();
   }
 
   /** Shows or hides base-map layers. */
@@ -293,6 +368,10 @@ export class SceneEngine {
     const kerbLines: number[] = [];
     const laneLines: number[] = [];
     const lift: Record<string, number> = { public_land: 0.019, road: 0.021, water: 0.03 };
+    this.raised.length = 0;
+    for (const key of [...this.anchorSizes.keys()]) if (key.startsWith('name:')) this.anchorSizes.delete(key);
+    // Recorded sidewalks carry the real kerb edges; then road seams get no kerb line.
+    const hasSidewalks = features.some((f) => f.surface === 'sidewalk');
     const parcelLines: number[] = [];
     for (const f of features) {
       if (f.kind === 'utility') continue;
@@ -302,21 +381,31 @@ export class SceneEngine {
       }
       const shapes = shapesFor(f.polygons);
       if (!shapes.length) continue;
-      if (f.kind === 'road') {
-        for (const polygon of f.polygons) for (const ring of polygon) kerbLines.push(...ringLines(ring, 0.05));
+      const sidewalk = f.surface === 'sidewalk';
+      if (f.kind === 'road' && sidewalk) {
+        for (const polygon of f.polygons) for (const ring of polygon) kerbLines.push(...ringLines(ring, SIDEWALK_M + 0.005));
+      } else if (f.kind === 'road' && f.surface !== 'court') {
+        if (!hasSidewalks) for (const polygon of f.polygons) for (const ring of polygon) kerbLines.push(...ringLines(ring, 0.05));
         laneLines.push(...laneDashes(f.polygons, 0.05));
       }
-      const mesh = new Mesh(prismGeometry(f.polygons, lift[f.kind] ?? 0.02, 0.001), f.kind === 'road' ? m.road : f.kind === 'water' ? m.water : m.publicLand);
+      const material = sidewalk ? m.sidewalk : f.surface === 'court' ? m.court : f.kind === 'road' ? m.road : f.kind === 'water' ? m.water : m.publicLand;
+      // Sidewalks are raised a kerb's height in the enhanced view (illustrative 15 cm); flat in plain view.
+      const mesh = new Mesh(sidewalk ? prismGeometry(f.polygons, 0, SIDEWALK_M) : prismGeometry(f.polygons, lift[f.kind] ?? 0.02, 0.001), material);
       mesh.receiveShadow = true;
       mesh.userData.layer = f.kind;
+      if (sidewalk) this.raised.push(mesh);
       if (f.name) {
-        const box = mesh.geometry.boundingBox!;
-        this.anchors.set(`name:${f.id}`, new Vector3((box.min.x + box.max.x) / 2, 0.2, (box.min.z + box.max.z) / 2));
+        const point = labelPoint(f.polygons);
+        if (point) {
+          this.anchors.set(`name:${f.id}`, new Vector3(point.x, 0.3, -point.y));
+          this.anchorSizes.set(`name:${f.id}`, point.sizeM);
+        }
       }
       this.base.add(mesh);
     }
     if (parcelLines.length) { const l = lines(parcelLines, m.parcel); l.userData.layer = 'parcel'; this.base.add(l); }
-    if (kerbLines.length) this.kerbs.add(lines(kerbLines, m.kerb));
+    if (kerbLines.length) this.kerbs.add(lines(kerbLines, hasSidewalks ? m.kerbEdge : m.kerb));
+    this.applyRaise();
     if (laneLines.length) this.kerbs.add(lines(laneLines, m.kerb));
     const hadRoads = this.hasRoads;
     this.hasRoads = features.some((f) => f.kind === 'road');
@@ -512,6 +601,7 @@ export class SceneEngine {
     canvas.removeEventListener('pointermove', this.onPointerMove);
     canvas.removeEventListener('pointerleave', this.onPointerLeave);
     for (const tiles of this.tilesets) tiles.dispose();
+    this.setOverlays([]);
     this.scene.traverse((object) => (object as Mesh).geometry?.dispose?.());
     for (const material of [...Object.values(this.m), ...this.spaceMaterials.values()] as Material[]) {
       (material as MeshBasicMaterial).map?.dispose();
@@ -529,13 +619,14 @@ export class SceneEngine {
     const known = hasKnownHeight(input);
     const geometry = prismGeometry(input.polygons, input.baseM ?? 0, known ? input.heightM! : FLAT_THICKNESS_M);
     if (!known) applyPlanarUV(geometry);
-    paintGeometry(geometry, facadeTint(input.id, known ? input.heightM : null));
-    const mesh = new Mesh(geometry, known ? this.m.bldg : this.m.unknown);
+    const themed = Boolean(input.color) && known;
+    paintGeometry(geometry, themed ? new Color(input.color) : facadeTint(input.id, known ? input.heightM : null));
+    const mesh = new Mesh(geometry, themed ? this.m.themed : known ? this.m.bldg : this.m.unknown);
     mesh.castShadow = known;
     mesh.receiveShadow = true;
     const edge = new LineSegments(edgeGeometry(geometry, input), this.m.edge);
     edge.raycast = () => {};
-    const entry: Entry = { kind: 'building', id: input.id, buildingId: input.id, meshes: [mesh], edges: [edge], known, bounds: geometry.boundingBox!.clone(), grow };
+    const entry: Entry = { kind: 'building', id: input.id, buildingId: input.id, meshes: [mesh], edges: [edge], known, bounds: geometry.boundingBox!.clone(), grow, themed };
     mesh.userData.entry = entry;
     this.buildings.add(mesh, edge);
     this.entries.set(input.id, entry);
@@ -679,13 +770,13 @@ export class SceneEngine {
     for (const entry of this.entries.values()) {
       if (entry.kind === 'building') {
         const selected = entry.id === buildingId;
-        let material: Material = entry.known ? m.bldg : m.unknown;
+        let material: Material = entry.themed ? m.themed : entry.known ? m.bldg : m.unknown;
         let edge: Material = m.edge;
         if (mode === 'findings') { material = selected ? m.ghost : m.bldgContext; edge = selected ? m.inkEdge : m.edgeContext; }
         else if (mode === 'underground') { material = selected ? m.ghost : m.faint; edge = selected ? m.inkEdge : m.ghostEdge; if (!selected) { this.setEntry(entry, material, edge, false, false); continue; } }
         else if (selected && exploring) { material = m.ghost; edge = m.ghostEdge; }
         else if (selected) { material = m.selected; edge = m.haloEdge; }
-        else if (selectedSomething) { material = entry.known ? m.bldgContext : m.unknownContext; edge = m.edgeContext; }
+        else if (selectedSomething) { material = entry.themed ? m.themed : entry.known ? m.bldgContext : m.unknownContext; edge = m.edgeContext; }
         this.setEntry(entry, material, edge, true, entry.known && material !== m.ghost && material !== m.faint);
       } else if (entry.kind === 'storey') {
         const selected = entry.buildingId === buildingId;
@@ -836,7 +927,7 @@ export class SceneEngine {
     const on = tool === 'section' && typeof sectionM === 'number';
     const planes = on ? [this.clip] : [];
     this.clip.constant = sectionM ?? 0;
-    for (const material of [this.m.bldg, this.m.selected, this.m.estimated, this.m.ghost, ...this.spaceMaterials.values()]) {
+    for (const material of [this.m.bldg, this.m.themed, this.m.selected, this.m.estimated, this.m.ghost, ...this.spaceMaterials.values()]) {
       if (material.clippingPlanes?.length !== planes.length) { material.clippingPlanes = planes; material.needsUpdate = true; }
     }
     this.m.edge.clippingPlanes = planes; this.m.haloEdge.clippingPlanes = planes; this.m.spaceEdge.clippingPlanes = planes; this.m.ghostEdge.clippingPlanes = planes;
@@ -1225,12 +1316,16 @@ function makeMaterials(p: ScenePalette, clip: Plane) {
     publicLand: layer(p.publicLand, -1),
     water: layer(p.water, -2, { roughness: 0.4 }),
     kerb: new LineBasicMaterial({ color: '#f7f7f4', transparent: true, opacity: 0.9 }),
+    kerbEdge: new LineBasicMaterial({ color: '#b9b8b2' }),
+    sidewalk: std(p.road, { roughness: 0.95 }),
+    court: layer(p.road, -1),
     plate: new MeshBasicMaterial({ color: p.selected, transparent: true, opacity: 0.28, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
     crown: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 }),
     trunk: new MeshStandardMaterial({ color: '#8a7560', roughness: 1 }),
     parcel: new LineBasicMaterial({ color: p.parcelLine, transparent: true, opacity: 0.7 }),
     bldg: std(p.building),
     bldgContext: std(contextColor),
+    themed: std('#ffffff'),
     unknown: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge) }),
     unknownContext: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge), transparent: true, opacity: 0.45 }),
     estimated: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge) }),

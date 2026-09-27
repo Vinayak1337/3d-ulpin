@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { SceneEngine, type SceneEngineOptions } from './engine';
 import { readPalette } from './palette';
 import type { SceneLook } from './look';
-import type { BaseFeatureInput, BuildingDetailInput, FootprintInput, Measurement, Pick, SceneLayers, SceneState, Trench } from './types';
+import type { BaseFeatureInput, BuildingDetailInput, FootprintInput, Measurement, OverlayInput, Pick, SceneLayers, SceneState, Trench } from './types';
 
 export interface SceneViewProps {
   base?: BaseFeatureInput[];
@@ -16,6 +16,8 @@ export interface SceneViewProps {
   /** Top-down camera. */
   flat?: boolean;
   layers?: Partial<SceneLayers>;
+  /** Georeferenced imagery and measured points. */
+  overlays?: OverlayInput[];
   onPick?: (pick: Pick) => void;
   onHover?: (pick: Pick) => void;
   onView?: () => void;
@@ -29,12 +31,13 @@ export interface SceneViewProps {
 }
 
 const NO_BASE: BaseFeatureInput[] = [];
+const NO_OVERLAYS: OverlayInput[] = [];
 
 /**
  * Thin React adapter: one engine per mount, props forwarded as imperative calls.
  * Callbacks go through a ref so a new closure never rebuilds the scene.
  */
-export function SceneView({ base = NO_BASE, buildings, detail, state, growNew, look = 'enhanced', flat = false, layers, onPick, onHover, onView, onMeasure, onTrench, onReady, className, style, label }: SceneViewProps) {
+export function SceneView({ base = NO_BASE, buildings, detail, state, growNew, look = 'enhanced', flat = false, layers, overlays = NO_OVERLAYS, onPick, onHover, onView, onMeasure, onTrench, onReady, className, style, label }: SceneViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const callbacks = useRef({ onPick, onHover, onView, onMeasure, onTrench });
@@ -64,6 +67,7 @@ export function SceneView({ base = NO_BASE, buildings, detail, state, growNew, l
   useEffect(() => { engine?.setBuildingDetail(detail); }, [engine, detail]);
   useEffect(() => { engine?.setState(state); }, [engine, state]);
   useEffect(() => { engine?.setLook(look); }, [engine, look]);
+  useEffect(() => { engine?.setOverlays(overlays); }, [engine, overlays]);
   useEffect(() => { engine?.setFlat(flat); }, [engine, flat]);
   const layerKey = JSON.stringify(layers ?? {});
   // eslint-disable-next-line react-hooks/exhaustive-deps

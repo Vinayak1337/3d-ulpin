@@ -6,7 +6,7 @@
  */
 export type MapMode = 'area' | 'building' | 'level' | 'findings' | 'underground';
 /** `auto` follows the mode: Rights on a level, Utilities underground, None elsewhere. */
-export type ColourBy = 'auto' | 'none' | 'rights' | 'utilities';
+export type ColourBy = 'auto' | 'none' | 'rights' | 'utilities' | 'height';
 export type LeftPanel = 'layers' | 'spaces' | 'sources' | 'checks' | null;
 const PANELS: Exclude<LeftPanel, null>[] = ['layers', 'spaces', 'sources', 'checks'];
 
@@ -35,7 +35,7 @@ export function readSelection(params: URLSearchParams): Selection {
     levelId: mode === 'level' ? levelId : null,
     spaceId: mode === 'level' ? params.get('record') : null,
     findingId: mode === 'findings' ? params.get('finding') : null,
-    colourBy: (['none', 'rights', 'utilities'] as const).find((c) => c === params.get('colour')) ?? 'auto',
+    colourBy: (['none', 'rights', 'utilities', 'height'] as const).find((c) => c === params.get('colour')) ?? 'auto',
     panel: PANELS.find((p) => p === params.get('panel')) ?? null,
   };
 }
