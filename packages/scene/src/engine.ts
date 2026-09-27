@@ -281,6 +281,21 @@ export class SceneEngine {
         mesh.raycast = () => {};
         mesh.userData.overlay = o.id;
         this.overlays.add(mesh);
+      } else if (o.kind === 'comparison') {
+        const conflict = o.role === 'conflict';
+        const color = conflict ? this.options.palette.critical : (this.options.palette.comparisonPlan ?? this.options.palette.selected);
+        const g = prismGeometry(o.polygons, 0.12, conflict ? o.heightM : 0.01);
+        if (conflict) {
+          const mesh = new Mesh(g, new MeshBasicMaterial({ color, transparent: true, opacity: 0.72, depthWrite: false, depthTest: false }));
+          mesh.renderOrder = 20;
+          mesh.raycast = () => {};
+          this.overlays.add(mesh);
+        }
+        const edge = new LineSegments(new EdgesGeometry(g), new LineBasicMaterial({ color, transparent: true, opacity: conflict ? 1 : 0.65, depthTest: false, depthWrite: false }));
+        edge.renderOrder = 21;
+        edge.raycast = () => {};
+        this.overlays.add(edge);
+        if (!conflict) g.dispose();
       } else {
         const g = new BufferGeometry();
         const positions = new Float32Array(o.positions.length);

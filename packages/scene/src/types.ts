@@ -73,7 +73,16 @@ export interface PointOverlayInput {
   sizeM: number;
 }
 
-export type OverlayInput = ImageOverlayInput | PointOverlayInput;
+/** Separate comparison geometry. Never participates in picking or registry records. */
+export interface ComparisonOverlayInput {
+  id: string;
+  kind: 'comparison';
+  role: 'plan' | 'conflict';
+  polygons: MultiPolygon;
+  heightM: number;
+}
+
+export type OverlayInput = ImageOverlayInput | PointOverlayInput | ComparisonOverlayInput;
 
 /** Base-map layers the viewer can switch off. Buildings and the selection always stay. */
 export interface SceneLayers {
@@ -204,5 +213,6 @@ export interface ScenePalette {
   soilTop: string;
   soilDeep: string;
   critical: string;
+  comparisonPlan?: string;
   utilities: Record<string, string>;
 }

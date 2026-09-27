@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { unzipSync } from 'fflate';
+import { compareSimulatedPlan } from './plan-check.mjs';
 const profile=JSON.parse(readFileSync(new URL('./nyc-profile.json',import.meta.url),'utf8'));
 const python=fileURLToPath(new URL('./normalize.py',import.meta.url));
 const sha=b=>createHash('sha256').update(b).digest('hex');
@@ -137,6 +138,10 @@ export function studioDemoImport(){
         if(path===`/api/demo/areas/${job.area.id}/surface`){
           if(!job.datasets?.some(d=>d.derivedSurface))return json(res,404,{message:'No measured surface has been derived'});
           res.writeHead(200,{'Content-Type':'image/tiff','Content-Disposition':'attachment; filename=lidar-observed-surface.tif','Cache-Control':'no-store'});res.end(await readFile(join(root,job.id,'lidar-observed-surface.tif')));return;
+        }
+        if(path===`/api/demo/areas/${job.area.id}/plan-check`){
+          const query=new URL(req.url,'http://localhost').searchParams;
+          return json(res,200,await compareSimulatedPlan(job,query.get('scenario')??'conflicts'));
         }
         if(parts[2]==='areas'&&path.endsWith('/context'))return json(res,200,context(job));
         if(parts[2]==='import-packages')return json(res,job.state==='FAILED'?422:200,job.state==='FAILED'?{message:job.error}:summary(job));
