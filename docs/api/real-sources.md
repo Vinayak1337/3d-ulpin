@@ -32,6 +32,14 @@ User preference is India; another country is acceptable. A complete **Census ZCT
 - [Esri India PIN boundary](https://www.arcgis.com/home/item.html?id=7fe4eec592004f5f992ed7492a50b18d) credits Department of Posts, but its item terms explicitly prohibit offline export. No geometry was exported from that service. Use the original Department of Posts/data.gov.in publication above when accessible.
 - [Esri 3D Buildings](https://www.arcgis.com/home/item.html?id=b8fec5af7dfe4866b1b8ac2d2800f282) has reachable public SceneServer metadata and mixed commercial/community sources. This does not establish local Indian coverage, official cadastral authority or permission to redistribute a downloaded mesh. Discovery metadata is retained at `/Users/vinayak/.codex/task-data/esri-kdmc-discovery-20260927`.
 
+### NYC 10013 companion context pack — prepared 27 September
+
+Official OTI [roadbed](https://data.cityofnewyork.us/d/i36f-5ih7), [sidewalk](https://data.cityofnewyork.us/d/52n9-sdep), [parks](https://data.cityofnewyork.us/d/y6ja-fw4f) and [hydrography](https://data.cityofnewyork.us/d/pjs3-c3z5) for the same ZCTA are retained privately. Original counts are 447/213/41/1; separate boundary-clipped derivatives contain 446/213/41/1. One invalid road remains quarantined; originals and all source attributes are preserved. Issuer responses total 4,337,317 bytes; prepared context files total 3,813,507 bytes.
+
+Private [manifest](/Users/vinayak/.codex/task-data/nyc-zcta-10013-context/manifest.json), [backend/frontend handoff](/Users/vinayak/.codex/task-data/nyc-zcta-10013-context/README.md) and [bundle](/Users/vinayak/.codex/task-data/nyc-zcta-10013-context/nyc-10013-official-context.zip) contain queries, hashes, terms, unchanged originals, separate derivatives and API inspection results. All four prepared files returned HTTP 200 from read-only GIS inspection; **not installed or rendered in Studio**. Repeated source IDs require the retained issuer Socrata row IDs, namespaced by dataset.
+
+Sidewalk/water kinds and bounded multi-layer delivery remain contract gaps. Do not misclassify water as public land or every park polygon as grass: the parks layer includes courts and Greenstreets. These sources do not supply individual tree positions, lane markings, street labels, terrain or rights. See the manifest for source terms and exact derivation; no synthetic records or geometry were introduced.
+
 ## Retained packs and API journeys
 
 The [machine-readable dataset catalogue](datasets.json) links the retained manifests, issuer/original URLs, hashes, permission/reference metadata and repository-byte checks. It does not claim API installation. Regenerate with `python3 scripts/api/build-dataset-catalog.py`; `--check` verifies metadata and available original bytes without starting services.
