@@ -96,8 +96,21 @@ def render_pdf_region(
         }
 
 
+def select_runtime(requested_device: str) -> tuple[str, Any]:
+    if requested_device not in {"auto", "cpu", "mps"}:
+        raise ValueError("unsupported document model device")
+    import torch
+
+    mps_available = torch.backends.mps.is_available()
+    if requested_device == "mps" and not mps_available:
+        raise RuntimeError("MPS was requested but is unavailable")
+    device = ("mps" if mps_available else "cpu") if requested_device == "auto" else requested_device
+    dtype = torch.bfloat16 if device == "mps" else torch.float32
+    return device, dtype
+
+
 def extract_region(image_path: Path, model_dir: Path, *, max_new_tokens: int = MAX_GENERATED_TOKENS,
-                   cpu_threads: int = MAX_CPU_THREADS) -> dict[str, Any]:
+                   cpu_threads: int = MAX_CPU_THREADS, device_choice: str = "auto") -> dict[str, Any]:
     """Run local image-to-DocTags inference; all output remains model-derived."""
     if not (1 <= max_new_tokens <= MAX_GENERATED_TOKENS and 1 <= cpu_threads <= MAX_CPU_THREADS):
         raise ValueError("inference bound exceeds the trial profile")
@@ -106,8 +119,7 @@ def extract_region(image_path: Path, model_dir: Path, *, max_new_tokens: int = M
     from transformers import AutoModelForVision2Seq, AutoProcessor
 
     torch.set_num_threads(cpu_threads)
-    device = "mps" if torch.backends.mps.is_available() else "cpu"
-    dtype = torch.bfloat16 if device == "mps" else torch.float32
+    device, dtype = select_runtime(device_choice)
     if device == "mps":
         torch.mps.set_per_process_memory_fraction(MPS_MEMORY_FRACTION)
     started = time.monotonic()
