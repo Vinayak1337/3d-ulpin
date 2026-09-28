@@ -69,7 +69,7 @@ function sampleBuilding(job,feature){
     revisions:[{kind:'recorded',title:'r1 Recorded',actor:'Duty officer',at:created,hash:revHash,previousHash:null}],deviation:null,
     sources:[{sourceId:levelsSrc,kind:'table',name:'level_schedule.csv',file:'level_schedule.csv',summary:`${floors.length} rows`},{sourceId:schedule,kind:'table',name:'unit_schedule.csv',file:'unit_schedule.csv',summary:`${units.length} rows`},{sourceId:decl,kind:'document',name:'Condominium declaration',file:'condominium_declaration.pdf',summary:'Schedule A'}]};
   const clean=units.map(({_row,_area,_level,...u})=>u);
-  const residents=residentsFor(b,units.filter(u=>u.use==='apartment').map(u=>({spaceId:u.id,unit:u.name,level:u._level})),{locale:'US',asOf:created.slice(0,10)});
+  const residents=residentsFor(b,units.filter(u=>u.use==='apartment').map(u=>({spaceId:u.id,unit:u.name,level:u._level})),{locale:'US',asOf:created.slice(0,10),addressLine:props.address??null});
   const sources=[['level_schedule.csv',levelsSrc],['unit_schedule.csv',schedule],['condominium_declaration.pdf',decl]].map(([name,sid])=>({id:sid,name,sha256:hash(`${sid}:${name}`),revision:1,profile:name.endsWith('.pdf')?'document':'table',createdAt:created,url:`/api/v1/sources/${sid}/file`,evidence:[]}));
   return {floors,units:clean,ledger,residents,sources,rows:{levels:layout.floors,units}};
 }

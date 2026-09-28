@@ -55,12 +55,13 @@ const CRC = (() => {
 })();
 const crc32 = (b: Uint8Array) => { let c = 0xffffffff; for (const x of b) c = CRC[(c ^ x) & 0xff]! ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
 
-function zip(files: Record<string, string>): Uint8Array<ArrayBuffer> {
+/** A stored (uncompressed) ZIP of text or binary files. */
+export function zip(files: Record<string, string | Uint8Array>): Uint8Array<ArrayBuffer> {
   const enc = new TextEncoder();
   const parts: Uint8Array[] = [], central: Uint8Array[] = [];
   let offset = 0;
   for (const [name, text] of Object.entries(files)) {
-    const data = enc.encode(text), fname = enc.encode(name), crc = crc32(data);
+    const data = typeof text === 'string' ? enc.encode(text) : text, fname = enc.encode(name), crc = crc32(data);
     const local = new DataView(new ArrayBuffer(30));
     local.setUint32(0, 0x04034b50, true); local.setUint16(4, 20, true); local.setUint16(6, 0x0800, true);
     local.setUint32(14, crc, true); local.setUint32(18, data.length, true); local.setUint32(22, data.length, true); local.setUint16(26, fname.length, true);

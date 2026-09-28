@@ -20,7 +20,10 @@ import { polygonsOf } from '../map/footprints';
 import { useBuildingScene } from '../map/useBuildingScene';
 import { CheckGroups } from '../review/CheckGroups';
 import { useBuildingActions, useBuildingWorkflow, useClearAction, useRecordAction } from '../workflow/useWorkflow';
-import { cityJson, download, fileStem, occupancyLabel, printRegister, registerRows, registerWorkbook, unitsCsv } from './exporters';
+import { cityJson, download, fileStem } from './exporters';
+import { printRegistry, registryDetail, registryHtml, registryPackage, registryTables, registryWorkbook } from './registry';
+import { featureCode } from '../../api/queries';
+import type { ConsolidatedRegistryReport } from '../../../../../packages/contracts/src/building-registry-report';
 import { useMapView } from '../map/useMapView';
 import styles from './RegisterPage.module.css';
 
@@ -117,6 +120,28 @@ function Register({ register }: { register: BuildingRegister }) {
   const cardBlocked = !record ? 'Blocked: select a unit with an assigned proposed code'
     : !recordWorkflow?.code ? 'Blocked: assign a proposed code first' : null;
   const stem = fileStem(register);
+  const [exportError, setExportError] = useState<string | null>(null);
+  /** Every export starts from the API's consolidated registry report, then adds the register's measurements. */
+  const exportAs = async (kind: 'pdf' | 'zip' | 'xlsx' | 'json') => {
+    setExportError(null);
+    // Open the print window inside the click, before any await, so it is not blocked.
+    const win = kind === 'pdf' ? window.open('', '_blank') : null;
+    try {
+      const response = await fetch(`/api/v1/buildings/${property.id}/register?profile=consolidated&format=json`);
+      if (!response.ok) throw new Error(`The registry report could not be prepared (${response.status}).`);
+      const report = (await response.json()) as ConsolidatedRegistryReport;
+      if (kind === 'json') return download(`${stem}-registry.json`, JSON.stringify(report, null, 2), 'application/json');
+      const detail = registryDetail(model, ledger, residents, workflowMap, featureCode(feature));
+      if (kind === 'xlsx') return download(`${stem}-register.xlsx`, registryWorkbook(registryTables(report, detail)), '');
+      if (kind === 'zip') return download(`${stem}-register.zip`, await registryPackage(report, detail, model.levels.length ? cityJson(register, model, ledger, workflowMap) : null, `${stem}-register`), '');
+      const html = registryHtml(report, detail);
+      if (win) { win.document.write(html.replace('</body>', '<script>window.onload=()=>setTimeout(()=>window.print(),250)</script></body>')); win.document.close(); }
+      else printRegistry(html);
+    } catch (error) {
+      win?.close();
+      setExportError(error instanceof Error ? error.message : 'The export failed.');
+    }
+  };
 
   return (
     <EvidenceProvider snapshot={snapshot}>
@@ -142,11 +167,11 @@ function Register({ register }: { register: BuildingRegister }) {
             {compare ? 'Close compare' : 'Deviation check'}
           </Button>
           <Menu label="Export" icon={DownloadSimple} items={[
-            { label: 'Full register (Excel)', disabled: !model.levels.length, onSelect: () => download(`${stem}-register.xlsx`, registerWorkbook(registerRows(register, model, ledger, residents, workflowMap)), '') },
-            { label: 'Register extract (PDF)', disabled: !model.levels.length, onSelect: () => printRegister(registerRows(register, model, ledger, residents, workflowMap), property.name) },
+            { label: 'Building register (PDF)', disabled: !model.levels.length, onSelect: () => void exportAs('pdf') },
+            { label: 'Register data package (ZIP)', disabled: !model.levels.length, onSelect: () => void exportAs('zip') },
+            { label: 'Register workbook (Excel)', disabled: !model.levels.length, onSelect: () => void exportAs('xlsx') },
+            { label: 'Consolidated registry (JSON)', onSelect: () => void exportAs('json') },
             { label: 'CityJSON 2.0', disabled: !model.levels.length, onSelect: () => download(`${stem}.city.json`, cityJson(register, model, ledger, workflowMap), 'application/city+json') },
-            { label: 'Units table (CSV)', disabled: !model.spaces.length, onSelect: () => download(`${stem}-units.csv`, unitsCsv(model, ledger, workflowMap), 'text/csv') },
-            { label: 'Register record (JSON)', onSelect: () => download(`${stem}-register.json`, JSON.stringify({ register, ledger, residents }, null, 2), 'application/json') },
           ]} />
           <div className={styles.primary}>
             <Button variant="primary" icon={QrCode} disabled={Boolean(cardBlocked)} onClick={() => setCardOpen(true)}>Property Card</Button>
@@ -154,6 +179,7 @@ function Register({ register }: { register: BuildingRegister }) {
           </div>
         </header>
 
+        {exportError ? <Banner tone="danger">{exportError}</Banner> : null}
         <div className={styles.body}>
           <div className={styles.sceneColumn}>
             <div className={styles.canvasWrap}>
@@ -325,7 +351,7 @@ function Residents({ residents, levelLabel, selectedId, onSelect, onClearLevel }
             <span className={styles.people}>{u.holders.map((h) => <span key={h.name}>{h.name}{u.holders.length > 1 ? <span className="ul-muted"> · {h.sharePct} %</span> : null}</span>)}
               <span className="ul-caption ul-mono">{u.holders[0]?.deedNo} · {formatDate(u.holders[0]?.since ?? '')}</span></span>
           ), width: '30%' },
-          { header: 'Occupancy', cell: (u) => <Badge tone={tone[u.occupancy]} icon={null}>{occupancyLabel(u.occupancy)}</Badge>, width: '14%' },
+          { header: 'Occupancy', cell: (u) => <Badge tone={tone[u.occupancy]} icon={null}>{({ owner_occupied: 'Owner-occupied', rented: 'Rented', vacant: 'Vacant' } as const)[u.occupancy]}</Badge>, width: '14%' },
           { header: 'Living here', cell: (u) => (u.occupants.length ? (
             <span className={styles.people}>{u.occupants.map((o) => <span key={o.name + o.relation}>{o.name} <span className="ul-muted">· {o.relation}</span></span>)}</span>
           ) : <span className="ul-muted">No one registered</span>) },
