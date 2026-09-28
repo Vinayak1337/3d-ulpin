@@ -6,10 +6,10 @@
   "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
   "servingObservation": {
     "schemaVersion": "ulpin-serving-observation/1",
-    "observedAt": "2026-09-26T21:04:44.905566+00:00",
+    "observedAt": "2026-09-26T22:06:12.370148+00:00",
     "environment": "linked-loopback-3188",
     "apiBase": "http://127.0.0.1:3188/api/v1",
-    "servedCodeCommit": "71d3a30a40f74c7b4a15f14cff304a7cd56ae710",
+    "servedCodeCommit": "4c4b1affc47a59e971db04f5cacbe9700e9bdb2c",
     "qualification": "Point-in-time local observation of administrative context, private post-admission tiles and one foreign footprint; not deployment, multiuser, Indian property-readiness, import-time GF-STREAM, scale or frontend qualification.",
     "database": {
       "status": "structurally_ready",
@@ -402,6 +402,22 @@
       },
       "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-runtime.json",
       "scope": "Local additive upgrade and read-only needs-input check. Question mutation journey is separately pinned isolated evidence at4695ae0; no new broad gate."
+    },
+    "registryReportUpgrade": {
+      "servedCodeCommit": "4c4b1affc47a59e971db04f5cacbe9700e9bdb2c",
+      "candidateCommit": "f6da4e86efa8abd7e5a353d92c49728f1f40b6ef",
+      "isolatedVerifiedProductionCommit": "ea276fd373c7b9dd266c65a7c15df089dbfd72d4",
+      "apiOperations": 163,
+      "namedSchemas": 191,
+      "health": "all services healthy; schema structurally_ready",
+      "schemaMigration": false,
+      "dataMutationByLead": false,
+      "providersEnabled": false,
+      "servedOpenapiAndDatasetsMatch": true,
+      "runtimeEvidence": "docs/evidence/usp/registry-report-handoff.md",
+      "qualification": "Isolated unchanged official NYC source: explicitly unrecorded JSON/PDF and visual check passed. Linked serving has no eligible recorded inhabited building; populated owners, occupants and floor/unit hierarchy remain unqualified. Historical archived source context unchanged.",
+      "privateLaunchReceipt": "/Users/vinayak/.codex/task-data/ulpin-serving-readiness/launch-serving-registry-pdf.json",
+      "privateHttpReceipt": "/Users/vinayak/.codex/task-data/ulpin-serving-readiness/serving-registry-pdf-http.json"
     }
   },
   "packs": [
@@ -3735,5 +3751,107 @@
         "Imagery and point-cloud evidence do not create ownership, units or new building geometry"
       ]
     }
-  ]
+  ],
+  "offlineLearningCorpus": {
+    "manifest": "docs/api/learning-corpus.json",
+    "manifestSha256": "059ea6facffe8850ffd75da3c922afe1fa158078c14a5daf93b1b6ee350f72d7",
+    "guide": "docs/api/learning.md",
+    "scope": "offline foreign-source research only; no production training or promotion",
+    "apiInstallation": "not-installed",
+    "productionModelPromoted": false,
+    "availability": "Originals retained outside Git; manifest pins are not repository-byte verification.",
+    "sources": [
+      {
+        "id": "nola-building-footprints",
+        "family": "nola-egis-footprints",
+        "split": "train",
+        "issuer": "City of New Orleans eGIS Team",
+        "geography": "New Orleans, Louisiana, United States",
+        "datasetUrl": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
+        "acquiredAt": "2026-09-28",
+        "sample": {
+          "file": "nola-sample.json",
+          "url": "https://data.nola.gov/resource/prh5-qsuf.geojson?$limit=5",
+          "bytes": 3044,
+          "sha256": "7a06e721f0a609db2a3b49210f36b0591d9d088e727acdc4ba7adcb9152a71f3",
+          "rows": 5
+        },
+        "metadata": {
+          "file": "nola-metadata.json",
+          "url": "https://data.nola.gov/api/views/prh5-qsuf.json",
+          "bytes": 15832,
+          "sha256": "95511cbf8c426d36b22db66ba2b38da21c2da43c4d0809b4345e2e9bc2e9e35b"
+        },
+        "permission": {
+          "basis": "Dataset portal declares Public Domain U.S. Government; local experimental schema learning only",
+          "url": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
+          "trainingEligible": true,
+          "productionEligible": false,
+          "sarvamDerived": false
+        },
+        "geometryCrs": "GeoJSON RFC 7946 WGS84 longitude/latitude; geometry operation still requires independent runtime validation"
+      },
+      {
+        "id": "nyc-building-footprints",
+        "family": "nyc-oti-footprints",
+        "split": "train",
+        "issuer": "City of New York Office of Technology and Innovation",
+        "geography": "New York City, New York, United States",
+        "datasetUrl": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue",
+        "acquiredAt": "2026-09-28",
+        "sample": {
+          "file": "nyc-sample.json",
+          "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?$limit=5&$where=doitt_id%20!=%20353927",
+          "bytes": 6945,
+          "sha256": "e46caaf50521f8ba2427987ace16cb1b64b7b73bbf82dedc9795afa4dea44ed3",
+          "rows": 5,
+          "excludesExistingBenchmarkDoittId": "353927"
+        },
+        "metadata": {
+          "file": "nyc-metadata.md",
+          "url": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "bytes": 12973,
+          "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+        },
+        "permission": {
+          "basis": "NYC OTI Open Data Technical Standards Manual says published datasets are available without restriction or licensing requirements",
+          "url": "https://opendata.cityofnewyork.us/wp-content/uploads/NYC_OpenData_TechnicalStandardsManual.pdf",
+          "trainingEligible": true,
+          "productionEligible": false,
+          "sarvamDerived": false
+        },
+        "geometryCrs": "Issuer metadata says NYC Open Data GeoJSON is EPSG:4326; operation still requires independent runtime validation"
+      },
+      {
+        "id": "sf-building-footprints",
+        "family": "sf-sfgis-footprints",
+        "split": "holdout",
+        "issuer": "City and County of San Francisco Enterprise GIS Program",
+        "geography": "San Francisco, California, United States",
+        "datasetUrl": "https://data.sfgov.org/Geographic-Locations-and-Boundaries/Building-Footprints/ynuv-fyni",
+        "acquiredAt": "2026-09-28",
+        "sample": {
+          "file": "sf-sample.json",
+          "url": "https://data.sfgov.org/resource/ynuv-fyni.geojson?$limit=5",
+          "bytes": 8915,
+          "sha256": "cdc4be502c67aca5620d05f91104af79c38a5c3cfa14b9c0e786af20d5b5683f",
+          "rows": 5
+        },
+        "metadata": {
+          "file": "sf-metadata.json",
+          "url": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "bytes": 85216,
+          "sha256": "6984dc32c3bb07361c0812d07b4fd75e818c4f852382677aba0a620e2a498d9b"
+        },
+        "permission": {
+          "basis": "Issuer metadata and source description specify Open Data Commons PDDL 1.0",
+          "url": "https://opendatacommons.org/licenses/pddl/1.0/",
+          "trainingEligible": true,
+          "productionEligible": false,
+          "sarvamDerived": false
+        },
+        "geometryCrs": "GeoJSON RFC 7946 WGS84 longitude/latitude; operation still requires independent runtime validation"
+      }
+    ]
+  }
 }

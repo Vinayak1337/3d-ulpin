@@ -2,7 +2,13 @@
 
 Local full-map demo upload: [fixed NYC normalization, SSE and runbook](demo-import.md). This opt-in display adapter is separate from the real registry and does not qualify production ingestion.
 
-Use this index before source-dependent orchestration and frontend/API integration. Official discovery links and retained source packs are separate: an online listing is not a downloaded original, an inspected original is not an installed record, and a runtime receipt qualifies only its stated profile. Last discovery/status review: **27 September 2026**. Exact bytes, hashes and qualification history belong in the linked manifests/receipts, not duplicated here.
+Use this index before source-dependent orchestration and frontend/API integration. Official discovery links and retained source packs are separate: an online listing is not a downloaded original, an inspected original is not an installed record, and a runtime receipt qualifies only its stated profile. Last discovery/status review: **28 September 2026**. Exact bytes, hashes and qualification history belong in the linked manifests/receipts, not duplicated here.
+
+## Independent learning corpus — 28 September
+
+The [checked learning manifest](learning-corpus.json) pins new five-feature samples and issuer dictionaries from [New Orleans](https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf), [NYC](https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue) and [San Francisco](https://data.sfgov.org/Geographic-Locations-and-Boundaries/Building-Footprints/ynuv-fyni). It records URLs, acquisition date, exact hashes, reference systems, labels and permitted use. Originals remain outside Git under `/Users/vinayak/.codex/task-data/ai-06a-learning/`; these are not installed API records. Preserve San Francisco as the held-out schema family, and preserve the earlier NYC benchmark separately.
+
+These independently checked foreign schema labels support only an offline field-mapping experiment. New Orleans declares public-domain terms; San Francisco declares PDDL; NYC's publishing policy permits unrestricted open-data use. The linked manifest retains the exact permission basis and limitations; none qualifies Indian operational records or provider-derived training. [The actual E5 fine-tuning result](learning.md) remains unpromoted: one of three positive held-out mappings succeeded, versus three of three for the lexical/type baseline. More rows of the same schema do not supply independent mapping examples.
 
 ## Official discovery entry points
 
