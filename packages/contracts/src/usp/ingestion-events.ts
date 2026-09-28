@@ -26,6 +26,11 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind:z.literal('streaming-vector.chunk'),sourceId:id,sourceRevision:revision,jobId:id,
     chunkIndex:z.number().int().nonnegative().max(4096),status:z.enum(['ready','quarantined']),resultSha256:hash,
     records:z.number().int().nonnegative().max(100),sourceComplete:z.literal(false)}),
+  z.strictObject({kind:z.literal('chunk-mapping.changed'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
+    status:z.enum(['queued','running','needs_input','disabled','unavailable','completed','completed_with_rejections','failed','stale'])}),
+  z.strictObject({kind:z.literal('chunk-mapping.chunk'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
+    chunkIndex:z.number().int().nonnegative().max(4096),status:z.enum(['ready','quarantined']),resultSha256:hash,
+    records:z.number().int().nonnegative().max(100),sourceComplete:z.literal(false)}),
 ]);
 /** Intentionally separate from registry snapshot events. No original, filename or error text. */
 export const CaseIngestionOutboxSchema = z.strictObject({

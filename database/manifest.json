@@ -1764,6 +1764,37 @@
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateStreamingVectorTx"
       }
+    },
+    {
+      "id": "ingestion.chunk-mapping.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/chunk-mapping.sql",
+        "function": "migrateChunkMappingTx",
+        "kind": "authored-sql",
+        "task": "AI-03",
+        "acceptedBase": "c2331d4d21945379e123da588dbd7a2a05d21a89"
+      },
+      "file": "sql/95-ingestion/chunk-mapping.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 36,
+      "sha256": "0d32a38dde4d894f42d520e1e2e5064adc912c683049b8b05e807e031224eb05",
+      "statements": [
+        {"ordinal": 1, "sha256": "43e6f6de0a9197427232b6a28cc205906e8606590731c68d3a1b9828dcb27f4d"},
+        {"ordinal": 2, "sha256": "943da61158f1c6bb91e2b915c815986f4a28f88a9e4f836826c5a9c949bbef62"},
+        {"ordinal": 3, "sha256": "3aa8eb5821b70b83bcdafc1fcd9a72469521365201f11c4618a8d1a42c2be484"},
+        {"ordinal": 4, "sha256": "c1bf6c4478d3edd5af6cc6d9aa9bd85c71c4c16d985f0333c72bf8c7c83e9cea"},
+        {"ordinal": 5, "sha256": "afcabae874ffdd8cde80b71864a999b018e0a1490707a63a9dce1c7a943d9705"}
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateChunkMappingTx"
+      }
     }
   ],
   "plannedButAbsent": []
