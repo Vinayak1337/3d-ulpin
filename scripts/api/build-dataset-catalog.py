@@ -108,6 +108,7 @@ def catalogue():
     learning_path = ROOT / "docs/api/learning-corpus.json"
     learning_raw = learning_path.read_bytes()
     learning = json.loads(learning_raw)
+    local_sources = json.loads((ROOT / "docs/api/retained-local-datasets.json").read_text())
     return {
         "schemaVersion": "ulpin-api-dataset-catalog/1",
         "purpose": "Source metadata for API integration; not installed records or permission grants.",
@@ -118,7 +119,10 @@ def catalogue():
         "packs": packs, "retainedOfficialTestSources": retained,
         # External originals are not reproducible repository assets. Preserve
         # their separately maintained acquisition metadata on every regeneration.
-        "localDemoSources": json.loads((ROOT / "docs/api/retained-local-datasets.json").read_text()),
+        "localDemoSources": [source for source in local_sources
+                             if source.get("apiInstallation") == "local-opt-in-demo-only"],
+        "retainedExternalSources": [source for source in local_sources
+                                    if source.get("apiInstallation") != "local-opt-in-demo-only"],
         "offlineLearningCorpus": {
             "manifest": "docs/api/learning-corpus.json", "manifestSha256": sha(learning_raw),
             "guide": "docs/api/learning.md", "scope": learning["scope"],
