@@ -122,13 +122,14 @@ def main() -> None:
     report = {
         "status": "offline_candidate_only",
         "promotion": "blocked_offline_experiment",
+        "evaluationInterpretation": "SF family is excluded from corrected training and threshold choice but was observed during prior development; this is a diagnostic comparison, not fresh generalization.",
         "base": {"repo": "intfloat/multilingual-e5-small", "revision": BASE_REVISION, "weightSha256": BASE_WEIGHT_SHA256, "configSha256": BASE_CONFIG_SHA256, "license": "MIT", "fileSha256": {name: sha256_file(args.base_dir / name) for name in ("config.json", "model.safetensors", "sentencepiece.bpe.model", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "README.md")}},
         "candidate": {"file": adapter_path.name, "sha256": adapter_sha, "fineTunedModule": "BertModel.encoder.layer.11", "trainableParameters": trainable_parameters, "maximumAbsoluteWeightChange": max_weight_change, "steps": args.steps, "seed": args.seed, "optimizer": "AdamW", "learningRate": 2e-5, "reloadMaxCosineDelta": max_reload_delta},
         "corpus": {"fileSha256": sha256_file(args.corpus), "featureVersion": corpus["featureVersion"], "trainFamilies": sorted({item["family"] for item in train}), "holdoutFamilies": sorted({item["family"] for item in holdout}), "trainFields": len(train), "trainPositiveFields": sum(item["target"] is not None for item in train), "trainPairs": labels.numel(), "trainPositivePairs": positive_pairs, "holdoutFields": len(holdout), "holdoutPositiveFields": sum(item["target"] is not None for item in holdout)},
         "comparison": {"lexicalHoldout": lexical_holdout, "baseTrain": base_train, "baseHoldout": base_holdout, "tunedTrain": tuned_train, "tunedHoldout": tuned_holdout},
         "resources": {"elapsedSeconds": round(time.monotonic() - started, 3), "peakProcessRssBytes": peak_rss, "torchThreads": torch.get_num_threads()},
         "loss": {"first": round(losses[0], 6), "last": round(losses[-1], 6)},
-        "limitations": ["Three foreign building footprint schema families only; no Indian production qualification", "No runtime conversion or candidate promotion", "Training rows represent checked fields, not repeated building features"],
+        "limitations": ["Three foreign building footprint schema families only; no Indian production qualification", "SF diagnostic family was previously observed during development", "No runtime conversion or candidate promotion", "Training rows represent checked fields, not repeated building features"],
     }
     report_path = args.output_dir / "run.json"
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")

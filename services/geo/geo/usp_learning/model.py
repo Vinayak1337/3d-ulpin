@@ -93,11 +93,11 @@ def load_adapter(model: Any, path: Path, expected_sha256: str) -> None:
 
 
 def allowed_target_indices(example: dict[str, Any]) -> tuple[int, ...]:
-    """Constrain learned proposals to currently executable input types."""
-    declared = example["declaredType"]
-    if declared == "text":
+    """Constrain schema proposals by wire shape; row execution is checked separately."""
+    wire_types = example["observedWire"]["nonNullTypes"]
+    if "string" in wire_types or (not wire_types and example["declaredType"] == "text"):
         return (0, 1)
-    if declared in ("polygon", "multipolygon") and example["path"] == "geometry":
+    if example["path"] == "geometry" and any(kind in ("geojson:Polygon", "geojson:MultiPolygon") for kind in wire_types):
         return (2,)
     return ()
 
@@ -159,7 +159,8 @@ def metrics(examples: list[dict[str, Any]], scores: torch.Tensor | None, thresho
         rows = scores.detach().cpu().tolist()
         result["decisions"] = [
             {"source": item["source"], "field": item["path"], "expected": item["target"], "predicted": guess,
-             "topAllowedCosine": round(max(row[index] for index in allowed_target_indices(item)), 5) if allowed_target_indices(item) else None}
+             "topAllowedCosine": round(max(row[index] for index in allowed_target_indices(item)), 5) if allowed_target_indices(item) else None,
+             "wireCompatibleRows": item["wireCompatibleRows"], "observedWire": item["observedWire"]}
             for item, guess, row in zip(examples, guesses, rows)
         ]
     return result
