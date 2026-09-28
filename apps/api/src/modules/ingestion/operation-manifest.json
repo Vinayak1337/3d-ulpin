@@ -415,6 +415,45 @@
       "responseStatus": 200,
       "transportProfile": "json",
       "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streaming-vector",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector",
+      "batch": "AI-02",
+      "disposition": "added",
+      "nativeController": "streaming-vector",
+      "requestSchema": "StreamingVectorRequestSchema",
+      "responseSchema": "StreamingVectorStatusSchema",
+      "responseStatus": 202,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streaming-vector/jobs/{jobId}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId",
+      "batch": "AI-02",
+      "disposition": "added",
+      "nativeController": "streaming-vector",
+      "requestSchema": null,
+      "responseSchema": "StreamingVectorStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streaming-vector/jobs/{jobId}/chunks/{chunkIndex}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId_chunks_chunkIndex",
+      "batch": "AI-02",
+      "disposition": "added",
+      "nativeController": "streaming-vector",
+      "requestSchema": null,
+      "responseSchema": "StreamingVectorChunkResponseSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
     }
   ]
 }
