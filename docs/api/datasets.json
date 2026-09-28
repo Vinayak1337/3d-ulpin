@@ -3754,7 +3754,7 @@
   ],
   "offlineLearningCorpus": {
     "manifest": "docs/api/learning-corpus.json",
-    "manifestSha256": "059ea6facffe8850ffd75da3c922afe1fa158078c14a5daf93b1b6ee350f72d7",
+    "manifestSha256": "60fb2e7044f084078a7b7f14bcb3e2a152eff11a7c878143d43b885a8e502af0",
     "guide": "docs/api/learning.md",
     "scope": "offline foreign-source research only; no production training or promotion",
     "apiInstallation": "not-installed",
