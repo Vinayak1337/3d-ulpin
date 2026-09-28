@@ -169,6 +169,8 @@ Existing NYC geometry/metadata and NWIC data can check conversion mechanics. USG
 
 Prepare the exact public excerpts, scoring and a capped call plan first. Live provider calls require the user's separate authorization under AGENTS.md; do not silently enable a provider or fabricate a passing model result. Offline proposal validation is useful but must be reported separately from model accuracy. A failed model check narrows the supported scope or improves tools/prompting; it does not justify editing the source document.
 
+Authorization update,28September: user approved live inference tests. Begin with the prepared two-call public NYC field-inventory check, maximum ₹3 aggregate reservation, using eligible configured credentials and the governed ledger. The user's estimated per-key allowance is not a funding measurement: verified105B pricing is₹29.28/M input and₹73.20/M output, and API keys within one organisation share credits. Keep training eligibility separate. Actual gateway configuration/funding/credential status must be checked; no standing-server activation, account creation, credit purchase or quota evasion is authorized.
+
 ## 10. Delivery batches and ownership
 
 The lead owns this plan, integration, generated OpenAPI/dataset handoff and shared seam arbitration. Workers use GPT-6 Sol/max, default tier requested (per-turn tier only reported if observed), isolated worktrees from accepted staging, no subagents. Normally two independent first-wave lanes; dispatch later work only after dependencies are integrated. Return one concise completion with commit, commands, checked real inputs and gaps. No exhaustive campaigns or new report collection.
