@@ -6,7 +6,7 @@ import {z} from 'zod';
 import {STREAMING_VECTOR_LIMITS as limits,StreamingVectorRequestSchema,StreamingVectorInputSchema,
   StreamingVectorStatusSchema,StreamingVectorSlotSchema,StreamingVectorPayloadSchema,StreamingVectorChunkResponseSchema,
   type StreamingVectorInput} from '@ulpin/contracts/usp';
-import {query,transaction} from '../../../infrastructure/db';
+import {transaction} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {readObject,sha256} from '../../../infrastructure/storage';
@@ -116,9 +116,11 @@ export class StreamingVectorService{
         conflict('The pinned original or access context changed.');
       const slot=(await client.query('SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 AND published=true',
         [jobId,input.sourceRevision,index])).rows[0]??notFound('This indexed draft slot is not published.');
-      const state=(await client.query('SELECT state,unknown_remainder,sealed_chunks FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
+      const state=(await client.query('SELECT state,unknown_remainder,sealed_chunks,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
       return {input,slot:streamingSlot(slot),state};
     });
+    if(row.state.state==='failed'&&row.state.issue_code==='STREAMING_SOURCE_INTEGRITY')
+      throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original failed its pinned integrity check.');
     let payload=null;
     if(row.slot.ref){
       const bytes=Buffer.from(await readObject(row.slot.ref.key));
@@ -130,8 +132,11 @@ export class StreamingVectorService{
         throw new AppError(422,'STREAMING_CHUNK_INTEGRITY','The private draft payload belongs to another source pin.');
     }
     assertIngestionBinding(binding);
-    const current=(await query('SELECT sha256,revision FROM sources WHERE id=$1 AND case_id=$2',[sourceId,caseId])).rows[0];
-    if(current?.sha256!==row.input.sourceSha256||current?.revision!==row.input.sourceRevision)conflict('The source changed during draft read.');
+    await transaction(async client=>{
+      const current=await streamingContextTx(client,caseId,sourceId);
+      if(current.binding.access!==row.input.accessBinding||current.source.sha256!==row.input.sourceSha256
+        ||current.source.revision!==row.input.sourceRevision)conflict('The source or access changed during draft read.');
+    });
     return StreamingVectorChunkResponseSchema.parse({slot:row.slot,payload,
       sourceComplete:row.state.sealed_chunks!==null&&['completed','completed_with_rejections'].includes(row.state.state),
       unknownRemainder:row.state.unknown_remainder});
