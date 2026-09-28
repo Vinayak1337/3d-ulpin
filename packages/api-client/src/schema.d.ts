@@ -2602,6 +2602,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/mapping-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request one source-pinned GIS mapping proposal; authoring and approval remain separate manual recipe operations */
+        post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_mapping_proposals"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -30767,6 +30784,78 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        POST_ingestion_cases_caseId_sources_sourceId_mapping_proposals_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            source: {
+                /** Format: uuid */
+                sourceId: string;
+                /** Format: uuid */
+                familyId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                schemaFingerprint: string;
+            };
+            workspaceRevision: number;
+            workspaceFingerprint: string;
+        };
+        POST_ingestion_cases_caseId_sources_sourceId_mapping_proposals_Response_200_application_json: {
+            /** @enum {string} */
+            version: "adaptive-geojson-proposal/1";
+            /** Format: uuid */
+            requestKey: string;
+            source: {
+                /** Format: uuid */
+                sourceId: string;
+                /** Format: uuid */
+                familyId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                schemaFingerprint: string;
+            };
+            workspaceRevision: number;
+            workspaceFingerprint: string;
+            /** @enum {string} */
+            status: "proposed" | "needs_input" | "disabled" | "unavailable" | "blocked";
+            code: string | null;
+            plan: {
+                /** @enum {string} */
+                version: "manual-geojson/1";
+                /** @enum {string} */
+                mode: "manual_mapping";
+                source: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    schemaFingerprint: string;
+                };
+                /** Format: uuid */
+                caseId: string;
+                workspaceRevision: number;
+                workspaceFingerprint: string;
+                operations: {
+                    /** @enum {string} */
+                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    sourcePath: string;
+                    /** @enum {string} */
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                }[];
+            } | null;
+            validationErrors: string[];
+            call: {
+                /** Format: uuid */
+                callId: string;
+                responseSha256: string;
+                modelId: string;
+            } | null;
+            /** @enum {string} */
+            validation: "mechanics_only";
+            /** @enum {boolean} */
+            reviewRequired: true;
+        };
     };
     responses: never;
     parameters: never;
@@ -47759,6 +47848,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_ingestion_cases_caseId_questions_questionId_answers_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_sources_sourceId_mapping_proposals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_mapping_proposals_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_mapping_proposals_Response_200_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
