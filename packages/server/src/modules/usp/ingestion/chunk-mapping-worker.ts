@@ -212,6 +212,7 @@ async function claimFailure(input:ChunkMappingInput,error:unknown){
     const active=(await client.query("SELECT 1 FROM usp_job_attempts WHERE job_id=$1 AND state='active' AND lease_until>now() LIMIT 1",
       [input.jobId])).rowCount;
     if(active)return;
+    await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[input.jobId]);
     const code=stale?'MAPPING_CONTEXT_STALE':'MAPPING_ATTEMPTS_EXHAUSTED';
     if(!stale){
       const last=(await client.query('SELECT number,fence FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1',
