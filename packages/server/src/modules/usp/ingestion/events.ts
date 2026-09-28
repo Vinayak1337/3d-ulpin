@@ -119,7 +119,7 @@ export class CaseIngestionReader {
       if (head - start > BigInt(INGESTION_EVENT_LIMITS.replay)) throw new IngestionResync('replay_limit', page, this.binding, start);
       const rows = (await client.query(`SELECT sequence::text,created_at,
         CASE WHEN octet_length(body::text)<=$4 THEN body ELSE NULL END body
-        FROM usp_outbox WHERE stream_id=$1 AND sequence>$2 ORDER BY sequence LIMIT $3`,
+        FROM usp_outbox WHERE stream_id=$1 AND sequence>$2 ORDER BY usp_outbox.sequence LIMIT $3`,
       [this.binding.streamId, start.toString(), INGESTION_EVENT_LIMITS.page, INGESTION_EVENT_LIMITS.eventBytes])).rows;
       const events: CaseIngestionEvent[] = [];
       for (const item of rows) {
