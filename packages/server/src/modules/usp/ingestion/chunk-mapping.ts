@@ -43,14 +43,14 @@ async function manualProfileTx(client:PoolClient,caseId:string,revision:number,s
   return source.profile==='geojson-manual-v1'
     ? manualProfileForLockedSourceTx(client,caseId,revision,source):null;
 }
-async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,profile:SourceProfile|null){
+async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,subject:string,profile:SourceProfile|null){
   const row=(await client.query('SELECT body FROM usp_mapping_recipes WHERE case_id=$1 AND source_id=$2 FOR SHARE',[caseId,sourceId])).rows[0];
   if(!row)return null;
   const receipt=MappingReceiptSchema.parse(row.body),plan=MappingPlanSchema.parse(receipt.plan);
   if(!['approved','executed'].includes(receipt.state))return null;
   if(!profile)conflict('The approved recipe has no current supported source profile.');
   const planHash=fingerprint({plan,destination:receipt.destination});
-  if(receipt.planHash!==planHash||receipt.approval?.planHash!==planHash
+  if(receipt.planHash!==planHash||receipt.approval?.planHash!==planHash||receipt.approval?.subject!==subject
     ||receipt.approval.provenance!=='server_configured_local_operator'
     ||fingerprint(plan.source)!==fingerprint(profile.source)||plan.workspaceRevision!==profile.workspaceRevision
     ||plan.workspaceFingerprint!==profile.workspaceFingerprint)
@@ -72,7 +72,7 @@ export async function assertChunkMappingInputTx(client:PoolClient,input:ChunkMap
   const profile=await manualProfileTx(client,input.caseId,input.caseRevision,ctx.source);
   if(input.schemaFingerprint!==(profile?.source.schemaFingerprint??null))conflict('The source schema fingerprint changed.');
   if(input.workspaceFingerprint!==(profile?.workspaceFingerprint??null))conflict('The source workspace fingerprint changed.');
-  const approved=await approvedRecipeTx(client,input.caseId,input.sourceId,profile);
+  const approved=await approvedRecipeTx(client,input.caseId,input.sourceId,input.subject,profile);
   if(input.route==='approved_recipe'){
     if(!approved||approved.receipt.id!==input.recipeId||approved.receipt.revision!==input.recipeRevision
       ||approved.receipt.planHash!==input.planHash)conflict('The approved recipe revision changed.');
@@ -134,7 +134,7 @@ export class ChunkMappingService{
         [request.rawJobId])).rows[0]??notFound('Source streaming state unavailable.');
       if(rawState.issue_code==='STREAMING_SOURCE_INTEGRITY')throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The original failed integrity verification.');
       const profile=await manualProfileTx(client,caseId,ctx.current.revision,ctx.source);
-      const approved=await approvedRecipeTx(client,caseId,sourceId,profile);
+      const approved=await approvedRecipeTx(client,caseId,sourceId,binding.subject,profile);
       const active=Number((await client.query("SELECT count(*)::int n FROM usp_chunk_mapping_imports WHERE state IN ('queued','running')")).rows[0].n);
       if(active>=limits.active)throw new AppError(429,'MAPPING_CAPACITY','The bounded mapping worker is occupied.');
       const history=Number((await client.query('SELECT count(*)::int n FROM usp_chunk_mapping_imports')).rows[0].n);
@@ -189,7 +189,8 @@ export class ChunkMappingService{
         throw new AppError(422,'MAPPING_CHUNK_INTEGRITY','The mapped draft differs from its immutable receipt.');
       payload=ChunkMappingPayloadSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
       if(payload.jobId!==jobId||payload.rawJobId!==initial.input.rawJobId||payload.sourceId!==sourceId
-        ||payload.sourceSha256!==initial.input.sourceSha256||payload.chunkIndex!==index
+        ||payload.sourceRevision!==initial.input.sourceRevision||payload.sourceSha256!==initial.input.sourceSha256
+        ||payload.recipeRevision!==initial.input.recipeRevision||payload.chunkIndex!==index
         ||payload.rawResultSha256!==initial.slot.rawResultSha256||payload.converterSha256!==initial.input.converterSha256)
         throw new AppError(422,'MAPPING_CHUNK_INTEGRITY','The mapped draft belongs to another pinned source or converter.');
     }
