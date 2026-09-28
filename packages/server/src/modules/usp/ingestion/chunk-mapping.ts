@@ -110,7 +110,8 @@ async function statusTx(client:PoolClient,input:ChunkMappingInput){
     records:row.records,normalized:row.normalized,quarantined:row.quarantined,unresolved:row.unresolved,
     duplicateKeys:row.duplicate_keys,schemaDriftChunks:row.schema_drift_chunks,
     issueCode:row.issue_code,unknownRemainder:row.unknown_remainder,
-    sourceComplete:complete,identityComplete:complete&&row.normalized===row.records&&row.duplicate_keys===0,
+    sourceComplete:complete,identityComplete:complete&&row.normalized===row.records&&row.duplicate_keys===0
+      &&row.schema_drift_chunks===0,
     proposal:row.proposal,proposalTrainingEligible:false,slots});
 }
 
@@ -214,7 +215,8 @@ export class ChunkMappingService{
         &&['completed','completed_with_rejections'].includes(state.state)
         &&['completed','completed_with_rejections'].includes(raw.state)&&!raw.unknown_remainder;
       return {complete,unknownRemainder:state.unknown_remainder,
-        identityComplete:complete&&state.normalized===state.records&&state.duplicate_keys===0};
+        identityComplete:complete&&state.normalized===state.records&&state.duplicate_keys===0
+          &&state.schema_drift_chunks===0};
     });
     return ChunkMappingChunkResponseSchema.parse({slot:initial.slot,payload,sourceComplete:fresh.complete,
       identityComplete:fresh.identityComplete,unknownRemainder:fresh.unknownRemainder});
