@@ -17,3 +17,4 @@ export * from './semantic-chunks';
 export * from './sufficiency';
 export * from './document-ingestion';
 export * from './streaming-vector';
+export * from './chunk-mapping';

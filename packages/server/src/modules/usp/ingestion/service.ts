@@ -49,6 +49,13 @@ function profile(row: any, scope: {revision: number; fingerprint: string}): Sour
   return SourceProfileSchema.parse({...fields,source:{sourceId:row.id,familyId:row.family_id,sourceRevision:row.revision,sourceSha256:row.sha256,schemaFingerprint},
     caseId:row.case_id,workspaceRevision:scope.revision,workspaceFingerprint:scope.fingerprint});
 }
+/** Reuse the manual inventory contract after a caller has locked case then source. */
+export async function manualProfileForLockedSourceTx(client:PoolClient,caseId:string,caseRevision:number,row:any):Promise<SourceProfile>{
+  if(row.case_id!==caseId||row.profile!=='geojson-manual-v1'||!row.inspection?.manualProfile)
+    throw new AppError(422,'UNSUPPORTED_PROFILE','This source has no qualified manual GeoJSON inventory.');
+  const sources=(await client.query('SELECT id,family_id,revision,sha256 FROM sources WHERE case_id=$1 ORDER BY id',[caseId])).rows;
+  return profile(row,{revision:caseRevision,fingerprint:fingerprint({caseId,revision:caseRevision,sources})});
+}
 export {workspace as lockUnassignedSourceCase};
 async function validate(client: PoolClient, plan: z.infer<typeof MappingPlanSchema>, scope: {revision: number; fingerprint: string}) {
   const row = await source(client,plan.caseId,plan.source.sourceId), current = profile(row,scope);

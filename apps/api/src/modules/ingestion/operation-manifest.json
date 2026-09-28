@@ -454,6 +454,45 @@
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
       "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/chunk-mapping",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_chunk_mapping",
+      "batch": "AI-03",
+      "disposition": "added",
+      "nativeController": "chunk-mapping",
+      "requestSchema": "ChunkMappingRequestSchema",
+      "responseSchema": "ChunkMappingStatusSchema",
+      "responseStatus": 202,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/chunk-mapping/jobs/{jobId}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_chunk_mapping_jobs_jobId",
+      "batch": "AI-03",
+      "disposition": "added",
+      "nativeController": "chunk-mapping",
+      "requestSchema": null,
+      "responseSchema": "ChunkMappingStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/chunk-mapping/jobs/{jobId}/chunks/{chunkIndex}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_chunk_mapping_jobs_jobId_chunks_chunkIndex",
+      "batch": "AI-03",
+      "disposition": "added",
+      "nativeController": "chunk-mapping",
+      "requestSchema": null,
+      "responseSchema": "ChunkMappingChunkResponseSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
     }
   ]
 }
