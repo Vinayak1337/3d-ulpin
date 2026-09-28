@@ -1,8 +1,8 @@
-// Original score and voice-over for the reel, rendered offline with Web Audio: 100 BPM in A minor, on the film clock.
+// Original score and voice-over for the reel, rendered offline with Web Audio: 120 BPM in A minor, on the film clock.
 // Drums, sidechained bass, pads, arpeggio and a lead hook, sound design cued to what is on screen (wipes, impacts,
-// file seals, chunk publications, clicks and typing in the Studio footage) and the narrator (vo/*.wav), with the
+// file seals, chunk publications, clicks and typing in the Studio footage) and the narrator (vo/<voice>/*.wav), with the
 // music ducking under every line. Picture cues are authored on the 104 s clock and mapped through W().
-const SR = 48000, BEAT = 0.6, BAR = 2.4;
+const SR = 48000, BEAT = 0.5, BAR = 2;
 const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 const between = (t, a, b) => t >= a && t < b;
 
@@ -13,7 +13,7 @@ const CHORDS = [
 ];
 const chordAt = (T) => CHORDS[Math.floor(T / (2 * BAR) + 1e-6) % 4];
 
-export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR, VO, VOD, filmOfRec }) {
+export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR, VO, VOT, VOICE, filmOfRec }) {
   const ctx = new OfflineAudioContext(2, Math.ceil(DUR * SR), SR);
   const A = inv; // film → authored
   let seed = 9; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
@@ -152,7 +152,9 @@ export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR
   function chime(t, notes = [76, 81, 84, 88], v = 1) { notes.forEach((n, i) => bell(t + i * 0.07, n, 0.9 * v, (i - 1.5) / 3, 1.4)); }
 
   /* ── voice-over ── */
-  const voLines = await Promise.all(VO.map(async (l) => ({ ...l, T: W(l.a) + 0.08, d: VOD[l.id], buf: await ctx.decodeAudioData(await (await fetch(`vo/${l.id}.wav`)).arrayBuffer()) })));
+  // fetched one at a time: a simple local server refuses a burst of 31 parallel requests
+  const voLines = [];
+  for (const l of VO) voLines.push({ ...l, T: W(VOT[l.id].start) + (l.a >= 90 && l.a < 93 ? 0.15 : 0), d: VOT[l.id].dur, buf: await ctx.decodeAudioData(await (await fetch(`vo/${VOICE}/${l.id}.wav`)).arrayBuffer()) });
   const voBus = ctx.createGain(); voBus.gain.value = 1.9;
   const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 75;
   const pres = ctx.createBiquadFilter(); pres.type = 'peaking'; pres.frequency.value = 3200; pres.gain.value = 2.5; pres.Q.value = 0.8;
@@ -163,8 +165,8 @@ export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR
   for (const l of voLines) { const src = ctx.createBufferSource(); src.buffer = l.buf; src.connect(hp); src.start(l.T); }
   const speaking = (T, pad = 0.25) => voLines.some((l) => T > l.T - pad && T < l.T + l.d + pad);
   bed.gain.setValueAtTime(1, 0);
-  // the closing words ride on the hits, so the bed dips less there
-  for (const l of voLines) { const a = l.T - 0.18, b = l.T + l.d + 0.12; const deep = l.a >= 90 ? 0.72 : 0.4; bed.gain.setTargetAtTime(deep, a, 0.06); bed.gain.setTargetAtTime(1, b, 0.35); }
+  // Identify · Prove · Govern land just after their hits, so the hit does not mask the first consonant; the bed dips less there
+  for (const l of voLines) { const a = l.T - 0.18, b = l.T + l.d + 0.12; const deep = l.a >= 90 ? 0.6 : 0.4; bed.gain.setTargetAtTime(deep, a, 0.06); bed.gain.setTargetAtTime(1, b, 0.35); }
 
   /* ── arrangement (sections are authored-time windows, tested through A(T)) ── */
   const inA = (T, a, b) => { const u = A(T); return u >= a && u < b; };

@@ -1,18 +1,22 @@
-// Time warp: the reel is authored on a 104 s clock; the film runs slower, and each voice-over line gets the
-// room it needs. Knots sit on every cut and every line start; each span stretches by at least MIN (more at the
-// end), and each cut-to-cut segment is rounded up to whole beats at 100 BPM so the music can cut with it.
-export const BEAT = 0.6;
+// Time warp: the reel is authored on a 104 s clock and plays at that pace up to the Studio montage. From there
+// the ending holds longer, so its lines have time to land: each span stretches by the ending minimum or by what
+// its voice-over line needs, and each cut-to-cut segment is rounded up to whole beats at 120 BPM.
+export const BEAT = 0.5;
 export const CUTS = [0, 8, 12, 20, 26, 34, 42, 48, 56, 60.5, 64, 67, 70, 73.5, 76, 80.4, 84, 90, 96, 104];
-export function buildWarp(lines, durs, { MIN = 1.22, END_MIN = 1.6, PAD = 0.35 } = {}) {
-  const knots = [...new Set([...CUTS, ...lines.map((l) => l.a)])].sort((x, y) => x - y);
-  const need = new Map(lines.map((l) => [l.a, (durs[l.id] + PAD) / (l.b - l.a)]));
+export const HOLD = [[84, 1.35], [90, 1.7], [96, 1.6]];
+export function buildWarp(lines, durs, { PAD = 0.35 } = {}) {
+  const from = HOLD[0][0];
+  const knots = [...new Set([...CUTS, ...lines.map((l) => l.a).filter((a) => a >= from)])].sort((x, y) => x - y);
+  const next = (a) => lines.find((l) => l.a > a)?.a ?? 104;
+  const need = new Map(lines.filter((l) => l.a >= from).map((l) => [l.a, (durs[l.id] + PAD) / (next(l.a) - l.a)]));
+  const hold = (a) => HOLD.reduce((s, [t, k]) => (a >= t ? k : s), 1);
   const spans = [];
   for (let i = 0; i < knots.length - 1; i++) {
     const a = knots[i], b = knots[i + 1];
-    spans.push({ a, b, s: Math.max(a >= 90 ? END_MIN : MIN, need.get(a) ?? 0) });
+    spans.push({ a, b, s: Math.max(hold(a), need.get(a) ?? 0) });
   }
-  // round each cut-to-cut segment up to whole beats by stretching its last span
   for (let c = 0; c < CUTS.length - 1; c++) {
+    if (CUTS[c] < from) continue;
     const seg = spans.filter((s) => s.a >= CUTS[c] && s.b <= CUTS[c + 1]);
     const len = seg.reduce((n, s) => n + (s.b - s.a) * s.s, 0);
     const target = Math.ceil(len / BEAT - 1e-6) * BEAT; const last = seg[seg.length - 1];
