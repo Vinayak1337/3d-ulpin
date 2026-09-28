@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BhuAayam Launch</title>
+<script type="importmap">
+{ "imports": { "three": "/node_modules/.pnpm/three@0.186.1/node_modules/three/build/three.module.js" } }
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+    <canvas id="gl" width="1920" height="1080"></canvas>
+    <div id="vignette"></div>
+    <div id="scenes"></div>
+    <div id="labels"></div>
+    <div id="captions"></div>
+    <div id="chrome">
+      <div id="mark">BhuAayam</div>
+      <div id="chapter"><span id="chapter-no"></span><span id="chapter-name"></span></div>
+      <div id="progress"><i></i></div>
+    </div>
+    <div id="fade"></div>
+  </div>
+</div>
+<div id="controls"><button id="play">Play</button><input id="scrub" type="range" min="0" max="1000" value="0"><span id="clock">0.0</span></div>
+<script type="module" src="main.js"></script>
+</body>
+</html>
