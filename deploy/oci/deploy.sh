@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 022
 PUBLIC_HOST="${1:?Pass the HTTPS hostname}"
 LEGACY_HOST="${2:-}"
 if [[ ! "$PUBLIC_HOST" =~ ^[a-z0-9.-]+$ ]] || { [[ -n "$LEGACY_HOST" ]] && [[ ! "$LEGACY_HOST" =~ ^[a-z0-9.-]+$ ]]; }; then
@@ -32,6 +33,7 @@ pnpm install --frozen-lockfile
 NODE_OPTIONS=--max-old-space-size=4096 pnpm build
 VITE_HOSTED_DEMO=1 VITE_LOCAL_DATA=on VITE_DEMO_IMPORT=1 NODE_OPTIONS=--max-old-space-size=4096 pnpm studio:build
 chmod -R a+rX apps/studio/dist
+chmod a+rx "$ROOT" "$ROOT/apps" "$ROOT/apps/studio"
 node scripts/demo-import/prepare-hosted.mjs "$SHARED/bootstrap.json"
 COMPOSE=(sudo docker compose -f compose.yaml -f deploy/oci/compose.yaml --profile app)
 "${COMPOSE[@]}" build postgres geo
