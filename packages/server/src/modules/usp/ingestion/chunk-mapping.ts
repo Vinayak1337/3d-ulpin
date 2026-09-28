@@ -5,8 +5,8 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {CHUNK_MAPPING_LIMITS as limits,ChunkMappingRequestSchema,ChunkMappingInputSchema,
   ChunkMappingStatusSchema,ChunkMappingSlotSchema,ChunkMappingPayloadSchema,ChunkMappingChunkResponseSchema,
-  MappingReceiptSchema,MappingPlanSchema,StreamingVectorInputSchema,
-  type ChunkMappingInput,type MappingReceipt,type SourceProfile} from '@ulpin/contracts/usp';
+  MappingReceiptSchema,MappingPlanSchema,StreamedMappingReceiptSchema,StreamedMappingPlanSchema,
+  StreamingVectorInputSchema,type ChunkMappingInput,type SourceProfile,type StreamedProfileGeneration} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
@@ -17,13 +17,17 @@ import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './e
 import {assertStreamingInputTx} from './streaming-vector';
 import {manualProfileForLockedSourceTx} from './service';
 import {compileMapping} from './registry';
+import {assertStreamedIssuerEvidence,compileStreamedMapping} from './streamed-mapping';
+import {loadSealedStreamedProfileTx} from './streamed-profile';
 
 const uuid=z.string().uuid();
 const converterFiles=['packages/contracts/src/usp/chunk-mapping.ts','packages/contracts/src/usp/ingestion.ts',
   'packages/contracts/src/usp/adaptive-mapping.ts',
+  'packages/contracts/src/usp/streamed-profile.ts',
   'packages/server/src/modules/usp/ingestion/registry.ts','packages/server/src/modules/usp/ingestion/chunk-mapping-normalizer.ts',
   'packages/server/src/modules/usp/ingestion/service.ts','packages/server/src/modules/usp/ingestion/adaptive-mapping.ts',
   'packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts',
+  'packages/server/src/modules/usp/ingestion/streamed-mapping.ts',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts','packages/server/src/modules/usp/ingestion/chunk-mapping.ts',
   'database/sql/95-ingestion/chunk-mapping.sql'];
 export const chunkMappingConverterSha=()=>fingerprint(converterFiles.map(path=>({path,
@@ -43,20 +47,30 @@ async function manualProfileTx(client:PoolClient,caseId:string,revision:number,s
   return source.profile==='geojson-manual-v1'
     ? manualProfileForLockedSourceTx(client,caseId,revision,source):null;
 }
-async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,subject:string,profile:SourceProfile|null){
+async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,subject:string,
+  profile:SourceProfile|StreamedProfileGeneration|null,source:any){
   const row=(await client.query('SELECT body FROM usp_mapping_recipes WHERE case_id=$1 AND source_id=$2 FOR SHARE',[caseId,sourceId])).rows[0];
   if(!row)return null;
-  const receipt=MappingReceiptSchema.parse(row.body),plan=MappingPlanSchema.parse(receipt.plan);
-  if(!['approved','executed'].includes(receipt.state))return null;
   if(!profile)conflict('The approved recipe has no current supported source profile.');
-  const planHash=fingerprint({plan,destination:receipt.destination});
-  if(receipt.planHash!==planHash||receipt.approval?.planHash!==planHash||receipt.approval?.subject!==subject
-    ||receipt.approval.provenance!=='server_configured_local_operator'
-    ||fingerprint(plan.source)!==fingerprint(profile.source)||plan.workspaceRevision!==profile.workspaceRevision
-    ||plan.workspaceFingerprint!==profile.workspaceFingerprint)
-    conflict('The approved recipe changed or no longer belongs to this exact source profile.');
-  compileMapping(plan,profile);
-  return {receipt,profile};
+  if(profile.version==='manual-geojson/1'){
+    const receipt=MappingReceiptSchema.parse(row.body),plan=MappingPlanSchema.parse(receipt.plan);
+    if(!['approved','executed'].includes(receipt.state))return null;
+    const planHash=fingerprint({plan,destination:receipt.destination});
+    if(receipt.planHash!==planHash||receipt.approval?.planHash!==planHash||receipt.approval?.subject!==subject
+      ||receipt.approval.provenance!=='server_configured_local_operator'
+      ||fingerprint(plan.source)!==fingerprint(profile.source)||plan.workspaceRevision!==profile.workspaceRevision
+      ||plan.workspaceFingerprint!==profile.workspaceFingerprint)
+      conflict('The approved recipe changed or no longer belongs to this exact source profile.');
+    compileMapping(plan,profile);return {receipt,profile};
+  }
+  const receipt=StreamedMappingReceiptSchema.parse(row.body),plan=StreamedMappingPlanSchema.parse(receipt.plan);
+  if(receipt.state!=='approved')return null;
+  if(receipt.planHash!==fingerprint(plan)||receipt.approval?.planHash!==receipt.planHash
+    ||receipt.approval.subject!==subject||receipt.approval.provenance!=='server_configured_local_operator'
+    ||plan.caseId!==caseId||plan.source.sourceId!==sourceId)
+    conflict('The streamed recipe changed or belongs to another local source context.');
+  assertStreamedIssuerEvidence(plan,source);
+  compileStreamedMapping(plan,profile);return {receipt,profile};
 }
 
 /** Case and source are locked by the raw pin before any job, recipe or mapping state. */
@@ -69,10 +83,14 @@ export async function assertChunkMappingInputTx(client:PoolClient,input:ChunkMap
     ||raw.sourceRevision!==input.sourceRevision||raw.sourceFamilyId!==input.sourceFamilyId
     ||raw.sourceSha256!==input.sourceSha256||raw.accessBinding!==input.accessBinding||raw.subject!==input.subject)
     conflict('The pinned raw source, converter or private access changed.');
-  const profile=await manualProfileTx(client,input.caseId,input.caseRevision,ctx.source);
+  const profile=input.profileJobId!==undefined
+    ?(await loadSealedStreamedProfileTx(client,input.profileJobId,input.profileGeneration!,input.profileHash!,
+      input.rawJobId,input.caseId,input.sourceId)).profile
+    :await manualProfileTx(client,input.caseId,input.caseRevision,ctx.source);
   if(input.schemaFingerprint!==(profile?.source.schemaFingerprint??null))conflict('The source schema fingerprint changed.');
-  if(input.workspaceFingerprint!==(profile?.workspaceFingerprint??null))conflict('The source workspace fingerprint changed.');
-  const approved=await approvedRecipeTx(client,input.caseId,input.sourceId,input.subject,profile);
+  if(input.workspaceFingerprint!==(profile?.version==='manual-geojson/1'?profile.workspaceFingerprint:null))
+    conflict('The source workspace fingerprint changed.');
+  const approved=await approvedRecipeTx(client,input.caseId,input.sourceId,input.subject,profile,ctx.source);
   if(input.route==='approved_recipe'){
     if(!approved||approved.receipt.id!==input.recipeId||approved.receipt.revision!==input.recipeRevision
       ||approved.receipt.planHash!==input.planHash)conflict('The approved recipe revision changed.');
@@ -104,6 +122,8 @@ async function statusTx(client:PoolClient,input:ChunkMappingInput){
     caseId:input.caseId,sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
     status:row.state,route:input.route,recipeId:input.recipeId,recipeRevision:input.recipeRevision,
     schemaFingerprint:input.schemaFingerprint,converterSha256:input.converterSha256,
+    ...(input.profileJobId?{profileJobId:input.profileJobId,profileGeneration:input.profileGeneration,
+      profileHash:input.profileHash}:{}),
     sourceCrs:typeof gis?.sourceCrs==='string'?gis.sourceCrs:null,
     referenceEvidence:typeof gis?.crsEvidence==='string'?gis.crsEvidence.slice(0,200):null,
     globalPlacement:'not_qualified',nextPublishIndex:row.next_publish_index,sealedChunks:row.sealed_chunks,
@@ -134,8 +154,11 @@ export class ChunkMappingService{
       const rawState=(await client.query('SELECT state,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
         [request.rawJobId])).rows[0]??notFound('Source streaming state unavailable.');
       if(rawState.issue_code==='STREAMING_SOURCE_INTEGRITY')throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The original failed integrity verification.');
-      const profile=await manualProfileTx(client,caseId,ctx.current.revision,ctx.source);
-      const approved=await approvedRecipeTx(client,caseId,sourceId,binding.subject,profile);
+      const profile=request.profileJobId!==undefined
+        ?(await loadSealedStreamedProfileTx(client,request.profileJobId,request.profileGeneration!,request.profileHash!,
+          request.rawJobId,caseId,sourceId)).profile
+        :await manualProfileTx(client,caseId,ctx.current.revision,ctx.source);
+      const approved=await approvedRecipeTx(client,caseId,sourceId,binding.subject,profile,ctx.source);
       const active=Number((await client.query("SELECT count(*)::int n FROM usp_chunk_mapping_imports WHERE state IN ('queued','running')")).rows[0].n);
       if(active>=limits.active)throw new AppError(429,'MAPPING_CAPACITY','The bounded mapping worker is occupied.');
       const history=Number((await client.query('SELECT count(*)::int n FROM usp_chunk_mapping_imports')).rows[0].n);
@@ -145,7 +168,10 @@ export class ChunkMappingService{
         rawJobId:request.rawJobId,rawInputFingerprint,readerSha256:raw.readerSha256,
         route:approved?'approved_recipe' as const:'proposal_only' as const,recipeId:approved?.receipt.id??null,
         recipeRevision:approved?.receipt.revision??null,planHash:approved?.receipt.planHash??null,
-        schemaFingerprint:profile?.source.schemaFingerprint??null,workspaceFingerprint:profile?.workspaceFingerprint??null,
+        schemaFingerprint:profile?.source.schemaFingerprint??null,
+        workspaceFingerprint:profile?.version==='manual-geojson/1'?profile.workspaceFingerprint:null,
+        ...(request.profileJobId?{profileJobId:request.profileJobId,profileGeneration:request.profileGeneration,
+          profileHash:request.profileHash}:{}),
         converterSha256,subject:binding.subject,accessBinding:binding.access};
       const input=ChunkMappingInputSchema.parse({...base,inputFingerprint:fingerprint(base)}),hash=fingerprint(input);
       await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'chunk-mapping',$4,$5,$6)",
@@ -192,7 +218,8 @@ export class ChunkMappingService{
       if(payload.jobId!==jobId||payload.rawJobId!==initial.input.rawJobId||payload.sourceId!==sourceId
         ||payload.sourceRevision!==initial.input.sourceRevision||payload.sourceSha256!==initial.input.sourceSha256
         ||payload.recipeRevision!==initial.input.recipeRevision||payload.chunkIndex!==index
-        ||payload.rawResultSha256!==initial.slot.rawResultSha256||payload.converterSha256!==initial.input.converterSha256)
+        ||payload.rawResultSha256!==initial.slot.rawResultSha256||payload.converterSha256!==initial.input.converterSha256
+        ||payload.profileHash!==initial.input.profileHash)
         throw new AppError(422,'MAPPING_CHUNK_INTEGRITY','The mapped draft belongs to another pinned source or converter.');
     }
     assertIngestionBinding(binding);

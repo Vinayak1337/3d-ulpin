@@ -1,11 +1,18 @@
-import {type ChunkMappingObservation,type MappingPlan,type SourceProfile,type StreamingVectorRecord} from '@ulpin/contracts/usp';
+import {type ChunkMappingObservation,type MappingPlan,type SourceProfile,type StreamedMappingPlan,
+  type StreamedProfileGeneration,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {sha256} from '../../../infrastructure/storage';
 import {compileMapping} from './registry';
+import {compileStreamedMapping} from './streamed-mapping';
+
+type Plan=MappingPlan|StreamedMappingPlan;
+type Profile=SourceProfile|StreamedProfileGeneration;
 
 type Field=ChunkMappingObservation['sourceKey'];
 export type KeyRow={source_key_sha256:string;source_key:string;first_feature_index:number};
 export type KeyDecision={hash:string;value:string;firstIndex:number;laterIndex:number|null};
 const unknown=(path:string|null=null):Field=>({state:'unknown',value:null,sourcePath:path});
+/** The existing literal_text@1 operation copies only bounded, nonempty, verbatim text. */
+export const literalTextValueValid=(value:string)=>value.length>0&&value.length<=2048&&value.trim()===value;
 const pathForProperty=(key:string)=>`/features/*/properties/${key.replaceAll('~','~0').replaceAll('/','~1')}`;
 const valueType=(value:unknown)=>Array.isArray(value)?'array':typeof value;
 const field=(feature:Record<string,unknown>,path:string):Field=>{
@@ -23,7 +30,7 @@ const field=(feature:Record<string,unknown>,path:string):Field=>{
   return value===null?{state:'null',value:null,sourcePath:path}
     :typeof value==='string'?{state:'known',value,sourcePath:path}:unknown(path);
 };
-export function candidateKeyHashes(records:StreamingVectorRecord[],plan:MappingPlan){
+export function candidateKeyHashes(records:StreamingVectorRecord[],plan:Plan){
   const path=plan.operations.find(op=>op.target==='building.sourceKey')!.sourcePath;
   return [...new Set(records.filter(record=>record.disposition==='accepted').map(record=>{
     const value=field(record.feature as Record<string,unknown>,path);
@@ -32,7 +39,7 @@ export function candidateKeyHashes(records:StreamingVectorRecord[],plan:MappingP
 }
 
 /** Compare each actual source record with the pinned inventory, including its permitted null and absent variants. */
-function sourceShapeIssues(feature:Record<string,unknown>,profile:SourceProfile){
+function sourceShapeIssues(feature:Record<string,unknown>,profile:Profile){
   const issues=new Set<string>(),paths=new Map(profile.paths.map(item=>[item.path,item]));
   const properties=feature.properties;
   const attributes=properties&&typeof properties==='object'&&!Array.isArray(properties)
@@ -57,9 +64,10 @@ function sourceShapeIssues(feature:Record<string,unknown>,profile:SourceProfile)
 }
 
 /** A source-linked draft projection. Geometry stays in the immutable raw chunk; no frame or role is inferred. */
-export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:MappingPlan,profile:SourceProfile,
+export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:Plan,profile:Profile,
   rawJobId:string,chunkIndex:number,existing:KeyRow[]){
-  compileMapping(plan,profile);
+  if(plan.version==='manual-geojson/1')compileMapping(plan,profile as SourceProfile);
+  else compileStreamedMapping(plan,profile as StreamedProfileGeneration);
   // A chunk can observe a permitted subset; the slot names the pinned allowed inventory.
   const schemaFingerprint=profile.source.schemaFingerprint;
   const keyPath=plan.operations.find(op=>op.target==='building.sourceKey')!.sourcePath;
@@ -78,6 +86,9 @@ export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:Mappin
     const feature=record.feature as Record<string,unknown>;
     issues.push(...sourceShapeIssues(feature,profile));
     let sourceKey=field(feature,keyPath),name=namePath?field(feature,namePath):unknown();
+    if(name.state==='known'&&!literalTextValueValid(name.value!)){
+      name=unknown(namePath);issues.push('MAPPING_TEXT_INVALID');
+    }
     if(sourceKey.state==='known'){
       if(!sourceKey.value||sourceKey.value.length>256||sourceKey.value.trim()!==sourceKey.value){
         sourceKey=unknown(keyPath);issues.push('MAPPING_IDENTITY_INVALID');
@@ -93,7 +104,8 @@ export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:Mappin
     }else issues.push(sourceKey.state==='null'?'MAPPING_IDENTITY_NULL':sourceKey.state==='absent'?'MAPPING_IDENTITY_ABSENT':'MAPPING_IDENTITY_INVALID');
     const identityIssue=issues.some(item=>item.startsWith('MAPPING_IDENTITY')||item==='DUPLICATE_SOURCE_KEY'||item==='SOURCE_KEY_HASH_COLLISION');
     observations.push({featureIndex:record.featureIndex,byteStart:record.byteStart,byteEnd:record.byteEnd,
-      rawSha256:record.rawSha256,disposition:identityIssue||issues.some(item=>item.startsWith('SCHEMA_DRIFT'))?'unresolved':'observed',sourceKey,name,
+      rawSha256:record.rawSha256,disposition:identityIssue||issues.includes('MAPPING_TEXT_INVALID')
+        ||issues.some(item=>item.startsWith('SCHEMA_DRIFT'))?'unresolved':'observed',sourceKey,name,
       geometryRef:{rawJobId,chunkIndex,featureIndex:record.featureIndex,rawSha256:record.rawSha256,
         sourcePath:'/features/*/geometry'},issueCodes:[...new Set(issues)].slice(0,8)});
   }

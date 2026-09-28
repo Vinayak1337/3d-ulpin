@@ -34,3 +34,6 @@ export async function migrateStreamingVectorTx(client:PoolClient){
 export async function migrateChunkMappingTx(client:PoolClient){
   await client.query(sql('ingestion.chunk-mapping.schema'));
 }
+export async function migrateStreamedProfileTx(client:PoolClient){
+  await client.query(sql('ingestion.streamed-profile.schema'));
+}
