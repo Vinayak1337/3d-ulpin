@@ -47,13 +47,33 @@ const iso = (r, fromYear, toYear) => {
  * @param {{ spaceId: string, unit: string, level: string }[]} units
  * @param {{ locale?: 'IN' | 'US', asOf?: string, registrar?: string }} [options]
  */
+/** A stable UUID (version 5 layout) from any text. */
+export function stableUuid(text) {
+  const h = [0, 1, 2, 3].map((i) => hash(`${i}:${text}`).toString(16).padStart(8, '0')).join('');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-5${h.slice(13, 16)}-${'89ab'[parseInt(h[16], 16) % 4]}${h.slice(17, 20)}-${h.slice(20, 32)}`;
+}
+/** A stable 64-hex digest standing in for a register extract's hash. */
+const digest = (text) => Array.from({ length: 8 }, (_, i) => hash(`${i}|${text}`).toString(16).padStart(8, '0')).join('');
+
+const ADDRESS = {
+  IN: { locality: 'Lake View', district: 'Pune', region: 'Maharashtra', postalCode: '411021', country: 'India' },
+  US: { locality: 'Tribeca, Manhattan', district: 'New York County', region: 'New York', postalCode: '10013', country: 'United States' },
+};
+
 export function residentsFor(buildingId, units, options = {}) {
   const names = NAMES[options.locale ?? 'IN'];
   const us = options.locale === 'US';
+  const asOf = options.asOf ?? '2026-09-24';
+  const register = (name, profile) => ({ id: stableUuid(`${buildingId}:${name}`), name, profile, sha256: digest(`${buildingId}:${name}:${asOf}`), receivedAt: `${asOf}T10:00:00.000Z` });
+  const deedIndex = register(us ? 'ACRIS deed index extract' : 'Sub-Registrar deed index extract', 'deed-index-extract');
+  const residentRegister = register(us ? 'Building resident register' : 'Society member and tenant register', 'resident-register');
+  const address = { line: options.addressLine ?? null, ...ADDRESS[us ? 'US' : 'IN'] };
   return {
     buildingId,
-    asOf: options.asOf ?? '2026-09-24',
+    asOf,
     source: options.registrar ?? (us ? 'Department of Finance · deed records; building resident register' : 'Sub-Registrar deed index; society member and tenant register'),
+    address,
+    registers: { deedIndex, residentRegister },
     units: units.map(({ spaceId, unit, level }) => {
       const r = rng(`${buildingId}:${spaceId}`);
       const surname = pick(r, names.surname);
@@ -82,7 +102,7 @@ export function residentsFor(buildingId, units, options = {}) {
         if (r() < 0.25) occupants.push({ name: `${pick(r, names.female)} ${surname}`, relation: 'Mother', since, registeredVia: via });
       } else if (occupancy === 'rented') {
         const ts = pick(r, names.surname);
-        const start = iso(r, 2023, 2026);
+        const start = iso(r, 2023, 2025);
         const tenantVia = us ? 'Lease on file with managing agent' : 'Leave and licence agreement · police tenant verification';
         occupants.push({ name: `${pick(r, names.male)} ${ts}`, relation: 'Tenant', since: start, registeredVia: tenantVia });
         if (r() < 0.7) occupants.push({ name: `${pick(r, names.female)} ${ts}`, relation: 'Tenant family', since: start, registeredVia: tenantVia });

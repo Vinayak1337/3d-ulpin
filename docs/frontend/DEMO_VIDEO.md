@@ -33,7 +33,7 @@ Before recording, open `http://127.0.0.1:5188/studio/work?reset-session` once. I
 | 3:40 | 6 Underground | Underground mode | Water main and metro corridor; draw a trench; screening is not a dig permission |
 | 4:20 | 7 Card | Property Card | QR → verification page with the same revision and hash chain |
 | 4:50 | 8 City | Add files → NYC ZIP | 2,363 features stream in; zoom out over the city; pick any building → floors, flats, residents |
-| 5:30 | Register | Register → Residents; Export | Holders and residents per floor; Full register (Excel), Register extract (PDF), CityJSON |
+| 5:30 | Register | Register → Residents; Export | Holders and residents per floor; Building register (PDF); Register data package (ZIP: consolidated registry JSON, CSV tables, Excel, CityJSON, manifest with SHA-256) |
 | 5:45 | Portal | `/portal` | Search by 3D ULPIN or parcel ULPIN; request floor data or a change of holder; officer sees it under Register |
 
 Use Flat 801 or Flat 704 for the card: their carpet area and share are on record (Flat 702's are Unknown).

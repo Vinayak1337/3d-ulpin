@@ -306,6 +306,10 @@ export interface BuildingResidents {
   asOf: string;
   /** The registers the entries come from. */
   source: string;
+  /** The building's postal address as the registers record it; null parts are unknown. */
+  address: { line: string | null; locality: string | null; district: string | null; region: string | null; postalCode: string | null; country: string | null };
+  /** The register extracts behind holders (deed index) and residents (society or tenant register). */
+  registers: Record<'deedIndex' | 'residentRegister', { id: string; name: string; profile: string; sha256: string; receivedAt: string }>;
   units: Array<{
     spaceId: string;
     unit: string;

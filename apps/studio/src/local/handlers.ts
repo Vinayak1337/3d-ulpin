@@ -1,6 +1,9 @@
 import { http, HttpResponse, passthrough } from 'msw';
 import { LOCAL_SOURCE_HEADER } from '@ulpin/api-client';
+import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import { localRoutes } from './routes';
+import { consolidatedReport } from './consolidated';
+import { registryHtml } from '../features/register/registry';
 import { areaPackage, buildingImport, detect, inspectAreaFile, startAreaImport, startFloorsImport } from './imports';
 import { lake } from './sources';
 import { storyAreas, storyBoard, storyContext, storyLedger, storyQueueItems, storyRegister } from './story';
@@ -18,6 +21,17 @@ const fail = (error: unknown) => {
   throw error;
 };
 const LOCAL = LOCAL_SOURCE_LABELS.lake;
+
+/** The consolidated registry report, from the same register, ledger and residents the Studio reads. */
+async function consolidated(buildingId: string, format: string): Promise<Response> {
+  if (!['json', 'html'].includes(format)) return HttpResponse.json({ error: { code: 'REGISTRY_REPORT_FORMAT', message: 'The consolidated profile supports json and html here.' } }, { status: 422 });
+  const get = async <T,>(path: string): Promise<T | null> => { const r = await fetch(`/api/v1/buildings/${buildingId}/${path}`); return r.ok ? (await r.json()) as T : null; };
+  const [reg, ledger, residents] = await Promise.all([get<never>('register'), get<BuildingLedger>('ledger'), get<BuildingResidents>('residents')]);
+  if (!reg) return HttpResponse.json({ error: { code: 'NOT_FOUND', message: 'Building not found.' } }, { status: 404 });
+  const report = consolidatedReport(reg, ledger, residents);
+  if (format === 'html') return new HttpResponse(registryHtml(report), { headers: { 'Content-Type': 'text/html; charset=utf-8', [LOCAL_SOURCE_HEADER]: LOCAL } });
+  return HttpResponse.json(report, { headers: { 'Content-Disposition': `attachment; filename="building-${buildingId}-registry.json"`, [LOCAL_SOURCE_HEADER]: LOCAL } });
+}
 type Json = Record<string, unknown>;
 
 /** City layers uploaded through the upload server, listed as import batches. */
@@ -66,7 +80,7 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
     const units = lake.register.register.filter((r) => r.use === 'apartment').map((r) => ({
       spaceId: r.id, unit: r.name, level: floors.get(r.links.find((l) => l.type === 'floor')?.targetId ?? '') ?? '',
     }));
-    return json(residentsFor(String(buildingId), units, { locale: 'IN' }), LOCAL_SOURCE_LABELS.lake);
+    return json(residentsFor(String(buildingId), units, { locale: 'IN', addressLine: lake.ledger.address }), LOCAL_SOURCE_LABELS.lake);
   },
   '/api/v1/buildings/:buildingId/levels/:levelId/review': ({ buildingId, levelId }) => {
     const body = levelReviews[String(levelId)];
@@ -168,7 +182,8 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
     const body = derivedContexts[String(areaId)];
     return body ? json(body, ALL_LOCAL) : undefined;
   },
-  '/api/v1/buildings/:buildingId/register': ({ buildingId }) => {
+  '/api/v1/buildings/:buildingId/register': async ({ buildingId }, url) => {
+    if (url.searchParams.get('profile') === 'consolidated') return consolidated(String(buildingId), url.searchParams.get('format') ?? 'json');
     const found = derivedRegister(String(buildingId));
     if (found?.source === 'lake' && !buildingVisible(String(buildingId))) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
     return found ? json(storyRegister(String(buildingId), found.body as never), LOCAL_SOURCE_LABELS[found.source]) : undefined;
