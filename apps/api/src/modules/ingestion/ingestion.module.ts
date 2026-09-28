@@ -13,6 +13,8 @@ import {IngestionSufficiencyService} from '@ulpin/server/modules/usp/ingestion/s
 import {SufficiencyController} from './sufficiency.controller';
 import {DocumentIngestionService} from '@ulpin/server/modules/usp/ingestion/documents';
 import {DocumentsController} from './documents.controller';
+import {AdaptiveMappingService} from '@ulpin/server/modules/usp/ingestion/adaptive-mapping-service';
+import {AdaptiveMappingController} from './adaptive-mapping.controller';
 
-@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService]})
+@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController,AdaptiveMappingController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService,AdaptiveMappingService]})
 export class IngestionModule {}
