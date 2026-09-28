@@ -1,6 +1,6 @@
 laspy==2.6.1
 lazrs==0.7.0
-rasterio==1.4.3
+rasterio==1.4.4
 pyproj==3.6.1
 shapely==2.0.7
 Pillow==11.3.0
