@@ -15,6 +15,8 @@ import {DocumentIngestionService} from '@ulpin/server/modules/usp/ingestion/docu
 import {DocumentsController} from './documents.controller';
 import {AdaptiveMappingService} from '@ulpin/server/modules/usp/ingestion/adaptive-mapping-service';
 import {AdaptiveMappingController} from './adaptive-mapping.controller';
+import {StreamingVectorController} from './streaming-vector.controller';
+import {StreamingVectorService} from '@ulpin/server/modules/usp/ingestion/streaming-vector';
 
-@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController,AdaptiveMappingController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService,AdaptiveMappingService]})
+@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController,AdaptiveMappingController,StreamingVectorController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService,AdaptiveMappingService,StreamingVectorService]})
 export class IngestionModule {}
