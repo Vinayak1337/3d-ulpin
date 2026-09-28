@@ -878,6 +878,8 @@ export class SceneEngine {
       material.depthWrite = !below;
     }
     this.base.visible = mode !== 'underground';
+    // Pads and trees stand on the ground surface; below ground they would float.
+    this.dressing.visible = this.look.uLook.value === 1 && mode !== 'underground';
     if (mode !== 'underground' && this.trenchPoints.length) this.clearTrench();
     this.underground.visible = mode === 'underground';
     this.buildSection(mode === 'underground' ? buildingId : null);

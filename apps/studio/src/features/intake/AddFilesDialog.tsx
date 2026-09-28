@@ -39,9 +39,9 @@ const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
  * officer confirms the mapping; Start import sends the original to the real import endpoint. Other files
  * are listed and kept for a case upload; nothing is dropped silently.
  */
-export function AddFilesDialog({ onClose, batchId, buildingId }: { onClose: () => void; batchId?: string | null; buildingId?: string | null }) {
+export function AddFilesDialog({ onClose, batchId, buildingId, routed = false }: { onClose: () => void; batchId?: string | null; buildingId?: string | null; routed?: boolean }) {
   if (batchId) return <SavedBatch batchId={batchId} onClose={onClose} />;
-  if (buildingId) return <BuildingFiles buildingId={buildingId} onClose={onClose} />;
+  if (buildingId) return <BuildingFiles buildingId={buildingId} onClose={onClose} routed={routed} />;
   return <NewFiles onClose={onClose} />;
 }
 
@@ -49,7 +49,7 @@ export function AddFilesDialog({ onClose, batchId, buildingId }: { onClose: () =
  * Add files to one building: plans, level schedules, unit inventories and deeds. Each file is recognised,
  * then Start import records the building's levels and units, which appear on the map as they are read.
  */
-function BuildingFiles({ buildingId, onClose }: { buildingId: string; onClose: () => void }) {
+function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; onClose: () => void; routed: boolean }) {
   const register = useBuildingRegister(buildingId).data;
   const navigate = useNavigate();
   const client = useQueryClient();
@@ -66,8 +66,9 @@ function BuildingFiles({ buildingId, onClose }: { buildingId: string; onClose: (
     mutationFn: () => startBuildingImport(buildingId, files),
     onSuccess: async (imp) => {
       await client.invalidateQueries();
-      onClose();
-      navigate(`/studio/areas/${register?.area.id}?feature=${buildingId}&mode=building&building-import=${imp.id}`);
+      // As a route the dialog closes by going back; that would undo this navigation, so leave by replacing.
+      if (!routed) onClose();
+      navigate(`/studio/areas/${register?.area.id}?feature=${buildingId}&mode=building&building-import=${imp.id}`, { replace: routed });
     },
     onError: (e) => setError((e as Error).message),
   });
@@ -145,8 +146,10 @@ function NewFiles({ onClose }: { onClose: () => void }) {
         const height = result.data.fields.find((f) => /height|hgt/i.test(f.name) && !/ground/i.test(f.name));
         setMapping((m) => m ?? {
           kind: 'building', idField: result.data.suggestedIdField ?? '', nameField: result.data.suggestedNameField ?? '',
-          heightField: height?.name ?? '', heightUnit: '',
-          heightMeaning: '',
+          // Proposed from the field name; the officer confirms or changes it before import.
+          heightField: height?.name ?? '',
+          heightUnit: !height ? '' : /(_m|metre|meter)s?$/i.test(height.name) ? 'm' : /(_ft|feet|foot)$/i.test(height.name) ? 'ft' : '',
+          heightMeaning: !height ? '' : /roof/i.test(height.name) ? 'Roof height above ground' : 'Building height above ground',
         });
         if (via === 'local') setSummary(await kindSummary(item.file));
       }

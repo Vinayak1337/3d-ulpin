@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { FilePlus, SlidersHorizontal, Trash, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
@@ -55,6 +56,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const buildingImportId = searchParams.get('building-import');
   const buildingImport = useBuildingImport(buildingImportId);
   const floorsLive = Boolean(buildingImportId) && buildingImport.data?.state !== 'done';
+  const client = useQueryClient();
+  // Polling stops when the import reports done; read the building once more so the last levels show.
+  useEffect(() => {
+    if (buildingImport.data?.state === 'done') void client.invalidateQueries({ queryKey: ['buildings', buildingImport.data.buildingId] });
+  }, [buildingImport.data?.state, buildingImport.data?.buildingId, client]);
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [tick, setTick] = useState(0);

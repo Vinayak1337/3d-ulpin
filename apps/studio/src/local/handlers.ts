@@ -18,18 +18,41 @@ const fail = (error: unknown) => {
   throw error;
 };
 const LOCAL = LOCAL_SOURCE_LABELS.lake;
+type Json = Record<string, unknown>;
+
+/** City layers uploaded through the upload server, listed as import batches. */
+async function uploadedQueueItems(): Promise<(Json & { id: string; areaId: string; state: string; featureCount: number })[]> {
+  if (import.meta.env.VITE_DEMO_IMPORT !== '1') return [];
+  try {
+    const areas = (await (await fetch('/api/demo/areas')).json()) as { id: string; name: string; uploadName: string | null; createdAt: string; state: string; packageId: string; sourceCount: number; featureCount: number }[];
+    return areas.map((a) => ({
+      id: a.packageId, kind: 'import', name: a.uploadName ?? `${a.sourceCount} city layers`, areaId: a.id, areaName: a.name, dataKind: 'mixed', buildingId: null, sourceCount: a.sourceCount,
+      updatedAt: a.createdAt, state: a.state === 'RECEIVED' ? 'RECEIVED' : 'COMMITTED', jobStatus: a.state === 'RECEIVED' ? 'running' : null,
+      recordedHistory: a.state !== 'RECEIVED', currentRecorded: a.state !== 'RECEIVED', featureCount: a.featureCount,
+      provenance: { classification: 'official', basis: 'Issued by the uploading office' },
+    }));
+  } catch { return []; }
+}
 
 type Params = Record<string, string | readonly string[] | undefined>;
 /** Local answers by route path. Returning undefined means "not held locally": fall through to the API. */
 const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => Response | undefined | Promise<Response | undefined>> = {
-  '/api/v1/work-queue': (_params, url) => {
+  '/api/v1/work-queue': async (_params, url) => {
     const q = url.searchParams.get('q')?.toLowerCase() ?? '';
     const status = url.searchParams.get('status') ?? 'all';
-    const items = storyQueueItems(workQueue.items).filter((item) => (!q || String(item.name).toLowerCase().includes(q) || String(item.id).includes(q))
+    const items = [...await uploadedQueueItems(), ...storyQueueItems(workQueue.items)].sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).filter((item) => (!q || String(item.name).toLowerCase().includes(q) || String(item.id).includes(q))
       && (status !== 'recorded' || item.currentRecorded) && (status !== 'processing' || item.jobStatus));
     return json({ ...workQueue, total: items.length, items }, LOCAL_SOURCE_LABELS.lake);
   },
-  '/api/v1/work-board': () => json(storyBoard(workBoard as never, storyQueueItems(workQueue.items)), LOCAL_SOURCE_LABELS.lake),
+  '/api/v1/work-board': async () => {
+    const uploaded = await uploadedQueueItems();
+    const board = storyBoard(workBoard as never, storyQueueItems(workQueue.items)) as { items: Json[]; counts: Json[] };
+    return json({ ...board, items: [...uploaded.map((u) => ({
+      id: u.id, stage: u.state === 'RECEIVED' ? 'add_files' : 'recorded', detail: `${u.featureCount} features`,
+      nextAction: { label: u.state === 'RECEIVED' ? 'Importing…' : 'Open the map', target: { kind: 'area', areaId: u.areaId } },
+      readiness: { met: u.state === 'RECEIVED' ? 3 : 6, unknown: 0, of: 6 },
+    })), ...board.items] }, LOCAL_SOURCE_LABELS.lake);
+  },
   '/api/v1/buildings/:buildingId/ledger': ({ buildingId }) => {
     const raw = ledgers[String(buildingId)];
     if (raw && !buildingVisible(String(buildingId))) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
