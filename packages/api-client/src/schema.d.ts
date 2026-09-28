@@ -2303,7 +2303,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Hash-verify complete byte parts and publish one unsupported-conversion original receipt */
+        /** Finalize v1 inline or queue recoverable v2 hash verification and original publication */
         post: operations["POST_api_v1_ingestion_cases_caseId_uploads_uploadId_finalize"];
         delete?: never;
         options?: never;
@@ -2818,6 +2818,8 @@ export interface components {
                         objectEtag: string;
                         verifiedSha256: string;
                         verifiedBytes: number;
+                        /** @enum {string} */
+                        receiptVersion?: "large-original/1" | "large-original/2";
                         provenance: {
                             issuer: string;
                             /** Format: uri */
@@ -3133,6 +3135,8 @@ export interface components {
                     objectEtag: string;
                     verifiedSha256: string;
                     verifiedBytes: number;
+                    /** @enum {string} */
+                    receiptVersion?: "large-original/1" | "large-original/2";
                     provenance: {
                         issuer: string;
                         /** Format: uri */
@@ -29632,6 +29636,56 @@ export interface components {
                 /** @enum {string} */
                 cleanupProtection: "permanent_zero_payload_fences";
             };
+            largeProfile: {
+                limits: {
+                    /** @enum {string} */
+                    version: "large-original/2";
+                    /** @enum {number} */
+                    partBytes: 8388608;
+                    /** @enum {number} */
+                    maxOriginalBytes: 7516192768;
+                    /** @enum {number} */
+                    maxParts: 896;
+                    /** @enum {number} */
+                    maxActiveGlobal: 1;
+                    /** @enum {number} */
+                    maxUploadReceipts: 8;
+                    /** @enum {number} */
+                    maxReservedOriginalBytes: 7516192768;
+                    /** @enum {number} */
+                    maxStoredBytesIncludingTemporaryCopies: 23622320128;
+                    /** @enum {number} */
+                    uploadLifetimeSeconds: 604800;
+                    /** @enum {number} */
+                    partRequestSeconds: 30;
+                    /** @enum {number} */
+                    storageRequestSeconds: 60;
+                    /** @enum {number} */
+                    leaseSeconds: 180;
+                    /** @enum {number} */
+                    finalizationSeconds: 43200;
+                    /** @enum {number} */
+                    cleanupSeconds: 43200;
+                    /** @enum {number} */
+                    maxFinalizationAttempts: 3;
+                    /** @enum {number} */
+                    maxPartAttempts: 3;
+                    /** @enum {number} */
+                    maxConcurrentDownloads: 1;
+                    /** @enum {number} */
+                    downloadSeconds: 43200;
+                    /** @enum {string} */
+                    storageProfile: "unversioned_private_conditional_multipart";
+                    /** @enum {string} */
+                    cleanupProtection: "permanent_zero_payload_fences";
+                };
+                capacity: {
+                    available: boolean;
+                    fullCeilingConfigured: boolean;
+                    configuredBytes: number;
+                    requiredBytes: number;
+                };
+            };
             /** @enum {string} */
             profile: "opaque_original_only";
             /** @enum {string} */
@@ -29644,7 +29698,6 @@ export interface components {
             filename: string;
             /** @enum {string} */
             mediaType: "application/zip" | "application/octet-stream";
-            bytes: number;
             sha256: string;
             provenance: {
                 issuer: string;
@@ -29655,10 +29708,33 @@ export interface components {
                 permissionReference: string;
                 limitations: string[];
             };
+            /** @enum {string} */
+            profile?: "large-original/1";
+            bytes: number;
+        } | {
+            /** Format: uuid */
+            requestKey: string;
+            expectedCaseRevision: number;
+            filename: string;
+            /** @enum {string} */
+            mediaType: "application/zip" | "application/octet-stream";
+            sha256: string;
+            provenance: {
+                issuer: string;
+                /** Format: uri */
+                originalUrl: string;
+                /** Format: date-time */
+                acquiredAt: string;
+                permissionReference: string;
+                limitations: string[];
+            };
+            /** @enum {string} */
+            profile: "large-original/2";
+            bytes: number;
         };
         POST_ingestion_cases_caseId_uploads_Response_201_application_json: {
             /** @enum {string} */
-            version: "large-original/1";
+            version: "large-original/1" | "large-original/2";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -29705,6 +29781,13 @@ export interface components {
             bundleCompleteness: "single_original_only_archive_dependencies_not_assessed";
             cleanupPending: boolean;
             lastError: string | null;
+            finalization?: {
+                /** Format: uuid */
+                jobId: string;
+                /** @enum {string} */
+                phase: "queued" | "assembling" | "verifying" | "cleaning" | "complete";
+                completedParts: number;
+            };
         };
         POST_ingestion_cases_caseId_uploads_uploadId_finalize_Request_application_json: {
             /** Format: uuid */

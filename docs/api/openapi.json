@@ -26789,7 +26789,7 @@
             "schema": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 16
+              "maximum": 896
             }
           },
           {
@@ -27311,7 +27311,7 @@
             }
           }
         },
-        "summary": "Hash-verify complete byte parts and publish one unsupported-conversion original receipt",
+        "summary": "Finalize v1 inline or queue recoverable v2 hash verification and original publication",
         "tags": [
           "LargeOriginal"
         ],
@@ -33535,7 +33535,14 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 134217728
+                              "maximum": 7516192768
+                            },
+                            "receiptVersion": {
+                              "type": "string",
+                              "enum": [
+                                "large-original/1",
+                                "large-original/2"
+                              ]
                             },
                             "provenance": {
                               "type": "object",
@@ -35086,7 +35093,14 @@
                         "type": "integer",
                         "minimum": 0,
                         "exclusiveMinimum": true,
-                        "maximum": 134217728
+                        "maximum": 7516192768
+                      },
+                      "receiptVersion": {
+                        "type": "string",
+                        "enum": [
+                          "large-original/1",
+                          "large-original/2"
+                        ]
                       },
                       "provenance": {
                         "type": "object",
@@ -167952,6 +167966,193 @@
             ],
             "additionalProperties": false
           },
+          "largeProfile": {
+            "type": "object",
+            "properties": {
+              "limits": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "enum": [
+                      "large-original/2"
+                    ]
+                  },
+                  "partBytes": {
+                    "type": "number",
+                    "enum": [
+                      8388608
+                    ]
+                  },
+                  "maxOriginalBytes": {
+                    "type": "number",
+                    "enum": [
+                      7516192768
+                    ]
+                  },
+                  "maxParts": {
+                    "type": "number",
+                    "enum": [
+                      896
+                    ]
+                  },
+                  "maxActiveGlobal": {
+                    "type": "number",
+                    "enum": [
+                      1
+                    ]
+                  },
+                  "maxUploadReceipts": {
+                    "type": "number",
+                    "enum": [
+                      8
+                    ]
+                  },
+                  "maxReservedOriginalBytes": {
+                    "type": "number",
+                    "enum": [
+                      7516192768
+                    ]
+                  },
+                  "maxStoredBytesIncludingTemporaryCopies": {
+                    "type": "number",
+                    "enum": [
+                      23622320128
+                    ]
+                  },
+                  "uploadLifetimeSeconds": {
+                    "type": "number",
+                    "enum": [
+                      604800
+                    ]
+                  },
+                  "partRequestSeconds": {
+                    "type": "number",
+                    "enum": [
+                      30
+                    ]
+                  },
+                  "storageRequestSeconds": {
+                    "type": "number",
+                    "enum": [
+                      60
+                    ]
+                  },
+                  "leaseSeconds": {
+                    "type": "number",
+                    "enum": [
+                      180
+                    ]
+                  },
+                  "finalizationSeconds": {
+                    "type": "number",
+                    "enum": [
+                      43200
+                    ]
+                  },
+                  "cleanupSeconds": {
+                    "type": "number",
+                    "enum": [
+                      43200
+                    ]
+                  },
+                  "maxFinalizationAttempts": {
+                    "type": "number",
+                    "enum": [
+                      3
+                    ]
+                  },
+                  "maxPartAttempts": {
+                    "type": "number",
+                    "enum": [
+                      3
+                    ]
+                  },
+                  "maxConcurrentDownloads": {
+                    "type": "number",
+                    "enum": [
+                      1
+                    ]
+                  },
+                  "downloadSeconds": {
+                    "type": "number",
+                    "enum": [
+                      43200
+                    ]
+                  },
+                  "storageProfile": {
+                    "type": "string",
+                    "enum": [
+                      "unversioned_private_conditional_multipart"
+                    ]
+                  },
+                  "cleanupProtection": {
+                    "type": "string",
+                    "enum": [
+                      "permanent_zero_payload_fences"
+                    ]
+                  }
+                },
+                "required": [
+                  "version",
+                  "partBytes",
+                  "maxOriginalBytes",
+                  "maxParts",
+                  "maxActiveGlobal",
+                  "maxUploadReceipts",
+                  "maxReservedOriginalBytes",
+                  "maxStoredBytesIncludingTemporaryCopies",
+                  "uploadLifetimeSeconds",
+                  "partRequestSeconds",
+                  "storageRequestSeconds",
+                  "leaseSeconds",
+                  "finalizationSeconds",
+                  "cleanupSeconds",
+                  "maxFinalizationAttempts",
+                  "maxPartAttempts",
+                  "maxConcurrentDownloads",
+                  "downloadSeconds",
+                  "storageProfile",
+                  "cleanupProtection"
+                ],
+                "additionalProperties": false
+              },
+              "capacity": {
+                "type": "object",
+                "properties": {
+                  "available": {
+                    "type": "boolean"
+                  },
+                  "fullCeilingConfigured": {
+                    "type": "boolean"
+                  },
+                  "configuredBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "requiredBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "available",
+                  "fullCeilingConfigured",
+                  "configuredBytes",
+                  "requiredBytes"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "limits",
+              "capacity"
+            ],
+            "additionalProperties": false
+          },
           "profile": {
             "type": "string",
             "enum": [
@@ -167967,98 +168168,204 @@
         },
         "required": [
           "limits",
+          "largeProfile",
           "profile",
           "conversion"
         ],
         "additionalProperties": false
       },
       "POST_ingestion_cases_caseId_uploads_Request_application_json": {
-        "type": "object",
-        "properties": {
-          "requestKey": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-          },
-          "expectedCaseRevision": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991
-          },
-          "filename": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 150
-          },
-          "mediaType": {
-            "type": "string",
-            "enum": [
-              "application/zip",
-              "application/octet-stream"
-            ]
-          },
-          "bytes": {
-            "type": "integer",
-            "minimum": 16777217,
-            "maximum": 134217728
-          },
-          "sha256": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "provenance": {
+        "anyOf": [
+          {
             "type": "object",
             "properties": {
-              "issuer": {
+              "requestKey": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "expectedCaseRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "filename": {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 500
+                "maxLength": 150
               },
-              "originalUrl": {
+              "mediaType": {
                 "type": "string",
-                "maxLength": 2048,
-                "format": "uri"
+                "enum": [
+                  "application/zip",
+                  "application/octet-stream"
+                ]
               },
-              "acquiredAt": {
+              "sha256": {
                 "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                "pattern": "^[a-f0-9]{64}$"
               },
-              "permissionReference": {
+              "provenance": {
+                "type": "object",
+                "properties": {
+                  "issuer": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  "originalUrl": {
+                    "type": "string",
+                    "maxLength": 2048,
+                    "format": "uri"
+                  },
+                  "acquiredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "permissionReference": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048
+                  },
+                  "limitations": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    }
+                  }
+                },
+                "required": [
+                  "issuer",
+                  "originalUrl",
+                  "acquiredAt",
+                  "permissionReference",
+                  "limitations"
+                ],
+                "additionalProperties": false
+              },
+              "profile": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 2048
+                "enum": [
+                  "large-original/1"
+                ]
               },
-              "limitations": {
-                "maxItems": 20,
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 2000
-                }
+              "bytes": {
+                "type": "integer",
+                "minimum": 16777217,
+                "maximum": 134217728
               }
             },
             "required": [
-              "issuer",
-              "originalUrl",
-              "acquiredAt",
-              "permissionReference",
-              "limitations"
+              "requestKey",
+              "expectedCaseRevision",
+              "filename",
+              "mediaType",
+              "sha256",
+              "provenance",
+              "bytes"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "requestKey": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "expectedCaseRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "filename": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 150
+              },
+              "mediaType": {
+                "type": "string",
+                "enum": [
+                  "application/zip",
+                  "application/octet-stream"
+                ]
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "provenance": {
+                "type": "object",
+                "properties": {
+                  "issuer": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  "originalUrl": {
+                    "type": "string",
+                    "maxLength": 2048,
+                    "format": "uri"
+                  },
+                  "acquiredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "permissionReference": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048
+                  },
+                  "limitations": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    }
+                  }
+                },
+                "required": [
+                  "issuer",
+                  "originalUrl",
+                  "acquiredAt",
+                  "permissionReference",
+                  "limitations"
+                ],
+                "additionalProperties": false
+              },
+              "profile": {
+                "type": "string",
+                "enum": [
+                  "large-original/2"
+                ]
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 16777217,
+                "maximum": 7516192768
+              }
+            },
+            "required": [
+              "requestKey",
+              "expectedCaseRevision",
+              "filename",
+              "mediaType",
+              "sha256",
+              "provenance",
+              "profile",
+              "bytes"
             ],
             "additionalProperties": false
           }
-        },
-        "required": [
-          "requestKey",
-          "expectedCaseRevision",
-          "filename",
-          "mediaType",
-          "bytes",
-          "sha256",
-          "provenance"
-        ],
-        "additionalProperties": false
+        ]
       },
       "POST_ingestion_cases_caseId_uploads_Response_201_application_json": {
         "type": "object",
@@ -168066,7 +168373,8 @@
           "version": {
             "type": "string",
             "enum": [
-              "large-original/1"
+              "large-original/1",
+              "large-original/2"
             ]
           },
           "id": {
@@ -168262,6 +168570,37 @@
           "lastError": {
             "nullable": true,
             "type": "string"
+          },
+          "finalization": {
+            "type": "object",
+            "properties": {
+              "jobId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "phase": {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "assembling",
+                  "verifying",
+                  "cleaning",
+                  "complete"
+                ]
+              },
+              "completedParts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "jobId",
+              "phase",
+              "completedParts"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
