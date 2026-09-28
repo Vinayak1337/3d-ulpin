@@ -1,56 +1,58 @@
 __PUBLIC_HOST__ {
-    @foreign_origin {
-        path /api/*
-        header Origin *
-        not header Origin https://__PUBLIC_HOST__
-    }
-    respond @foreign_origin "Forbidden" 403
-
-    @cross_site {
-        path /api/*
-        header Sec-Fetch-Site cross-site
-    }
-    respond @cross_site "Forbidden" 403
-
-    @demo {
-        path /api/demo/*
-    }
-    handle @demo {
-        reverse_proxy 127.0.0.1:3190 {
-            flush_interval -1
-            header_up Host 127.0.0.1:3190
-            header_up Origin http://127.0.0.1:3190
+    route {
+        @foreign_origin {
+            path /api/*
+            header Origin *
+            not header Origin https://__PUBLIC_HOST__
         }
-    }
+        respond @foreign_origin "Forbidden" 403
 
-    @demo_record path_regexp demo_record ^/api/v1/[^/]+/d30d[0-9a-f-]+(?:/|$)
-    handle @demo_record {
-        reverse_proxy 127.0.0.1:3190 {
-            flush_interval -1
-            header_up Host 127.0.0.1:3190
-            header_up Origin http://127.0.0.1:3190
+        @cross_site {
+            path /api/*
+            header Sec-Fetch-Site cross-site
         }
-    }
+        respond @cross_site "Forbidden" 403
 
-    handle /api/* {
-        reverse_proxy 127.0.0.1:3188 {
-            flush_interval -1
-            header_up Host 127.0.0.1:3188
-            header_up Origin http://127.0.0.1:3188
+        @demo {
+            path /api/demo/*
         }
-    }
+        handle @demo {
+            reverse_proxy 127.0.0.1:3190 {
+                flush_interval -1
+                header_up Host 127.0.0.1:3190
+                header_up Origin http://127.0.0.1:3190
+            }
+        }
 
-    handle {
-        root * /opt/ulpin/app/apps/studio/dist
-        encode gzip
-        @worker path /mockServiceWorker.js
-        header @worker Cache-Control "no-store"
-        header @worker Service-Worker-Allowed "/"
-        @assets path /assets/*
-        header @assets Cache-Control "public, max-age=31536000, immutable"
-        try_files {path} /index.html
-        @index path /index.html
-        header @index Cache-Control "no-cache"
-        file_server
+        @demo_record path_regexp demo_record ^/api/v1/[^/]+/d30d[0-9a-f-]+(?:/|$)
+        handle @demo_record {
+            reverse_proxy 127.0.0.1:3190 {
+                flush_interval -1
+                header_up Host 127.0.0.1:3190
+                header_up Origin http://127.0.0.1:3190
+            }
+        }
+
+        handle /api/* {
+            reverse_proxy 127.0.0.1:3188 {
+                flush_interval -1
+                header_up Host 127.0.0.1:3188
+                header_up Origin http://127.0.0.1:3188
+            }
+        }
+
+        handle {
+            root * /opt/ulpin/app/apps/studio/dist
+            encode gzip
+            @worker path /mockServiceWorker.js
+            header @worker Cache-Control "no-store"
+            header @worker Service-Worker-Allowed "/"
+            @assets path /assets/*
+            header @assets Cache-Control "public, max-age=31536000, immutable"
+            try_files {path} /index.html
+            @index path /index.html
+            header @index Cache-Control "no-cache"
+            file_server
+        }
     }
 }
