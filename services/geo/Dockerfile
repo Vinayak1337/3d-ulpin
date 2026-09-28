@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt -r requirements-ml.txt
 RUN apt-get update && apt-get install -y --no-install-recommends libexpat1 && rm -rf /var/lib/apt/lists/*
 COPY ml-models.json ./ml-models.json
 COPY geo ./geo
-RUN useradd --create-home --uid 10001 processor
+RUN useradd --create-home --uid 10001 processor && chmod -R a+rX /app
 USER processor
 EXPOSE 8000
 CMD ["uvicorn", "geo.api:app", "--host", "0.0.0.0", "--port", "8000"]
