@@ -117,7 +117,7 @@ def predict(examples: list[dict[str, Any]], scores: torch.Tensor, threshold: flo
 
 
 def choose_train_threshold(examples: list[dict[str, Any]], scores: torch.Tensor) -> float:
-    """Optimize exact field decisions on training families only, breaking ties conservatively."""
+    """Optimize exact field decisions on the caller's selected families, breaking ties conservatively."""
     top_scores = [
         max(row[index] for index in allowed)
         for example, row in zip(examples, scores.detach().cpu().tolist())
@@ -154,13 +154,12 @@ def metrics(examples: list[dict[str, Any]], scores: torch.Tensor | None, thresho
         "falseMappedNegative": sum(guess is not None for _, guess in negatives),
     }
     if threshold is not None:
-        result["trainCalibratedThreshold"] = round(threshold, 6)
-    if scores is not None:
-        rows = scores.detach().cpu().tolist()
-        result["decisions"] = [
-            {"source": item["source"], "field": item["path"], "expected": item["target"], "predicted": guess,
-             "topAllowedCosine": round(max(row[index] for index in allowed_target_indices(item)), 5) if allowed_target_indices(item) else None,
-             "wireCompatibleRows": item["wireCompatibleRows"], "observedWire": item["observedWire"]}
-            for item, guess, row in zip(examples, guesses, rows)
-        ]
+        result["decisionThreshold"] = round(threshold, 6)
+    rows = scores.detach().cpu().tolist() if scores is not None else [None] * len(examples)
+    result["decisions"] = [
+        {"source": item["source"], "field": item["path"], "expected": item["target"], "predicted": guess,
+         "topAllowedCosine": round(max(row[index] for index in allowed_target_indices(item)), 5) if row is not None and allowed_target_indices(item) else None,
+         "wireCompatibleRows": item["wireCompatibleRows"], "observedWire": item["observedWire"]}
+        for item, guess, row in zip(examples, guesses, rows)
+    ]
     return result

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "usp-field-mapping-corpus-v2",
-  "featureVersion": "issuer-field-profile-v2",
+  "schemaVersion": "usp-field-mapping-corpus-v4",
+  "featureVersion": "publisher-metadata-profile-v4",
   "scope": "offline foreign-source research only; no production training or promotion",
   "targets": [
     {
@@ -65,7 +65,11 @@
               "string"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "globalid",
+            "fieldPointer": "/columns/7"
+          }
         },
         {
           "path": "geometry",
@@ -82,7 +86,11 @@
               "geojson:MultiPolygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "the_geom",
+            "fieldPointer": "/columns/0"
+          }
         },
         {
           "path": "properties.activestatus",
@@ -98,6 +106,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "activestatus",
+            "fieldPointer": "/columns/3"
           }
         },
         {
@@ -114,6 +126,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "shape_starea",
+            "fieldPointer": "/columns/4"
           }
         },
         {
@@ -130,6 +146,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "shape_stlength",
+            "fieldPointer": "/columns/5"
           }
         }
       ],
@@ -180,7 +200,12 @@
           }
         }
       ],
-      "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels"
+      "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels",
+      "representation": "GeoJSON building footprint FeatureCollection",
+      "inputEvidence": {
+        "format": "socrata-view-json",
+        "titlePointer": "/name"
+      }
     },
     {
       "id": "nyc-building-footprints",
@@ -228,7 +253,11 @@
               "string"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "doitt_id",
+            "fieldLine": 38
+          }
         },
         {
           "path": "properties.name",
@@ -243,7 +272,11 @@
             "absentCount": 0,
             "nonNullTypes": []
           },
-          "wireCompatibleRows": 0
+          "wireCompatibleRows": 0,
+          "inputEvidence": {
+            "sourceField": "name",
+            "fieldLine": 47
+          }
         },
         {
           "path": "geometry",
@@ -260,7 +293,11 @@
               "geojson:MultiPolygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "SHAPE",
+            "fieldLine": 48
+          }
         },
         {
           "path": "properties.height_roof",
@@ -276,6 +313,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "height_roof",
+            "fieldLine": 43
           }
         },
         {
@@ -292,6 +333,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "geom_source",
+            "fieldLine": 40
           }
         },
         {
@@ -308,6 +353,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "construction_year",
+            "fieldLine": 37
           }
         }
       ],
@@ -373,12 +422,17 @@
           "reason": "Issuer defines a billing tax-lot join key that can be shared by buildings; the parcel-link role is outside this target vocabulary."
         }
       ],
-      "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels"
+      "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels",
+      "representation": "GeoJSON building footprint FeatureCollection",
+      "inputEvidence": {
+        "format": "nyc-markdown-table",
+        "titleLine": 1
+      }
     },
     {
       "id": "sf-building-footprints",
       "family": "sf-sfgis-footprints",
-      "split": "holdout",
+      "split": "diagnostic",
       "issuer": "City and County of San Francisco Enterprise GIS Program",
       "geography": "San Francisco, California, United States",
       "datasetUrl": "https://data.sfgov.org/Geographic-Locations-and-Boundaries/Building-Footprints/ynuv-fyni",
@@ -426,7 +480,11 @@
               "string"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "sf16_bldgid",
+            "fieldPointer": "/columns/0"
+          }
         },
         {
           "path": "properties.p2010_name",
@@ -443,7 +501,11 @@
               "string"
             ]
           },
-          "wireCompatibleRows": 3
+          "wireCompatibleRows": 3,
+          "inputEvidence": {
+            "sourceField": "p2010_name",
+            "fieldPointer": "/columns/3"
+          }
         },
         {
           "path": "geometry",
@@ -460,7 +522,11 @@
               "geojson:MultiPolygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "shape",
+            "fieldPointer": "/columns/42"
+          }
         },
         {
           "path": "properties.hgt_median_m",
@@ -476,6 +542,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "hgt_median_m",
+            "fieldPointer": "/columns/38"
           }
         },
         {
@@ -492,6 +562,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "gnd_min_m",
+            "fieldPointer": "/columns/36"
           }
         },
         {
@@ -508,6 +582,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "data_as_of",
+            "fieldPointer": "/columns/43"
           }
         }
       ],
@@ -558,8 +636,846 @@
           "reason": "Issuer defines an assessor map-block-lot parcel/right-of-way key; its possible linkage role is outside this building-only target vocabulary."
         }
       ],
-      "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels"
+      "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels",
+      "representation": "GeoJSON building footprint FeatureCollection",
+      "inputEvidence": {
+        "format": "socrata-view-json",
+        "titlePointer": "/name"
+      }
+    },
+    {
+      "id": "massgis-building-structures",
+      "family": "massgis-structures-2d",
+      "split": "train",
+      "issuer": "MassGIS (Bureau of Geographic Information), Commonwealth of Massachusetts",
+      "geography": "Massachusetts, United States",
+      "datasetUrl": "https://www.mass.gov/info-details/massgis-data-building-structures-2-d",
+      "acquiredAt": "2026-09-28",
+      "sample": {
+        "file": "massgis-structures-sample.json",
+        "url": "https://services1.arcgis.com/hGdibHYSPO59RG1h/ArcGIS/rest/services/Building_Structures/FeatureServer/0/query?where=1%3D1&outFields=*&returnGeometry=true&outSR=4326&resultRecordCount=5&f=geojson",
+        "bytes": 4149,
+        "sha256": "82236ab394111d8fca2a13149307a75bd4c50357c7ceadecff933b2440f2a726",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "massgis-structures-metadata.json",
+        "url": "https://services1.arcgis.com/hGdibHYSPO59RG1h/ArcGIS/rest/services/Building_Structures/FeatureServer/0?f=pjson",
+        "bytes": 20904,
+        "sha256": "676cbd0deb6affe35df982b0afa25d3fe1ca066e7142fa0b18823fc50fda105f"
+      },
+      "permission": {
+        "basis": "MassGIS public-record data may be used by anyone for their purposes; credit requested. Layer includes some City of Boston source footprints; only source field definitions and observed shapes train here.",
+        "url": "https://www.mass.gov/info-details/about-massgis",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "GeoJSON sample carries EPSG:4326; source layer is EPSG:26986; runtime geometry still needs separate validation",
+      "representation": "GeoJSON building roofprint FeatureCollection",
+      "fields": [
+        {
+          "path": "geometry",
+          "definition": "MassGIS 2-D building structure roofprint polygon",
+          "target": "building.geometry",
+          "evidence": "https://www.mass.gov/info-details/massgis-data-building-structures-2-d",
+          "decision": "positive",
+          "declaredType": "esriGeometryPolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "geometry",
+            "geometryTypePointer": "/geometryType"
+          }
+        },
+        {
+          "path": "properties.TOWN_ID",
+          "definition": "Identifier for the city or town containing the structure; administrative, not a building identifier",
+          "target": null,
+          "evidence": "https://www.mass.gov/info-details/massgis-data-building-structures-2-d",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeSmallInteger",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "TOWN_ID",
+            "fieldPointer": "/fields/7"
+          }
+        },
+        {
+          "path": "properties.SOURCE",
+          "definition": "Polygon source organization or compilation method",
+          "target": null,
+          "evidence": "https://www.mass.gov/info-details/massgis-data-building-structures-2-d",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "SOURCE",
+            "fieldPointer": "/fields/1"
+          }
+        },
+        {
+          "path": "properties.SOURCETYPE",
+          "definition": "Type of structure polygon, such as roofprint or footprint",
+          "target": null,
+          "evidence": "https://www.mass.gov/info-details/massgis-data-building-structures-2-d",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "SOURCETYPE",
+            "fieldPointer": "/fields/2"
+          }
+        },
+        {
+          "path": "properties.AREA_SQ_FT",
+          "definition": "Area of structure polygon in square feet",
+          "target": null,
+          "evidence": "https://www.mass.gov/info-details/massgis-data-building-structures-2-d",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeDouble",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "AREA_SQ_FT",
+            "fieldPointer": "/fields/6"
+          }
+        },
+        {
+          "path": "properties.MOVED",
+          "definition": "Whether original polygon was shifted to correct building lean",
+          "target": null,
+          "evidence": "https://www.mass.gov/info-details/massgis-data-building-structures-2-d",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "MOVED",
+            "fieldPointer": "/fields/5"
+          }
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.STRUCT_ID",
+          "decision": "unknown",
+          "reason": "Unique centroid-based polygon identifier; identifier can change with footprint geometry, so stability for the literal sourceKey operation is not established",
+          "evidence": "https://www.mass.gov/info-details/massgis-data-building-structures-2-d",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.LOCAL_ID",
+          "decision": "unknown",
+          "reason": "Issuer says local identifier currently unused and sample values are null",
+          "evidence": "https://www.mass.gov/info-details/massgis-data-building-structures-2-d",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 5,
+            "absentCount": 0,
+            "nonNullTypes": []
+          }
+        },
+        {
+          "path": "properties.OBJECTID",
+          "decision": "unknown",
+          "reason": "Service OID has no issuer-backed cross-export stability evidence",
+          "evidence": "https://services1.arcgis.com/hGdibHYSPO59RG1h/ArcGIS/rest/services/Building_Structures/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        }
+      ],
+      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      }
+    },
+    {
+      "id": "vancouver-building-footprints-2015",
+      "family": "vancouver-2015-footprints",
+      "split": "train",
+      "issuer": "City of Vancouver",
+      "geography": "Vancouver, British Columbia, Canada",
+      "datasetUrl": "https://opendata.vancouver.ca/explore/dataset/building-footprints-2015/",
+      "acquiredAt": "2026-09-28",
+      "sample": {
+        "file": "vancouver-2015-records.json",
+        "url": "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/building-footprints-2015/records?limit=5",
+        "bytes": 2648,
+        "sha256": "2aa01c6ebea1d90b4f842db8f77f5e06a63741e282f59fe27295df458bd2a4b3",
+        "rows": 5,
+        "format": "opendatasoft-records-v2"
+      },
+      "metadata": {
+        "file": "vancouver-2015-metadata.json",
+        "url": "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/building-footprints-2015",
+        "bytes": 3496,
+        "sha256": "1c713150fdb84365dcf28dd97cb970f17ad205c534ac44fb195f57c168b27662"
+      },
+      "permission": {
+        "basis": "Open Government Licence - Vancouver shown in issuer dataset metadata; attribution required",
+        "url": "https://vancouver.ca/your-government/terms-of-use.aspx",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "Nested GeoJSON feature coordinates in WGS84 longitude/latitude; 2015 footprints are approximate and parcel-split",
+      "representation": "OpenDataSoft building footprint records with nested GeoJSON features",
+      "fields": [
+        {
+          "path": "geometry",
+          "definition": "Spatial representation of a specified 2015 building footprint polygon",
+          "target": "building.geometry",
+          "evidence": "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/building-footprints-2015",
+          "decision": "positive",
+          "declaredType": "geo_shape",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "geom",
+            "fieldPointer": "/fields/1"
+          }
+        },
+        {
+          "path": "properties.geo_point_2d",
+          "definition": "Point representation of the footprint, not a polygon geometry or building identifier",
+          "target": null,
+          "evidence": "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/building-footprints-2015",
+          "decision": "negative",
+          "declaredType": "geo_point_2d",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "object"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "geo_point_2d",
+            "fieldPointer": "/fields/2"
+          }
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.object_id",
+          "decision": "unknown",
+          "reason": "Issuer calls this a unique polygon identifier, but the observed wire is numeric and the literal sourceKey operation forbids coercion",
+          "evidence": "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/building-footprints-2015",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        }
+      ],
+      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels",
+      "inMemoryNormalization": {
+        "geometrySourcePath": "results[*].geom.geometry",
+        "propertiesSourcePath": "results[*] except geom",
+        "scope": "in-memory learner profile only; no production parser claim"
+      },
+      "inputEvidence": {
+        "format": "opendatasoft-dataset-json",
+        "titlePointer": "/metas/default/title"
+      }
+    },
+    {
+      "id": "census-tigerweb-counties",
+      "family": "census-tigerweb-counties-2026",
+      "split": "train",
+      "issuer": "United States Census Bureau",
+      "geography": "Rhode Island counties, United States",
+      "datasetUrl": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19",
+      "acquiredAt": "2026-09-28",
+      "sample": {
+        "file": "census-counties-sample.json",
+        "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19/query?where=STATE%3D%2744%27&outFields=%2A&returnGeometry=true&outSR=4326&geometryPrecision=6&resultRecordCount=5&f=geojson",
+        "bytes": 162501,
+        "sha256": "48e039e186f3dc6cc548d05d781592b93b31149e364c9b61343f67a85dbf2f2f",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "census-counties-metadata.json",
+        "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19?f=pjson",
+        "bytes": 7497,
+        "sha256": "227eee0cf9b2f1b6250589c60e5c8f640f97381b6e3a599379c105d75cca2ee3"
+      },
+      "permission": {
+        "basis": "Public-use federal Census geographic data; Census encourages reuse and attribution; released Census employee work generally has no U.S. copyright",
+        "url": "https://www.census.gov/about/policies/citation.html",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "GeoJSON output requested at EPSG:4326; these are county boundaries, not building footprints",
+      "representation": "GeoJSON county administrative boundary FeatureCollection",
+      "fields": [
+        {
+          "path": "properties.GEOID",
+          "definition": "Census geographic identifier for a county, not a building identifier",
+          "target": null,
+          "evidence": "https://www.census.gov/programs-surveys/geography/guidance/geo-identifiers.html",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "GEOID",
+            "fieldPointer": "/fields/2"
+          }
+        },
+        {
+          "path": "properties.NAME",
+          "definition": "County name, not a building name",
+          "target": null,
+          "evidence": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "NAME",
+            "fieldPointer": "/fields/7"
+          }
+        },
+        {
+          "path": "geometry",
+          "definition": "County administrative boundary polygon, not a building footprint",
+          "target": null,
+          "evidence": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriGeometryPolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:MultiPolygon",
+              "geojson:Polygon"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "STGEOMETRY",
+            "fieldPointer": "/fields/14"
+          }
+        },
+        {
+          "path": "properties.STATE",
+          "definition": "State geographic code containing county, not a building identifier",
+          "target": null,
+          "evidence": "https://www.census.gov/programs-surveys/geography/guidance/geo-identifiers.html",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "STATE",
+            "fieldPointer": "/fields/3"
+          }
+        },
+        {
+          "path": "properties.COUNTY",
+          "definition": "County geographic code, not a building identifier",
+          "target": null,
+          "evidence": "https://www.census.gov/programs-surveys/geography/guidance/geo-identifiers.html",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "COUNTY",
+            "fieldPointer": "/fields/4"
+          }
+        },
+        {
+          "path": "properties.CENTLAT",
+          "definition": "Latitude of county center; not a building name or identifier",
+          "target": null,
+          "evidence": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "CENTLAT",
+            "fieldPointer": "/fields/15"
+          }
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.OID",
+          "decision": "unknown",
+          "reason": "OID string has no stable building feature meaning; the dataset represents counties",
+          "evidence": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        }
+      ],
+      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      }
+    },
+    {
+      "id": "calgary-buildings",
+      "family": "calgary-building-roof-outlines",
+      "split": "calibration",
+      "issuer": "City of Calgary",
+      "geography": "Calgary, Alberta, Canada",
+      "datasetUrl": "https://data.calgary.ca/d/uc4c-6kbd",
+      "acquiredAt": "2026-09-28",
+      "sample": {
+        "file": "calgary-buildings-sample.json",
+        "url": "https://data.calgary.ca/resource/uc4c-6kbd.geojson?$limit=5",
+        "bytes": 2581,
+        "sha256": "39e1fc46e8e9779b58d1c13b848e6646826b708be8be72aa701d4246f6ff00af",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "calgary-buildings-metadata.json",
+        "url": "https://data.calgary.ca/api/views/uc4c-6kbd.json",
+        "bytes": 16347,
+        "sha256": "5afb47d610860fcc7d5dfb5ccad6c96591bc5e0bb9ba4ec4b3fec1c6d48e5b69"
+      },
+      "permission": {
+        "basis": "Open Calgary data under Open Government Licence - City of Calgary; attribution required",
+        "url": "https://data.calgary.ca/stories/s/u45n-7awa/",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "GeoJSON sample declares CRS84 longitude/latitude; coordinate columns are separate Calgary 3TM center values",
+      "representation": "GeoJSON building roof outline FeatureCollection",
+      "fields": [
+        {
+          "path": "geometry",
+          "definition": "Building roof edge outline polygons",
+          "target": "building.geometry",
+          "evidence": "https://data.calgary.ca/api/views/uc4c-6kbd.json",
+          "decision": "positive",
+          "declaredType": "multipolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:MultiPolygon"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "multipolygon",
+            "fieldPointer": "/columns/7"
+          }
+        },
+        {
+          "path": "properties.bldg_code",
+          "definition": "Two-digit code identifying a building type, not an individual building",
+          "target": null,
+          "evidence": "https://data.calgary.ca/api/views/uc4c-6kbd.json",
+          "decision": "negative",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "bldg_code",
+            "fieldPointer": "/columns/0"
+          }
+        },
+        {
+          "path": "properties.bldg_code_desc",
+          "definition": "Description of building type according to bldg_code, not a building name",
+          "target": null,
+          "evidence": "https://data.calgary.ca/api/views/uc4c-6kbd.json",
+          "decision": "negative",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "bldg_code_desc",
+            "fieldPointer": "/columns/1"
+          }
+        },
+        {
+          "path": "properties.x_coord",
+          "definition": "X coordinate of building center point in Calgary 3TM projection",
+          "target": null,
+          "evidence": "https://data.calgary.ca/api/views/uc4c-6kbd.json",
+          "decision": "negative",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "x_coord",
+            "fieldPointer": "/columns/2"
+          }
+        },
+        {
+          "path": "properties.y_coord",
+          "definition": "Y coordinate of building center point in Calgary 3TM projection",
+          "target": null,
+          "evidence": "https://data.calgary.ca/api/views/uc4c-6kbd.json",
+          "decision": "negative",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "y_coord",
+            "fieldPointer": "/columns/3"
+          }
+        },
+        {
+          "path": "properties.obscured",
+          "definition": "Flag for building outline obscured by another feature",
+          "target": null,
+          "evidence": "https://data.calgary.ca/api/views/uc4c-6kbd.json",
+          "decision": "negative",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "obscured",
+            "fieldPointer": "/columns/4"
+          }
+        },
+        {
+          "path": "properties.shape__area",
+          "definition": "Area of polygon geometry, not a building name or identifier",
+          "target": null,
+          "evidence": "https://data.calgary.ca/api/views/uc4c-6kbd.json",
+          "decision": "negative",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "shape__area",
+            "fieldPointer": "/columns/8"
+          }
+        }
+      ],
+      "excludedFields": [],
+      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels",
+      "inputEvidence": {
+        "format": "socrata-view-json",
+        "titlePointer": "/name"
+      }
+    },
+    {
+      "id": "dc-building-footprints-2021",
+      "family": "dc-planimetrics-2021",
+      "split": "evaluation",
+      "issuer": "District of Columbia Office of the Chief Technology Officer",
+      "geography": "Washington, District of Columbia, United States",
+      "datasetUrl": "https://catalog.data.gov/dataset/building-footprints-2021",
+      "acquiredAt": "2026-09-28",
+      "sample": {
+        "file": "dc-2021-sample.json",
+        "url": "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Planimetrics_2021/MapServer/1/query?where=1%3D1&outFields=*&returnGeometry=true&outSR=4326&resultRecordCount=5&f=geojson",
+        "bytes": 3311,
+        "sha256": "52e113de7486d10b0293244004542e7ddde7ebf400f4581d0c2540a3acd6dd96",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "dc-2021-metadata.json",
+        "url": "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Planimetrics_2021/MapServer/1?f=pjson",
+        "bytes": 8551,
+        "sha256": "11e38c859779fdd1f20bb1b42c9e9937644ad7d8d072abaad380660c9dd6d05e"
+      },
+      "permission": {
+        "basis": "Dataset catalogue declares Creative Commons Attribution 4.0; attribute District GIS",
+        "url": "https://catalog.data.gov/dataset/building-footprints-2021",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "Service source is EPSG:26985; GeoJSON sample requested outSR=4326; building structure set includes garages, ruins and monuments",
+      "representation": "GeoJSON 2021 building structure FeatureCollection",
+      "fields": [
+        {
+          "path": "properties.GLOBALID",
+          "definition": "Issuer-managed GlobalID uniquely identifying the source feature row",
+          "target": "building.sourceKey",
+          "evidence": "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Planimetrics_2021/MapServer/1?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeGlobalID",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "GLOBALID",
+            "fieldPointer": "/fields/9"
+          }
+        },
+        {
+          "path": "geometry",
+          "definition": "2021 DC building structure roof-line polygon",
+          "target": "building.geometry",
+          "evidence": "https://catalog.data.gov/dataset/building-footprints-2021",
+          "decision": "positive",
+          "declaredType": "esriGeometryPolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "SHAPE",
+            "fieldPointer": "/fields/5"
+          }
+        },
+        {
+          "path": "properties.FEATURECODE",
+          "definition": "Feature classification code, not a building identifier",
+          "target": null,
+          "evidence": "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Planimetrics_2021/MapServer/1?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeSmallInteger",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "FEATURECODE",
+            "fieldPointer": "/fields/1"
+          }
+        },
+        {
+          "path": "properties.DESCRIPTION",
+          "definition": "Feature description or classification, not a specific building name",
+          "target": null,
+          "evidence": "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Planimetrics_2021/MapServer/1?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "DESCRIPTION",
+            "fieldPointer": "/fields/2"
+          }
+        },
+        {
+          "path": "properties.CAPTUREYEAR",
+          "definition": "Year of feature capture, not a building identifier",
+          "target": null,
+          "evidence": "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Planimetrics_2021/MapServer/1?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeDate",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "CAPTUREYEAR",
+            "fieldPointer": "/fields/3"
+          }
+        },
+        {
+          "path": "properties.CAPTUREACTION",
+          "definition": "Capture action for feature, not a building name or identifier",
+          "target": null,
+          "evidence": "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Planimetrics_2021/MapServer/1?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "CAPTUREACTION",
+            "fieldPointer": "/fields/4"
+          }
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.OBJECTID",
+          "decision": "unknown",
+          "reason": "Service row OID is not evidenced as stable across extracts",
+          "evidence": "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Planimetrics_2021/MapServer/1?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        }
+      ],
+      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      }
     }
   ],
-  "labelEncoding": "Issuer declared type, retained GeoJSON observed wire shapes, and shallow operation wire compatibility are separate. Positive/negative are checked field semantics; excluded unknown fields never become negatives. Null and absent counts are distinct. A positive field with zero compatible sample values is not a successful row conversion."
+  "labelEncoding": "Issuer-authored title/alias/description/type for model input resolve from exact locators in hash-pinned metadata. Reviewer definitions/evidence/targets and representation are label audit only and never enter v4 encoder text. Observed wire shape/counts derive from unchanged samples; raw record values do not enter features. Prior v3 corpus/run07 is immutable and its answer-bearing reviewer-text model features invalidate a fresh unseen-input claim. The unchanged source-family roles now support one corrected diagnostic fit, not a new DC holdout."
 }
