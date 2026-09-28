@@ -2,17 +2,20 @@
 // with real Studio recordings (../launch/rec) in browser frames. Every frame is a pure function of t.
 import { World } from './world.js';
 import { E, P, clamp, lerp, h, $, $$, css, fmt, rng } from '../launch/lib.js';
+import { buildWarp } from './warp.js';
 
-export const DUR = 104;
 const params = new URLSearchParams(location.search);
 const RENDER = params.has('render');
+const SCALE = +(params.get('scale') ?? 1), FPS = +(params.get('fps') ?? 30);
 if (RENDER) document.body.classList.add('render');
 const stage = $('#stage'), scenesEl = $('#scenes'), typeEl = $('#type'), labelsEl = $('#labels'), canvas = $('#gl');
 function fit() { if (RENDER) return; const k = Math.min(innerWidth / 1920, (innerHeight - 44) / 1080); stage.style.transform = `scale(${k}) translate(-50%, -50%)`; }
 addEventListener('resize', fit); fit();
 
-const [data, index, events] = await Promise.all(['../launch/data/city.json', '../launch/rec/index.json', '../launch/rec/events.json'].map((u) => fetch(u).then((r) => r.json())));
-const world = new World(canvas, data);
+const [data, index, events, VO, VOD] = await Promise.all(['../launch/data/city.json', '../launch/rec/index.json', '../launch/rec/events.json', 'vo/lines.json', 'vo/durations.json'].map((u) => fetch(u).then((r) => r.json())));
+const warp = buildWarp(VO, VOD); const W = warp.W;
+export const DUR = warp.DUR;
+const world = new World(canvas, data, SCALE);
 const B = data.buildings, hero = world.hero;
 const moves = events.filter((e) => e.type === 'move'), clicks = events.filter((e) => e.type === 'click');
 
@@ -97,9 +100,10 @@ function updWipes(t) {
 }
 
 /* ───────── grain ───────── */
-const grainCtx = $('#grain').getContext('2d'); const grainImg = grainCtx.createImageData(480, 270);
-function updGrain(t) {
-  const r = rng(Math.floor(t * 30) + 11); const d = grainImg.data;
+const grainEl = $('#grain'); grainEl.width = 480 * SCALE; grainEl.height = 270 * SCALE;
+const grainCtx = grainEl.getContext('2d'); const grainImg = grainCtx.createImageData(480 * SCALE, 270 * SCALE);
+function updGrain(T) {
+  const r = rng(Math.floor(T * FPS) + 11); const d = grainImg.data;
   for (let i = 0; i < d.length; i += 4) { const v = r() * 255; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
   grainCtx.putImageData(grainImg, 0, 0);
 }
@@ -142,20 +146,21 @@ class Screen {
     else this.rip.style.display = 'none';
   }
 }
-/** A recorded clip: pieces [recFrom, recTo, speed], zoom keys [recTime, scale, fx, fy]. */
-function clip(start, pieces, zoom) {
-  let acc = 0; const ps = pieces.map(([r0, r1, sp]) => { const p = { r0, r1, sp, f0: acc }; acc += (r1 - r0) / sp; return p; });
-  return { start, end: start + acc, ps, zoom };
+/** A recorded clip over authored [a, b]: recording ranges played at one speed that fills the film window, zoom keys [recTime, scale, fx, fy]. */
+function clip(a, b, ranges, zoom) {
+  const start = W(a), end = W(b); const total = ranges.reduce((n, [r0, r1]) => n + r1 - r0, 0); const sp = total / (end - start);
+  let acc = 0; const ps = ranges.map(([r0, r1]) => { const p = { r0, r1, sp, f0: acc }; acc += (r1 - r0) / sp; return p; });
+  return { a, b, start, end, ps, zoom, sp };
 }
-function clipAt(c, t) {
-  const lt = t - c.start; let p = c.ps[0]; for (const q of c.ps) if (lt >= q.f0) p = q;
+function clipAt(c, T) {
+  const lt = T - c.start; let p = c.ps[0]; for (const q of c.ps) if (lt >= q.f0) p = q;
   const r = clamp(p.r0 + (lt - p.f0) * p.sp, p.r0, p.r1);
   const k = c.zoom; let a = k[0], b = k[k.length - 1];
   if (r <= k[0][0]) b = a; else if (r >= b[0]) a = b; else for (let i = 0; i < k.length - 1; i++) if (r >= k[i][0] && r <= k[i + 1][0]) { a = k[i]; b = k[i + 1]; break; }
   const q = a === b ? 0 : E.inOutCubic(clamp((r - a[0]) / (b[0] - a[0])));
   return { r, sp: p.sp, z: lerp(a[1], b[1], q), fx: lerp(a[2], b[2], q), fy: lerp(a[3], b[3], q) };
 }
-const speedTag = (sp) => (sp === 1 ? 'Real time' : `${+sp.toFixed(1)}× speed`);
+const speedTag = (sp) => (Math.abs(sp - 1) < 0.06 ? 'Real time' : `${sp.toFixed(1)}× speed`);
 
 /* ───────── scenes ───────── */
 const SC = [];
@@ -440,11 +445,11 @@ head('m', [['Live on the map.', 'c-ink'], ['While it uploads.', 'c-forest']], 96
 const MAIN = { x: 80, y: 232, w: 1340 };
 const mainScr = new Screen(scenesEl, MAIN.w); mainScr.el.style.display = 'none';
 const CLIPS = {
-  explore: clip(48, [[13.2, 15.6, 1.2], [16.0, 25.6, 1.6]], [[13.2, 1, 960, 540], [15.6, 1.06, 960, 520], [16.0, 1.0, 960, 540], [16.8, 1.7, 1560, 250], [20.4, 1.7, 1560, 250], [21.4, 1, 960, 540], [24.6, 1.05, 960, 540], [25.6, 1.2, 1350, 620]]),
-  floors: clip(60.5, [[78.6, 87.0, 2.4]], [[78.6, 1.18, 1000, 480], [87, 1.3, 1000, 470]]),
-  check: clip(67, [[94.4, 99.8, 1.8]], [[94.4, 1.25, 700, 470], [96.9, 1.3, 700, 470], [97.6, 1.25, 1050, 560], [99.8, 1.3, 1050, 560]]),
-  under: clip(73.5, [[128.6, 133.6, 2]], [[128.6, 1.1, 960, 620], [133.6, 1.25, 960, 660]]),
-  proof: clip(80.4, [[106.3, 113.3, 2.8], [116.3, 119.3, 3]], [[106.3, 1, 960, 540], [107.2, 1.3, 1500, 460], [108.2, 1.1, 1150, 600], [109.6, 1, 960, 540], [113.3, 1.12, 960, 500], [116.3, 1.3, 900, 420], [119.3, 1.35, 900, 400]]),
+  explore: clip(48, 56, [[13.2, 15.6], [16.0, 25.6]], [[13.2, 1, 960, 540], [15.6, 1.06, 960, 520], [16.0, 1.0, 960, 540], [16.8, 1.7, 1560, 250], [20.4, 1.7, 1560, 250], [21.4, 1, 960, 540], [24.6, 1.05, 960, 540], [25.6, 1.2, 1350, 620]]),
+  floors: clip(60.5, 64, [[78.6, 87.0]], [[78.6, 1.18, 1000, 480], [87, 1.3, 1000, 470]]),
+  check: clip(67, 70, [[94.4, 99.8]], [[94.4, 1.25, 700, 470], [96.9, 1.3, 700, 470], [97.6, 1.25, 1050, 560], [99.8, 1.3, 1050, 560]]),
+  under: clip(73.5, 76, [[128.0, 133.6]], [[128.6, 1.1, 960, 620], [133.6, 1.25, 960, 660]]),
+  proof: clip(80.4, 84, [[106.3, 113.3], [116.3, 119.3]], [[106.3, 1, 960, 540], [107.2, 1.3, 1500, 460], [108.2, 1.1, 1150, 600], [109.6, 1, 960, 540], [113.3, 1.12, 960, 500], [116.3, 1.3, 900, 420], [119.3, 1.35, 900, 400]]),
 };
 // [clip, steps for the right column, kicker]
 const FOOT = {
@@ -455,20 +460,20 @@ const FOOT = {
   proof: [['Assign 3D ULPIN', 80.5], ['Property Card', 81.9], ['Verify', 83.4]],
 };
 const colEl = h(`<div class="abs" id="fcol" style="left:1470px;top:${MAIN.y + 30}px;width:370px"></div>`); scenesEl.appendChild(colEl);
-function footage(name, t, { enter = 'right' } = {}) {
+function footage(name, t, T, { enter = 'right' } = {}) {
   const c = CLIPS[name]; const s = mainScr; vis(s.el, true);
-  const lt = t - c.start, rt = c.end - t;
-  const pin = P(lt, 0, 0.75, E.outExpo), pout = P(t, c.end - 0.3, c.end, E.inCubic);
+  const lt = T - c.start;
+  const pin = P(lt, 0, 0.9, E.outExpo), pout = P(T, c.end - 0.35, c.end, E.inCubic);
   const drift = lt * 0.012;
   const rotY = enter === 'right' ? (1 - pin) * -24 : (1 - pin) * 24;
   css(s.el, { left: `${MAIN.x}px`, top: `${MAIN.y}px`, opacity: Math.min(1, pin * 1.5), transform: `perspective(2600px) translateX(${(1 - pin) * (enter === 'right' ? 420 : -420)}px) rotateY(${rotY}deg) scale(${1 + drift - pout * 0.02})` });
   return (async () => {
-    const { r, sp, z, fx, fy } = clipAt(c, t); await s.frame(r); s.view(z, fx, fy); s.pointer(r, z);
+    const { r, sp, z, fx, fy } = clipAt(c, T); await s.frame(r); s.view(z, fx, fy); s.pointer(r, z);
     s.tag.textContent = speedTag(sp); s.tag.classList.toggle('live', sp === 1);
     // right column: step list
     const steps = FOOT[name];
     if (colEl._for !== name) { colEl._for = name; colEl.innerHTML = `<div style="font:700 13px var(--mono);letter-spacing:.2em;color:var(--forest);display:flex;gap:10px;align-items:center"><i style="width:10px;height:10px;border-radius:50%;background:#d03b3b"></i>REAL STUDIO</div>${steps.map(([l], i) => `<div class="stp" style="margin-top:${i ? 26 : 40}px;display:flex;gap:18px;align-items:baseline"><b style="font:800 18px var(--mono);color:var(--forest)">${String(i + 1).padStart(2, '0')}</b><span style="font-size:34px;font-weight:750;letter-spacing:-.025em;line-height:1.1">${l}</span></div>`).join('')}`; }
-    vis(colEl, true); colEl.style.opacity = P(lt, 0.2, 0.7) * (1 - P(t, c.end - 0.3, c.end));
+    vis(colEl, true); colEl.style.opacity = P(lt, 0.2, 0.8) * (1 - P(T, c.end - 0.35, c.end));
     $$('.stp', colEl).forEach((el, i) => { const a = steps[i][1]; const active = t >= a && (i === steps.length - 1 || t < steps[i + 1][1]); const q = P(t, a, a + 0.4, E.outExpo); css(el, { opacity: t < a ? 0.22 : active ? 1 : 0.45, transform: `translateX(${(1 - q) * -14}px)`, color: active ? 'var(--ink)' : 'var(--muted)' }); });
   })();
 }
@@ -700,8 +705,8 @@ function updChrome(t, s) {
 /* ───────── seek ───────── */
 const FOOTAGE = [['explore', 48, 56], ['floors', 60.5, 64], ['check', 67, 70], ['under', 73.5, 76], ['proof', 80.4, 84]];
 let lastT = -1;
-async function seek(t) {
-  t = clamp(t, 0, DUR - 1e-3);
+async function seek(T) {
+  T = clamp(T, 0, DUR - 1e-3); const t = warp.inv(T);
   const s = SC.find((x) => t >= x.a && t < x.b) ?? SC[SC.length - 1];
   for (const x of SC) vis(x.el, x === s);
   updChrome(t, s);
@@ -709,16 +714,17 @@ async function seek(t) {
   const jobs = [];
   jobs.push(Promise.resolve(s.upd(t)));
   const f = FOOTAGE.find(([, a, b]) => t >= a && t < b);
-  if (f) { jobs.push(footage(f[0], t, { enter: f[0] === 'explore' ? 'right' : 'left' })); $('#foot').style.opacity = 0; } else { vis(mainScr.el, false); vis(colEl, false); }
+  if (f) { jobs.push(footage(f[0], t, T, { enter: f[0] === 'explore' ? 'right' : 'left' })); $('#foot').style.opacity = 0; } else { vis(mainScr.el, false); vis(colEl, false); }
   world3d(t);
   label.end();
-  updType(t); updWipes(t); updGrain(t);
+  updType(t); updWipes(t); updGrain(T);
   if (!(t >= 96)) $('#fade').style.opacity = 0;
   await Promise.all(jobs);
   lastT = t;
 }
 window.seek = seek; window.DUR = DUR;
-window.cues = { sim, fileLand, fileSeal, FILES, CLIPS, WALL, events };
+const filmOfRec = (r) => { for (const c of Object.values(CLIPS)) for (const p of c.ps) if (r >= p.r0 && r <= p.r1) return c.start + p.f0 + (r - p.r0) / p.sp; return null; };
+window.cues = { sim, fileLand, fileSeal, FILES, WALL, events, W, inv: warp.inv, DUR, VO, VOD, filmOfRec };
 
 await document.fonts.load('800 100px "Noto Sans"'); await document.fonts.load('600 20px "Noto Sans Mono"'); await document.fonts.load('600 30px "Noto Sans Devanagari"'); await document.fonts.ready;
 window.renderAudio = async () => { const { score } = await import('./score.js'); return score(window.cues); };

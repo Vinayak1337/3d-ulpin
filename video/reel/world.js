@@ -125,9 +125,9 @@ const PAL = {
 };
 
 export class World {
-  constructor(canvas, data) {
+  constructor(canvas, data, scale = 1) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(1);
+    this.renderer.setPixelRatio(scale);
     this.renderer.setSize(1920, 1080, false);
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(34, 1920 / 1080, 1, 12000);
