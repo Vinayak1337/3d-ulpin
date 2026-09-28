@@ -58,7 +58,8 @@ export function BuildingInspector({ feature, register, model, ledger, registerPe
         {known ? <span className="ul-num">{formatMeasure(feature.height.value, 'm', 1)}</span> : <StatusBadge status="Unknown" />}
         {evidence.height.slice(0, 1).map((ref) => (
           <EvidenceChip key={ref.locator.text} kind="feature" source={feature.height.originalValue !== undefined ? 'Roof height' : ref.label}
-            locator={feature.height.originalValue !== undefined ? `${String(feature.height.originalValue)} ${feature.height.originalUnit ?? ''}`.trim() : ref.locator.text}
+            locator={feature.height.originalValue !== undefined ? sourceValue(feature.height.originalValue, feature.height.originalUnit, 2) : ref.locator.text}
+            exact={feature.height.originalValue !== undefined ? sourceValue(feature.height.originalValue, feature.height.originalUnit) : undefined}
             onOpen={() => openEvidence(ref)} />
         ))}
       </span>
@@ -162,4 +163,13 @@ function RightsSummary({ ledger }: { ledger: BuildingLedger }) {
       ]} />
     </>
   );
+}
+
+/** A source value with its unit; rounded for display when `digits` is given (the exact value stays on hover). */
+function sourceValue(value: unknown, unit: string | null | undefined, digits?: number): string {
+  const n = Number(value);
+  const text = digits !== undefined && typeof value !== 'boolean' && String(value).trim() !== '' && Number.isFinite(n)
+    ? n.toLocaleString('en-IN', { maximumFractionDigits: digits })
+    : String(value);
+  return `${text} ${unit ?? ''}`.trim();
 }
