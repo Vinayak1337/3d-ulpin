@@ -37,3 +37,6 @@
   .body { grid-template-columns: minmax(0, 1fr); }
   .canvasWrap { min-height: 420px; }
 }
+
+.people { display: flex; flex-direction: column; gap: 2px; }
+.residentsSource { padding: var(--ui-space-2, 8px) var(--ui-space-3, 12px); margin: 0; }

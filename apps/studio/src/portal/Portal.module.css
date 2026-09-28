@@ -115,7 +115,7 @@
 .form :global(.ul-field) { max-width: none; }
 .form textarea { min-height: 120px; resize: vertical; font: 400 16px/24px var(--ui-font-sans); }
 .twoCol { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.kindPick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.kindPick { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 .kindPick label {
   display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-12); cursor: pointer; background: var(--ui-surface);
 }

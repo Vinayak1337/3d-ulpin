@@ -3,12 +3,12 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { DownloadSimple, FilePlus, Intersect, MapTrifold, QrCode, WarningCircle } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { DeviationInput, MultiPolygon, Pick, SceneEngine, SceneState } from '@ulpin/scene';
-import type { BuildingLedger } from '@ulpin/api-client/draft';
+import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import {
   Badge, Banner, Button, DataTable, DescriptionList, EmptyState, EvidenceChip, Icon, LevelRail, Menu, Panel, RevisionTimeline, Skeleton,
   StatusBadge, Tabs, formatDate, formatDateTime, type StatusWord,
 } from '@ulpin/ui';
-import { useAreaContext, useBuildingLedger, useBuildingRegister, type BuildingRegister } from '../../api/queries';
+import { useAreaContext, useBuildingLedger, useBuildingRegister, useBuildingResidents, type BuildingRegister } from '../../api/queries';
 import { shortHash, type SpaceWorkflow } from '../../local/workflow';
 import { buildingModel, type SpaceModel } from '../../model/building';
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
@@ -20,12 +20,12 @@ import { polygonsOf } from '../map/footprints';
 import { useBuildingScene } from '../map/useBuildingScene';
 import { CheckGroups } from '../review/CheckGroups';
 import { useBuildingActions, useBuildingWorkflow, useClearAction, useRecordAction } from '../workflow/useWorkflow';
-import { cityJson, download, fileStem, unitsCsv } from './exporters';
+import { cityJson, download, fileStem, occupancyLabel, printRegister, registerRows, registerWorkbook, unitsCsv } from './exporters';
 import { useMapView } from '../map/useMapView';
 import styles from './RegisterPage.module.css';
 
-type Tab = 'units' | 'shares' | 'documents' | 'checks' | 'history';
-const TABS: Tab[] = ['units', 'shares', 'documents', 'checks', 'history'];
+type Tab = 'units' | 'residents' | 'shares' | 'documents' | 'checks' | 'history';
+const TABS: Tab[] = ['units', 'residents', 'shares', 'documents', 'checks', 'history'];
 
 /** S12/S13 Register: the building in 3D beside its units, shares, documents, checks and history. */
 export function RegisterPage() {
@@ -68,6 +68,7 @@ function Register({ register }: { register: BuildingRegister }) {
   const property = register.property;
   const context = useAreaContext(register.area.id).data;
   const ledger = useBuildingLedger(property.id).data;
+  const residents = useBuildingResidents(property.id).data;
   const workflow = useBuildingWorkflow(property.id).data;
   const actions = useBuildingActions(property.id).data ?? [];
   const model = useMemo(() => buildingModel(register), [register]);
@@ -140,9 +141,11 @@ function Register({ register }: { register: BuildingRegister }) {
             {compare ? 'Close compare' : 'Deviation check'}
           </Button>
           <Menu label="Export" icon={DownloadSimple} items={[
+            { label: 'Full register (Excel)', disabled: !model.levels.length, onSelect: () => download(`${stem}-register.xlsx`, registerWorkbook(registerRows(register, model, ledger, residents, workflowMap)), '') },
+            { label: 'Register extract (PDF)', disabled: !model.levels.length, onSelect: () => printRegister(registerRows(register, model, ledger, residents, workflowMap), property.name) },
             { label: 'CityJSON 2.0', disabled: !model.levels.length, onSelect: () => download(`${stem}.city.json`, cityJson(register, model, ledger, workflowMap), 'application/city+json') },
             { label: 'Units table (CSV)', disabled: !model.spaces.length, onSelect: () => download(`${stem}-units.csv`, unitsCsv(model, ledger, workflowMap), 'text/csv') },
-            { label: 'Register record (JSON)', onSelect: () => download(`${stem}-register.json`, JSON.stringify({ register, ledger }, null, 2), 'application/json') },
+            { label: 'Register record (JSON)', onSelect: () => download(`${stem}-register.json`, JSON.stringify({ register, ledger, residents }, null, 2), 'application/json') },
           ]} />
           <div className={styles.primary}>
             <Button variant="primary" icon={QrCode} disabled={Boolean(cardBlocked)} onClick={() => setCardOpen(true)}>Property Card</Button>
@@ -184,6 +187,7 @@ function Register({ register }: { register: BuildingRegister }) {
                 <Tabs label="Register sections" value={tab} onChange={(value) => set({ tab: value === 'units' ? null : value })}
                   tabs={[
                     { value: 'units', label: 'Units', count: units.length },
+                    { value: 'residents', label: 'Residents', count: residents ? residents.units.reduce((n, u) => n + u.occupants.length, 0) : undefined },
                     { value: 'shares', label: 'Shares' },
                     { value: 'documents', label: 'Documents', count: ledger?.sources.length ?? register.sources.length },
                     { value: 'checks', label: 'Checks', count: ledger?.checks.filter((c) => c.state === 'blocking' || c.state === 'needs_review').length },
@@ -194,6 +198,10 @@ function Register({ register }: { register: BuildingRegister }) {
                     <UnitsTable register={register} units={units} levelLabel={level?.label ?? null} levels={new Map(model.levels.map((l) => [l.id, l.label]))}
                       ledger={ledger} workflow={workflowMap} selectedId={record?.id ?? null}
                       onSelect={(s) => set({ record: s.id === record?.id ? null : s.id, level: s.levelId })} onClearLevel={() => set({ level: null, record: null })} />
+                  ) : tab === 'residents' ? (
+                    <Residents residents={residents} levelLabel={level?.label ?? null} selectedId={record?.id ?? null}
+                      onSelect={(spaceId) => { const s = model.spaceById.get(spaceId); if (s) set({ record: s.id === record?.id ? null : s.id, level: s.levelId }); }}
+                      onClearLevel={() => set({ level: null, record: null })} />
                   ) : tab === 'shares' ? (
                     <Shares ledger={ledger} model={model} workflow={workflowMap} />
                   ) : tab === 'documents' ? (
@@ -280,6 +288,49 @@ function UnitsTable({ register, units, levelLabel, levels, ledger, workflow, sel
           { header: 'Status', cell: (s) => <StatusBadge status={unitStatus(workflow.get(s.id), ledger, s.id)} /> },
         ]}
       />
+    </div>
+  );
+}
+
+function Residents({ residents, levelLabel, selectedId, onSelect, onClearLevel }: {
+  residents: BuildingResidents | null | undefined; levelLabel: string | null; selectedId: string | null; onSelect: (spaceId: string) => void; onClearLevel: () => void;
+}) {
+  if (!residents) {
+    return (
+      <Panel title="Residents" aside={<StatusBadge status="Not assessed" />}>
+        <p className="ul-help">No register extract is linked to this building yet. Holders come from the deed index; residents from the society or tenant register.</p>
+      </Panel>
+    );
+  }
+  const rows = levelLabel ? residents.units.filter((u) => u.level === levelLabel) : residents.units;
+  const people = rows.reduce((n, u) => n + u.occupants.length, 0);
+  const tone = { owner_occupied: 'success', rented: 'info', vacant: 'neutral' } as const;
+  return (
+    <div className="ul-panel">
+      <div className={styles.filterBar}>
+        <span>{levelLabel ? <>Residents on <b>{levelLabel}</b> · </> : null}<span className="ul-num">{people}</span> people in <span className="ul-num">{rows.length}</span> units · as of {formatDate(residents.asOf)}</span>
+        {levelLabel ? <button type="button" className="ul-btn ul-btn--ghost" onClick={onClearLevel}>All floors</button> : null}
+      </div>
+      <DataTable
+        caption={levelLabel ? `Residents on ${levelLabel}` : 'Registered holders and residents of each unit'}
+        rows={rows}
+        rowKey={(u) => u.spaceId}
+        selectedKey={selectedId}
+        onRowClick={(u) => onSelect(u.spaceId)}
+        columns={[
+          { header: 'Level', cell: (u) => u.level, width: '8%' },
+          { header: 'Unit', cell: (u) => <strong>{u.unit}</strong>, width: '13%' },
+          { header: 'Registered holders', cell: (u) => (
+            <span className={styles.people}>{u.holders.map((h) => <span key={h.name}>{h.name}{u.holders.length > 1 ? <span className="ul-muted"> · {h.sharePct} %</span> : null}</span>)}
+              <span className="ul-caption ul-mono">{u.holders[0]?.deedNo} · {formatDate(u.holders[0]?.since ?? '')}</span></span>
+          ), width: '30%' },
+          { header: 'Occupancy', cell: (u) => <Badge tone={tone[u.occupancy]} icon={null}>{occupancyLabel(u.occupancy)}</Badge>, width: '14%' },
+          { header: 'Living here', cell: (u) => (u.occupants.length ? (
+            <span className={styles.people}>{u.occupants.map((o) => <span key={o.name + o.relation}>{o.name} <span className="ul-muted">· {o.relation}</span></span>)}</span>
+          ) : <span className="ul-muted">No one registered</span>) },
+        ]}
+      />
+      <p className={`ul-caption ${styles.residentsSource}`}>{residents.source}. For official use.</p>
     </div>
   );
 }

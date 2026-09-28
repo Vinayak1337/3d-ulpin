@@ -18,6 +18,8 @@ interface Picked {
   state: 'inspecting' | 'ready' | 'not-gis' | 'failed';
   inspection?: Inspection;
   error?: string;
+  /** Answered by the NYC upload profile (demo import) rather than the area import. */
+  via?: 'demo' | 'local';
 }
 
 interface Mapping {
@@ -117,6 +119,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
 
   const gis = files.find((f) => f.state === 'ready');
+  const demoUpload = files.length > 0 && files.some((f) => f.via === 'demo');
   const fields = gis?.inspection?.fields ?? [];
   const kindField = fields.find((f) => /^(kind|type|class|category)$/i.test(f.name))?.name ?? null;
 
@@ -128,11 +131,16 @@ function NewFiles({ onClose }: { onClose: () => void }) {
     for (const item of picked.filter((p) => p.state === 'inspecting')) {
       const body = new FormData();
       body.set('file', item.file);
-      const result = demoImportEnabled
+      // The NYC upload profile answers its own files; any other file goes to the area import.
+      const demo = demoImportEnabled
         ? await inspectDemoFile(item.file).then(data => ({ data, error: undefined, response: new Response() })).catch(error => ({ data: undefined, error: { message: error.message }, response: new Response(null, { status: 400 }) }))
-        : await api.POST('/api/v1/import-packages/inspect', { body: body as never, bodySerializer: (b) => b as unknown as FormData });
+        : null;
+      const via: 'demo' | 'local' = demo?.data ? 'demo' : 'local';
+      const result = demo?.data ? demo : GIS.test(item.file.name)
+        ? await api.POST('/api/v1/import-packages/inspect', { body: body as never, bodySerializer: (b) => b as unknown as FormData })
+        : demo!;
       setFiles((current) => current.map((f) => (f.file !== item.file ? f
-        : result.data ? { ...f, state: 'ready', inspection: result.data } : { ...f, state: 'failed', error: new ApiError(result.response.status, '', result.error).message })));
+        : result.data ? { ...f, state: 'ready', inspection: result.data, via } : { ...f, state: 'failed', error: new ApiError(result.response.status, '', result.error).message })));
       if (result.data) {
         const height = result.data.fields.find((f) => /height|hgt/i.test(f.name) && !/ground/i.test(f.name));
         setMapping((m) => m ?? {
@@ -140,14 +148,14 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           heightField: height?.name ?? '', heightUnit: '',
           heightMeaning: '',
         });
-        if (!demoImportEnabled) setSummary(await kindSummary(item.file));
+        if (via === 'local') setSummary(await kindSummary(item.file));
       }
     }
   };
 
   const importFile = useMutation({
     mutationFn: async () => {
-      if (demoImportEnabled) return startDemoImport(files.map(item => item.file));
+      if (demoUpload) return startDemoImport(files.map(item => item.file));
       if (!gis?.inspection || !mapping) throw new Error('Choose a GIS file first.');
       const body = new FormData();
       body.set('file', gis.file);
@@ -167,7 +175,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
     onSuccess: async (pkg) => { await client.invalidateQueries(); navigate(`/studio/areas/${pkg.areaId}?package=${pkg.id}`); },
   });
 
-  const blocked = demoImportEnabled ? (!files.length ? 'add the NYC layer files or their ZIP' : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null) : !gis ? 'add a GIS file (GeoJSON, GeoPackage or a zipped shapefile)'
+  const blocked = demoUpload ? (!files.length ? 'add the NYC layer files or their ZIP' : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null) : !gis ? 'add a GIS file (GeoJSON, GeoPackage or a zipped shapefile)'
     : gis.inspection?.quarantine?.accepted === 0 ? 'no source geometries were accepted'
     : !gis.inspection?.sourceCrs ? 'the file states no coordinate reference system'
       : !mapping?.idField ? 'choose the field that identifies each feature'
@@ -214,7 +222,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
                 { header: 'File', cell: (f) => <span className="ul-id">{f.file.name}</span> },
                 { header: 'Detected', cell: (f) => (f.state === 'ready' ? formatLabel(f.inspection!.format) : f.state === 'inspecting' ? 'Reading…' : f.state === 'not-gis' ? 'Document or table' : <span className="ul-error"><Icon icon={Warning} size={16} />{f.error}</span>) },
                 { header: 'CRS', cell: (f) => (f.inspection ? (f.inspection.sourceCrs ?? <Badge tone="warning" icon={Warning}>CRS unverified</Badge>) : '—') },
-                { header: 'Contents', numeric: true, cell: (f) => demoImportEnabled && f.inspection?.demoContents ? f.inspection.demoContents : (f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—' : `${formatCount(f.inspection.featureCount)} features`) },
+                { header: 'Contents', numeric: true, cell: (f) => f.via === 'demo' && f.inspection?.demoContents ? f.inspection.demoContents : (f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—' : `${formatCount(f.inspection.featureCount)} features`) },
                 { header: 'Mapping', cell: (f) => (f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : f.state === 'not-gis' ? <Badge icon={null}>Kept as evidence</Badge> : '—') },
                 ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash} aria-label={`Remove ${f.file.name}`} onClick={() => setFiles((c) => c.filter((x) => x !== f))} /> }] : []),
               ]}
@@ -222,7 +230,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           </div>
         ) : null}
 
-        {!demoImportEnabled && gis?.inspection && mapping && step >= 1 ? (
+        {!demoUpload && gis?.inspection && mapping && step >= 1 ? (
           <section className={styles.readAs} aria-label="How the file is read">
             <header className={styles.readAsHead}>
               <span className="ul-heading">{step === 2 ? 'It will be read like this' : 'We propose to read it like this'}</span>
@@ -281,7 +289,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           </section>
         ) : null}
 
-        {!demoImportEnabled && step === 2 && gis?.inspection ? (
+        {!demoUpload && step === 2 && gis?.inspection ? (
           <Banner tone="info">
             Start import retains <span className="ul-id">{gis.file.name}</span> unchanged (SHA-256 <span className="ul-mono">{gis.inspection.sourceSha256.slice(0, 12)}…</span>) and creates an import to review. Nothing is recorded until you review and record it.
           </Banner>
