@@ -3803,6 +3803,51 @@
         "No 1–7 GB throughput, memory, global placement or frontend rendering qualification follows.",
         "Runtime IDs belong to stopped isolated services, not the standing API."
       ]
+    },
+    {
+      "manifest": "/Users/vinayak/.codex/task-data/ai-04a-docling/trial-plan-v2.json",
+      "manifestSha256": "ce660cb79cc60021eebf1441f3de242afbb991e72a8bde7d0499c84affc11ea2",
+      "guide": "scripts/usp/document-models/README.md",
+      "issuer": "U.S. Geological Survey",
+      "dataset": "USGS Fact Sheet 2025-3036",
+      "datasetUrl": "https://pubs.usgs.gov/publication/fs20253036/full",
+      "originalUrl": "https://pubs.usgs.gov/fs/2025/3036/fs20253036.pdf",
+      "acquiredAt": null,
+      "checkedOn": "2026-09-28",
+      "geography": "Upper Colorado River Basin, United States; document extraction research only",
+      "apiInstallation": "offline-extraction-trial-only",
+      "standingInstallation": false,
+      "productionRuntimeVerified": false,
+      "content": {
+        "externalPath": "/Users/vinayak/.codex/task-data/ai-04a-docling/usgs-fact-sheet-2025-3036.pdf",
+        "bytes": 6219868,
+        "sha256": "5c1576e603b4bb66ff4725329432be66941853838d6ab02544e7b40a0071b5a7",
+        "format": "pdf",
+        "pages": 4,
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "reference": "https://www.usgs.gov/faqs/are-usgs-reportspublications-copyrighted",
+        "note": "Local evaluation of USGS-authored text; selected regions avoid potentially third-party imagery. No model output is training ground truth."
+      },
+      "reference": {
+        "description": "Document-only extraction evaluation; no geometry or coordinate transform",
+        "globalPlacement": "not_applicable"
+      },
+      "runtimeEvidence": {
+        "scope": "One page-1 title region; CPU float32; exact title and heading; token-truncated paragraph absent from Markdown; no API/OCR production qualification",
+        "receipt": "/Users/vinayak/.codex/task-data/ai-04a-docling/run-06/trial-receipt.json",
+        "receiptSha256": "a94d6ad788d06d9d76c3b2574a66753a54fb08fa86c60d0dc30e144924485816",
+        "assessment": "/Users/vinayak/.codex/task-data/ai-04a-docling/cpu-diagnostic-assessment.json",
+        "assessmentSha256": "0316fd92806adff195cc1b36cb88d5f9c490d516c52f8f7159725cde5691e1d1",
+        "codeCommit": "3404d7747e69b458537b59219551449d0010a0d8"
+      },
+      "limitations": [
+        "Exact acquisition timestamp was not retained in the trial plan",
+        "No scanned-map CPU qualification",
+        "Model-derived output remains separate from native text and learning labels",
+        "No parcel, ownership, Indian registry or whole-document accuracy claim"
+      ]
     }
   ],
   "offlineLearningCorpus": {
