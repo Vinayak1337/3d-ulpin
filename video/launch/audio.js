@@ -2,7 +2,8 @@
 const SR = 48000;
 const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 
-export async function soundtrack({ dur, hits, blips, ticks, seals }) {
+export async function soundtrack({ dur, hits, blips, ticks, seals, drums, hats, arps, curve }) {
+  const within = (w) => (t) => w.some(([a, b]) => t >= a && t < b);
   const ctx = new OfflineAudioContext(2, Math.ceil(dur * SR), SR);
   const master = ctx.createGain(); master.gain.value = 0.9;
   const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 3.5; comp.attack.value = 0.01; comp.release.value = 0.25;
@@ -20,7 +21,7 @@ export async function soundtrack({ dur, hits, blips, ticks, seals }) {
   const send = (node, wet = 0.3) => { const g = ctx.createGain(); g.gain.value = wet; node.connect(g).connect(verbIn); };
 
   // intensity over time (0..1)
-  const I = [[0, 0.15], [3, 0.25], [9, 0.45], [14, 0.3], [26, 0.35], [37, 0.45], [53, 0.6], [78, 0.8], [92, 0.7], [108, 0.75], [134, 0.6], [143, 0.55], [157, 0.5], [175, 0.8], [184, 1.0], [188, 0.45], [dur, 0.2]];
+  const I = curve;
   const inten = (t) => { for (let i = 1; i < I.length; i++) if (t <= I[i][0]) { const [a, va] = I[i - 1], [b, vb] = I[i]; return va + (vb - va) * (t - a) / (b - a); } return 0.2; };
 
   // pad: Dm9 – Bbmaj7 – Fmaj7 – C(add9), 10 s per chord
@@ -49,11 +50,10 @@ export async function soundtrack({ dur, hits, blips, ticks, seals }) {
 
   // rhythm: 96 bpm
   const beat = 60 / 96;
-  const drumOn = (t) => (t >= 53 && t < 143) || (t >= 175 && t < 187.6);
-  const hatOn = (t) => (t >= 78 && t < 134) || (t >= 179 && t < 187.6);
+  const drumOn = within(drums), hatOn = within(hats);
   for (let t = 0; t < dur; t += beat) {
     const bi = Math.round(t / beat);
-    if (drumOn(t) && (t < 134 || bi % 2 === 0)) {
+    if (drumOn(t)) {
       const o = ctx.createOscillator(); o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.16);
       const g = ctx.createGain(); g.gain.setValueAtTime(0.55 * (0.6 + 0.4 * inten(t)), t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
       o.connect(g).connect(master); o.start(t); o.stop(t + 0.45);
@@ -65,7 +65,7 @@ export async function soundtrack({ dur, hits, blips, ticks, seals }) {
     }
   }
   // arpeggio (16ths) on chord tones
-  const arpOn = (t) => (t >= 56 && t < 92) || (t >= 108 && t < 122) || (t >= 176 && t < 187.6);
+  const arpOn = within(arps);
   for (let t = 0, i = 0; t < dur; t += beat / 2, i++) {
     if (!arpOn(t)) continue;
     const notes = chords[Math.floor(t / CH) % 4]; const n = notes[[1, 2, 3, 4, 3, 2][i % 6]] + 12;
