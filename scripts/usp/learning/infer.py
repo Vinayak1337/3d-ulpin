@@ -26,11 +26,16 @@ def main() -> None:
     if report["corpus"]["fileSha256"] != sha256_file(args.corpus) or report["base"]["revision"] != BASE_REVISION:
         raise ValueError("run corpus or base revision mismatch")
     corpus, examples = load_examples(args.corpus, args.originals_dir)
-    holdout = [item for item in examples if item["split"] == "holdout"]
+    evaluated_split = "holdout" if corpus["schemaVersion"].endswith("-v2") else "evaluation"
+    holdout = [item for item in examples if item["split"] == evaluated_split]
     tokenizer, model = load_base(args.base_dir)
     if args.model == "tuned":
         load_adapter(model, args.candidate_dir / report["candidate"]["file"], report["candidate"]["sha256"])
-    threshold = report["comparison"]["tunedTrain" if args.model == "tuned" else "baseTrain"]["trainCalibratedThreshold"]
+    if corpus["schemaVersion"].endswith("-v2"):
+        threshold = report["comparison"]["tunedTrain" if args.model == "tuned" else "baseTrain"]["trainCalibratedThreshold"]
+    else:
+        key = "savedReloadedTuned" if args.model == "tuned" else "base"
+        threshold = report["comparison"][key]["calibration"]["decisionThreshold"]
     with torch.no_grad():
         scores = score_matrix(tokenizer, model, holdout, corpus["targets"])
     print(json.dumps(metrics(holdout, scores, threshold), indent=2, sort_keys=True))
