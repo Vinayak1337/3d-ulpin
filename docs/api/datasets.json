@@ -3752,6 +3752,59 @@
       ]
     }
   ],
+  "retainedExternalSources": [
+    {
+      "manifest": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/receipt.json",
+      "manifestSha256": "ce1c4cb35d642682cb3e49bbcbb84137910fd6673716e954e8f577df2b0a9f3d",
+      "guide": "docs/api/README.md#streamed-source-profiles-and-recipes-ai-03b",
+      "issuer": "City of New York Office of Technology and Innovation",
+      "dataset": "BUILDING 5zhs-2jue",
+      "datasetUrl": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue/about_data",
+      "originalUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?%24select=the_geom%2Cdoitt_id%2Cbin%2Cbase_bbl%2Cheight_roof%2Cground_elevation%2Cfeature_code%2Cgeom_source%2Clast_edited_date&%24where=feature_code%3D%272100%27&%24order=doitt_id&%24limit=30000",
+      "acquiredAt": "2026-09-28T03:49:03.433356+00:00",
+      "geography": "New York City, USA; unchanged source coordinates",
+      "selection": {
+        "featureCode": "2100",
+        "orderedBy": "doitt_id",
+        "limit": 30000,
+        "meaning": "bounded first 30000 source features, not all NYC buildings"
+      },
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "standingInstallation": false,
+      "content": {
+        "externalPath": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/nyc-building-30000-original.geojson",
+        "bytes": 19115995,
+        "sha256": "ee9665242c13a9802fbb260722248dd0009d0076f52b381c0c95338b26fa0737",
+        "featureCount": 30000,
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "reference": "https://www.nyc.gov/opendata/get-started/FAQs",
+        "note": "Official NYC Open Data FAQ reports no use restrictions; local private source inspection only. Issuer does not warrant data accuracy."
+      },
+      "reference": {
+        "description": "GeoJSON RFC 7946 export; global placement not qualified by this receipt",
+        "globalPlacement": "not_qualified"
+      },
+      "runtimeEvidence": {
+        "baselineCommit": "867fe08afcae4cb0bd4766dc6b41ad8b8ef3a68a",
+        "baselineReceipt": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/runtime-30000.json",
+        "baselineReceiptSha256": "8af9b247a22f8da44423b5804e660a1e789683730a7f5ac7d83298cf3e9093b1",
+        "correctionCommit": "c16c5f277da6e9fad9e534de02bf2571d867dda7",
+        "correctionReceipt": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/runtime-correction.json",
+        "correctionReceiptSha256": "1f9492bd8a630123db2b038444c382905c526045965dd1f9e19974c08e625d72",
+        "scope": "Retained original, 300 raw chunks, provisional then sealed field inventory, operator-approved exact key/polygon mapping; targeted replay, text-value and original-integrity corrections."
+      },
+      "limitations": [
+        "This is one bounded query response and may omit later rows or concurrent updates.",
+        "Building source identifiers are not parcel ULPINs or ownership evidence.",
+        "No geometry repair or global placement qualification is claimed.",
+        "No AI normalization or learned production routing is qualified.",
+        "No 1–7 GB throughput, memory, global placement or frontend rendering qualification follows.",
+        "Runtime IDs belong to stopped isolated services, not the standing API."
+      ]
+    }
+  ],
   "offlineLearningCorpus": {
     "manifest": "docs/api/learning-corpus.json",
     "manifestSha256": "60fb2e7044f084078a7b7f14bcb3e2a152eff11a7c878143d43b885a8e502af0",
