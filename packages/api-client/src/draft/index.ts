@@ -244,7 +244,12 @@ export interface PublicMap {
  * Requests from the public (REQUEST-01): a citizen asks for a building's register, or for a correction to
  * a released record. Officers review them in the Studio. The applicant's contact is never public.
  */
-export type RequestKind = 'register' | 'correction';
+/**
+ * register: record a building's floors and flats from the applicant's documents; floors: add or update
+ * floor data (an extension, a new plan); correction: a level, area or share is wrong; residents: change
+ * of holder or of the people living in a unit; copy: a certified register extract; other: anything else.
+ */
+export type RequestKind = 'register' | 'floors' | 'correction' | 'residents' | 'copy' | 'other';
 export type RequestState = 'submitted' | 'in_review' | 'accepted' | 'rejected';
 
 /** POST /api/v1/public/requests answers with this; GET /api/v1/public/requests/{ref} tracks it. */
@@ -285,4 +290,28 @@ export interface BuildingImport {
   levels: number;
   units: number;
   files: Array<{ name: string; detected: string; state: 'queued' | 'running' | 'saved'; detail: string }>;
+}
+
+/** One person on a unit's register. */
+export interface UnitOccupant { name: string; relation: string; since: string; registeredVia: string }
+
+/**
+ * GET /api/v1/buildings/{buildingId}/residents — RIGHTS-01 / REGISTER-02: the registered holders of each
+ * unit (from the deed index) and the people registered as living there (society or tenant register).
+ * Officer-only; never part of a public projection.
+ */
+export interface BuildingResidents {
+  buildingId: string;
+  /** Date of the register extract. */
+  asOf: string;
+  /** The registers the entries come from. */
+  source: string;
+  units: Array<{
+    spaceId: string;
+    unit: string;
+    level: string;
+    occupancy: 'owner_occupied' | 'rented' | 'vacant';
+    holders: Array<{ name: string; sharePct: number; since: string; deedNo: string }>;
+    occupants: UnitOccupant[];
+  }>;
 }

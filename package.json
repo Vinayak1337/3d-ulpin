@@ -13,7 +13,7 @@
     "web:build": "pnpm --filter @ulpin/web build",
     "web:start": "pnpm --filter @ulpin/web start",
     "web:typecheck": "pnpm --filter @ulpin/web typecheck",
-    "studio:demo": "ULPIN_DEMO_IMPORT=1 VITE_DEMO_IMPORT=1 VITE_LOCAL_DATA=off pnpm --filter @ulpin/studio dev",
+    "studio:demo": "ULPIN_DEMO_IMPORT=1 VITE_DEMO_IMPORT=1 VITE_LOCAL_DATA=on pnpm --filter @ulpin/studio dev",
     "studio:dev": "pnpm --filter @ulpin/studio dev",
     "studio:build": "pnpm --filter @ulpin/studio build",
     "studio:typecheck": "pnpm --filter @ulpin/api-client --filter @ulpin/ui --filter @ulpin/scene --filter @ulpin/studio typecheck",

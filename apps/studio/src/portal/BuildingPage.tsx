@@ -9,7 +9,7 @@ import styles from './Portal.module.css';
 
 /**
  * A building by its 3D ULPIN: its public identity, a view-only 3D view, its released records, and a way to
- * request its register (when no floors are recorded yet) or a correction.
+ * request its register (when no floors are recorded yet), new floor data, a correction, a change of holder or a copy.
  */
 export function BuildingPage() {
   const { buildingId } = useParams();
@@ -77,9 +77,14 @@ export function BuildingPage() {
           ) : null}
           {levels ? (
             <div className={styles.cta}>
-              <span className="portal-h3">Something wrong in this building's record?</span>
-              <p className="portal-body-sm ul-muted">Ask the land records office to correct it. Attach your deed or plan.</p>
-              <Link to={`${request}&kind=correction`} className="ul-btn">Request a correction <Icon icon={ArrowRight} size={16} /></Link>
+              <span className="portal-h3">Update this building's record</span>
+              <p className="portal-body-sm ul-muted">Send new floor data, report a wrong value, register a change of holder or tenant, or ask for a certified copy. Attach your deed or plan.</p>
+              <div className="ul-row" style={{ flexWrap: 'wrap' }}>
+                <Link to={`${request}&kind=floors`} className="ul-btn ul-btn--primary">Add or update floor data <Icon icon={ArrowRight} size={16} /></Link>
+                <Link to={`${request}&kind=correction`} className="ul-btn">Request a correction</Link>
+                <Link to={`${request}&kind=residents`} className="ul-btn">Change of holder or residents</Link>
+                <Link to={`${request}&kind=copy`} className="ul-btn">Certified copy</Link>
+              </div>
             </div>
           ) : (
             <div className={styles.cta}>

@@ -5,6 +5,7 @@ import type { PublicRequestStatus, RequestKind } from '@ulpin/api-client/draft';
 import { Button, EmptyState, Icon, Skeleton, UlpinCode } from '@ulpin/ui';
 import { Crumbs } from './PortalFrame';
 import { fileRequest, usePublicBuilding } from './queries';
+import { REQUEST_KINDS, requiresFloors } from '../local/requestKinds';
 import styles from './Portal.module.css';
 
 const RELATIONS = ['Owner', 'Joint owner', 'Tenant', 'Resident association', 'Builder or developer', 'Legal heir', 'Other'];
@@ -20,7 +21,8 @@ export function RequestPage() {
   const building = usePublicBuilding(buildingId);
   const b = building.data;
   const hasFloors = Boolean(b?.storeys.length);
-  const [kind, setKind] = useState<RequestKind>(params.get('kind') === 'correction' || recordId ? 'correction' : 'register');
+  const asked = params.get('kind') as RequestKind | null;
+  const [kind, setKind] = useState<RequestKind>(asked && asked in REQUEST_KINDS ? asked : recordId ? 'correction' : 'register');
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
   const [relation, setRelation] = useState(RELATIONS[0]!);
@@ -45,7 +47,8 @@ export function RequestPage() {
   if (building.isPending) return <div className={styles.wrap}><Skeleton width="50%" height={36} /><Skeleton height={240} /></div>;
   if (!b) return <div className={styles.wrap}><EmptyState icon={FileArrowUp} title="This building is not on record" action={<Link to="/portal">Search again</Link>}>It may have been removed.</EmptyState></div>;
   const record = recordId ? b.records.find((r) => r.id === recordId) ?? null : null;
-  const effectiveKind: RequestKind = hasFloors ? kind : 'register';
+  const allowed = (k: RequestKind) => (k === 'register' ? !hasFloors : requiresFloors(k) ? hasFloors : true);
+  const effectiveKind: RequestKind = allowed(kind) ? kind : hasFloors ? 'floors' : 'register';
 
   const add = (list: FileList | null) => {
     if (!list) return;
@@ -98,22 +101,19 @@ export function RequestPage() {
     <div className={styles.wrap}>
       <div className={styles.recordHead}>
         <Crumbs items={[{ label: 'Home', to: '/portal' }, { label: b.name, to: `/portal/buildings/${b.id}` }, { label: 'Request' }]} />
-        <h1 className="portal-h1">{effectiveKind === 'register' ? `Request the register of ${b.name}` : `Request a correction${record ? ` to ${record.name}` : ''}`}</h1>
+        <h1 className="portal-h1">{effectiveKind === 'register' ? `Request the register of ${b.name}` : effectiveKind === 'correction' ? `Request a correction${record ? ` to ${record.name}` : ''}` : REQUEST_KINDS[effectiveKind].label}</h1>
         <UlpinCode code={b.code} location={b.location} copyable={false} />
       </div>
       <form className={styles.form} onSubmit={(e) => void submit(e)} noValidate>
         <fieldset className={styles.kindPick} style={{ border: 0, padding: 0, margin: 0 }}>
           <legend className="portal-label" style={{ marginBottom: 8 }}>What do you need?</legend>
-          <label>
-            <input type="radio" name="kind" value="register" checked={effectiveKind === 'register'} onChange={() => setKind('register')} disabled={hasFloors} />
-            <span className="portal-h3">Register this building</span>
-            <span className="portal-body-sm ul-muted">{hasFloors ? 'Its floors are already recorded.' : 'Record its floors and flats from your documents.'}</span>
-          </label>
-          <label>
-            <input type="radio" name="kind" value="correction" checked={effectiveKind === 'correction'} onChange={() => setKind('correction')} disabled={!hasFloors} />
-            <span className="portal-h3">Correct a record</span>
-            <span className="portal-body-sm ul-muted">{hasFloors ? 'A level, area or share looks wrong.' : 'Available once its floors are recorded.'}</span>
-          </label>
+          {(Object.keys(REQUEST_KINDS) as RequestKind[]).filter((k) => allowed(k) || k === 'register').map((k) => (
+            <label key={k}>
+              <input type="radio" name="kind" value={k} checked={effectiveKind === k} onChange={() => setKind(k)} disabled={!allowed(k)} />
+              <span className="portal-h3">{REQUEST_KINDS[k].label}</span>
+              <span className="portal-body-sm ul-muted">{k === 'register' && hasFloors ? 'Its floors are already recorded.' : REQUEST_KINDS[k].help}</span>
+            </label>
+          ))}
         </fieldset>
 
         <div className={styles.twoCol}>
@@ -127,13 +127,13 @@ export function RequestPage() {
             {RELATIONS.map((r) => <option key={r}>{r}</option>)}
           </select>
         </label>
-        <label className="ul-field"><span className="portal-label">{effectiveKind === 'register' ? 'Tell us about the building' : 'What is wrong, and what should it be?'}</span>
+        <label className="ul-field"><span className="portal-label">{({ register: 'Tell us about the building', floors: 'What changed on which floors?', correction: 'What is wrong, and what should it be?', residents: 'What changed, and from when?', copy: 'What do you need the copy for?', other: 'What should change?' } as const)[effectiveKind]}</span>
           <textarea className="ul-input" value={message} onChange={(e) => setMessage(e.target.value)} required maxLength={2000}
-            placeholder={effectiveKind === 'register' ? 'For example: how many floors and flats it has, and whether an occupancy certificate was issued.' : 'For example: the carpet area in my sale deed differs from the one on this record.'} />
+            placeholder={REQUEST_KINDS[effectiveKind].placeholder} />
         </label>
 
         <div className="ul-stack">
-          <span className="portal-label">Documents <span className="ul-muted">(optional)</span></span>
+          <span className="portal-label">Documents <span className="ul-muted">{effectiveKind === 'floors' || effectiveKind === 'register' ? '(plans, level schedule, unit list)' : '(optional)'}</span></span>
           <label className={styles.drop} data-over={over}
             onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
             onDrop={(e) => { e.preventDefault(); setOver(false); add(e.dataTransfer.files); }}>

@@ -7,7 +7,8 @@ import { storyAreas, storyBoard, storyContext, storyLedger, storyQueueItems, sto
 import { publicAreas, publicBuilding, publicCode, publicMap, publicRecord, publicSearch } from './public';
 import { RequestError, decideRequest, fileRequest, getRequest, listRequests, trackRequest } from './requests';
 import { deleteArea, deleteBuilding } from './session';
-import { buildingVisible } from './story';
+import { buildingVisible, floorsDone } from './story';
+import { residentsFor } from '../../../../scripts/demo-import/sample-registry.mjs';
 import { LOCAL_SOURCE_LABELS, derivedContexts, derivedRegister, derivedSourceFiles, documents, importBatches, ledgers, levelReviews, workBoard, workQueue } from './sources';
 
 const ALL_LOCAL = Object.values(LOCAL_SOURCE_LABELS).join('; ');
@@ -34,6 +35,15 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
     if (raw && !buildingVisible(String(buildingId))) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
     const body = raw ? storyLedger(raw) : undefined;
     return body ? json(body, LOCAL_SOURCE_LABELS.lake) : raw ? HttpResponse.json({ error: 'not_found' }, { status: 404 }) : undefined;
+  },
+  '/api/v1/buildings/:buildingId/residents': ({ buildingId }) => {
+    if (String(buildingId) !== lake.register.property.id) return undefined;
+    if (!buildingVisible(String(buildingId)) || !floorsDone()) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
+    const floors = new Map(lake.register.register.filter((r) => r.kind === 'floor').map((r) => [r.id, r.geometry?.levelLabel ?? r.name]));
+    const units = lake.register.register.filter((r) => r.use === 'apartment').map((r) => ({
+      spaceId: r.id, unit: r.name, level: floors.get(r.links.find((l) => l.type === 'floor')?.targetId ?? '') ?? '',
+    }));
+    return json(residentsFor(String(buildingId), units, { locale: 'IN' }), LOCAL_SOURCE_LABELS.lake);
   },
   '/api/v1/buildings/:buildingId/levels/:levelId/review': ({ buildingId, levelId }) => {
     const body = levelReviews[String(levelId)];

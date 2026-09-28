@@ -20,7 +20,7 @@ export function HomePage() {
         <nav aria-label="Tasks" className={styles.tasks}>
           <TaskLink to="/portal/verify" title="Verify a Property Card" detail="Check a card's code and revision" />
           <TaskLink to="/portal/map" title="Explore the map" detail="Every building with its 3D ULPIN, in 3D" />
-          <TaskLink to="/portal/track" title="Track a request" detail="A register or correction you asked for" />
+          <TaskLink to="/portal/track" title="Track a request" detail="A register, floor data, correction or copy you asked for" />
         </nav>
       </div>
     </div>
