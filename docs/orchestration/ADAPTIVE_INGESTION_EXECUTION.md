@@ -259,6 +259,8 @@ Provide a reusable bounded offline adapter/runner with isolated optional depende
 
 Use the host, not another Docker stack or the existing E5 environment. Bound image pixels, output tokens, CPU threads, runtime and memory; measure what ran on the M3/16GiB host. Download one necessary licensed checkpoint, not several alternative models. No provider calls, production routing, standing-server change, frontend or broad benchmark campaign. Return the actual extraction artifacts outside Git, reproducible code and a concise suitability decision. A useful trial leads to a separately scoped document chunk/OCR API integration; a model-card claim alone does not pass that step.
 
+Review of candidate `1bcdc3b`: the MPS trials returned no usable extraction from two readable source regions. Preserve these failures and keep production `needs_ocr` behavior. Before rejecting the checkpoint, run one CPU/float32 comparison on the retained fact-sheet title region with explicit device selection, unchanged SDPA attention, at most128 output tokens,240 seconds,6GiB process RSS and two threads. The model card's documented punctuation/precision issue is a diagnostic lead, not proof of the cause on Apple MPS. No further model search or training is part of this correction; extraction success would still require a separate integration decision.
+
 ## Research references — checked 28 September 2026
 
 - R1 [India Code: Registration Act, section 21](https://www.indiacode.nic.in/bitstream/123456789/19013/1/the_registration_act%2C_1908.pdf): property-description requirements; not a universal coordinate field.
