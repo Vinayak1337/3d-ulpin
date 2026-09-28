@@ -26,12 +26,12 @@ if sudo docker inspect ulpin-postgres-1 >/dev/null 2>&1; then
   (umask 077; sudo docker exec ulpin-postgres-1 sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > "$BACKUP/database.dump")
 fi
 node deploy/oci/configure-env.mjs
+if [[ ! -x "$SHARED/demo-venv/bin/pip" ]]; then python3 -m venv "$SHARED/demo-venv"; fi
+"$SHARED/demo-venv/bin/pip" install --only-binary=:all: --disable-pip-version-check -q -r scripts/demo-import/requirements.txt
 pnpm install --frozen-lockfile
 NODE_OPTIONS=--max-old-space-size=4096 pnpm build
 VITE_HOSTED_DEMO=1 VITE_LOCAL_DATA=on VITE_DEMO_IMPORT=1 NODE_OPTIONS=--max-old-space-size=4096 pnpm studio:build
 chmod -R a+rX apps/studio/dist
-if [[ ! -x "$SHARED/demo-venv/bin/python" ]]; then python3 -m venv "$SHARED/demo-venv"; fi
-"$SHARED/demo-venv/bin/pip" install --disable-pip-version-check -q -r scripts/demo-import/requirements.txt
 node scripts/demo-import/prepare-hosted.mjs "$SHARED/bootstrap.json"
 COMPOSE=(sudo docker compose -f compose.yaml -f deploy/oci/compose.yaml --profile app)
 "${COMPOSE[@]}" build postgres geo
