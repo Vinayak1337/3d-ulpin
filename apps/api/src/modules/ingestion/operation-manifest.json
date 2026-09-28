@@ -402,6 +402,19 @@
       "responseStatus": 200,
       "transportProfile": "json",
       "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-handoff.md"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/mapping-proposals",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_mapping_proposals",
+      "batch": "AI-01B",
+      "disposition": "added",
+      "nativeController": "adaptive-mapping",
+      "requestSchema": "AdaptiveMappingRequestSchema",
+      "responseSchema": "AdaptiveMappingResponseSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
     }
   ]
 }
