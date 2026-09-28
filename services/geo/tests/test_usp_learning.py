@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from geo.usp_learning.corpus import _features, load_examples, wire_compatible_rows, wire_observation
+from geo.usp_learning.corpus import _features, load_examples, publisher_field_profile, wire_compatible_rows, wire_observation
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -59,7 +59,7 @@ def test_acquired_opendatasoft_shape_nonbuilding_labels_and_profile_privacy():
         pytest.skip("bounded external issuer originals are not configured")
     corpus_path = REPO / "docs/api/learning-corpus.json"
     corpus, examples = load_examples(corpus_path, Path(originals))
-    assert corpus["schemaVersion"] == "usp-field-mapping-corpus-v3"
+    assert corpus["schemaVersion"] == "usp-field-mapping-corpus-v4"
     assert {item["family"] for item in examples if item["split"] == "calibration"}.isdisjoint(
         {item["family"] for item in examples if item["split"] == "evaluation"}
     )
@@ -76,3 +76,33 @@ def test_acquired_opendatasoft_shape_nonbuilding_labels_and_profile_privacy():
     profile = next(item["text"] for item in examples
                    if item["source"] == dc["id"] and item["path"] == "properties.GLOBALID")
     assert raw_id not in profile
+
+
+def test_publisher_profile_ignores_reviewer_label_and_rejects_wrong_locator():
+    originals = os.environ.get("USP_LEARNING_ORIGINALS_DIR")
+    if not originals:
+        pytest.skip("bounded external issuer originals are not configured")
+    root = Path(originals)
+    corpus = json.loads((REPO / "docs/api/learning-corpus.json").read_text())
+    source = next(item for item in corpus["sources"] if item["id"] == "calgary-buildings")
+    field = next(item for item in source["fields"] if item["path"] == "properties.bldg_code_desc")
+    metadata = (root / source["metadata"]["file"]).read_text()
+    features = json.loads((root / source["sample"]["file"]).read_text())["features"]
+    profile = publisher_field_profile(source, field, features, metadata)
+    publisher_description = json.loads(metadata)["columns"][1]["description"]
+    assert publisher_description in profile
+    assert "not a building name" not in profile
+    changed = {**field, "definition": "reviewer target explanation", "target": "building.name", "evidence": "reviewer note"}
+    assert publisher_field_profile(source, changed, features, metadata) == profile
+    for issuer in corpus["sources"]:
+        issuer_metadata = (root / issuer["metadata"]["file"]).read_text()
+        issuer_sample = json.loads((root / issuer["sample"]["file"]).read_text())
+        issuer_features = _features(issuer_sample, issuer)
+        for labelled in issuer["fields"]:
+            original_text = publisher_field_profile(issuer, labelled, issuer_features, issuer_metadata)
+            changed_label = {**labelled, "definition": "reviewer target explanation",
+                             "target": "building.name", "evidence": "reviewer note"}
+            assert publisher_field_profile(issuer, changed_label, issuer_features, issuer_metadata) == original_text
+    wrong = {**field, "inputEvidence": {"sourceField": "bldg_code", "fieldPointer": "/columns/0"}}
+    with pytest.raises(ValueError, match="observed property path"):
+        publisher_field_profile(source, wrong, features, metadata)

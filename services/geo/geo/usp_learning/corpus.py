@@ -10,7 +10,7 @@ from typing import Any
 
 
 TARGETS = ("building.sourceKey", "building.name", "building.geometry")
-CORPUS_VERSION = "usp-field-mapping-corpus-v3"
+CORPUS_VERSION = "usp-field-mapping-corpus-v4"
 SPLITS = ("train", "calibration", "evaluation", "diagnostic")
 
 
@@ -98,7 +98,7 @@ def wire_compatible_rows(target: str, path: str, features: list[dict[str, Any]])
 
 
 def field_profile(source: dict[str, Any], field: dict[str, Any], features: list[dict[str, Any]]) -> str:
-    """Returns aggregate shapes only; never feeds raw source values to the model."""
+    """Historical v2/v3 profile retained byte-for-byte for artifact replay."""
     path = field["path"]
     values, absent = field_values(path, features)
     if absent == len(features):
@@ -118,6 +118,87 @@ def field_profile(source: dict[str, Any], field: dict[str, Any], features: list[
         f"observed wire types {','.join(field['observedWire']['nonNullTypes']) or 'none'}; "
         f"observed value patterns {shape_summary}; absent {absent}/{len(values)}; "
         f"source representation {source.get('representation', 'GeoJSON building footprints')}"
+    )
+
+
+def _pointer(document: dict[str, Any], pointer: str) -> Any:
+    if not pointer.startswith("/"):
+        raise ValueError("metadata locator must be a JSON pointer")
+    value: Any = document
+    for token in pointer[1:].split("/"):
+        key = token.replace("~1", "/").replace("~0", "~")
+        value = value[int(key)] if isinstance(value, list) else value[key]
+    return value
+
+
+def _publisher_field(metadata: str, source: dict[str, Any], field: dict[str, Any]) -> tuple[str, str, str, str, str]:
+    """Resolve only publisher-authored title/field text from a hash-checked original."""
+    evidence = source["inputEvidence"]
+    locator = field["inputEvidence"]
+    if evidence["format"] == "nyc-markdown-table":
+        lines = metadata.splitlines()
+        title_line = lines[evidence["titleLine"] - 1]
+        if not title_line.startswith("# "):
+            raise ValueError("publisher markdown title locator changed")
+        title = title_line.removeprefix("# ").strip()
+        cells = [cell.strip() for cell in lines[locator["fieldLine"] - 1].strip().strip("|").split("|")]
+        if len(cells) != 5:
+            raise ValueError("publisher markdown field row changed")
+        name, alias, description, declared_type, _notes = cells
+    else:
+        document = json.loads(metadata)
+        title = _pointer(document, evidence["titlePointer"])
+        if "geometryTypePointer" in locator:
+            name, alias, description, declared_type = ("geometry", "", "", _pointer(document, locator["geometryTypePointer"]))
+        else:
+            entry = _pointer(document, locator["fieldPointer"])
+            if evidence["format"] == "socrata-view-json":
+                name, alias, description, declared_type = (entry["fieldName"], entry["name"],
+                                                           entry.get("description") or "", entry["dataTypeName"])
+            elif evidence["format"] == "arcgis-layer-json":
+                name, alias, description, declared_type = (entry["name"], entry.get("alias") or "",
+                                                           entry.get("description") or "", entry["type"])
+            elif evidence["format"] == "opendatasoft-dataset-json":
+                name, alias, description, declared_type = (entry["name"], entry.get("label") or "",
+                                                           entry.get("description") or "", entry["type"])
+            else:
+                raise ValueError("unsupported publisher metadata format")
+    if not all(isinstance(value, str) for value in (title, name, alias, description, declared_type)):
+        raise ValueError("publisher metadata text/type must be strings")
+    if name.casefold() != locator["sourceField"].casefold():
+        raise ValueError("metadata locator does not match declared source field")
+    path = field["path"]
+    if path != "geometry" and name.casefold() != path.removeprefix("properties.").casefold():
+        raise ValueError("metadata field does not match observed property path")
+    if path == "geometry" and not ("geom" in declared_type.lower() or "polygon" in declared_type.lower() or
+                                   declared_type in ("varies", "geo_shape")):
+        raise ValueError("geometry metadata locator has a nongeometry type")
+    if not title or not name or not declared_type:
+        raise ValueError("publisher metadata title/field/type is empty")
+    return title, name, alias, description, declared_type
+
+
+def publisher_field_profile(source: dict[str, Any], field: dict[str, Any], features: list[dict[str, Any]], metadata: str) -> str:
+    """Use verified publisher text and deterministic wire aggregates; no reviewer label prose."""
+    title, name, alias, description, declared_type = _publisher_field(metadata, source, field)
+    path = field["path"]
+    values, absent = field_values(path, features)
+    if absent == len(features):
+        raise ValueError(f"field absent from original: {source['id']}:{path}")
+    present_values = [value for value, feature in zip(values, features)
+                      if (path == "geometry" and "geometry" in feature) or
+                         (path != "geometry" and path.removeprefix("properties.") in feature.get("properties", {}))]
+    shape_counts: dict[str, int] = {}
+    for value in present_values:
+        shape = _value_shape(value)
+        shape_counts[shape] = shape_counts.get(shape, 0) + 1
+    shape_summary = ", ".join(f"{key} {count}/{len(features)}" for key, count in sorted(shape_counts.items()))
+    observed = wire_observation(path, features)
+    return (
+        f"publisher dataset title {title}; source field {name}; publisher alias {alias or 'none recorded'}; "
+        f"publisher description {description or 'none recorded'}; publisher declared type {declared_type}; "
+        f"observed wire types {','.join(observed['nonNullTypes']) or 'none'}; "
+        f"observed value patterns {shape_summary}; absent {absent}/{len(values)}"
     )
 
 
@@ -143,7 +224,7 @@ def _features(sample: dict[str, Any], source: dict[str, Any]) -> list[dict[str, 
 def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     corpus = json.loads(corpus_path.read_text())
     version = corpus.get("schemaVersion")
-    if version not in ("usp-field-mapping-corpus-v2", CORPUS_VERSION):
+    if version not in ("usp-field-mapping-corpus-v2", "usp-field-mapping-corpus-v3", CORPUS_VERSION):
         raise ValueError("unknown corpus version")
     targets = tuple(target["id"] for target in corpus["targets"])
     if targets != TARGETS:
@@ -162,10 +243,11 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
             raise ValueError(f"unsupported split: {split}")
         split_families[split].add(source["family"])
         sample_path = _checked_file(originals_dir, source["sample"])
-        _checked_file(originals_dir, source["metadata"])
+        metadata_path = _checked_file(originals_dir, source["metadata"])
         if "descriptionPdf" in source:
             _checked_file(originals_dir, source["descriptionPdf"])
         sample = json.loads(sample_path.read_text())
+        metadata = metadata_path.read_text() if version == CORPUS_VERSION else ""
         features = _features(sample, source)
         if len(features) != source["sample"]["rows"]:
             raise ValueError(f"sample row count mismatch: {source['id']}")
@@ -185,6 +267,7 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
         for field in source["fields"]:
             path = field["path"]
             target = field["target"]
+            publisher_type = _publisher_field(metadata, source, field)[4] if version == CORPUS_VERSION else field["declaredType"]
             if target is not None and target not in TARGETS:
                 raise ValueError(f"unsupported mapping label: {target}")
             if field.get("decision") != ("positive" if target is not None else "negative"):
@@ -196,8 +279,9 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
                 raise ValueError(f"operation wire compatibility contradicts retained original: {source['id']}:{path}")
             examples.append({
                 "source": source["id"], "family": source["family"], "split": split,
-                "path": path, "text": field_profile(source, field, features),
-                "declaredType": field["declaredType"], "observedWire": field["observedWire"],
+                "path": path, "text": (publisher_field_profile(source, field, features, metadata)
+                                         if version == CORPUS_VERSION else field_profile(source, field, features)),
+                "declaredType": publisher_type, "observedWire": field["observedWire"],
                 "wireCompatibleRows": compatible_rows, "target": target,
                 "originalSha256": source["sample"]["sha256"],
             })
