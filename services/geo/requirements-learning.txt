@@ -1,0 +1,6 @@
+# Optional, offline AI-06A learner environment. Install separately from the geo service.
+torch==2.5.1
+transformers==4.44.2
+huggingface-hub==0.24.7
+safetensors==0.4.5
+numpy==1.26.4
