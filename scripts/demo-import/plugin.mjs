@@ -174,11 +174,11 @@ export function studioDemoImport(){
             layer.path=join(dir,layer.sha256+ext);await writeFile(layer.path,layer.bytes,{mode:0o600});
             sources.push({id:layer.sourceId,name:layer.name,hash:layer.sha256,namespace:layer.dataset,url:layer.url,layer:layer.layer,format:layer.format??'geojson',file:layer.sha256+ext});delete layer.bytes;
           }
-          job={id:jid,hash,area:{id:areaId,siteId:areaId,name:profile.title,revision:0,reference:null,extent:null,geographicExtent:null,administrativeUnits:[],dataKind:'mixed',featureCount:0},features:[],sources,state:'RECEIVED',createdAt:new Date().toISOString(),sequence:0};
+          job={id:jid,hash,area:{id:areaId,siteId:areaId,name:profile.title,revision:0,reference:null,extent:null,geographicExtent:null,administrativeUnits:[],dataKind:'mixed',featureCount:0},features:[],sources,state:'RECEIVED',createdAt:new Date().toISOString(),sequence:0,uploadName:originals.map(o=>o.name).join(', ')};
           jobs.set(jid,job);await save(job);job.pendingLayers=layers;
           return json(res,202,{id:jid,areaId});
         }
-        if(path==='/api/demo/areas'&&req.method==='GET')return json(res,200,[...jobs.values()].map(j=>({...j.area,featureCount:j.features.length})));
+        if(path==='/api/demo/areas'&&req.method==='GET')return json(res,200,[...jobs.values()].map(j=>({...j.area,featureCount:j.features.length,createdAt:j.createdAt,state:j.state,packageId:j.id,sourceCount:j.sources.length,uploadName:j.uploadName??null})));
         const sample=parts[2]==='sources'?sampleSources.get(parts[3]):null;
         if(sample&&path.endsWith('/file')){
           const built=sampleBuilding(sample.job,sample.feature);
