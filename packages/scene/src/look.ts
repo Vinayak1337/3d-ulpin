@@ -23,10 +23,13 @@ export function lookUniforms(): LookUniforms {
   return { uLook: { value: 1 } };
 }
 
-/** Warm and neutral facade tones; the choice per building is fixed by its ID. */
-const FACADES = ['#f6f2ea', '#f0ebe2', '#f8f6f1', '#ece6dc', '#f3eee6', '#e9e6df', '#f1ede5', '#f7f3ec', '#e6e0d6', '#efe8dc', '#f4ebe0', '#ebe9e4'];
-/** Tall buildings lean towards cool glass and concrete. */
-const TOWER = new Color('#dfe6ea');
+/**
+ * Facade families, chosen per building from its ID (tall buildings lean to glass): masonry (brick,
+ * brownstone, limestone, stucco), concrete, and glass. Muted so a dense area stays calm.
+ */
+const MASONRY = ['#b98a74', '#a97a66', '#c29a82', '#9c7a66', '#e6dccb', '#dccfb8', '#e9e2d4', '#d3c6b0', '#efe8dc', '#cdbfa9'];
+const CONCRETE = ['#dcdad5', '#cfd0cd', '#e5e2da', '#d6d2c9', '#c8c9c6'];
+const GLASS = ['#bccbd3', '#aebfc9', '#c9d3d8', '#b3c2c6'];
 
 function hash(text: string): number {
   let h = 2166136261;
@@ -35,22 +38,34 @@ function hash(text: string): number {
   return h >>> 0;
 }
 
-/** Facade tint of a building: from its ID, cooled with recorded height (no height: the first tone). */
-export function facadeTint(id: string, heightM: number | null): Color {
+/**
+ * The illustrative facade of a building: a seed in [0, 1) whose range picks the family (masonry below 0.5,
+ * concrete to 0.78, glass above) and varies its windows and roof, and the matching tint.
+ */
+export function facadeStyle(id: string, heightM: number | null): { seed: number; color: Color } {
   const h = hash(id);
-  const color = new Color(FACADES[h % FACADES.length]!);
-  if (heightM !== null && heightM > 24) color.lerp(TOWER, Math.min(0.6, (heightM - 24) / 70));
-  // A small brightness jitter keeps neighbours apart.
-  const jitter = 0.97 + ((h >>> 8) % 100) / 100 * 0.06;
-  return color.multiplyScalar(jitter);
+  let seed = (h % 10007) / 10007;
+  // Towers are mostly glass or concrete; low buildings mostly masonry.
+  if (heightM !== null && heightM > 45 && ((h >>> 12) % 10) < 7) seed = 0.62 + seed * 0.38;
+  else if (heightM !== null && heightM < 25 && ((h >>> 12) % 10) < 6) seed = seed * 0.5;
+  const pick = (list: string[]) => list[(h >>> 4) % list.length]!;
+  const color = new Color(seed < 0.5 ? pick(MASONRY) : seed < 0.78 ? pick(CONCRETE) : pick(GLASS));
+  const jitter = 0.97 + (((h >>> 8) % 100) / 100) * 0.06;
+  return { seed, color: color.multiplyScalar(jitter) };
 }
 
-/** Per-vertex colour so one shared material can tint every building differently. */
-export function paintGeometry(geometry: BufferGeometry, color: Color): void {
+/** Facade tint of a building (see facadeStyle). */
+export function facadeTint(id: string, heightM: number | null): Color {
+  return facadeStyle(id, heightM).color;
+}
+
+/** Per-vertex colour and facade seed so one shared material can draw every building differently. */
+export function paintGeometry(geometry: BufferGeometry, color: Color, seed = 0): void {
   const count = geometry.getAttribute('position').count;
   const values = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) { values[i * 3] = color.r; values[i * 3 + 1] = color.g; values[i * 3 + 2] = color.b; }
   geometry.setAttribute('color', new Float32BufferAttribute(values, 3));
+  geometry.setAttribute('aSeed', new Float32BufferAttribute(new Float32Array(count).fill(seed), 1));
 }
 
 interface FacadeOptions {
@@ -62,25 +77,38 @@ interface FacadeOptions {
   alwaysTint?: boolean;
   /** Glass colour of the windows. */
   glass?: string;
+  /** Hover: lift the whole facade towards this colour. */
+  lift?: string;
 }
 
+const NOISE_GLSL = `
+float ulHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float ulNoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(ulHash(i), ulHash(i + vec2(1.0, 0.0)), u.x), mix(ulHash(i + vec2(0.0, 1.0)), ulHash(i + vec2(1.0, 1.0)), u.x), u.y);
+}`;
+
 /**
- * Adds the enhanced facade to a standard material: per-building tint, roof tone, window bays (3 m) and
- * storey bands (3.2 m, illustrative, never the recorded slabs), a darker plinth and a soft ground
- * occlusion. Faded out with distance so dense areas stay calm.
+ * Adds the enhanced facade to a standard material. Per building (from its seed): masonry with framed
+ * punched windows, concrete with ribbon windows, or glass curtain wall; a storefront band at street level;
+ * a roof tone. Storey spacing (3.2 m) is illustrative, never the recorded slabs. Details fade with
+ * distance so dense areas stay calm.
  */
 export function enhanceFacade(material: MeshStandardMaterial, uniforms: LookUniforms, options: FacadeOptions): void {
   if (options.tint) material.vertexColors = true;
-  const glass = new Color(options.glass ?? '#8c9daa');
-  material.customProgramCacheKey = () => `facade-${options.windows}-${options.tint}-${options.alwaysTint ?? false}`;
+  const glass = new Color(options.glass ?? '#6f8594');
+  const lift = new Color(options.lift ?? '#000000');
+  material.customProgramCacheKey = () => `facade2-${options.windows}-${options.tint}-${options.alwaysTint ?? false}-${Boolean(options.lift)}`;
   material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
     shader.uniforms.uLook = uniforms.uLook;
     shader.uniforms.uGlass = { value: glass };
+    shader.uniforms.uLift = { value: lift };
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vWPos;\nvarying vec3 vWNormal;')
-      .replace('#include <project_vertex>', '#include <project_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvWNormal = normalize(mat3(modelMatrix) * objectNormal);');
+      .replace('#include <common>', '#include <common>\nattribute float aSeed;\nvarying float vSeed;\nvarying vec3 vWPos;\nvarying vec3 vWNormal;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\nvSeed = aSeed;\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvWNormal = normalize(mat3(modelMatrix) * objectNormal);');
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uLook;\nuniform vec3 uGlass;\nvarying vec3 vWPos;\nvarying vec3 vWNormal;')
+      .replace('#include <common>', `#include <common>\nuniform float uLook;\nuniform vec3 uGlass;\nuniform vec3 uLift;\nvarying float vSeed;\nvarying vec3 vWPos;\nvarying vec3 vWNormal;\n${NOISE_GLSL}`)
       .replace('#include <color_fragment>', `
 #if defined( USE_COLOR ) || defined( USE_COLOR_ALPHA )
   diffuseColor.rgb *= mix(vec3(1.0), vColor.rgb, ${options.alwaysTint ? '1.0' : 'uLook'});
@@ -89,33 +117,85 @@ export function enhanceFacade(material: MeshStandardMaterial, uniforms: LookUnif
   vec3 n = normalize(vWNormal);
   float roof = step(0.6, n.y);
   float wall = 1.0 - step(0.6, abs(n.y));
-  // Roof: a light, cool concrete slab.
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.87, 0.88), roof * uLook * ${options.tint ? '0.55' : '0.0'});
-  // Soft occlusion where walls meet the ground, and a slightly darker plinth.
-  float occl = mix(0.74, 1.0, smoothstep(0.0, 5.0, vWPos.y));
-  float plinth = 1.0 - 0.06 * (1.0 - step(0.9, vWPos.y));
-  diffuseColor.rgb *= mix(1.0, occl * plinth, wall * uLook);
+  float seed = vSeed;
+  float masonry = step(seed, 0.5), glassy = step(0.78, seed), concrete = (1.0 - masonry) * (1.0 - glassy);
+  // Roof: light concrete, grey membrane or dark gravel, with a faint mottle.
+  float rt = fract(seed * 7.13);
+  vec3 roofTone = rt < 0.45 ? vec3(0.84, 0.85, 0.85) : rt < 0.8 ? vec3(0.72, 0.73, 0.74) : vec3(0.58, 0.58, 0.56);
+  roofTone *= 0.96 + 0.08 * ulNoise(vWPos.xz * 0.6);
+  diffuseColor.rgb = mix(diffuseColor.rgb, roofTone, roof * uLook * ${options.tint ? '0.8' : '0.0'});
+  // Soft occlusion where walls meet the ground.
+  float occl = mix(0.72, 1.0, smoothstep(0.0, 6.0, vWPos.y));
+  diffuseColor.rgb *= mix(1.0, occl, wall * uLook);
   ${options.windows ? `
   vec2 t = normalize(vec2(-n.z, n.x) + 1e-5);
-  float u = dot(vWPos.xz, t) / 3.4;
-  float v = vWPos.y / 3.2;
+  float along = dot(vWPos.xz, t);
+  // Window module per family: masonry 3.0 m bays, concrete 1.8 m ribbons, glass 1.5 m mullions.
+  float bay = masonry > 0.5 ? 2.8 + fract(seed * 13.7) * 0.8 : concrete > 0.5 ? 1.8 : 1.5;
+  float storey = 3.2 + fract(seed * 5.3) * 0.5;
+  float u = along / bay;
+  float v = (vWPos.y - 4.2) / storey;
   vec2 fw = fwidth(vec2(u, v));
-  float fade = 1.0 - smoothstep(0.12, 0.35, max(fw.x, fw.y));
+  float fade = 1.0 - smoothstep(0.1, 0.32, max(fw.x, fw.y));
   float fu = fract(u), fv = fract(v);
-  float aa = max(fw.x, 0.02), ab = max(fw.y, 0.02);
-  float win = smoothstep(0.3 - aa, 0.3 + aa, fu) * (1.0 - smoothstep(0.7 - aa, 0.7 + aa, fu))
-            * smoothstep(0.34 - ab, 0.34 + ab, fv) * (1.0 - smoothstep(0.8 - ab, 0.8 + ab, fv));
-  float band = 1.0 - smoothstep(0.0, ab * 2.0, fv) * (1.0 - smoothstep(1.0 - ab * 2.0, 1.0, fv));
-  float above = step(0.9, vWPos.y);
-  float glassK = win * fade * wall * above * uLook;
-  vec3 pane = mix(uGlass, min(uGlass * 1.3, vec3(1.0)), smoothstep(0.0, 1.0, fract(v * 0.37 + u * 0.13)));
-  diffuseColor.rgb = mix(diffuseColor.rgb, pane, glassK * 0.55);
-  diffuseColor.rgb *= 1.0 - band * 0.05 * fade * wall * uLook;
-  // Distant walls: a hint of glass so towers keep texture.
-  diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, uGlass, 0.07), (1.0 - fade) * wall * above * uLook);
+  float aa = max(fw.x, 0.015), ab = max(fw.y, 0.015);
+  float halfW = masonry > 0.5 ? 0.2 + fract(seed * 3.1) * 0.08 : concrete > 0.5 ? 0.44 : 0.47;
+  float top = masonry > 0.5 ? 0.82 : concrete > 0.5 ? 0.78 : 0.95;
+  float bot = masonry > 0.5 ? 0.3 : concrete > 0.5 ? 0.38 : 0.05;
+  float boxU = smoothstep(0.5 - halfW - aa, 0.5 - halfW + aa, fu) * (1.0 - smoothstep(0.5 + halfW - aa, 0.5 + halfW + aa, fu));
+  float boxV = smoothstep(bot - ab, bot + ab, fv) * (1.0 - smoothstep(top - ab, top + ab, fv));
+  float win = boxU * boxV;
+  // Masonry windows get a light stone frame (sill and lintel).
+  float frameU = smoothstep(0.5 - halfW - 0.06 - aa, 0.5 - halfW - 0.06 + aa, fu) * (1.0 - smoothstep(0.5 + halfW + 0.06 - aa, 0.5 + halfW + 0.06 + aa, fu));
+  float frameV = smoothstep(bot - 0.06 - ab, bot - 0.06 + ab, fv) * (1.0 - smoothstep(top + 0.05 - ab, top + 0.05 + ab, fv));
+  float frame = frameU * frameV * (1.0 - win) * masonry;
+  float upper = step(4.2, vWPos.y);
+  float k = fade * wall * upper * uLook;
+  // Glass: darker low, catching more sky higher up; a slight variation per pane.
+  float sky = smoothstep(0.0, 60.0, vWPos.y);
+  vec3 pane = mix(uGlass * 0.8, min(uGlass * 1.35, vec3(1.0)), 0.35 * sky + 0.3 * ulHash(floor(vec2(u, v))));
+  diffuseColor.rgb = mix(diffuseColor.rgb, min(diffuseColor.rgb * 1.12, vec3(1.0)), frame * k * 0.9);
+  diffuseColor.rgb = mix(diffuseColor.rgb, pane, win * k * (glassy > 0.5 ? 0.85 : 0.7));
+  // Floor slabs on glass towers; storey band on concrete.
+  float slab = 1.0 - smoothstep(0.0, ab * 2.5, fv) * (1.0 - smoothstep(1.0 - ab * 2.5, 1.0, fv));
+  diffuseColor.rgb *= 1.0 - slab * k * (glassy > 0.5 ? 0.25 : 0.06);
+  // Street level: a storefront of large panes under a sign band (below 4.2 m) on buildings over 6 m.
+  float ground = (1.0 - upper) * step(0.35, vWPos.y) * wall * uLook;
+  float su = fract(along / 1.6);
+  float shop = smoothstep(0.08, 0.12, su) * (1.0 - smoothstep(0.88, 0.92, su)) * (1.0 - smoothstep(3.2, 3.3, vWPos.y));
+  float sign = smoothstep(3.3, 3.4, vWPos.y) * (1.0 - step(4.2, vWPos.y));
+  float gFade = 1.0 - smoothstep(0.1, 0.32, fwidth(along / 1.6));
+  diffuseColor.rgb = mix(diffuseColor.rgb, uGlass * 0.55, shop * ground * gFade * 0.85);
+  diffuseColor.rgb *= 1.0 - sign * ground * 0.18;
+  // Far away: a hint of glass so walls keep texture.
+  diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, uGlass, glassy > 0.5 ? 0.35 : 0.1), (1.0 - fade) * wall * upper * uLook);
   ` : ''}
+  ${options.lift ? 'diffuseColor.rgb = mix(diffuseColor.rgb, uLift, 0.42);' : ''}
 }
 `);
+  };
+  material.needsUpdate = true;
+}
+
+/**
+ * Surface texture for flat layers (enhanced view): a fine grain on paving and asphalt, a mottle on grass,
+ * gentle ripples on water. Colours stay the layer's own.
+ */
+export function enhanceSurface(material: MeshStandardMaterial, uniforms: LookUniforms, kind: 'paving' | 'grass' | 'water'): void {
+  material.customProgramCacheKey = () => `surface-${kind}`;
+  material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
+    shader.uniforms.uLook = uniforms.uLook;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWPos;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    const body = kind === 'grass'
+      ? 'float g = ulNoise(vWPos.xz * 0.35) * 0.6 + ulNoise(vWPos.xz * 1.7) * 0.4; diffuseColor.rgb *= mix(1.0, 0.86 + 0.24 * g, uLook);'
+      : kind === 'water'
+        ? 'float w = ulNoise(vec2(vWPos.x * 0.18 + vWPos.z * 0.05, vWPos.z * 0.9)) * 0.7 + ulNoise(vWPos.xz * 0.6) * 0.3; diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb * 0.86, min(diffuseColor.rgb * 1.18, vec3(1.0)), w), uLook);'
+        : 'float s = ulNoise(vWPos.xz * 2.3); diffuseColor.rgb *= mix(1.0, 0.95 + 0.08 * s, uLook);';
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>\nuniform float uLook;\nvarying vec3 vWPos;\n${NOISE_GLSL}`)
+      .replace('#include <color_fragment>', `#include <color_fragment>\n{ ${body} }`);
   };
   material.needsUpdate = true;
 }

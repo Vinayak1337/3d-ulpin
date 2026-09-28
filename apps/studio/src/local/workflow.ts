@@ -115,8 +115,11 @@ export async function recordReview(input: { spaceId: string; buildingId: string;
 }
 
 /** Assign a proposed 3D ULPIN: a random P3 payload with its check pair (packages/contracts P3/1). */
-export async function assignProposedCode(spaceId: string): Promise<SpaceWorkflow> {
-  const workflow = await getSpaceWorkflow(spaceId);
+export async function assignProposedCode(input: string | { spaceId: string; buildingId: string; spaceName: string; recordRevision: number }): Promise<SpaceWorkflow> {
+  const spaceId = typeof input === 'string' ? input : input.spaceId;
+  let workflow = await getSpaceWorkflow(spaceId);
+  // A record that arrives already reviewed has no session history yet: record the review first.
+  if (!workflow && typeof input !== 'string') workflow = await recordReview(input);
   if (!workflow || workflow.status !== 'Reviewed') throw new Error('Record reviewed details before assigning a code.');
   const code = projectCodeForPayload(randomPayload());
   const at = new Date().toISOString();

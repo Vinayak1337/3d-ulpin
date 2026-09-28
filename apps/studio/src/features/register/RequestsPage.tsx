@@ -11,16 +11,17 @@ import {
   decideRegisterRequest, featureCode, queryKeys, useAreas, useRegisterRequests, type AreaFeature, type RequestFilter,
 } from '../../api/queries';
 import { DeleteDialog } from '../manage/DeleteDialog';
+import { REQUEST_KINDS } from '../../local/requestKinds';
 import styles from './Requests.module.css';
 
 type View = 'requests' | 'buildings';
 
 const STATE_LABEL: Record<RequestState, string> = { submitted: 'New', in_review: 'In review', accepted: 'Accepted', rejected: 'Rejected' };
 const STATE_TONE: Record<RequestState, 'primary' | 'warning' | 'success' | 'danger'> = { submitted: 'primary', in_review: 'warning', accepted: 'success', rejected: 'danger' };
-const KIND_LABEL = { register: 'Register', correction: 'Correction' } as const;
+const KIND_LABEL = Object.fromEntries(Object.entries(REQUEST_KINDS).map(([k, v]) => [k, v.short])) as Record<RegisterRequest['kind'], string>;
 
 export const requestTitle = (r: Pick<RegisterRequest, 'kind' | 'buildingName' | 'recordName'>) =>
-  r.kind === 'register' ? `Register ${r.buildingName}` : `Correct ${r.recordName ? `${r.recordName}, ` : ''}${r.buildingName}`;
+  REQUEST_KINDS[r.kind].title(r.buildingName, r.recordName);
 
 /**
  * Register: requests from the public portal for officers to review (a building's register, or a
@@ -157,7 +158,7 @@ function RequestDetail({ request: r }: { request: RegisterRequest }) {
       <div className={styles.actions}>
         {mapLink ? <Link to={mapLink} className="ul-btn"><Icon icon={MapPin} />Open on map</Link> : null}
         <Link to={`/studio/properties/${r.buildingId}/register`} className="ul-btn">Open register</Link>
-        {r.kind === 'register' && r.state === 'accepted' ? (
+        {(r.kind === 'register' || r.kind === 'floors') && r.state === 'accepted' ? (
           <Link to={`/studio/add-files?feature=${r.buildingId}`} className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>
         ) : null}
       </div>
@@ -167,7 +168,7 @@ function RequestDetail({ request: r }: { request: RegisterRequest }) {
           <label className="ul-field" style={{ maxWidth: 'none' }}>
             <span className="ul-label">Note to the applicant</span>
             <textarea className="ul-input" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500}
-              placeholder={r.kind === 'register' ? 'For example: we will record the floors from the documents you attached.' : 'For example: the carpet area will be re-measured from the sanctioned plan.'} />
+              placeholder={r.kind === 'register' || r.kind === 'floors' ? 'For example: we will record the floors from the documents you attached.' : r.kind === 'residents' ? 'For example: the holder will be updated after the deed is verified at the Sub-Registrar.' : 'For example: the carpet area will be re-measured from the sanctioned plan.'} />
           </label>
           <div className={styles.actions}>
             {r.state === 'submitted' ? <Button variant="soft" disabled={Boolean(busy)} onClick={() => void decide('in_review')}>{busy === 'in_review' ? 'Taking up…' : 'Take up'}</Button> : null}
@@ -227,7 +228,7 @@ function BuildingsView() {
     <div className={styles.buildings}>
       {areas.data.map((area, i) => {
         const context = contexts[i]?.data;
-        const buildings = context?.features.filter((f) => f.kind === 'building') ?? [];
+        const buildings = (context?.displayFeatures ?? context?.features)?.filter((f) => f.kind === 'building') ?? [];
         return (
           <section key={area.id} className="ul-stack">
             <div className={styles.areaHead}>

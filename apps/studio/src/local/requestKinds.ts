@@ -1,0 +1,12 @@
+import type { RequestKind } from '@ulpin/api-client/draft';
+
+/** What each request asks for, in the words the portal and the Studio use. */
+export const REQUEST_KINDS: Record<RequestKind, { label: string; short: string; title: (building: string, record?: string | null) => string; help: string; accepted: string; placeholder: string }> = {
+  register: { label: 'Register this building', short: 'Building register', title: (b) => `Register ${b}`, help: 'Record its floors and flats from your documents.', accepted: "The office will record this building's floors and flats.", placeholder: 'For example: how many floors and flats it has, and whether an occupancy certificate was issued.' },
+  floors: { label: 'Add or update floor data', short: 'Floor data', title: (b) => `Floor data for ${b}`, help: 'A new floor, an extension or a revised plan. Attach the plan or level schedule.', accepted: 'The office will add the floor data you sent to the register.', placeholder: 'For example: a ninth floor was completed in 2025; the revised sanctioned plan is attached.' },
+  correction: { label: 'Correct a record', short: 'Record correction', title: (b, r) => `Correct ${r ? `${r}, ` : ''}${b}`, help: 'A level, area or share looks wrong.', accepted: 'The office will correct the record.', placeholder: 'For example: the carpet area in my sale deed differs from the one on this record.' },
+  residents: { label: 'Change of holder or residents', short: 'Holder or residents', title: (b, r) => `Holder or residents${r ? ` of ${r}` : ''}, ${b}`, help: 'A sale, inheritance, or a new tenant to register.', accepted: 'The office will update the holders or residents on the register.', placeholder: 'For example: Flat 304 was sold on 12 August 2026; the registered sale deed is attached.' },
+  copy: { label: 'Certified register copy', short: 'Register copy', title: (b) => `Register copy of ${b}`, help: 'A signed extract of the floors, units and holders.', accepted: 'The office will issue the certified extract.', placeholder: 'For example: needed for a home loan application.' },
+  other: { label: 'Other update', short: 'Other update', title: (b) => `Update to ${b}`, help: 'Anything else about this building’s record.', accepted: 'The office will act on your request.', placeholder: 'Describe what should change and why.' },
+};
+export const requiresFloors = (kind: RequestKind) => kind !== 'register' && kind !== 'other';

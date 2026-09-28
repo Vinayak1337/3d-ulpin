@@ -1,5 +1,6 @@
 import type { PublicRequestStatus, RegisterRequest, RequestKind, RequestState } from '@ulpin/api-client/draft';
 import { buildingCode } from './codes';
+import { REQUEST_KINDS } from './requestKinds';
 import { lake } from './sources';
 import { visibleFeatures } from './story';
 
@@ -35,7 +36,7 @@ export async function fileRequest(form: FormData): Promise<PublicRequestStatus> 
   const buildingId = text('buildingId');
   const building = visibleFeatures().find((f) => f.id === buildingId && f.kind === 'building');
   if (!building) throw new RequestError(404, 'building_not_found', 'This building is not in the register.');
-  if (kind !== 'register' && kind !== 'correction') throw new RequestError(400, 'kind_invalid', 'Choose what you are requesting.');
+  if (!(kind in REQUEST_KINDS)) throw new RequestError(400, 'kind_invalid', 'Choose what you are requesting.');
   const name = text('name'), mobile = text('mobile').replace(/\D/g, ''), relation = text('relation'), message = text('message');
   if (!name) throw new RequestError(400, 'name_required', 'Enter your name.');
   if (!/^[6-9]\d{9}$/.test(mobile)) throw new RequestError(400, 'mobile_invalid', 'Enter a 10-digit mobile number.');
