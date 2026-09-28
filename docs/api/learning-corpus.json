@@ -1,0 +1,337 @@
+{
+  "schemaVersion": "usp-field-mapping-corpus-v1",
+  "featureVersion": "issuer-field-profile-v1",
+  "scope": "offline foreign-source research only; no production training or promotion",
+  "targets": [
+    {
+      "id": "building.sourceKey",
+      "operation": "literal_identifier@1",
+      "description": "Complete, unique, stable source string identifying a building footprint feature; never a parcel, person, generated ID, or coerced number."
+    },
+    {
+      "id": "building.name",
+      "operation": "literal_text@1",
+      "description": "Source text naming the building, where available; a missing name stays missing."
+    },
+    {
+      "id": "building.geometry",
+      "operation": "geojson_polygon@1",
+      "description": "GeoJSON Polygon or MultiPolygon building footprint geometry with separately checked CRS evidence."
+    }
+  ],
+  "sources": [
+    {
+      "id": "nola-building-footprints",
+      "family": "nola-egis-footprints",
+      "split": "train",
+      "issuer": "City of New Orleans eGIS Team",
+      "geography": "New Orleans, Louisiana, United States",
+      "datasetUrl": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
+      "acquiredAt": "2026-09-28",
+      "sample": {
+        "file": "nola-sample.json",
+        "url": "https://data.nola.gov/resource/prh5-qsuf.geojson?$limit=5",
+        "bytes": 3044,
+        "sha256": "7a06e721f0a609db2a3b49210f36b0591d9d088e727acdc4ba7adcb9152a71f3",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "nola-metadata.json",
+        "url": "https://data.nola.gov/api/views/prh5-qsuf.json",
+        "bytes": 15832,
+        "sha256": "95511cbf8c426d36b22db66ba2b38da21c2da43c4d0809b4345e2e9bc2e9e35b"
+      },
+      "permission": {
+        "basis": "Dataset portal declares Public Domain U.S. Government; local experimental schema learning only",
+        "url": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "GeoJSON RFC 7946 WGS84 longitude/latitude; geometry operation still requires independent runtime validation",
+      "fields": [
+        {
+          "path": "properties.globalid",
+          "type": "text",
+          "definition": "GlobalID text; issuer portal's 162486 current rows have 162486 non-null distinct values (28 September 2026)",
+          "target": "building.sourceKey",
+          "evidence": "https://data.nola.gov/resource/prh5-qsuf.json?$select=count(*)%20as%20total,count(distinct%20globalid)%20as%20distinct_ids,count(globalid)%20as%20nonnull",
+          "decision": "positive"
+        },
+        {
+          "path": "geometry",
+          "type": "multipolygon",
+          "definition": "Building footprint polygon published as GeoJSON feature geometry",
+          "target": "building.geometry",
+          "evidence": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
+          "decision": "positive"
+        },
+        {
+          "path": "properties.activestatus",
+          "type": "number",
+          "definition": "Active status code",
+          "target": null,
+          "evidence": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
+          "decision": "negative"
+        },
+        {
+          "path": "properties.shape_starea",
+          "type": "number",
+          "definition": "Shape area measurement",
+          "target": null,
+          "evidence": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
+          "decision": "negative"
+        },
+        {
+          "path": "properties.shape_stlength",
+          "type": "number",
+          "definition": "Shape length measurement",
+          "target": null,
+          "evidence": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
+          "decision": "negative"
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.geopin",
+          "decision": "unknown",
+          "reason": "GEOPIN denotes an identifier but its building-versus-property scope is unverified here.",
+          "evidence": "https://data.nola.gov/api/views/prh5-qsuf.json"
+        },
+        {
+          "path": "properties.structureid",
+          "decision": "unknown",
+          "reason": "Numeric identifier cannot use literal_identifier@1 without coercion.",
+          "evidence": "https://data.nola.gov/api/views/prh5-qsuf.json"
+        },
+        {
+          "path": "properties.objectid",
+          "decision": "unknown",
+          "reason": "Numeric internal object identifier cannot use literal_identifier@1 without coercion.",
+          "evidence": "https://data.nola.gov/api/views/prh5-qsuf.json"
+        }
+      ],
+      "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels"
+    },
+    {
+      "id": "nyc-building-footprints",
+      "family": "nyc-oti-footprints",
+      "split": "train",
+      "issuer": "City of New York Office of Technology and Innovation",
+      "geography": "New York City, New York, United States",
+      "datasetUrl": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue",
+      "acquiredAt": "2026-09-28",
+      "sample": {
+        "file": "nyc-sample.json",
+        "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?$limit=5&$where=doitt_id%20!=%20353927",
+        "bytes": 6945,
+        "sha256": "e46caaf50521f8ba2427987ace16cb1b64b7b73bbf82dedc9795afa4dea44ed3",
+        "rows": 5,
+        "excludesExistingBenchmarkDoittId": "353927"
+      },
+      "metadata": {
+        "file": "nyc-metadata.md",
+        "url": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+        "bytes": 12973,
+        "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27"
+      },
+      "permission": {
+        "basis": "NYC OTI Open Data Technical Standards Manual says published datasets are available without restriction or licensing requirements",
+        "url": "https://opendata.cityofnewyork.us/wp-content/uploads/NYC_OpenData_TechnicalStandardsManual.pdf",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "Issuer metadata says NYC Open Data GeoJSON is EPSG:4326; operation still requires independent runtime validation",
+      "fields": [
+        {
+          "path": "properties.name",
+          "type": "text",
+          "definition": "Building name, limited to commonly known names; issuer says this field has not been actively maintained",
+          "target": "building.name",
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "decision": "positive"
+        },
+        {
+          "path": "geometry",
+          "type": "multipolygon",
+          "definition": "Building footprint outline in GeoJSON",
+          "target": "building.geometry",
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "decision": "positive"
+        },
+        {
+          "path": "properties.base_bbl",
+          "type": "text",
+          "definition": "Tax lot borough-block-lot identifier; not a building source key",
+          "target": null,
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "decision": "negative"
+        },
+        {
+          "path": "properties.mappluto_bbl",
+          "type": "text",
+          "definition": "Billing tax lot join key that may be shared by multiple buildings",
+          "target": null,
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "decision": "negative"
+        },
+        {
+          "path": "properties.height_roof",
+          "type": "number",
+          "definition": "Roof height above ground elevation, potentially absent",
+          "target": null,
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "decision": "negative"
+        },
+        {
+          "path": "properties.geom_source",
+          "type": "text",
+          "definition": "Source method used to update the feature geometry",
+          "target": null,
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "decision": "negative"
+        },
+        {
+          "path": "properties.construction_year",
+          "type": "number",
+          "definition": "Year building construction was completed",
+          "target": null,
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "decision": "negative"
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.doitt_id",
+          "decision": "unknown",
+          "reason": "Issuer calls this the consistent building key, but its numeric GeoJSON value is incompatible with the current literal string operation.",
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md"
+        },
+        {
+          "path": "properties.bin",
+          "decision": "unknown",
+          "reason": "Issuer says placeholder and duplicate BINs occur; cannot assume a unique feature key.",
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md"
+        },
+        {
+          "path": "properties.objectid",
+          "decision": "unknown",
+          "reason": "Issuer calls this a synthetic internal key and recommends DOITT_ID instead.",
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md"
+        }
+      ],
+      "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels"
+    },
+    {
+      "id": "sf-building-footprints",
+      "family": "sf-sfgis-footprints",
+      "split": "holdout",
+      "issuer": "City and County of San Francisco Enterprise GIS Program",
+      "geography": "San Francisco, California, United States",
+      "datasetUrl": "https://data.sfgov.org/Geographic-Locations-and-Boundaries/Building-Footprints/ynuv-fyni",
+      "acquiredAt": "2026-09-28",
+      "sample": {
+        "file": "sf-sample.json",
+        "url": "https://data.sfgov.org/resource/ynuv-fyni.geojson?$limit=5",
+        "bytes": 8915,
+        "sha256": "cdc4be502c67aca5620d05f91104af79c38a5c3cfa14b9c0e786af20d5b5683f",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "sf-metadata.json",
+        "url": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+        "bytes": 85216,
+        "sha256": "6984dc32c3bb07361c0812d07b4fd75e818c4f852382677aba0a620e2a498d9b"
+      },
+      "descriptionPdf": {
+        "file": "sf-description.pdf",
+        "url": "https://data.sfgov.org/api/views/ynuv-fyni/files/e6e73cd0-15be-47a8-9463-9c9a725b72c3?download=true&filename=SF_BldgFoot_2017-05_description.pdf",
+        "bytes": 1283528,
+        "sha256": "1fa6af3167ac0935883bff2b3e79fefb8118827e158289f3cbf458769bdf6ad2"
+      },
+      "permission": {
+        "basis": "Issuer metadata and source description specify Open Data Commons PDDL 1.0",
+        "url": "https://opendatacommons.org/licenses/pddl/1.0/",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "GeoJSON RFC 7946 WGS84 longitude/latitude; operation still requires independent runtime validation",
+      "fields": [
+        {
+          "path": "properties.sf16_bldgid",
+          "type": "text",
+          "definition": "San Francisco Building ID with epoch and building-area sequence",
+          "target": "building.sourceKey",
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "decision": "positive"
+        },
+        {
+          "path": "properties.p2010_name",
+          "type": "text",
+          "definition": "Pictometry 2010 building name, if any",
+          "target": "building.name",
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "decision": "positive"
+        },
+        {
+          "path": "geometry",
+          "type": "multipolygon",
+          "definition": "Multi-Polygon building footprint geography",
+          "target": "building.geometry",
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "decision": "positive"
+        },
+        {
+          "path": "properties.mblr",
+          "type": "text",
+          "definition": "Assessor map-block-lot property key; not the building identifier",
+          "target": null,
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "decision": "negative"
+        },
+        {
+          "path": "properties.hgt_median_m",
+          "type": "text",
+          "definition": "LiDAR derived median feature height in metres",
+          "target": null,
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "decision": "negative"
+        },
+        {
+          "path": "properties.gnd_min_m",
+          "type": "text",
+          "definition": "Bare earth minimum ground elevation in metres",
+          "target": null,
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "decision": "negative"
+        },
+        {
+          "path": "properties.data_as_of",
+          "type": "calendar_date",
+          "definition": "Record data-as-of date",
+          "target": null,
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "decision": "negative"
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.globalid",
+          "decision": "unknown",
+          "reason": "A second possible identifier is not independently qualified for this local mapping label.",
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json"
+        },
+        {
+          "path": "properties.area_id",
+          "decision": "unknown",
+          "reason": "Numeric area identifier cannot use literal_identifier@1 without coercion.",
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json"
+        }
+      ],
+      "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels"
+    }
+  ],
+  "labelEncoding": "For each checked field, decision positive maps to target; decision negative excludes all three fixed targets. Excluded fields have decision unknown and are never used as negatives."
+}
