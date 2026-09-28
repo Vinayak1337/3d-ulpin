@@ -26,10 +26,14 @@ PYTHONPATH=services/geo /path/to/venv/bin/python \
   scripts/usp/document-models/run_trial.py \
   --plan /outside-git/trial-plan.json \
   --model-dir /outside-git/base-model \
-  --output-dir /outside-git/run-01
+  --output-dir /outside-git/run-01 \
+  --device cpu
 ```
 
-The receipt records source, model, plan, region, render, artifact and resource
-hashes. The process stops after the first failed region; failed runs remain
-available for inspection. Compare the output with the rendered source before
-deciding whether it is suitable for any later integration.
+The device may be `auto`, `cpu`, or `mps`; CPU uses float32 and MPS uses
+bfloat16. The receipt records
+the selected device and dtype, source, model, plan, region, render, artifact,
+and resource hashes. Worker errors or resource caps stop the trial. A no-text
+result is marked unusable, and remaining selected regions are still checked.
+Failed runs remain available for inspection. Compare the output with the
+rendered source before deciding whether it is suitable for any later integration.

@@ -104,6 +104,7 @@ def main() -> None:
     parser.add_argument("--max-new-tokens", type=int, default=MAX_GENERATED_TOKENS)
     parser.add_argument("--region-timeout-seconds", type=int, default=MAX_REGION_SECONDS)
     parser.add_argument("--memory-cap-mib", type=int, default=6144)
+    parser.add_argument("--device", choices=("auto", "cpu", "mps"), default="auto")
     args = parser.parse_args()
     if not (1 <= args.max_new_tokens <= MAX_GENERATED_TOKENS):
         parser.error("output token cap exceeds the trial profile")
@@ -160,7 +161,7 @@ def main() -> None:
                    "maxImageSide": MAX_SIDE, "maxGeneratedTokens": args.max_new_tokens,
                    "cpuThreads": MAX_CPU_THREADS, "regionTimeoutSeconds": args.region_timeout_seconds,
                    "processMemoryCapBytes": args.memory_cap_mib * 1024**2,
-                   "mpsMemoryFraction": MPS_MEMORY_FRACTION},
+                   "mpsMemoryFraction": MPS_MEMORY_FRACTION, "requestedDevice": args.device},
         "runtime": {"python": sys.version.split()[0], "platform": platform.platform(),
                     "torch": importlib.metadata.version("torch"),
                     "transformers": importlib.metadata.version("transformers"),
@@ -186,9 +187,14 @@ def main() -> None:
             command = [sys.executable, "-m", "geo.usp_document_candidates.worker",
                        "--image", str(image_path), "--model-dir", str(args.model_dir),
                        "--output-dir", str(output_path), "--max-new-tokens", str(args.max_new_tokens),
-                       "--cpu-threads", str(MAX_CPU_THREADS)]
+                       "--cpu-threads", str(MAX_CPU_THREADS), "--device", args.device]
             item["worker"] = _run_worker(command, args.output_dir / (region["id"] + ".log"),
                                          args.region_timeout_seconds, args.memory_cap_mib * 1024**2)
+            selection_path = output_path / "runtime-selection.json"
+            if selection_path.exists():
+                selection = json.loads(selection_path.read_text())
+                item["runtimeSelection"] = {"path": str(selection_path),
+                                            "sha256": sha256_file(selection_path), **selection}
             if item["worker"]["exitCode"] != 0 or item["worker"]["stopReason"]:
                 item["status"] = "failed"
                 item["failure"] = item["worker"]["stopReason"] or "model_or_tool_error"
