@@ -246,7 +246,7 @@ ${['LADM', 'CityGML', 'CityJSON 2.0', '3D Tiles', 'ULPIN'].map((s, i) => `<div c
 add('end', `<div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%, rgba(5,13,11,.6), rgba(5,13,11,.95) 70%)"></div>
 <div class="logo" style="top:320px"><div class="name">Bhu<b>Aayam</b></div><div class="tag" style="margin-top:34px">Every floor. Every flat. One verifiable record.</div>
 <div style="margin-top:70px;font:600 18px var(--mono);letter-spacing:.2em;color:var(--muted);text-transform:uppercase">Identify · Prove · Govern</div>
-<div style="margin-top:18px;font:600 16px var(--mono);letter-spacing:.2em;color:#5d7870;text-transform:uppercase">Smart India Hackathon · Grand Finale</div></div>`);
+<div style="margin-top:18px;font:600 16px var(--mono);letter-spacing:.2em;color:#5d7870;text-transform:uppercase">Smart India Hackathon</div></div>`);
 
 // map HUDs
 add('hud', `<div class="hud-search" id="search"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="#5b6a72" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="#5b6a72" stroke-width="2"/></svg><span class="q" id="q"></span><span class="cur" id="cur"></span></div>
