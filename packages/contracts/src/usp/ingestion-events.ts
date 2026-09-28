@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 const id = z.string().uuid();
+const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const revision = z.number().int().positive();
 export const CASE_INGESTION_VERSION = 'case-ingestion/1' as const;
 /** SSE IDs encode a case/access binding and the durable bigint sequence as canonical decimal. */
@@ -20,6 +21,11 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
     status:z.enum(['evaluated','answered','parked','stale'])}),
   z.strictObject({kind:z.literal('document.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','failed','stale'])}),
+  z.strictObject({kind:z.literal('streaming-vector.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','completed_with_rejections','failed','stale'])}),
+  z.strictObject({kind:z.literal('streaming-vector.chunk'),sourceId:id,sourceRevision:revision,jobId:id,
+    chunkIndex:z.number().int().nonnegative().max(4096),status:z.enum(['ready','quarantined']),resultSha256:hash,
+    records:z.number().int().nonnegative().max(100),sourceComplete:z.literal(false)}),
 ]);
 /** Intentionally separate from registry snapshot events. No original, filename or error text. */
 export const CaseIngestionOutboxSchema = z.strictObject({

@@ -11,8 +11,10 @@ import {failProjectedJob,ingestProjectedResult,markProjectedRunning} from '../us
 import {runPrivateMvtJob,failPrivateMvtJob} from '../usp/tiles/publication';
 import {runDocumentJob} from '../usp/ingestion/document-worker';
 import {runLargeOriginalStorageJob} from '../usp/ingestion/large-original';
+import {runStreamingVectorJob} from '../usp/ingestion/streaming-vector-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
+let streamingVectorWorker:Promise<void>|undefined;
 
 type WorkerReply = {
   jobId: string;
@@ -181,6 +183,12 @@ export async function dispatchTick(): Promise<number> {
         if(!largeOriginalWorker)largeOriginalWorker=runLargeOriginalStorageJob(job.id)
           .catch(()=>{/* The upload job persists its own bounded retry/failure state. */})
           .finally(()=>{largeOriginalWorker=undefined;});
+        return;
+      }
+      if(job.operation==='streaming-vector'){
+        if(!streamingVectorWorker)streamingVectorWorker=runStreamingVectorJob(job.id)
+          .catch(()=>{/* Fenced attempt and durable job state permit replay after restart. */})
+          .finally(()=>{streamingVectorWorker=undefined;});
         return;
       }
       if(job.operation==='document-extraction'){
