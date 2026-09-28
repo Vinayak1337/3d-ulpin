@@ -50,7 +50,17 @@ export async function assertStreamedProfileInputTx(client:PoolClient,input:Strea
     conflict('The pinned original, reader, profiler or private access changed.');
   return {raw,ctx};
 }
+async function rawSourceIntegrityTx(client:PoolClient,input:StreamedProfileInput){
+  const row=(await client.query('SELECT issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 AND case_id=$2 AND source_id=$3 FOR SHARE',
+    [input.rawJobId,input.caseId,input.sourceId])).rows[0]??notFound('Raw streaming state unavailable.');
+  return row.issue_code==='STREAMING_SOURCE_INTEGRITY';
+}
+async function assertRawSourceIntegrityTx(client:PoolClient,input:StreamedProfileInput){
+  if(await rawSourceIntegrityTx(client,input))
+    throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original failed integrity verification.');
+}
 export async function readStreamedGenerationTx(client:PoolClient,input:StreamedProfileInput,index:number){
+  await assertRawSourceIntegrityTx(client,input);
   const row=(await client.query('SELECT body,body_sha256,raw_chunk_index,raw_result_sha256,sealed FROM usp_streamed_profile_generations WHERE job_id=$1 AND generation=$2',
     [input.jobId,index])).rows[0]??notFound('This profile generation is not published.');
   const body=StreamedProfileGenerationSchema.parse(row.body);
@@ -78,6 +88,7 @@ export async function loadSealedStreamedProfileTx(client:PoolClient,profileJobId
     [profileJobId,caseId,sourceId])).rows[0]??notFound('Streamed profile job not found.');
   const input=StreamedProfileInputSchema.parse(job.payload);
   await assertStreamedProfileInputTx(client,input);
+  await assertRawSourceIntegrityTx(client,input);
   const state=(await client.query('SELECT state,sealed_generation FROM usp_streamed_profile_imports WHERE job_id=$1 FOR SHARE',
     [profileJobId])).rows[0]??notFound('Streamed profile state unavailable.');
   if(input.rawJobId!==rawJobId||state.state!=='sealed'||state.sealed_generation!==generation)
@@ -89,14 +100,16 @@ export async function loadSealedStreamedProfileTx(client:PoolClient,profileJobId
 }
 async function statusTx(client:PoolClient,input:StreamedProfileInput){
   await assertStreamedProfileInputTx(client,input);
+  const sourceIntegrityFailed=await rawSourceIntegrityTx(client,input);
   const state=(await client.query('SELECT * FROM usp_streamed_profile_imports WHERE job_id=$1',[input.jobId])).rows[0]
     ??notFound('Streamed profile state unavailable.');
-  const latest=state.next_raw_index===0&&state.sealed_generation===null?null:
+  const latest=sourceIntegrityFailed||state.next_raw_index===0&&state.sealed_generation===null?null:
     await readStreamedGenerationTx(client,input,state.sealed_generation??state.next_raw_index-1);
   return StreamedProfileStatusSchema.parse({version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
     caseId:input.caseId,sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
-    status:state.state,nextRawIndex:state.next_raw_index,latest,issueCode:state.issue_code,
-    sourceComplete:state.state==='sealed'&&latest?.coverage==='sealed',
+    status:sourceIntegrityFailed?'failed':state.state,nextRawIndex:state.next_raw_index,latest,
+    issueCode:sourceIntegrityFailed?'STREAMING_SOURCE_INTEGRITY':state.issue_code,
+    sourceComplete:!sourceIntegrityFailed&&state.state==='sealed'&&latest?.coverage==='sealed',
     usableCoverage:!!latest&&latest.accepted>0,identityComplete:false});
 }
 

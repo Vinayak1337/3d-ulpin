@@ -11,6 +11,8 @@ type Field=ChunkMappingObservation['sourceKey'];
 export type KeyRow={source_key_sha256:string;source_key:string;first_feature_index:number};
 export type KeyDecision={hash:string;value:string;firstIndex:number;laterIndex:number|null};
 const unknown=(path:string|null=null):Field=>({state:'unknown',value:null,sourcePath:path});
+/** The existing literal_text@1 operation copies only bounded, nonempty, verbatim text. */
+export const literalTextValueValid=(value:string)=>value.length>0&&value.length<=2048&&value.trim()===value;
 const pathForProperty=(key:string)=>`/features/*/properties/${key.replaceAll('~','~0').replaceAll('/','~1')}`;
 const valueType=(value:unknown)=>Array.isArray(value)?'array':typeof value;
 const field=(feature:Record<string,unknown>,path:string):Field=>{
@@ -84,6 +86,9 @@ export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:Plan,p
     const feature=record.feature as Record<string,unknown>;
     issues.push(...sourceShapeIssues(feature,profile));
     let sourceKey=field(feature,keyPath),name=namePath?field(feature,namePath):unknown();
+    if(name.state==='known'&&!literalTextValueValid(name.value!)){
+      name=unknown(namePath);issues.push('MAPPING_TEXT_INVALID');
+    }
     if(sourceKey.state==='known'){
       if(!sourceKey.value||sourceKey.value.length>256||sourceKey.value.trim()!==sourceKey.value){
         sourceKey=unknown(keyPath);issues.push('MAPPING_IDENTITY_INVALID');
@@ -99,7 +104,8 @@ export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:Plan,p
     }else issues.push(sourceKey.state==='null'?'MAPPING_IDENTITY_NULL':sourceKey.state==='absent'?'MAPPING_IDENTITY_ABSENT':'MAPPING_IDENTITY_INVALID');
     const identityIssue=issues.some(item=>item.startsWith('MAPPING_IDENTITY')||item==='DUPLICATE_SOURCE_KEY'||item==='SOURCE_KEY_HASH_COLLISION');
     observations.push({featureIndex:record.featureIndex,byteStart:record.byteStart,byteEnd:record.byteEnd,
-      rawSha256:record.rawSha256,disposition:identityIssue||issues.some(item=>item.startsWith('SCHEMA_DRIFT'))?'unresolved':'observed',sourceKey,name,
+      rawSha256:record.rawSha256,disposition:identityIssue||issues.includes('MAPPING_TEXT_INVALID')
+        ||issues.some(item=>item.startsWith('SCHEMA_DRIFT'))?'unresolved':'observed',sourceKey,name,
       geometryRef:{rawJobId,chunkIndex,featureIndex:record.featureIndex,rawSha256:record.rawSha256,
         sourcePath:'/features/*/geometry'},issueCodes:[...new Set(issues)].slice(0,8)});
   }
