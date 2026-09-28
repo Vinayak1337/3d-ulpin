@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "usp-field-mapping-corpus-v3",
-  "featureVersion": "issuer-field-profile-v3",
+  "schemaVersion": "usp-field-mapping-corpus-v4",
+  "featureVersion": "publisher-metadata-profile-v4",
   "scope": "offline foreign-source research only; no production training or promotion",
   "targets": [
     {
@@ -65,7 +65,11 @@
               "string"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "globalid",
+            "fieldPointer": "/columns/7"
+          }
         },
         {
           "path": "geometry",
@@ -82,7 +86,11 @@
               "geojson:MultiPolygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "the_geom",
+            "fieldPointer": "/columns/0"
+          }
         },
         {
           "path": "properties.activestatus",
@@ -98,6 +106,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "activestatus",
+            "fieldPointer": "/columns/3"
           }
         },
         {
@@ -114,6 +126,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "shape_starea",
+            "fieldPointer": "/columns/4"
           }
         },
         {
@@ -130,6 +146,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "shape_stlength",
+            "fieldPointer": "/columns/5"
           }
         }
       ],
@@ -181,7 +201,11 @@
         }
       ],
       "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels",
-      "representation": "GeoJSON building footprint FeatureCollection"
+      "representation": "GeoJSON building footprint FeatureCollection",
+      "inputEvidence": {
+        "format": "socrata-view-json",
+        "titlePointer": "/name"
+      }
     },
     {
       "id": "nyc-building-footprints",
@@ -229,7 +253,11 @@
               "string"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "doitt_id",
+            "fieldLine": 38
+          }
         },
         {
           "path": "properties.name",
@@ -244,7 +272,11 @@
             "absentCount": 0,
             "nonNullTypes": []
           },
-          "wireCompatibleRows": 0
+          "wireCompatibleRows": 0,
+          "inputEvidence": {
+            "sourceField": "name",
+            "fieldLine": 47
+          }
         },
         {
           "path": "geometry",
@@ -261,7 +293,11 @@
               "geojson:MultiPolygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "SHAPE",
+            "fieldLine": 48
+          }
         },
         {
           "path": "properties.height_roof",
@@ -277,6 +313,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "height_roof",
+            "fieldLine": 43
           }
         },
         {
@@ -293,6 +333,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "geom_source",
+            "fieldLine": 40
           }
         },
         {
@@ -309,6 +353,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "construction_year",
+            "fieldLine": 37
           }
         }
       ],
@@ -375,7 +423,11 @@
         }
       ],
       "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels",
-      "representation": "GeoJSON building footprint FeatureCollection"
+      "representation": "GeoJSON building footprint FeatureCollection",
+      "inputEvidence": {
+        "format": "nyc-markdown-table",
+        "titleLine": 1
+      }
     },
     {
       "id": "sf-building-footprints",
@@ -428,7 +480,11 @@
               "string"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "sf16_bldgid",
+            "fieldPointer": "/columns/0"
+          }
         },
         {
           "path": "properties.p2010_name",
@@ -445,7 +501,11 @@
               "string"
             ]
           },
-          "wireCompatibleRows": 3
+          "wireCompatibleRows": 3,
+          "inputEvidence": {
+            "sourceField": "p2010_name",
+            "fieldPointer": "/columns/3"
+          }
         },
         {
           "path": "geometry",
@@ -462,7 +522,11 @@
               "geojson:MultiPolygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "shape",
+            "fieldPointer": "/columns/42"
+          }
         },
         {
           "path": "properties.hgt_median_m",
@@ -478,6 +542,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "hgt_median_m",
+            "fieldPointer": "/columns/38"
           }
         },
         {
@@ -494,6 +562,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "gnd_min_m",
+            "fieldPointer": "/columns/36"
           }
         },
         {
@@ -510,6 +582,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "data_as_of",
+            "fieldPointer": "/columns/43"
           }
         }
       ],
@@ -561,7 +637,11 @@
         }
       ],
       "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels",
-      "representation": "GeoJSON building footprint FeatureCollection"
+      "representation": "GeoJSON building footprint FeatureCollection",
+      "inputEvidence": {
+        "format": "socrata-view-json",
+        "titlePointer": "/name"
+      }
     },
     {
       "id": "massgis-building-structures",
@@ -609,7 +689,11 @@
               "geojson:Polygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "geometry",
+            "geometryTypePointer": "/geometryType"
+          }
         },
         {
           "path": "properties.TOWN_ID",
@@ -625,6 +709,10 @@
             "nonNullTypes": [
               "number"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "TOWN_ID",
+            "fieldPointer": "/fields/7"
           }
         },
         {
@@ -641,6 +729,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "SOURCE",
+            "fieldPointer": "/fields/1"
           }
         },
         {
@@ -657,6 +749,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "SOURCETYPE",
+            "fieldPointer": "/fields/2"
           }
         },
         {
@@ -673,6 +769,10 @@
             "nonNullTypes": [
               "number"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "AREA_SQ_FT",
+            "fieldPointer": "/fields/6"
           }
         },
         {
@@ -689,6 +789,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "MOVED",
+            "fieldPointer": "/fields/5"
           }
         }
       ],
@@ -734,7 +838,11 @@
           }
         }
       ],
-      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels"
+      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      }
     },
     {
       "id": "vancouver-building-footprints-2015",
@@ -783,7 +891,11 @@
               "geojson:Polygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "geom",
+            "fieldPointer": "/fields/1"
+          }
         },
         {
           "path": "properties.geo_point_2d",
@@ -799,6 +911,10 @@
             "nonNullTypes": [
               "object"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "geo_point_2d",
+            "fieldPointer": "/fields/2"
           }
         }
       ],
@@ -823,6 +939,10 @@
         "geometrySourcePath": "results[*].geom.geometry",
         "propertiesSourcePath": "results[*] except geom",
         "scope": "in-memory learner profile only; no production parser claim"
+      },
+      "inputEvidence": {
+        "format": "opendatasoft-dataset-json",
+        "titlePointer": "/metas/default/title"
       }
     },
     {
@@ -870,6 +990,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "GEOID",
+            "fieldPointer": "/fields/2"
           }
         },
         {
@@ -886,6 +1010,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "NAME",
+            "fieldPointer": "/fields/7"
           }
         },
         {
@@ -903,6 +1031,10 @@
               "geojson:MultiPolygon",
               "geojson:Polygon"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "STGEOMETRY",
+            "fieldPointer": "/fields/14"
           }
         },
         {
@@ -919,6 +1051,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "STATE",
+            "fieldPointer": "/fields/3"
           }
         },
         {
@@ -935,6 +1071,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "COUNTY",
+            "fieldPointer": "/fields/4"
           }
         },
         {
@@ -951,6 +1091,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "CENTLAT",
+            "fieldPointer": "/fields/15"
           }
         }
       ],
@@ -970,7 +1114,11 @@
           }
         }
       ],
-      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels"
+      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      }
     },
     {
       "id": "calgary-buildings",
@@ -1018,7 +1166,11 @@
               "geojson:MultiPolygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "multipolygon",
+            "fieldPointer": "/columns/7"
+          }
         },
         {
           "path": "properties.bldg_code",
@@ -1034,6 +1186,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "bldg_code",
+            "fieldPointer": "/columns/0"
           }
         },
         {
@@ -1050,6 +1206,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "bldg_code_desc",
+            "fieldPointer": "/columns/1"
           }
         },
         {
@@ -1066,6 +1226,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "x_coord",
+            "fieldPointer": "/columns/2"
           }
         },
         {
@@ -1082,6 +1246,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "y_coord",
+            "fieldPointer": "/columns/3"
           }
         },
         {
@@ -1098,6 +1266,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "obscured",
+            "fieldPointer": "/columns/4"
           }
         },
         {
@@ -1114,11 +1286,19 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "shape__area",
+            "fieldPointer": "/columns/8"
           }
         }
       ],
       "excludedFields": [],
-      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels"
+      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels",
+      "inputEvidence": {
+        "format": "socrata-view-json",
+        "titlePointer": "/name"
+      }
     },
     {
       "id": "dc-building-footprints-2021",
@@ -1166,7 +1346,11 @@
               "string"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "GLOBALID",
+            "fieldPointer": "/fields/9"
+          }
         },
         {
           "path": "geometry",
@@ -1183,7 +1367,11 @@
               "geojson:Polygon"
             ]
           },
-          "wireCompatibleRows": 5
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "SHAPE",
+            "fieldPointer": "/fields/5"
+          }
         },
         {
           "path": "properties.FEATURECODE",
@@ -1199,6 +1387,10 @@
             "nonNullTypes": [
               "number"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "FEATURECODE",
+            "fieldPointer": "/fields/1"
           }
         },
         {
@@ -1215,6 +1407,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "DESCRIPTION",
+            "fieldPointer": "/fields/2"
           }
         },
         {
@@ -1231,6 +1427,10 @@
             "nonNullTypes": [
               "number"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "CAPTUREYEAR",
+            "fieldPointer": "/fields/3"
           }
         },
         {
@@ -1247,6 +1447,10 @@
             "nonNullTypes": [
               "string"
             ]
+          },
+          "inputEvidence": {
+            "sourceField": "CAPTUREACTION",
+            "fieldPointer": "/fields/4"
           }
         }
       ],
@@ -1266,8 +1470,12 @@
           }
         }
       ],
-      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels"
+      "labelOrigin": "Issuer dataset/layer metadata and linked authority definitions, checked against unchanged five-row source response; no model-generated labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      }
     }
   ],
-  "labelEncoding": "Issuer definitions and retained wire shapes are separate. Positive, negative and excluded unknown semantics stay distinct. Null and absent counts are distinct; no numeric identifier is coerced to a string. Calibration and final evaluation are independent source families; SF is prior-observed diagnostic only."
+  "labelEncoding": "Issuer-authored title/alias/description/type for model input resolve from exact locators in hash-pinned metadata. Reviewer definitions/evidence/targets and representation are label audit only and never enter v4 encoder text. Observed wire shape/counts derive from unchanged samples; raw record values do not enter features. Prior v3 corpus/run07 is immutable and its answer-bearing reviewer-text model features invalidate a fresh unseen-input claim. The unchanged source-family roles now support one corrected diagnostic fit, not a new DC holdout."
 }

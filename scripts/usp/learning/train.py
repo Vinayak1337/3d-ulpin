@@ -159,13 +159,18 @@ def main() -> None:
         raise RuntimeError(f"adapter reload changed inference scores: {max_reload_delta}")
     tuned_threshold = choose_train_threshold(splits["calibration"], tuned_scores["calibration"])
     tuned = {split: metrics(items, tuned_scores[split], tuned_threshold) for split, items in splits.items()}
+    calibration_coverage = {target["id"]: {"positiveFields": sum(item["target"] == target["id"] for item in splits["calibration"]),
+                                           "wireCompatibleSampleRows": sum(item["wireCompatibleRows"] or 0 for item in splits["calibration"]
+                                                                           if item["target"] == target["id"])}
+                            for target in corpus["targets"]}
     peak_rss = _peak_rss_bytes()
     if peak_rss > fit["maxPeakProcessRssBytes"]:
         raise MemoryError("candidate evaluation exceeded process RSS budget")
     report = {
         "status": "offline_candidate_only",
         "promotion": "blocked_offline_experiment",
-        "evaluationInterpretation": "DC is an independent issuer/schema family reserved before fit. Calgary is the independent threshold-calibration family. Previously inspected SF is diagnostic only. Five-row samples establish schema behavior, not population accuracy or production readiness.",
+        "evaluationInterpretation": "DC was originally reserved in v3 but has now been observed; this one fixed source-profile correction is diagnostic, not a fresh holdout. Calgary has one geometry positive but no sourceKey/name positive calibration fields. SF was previously inspected and is diagnostic only. Five-row samples do not establish population accuracy or production readiness.",
+        "previousProfileIssue": "Immutable v3/run07 feature text included reviewer-authored target explanations and cannot establish realistic unseen-input performance; this v4 run uses only hash-pinned publisher metadata and observed wire aggregates.",
         "freeze": {"file": args.freeze_file.name, "sha256": sha256_file(args.freeze_file), "configuration": config},
         "base": {"repo": "intfloat/multilingual-e5-small", "revision": BASE_REVISION, "weightSha256": BASE_WEIGHT_SHA256, "configSha256": BASE_CONFIG_SHA256, "license": "MIT", "fileSha256": {name: sha256_file(args.base_dir / name) for name in ("config.json", "model.safetensors", "sentencepiece.bpe.model", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "README.md")}},
         "candidate": {"file": adapter_path.name, "sha256": adapter_sha, "fineTunedModule": "BertModel.encoder.layer.11", "trainableParameters": trainable_parameters, "maximumAbsoluteWeightChange": max_weight_change, "steps": fit["steps"], "seed": fit["seed"], "optimizer": "AdamW", "learningRate": fit["learningRate"], "reloadMaxCosineDelta": max_reload_delta},
@@ -177,7 +182,8 @@ def main() -> None:
                    "sourceOriginals": {source["id"]: {kind: {key: source[kind][key] for key in ("sha256", "bytes", "url")}
                                                       for kind in ("sample", "metadata")}
                                        for source in corpus["sources"]}},
-        "comparison": {"thresholdSource": "independent Calgary calibration exact-field decisions",
+        "comparison": {"thresholdSource": "independent Calgary calibration exact-field decisions; sourceKey/name positive calibration absent",
+                       "calibrationTargetCoverage": calibration_coverage,
                        "lexical": lexical, "base": base, "savedReloadedTuned": tuned},
         "resources": {"fitSeconds": round(fit_seconds, 3), "elapsedSeconds": round(time.monotonic() - started, 3), "peakProcessRssBytes": peak_rss, "torchThreads": torch.get_num_threads()},
         "loss": {"first": round(losses[0], 6), "last": round(losses[-1], 6)},
