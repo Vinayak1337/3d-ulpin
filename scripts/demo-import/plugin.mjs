@@ -9,12 +9,70 @@ import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { unzipSync } from 'fflate';
 import { compareSimulatedPlan } from './plan-check.mjs';
+import { layoutFor, residentsFor } from './sample-registry.mjs';
 const profile=JSON.parse(readFileSync(new URL('./nyc-profile.json',import.meta.url),'utf8'));
 const python=fileURLToPath(new URL('./normalize.py',import.meta.url));
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const id=value=>{const h='d30d'+sha(value).slice(4,32);return `${h.slice(0,8)}-${h.slice(8,12)}-5${h.slice(13,16)}-a${h.slice(17,20)}-${h.slice(20)}`;};
 const demoId=v=>/^d30d[0-9a-f]{4}-[0-9a-f-]{27}$/.test(v??'');
 const MAX=32*1024*1024;
+
+/** Floors, units, ledger and residents for a building that has a footprint and a roof height (sample registry). */
+const sampleSources=new Map();
+function outerRing(geometry){
+  const polys=geometry?.type==='Polygon'?[geometry.coordinates]:geometry?.type==='MultiPolygon'?geometry.coordinates:[];
+  let best=null,area=0;
+  for(const poly of polys){const r=poly[0];let a=0;for(let i=0;i<r.length-1;i++)a+=r[i][0]*r[i+1][1]-r[i+1][0]*r[i][1];if(Math.abs(a)>area){area=Math.abs(a);best=r;}}
+  return best;
+}
+function sampleBuilding(job,feature){
+  if(feature.kind!=='building')return null;
+  const layout=layoutFor(outerRing(feature.geometry),feature.height?.value);
+  if(!layout)return null;
+  const b=feature.id,key=feature.sourceKey,base=feature.identifier??`DOITT ${key}`;
+  const props=feature.properties??{};
+  const bbl=props.base_bbl??props.mpluto_bbl??null;
+  const src=(name,kind)=>{const sid=id(`sample:${b}:${name}`);sampleSources.set(sid,{job,feature,name,kind});return sid;};
+  const schedule=src('unit_schedule.csv','table'),levelsSrc=src('level_schedule.csv','table'),decl=src('condominium_declaration.pdf','document');
+  const created=job.createdAt;
+  const floors=layout.floors.map(f=>{
+    const fid=id(`floor:${b}:${f.index}`);
+    const fp=outerRing(feature.geometry);
+    return {id:fid,identifier:`${base}/${f.label}`,ulpin3d:`${base}/${f.label}`,name:f.label,kind:'floor',revision:1,use:f.index===0&&layout.floors.length>2?'retail and lobby':'residential floor',footprint:fp,
+      geometry:{id:fid,alias:f.label,name:f.label,kind:'level',footprint:fp,lower:+f.lower.toFixed(2),upper:+f.upper.toFixed(2),lowerVerified:true,upperVerified:true,bindings:{lower:{sourceId:levelsSrc,locator:`row ${f.index+1}`},upper:{sourceId:levelsSrc,locator:`row ${f.index+1}`}},revision:1,levelLabel:f.label},
+      links:[{targetId:b,type:'within'}],evidence:[{sourceId:levelsSrc,locator:`row ${f.index+1}`}]};
+  });
+  const units=[];let row=0;
+  layout.floors.forEach((f,i)=>{
+    const retail=i===0&&layout.floors.length>2;
+    for(const u of layout.units){
+      row++;
+      const name=retail?`Shop ${u.name}`:`Apt ${i===0?'G':i}${u.name}`;
+      const uid=id(`unit:${b}:${i}:${u.name}`);
+      const ident=`${base}/${f.label}/${name.replace(/\s+/g,'-')}`;
+      units.push({id:uid,identifier:ident,ulpin3d:ident,name,kind:'space',revision:1,use:retail?'retail':'apartment',footprint:u.ring,
+        geometry:{id:uid,alias:name,name,kind:'unit',footprint:u.ring,lower:+f.lower.toFixed(2),upper:+f.upper.toFixed(2),lowerVerified:true,upperVerified:true,
+          bindings:{footprint:{sourceId:schedule,locator:`row ${row}`},lower:{sourceId:levelsSrc,locator:`row ${i+1}`}},revision:1,levelLabel:f.label,area:u.areaM2,height:+(f.upper-f.lower).toFixed(2),volume:+(u.areaM2*(f.upper-f.lower)).toFixed(2)},
+        links:[{targetId:floors[i].id,type:'floor'},{targetId:b,type:'within'}],evidence:[{sourceId:schedule,locator:`row ${row}`}],_row:row,_area:u.areaM2,_level:f.label});
+    }
+  });
+  const total=units.reduce((n,u)=>n+u._area,0);
+  const sv=(value,locator,source='unit_schedule.csv',sid=schedule)=>({value,sourceId:sid,source,locator});
+  const hash=v=>sha(v);
+  const revHash=hash(`${b}:r1`);
+  const ledger={buildingId:b,revision:1,status:'reviewed',address:props.address??null,parcelUlpin:bbl?`BBL ${bbl}`:null,declaration:'Condominium declaration',siteDatum:'Building ground (0 m)',groundElevationM:0,
+    shareBasis:'unit floor area',shareTotalPct:100,shareEvidence:{sourceId:decl,source:'Condominium declaration',locator:'Schedule A'},
+    spaces:units.map(u=>({spaceId:u.id,rights:'exclusive',status:'reviewed',carpetAreaM2:sv(u._area,`row ${u._row}`),declaredAreaM2:sv(+(u._area*1.012).toFixed(2),`row ${u._row}`),sharePct:sv(+(100*u._area/total).toFixed(3),`Schedule A, unit ${u.name}`,'Condominium declaration',decl),parking:null})),
+    readiness:{task:'Assign proposed 3D ULPIN',dimensions:[{name:'Evidence',value:1},{name:'Geometry',value:1},{name:'Association',value:1},{name:'Consistency',value:1},{name:'Review',value:1},{name:'Freshness',value:1}]},
+    checks:[{name:'Exclusive overlap',detail:`${units.length} units · none overlap`,state:'passed',findingId:null},{name:'Partition completeness',detail:`${floors.length} levels`,state:'passed',findingId:null},{name:'Shares total',detail:'100.000 %',state:'passed',findingId:null},{name:'Carpet area',detail:'within 10 % of declared',state:'passed',findingId:null}],
+    checkMethod:'Check v1.4',findingDetails:[],
+    revisions:[{kind:'recorded',title:'r1 Recorded',actor:'Duty officer',at:created,hash:revHash,previousHash:null}],deviation:null,
+    sources:[{sourceId:levelsSrc,kind:'table',name:'level_schedule.csv',file:'level_schedule.csv',summary:`${floors.length} rows`},{sourceId:schedule,kind:'table',name:'unit_schedule.csv',file:'unit_schedule.csv',summary:`${units.length} rows`},{sourceId:decl,kind:'document',name:'Condominium declaration',file:'condominium_declaration.pdf',summary:'Schedule A'}]};
+  const clean=units.map(({_row,_area,_level,...u})=>u);
+  const residents=residentsFor(b,units.filter(u=>u.use==='apartment').map(u=>({spaceId:u.id,unit:u.name,level:u._level})),{locale:'US',asOf:created.slice(0,10)});
+  const sources=[['level_schedule.csv',levelsSrc],['unit_schedule.csv',schedule],['condominium_declaration.pdf',decl]].map(([name,sid])=>({id:sid,name,sha256:hash(`${sid}:${name}`),revision:1,profile:name.endsWith('.pdf')?'document':'table',createdAt:created,url:`/api/v1/sources/${sid}/file`,evidence:[]}));
+  return {floors,units:clean,ledger,residents,sources,rows:{levels:layout.floors,units}};
+}
 export function studioDemoImport(){
   const enabled=process.env.ULPIN_DEMO_IMPORT==='1';
   return {name:'nyc-demo-import',apply:'serve',async configureServer(server){
@@ -121,6 +179,14 @@ export function studioDemoImport(){
           return json(res,202,{id:jid,areaId});
         }
         if(path==='/api/demo/areas'&&req.method==='GET')return json(res,200,[...jobs.values()].map(j=>({...j.area,featureCount:j.features.length})));
+        const sample=parts[2]==='sources'?sampleSources.get(parts[3]):null;
+        if(sample&&path.endsWith('/file')){
+          const built=sampleBuilding(sample.job,sample.feature);
+          const body=sample.name==='level_schedule.csv'?['level,bottom_m,top_m',...built.rows.levels.map(l=>`${l.label},${l.lower.toFixed(2)},${l.upper.toFixed(2)}`)].join('\n')
+            :sample.name==='unit_schedule.csv'?['unit,level,floor_area_m2,use',...built.rows.units.map(u=>`${u.name},${u._level},${u._area},${u.use}`)].join('\n')
+            :`Condominium declaration\n${sample.feature.identifier}\n\nSchedule A: undivided interest by unit floor area\n`+built.rows.units.map(u=>`${u.name} (${u._level}): ${(100*u._area/built.rows.units.reduce((n,x)=>n+x._area,0)).toFixed(3)} %`).join('\n');
+          res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});res.end(body+'\n');return;
+        }
         const job=[...jobs.values()].find(j=>[j.id,j.area.id,...j.sources.map(s=>s.id)].includes(parts[3])||j.features.some(f=>f.id===parts[3]));
         if(!job)return json(res,404,{message:'Local demo record not found'});
         if(path.endsWith('/events')&&req.method==='GET'){
@@ -147,7 +213,14 @@ export function studioDemoImport(){
         if(parts[2]==='import-packages')return json(res,job.state==='FAILED'?422:200,job.state==='FAILED'?{message:job.error}:summary(job));
         if(parts[2]==='buildings'&&path.endsWith('/register')){
           const feature=job.features.find(f=>f.id===parts[3]&&f.kind==='building');if(!feature)return json(res,404,{message:'Building not found'});
-          return json(res,200,{area:job.area,property:feature,register:[],sources:job.sources.filter(s=>!s.format||s.format==='geojson').map(s=>({id:s.id,name:s.name,sha256:s.hash,format:'geojson',url:s.url})),findings:[],parcelIdentifiers:[],parcelAssociations:[],questions:[],revisions:[],latestCheck:null});
+          const built=sampleBuilding(job,feature);
+          const base=job.sources.filter(s=>!s.format||s.format==='geojson').map(s=>({id:s.id,name:s.name,sha256:s.hash,revision:1,createdAt:job.createdAt,format:'geojson',url:s.url,evidence:[]}));
+          return json(res,200,{schemaVersion:'ulpin-register/1',exportedAt:new Date().toISOString(),area:job.area,property:{...feature,revision:built?1:feature.revision},register:built?[...built.floors].reverse().concat(built.units):[],sources:[...base,...(built?.sources??[])],missing:built?[]:['No floors or spaces are recorded for this building yet.'],findings:[],findingQualification:{state:built?'qualified':'not_assessed',missing:[]},parcelIdentifiers:built?.ledger.parcelUlpin?[{value:built.ledger.parcelUlpin,scheme:'NYC BBL'}]:[],parcelAssociations:[],associations:[],questions:[],revisions:[],latestCheck:null,scope:'Technical record of the building. Not a title, certificate or legal order.'});
+        }
+        if(parts[2]==='buildings'&&(path.endsWith('/ledger')||path.endsWith('/residents'))){
+          const feature=job.features.find(f=>f.id===parts[3]&&f.kind==='building');const built=feature&&sampleBuilding(job,feature);
+          if(!built)return json(res,404,{message:'No register for this building'});
+          return json(res,200,path.endsWith('/ledger')?built.ledger:built.residents);
         }
         if(parts[2]==='sources'&&path.endsWith('/file')){const source=sourceFor(job,parts[3]);const binary=source.format&&source.format!=='geojson';res.writeHead(200,{'Content-Type':binary?(source.format==='laz'?'application/octet-stream':'image/tiff'):'application/geo+json','Cache-Control':'no-store',...(binary?{'Content-Disposition':`attachment; filename="${source.name}"`}:{})});res.end(await readFile(join(root,job.id,source.file??source.hash+'.geojson')));return;}
         return json(res,404,{message:'This capability is not provided by the bounded demo adapter'});

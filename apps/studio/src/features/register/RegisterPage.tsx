@@ -73,7 +73,8 @@ function Register({ register }: { register: BuildingRegister }) {
   const actions = useBuildingActions(property.id).data ?? [];
   const model = useMemo(() => buildingModel(register), [register]);
   const byId = useMemo(() => new Map((workflow ?? []).map((w) => [w.spaceId, w])), [workflow]);
-  const features = context?.features ?? NO_FEATURES;
+  // Streamed areas carry their map layers as display features.
+  const features = context?.displayFeatures ?? context?.features ?? NO_FEATURES;
   const feature = features.find((f) => f.id === property.id) ?? null;
   const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, levelId ? 'rights' : 'none');
   const level = model.levels.find((l) => l.id === levelId) ?? null;

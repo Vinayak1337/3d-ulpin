@@ -228,7 +228,7 @@ function BuildingsView() {
     <div className={styles.buildings}>
       {areas.data.map((area, i) => {
         const context = contexts[i]?.data;
-        const buildings = context?.features.filter((f) => f.kind === 'building') ?? [];
+        const buildings = (context?.displayFeatures ?? context?.features)?.filter((f) => f.kind === 'building') ?? [];
         return (
           <section key={area.id} className="ul-stack">
             <div className={styles.areaHead}>
