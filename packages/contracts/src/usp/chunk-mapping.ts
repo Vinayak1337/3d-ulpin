@@ -6,13 +6,23 @@ const issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/);
 export const CHUNK_MAPPING_LIMITS=Object.freeze({version:'chunk-mapping/1',chunkBytes:256*1024,
   chunkFeatures:100,chunks:4096,readMs:12*60*1000,active:1});
 export const ChunkMappingRequestSchema=z.strictObject({requestKey:id,rawJobId:id,
-  expectedCaseRevision:z.number().int().nonnegative(),expectedSourceRevision:z.number().int().positive(),sourceSha256:hash});
+  expectedCaseRevision:z.number().int().nonnegative(),expectedSourceRevision:z.number().int().positive(),sourceSha256:hash,
+  profileJobId:id.optional(),profileGeneration:z.number().int().nonnegative().optional(),profileHash:hash.optional(),
+}).superRefine((value,ctx)=>{
+  const count=[value.profileJobId,value.profileGeneration,value.profileHash].filter(item=>item!==undefined).length;
+  if(count!==0&&count!==3)ctx.addIssue({code:'custom',message:'Pin one complete streamed profile generation.'});
+});
 export const ChunkMappingInputSchema=z.strictObject({version:z.literal(CHUNK_MAPPING_LIMITS.version),jobId:id,
   caseId:id,caseRevision:z.number().int().nonnegative(),sourceId:id,sourceRevision:z.number().int().positive(),
   sourceFamilyId:id,sourceSha256:hash,rawJobId:id,rawInputFingerprint:hash,readerSha256:hash,
   route:z.enum(['approved_recipe','proposal_only']),recipeId:id.nullable(),recipeRevision:z.number().int().positive().nullable(),
   planHash:hash.nullable(),schemaFingerprint:hash.nullable(),workspaceFingerprint:hash.nullable(),
-  converterSha256:hash,subject:z.string().min(1).max(300),accessBinding:hash,inputFingerprint:hash});
+  profileJobId:id.optional(),profileGeneration:z.number().int().nonnegative().optional(),profileHash:hash.optional(),
+  converterSha256:hash,subject:z.string().min(1).max(300),accessBinding:hash,inputFingerprint:hash,
+}).superRefine((value,ctx)=>{
+  const count=[value.profileJobId,value.profileGeneration,value.profileHash].filter(item=>item!==undefined).length;
+  if(count!==0&&count!==3)ctx.addIssue({code:'custom',message:'A streamed job must pin one complete profile generation.'});
+});
 export const ChunkMappingFieldSchema=z.strictObject({state:z.enum(['known','absent','null','withheld','conflicting','unknown']),
   value:z.string().max(2048).nullable(),sourcePath:z.string().max(512).nullable()});
 export const ChunkMappingObservationSchema=z.strictObject({featureIndex:z.number().int().nonnegative(),
@@ -25,7 +35,8 @@ export const ChunkMappingPayloadSchema=z.strictObject({version:z.literal(CHUNK_M
   rawJobId:id,sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
   chunkIndex:z.number().int().nonnegative(),rawResultSha256:hash,schemaFingerprint:hash.nullable(),
   recipeRevision:z.number().int().positive(),
-  converterSha256:hash,records:z.array(ChunkMappingObservationSchema).max(CHUNK_MAPPING_LIMITS.chunkFeatures)});
+  converterSha256:hash,profileHash:hash.optional(),
+  records:z.array(ChunkMappingObservationSchema).max(CHUNK_MAPPING_LIMITS.chunkFeatures)});
 export const ChunkMappingSlotSchema=z.strictObject({chunkIndex:z.number().int().nonnegative().max(CHUNK_MAPPING_LIMITS.chunks),
   status:z.enum(['ready','quarantined']),published:z.boolean(),rawResultSha256:hash.nullable(),
   schemaFingerprint:hash.nullable(),schemaDrift:z.boolean(),
@@ -40,6 +51,7 @@ export const ChunkMappingStatusSchema=z.strictObject({version:z.literal(CHUNK_MA
   status:z.enum(['queued','running','needs_input','disabled','unavailable','completed','completed_with_rejections','failed','stale']),
   route:z.enum(['approved_recipe','proposal_only']),recipeId:id.nullable(),recipeRevision:z.number().int().positive().nullable(),
   schemaFingerprint:hash.nullable(),converterSha256:hash,sourceCrs:z.string().max(100).nullable(),
+  profileJobId:id.optional(),profileGeneration:z.number().int().nonnegative().optional(),profileHash:hash.optional(),
   referenceEvidence:z.string().max(200).nullable(),globalPlacement:z.literal('not_qualified'),
   nextPublishIndex:z.number().int().nonnegative(),sealedChunks:z.number().int().nonnegative().nullable(),
   records:z.number().int().nonnegative(),normalized:z.number().int().nonnegative(),
