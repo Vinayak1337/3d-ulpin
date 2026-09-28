@@ -174,6 +174,7 @@ export class SceneEngine {
     this.m = makeMaterials(palette, this.clip);
     enhanceFacade(this.m.bldg, this.look, { windows: true, tint: true });
     enhanceFacade(this.m.bldgContext, this.look, { windows: true, tint: true });
+    enhanceFacade(this.m.occluder, this.look, { windows: true, tint: true });
     // Thematic colours show in both looks: their tint is always on.
     enhanceFacade(this.m.themed, this.look, { windows: true, tint: true, alwaysTint: true, glass: '#9aa7ae' });
     enhanceFacade(this.m.selected, this.look, { windows: true, tint: false, glass: '#8fb3a8' });
@@ -222,6 +223,7 @@ export class SceneEngine {
     this.look.uLook.value = on ? 1 : 0;
     m.bldg.color.set(on ? '#ffffff' : p.building);
     m.bldgContext.color.set(on ? '#dfe2df' : new Color(p.ground).lerp(new Color(p.building), 0.35).getStyle());
+    m.occluder.color.copy(m.bldgContext.color);
     // With recorded roads the land between them is light and the roads dark; without, the open ground reads as street.
     m.ground.color.set(on ? (this.hasRoads ? '#dfe2dc' : '#b9bebd') : p.ground);
     m.road.color.set(on ? '#9aa0a3' : p.road);
@@ -570,7 +572,9 @@ export class SceneEngine {
   project(id: string): { x: number; y: number; visible: boolean } | null {
     let point: Vector3 | undefined;
     const entry = this.entries.get(id);
-    const box = entry?.kind === 'space' && entry.meshes[0]!.visible ? entry.bounds : this.buildingBounds.get(id);
+    // A space anchors on its own box; it is shown only while its level is drawn.
+    const hidden = entry?.kind === 'space' && !entry.meshes[0]!.visible;
+    const box = entry?.kind === 'space' ? entry.bounds : this.buildingBounds.get(id);
     if (box) point = new Vector3((box.min.x + box.max.x) / 2, box.max.y, (box.min.z + box.max.z) / 2);
     else point = this.anchors.get(id)?.clone();
     if (!point) return null;
@@ -580,7 +584,7 @@ export class SceneEngine {
     if (split) { this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
     point.project(this.camera);
     if (split) { this.camera.aspect = fullW / h; this.camera.updateProjectionMatrix(); }
-    const visible = point.z > -1 && point.z < 1 && Math.abs(point.x) < 1.1 && Math.abs(point.y) < 1.1;
+    const visible = !hidden && point.z > -1 && point.z < 1 && Math.abs(point.x) < 1.1 && Math.abs(point.y) < 1.1;
     return { x: ((point.x + 1) / 2) * w, y: ((1 - point.y) / 2) * h, visible };
   }
 
@@ -806,10 +810,18 @@ export class SceneEngine {
     const activeStorey = buildingId && levelId ? this.entries.get(`${buildingId}::${levelId}`)?.storey : undefined;
     const activeBelow = Boolean(activeStorey?.belowGround);
     const participants = new Set(finding?.participants ?? []);
+    // Exploring one building in a dense block: neighbours close enough to hide it turn see-through.
+    const focus = (mode === 'building' || mode === 'level') && buildingId ? this.buildingBounds.get(buildingId)?.clone().expandByVector(new Vector3(45, 0, 45)) : undefined;
+    const hides = (id: string | undefined) => {
+      if (!focus || !id || id === buildingId) return false;
+      const b = this.buildingBounds.get(id);
+      return Boolean(b && b.min.x < focus.max.x && b.max.x > focus.min.x && b.min.z < focus.max.z && b.max.z > focus.min.z);
+    };
 
     for (const entry of this.entries.values()) {
       if (entry.kind === 'building') {
         const selected = entry.id === buildingId;
+        if (hides(entry.id)) { this.setEntry(entry, m.occluder, m.occluderEdge, true, false); continue; }
         let material: Material = entry.themed ? m.themed : entry.known ? m.bldg : m.unknown;
         let edge: Material = m.edge;
         if (mode === 'findings') { material = selected ? m.ghost : m.bldgContext; edge = selected ? m.inkEdge : m.edgeContext; }
@@ -822,6 +834,7 @@ export class SceneEngine {
         this.setEntry(entry, material, edge, true, entry.known && material !== m.ghost && material !== m.faint);
       } else if (entry.kind === 'storey') {
         const selected = entry.buildingId === buildingId;
+        if (hides(entry.buildingId)) { this.setEntry(entry, m.occluder, m.occluderEdge, !entry.storey!.belowGround, false); continue; }
         const storey = entry.storey!;
         const base = storey.estimated ? m.estimated : m.bldg;
         let material: Material = base, edge: Material = m.edge, visible = !storey.belowGround;
@@ -1439,6 +1452,9 @@ function makeMaterials(p: ScenePalette, clip: Plane) {
     parcel: new LineBasicMaterial({ color: p.parcelLine, transparent: true, opacity: 0.7 }),
     bldg: std(p.building),
     bldgContext: std(contextColor),
+    /** Neighbours between the camera and an explored building: see-through, never hiding it. */
+    occluder: std(contextColor, { transparent: true, opacity: 0.14, depthWrite: false }),
+    occluderEdge: new LineBasicMaterial({ color: p.buildingEdge, transparent: true, opacity: 0.16, depthWrite: false }),
     themed: std('#ffffff'),
     hover: std('#ffffff'),
     unknown: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge) }),
