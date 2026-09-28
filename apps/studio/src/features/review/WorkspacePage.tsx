@@ -261,7 +261,7 @@ function LevelRegister({ model, selected, onSelect, datum }: { model: BuildingMo
 function CheckStage({ register, model, ledger, actions }: { register: BuildingRegister; model: BuildingModel; ledger: BuildingLedger | null | undefined; actions: BuildingAction[] }) {
   const [{ look: mapLook, layers: mapLayers }] = useMapView();
   const context = useAreaContext(register.area.id).data;
-  const features = context?.features ?? NONE;
+  const features = context?.displayFeatures ?? context?.features ?? NONE;
   const feature = features.find((f) => f.id === register.property.id) ?? null;
   const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, 'none');
   const findings = register.findings;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { FilePlus, SlidersHorizontal, Trash, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
@@ -55,6 +56,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const buildingImportId = searchParams.get('building-import');
   const buildingImport = useBuildingImport(buildingImportId);
   const floorsLive = Boolean(buildingImportId) && buildingImport.data?.state !== 'done';
+  const client = useQueryClient();
+  // Polling stops when the import reports done; read the building once more so the last levels show.
+  useEffect(() => {
+    if (buildingImport.data?.state === 'done') void client.invalidateQueries({ queryKey: ['buildings', buildingImport.data.buildingId] });
+  }, [buildingImport.data?.state, buildingImport.data?.buildingId, client]);
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
@@ -64,6 +70,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
   const [focusSearch, setFocusSearch] = useState(false);
+  // An overlay just switched on is brought into view once the scene has it.
+  const [focusOverlay, setFocusOverlay] = useState<string | null>(null);
   const [planResult, setPlanResult] = useState<MapPlanCheck | null>(null);
   const activePlan = planResult?.areaId === context.area.id ? planResult : null;
 
@@ -122,10 +130,18 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ...(base.some((f) => f.name) ? [{ key: 'labels', label: 'Names', checked: mapView.labels }] : []),
     ...loadedOverlays.map((o) => ({ key: `overlay:${o.layer}`, label: o.label, checked: mapView.overlays[o.layer] })),
   ];
+  useEffect(() => {
+    if (!engine || !focusOverlay || !overlayInputs.some((o) => o.id === focusOverlay)) return;
+    engine.focusOverlay(focusOverlay);
+    setFocusOverlay(null);
+  }, [engine, focusOverlay, overlayInputs]);
   const onLayer = (key: string, on: boolean) => {
     if (key === 'look') setMapView({ look: on ? 'enhanced' : 'plain' });
     else if (key === 'labels') setMapView({ labels: on });
-    else if (key.startsWith('overlay:')) setMapView({ overlays: { ...mapView.overlays, [key.slice(8)]: on } });
+    else if (key.startsWith('overlay:')) {
+      setMapView({ overlays: { ...mapView.overlays, [key.slice(8)]: on } });
+      if (on) setFocusOverlay(loadedOverlays.find((o) => o.layer === key.slice(8))?.input.id ?? null);
+    }
     else setMapView({ layers: { ...mapView.layers, [key]: on } });
   };
 
@@ -399,8 +415,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
                 selectedSpaceId={selection.spaceId}
                 onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
+                viewFooter={<>
+                  <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
+                  {!feature ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
+                </>}
               />
-              {!feature ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
             </details>
             {feature ? (
               <div className={styles.inspectorColumn} key={feature.id}>

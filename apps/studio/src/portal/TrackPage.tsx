@@ -5,6 +5,7 @@ import type { PublicRequestStatus, RequestState } from '@ulpin/api-client/draft'
 import { Button, Icon, UlpinCode, formatDateTime } from '@ulpin/ui';
 import { trackRequest } from './queries';
 import styles from './Portal.module.css';
+import { REQUEST_KINDS } from '../local/requestKinds';
 
 const STEPS: { state: RequestState; title: string; detail: string }[] = [
   { state: 'submitted', title: 'Received', detail: 'Your request reached the land records office.' },
@@ -52,15 +53,15 @@ function Status({ status: s, onRefresh }: { status: PublicRequestStatus; onRefre
   const rejected = s.state === 'rejected';
   return (
     <section className={styles.done} aria-label={`Request ${s.ref}`}>
-      <span className="portal-label ul-muted">{s.ref} · {s.kind === 'register' ? 'Building register' : 'Record correction'}</span>
-      <span className="portal-h3">{s.kind === 'register' ? `Register of ${s.buildingName}` : `Correction${s.recordName ? ` to ${s.recordName}` : ''}, ${s.buildingName}`}</span>
+      <span className="portal-label ul-muted">{s.ref} · {REQUEST_KINDS[s.kind].short}</span>
+      <span className="portal-h3">{REQUEST_KINDS[s.kind].title(s.buildingName, s.recordName)}</span>
       <UlpinCode code={s.buildingCode} copyable={false} />
       <ol className={styles.steps}>
         {STEPS.map((step) => {
           const h = reached(step.state);
           const isDecision = step.state === 'accepted';
           const title = isDecision && h ? (rejected ? 'Not accepted' : 'Accepted') : step.title;
-          const detail = isDecision && h ? (rejected ? 'The office could not take this request up.' : s.kind === 'register' ? 'The office will record this building\'s floors and flats.' : 'The office will correct the record.') : step.detail;
+          const detail = isDecision && h ? (rejected ? 'The office could not take this request up.' : REQUEST_KINDS[s.kind].accepted) : step.detail;
           return (
             <li key={step.state} data-state={h ? (isDecision && rejected ? 'rejected' : 'done') : 'todo'}>
               <span className={styles.stepDot}>{h ? <Icon icon={isDecision && rejected ? X : Check} size={16} /> : null}</span>

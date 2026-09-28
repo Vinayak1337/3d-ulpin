@@ -3,6 +3,10 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Schemas } from '@ulpin/api-client';
 import type { AreaContext } from './queries';
+import { buildingCode } from '../local/codes';
+
+/** Every uploaded building carries the proposed 3D ULPIN allotted when its import committed, as area imports do. */
+const withCodes = <T extends { id: string; kind: string }>(features: T[] | undefined): T[] | undefined => features?.map((f) => (f.kind === "building" ? { ...f, projectCode: buildingCode(f.id) } : f));
 export const demoImportEnabled = import.meta.env.DEV && import.meta.env.VITE_DEMO_IMPORT === '1';
 export const isDemoId = (id: string | null | undefined) => demoImportEnabled && Boolean(id?.startsWith('d30d'));
 
@@ -43,12 +47,12 @@ export function useDemoAreaStream(areaId: string | undefined) {
       sequence = message.sequence;
       if (event.type === 'snapshot' || event.type === 'metadata') {
         // Keep the loading screen until the normalizer establishes the shared frame.
-        if (message.context.area.reference || message.package.state !== 'RECEIVED') client.setQueryData(key, message.context);
+        if (message.context.area.reference || message.package.state !== 'RECEIVED') client.setQueryData(key, { ...message.context, displayFeatures: withCodes(message.context.displayFeatures) });
       }
       else client.setQueryData<AreaContext>(key, (previous) => {
         if (!previous) return previous;
         return { ...previous, area: message.area ?? previous.area,
-          displayFeatures: message.features ? [...(previous.displayFeatures ?? []), ...message.features] : previous.displayFeatures,
+          displayFeatures: message.features ? [...(previous.displayFeatures ?? []), ...withCodes(message.features as NonNullable<AreaContext["displayFeatures"]>)!] : previous.displayFeatures,
           packages: [message.package] };
       });
       client.setQueryData(['import-packages', message.package.id], message.package);

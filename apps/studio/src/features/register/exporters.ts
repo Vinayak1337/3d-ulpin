@@ -4,8 +4,8 @@ import type { BuildingModel, SpaceModel } from '../../model/building';
 import type { SpaceWorkflow } from '../../local/workflow';
 
 /** Hands the browser a file to save. */
-export function download(name: string, body: string, type: string) {
-  const url = URL.createObjectURL(new Blob([body], { type }));
+export function download(name: string, body: string | Blob, type: string) {
+  const url = URL.createObjectURL(typeof body === 'string' ? new Blob([body], { type }) : body);
   const a = Object.assign(document.createElement('a'), { href: url, download: name });
   document.body.append(a);
   a.click();
@@ -116,3 +116,4 @@ function unitObject(space: SpaceModel, levelId: string, ledger: BuildingLedger |
     geometry: ring && space.lower !== null && space.upper !== null ? [solid(ring as number[][], space.lower, space.upper)] : [],
   };
 }
+

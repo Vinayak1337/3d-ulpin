@@ -31,8 +31,10 @@ const ICONS: Record<ViewKey, PhosphorIcon> = { area: MapTrifold, building: Build
  * The map's left navigation: which view the canvas shows, what it is coloured by (with its key), and on a
  * floor its spaces as a list. Facts about the selection live only in the inspector on the right.
  */
-export function MapSidebar({ views, active, onView, colour, colourOptions, onColour, keySections, layers, onLayer, layersNote, floor, spaces, rightsColour, selectedSpaceId, onSelectSpace, planCheck }: {
+export function MapSidebar({ views, active, onView, colour, colourOptions, onColour, keySections, layers, onLayer, layersNote, floor, spaces, rightsColour, selectedSpaceId, onSelectSpace, planCheck, viewFooter }: {
   planCheck?: ReactNode;
+  /** Shown under the View list only (area actions). */
+  viewFooter?: ReactNode;
   views: SidebarView[]; active: ViewKey; onView: (key: ViewKey) => void;
   colour: Colour; colourOptions: { value: Colour; label: string; disabled?: boolean }[]; onColour: (c: Colour) => void;
   keySections: LegendSection[];
@@ -65,6 +67,7 @@ export function MapSidebar({ views, active, onView, colour, colourOptions, onCol
             </li>
           ))}
         </ul> : null}
+        {section === 'view' ? viewFooter : null}
 
         {section === 'colour' ? <section className={styles.group} aria-label="Colour by">
           <div role="radiogroup" aria-label="Colour by" className={styles.segments}>

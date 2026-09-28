@@ -1,7 +1,7 @@
 import { demoAreas, isDemoId, useDemoAreaStream } from './demo-import';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
-import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard } from '@ulpin/api-client/draft';
+import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
@@ -35,6 +35,7 @@ export const queryKeys = {
   capabilities: ['workspace-capabilities'] as const,
   register: (buildingId: string) => ['buildings', buildingId, 'register'] as const,
   ledger: (buildingId: string) => ['buildings', buildingId, 'ledger'] as const,
+  residents: (buildingId: string) => ['buildings', buildingId, 'residents'] as const,
   workBoard: ['work-board'] as const,
   levelReview: (buildingId: string, levelId: string) => ['buildings', buildingId, 'levels', levelId, 'review'] as const,
   documentPages: (sourceId: string) => ['sources', sourceId, 'pages'] as const,
@@ -56,6 +57,16 @@ export function useBuildingLedger(buildingId: string | null | undefined, live = 
     queryFn: () => getDraft<BuildingLedger>(`/api/v1/buildings/${buildingId}/ledger`),
     staleTime: 60_000,
     refetchInterval: live ? 700 : false,
+  });
+}
+
+/** Registered holders and occupants of each unit. Null when no register extract exists. */
+export function useBuildingResidents(buildingId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.residents(buildingId ?? ''),
+    enabled: Boolean(buildingId),
+    queryFn: () => getDraft<BuildingResidents>(`/api/v1/buildings/${buildingId}/residents`),
+    staleTime: 60_000,
   });
 }
 
@@ -118,7 +129,12 @@ export function useWorkQueue(status: WorkStatusFilter, q: string, page: number) 
 }
 
 export function useAreas() {
-  return useQuery({ queryKey: queryKeys.areas, queryFn: async () => [...unwrap(await api.GET('/api/v1/areas')), ...await demoAreas()], staleTime: 60_000 });
+  return useQuery({ queryKey: queryKeys.areas, queryFn: async () => {
+    // Uploaded areas stay listed when the registry API is unavailable; registry areas need it.
+    const [registry, uploaded] = await Promise.allSettled([api.GET('/api/v1/areas').then(unwrap), demoAreas()]);
+    if (registry.status === 'rejected' && (uploaded.status === 'rejected' || !uploaded.value.length)) throw registry.reason;
+    return [...(registry.status === 'fulfilled' ? registry.value : []), ...(uploaded.status === 'fulfilled' ? uploaded.value : [])];
+  }, staleTime: 60_000 });
 }
 
 /** `live`: an import into this area is streaming, so poll until it settles (SSE replaces this later). */

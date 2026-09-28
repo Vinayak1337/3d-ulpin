@@ -22,7 +22,7 @@ export function AssignDialog({ space, register, onClose, onAssigned }: {
             variant="primary"
             icon={ShieldCheck}
             disabled={assign.isPending}
-            onClick={() => assign.mutate(space.id, { onSuccess: (workflow) => onAssigned(workflow.code!) })}
+            onClick={() => assign.mutate({ spaceId: space.id, buildingId: register.property.id, spaceName: space.name, recordRevision: space.record.revision }, { onSuccess: (workflow) => onAssigned(workflow.code!) })}
           >
             Assign code
           </Button>

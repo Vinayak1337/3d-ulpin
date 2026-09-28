@@ -36,6 +36,10 @@ export const ROUTES: RouteEntry[] = [
     reason: 'READY-01, RIGHTS-01, HISTORY-02: rights, areas, shares, readiness, checks and revisions per building.',
   },
   {
+    method: 'GET', path: '/api/v1/buildings/:buildingId/residents', mode: 'local', draft: true,
+    reason: 'REGISTER-02: registered holders and occupants of each unit.',
+  },
+  {
     method: 'GET', path: '/api/v1/buildings/:buildingId/levels/:levelId/review', mode: 'local', draft: true,
     reason: 'EXTRACT-02: room candidates from a plan page, or the level question to confirm.',
   },

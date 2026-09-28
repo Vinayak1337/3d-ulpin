@@ -1,5 +1,5 @@
 import {
-  BackSide, BufferAttribute, Points, PointsMaterial, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
+  BackSide, MOUSE, Spherical, TOUCH, BufferAttribute, Points, PointsMaterial, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
   Group, HemisphereLight, LineBasicMaterial, LineDashedMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial,
   MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
   SphereGeometry, Vector2, Vector3, WebGLRenderer, type Material, type Object3D,
@@ -8,7 +8,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
 import { FLAT_THICKNESS_M, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
-import { enhanceFacade, facadeTint, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
+import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
   OverlayInput, ScenePalette, SceneLayers, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
@@ -152,6 +152,10 @@ export class SceneEngine {
     this.controls.maxPolarAngle = Math.PI * 0.62; // allows the low underground view
     this.controls.minDistance = 6;
     this.controls.screenSpacePanning = false;
+    // Map navigation: drag moves the map; right-drag, Ctrl/Shift-drag or two fingers rotate; wheel or pinch zooms.
+    this.controls.mouseButtons = { LEFT: MOUSE.PAN, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE };
+    this.controls.touches = { ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE };
+    this.renderer.domElement.addEventListener('wheel', this.onWheel, { capture: true, passive: false });
     this.controls.addEventListener('start', () => { this.flight = null; });
     this.controls.addEventListener('change', () => this.requestRender());
 
@@ -170,9 +174,16 @@ export class SceneEngine {
     this.m = makeMaterials(palette, this.clip);
     enhanceFacade(this.m.bldg, this.look, { windows: true, tint: true });
     enhanceFacade(this.m.bldgContext, this.look, { windows: true, tint: true });
+    enhanceFacade(this.m.occluder, this.look, { windows: true, tint: true });
     // Thematic colours show in both looks: their tint is always on.
     enhanceFacade(this.m.themed, this.look, { windows: true, tint: true, alwaysTint: true, glass: '#9aa7ae' });
     enhanceFacade(this.m.selected, this.look, { windows: true, tint: false, glass: '#8fb3a8' });
+    enhanceFacade(this.m.hover, this.look, { windows: true, tint: true, lift: '#e3f1ea' });
+    enhanceSurface(this.m.road, this.look, 'paving');
+    enhanceSurface(this.m.sidewalk, this.look, 'paving');
+    enhanceSurface(this.m.court, this.look, 'paving');
+    enhanceSurface(this.m.publicLand, this.look, 'grass');
+    enhanceSurface(this.m.water, this.look, 'water');
     this.plate = new Mesh(new BufferGeometry(), this.m.plate);
     this.plate.visible = false;
     this.plate.renderOrder = -2;
@@ -212,15 +223,17 @@ export class SceneEngine {
     this.look.uLook.value = on ? 1 : 0;
     m.bldg.color.set(on ? '#ffffff' : p.building);
     m.bldgContext.color.set(on ? '#dfe2df' : new Color(p.ground).lerp(new Color(p.building), 0.35).getStyle());
+    m.occluder.color.copy(m.bldgContext.color);
     // With recorded roads the land between them is light and the roads dark; without, the open ground reads as street.
     m.ground.color.set(on ? (this.hasRoads ? '#dfe2dc' : '#b9bebd') : p.ground);
-    m.road.color.set(on ? '#a4a9ab' : p.road);
-    m.publicLand.color.set(on ? '#c9dcb8' : p.publicLand);
-    m.water.color.set(on ? '#a9cbe0' : p.water);
-    m.sidewalk.color.set(on ? '#d9d8d2' : p.road);
+    m.road.color.set(on ? '#9aa0a3' : p.road);
+    m.publicLand.color.set(on ? '#b5d19f' : p.publicLand);
+    m.water.color.set(on ? '#7fb0d0' : p.water);
+    m.sidewalk.color.set(on ? '#dedcd5' : p.road);
     m.court.color.set(on ? '#b7c9b5' : p.road);
-    m.edge.color.set(on ? '#cfc9bf' : p.buildingEdge);
-    m.edgeContext.color.set(on ? '#cfc9bf' : p.buildingEdge);
+    // Edges a shade darker than the facades, so neighbouring buildings read apart.
+    m.edge.color.set(on ? '#b3ab9e' : p.buildingEdge);
+    m.edgeContext.color.set(on ? '#b3ab9e' : p.buildingEdge);
     const horizon = new Color(on ? '#eef1ee' : p.ground);
     this.scene.background = on ? this.sky : new Color(p.ground);
     (this.scene.fog as Fog).color.copy(horizon);
@@ -254,6 +267,18 @@ export class SceneEngine {
     const distance = this.camera.position.distanceTo(point);
     const metresPerPx = (2 * distance * Math.tan((this.camera.fov * Math.PI) / 360)) / Math.max(1, this.container.clientHeight);
     return size / metresPerPx;
+  }
+
+  /** Brings an overlay's coverage into view when it is not already fully on screen. */
+  focusOverlay(id: string): void {
+    const object = this.overlays.children.find((c) => c.userData.overlay === id);
+    if (!object) return;
+    const box = new Box3().setFromObject(object);
+    if (box.isEmpty() || this.readableInView(box)) return;
+    box.max.y = Math.max(box.max.y, 1);
+    box.min.y = 0;
+    this.cameraKey = 'overlay';
+    this.flyToNeighbourhood(box, false, 20);
   }
 
   /** Georeferenced imagery and measured point sets, drawn over the base map. Replaces the previous set. */
@@ -547,7 +572,9 @@ export class SceneEngine {
   project(id: string): { x: number; y: number; visible: boolean } | null {
     let point: Vector3 | undefined;
     const entry = this.entries.get(id);
-    const box = entry?.kind === 'space' && entry.meshes[0]!.visible ? entry.bounds : this.buildingBounds.get(id);
+    // A space anchors on its own box; it is shown only while its level is drawn.
+    const hidden = entry?.kind === 'space' && !entry.meshes[0]!.visible;
+    const box = entry?.kind === 'space' ? entry.bounds : this.buildingBounds.get(id);
     if (box) point = new Vector3((box.min.x + box.max.x) / 2, box.max.y, (box.min.z + box.max.z) / 2);
     else point = this.anchors.get(id)?.clone();
     if (!point) return null;
@@ -557,7 +584,7 @@ export class SceneEngine {
     if (split) { this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
     point.project(this.camera);
     if (split) { this.camera.aspect = fullW / h; this.camera.updateProjectionMatrix(); }
-    const visible = point.z > -1 && point.z < 1 && Math.abs(point.x) < 1.1 && Math.abs(point.y) < 1.1;
+    const visible = !hidden && point.z > -1 && point.z < 1 && Math.abs(point.x) < 1.1 && Math.abs(point.y) < 1.1;
     return { x: ((point.x + 1) / 2) * w, y: ((1 - point.y) / 2) * h, visible };
   }
 
@@ -615,6 +642,7 @@ export class SceneEngine {
     canvas.removeEventListener('pointerup', this.onPointerUp);
     canvas.removeEventListener('pointermove', this.onPointerMove);
     canvas.removeEventListener('pointerleave', this.onPointerLeave);
+    canvas.removeEventListener('wheel', this.onWheel, { capture: true });
     for (const tiles of this.tilesets) tiles.dispose();
     this.setOverlays([]);
     this.scene.traverse((object) => (object as Mesh).geometry?.dispose?.());
@@ -635,7 +663,8 @@ export class SceneEngine {
     const geometry = prismGeometry(input.polygons, input.baseM ?? 0, known ? input.heightM! : FLAT_THICKNESS_M);
     if (!known) applyPlanarUV(geometry);
     const themed = Boolean(input.color) && known;
-    paintGeometry(geometry, themed ? new Color(input.color) : facadeTint(input.id, known ? input.heightM : null));
+    const style = facadeStyle(input.id, known ? input.heightM : null);
+    paintGeometry(geometry, themed ? new Color(input.color) : style.color, style.seed);
     const mesh = new Mesh(geometry, themed ? this.m.themed : known ? this.m.bldg : this.m.unknown);
     mesh.castShadow = known;
     mesh.receiveShadow = true;
@@ -666,10 +695,10 @@ export class SceneEngine {
       const bounds = new Box3();
       const id = `${input.id}::${storey.levelId}`;
       const entry: Entry = { kind: 'storey', id, buildingId: input.id, levelId: storey.levelId, storey, meshes, edges, known: true, bounds };
-      const tint = facadeTint(input.id, input.heightM);
+      const style = facadeStyle(input.id, input.heightM);
       for (const geometry of parts) {
         if (storey.estimated) applyPlanarUV(geometry);
-        paintGeometry(geometry, tint);
+        paintGeometry(geometry, style.color, style.seed);
         const mesh = new Mesh(geometry, storey.estimated ? this.m.estimated : this.m.bldg);
         mesh.castShadow = mesh.receiveShadow = true;
         mesh.userData.entry = entry;
@@ -781,10 +810,18 @@ export class SceneEngine {
     const activeStorey = buildingId && levelId ? this.entries.get(`${buildingId}::${levelId}`)?.storey : undefined;
     const activeBelow = Boolean(activeStorey?.belowGround);
     const participants = new Set(finding?.participants ?? []);
+    // Exploring one building in a dense block: neighbours close enough to hide it turn see-through.
+    const focus = (mode === 'building' || mode === 'level') && buildingId ? this.buildingBounds.get(buildingId)?.clone().expandByVector(new Vector3(45, 0, 45)) : undefined;
+    const hides = (id: string | undefined) => {
+      if (!focus || !id || id === buildingId) return false;
+      const b = this.buildingBounds.get(id);
+      return Boolean(b && b.min.x < focus.max.x && b.max.x > focus.min.x && b.min.z < focus.max.z && b.max.z > focus.min.z);
+    };
 
     for (const entry of this.entries.values()) {
       if (entry.kind === 'building') {
         const selected = entry.id === buildingId;
+        if (hides(entry.id)) { this.setEntry(entry, m.occluder, m.occluderEdge, true, false); continue; }
         let material: Material = entry.themed ? m.themed : entry.known ? m.bldg : m.unknown;
         let edge: Material = m.edge;
         if (mode === 'findings') { material = selected ? m.ghost : m.bldgContext; edge = selected ? m.inkEdge : m.edgeContext; }
@@ -792,9 +829,12 @@ export class SceneEngine {
         else if (selected && exploring) { material = m.ghost; edge = m.ghostEdge; }
         else if (selected) { material = m.selected; edge = m.haloEdge; }
         else if (selectedSomething) { material = entry.themed ? m.themed : entry.known ? m.bldgContext : m.unknownContext; edge = m.edgeContext; }
+        // Hover (area and building views): a lighter facade and a dark outline, never on the selection.
+        if (!selected && entry.known && !entry.themed && entry.id === this.hovered && (mode === 'area' || mode === 'building')) { material = m.hover; edge = m.inkEdge; }
         this.setEntry(entry, material, edge, true, entry.known && material !== m.ghost && material !== m.faint);
       } else if (entry.kind === 'storey') {
         const selected = entry.buildingId === buildingId;
+        if (hides(entry.buildingId)) { this.setEntry(entry, m.occluder, m.occluderEdge, !entry.storey!.belowGround, false); continue; }
         const storey = entry.storey!;
         const base = storey.estimated ? m.estimated : m.bldg;
         let material: Material = base, edge: Material = m.edge, visible = !storey.belowGround;
@@ -838,6 +878,8 @@ export class SceneEngine {
       material.depthWrite = !below;
     }
     this.base.visible = mode !== 'underground';
+    // Pads and trees stand on the ground surface; below ground they would float.
+    this.dressing.visible = this.look.uLook.value === 1 && mode !== 'underground';
     if (mode !== 'underground' && this.trenchPoints.length) this.clearTrench();
     this.underground.visible = mode === 'underground';
     this.buildSection(mode === 'underground' ? buildingId : null);
@@ -942,7 +984,7 @@ export class SceneEngine {
     const on = tool === 'section' && typeof sectionM === 'number';
     const planes = on ? [this.clip] : [];
     this.clip.constant = sectionM ?? 0;
-    for (const material of [this.m.bldg, this.m.themed, this.m.selected, this.m.estimated, this.m.ghost, ...this.spaceMaterials.values()]) {
+    for (const material of [this.m.bldg, this.m.hover, this.m.themed, this.m.selected, this.m.estimated, this.m.ghost, ...this.spaceMaterials.values()]) {
       if (material.clippingPlanes?.length !== planes.length) { material.clippingPlanes = planes; material.needsUpdate = true; }
     }
     this.m.edge.clippingPlanes = planes; this.m.haloEdge.clippingPlanes = planes; this.m.spaceEdge.clippingPlanes = planes; this.m.ghostEdge.clippingPlanes = planes;
@@ -1059,6 +1101,19 @@ export class SceneEngine {
   private applyCamera(instant: boolean) {
     const { mode, buildingId, levelId, finding } = this.state;
     const key = `${mode}|${mode === 'area' ? '' : buildingId ?? ''}|${mode === 'level' ? levelId ?? '' : ''}|${mode === 'findings' ? finding?.id ?? '' : ''}`;
+    // Area mode: a selected building the viewer cannot make out (too small or out of view) is brought into
+    // view with its surroundings; a readable one leaves the camera alone, and so does clearing the selection.
+    if (mode === 'area' && this.cameraKey) {
+      const selectedKey = `area|selected:${buildingId ?? ''}`;
+      const box = buildingId ? this.buildingBounds.get(buildingId) : undefined;
+      if (buildingId && box) {
+        if (selectedKey === this.cameraKey) return;
+        this.cameraKey = selectedKey;
+        if (!this.readableInView(box)) this.flyToNeighbourhood(box, instant);
+        return;
+      }
+      if (this.cameraKey.startsWith('area|selected:')) { this.cameraKey = key; return; }
+    }
     if (key === this.cameraKey) return;
     const target = this.cameraTarget(mode, buildingId, levelId, finding);
     if (!target) return;
@@ -1078,6 +1133,35 @@ export class SceneEngine {
       this.controls.target.copy(to[1]);
       this.controls.update();
       this.requestRender();
+      return;
+    }
+    this.flight = { from: [this.camera.position.clone(), this.controls.target.clone()], to, start: performance.now() };
+    this.requestRender();
+  }
+
+  /** Whether a box is fully on screen and at least 60 px tall, so it can be made out. */
+  private readableInView(box: Box3): boolean {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+      const p = new Vector3(x, y, z).project(this.camera);
+      if (p.z > 1) return false;
+      minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+    }
+    const heightPx = ((maxY - minY) / 2) * this.container.clientHeight;
+    return minX > -0.95 && maxX < 0.95 && minY > -0.95 && maxY < 0.9 && heightPx >= 60;
+  }
+
+  /** The building and about 110 m around it, from the area view’s direction. */
+  private flyToNeighbourhood(box: Box3, instant: boolean, minPad = 110) {
+    const pad = Math.max(minPad, (box.max.y - box.min.y) * 1.2);
+    const bounds: Bounds2D = { minX: box.min.x - pad, maxX: box.max.x + pad, minY: -box.max.z - pad, maxY: -box.min.z + pad };
+    const aspect = this.container.clientWidth / Math.max(1, this.container.clientHeight);
+    const hFov = (2 * Math.atan(Math.tan((this.camera.fov * Math.PI) / 360) * aspect) * 180) / Math.PI;
+    const pose = presetFor('area', bounds, (box.max.y - box.min.y) / 3, box.max.y - box.min.y, Math.min(this.camera.fov, hFov));
+    const to: [Vector3, Vector3] = [new Vector3(...pose.position), new Vector3(...pose.target)];
+    if (this.flat) { const d = to[0].distanceTo(to[1]); to[0].set(to[1].x, to[1].y + d, to[1].z + d * 1e-4); }
+    if (instant || this.options.reducedMotion) {
+      this.camera.position.copy(to[0]); this.controls.target.copy(to[1]); this.controls.update(); this.requestRender();
       return;
     }
     this.flight = { from: [this.camera.position.clone(), this.controls.target.clone()], to, start: performance.now() };
@@ -1308,12 +1392,42 @@ export class SceneEngine {
     if (id === this.hovered) return;
     this.hovered = id;
     this.renderer.domElement.style.cursor = id ? 'pointer' : '';
+    this.apply();
     this.options.onHover?.(pick);
   };
+
+  /**
+   * Trackpad two-finger swipe rotates (left/right turns, up/down tilts). A mouse wheel and a pinch
+   * (reported with Ctrl) fall through to the controls and zoom.
+   */
+  private readonly onWheel = (event: WheelEvent) => {
+    if (event.ctrlKey || !this.controls.enabled) return;
+    const mouseWheel = event.deltaMode !== 0 || (event.deltaX === 0 && Math.abs(event.deltaY) >= 40 && Number.isInteger(event.deltaY));
+    if (mouseWheel) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    this.flight = null;
+    this.rotateBy(-event.deltaX * 0.006, -event.deltaY * 0.004);
+  };
+
+  /** Orbits the camera around the target by angles (radians), within the controls' tilt limits. */
+  private rotateBy(dTheta: number, dPhi: number) {
+    const target = this.controls.target;
+    const offset = new Vector3().subVectors(this.camera.position, target);
+    const spherical = new Spherical().setFromVector3(offset);
+    spherical.theta += dTheta;
+    spherical.phi = Math.min(Math.max(spherical.phi + dPhi, Math.max(1e-4, this.controls.minPolarAngle)), Math.max(1e-4, this.controls.maxPolarAngle));
+    offset.setFromSpherical(spherical);
+    this.camera.position.copy(target).add(offset);
+    this.camera.lookAt(target);
+    this.controls.update();
+    this.requestRender();
+  }
 
   private readonly onPointerLeave = () => {
     if (!this.hovered) return;
     this.hovered = null;
+    this.apply();
     this.options.onHover?.({ kind: 'ground' });
   };
 }
@@ -1340,7 +1454,11 @@ function makeMaterials(p: ScenePalette, clip: Plane) {
     parcel: new LineBasicMaterial({ color: p.parcelLine, transparent: true, opacity: 0.7 }),
     bldg: std(p.building),
     bldgContext: std(contextColor),
+    /** Neighbours between the camera and an explored building: see-through, never hiding it. */
+    occluder: std(contextColor, { transparent: true, opacity: 0.14, depthWrite: false }),
+    occluderEdge: new LineBasicMaterial({ color: p.buildingEdge, transparent: true, opacity: 0.16, depthWrite: false }),
     themed: std('#ffffff'),
+    hover: std('#ffffff'),
     unknown: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge) }),
     unknownContext: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge), transparent: true, opacity: 0.45 }),
     estimated: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge) }),
