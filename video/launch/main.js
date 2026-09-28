@@ -12,7 +12,7 @@ const CHAPTERS = [
   [S.problem, '01', 'The problem'], [S.upload, '02', 'Ingest'], [S.ai, '03', 'Understand'], [S.chunks, '04', 'Normalise'],
   [S.stream, '05', 'Stream'], [S.nav, '06', 'Explore'], [S.floors, '07', 'Floors and flats'], [S.checks, '08', 'Check'],
   [S.under, '09', 'Underground'], [S.studio, '10', 'The Studio'], [S.card, '11', 'Property Card'], [S.register, '12', 'Register'],
-  [S.propose, '13', 'What we propose'],
+  [S.propose, '14', 'What we propose'],
 ];
 // [from, to, position, kicker, text]
 const CAPTIONS = [
@@ -58,7 +58,8 @@ const canvas = $('#gl');
 function fit() {
   if (RENDER) return;
   const vw = innerWidth, vh = innerHeight - 44;
-  stage.style.transform = `scale(${Math.min(vw / 1920, vh / 1080)})`;
+  const k = Math.min(vw / 1920, vh / 1080);
+  stage.style.transform = `scale(${k}) translate(-50%, -50%)`;
 }
 addEventListener('resize', fit); fit();
 
@@ -696,29 +697,8 @@ export function seek(t) {
   $('#fade').style.opacity = Math.max(1 - P(t, 0, 0.4), P(t, 195.3, 196));
   if (has3D) city.render();
 }
-window.seek = seek; window.DUR = DUR; window.__city = city;
-window.renderAudio = async () => {
-  const { soundtrack } = await import('./audio.js');
-  const hits = [3.2, 9.1, 14, 26, 37, 53, 77.9, 92, 108, 122, 134, 143.3, 157, 166, 175, 183.8, 188.3];
-  const ticks = [];
-  const q1 = `BIN ${B[idxB].bin}`, q2 = `BIN ${B[hero].bin}`;
-  for (let k = 1; k <= q1.length; k++) ticks.push(93.4 + (k / q1.length) * 1.8);
-  for (let k = 1; k <= q2.length; k++) ticks.push(100.6 + (k / q2.length) * 0.8);
-  const seals = FILES.map((_, i) => 27.2 + i * 0.32 + 4 + i * 0.15);
-  const ab = await soundtrack({ dur: DUR, hits, blips: sim.map((c) => c.pub), ticks, seals });
-  let bin = ''; const u8 = new Uint8Array(ab); for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode(...u8.subarray(i, i + 0x8000));
-  return btoa(bin);
-};
+window.__city = city;
 await document.fonts.load('700 20px "Noto Sans"'); await document.fonts.load('600 20px "Noto Sans Mono"'); await document.fonts.load('600 20px "Noto Sans Devanagari"', 'भू');
 await document.fonts.ready;
-
-/* ───────────── preview player ───────────── */
-let t = +(params.get('t') ?? 0), playing = false, last = 0;
-const scrub = $('#scrub'), clock = $('#clock');
-const draw = () => { seek(t); scrub.value = (t / DUR) * 1000; clock.textContent = t.toFixed(2); };
-$('#play').onclick = () => { playing = !playing; last = performance.now(); $('#play').textContent = playing ? 'Pause' : 'Play'; if (playing) requestAnimationFrame(loop); };
-scrub.oninput = () => { t = (scrub.value / 1000) * DUR; draw(); };
-addEventListener('keydown', (e) => { if (e.code === 'Space') $('#play').click(); if (e.code === 'ArrowRight') { t = Math.min(DUR, t + 1); draw(); } if (e.code === 'ArrowLeft') { t = Math.max(0, t - 1); draw(); } });
-function loop(now) { if (!playing) return; t += (now - last) / 1000; last = now; if (t >= DUR) { t = DUR; playing = false; } draw(); requestAnimationFrame(loop); }
-draw();
-window.ready = true;
+const { initFilm } = await import('./film.js');
+await initFilm({ seekGfx: seek, sim, FILES, params, RENDER });

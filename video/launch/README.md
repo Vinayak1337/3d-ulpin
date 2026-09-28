@@ -1,6 +1,9 @@
 # BhuAayam launch video
 
-A 3 min 16 s motion-graphics launch film, written as code. Every frame is a pure function of time, so renders are deterministic.
+A launch film of about 3 min 36 s, written as code. It cuts **real Studio recordings** (upload, live streaming, floors, checks, Property Card, register, portal) together with motion graphics for what the screen can't show (the problem, AI reading unfamiliar data, the chunk engine with ML hand-over, the proposal). Every frame is a pure function of time, so renders are deterministic.
+
+- `film.js`: the edit, a list of recording clips (with speed, zoom path and captions) and graphics ranges. Recorded clips get a screen frame, cursor, click ripples, file-drop chips and a "Real time" or "2× speed" tag.
+- `record.mjs`: drives the demo Studio (`pnpm studio:demo`) through the flows and captures every painted frame into `rec/` (git-ignored, about 150 MB).
 
 - `index.html`, `style.css`: the 1920 × 1080 stage.
 - `main.js`: the timeline. It holds 14 scenes, the captions, camera choreography and the chunk-engine simulation.
@@ -14,6 +17,7 @@ A 3 min 16 s motion-graphics launch film, written as code. Every frame is a pure
 python3 -m http.server 8790 --bind 127.0.0.1        # from the worktree root
 open "http://127.0.0.1:8790/video/launch/index.html" # Space plays; ←/→ step; ?t=78 starts at 78 s
 node video/launch/render.mjs stills 12,60,115 out/   # PNG stills
+node video/launch/record.mjs video/launch/rec        # re-record the Studio (demo Studio must be running)
 node video/launch/render.mjs video out/video.mp4 30 4
 node video/launch/render.mjs audio out/music.wav
 node video/launch/render.mjs mux out/video.mp4 out/music.wav out/BhuAayam-launch.mp4
@@ -24,6 +28,8 @@ Rendering needs ffmpeg (`brew install ffmpeg`) and the repository's Playwright. 
 ## Voice-over script
 
 The captions carry the story on their own. To add a voice, keep it under the music, around −6 dB below the captions' pace.
+
+In the current cut the order is: open and problem (graphics), ingest (recorded), understand and normalise (graphics), then stream, explore, adaptive intake, documents to floors, check, identify, findings, underground and portal (all recorded), then the proposal and end card (graphics). The times below come from the earlier graphics-only cut; reuse the lines in the new order.
 
 | Time | Scene | Voice-over |
 | --- | --- | --- |
