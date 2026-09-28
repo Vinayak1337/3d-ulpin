@@ -8,7 +8,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
 import { FLAT_THICKNESS_M, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
-import { enhanceFacade, facadeTint, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
+import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
   OverlayInput, ScenePalette, SceneLayers, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
@@ -173,6 +173,12 @@ export class SceneEngine {
     // Thematic colours show in both looks: their tint is always on.
     enhanceFacade(this.m.themed, this.look, { windows: true, tint: true, alwaysTint: true, glass: '#9aa7ae' });
     enhanceFacade(this.m.selected, this.look, { windows: true, tint: false, glass: '#8fb3a8' });
+    enhanceFacade(this.m.hover, this.look, { windows: true, tint: true, lift: '#e3f1ea' });
+    enhanceSurface(this.m.road, this.look, 'paving');
+    enhanceSurface(this.m.sidewalk, this.look, 'paving');
+    enhanceSurface(this.m.court, this.look, 'paving');
+    enhanceSurface(this.m.publicLand, this.look, 'grass');
+    enhanceSurface(this.m.water, this.look, 'water');
     this.plate = new Mesh(new BufferGeometry(), this.m.plate);
     this.plate.visible = false;
     this.plate.renderOrder = -2;
@@ -214,13 +220,14 @@ export class SceneEngine {
     m.bldgContext.color.set(on ? '#dfe2df' : new Color(p.ground).lerp(new Color(p.building), 0.35).getStyle());
     // With recorded roads the land between them is light and the roads dark; without, the open ground reads as street.
     m.ground.color.set(on ? (this.hasRoads ? '#dfe2dc' : '#b9bebd') : p.ground);
-    m.road.color.set(on ? '#a4a9ab' : p.road);
-    m.publicLand.color.set(on ? '#c9dcb8' : p.publicLand);
-    m.water.color.set(on ? '#a9cbe0' : p.water);
-    m.sidewalk.color.set(on ? '#d9d8d2' : p.road);
+    m.road.color.set(on ? '#9aa0a3' : p.road);
+    m.publicLand.color.set(on ? '#b5d19f' : p.publicLand);
+    m.water.color.set(on ? '#7fb0d0' : p.water);
+    m.sidewalk.color.set(on ? '#dedcd5' : p.road);
     m.court.color.set(on ? '#b7c9b5' : p.road);
-    m.edge.color.set(on ? '#cfc9bf' : p.buildingEdge);
-    m.edgeContext.color.set(on ? '#cfc9bf' : p.buildingEdge);
+    // Edges a shade darker than the facades, so neighbouring buildings read apart.
+    m.edge.color.set(on ? '#b3ab9e' : p.buildingEdge);
+    m.edgeContext.color.set(on ? '#b3ab9e' : p.buildingEdge);
     const horizon = new Color(on ? '#eef1ee' : p.ground);
     this.scene.background = on ? this.sky : new Color(p.ground);
     (this.scene.fog as Fog).color.copy(horizon);
@@ -647,7 +654,8 @@ export class SceneEngine {
     const geometry = prismGeometry(input.polygons, input.baseM ?? 0, known ? input.heightM! : FLAT_THICKNESS_M);
     if (!known) applyPlanarUV(geometry);
     const themed = Boolean(input.color) && known;
-    paintGeometry(geometry, themed ? new Color(input.color) : facadeTint(input.id, known ? input.heightM : null));
+    const style = facadeStyle(input.id, known ? input.heightM : null);
+    paintGeometry(geometry, themed ? new Color(input.color) : style.color, style.seed);
     const mesh = new Mesh(geometry, themed ? this.m.themed : known ? this.m.bldg : this.m.unknown);
     mesh.castShadow = known;
     mesh.receiveShadow = true;
@@ -678,10 +686,10 @@ export class SceneEngine {
       const bounds = new Box3();
       const id = `${input.id}::${storey.levelId}`;
       const entry: Entry = { kind: 'storey', id, buildingId: input.id, levelId: storey.levelId, storey, meshes, edges, known: true, bounds };
-      const tint = facadeTint(input.id, input.heightM);
+      const style = facadeStyle(input.id, input.heightM);
       for (const geometry of parts) {
         if (storey.estimated) applyPlanarUV(geometry);
-        paintGeometry(geometry, tint);
+        paintGeometry(geometry, style.color, style.seed);
         const mesh = new Mesh(geometry, storey.estimated ? this.m.estimated : this.m.bldg);
         mesh.castShadow = mesh.receiveShadow = true;
         mesh.userData.entry = entry;
@@ -804,6 +812,8 @@ export class SceneEngine {
         else if (selected && exploring) { material = m.ghost; edge = m.ghostEdge; }
         else if (selected) { material = m.selected; edge = m.haloEdge; }
         else if (selectedSomething) { material = entry.themed ? m.themed : entry.known ? m.bldgContext : m.unknownContext; edge = m.edgeContext; }
+        // Hover (area and building views): a lighter facade and a dark outline, never on the selection.
+        if (!selected && entry.known && !entry.themed && entry.id === this.hovered && (mode === 'area' || mode === 'building')) { material = m.hover; edge = m.inkEdge; }
         this.setEntry(entry, material, edge, true, entry.known && material !== m.ghost && material !== m.faint);
       } else if (entry.kind === 'storey') {
         const selected = entry.buildingId === buildingId;
@@ -954,7 +964,7 @@ export class SceneEngine {
     const on = tool === 'section' && typeof sectionM === 'number';
     const planes = on ? [this.clip] : [];
     this.clip.constant = sectionM ?? 0;
-    for (const material of [this.m.bldg, this.m.themed, this.m.selected, this.m.estimated, this.m.ghost, ...this.spaceMaterials.values()]) {
+    for (const material of [this.m.bldg, this.m.hover, this.m.themed, this.m.selected, this.m.estimated, this.m.ghost, ...this.spaceMaterials.values()]) {
       if (material.clippingPlanes?.length !== planes.length) { material.clippingPlanes = planes; material.needsUpdate = true; }
     }
     this.m.edge.clippingPlanes = planes; this.m.haloEdge.clippingPlanes = planes; this.m.spaceEdge.clippingPlanes = planes; this.m.ghostEdge.clippingPlanes = planes;
@@ -1362,12 +1372,14 @@ export class SceneEngine {
     if (id === this.hovered) return;
     this.hovered = id;
     this.renderer.domElement.style.cursor = id ? 'pointer' : '';
+    this.apply();
     this.options.onHover?.(pick);
   };
 
   private readonly onPointerLeave = () => {
     if (!this.hovered) return;
     this.hovered = null;
+    this.apply();
     this.options.onHover?.({ kind: 'ground' });
   };
 }
@@ -1395,6 +1407,7 @@ function makeMaterials(p: ScenePalette, clip: Plane) {
     bldg: std(p.building),
     bldgContext: std(contextColor),
     themed: std('#ffffff'),
+    hover: std('#ffffff'),
     unknown: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge) }),
     unknownContext: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge), transparent: true, opacity: 0.45 }),
     estimated: new MeshLambertMaterial({ map: hatchTexture(p.building, p.buildingEdge) }),
