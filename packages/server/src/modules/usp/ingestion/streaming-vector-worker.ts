@@ -8,8 +8,9 @@ import {openObjectStream,putOriginal,readObject,sha256} from '../../../infrastru
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
-import {assertStreamingInputTx} from './streaming-vector';
+import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
 import {readStreamingFeatures,sourceRecord} from './streaming-vector-reader';
+import {validateStreamingTopology} from './streaming-vector-validation';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
   status:'ready'|'quarantined';bytes:number;ref:{key:string;sha256:string;bytes:number}|null;issueCode:string|null;resultSha256:string};
@@ -78,7 +79,8 @@ async function acceptSlot(input:StreamingVectorInput,attempt:UspJobAttempt,slot:
 
 async function terminal(input:StreamingVectorInput,attempt:UspJobAttempt,code:string,nextIndex:number,nextFeatureIndex:number,stale=false){
   await transaction(async client=>{
-    if(!stale)await assertStreamingInputTx(client,input);
+    if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
+    else await assertStreamingInputTx(client,input);
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
     if(!state)conflict('The streaming import state is unavailable.');
@@ -103,6 +105,7 @@ async function terminal(input:StreamingVectorInput,attempt:UspJobAttempt,code:st
 
 async function retry(input:StreamingVectorInput,attempt:UspJobAttempt,code:string){
   await transaction(async client=>{
+    await assertStreamingInputTx(client,input);
     await assertUspJobAttemptTx(client,attempt);
     if(attempt.number>=3){
       // The caller will commit a terminal marker under this still-active fence.
@@ -129,6 +132,7 @@ export async function runStreamingVectorJob(jobId:string){
     if(active)return;
     // Exhausted leases get an ordered issue marker, without claiming a fourth attempt.
     await transaction(async client=>{
+      await lockStreamingRowsTx(client,input.caseId,input.sourceId);
       const current=(await client.query("SELECT status FROM jobs WHERE id=$1 AND operation='streaming-vector' FOR UPDATE",[jobId])).rows[0];
       const row=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
       if(!row||!['queued','running'].includes(row.state))return;
@@ -180,6 +184,10 @@ export async function runStreamingVectorJob(jobId:string){
     try{
       result=await readStreamingFeatures(object.body,input.framing,async item=>{
         await pulse();const record=sourceRecord(item);nextFeatureIndex=item.index+1;
+        if(record.disposition==='accepted'){
+          const issue=await validateStreamingTopology((record.feature as {geometry:unknown}).geometry);
+          if(issue){record.disposition='quarantined';record.issueCode=issue;record.feature=null;}
+        }
         let recordBytes=Buffer.byteLength(JSON.stringify(record));
         if(recordBytes>limits.chunkBytes-2048){record.feature=null;record.disposition='quarantined';record.issueCode='DRAFT_UNIT_BUDGET';recordBytes=Buffer.byteLength(JSON.stringify(record));}
         if(pending.length&&(pending.length>=limits.chunkFeatures||pendingBytes+recordBytes+2048>limits.chunkBytes))await flush();

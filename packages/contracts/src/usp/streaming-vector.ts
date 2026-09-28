@@ -2,9 +2,11 @@ import {z} from 'zod';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
 export const STREAMING_VECTOR_LIMITS=Object.freeze({
-  version:'geojson-stream/1',featureBytes:1024*1024,chunkBytes:512*1024,
+  version:'geojson-stream/2',featureBytes:1024*1024,chunkBytes:512*1024,
   chunkFeatures:100,featurePositions:10000,chunks:4096,sourceBytes:128*1024*1024,
-  metadataBytes:64*1024,readMs:10*60*1000,lookaheadSlots:8,stagedBytes:64*1024*1024,
+  metadataBytes:64*1024,metadataFields:32,jsonNesting:64,
+  numberPolicy:'exact_decimal_roundtrip_or_quarantine',duplicateKeyPolicy:'quarantine',
+  readMs:10*60*1000,lookaheadSlots:8,stagedBytes:64*1024*1024,
 });
 export const StreamingVectorFramingSchema=z.enum(['feature-collection','geojson-seq-rs']);
 export const StreamingVectorRequestSchema=z.strictObject({
