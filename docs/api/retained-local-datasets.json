@@ -1,0 +1,153 @@
+[
+  {
+    "manifest": "/Users/vinayak/.codex/task-data/nyc-10013-multimodal/manifest.json",
+    "manifestSha256": "0a382828c60e5b519da2e7a313f6e26202e511ed2d90e862f6550f4307bd10f5",
+    "guide": "docs/api/demo-import.md",
+    "geography": "Bounded lower Manhattan subset within NYC ZCTA 10013, United States",
+    "apiInstallation": "local-opt-in-demo-only",
+    "productionRuntimeVerified": false,
+    "assets": [
+      {
+        "name": "nyc-10013-lidar-2017.laz",
+        "role": "point_cloud",
+        "format": "laz",
+        "sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790",
+        "bytes": 11110715,
+        "count": 1726222,
+        "crs": "COMPD_CS[\"NAD83(2011) / UTM zone 18N + NAVD88 height\",PROJCS[\"NAD83(2011) / UTM zone 18N\",GEOGCS[\"NAD83(2011)\",DATUM[\"NAD83_National_Spatial_Reference_System_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101],AUTHORITY[\"EPSG\",\"1116\"]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6318\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",-75],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"6347\"]],VERT_CS[\"NAVD88 height\",VERT_DATUM[\"North American Vertical Datum 1988\",2005],UNIT[\"metre\",1],AXIS[\"Gravity-related height\",UP],AUTHORITY[\"EPSG\",\"5703\"]]]",
+        "verticalReference": "NAVD88 height, metres, NOAA GEOID18 distribution",
+        "source": "https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9306/20170504_980200.copc.laz",
+        "recipe": "Bounding-box selection of unchanged point records; no decimation, reconstruction or interpolation",
+        "captureYear": 2017
+      },
+      {
+        "name": "nyc-10013-dem-2017.tif",
+        "role": "dem",
+        "format": "geotiff",
+        "sha256": "955d7f051c26cc2a26b7a1e9c00bacb9f4e96b6b5611c716d56be6d91e11d317",
+        "bytes": 989186,
+        "count": 757952,
+        "crs": "EPSG:2263",
+        "verticalReference": "Not qualified from raster header; raw sample units are not assumed",
+        "source": "https://gisdata.ny.gov/elevation/DEM/NYC_TopoBathymetric2017/be_NYC_025.tif",
+        "recipe": "Native-grid window copied without resampling or filling nodata",
+        "captureYear": 2017
+      },
+      {
+        "name": "nyc-10013-ortho-2018.tif",
+        "role": "imagery",
+        "format": "geotiff",
+        "sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716",
+        "bytes": 1036134,
+        "count": 589824,
+        "crs": "EPSG:3857",
+        "verticalReference": null,
+        "source": "https://maps.nyc.gov/tiles/",
+        "recipe": "Exact XYZ tile mosaic; PNG palette expanded to RGBA, georeferenced using Web Mercator tile grid; no resampling",
+        "captureYear": 2018
+      }
+    ],
+    "limitations": [
+      "No verified drone acquisition",
+      "Different survey vintages; no claim of contemporary ground truth",
+      "DEM vertical unit/datum not qualified; no LiDAR minus DEM height calculation",
+      "Imagery and point-cloud evidence do not create ownership, units or new building geometry"
+    ]
+  },
+  {
+    "manifest": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/receipt.json",
+    "manifestSha256": "ce1c4cb35d642682cb3e49bbcbb84137910fd6673716e954e8f577df2b0a9f3d",
+    "guide": "docs/api/README.md#streamed-source-profiles-and-recipes-ai-03b",
+    "issuer": "City of New York Office of Technology and Innovation",
+    "dataset": "BUILDING 5zhs-2jue",
+    "datasetUrl": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue/about_data",
+    "originalUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?%24select=the_geom%2Cdoitt_id%2Cbin%2Cbase_bbl%2Cheight_roof%2Cground_elevation%2Cfeature_code%2Cgeom_source%2Clast_edited_date&%24where=feature_code%3D%272100%27&%24order=doitt_id&%24limit=30000",
+    "acquiredAt": "2026-09-28T03:49:03.433356+00:00",
+    "geography": "New York City, USA; unchanged source coordinates",
+    "selection": {
+      "featureCode": "2100",
+      "orderedBy": "doitt_id",
+      "limit": 30000,
+      "meaning": "bounded first 30000 source features, not all NYC buildings"
+    },
+    "apiInstallation": "verified-in-stopped-isolated-run",
+    "standingInstallation": false,
+    "content": {
+      "externalPath": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/nyc-building-30000-original.geojson",
+      "bytes": 19115995,
+      "sha256": "ee9665242c13a9802fbb260722248dd0009d0076f52b381c0c95338b26fa0737",
+      "featureCount": 30000,
+      "repositoryBytesVerified": false
+    },
+    "terms": {
+      "reference": "https://www.nyc.gov/opendata/get-started/FAQs",
+      "note": "Official NYC Open Data FAQ reports no use restrictions; local private source inspection only. Issuer does not warrant data accuracy."
+    },
+    "reference": {
+      "description": "GeoJSON RFC 7946 export; global placement not qualified by this receipt",
+      "globalPlacement": "not_qualified"
+    },
+    "runtimeEvidence": {
+      "baselineCommit": "867fe08afcae4cb0bd4766dc6b41ad8b8ef3a68a",
+      "baselineReceipt": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/runtime-30000.json",
+      "baselineReceiptSha256": "8af9b247a22f8da44423b5804e660a1e789683730a7f5ac7d83298cf3e9093b1",
+      "correctionCommit": "c16c5f277da6e9fad9e534de02bf2571d867dda7",
+      "correctionReceipt": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/runtime-correction.json",
+      "correctionReceiptSha256": "1f9492bd8a630123db2b038444c382905c526045965dd1f9e19974c08e625d72",
+      "scope": "Retained original, 300 raw chunks, provisional then sealed field inventory, operator-approved exact key/polygon mapping; targeted replay, text-value and original-integrity corrections."
+    },
+    "limitations": [
+      "This is one bounded query response and may omit later rows or concurrent updates.",
+      "Building source identifiers are not parcel ULPINs or ownership evidence.",
+      "No geometry repair or global placement qualification is claimed.",
+      "No AI normalization or learned production routing is qualified.",
+      "No 1–7 GB throughput, memory, global placement or frontend rendering qualification follows.",
+      "Runtime IDs belong to stopped isolated services, not the standing API."
+    ]
+  },
+  {
+    "manifest": "/Users/vinayak/.codex/task-data/ai-04a-docling/trial-plan-v2.json",
+    "manifestSha256": "ce660cb79cc60021eebf1441f3de242afbb991e72a8bde7d0499c84affc11ea2",
+    "guide": "scripts/usp/document-models/README.md",
+    "issuer": "U.S. Geological Survey",
+    "dataset": "USGS Fact Sheet 2025-3036",
+    "datasetUrl": "https://pubs.usgs.gov/publication/fs20253036/full",
+    "originalUrl": "https://pubs.usgs.gov/fs/2025/3036/fs20253036.pdf",
+    "acquiredAt": null,
+    "checkedOn": "2026-09-28",
+    "geography": "Upper Colorado River Basin, United States; document extraction research only",
+    "apiInstallation": "offline-extraction-trial-only",
+    "standingInstallation": false,
+    "productionRuntimeVerified": false,
+    "content": {
+      "externalPath": "/Users/vinayak/.codex/task-data/ai-04a-docling/usgs-fact-sheet-2025-3036.pdf",
+      "bytes": 6219868,
+      "sha256": "5c1576e603b4bb66ff4725329432be66941853838d6ab02544e7b40a0071b5a7",
+      "format": "pdf",
+      "pages": 4,
+      "repositoryBytesVerified": false
+    },
+    "terms": {
+      "reference": "https://www.usgs.gov/faqs/are-usgs-reportspublications-copyrighted",
+      "note": "Local evaluation of USGS-authored text; selected regions avoid potentially third-party imagery. No model output is training ground truth."
+    },
+    "reference": {
+      "description": "Document-only extraction evaluation; no geometry or coordinate transform",
+      "globalPlacement": "not_applicable"
+    },
+    "runtimeEvidence": {
+      "scope": "One page-1 title region; CPU float32; exact title and heading; token-truncated paragraph absent from Markdown; no API/OCR production qualification",
+      "receipt": "/Users/vinayak/.codex/task-data/ai-04a-docling/run-06/trial-receipt.json",
+      "receiptSha256": "a94d6ad788d06d9d76c3b2574a66753a54fb08fa86c60d0dc30e144924485816",
+      "assessment": "/Users/vinayak/.codex/task-data/ai-04a-docling/cpu-diagnostic-assessment.json",
+      "assessmentSha256": "0316fd92806adff195cc1b36cb88d5f9c490d516c52f8f7159725cde5691e1d1",
+      "codeCommit": "3404d7747e69b458537b59219551449d0010a0d8"
+    },
+    "limitations": [
+      "Exact acquisition timestamp was not retained in the trial plan",
+      "No scanned-map CPU qualification",
+      "Model-derived output remains separate from native text and learning labels",
+      "No parcel, ownership, Indian registry or whole-document accuracy claim"
+    ]
+  }
+]

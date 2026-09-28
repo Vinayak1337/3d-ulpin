@@ -105,6 +105,10 @@ def catalogue():
                 'purpose': 'Foreign official native-text extraction test; not property facts or an installed document.',
                 'handoff': 'docs/evidence/usp/document-ingestion-handoff.md',
             } for asset in documents]
+    learning_path = ROOT / "docs/api/learning-corpus.json"
+    learning_raw = learning_path.read_bytes()
+    learning = json.loads(learning_raw)
+    local_sources = json.loads((ROOT / "docs/api/retained-local-datasets.json").read_text())
     return {
         "schemaVersion": "ulpin-api-dataset-catalog/1",
         "purpose": "Source metadata for API integration; not installed records or permission grants.",
@@ -113,6 +117,22 @@ def catalogue():
         "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
         "servingObservation": json.loads((ROOT / "docs/api/serving-observation.json").read_text()),
         "packs": packs, "retainedOfficialTestSources": retained,
+        # External originals are not reproducible repository assets. Preserve
+        # their separately maintained acquisition metadata on every regeneration.
+        "localDemoSources": [source for source in local_sources
+                             if source.get("apiInstallation") == "local-opt-in-demo-only"],
+        "retainedExternalSources": [source for source in local_sources
+                                    if source.get("apiInstallation") != "local-opt-in-demo-only"],
+        "offlineLearningCorpus": {
+            "manifest": "docs/api/learning-corpus.json", "manifestSha256": sha(learning_raw),
+            "guide": "docs/api/learning.md", "scope": learning["scope"],
+            "apiInstallation": "not-installed", "productionModelPromoted": False,
+            "availability": "Originals retained outside Git; manifest pins are not repository-byte verification.",
+            "sources": [{key: source[key] for key in (
+                "id", "family", "split", "issuer", "geography", "datasetUrl", "acquiredAt",
+                "sample", "metadata", "permission", "geometryCrs")}
+                for source in learning["sources"]],
+        },
     }
 
 

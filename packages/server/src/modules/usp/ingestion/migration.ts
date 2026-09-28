@@ -7,6 +7,7 @@ export async function migrateManualIngestionTx(client: PoolClient) {
 
 export async function migrateLargeOriginalTx(client: PoolClient) {
   await client.query(sql('ingestion.large.schema'));
+  await client.query(sql('ingestion.large.capacity'));
 }
 
 export async function migrateIngestionEventsTx(client: PoolClient) {
@@ -26,4 +27,13 @@ export async function migrateSemanticChunksTx(client:PoolClient){
 }
 export async function migrateSufficiencyTx(client:PoolClient){
   await client.query(sql('ingestion.sufficiency.schema'));
+}
+export async function migrateStreamingVectorTx(client:PoolClient){
+  await client.query(sql('ingestion.streaming-vector.schema'));
+}
+export async function migrateChunkMappingTx(client:PoolClient){
+  await client.query(sql('ingestion.chunk-mapping.schema'));
+}
+export async function migrateStreamedProfileTx(client:PoolClient){
+  await client.query(sql('ingestion.streamed-profile.schema'));
 }
