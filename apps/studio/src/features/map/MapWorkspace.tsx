@@ -409,7 +409,10 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
                 selectedSpaceId={selection.spaceId}
                 onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
-                viewFooter={!feature ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
+                viewFooter={<>
+                  <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
+                  {!feature ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
+                </>}
               />
             </details>
             {feature ? (

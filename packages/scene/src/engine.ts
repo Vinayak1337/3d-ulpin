@@ -1,5 +1,5 @@
 import {
-  BackSide, BufferAttribute, Points, PointsMaterial, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
+  BackSide, MOUSE, Spherical, TOUCH, BufferAttribute, Points, PointsMaterial, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
   Group, HemisphereLight, LineBasicMaterial, LineDashedMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial,
   MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
   SphereGeometry, Vector2, Vector3, WebGLRenderer, type Material, type Object3D,
@@ -152,6 +152,10 @@ export class SceneEngine {
     this.controls.maxPolarAngle = Math.PI * 0.62; // allows the low underground view
     this.controls.minDistance = 6;
     this.controls.screenSpacePanning = false;
+    // Map navigation: drag moves the map; right-drag, Ctrl/Shift-drag or two fingers rotate; wheel or pinch zooms.
+    this.controls.mouseButtons = { LEFT: MOUSE.PAN, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE };
+    this.controls.touches = { ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE };
+    this.renderer.domElement.addEventListener('wheel', this.onWheel, { capture: true, passive: false });
     this.controls.addEventListener('start', () => { this.flight = null; });
     this.controls.addEventListener('change', () => this.requestRender());
 
@@ -634,6 +638,7 @@ export class SceneEngine {
     canvas.removeEventListener('pointerup', this.onPointerUp);
     canvas.removeEventListener('pointermove', this.onPointerMove);
     canvas.removeEventListener('pointerleave', this.onPointerLeave);
+    canvas.removeEventListener('wheel', this.onWheel, { capture: true });
     for (const tiles of this.tilesets) tiles.dispose();
     this.setOverlays([]);
     this.scene.traverse((object) => (object as Mesh).geometry?.dispose?.());
@@ -1375,6 +1380,34 @@ export class SceneEngine {
     this.apply();
     this.options.onHover?.(pick);
   };
+
+  /**
+   * Trackpad two-finger swipe rotates (left/right turns, up/down tilts). A mouse wheel and a pinch
+   * (reported with Ctrl) fall through to the controls and zoom.
+   */
+  private readonly onWheel = (event: WheelEvent) => {
+    if (event.ctrlKey || !this.controls.enabled) return;
+    const mouseWheel = event.deltaMode !== 0 || (event.deltaX === 0 && Math.abs(event.deltaY) >= 40 && Number.isInteger(event.deltaY));
+    if (mouseWheel) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    this.flight = null;
+    this.rotateBy(-event.deltaX * 0.006, -event.deltaY * 0.004);
+  };
+
+  /** Orbits the camera around the target by angles (radians), within the controls' tilt limits. */
+  private rotateBy(dTheta: number, dPhi: number) {
+    const target = this.controls.target;
+    const offset = new Vector3().subVectors(this.camera.position, target);
+    const spherical = new Spherical().setFromVector3(offset);
+    spherical.theta += dTheta;
+    spherical.phi = Math.min(Math.max(spherical.phi + dPhi, Math.max(1e-4, this.controls.minPolarAngle)), Math.max(1e-4, this.controls.maxPolarAngle));
+    offset.setFromSpherical(spherical);
+    this.camera.position.copy(target).add(offset);
+    this.camera.lookAt(target);
+    this.controls.update();
+    this.requestRender();
+  }
 
   private readonly onPointerLeave = () => {
     if (!this.hovered) return;
