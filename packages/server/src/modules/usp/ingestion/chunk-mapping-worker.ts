@@ -52,10 +52,10 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawC
     const {profile,approved}=await assertChunkMappingInputTx(client,input);
     if(!profile||!approved)conflict('An approved source recipe is required.');
     await assertUspJobAttemptTx(client,attempt);
-    const state=(await client.query('SELECT next_publish_index,baseline_schema_fingerprint FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[input.jobId])).rows[0];
+    const state=(await client.query('SELECT next_publish_index FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[input.jobId])).rows[0];
     if(state?.next_publish_index!==slot.chunkIndex)conflict('The mapping publication pointer changed.');
     return normalizeMappedChunk(payload.records,approved.receipt.plan,profile,input.rawJobId,slot.chunkIndex,
-      await keyRows(client,input.jobId,candidateKeyHashes(payload.records,approved.receipt.plan)),state.baseline_schema_fingerprint);
+      await keyRows(client,input.jobId,candidateKeyHashes(payload.records,approved.receipt.plan)));
   });
   const mapped=ChunkMappingPayloadSchema.parse({version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
     sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
@@ -74,7 +74,7 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawC
       [input.rawJobId,input.sourceRevision,slot.chunkIndex])).rows[0];
     if(!rawSlot?.published||rawSlot.result_sha256!==slot.resultSha256)conflict('The raw chunk changed before mapping publication.');
     const reproduced=normalizeMappedChunk(payload.records,approved.receipt.plan,profile,input.rawJobId,slot.chunkIndex,
-      await keyRows(client,input.jobId,candidateKeyHashes(payload.records,approved.receipt.plan)),state.baseline_schema_fingerprint);
+      await keyRows(client,input.jobId,candidateKeyHashes(payload.records,approved.receipt.plan)));
     const expected=ChunkMappingPayloadSchema.parse({...mapped,records:reproduced.records,
       schemaFingerprint:reproduced.schemaFingerprint});
     if(sha256(Buffer.from(JSON.stringify(expected)))!==stored.hash)
