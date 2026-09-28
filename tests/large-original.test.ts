@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { PassThrough } from 'node:stream';
 import type { IncomingMessage } from 'node:http';
-import { LARGE_ORIGINAL_LIMITS, LargeUploadCreateSchema } from '../packages/contracts/src/usp/ingestion';
+import { LARGE_ORIGINAL_LIMITS, LARGE_ORIGINAL_V2_LIMITS, LargeUploadCreateSchema, LargeUploadPartSchema } from '../packages/contracts/src/usp/ingestion';
 import { AppError } from '../packages/server/src/infrastructure/errors';
 import { readObject } from '../packages/server/src/infrastructure/storage';
 import { readBoundedBytes } from '../apps/api/src/common/body';
@@ -14,6 +14,21 @@ test('large-original admission rejects unbounded bytes, object keys and unsafe f
   assert.equal(LargeUploadCreateSchema.safeParse(input).success,true);
   for(const changed of [{bytes:LARGE_ORIGINAL_LIMITS.maxOriginalBytes+1},{bytes:16*1024*1024},{filename:'../original.zip'},{filename:'original\r\n.zip'},{objectKey:'caller-selected'}])
     assert.equal(LargeUploadCreateSchema.safeParse({...input,...changed}).success,false);
+});
+
+test('v2 admission has an explicit 7 GiB and 896-part ceiling without widening v1',()=>{
+  const input={requestKey:randomUUID(),expectedCaseRevision:0,filename:'district_nwic_geojson.zip',mediaType:'application/zip',
+    sha256:'44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37',
+    provenance:{issuer:'National Water Informatics Centre',originalUrl:'https://nwdp.nwic.gov.in/',acquiredAt:'2026-09-26T08:44:40Z',
+      permissionReference:'https://www.nwdp.nwic.gov.in/footer/copyrightPolicy',limitations:['Opaque byte receipt only']}};
+  assert.equal(LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes,7*1024**3);
+  assert.equal(LARGE_ORIGINAL_V2_LIMITS.maxParts,Math.ceil(LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes/LARGE_ORIGINAL_V2_LIMITS.partBytes));
+  assert.equal(LargeUploadCreateSchema.safeParse({...input,profile:'large-original/2',bytes:LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes}).success,true);
+  assert.equal(LargeUploadCreateSchema.safeParse({...input,profile:'large-original/2',bytes:LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes+1}).success,false);
+  assert.equal(LargeUploadCreateSchema.safeParse({...input,bytes:LARGE_ORIGINAL_LIMITS.maxOriginalBytes+1}).success,false);
+  const part={requestKey:randomUUID(),expectedRevision:1,expectedCaseRevision:0,partNumber:896,sha256:input.sha256};
+  assert.equal(LargeUploadPartSchema.safeParse(part).success,true);
+  assert.equal(LargeUploadPartSchema.safeParse({...part,partNumber:897}).success,false);
 });
 
 test('legacy whole-byte reader refuses a large original before accessing storage',async()=>{
