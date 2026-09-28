@@ -10,6 +10,8 @@ The [checked learning manifest](learning-corpus.json) pins new five-feature samp
 
 These independently checked foreign schema labels support only an offline field-mapping experiment. New Orleans declares public-domain terms; San Francisco declares PDDL; NYC's publishing policy permits unrestricted open-data use. The linked manifest retains the exact permission basis and limitations; none qualifies Indian operational records or provider-derived training. [The actual E5 fine-tuning result](learning.md) remains unpromoted: one of three positive held-out mappings succeeded, versus three of three for the lexical/type baseline. More rows of the same schema do not supply independent mapping examples.
 
+Follow-up corpus correction: the retained NYC sample's `doitt_id` is a JSON string, contrary to the numeric-wire-value exclusion in the learning manifest. The lead verified this directly; the learning worker must reconcile label/type metadata with unchanged originals before retraining. The earlier measured result is historical, and no production learner has been promoted.
+
 ## Official discovery entry points
 
 | Source / official links | Useful for | Current evidence and next use |
