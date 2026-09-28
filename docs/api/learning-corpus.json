@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "usp-field-mapping-corpus-v1",
-  "featureVersion": "issuer-field-profile-v1",
+  "schemaVersion": "usp-field-mapping-corpus-v2",
+  "featureVersion": "issuer-field-profile-v2",
   "scope": "offline foreign-source research only; no production training or promotion",
   "targets": [
     {
@@ -52,63 +52,132 @@
       "fields": [
         {
           "path": "properties.globalid",
-          "type": "text",
           "definition": "GlobalID text; issuer portal's 162486 current rows have 162486 non-null distinct values (28 September 2026)",
           "target": "building.sourceKey",
           "evidence": "https://data.nola.gov/resource/prh5-qsuf.json?$select=count(*)%20as%20total,count(distinct%20globalid)%20as%20distinct_ids,count(globalid)%20as%20nonnull",
-          "decision": "positive"
+          "decision": "positive",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5
         },
         {
           "path": "geometry",
-          "type": "multipolygon",
           "definition": "Building footprint polygon published as GeoJSON feature geometry",
           "target": "building.geometry",
           "evidence": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
-          "decision": "positive"
+          "decision": "positive",
+          "declaredType": "multipolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:MultiPolygon"
+            ]
+          },
+          "wireCompatibleRows": 5
         },
         {
           "path": "properties.activestatus",
-          "type": "number",
           "definition": "Active status code",
           "target": null,
           "evidence": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
-          "decision": "negative"
+          "decision": "negative",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.shape_starea",
-          "type": "number",
           "definition": "Shape area measurement",
           "target": null,
           "evidence": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
-          "decision": "negative"
+          "decision": "negative",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.shape_stlength",
-          "type": "number",
           "definition": "Shape length measurement",
           "target": null,
           "evidence": "https://data.nola.gov/Real-Estate-Land-Records/Building-Footprint/prh5-qsuf",
-          "decision": "negative"
+          "decision": "negative",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         }
       ],
       "excludedFields": [
         {
           "path": "properties.geopin",
           "decision": "unknown",
-          "reason": "GEOPIN denotes an identifier but its building-versus-property scope is unverified here.",
-          "evidence": "https://data.nola.gov/api/views/prh5-qsuf.json"
+          "reason": "The issuer lists GEOPIN without a field definition establishing that it is a building footprint key rather than a property/geographic key; the retained GeoJSON wire values are strings.",
+          "evidence": "https://data.nola.gov/api/views/prh5-qsuf.json",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.structureid",
           "decision": "unknown",
-          "reason": "Numeric identifier cannot use literal_identifier@1 without coercion.",
-          "evidence": "https://data.nola.gov/api/views/prh5-qsuf.json"
+          "reason": "The issuer lists StructureID but gives no stability or uniqueness definition for a footprint key; the retained GeoJSON wire values are strings.",
+          "evidence": "https://data.nola.gov/api/views/prh5-qsuf.json",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.objectid",
           "decision": "unknown",
-          "reason": "Numeric internal object identifier cannot use literal_identifier@1 without coercion.",
-          "evidence": "https://data.nola.gov/api/views/prh5-qsuf.json"
+          "reason": "The issuer lists OBJECTID but gives no stable building-key definition; the retained GeoJSON wire values are strings.",
+          "evidence": "https://data.nola.gov/api/views/prh5-qsuf.json",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         }
       ],
       "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels"
@@ -145,80 +214,163 @@
       "geometryCrs": "Issuer metadata says NYC Open Data GeoJSON is EPSG:4326; operation still requires independent runtime validation",
       "fields": [
         {
+          "path": "properties.doitt_id",
+          "declaredType": "number",
+          "definition": "Consistent unique identifier assigned by NYC OTI (formerly DOITT)",
+          "target": "building.sourceKey",
+          "decision": "positive",
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5
+        },
+        {
           "path": "properties.name",
-          "type": "text",
           "definition": "Building name, limited to commonly known names; issuer says this field has not been actively maintained",
           "target": "building.name",
           "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
-          "decision": "positive"
+          "decision": "positive",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 5,
+            "absentCount": 0,
+            "nonNullTypes": []
+          },
+          "wireCompatibleRows": 0
         },
         {
           "path": "geometry",
-          "type": "multipolygon",
           "definition": "Building footprint outline in GeoJSON",
           "target": "building.geometry",
           "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
-          "decision": "positive"
-        },
-        {
-          "path": "properties.base_bbl",
-          "type": "text",
-          "definition": "Tax lot borough-block-lot identifier; not a building source key",
-          "target": null,
-          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
-          "decision": "negative"
-        },
-        {
-          "path": "properties.mappluto_bbl",
-          "type": "text",
-          "definition": "Billing tax lot join key that may be shared by multiple buildings",
-          "target": null,
-          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
-          "decision": "negative"
+          "decision": "positive",
+          "declaredType": "varies",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:MultiPolygon"
+            ]
+          },
+          "wireCompatibleRows": 5
         },
         {
           "path": "properties.height_roof",
-          "type": "number",
           "definition": "Roof height above ground elevation, potentially absent",
           "target": null,
           "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
-          "decision": "negative"
+          "decision": "negative",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.geom_source",
-          "type": "text",
           "definition": "Source method used to update the feature geometry",
           "target": null,
           "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
-          "decision": "negative"
+          "decision": "negative",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.construction_year",
-          "type": "number",
           "definition": "Year building construction was completed",
           "target": null,
           "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
-          "decision": "negative"
+          "decision": "negative",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         }
       ],
       "excludedFields": [
         {
-          "path": "properties.doitt_id",
-          "decision": "unknown",
-          "reason": "Issuer calls this the consistent building key, but its numeric GeoJSON value is incompatible with the current literal string operation.",
-          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md"
-        },
-        {
           "path": "properties.bin",
           "decision": "unknown",
-          "reason": "Issuer says placeholder and duplicate BINs occur; cannot assume a unique feature key.",
-          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md"
+          "reason": "The issuer documents placeholder and duplicate BINs, so a string wire value does not establish a unique footprint key.",
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.objectid",
           "decision": "unknown",
-          "reason": "Issuer calls this a synthetic internal key and recommends DOITT_ID instead.",
-          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md"
+          "reason": "The issuer calls OBJECTID a synthetic internal key and recommends DOITT_ID as the consistent building key; the retained sample wire values are strings.",
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "declaredType": "number",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.base_bbl",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "decision": "unknown",
+          "reason": "Issuer defines the physical tax lot containing a footprint; this corpus has no parcel-link target and a parcel key must not be assumed to be a unique building source key."
+        },
+        {
+          "path": "properties.mappluto_bbl",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "evidence": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "decision": "unknown",
+          "reason": "Issuer defines a billing tax-lot join key that can be shared by buildings; the parcel-link role is outside this target vocabulary."
         }
       ],
       "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels"
@@ -261,77 +413,153 @@
       "fields": [
         {
           "path": "properties.sf16_bldgid",
-          "type": "text",
           "definition": "San Francisco Building ID with epoch and building-area sequence",
           "target": "building.sourceKey",
           "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
-          "decision": "positive"
+          "decision": "positive",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5
         },
         {
           "path": "properties.p2010_name",
-          "type": "text",
           "definition": "Pictometry 2010 building name, if any",
           "target": "building.name",
           "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
-          "decision": "positive"
+          "decision": "positive",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 2,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 3
         },
         {
           "path": "geometry",
-          "type": "multipolygon",
           "definition": "Multi-Polygon building footprint geography",
           "target": "building.geometry",
           "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
-          "decision": "positive"
-        },
-        {
-          "path": "properties.mblr",
-          "type": "text",
-          "definition": "Assessor map-block-lot property key; not the building identifier",
-          "target": null,
-          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
-          "decision": "negative"
+          "decision": "positive",
+          "declaredType": "multipolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:MultiPolygon"
+            ]
+          },
+          "wireCompatibleRows": 5
         },
         {
           "path": "properties.hgt_median_m",
-          "type": "text",
           "definition": "LiDAR derived median feature height in metres",
           "target": null,
           "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
-          "decision": "negative"
+          "decision": "negative",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.gnd_min_m",
-          "type": "text",
           "definition": "Bare earth minimum ground elevation in metres",
           "target": null,
           "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
-          "decision": "negative"
+          "decision": "negative",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.data_as_of",
-          "type": "calendar_date",
           "definition": "Record data-as-of date",
           "target": null,
           "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
-          "decision": "negative"
+          "decision": "negative",
+          "declaredType": "calendar_date",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         }
       ],
       "excludedFields": [
         {
           "path": "properties.globalid",
           "decision": "unknown",
-          "reason": "A second possible identifier is not independently qualified for this local mapping label.",
-          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json"
+          "reason": "The issuer calls this a Global Identifier, but this experiment has not independently qualified its stability and scope as the building source key.",
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
         },
         {
           "path": "properties.area_id",
           "decision": "unknown",
-          "reason": "Numeric area identifier cannot use literal_identifier@1 without coercion.",
-          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json"
+          "reason": "The issuer describes an area-sort identifier, not a stable building key; the retained wire values are strings.",
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.mblr",
+          "declaredType": "text",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "evidence": "https://data.sfgov.org/api/views/ynuv-fyni.json",
+          "decision": "unknown",
+          "reason": "Issuer defines an assessor map-block-lot parcel/right-of-way key; its possible linkage role is outside this building-only target vocabulary."
         }
       ],
       "labelOrigin": "Issuer-published field dictionary and manually checked operation compatibility; no model or provider output labels"
     }
   ],
-  "labelEncoding": "For each checked field, decision positive maps to target; decision negative excludes all three fixed targets. Excluded fields have decision unknown and are never used as negatives."
+  "labelEncoding": "Issuer declared type, retained GeoJSON observed wire shapes, and shallow operation wire compatibility are separate. Positive/negative are checked field semantics; excluded unknown fields never become negatives. Null and absent counts are distinct. A positive field with zero compatible sample values is not a successful row conversion."
 }
