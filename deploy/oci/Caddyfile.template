@@ -1,11 +1,15 @@
 __PUBLIC_HOST__ {
     @foreign_origin {
+        path /api/*
         header Origin *
         not header Origin https://__PUBLIC_HOST__
     }
     respond @foreign_origin "Forbidden" 403
 
-    @cross_site header Sec-Fetch-Site cross-site
+    @cross_site {
+        path /api/*
+        header Sec-Fetch-Site cross-site
+    }
     respond @cross_site "Forbidden" 403
 
     @demo {
