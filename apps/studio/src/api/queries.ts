@@ -118,7 +118,12 @@ export function useWorkQueue(status: WorkStatusFilter, q: string, page: number) 
 }
 
 export function useAreas() {
-  return useQuery({ queryKey: queryKeys.areas, queryFn: async () => [...unwrap(await api.GET('/api/v1/areas')), ...await demoAreas()], staleTime: 60_000 });
+  return useQuery({ queryKey: queryKeys.areas, queryFn: async () => {
+    // Uploaded areas stay listed when the registry API is unavailable; registry areas need it.
+    const [registry, uploaded] = await Promise.allSettled([api.GET('/api/v1/areas').then(unwrap), demoAreas()]);
+    if (registry.status === 'rejected' && (uploaded.status === 'rejected' || !uploaded.value.length)) throw registry.reason;
+    return [...(registry.status === 'fulfilled' ? registry.value : []), ...(uploaded.status === 'fulfilled' ? uploaded.value : [])];
+  }, staleTime: 60_000 });
 }
 
 /** `live`: an import into this area is streaming, so poll until it settles (SSE replaces this later). */

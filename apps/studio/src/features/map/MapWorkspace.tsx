@@ -64,6 +64,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
   const [focusSearch, setFocusSearch] = useState(false);
+  // An overlay just switched on is brought into view once the scene has it.
+  const [focusOverlay, setFocusOverlay] = useState<string | null>(null);
   const [planResult, setPlanResult] = useState<MapPlanCheck | null>(null);
   const activePlan = planResult?.areaId === context.area.id ? planResult : null;
 
@@ -122,10 +124,18 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ...(base.some((f) => f.name) ? [{ key: 'labels', label: 'Names', checked: mapView.labels }] : []),
     ...loadedOverlays.map((o) => ({ key: `overlay:${o.layer}`, label: o.label, checked: mapView.overlays[o.layer] })),
   ];
+  useEffect(() => {
+    if (!engine || !focusOverlay || !overlayInputs.some((o) => o.id === focusOverlay)) return;
+    engine.focusOverlay(focusOverlay);
+    setFocusOverlay(null);
+  }, [engine, focusOverlay, overlayInputs]);
   const onLayer = (key: string, on: boolean) => {
     if (key === 'look') setMapView({ look: on ? 'enhanced' : 'plain' });
     else if (key === 'labels') setMapView({ labels: on });
-    else if (key.startsWith('overlay:')) setMapView({ overlays: { ...mapView.overlays, [key.slice(8)]: on } });
+    else if (key.startsWith('overlay:')) {
+      setMapView({ overlays: { ...mapView.overlays, [key.slice(8)]: on } });
+      if (on) setFocusOverlay(loadedOverlays.find((o) => o.layer === key.slice(8))?.input.id ?? null);
+    }
     else setMapView({ layers: { ...mapView.layers, [key]: on } });
   };
 
@@ -399,8 +409,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
                 selectedSpaceId={selection.spaceId}
                 onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
+                viewFooter={!feature ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
               />
-              {!feature ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
             </details>
             {feature ? (
               <div className={styles.inspectorColumn} key={feature.id}>

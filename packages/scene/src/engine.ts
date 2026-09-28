@@ -256,6 +256,18 @@ export class SceneEngine {
     return size / metresPerPx;
   }
 
+  /** Brings an overlay's coverage into view when it is not already fully on screen. */
+  focusOverlay(id: string): void {
+    const object = this.overlays.children.find((c) => c.userData.overlay === id);
+    if (!object) return;
+    const box = new Box3().setFromObject(object);
+    if (box.isEmpty() || this.readableInView(box)) return;
+    box.max.y = Math.max(box.max.y, 1);
+    box.min.y = 0;
+    this.cameraKey = 'overlay';
+    this.flyToNeighbourhood(box, false, 20);
+  }
+
   /** Georeferenced imagery and measured point sets, drawn over the base map. Replaces the previous set. */
   setOverlays(overlays: OverlayInput[]): void {
     for (const child of [...this.overlays.children]) {
@@ -1059,6 +1071,19 @@ export class SceneEngine {
   private applyCamera(instant: boolean) {
     const { mode, buildingId, levelId, finding } = this.state;
     const key = `${mode}|${mode === 'area' ? '' : buildingId ?? ''}|${mode === 'level' ? levelId ?? '' : ''}|${mode === 'findings' ? finding?.id ?? '' : ''}`;
+    // Area mode: a selected building the viewer cannot make out (too small or out of view) is brought into
+    // view with its surroundings; a readable one leaves the camera alone, and so does clearing the selection.
+    if (mode === 'area' && this.cameraKey) {
+      const selectedKey = `area|selected:${buildingId ?? ''}`;
+      const box = buildingId ? this.buildingBounds.get(buildingId) : undefined;
+      if (buildingId && box) {
+        if (selectedKey === this.cameraKey) return;
+        this.cameraKey = selectedKey;
+        if (!this.readableInView(box)) this.flyToNeighbourhood(box, instant);
+        return;
+      }
+      if (this.cameraKey.startsWith('area|selected:')) { this.cameraKey = key; return; }
+    }
     if (key === this.cameraKey) return;
     const target = this.cameraTarget(mode, buildingId, levelId, finding);
     if (!target) return;
@@ -1078,6 +1103,35 @@ export class SceneEngine {
       this.controls.target.copy(to[1]);
       this.controls.update();
       this.requestRender();
+      return;
+    }
+    this.flight = { from: [this.camera.position.clone(), this.controls.target.clone()], to, start: performance.now() };
+    this.requestRender();
+  }
+
+  /** Whether a box is fully on screen and at least 60 px tall, so it can be made out. */
+  private readableInView(box: Box3): boolean {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+      const p = new Vector3(x, y, z).project(this.camera);
+      if (p.z > 1) return false;
+      minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+    }
+    const heightPx = ((maxY - minY) / 2) * this.container.clientHeight;
+    return minX > -0.95 && maxX < 0.95 && minY > -0.95 && maxY < 0.9 && heightPx >= 60;
+  }
+
+  /** The building and about 110 m around it, from the area view’s direction. */
+  private flyToNeighbourhood(box: Box3, instant: boolean, minPad = 110) {
+    const pad = Math.max(minPad, (box.max.y - box.min.y) * 1.2);
+    const bounds: Bounds2D = { minX: box.min.x - pad, maxX: box.max.x + pad, minY: -box.max.z - pad, maxY: -box.min.z + pad };
+    const aspect = this.container.clientWidth / Math.max(1, this.container.clientHeight);
+    const hFov = (2 * Math.atan(Math.tan((this.camera.fov * Math.PI) / 360) * aspect) * 180) / Math.PI;
+    const pose = presetFor('area', bounds, (box.max.y - box.min.y) / 3, box.max.y - box.min.y, Math.min(this.camera.fov, hFov));
+    const to: [Vector3, Vector3] = [new Vector3(...pose.position), new Vector3(...pose.target)];
+    if (this.flat) { const d = to[0].distanceTo(to[1]); to[0].set(to[1].x, to[1].y + d, to[1].z + d * 1e-4); }
+    if (instant || this.options.reducedMotion) {
+      this.camera.position.copy(to[0]); this.controls.target.copy(to[1]); this.controls.update(); this.requestRender();
       return;
     }
     this.flight = { from: [this.camera.position.clone(), this.controls.target.clone()], to, start: performance.now() };
