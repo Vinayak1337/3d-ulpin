@@ -126,7 +126,7 @@ def audit_historical() -> tuple[dict, int]:
         source_path = source["path"]
         authored = source["kind"] == "authored-sql"
         if authored:
-            if source_path != "database/" + step["file"] or source.get("task") not in ("DEPLOY-01", "INGEST-02A", "INGEST-06", "INGEST-03B", "INGEST-07", "TILE-01", "STREAM-02", "INGEST-04A", "AI-01A", "AI-02") or not re.fullmatch(r"[a-f0-9]{40}", source.get("acceptedBase", "")):
+            if source_path != "database/" + step["file"] or source.get("task") not in ("DEPLOY-01", "INGEST-02A", "INGEST-06", "INGEST-03B", "INGEST-07", "TILE-01", "STREAM-02", "INGEST-04A", "AI-01A", "AI-02", "AI-03") or not re.fullmatch(r"[a-f0-9]{40}", source.get("acceptedBase", "")):
                 raise ValueError(f"Authored SQL provenance is invalid: {step['id']}")
             original = (ROOT / source_path).read_bytes()
         elif source_path not in source_cache:

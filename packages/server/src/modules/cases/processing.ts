@@ -12,9 +12,11 @@ import {runPrivateMvtJob,failPrivateMvtJob} from '../usp/tiles/publication';
 import {runDocumentJob} from '../usp/ingestion/document-worker';
 import {runLargeOriginalStorageJob} from '../usp/ingestion/large-original';
 import {runStreamingVectorJob} from '../usp/ingestion/streaming-vector-worker';
+import {runChunkMappingJob} from '../usp/ingestion/chunk-mapping-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
 let streamingVectorWorker:Promise<void>|undefined;
+let chunkMappingWorker:Promise<void>|undefined;
 
 type WorkerReply = {
   jobId: string;
@@ -189,6 +191,12 @@ export async function dispatchTick(): Promise<number> {
         if(!streamingVectorWorker)streamingVectorWorker=runStreamingVectorJob(job.id)
           .catch(()=>{/* Fenced attempt and durable job state permit replay after restart. */})
           .finally(()=>{streamingVectorWorker=undefined;});
+        return;
+      }
+      if(job.operation==='chunk-mapping'){
+        if(!chunkMappingWorker)chunkMappingWorker=runChunkMappingJob(job.id)
+          .catch(()=>{/* The shared attempt fence owns retry and durable terminal state. */})
+          .finally(()=>{chunkMappingWorker=undefined;});
         return;
       }
       if(job.operation==='document-extraction'){
