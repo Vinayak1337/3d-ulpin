@@ -19,6 +19,9 @@ import {StreamingVectorController} from './streaming-vector.controller';
 import {StreamingVectorService} from '@ulpin/server/modules/usp/ingestion/streaming-vector';
 import {ChunkMappingController} from './chunk-mapping.controller';
 import {ChunkMappingService} from '@ulpin/server/modules/usp/ingestion/chunk-mapping';
+import {StreamedProfileController} from './streamed-profile.controller';
+import {StreamedProfileService} from '@ulpin/server/modules/usp/ingestion/streamed-profile';
+import {StreamedMappingService} from '@ulpin/server/modules/usp/ingestion/streamed-mapping';
 
-@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController,AdaptiveMappingController,StreamingVectorController,ChunkMappingController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService,AdaptiveMappingService,StreamingVectorService,ChunkMappingService]})
+@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController,AdaptiveMappingController,StreamingVectorController,ChunkMappingController,StreamedProfileController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService,AdaptiveMappingService,StreamingVectorService,ChunkMappingService,StreamedProfileService,StreamedMappingService]})
 export class IngestionModule {}

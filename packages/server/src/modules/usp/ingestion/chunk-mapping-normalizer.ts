@@ -1,6 +1,11 @@
-import {type ChunkMappingObservation,type MappingPlan,type SourceProfile,type StreamingVectorRecord} from '@ulpin/contracts/usp';
+import {type ChunkMappingObservation,type MappingPlan,type SourceProfile,type StreamedMappingPlan,
+  type StreamedProfileGeneration,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {sha256} from '../../../infrastructure/storage';
 import {compileMapping} from './registry';
+import {compileStreamedMapping} from './streamed-mapping';
+
+type Plan=MappingPlan|StreamedMappingPlan;
+type Profile=SourceProfile|StreamedProfileGeneration;
 
 type Field=ChunkMappingObservation['sourceKey'];
 export type KeyRow={source_key_sha256:string;source_key:string;first_feature_index:number};
@@ -23,7 +28,7 @@ const field=(feature:Record<string,unknown>,path:string):Field=>{
   return value===null?{state:'null',value:null,sourcePath:path}
     :typeof value==='string'?{state:'known',value,sourcePath:path}:unknown(path);
 };
-export function candidateKeyHashes(records:StreamingVectorRecord[],plan:MappingPlan){
+export function candidateKeyHashes(records:StreamingVectorRecord[],plan:Plan){
   const path=plan.operations.find(op=>op.target==='building.sourceKey')!.sourcePath;
   return [...new Set(records.filter(record=>record.disposition==='accepted').map(record=>{
     const value=field(record.feature as Record<string,unknown>,path);
@@ -32,7 +37,7 @@ export function candidateKeyHashes(records:StreamingVectorRecord[],plan:MappingP
 }
 
 /** Compare each actual source record with the pinned inventory, including its permitted null and absent variants. */
-function sourceShapeIssues(feature:Record<string,unknown>,profile:SourceProfile){
+function sourceShapeIssues(feature:Record<string,unknown>,profile:Profile){
   const issues=new Set<string>(),paths=new Map(profile.paths.map(item=>[item.path,item]));
   const properties=feature.properties;
   const attributes=properties&&typeof properties==='object'&&!Array.isArray(properties)
@@ -57,9 +62,10 @@ function sourceShapeIssues(feature:Record<string,unknown>,profile:SourceProfile)
 }
 
 /** A source-linked draft projection. Geometry stays in the immutable raw chunk; no frame or role is inferred. */
-export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:MappingPlan,profile:SourceProfile,
+export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:Plan,profile:Profile,
   rawJobId:string,chunkIndex:number,existing:KeyRow[]){
-  compileMapping(plan,profile);
+  if(plan.version==='manual-geojson/1')compileMapping(plan,profile as SourceProfile);
+  else compileStreamedMapping(plan,profile as StreamedProfileGeneration);
   // A chunk can observe a permitted subset; the slot names the pinned allowed inventory.
   const schemaFingerprint=profile.source.schemaFingerprint;
   const keyPath=plan.operations.find(op=>op.target==='building.sourceKey')!.sourcePath;

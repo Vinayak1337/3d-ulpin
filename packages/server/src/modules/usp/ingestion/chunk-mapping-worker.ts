@@ -61,7 +61,8 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawC
     sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
     chunkIndex:slot.chunkIndex,rawResultSha256:slot.resultSha256,schemaFingerprint:prepared.schemaFingerprint,
     recipeRevision:input.recipeRevision,
-    converterSha256:input.converterSha256,records:prepared.records});
+    converterSha256:input.converterSha256,
+    ...(input.profileHash?{profileHash:input.profileHash}:{}),records:prepared.records});
   const stored=await storePayload(mapped);
   await transaction(async client=>{
     const {profile,approved}=await assertChunkMappingInputTx(client,input);
@@ -151,12 +152,14 @@ async function retry(input:ChunkMappingInput,attempt:UspJobAttempt,code:string){
 async function propose(input:ChunkMappingInput,attempt:UspJobAttempt){
   const current=await transaction(client=>assertChunkMappingInputTx(client,input));
   let proposal:AdaptiveMappingResponse|null=null,status:'needs_input'|'disabled'|'unavailable'='needs_input',code='MAPPING_PROFILE_UNSUPPORTED';
-  if(current.profile){
+  if(current.profile?.version==='manual-geojson/1'){
     proposal=await adaptive.propose(input.caseId,input.sourceId,{requestKey:input.jobId,
       source:current.profile.source,workspaceRevision:current.profile.workspaceRevision,
       workspaceFingerprint:current.profile.workspaceFingerprint});
     status=proposal.status==='disabled'?'disabled':proposal.status==='unavailable'?'unavailable':'needs_input';
     code=proposal.code??'MAPPING_REVIEW_REQUIRED';
+  }else if(current.profile?.version==='streamed-profile/1'){
+    code='STREAMED_PROFILE_REVIEW_REQUIRED';
   }
   const resultHash=fingerprint({version:limits.version,jobId:input.jobId,status,code,proposal});
   await acceptUspJobAttempt(attempt,{assetId:`chunk-mapping:${input.jobId}`,version:1,sha256:resultHash},
