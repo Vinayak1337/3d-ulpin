@@ -1420,6 +1420,35 @@
       }
     },
     {
+      "id": "ingestion.large.capacity",
+      "source": {
+        "path": "database/sql/95-ingestion/large-original-capacity.sql",
+        "function": "migrateLargeOriginalTx",
+        "kind": "authored-sql",
+        "task": "AI-01A",
+        "acceptedBase": "5df6d18dca221e7871ba31595f77ba9d7658b08d"
+      },
+      "file": "sql/95-ingestion/large-original-capacity.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; idempotent constraint widening",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 28,
+      "sha256": "db132a1de6bb59000006c02d2476aba0a103209d62989a2c918679e61da9e8a9",
+      "statements": [
+        {"ordinal": 1, "sha256": "86d93a0bd4831ca68c2fc7fd4cf683f6764c5ed6baaa62ddafe9e64e579a2143"},
+        {"ordinal": 2, "sha256": "8391130d28025e61491605518caa93ebd8ecb48799de793bed17b5757784c452"},
+        {"ordinal": 3, "sha256": "8e0da2eed1374077a9bc59b9a5c2ad27b6c8f35ef1a23d69948f2c28bf2bc02e"}
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateLargeOriginalTx"
+      }
+    },
+    {
       "id": "ingestion.events.index",
       "source": {
         "path": "database/sql/95-ingestion/events.sql",
@@ -1436,7 +1465,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 28,
+      "order": 29,
       "sha256": "ce1a8ea8cc8682689e604a41ac1b4dc7478ac8e4868e94dfeb316d2ab7380623",
       "statements": [
         {
@@ -1466,7 +1495,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 29,
+      "order": 30,
       "sha256": "f67ef2ea68524a671477a24daf29bfcd68d2e2a09cc655f6714d866357d2b06a",
       "statements": [
         {
@@ -1516,7 +1545,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 30,
+      "order": 31,
       "sha256": "a8375ab18ccc5cded91da5e4f4ff11660dd7ecdfce12bfa6f18c56544fbb1bd5",
       "statements": [
         {
@@ -1577,7 +1606,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 31,
+      "order": 32,
       "sha256": "c04c41b2cc022e5c3ecb39c70f575c8f68a2b38f569b16d711cc58b0016d56a1",
       "statements": [
         {
@@ -1607,7 +1636,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 32,
+      "order": 33,
       "runtime": {
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateSemanticChunksTx"
@@ -1669,7 +1698,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 33,
+      "order": 34,
       "sha256": "447796c4990f782b79ac3d6c7a348c81e7ee5c6caf46d838ebb3a6ccd1d143c3",
       "statements": [
         {
@@ -1692,6 +1721,117 @@
       "runtime": {
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateSufficiencyTx"
+      }
+    },
+{
+      "id": "ingestion.streaming-vector.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/streaming-vector.sql",
+        "function": "migrateStreamingVectorTx",
+        "kind": "authored-sql",
+        "task": "AI-02",
+        "acceptedBase": "79a896e314501be3f5e192924431fdff5fa7359e"
+      },
+      "file": "sql/95-ingestion/streaming-vector.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 35,
+      "sha256": "5c06252313d279e2e28db811a65bd3047ead9be3a11a835c36aa24864273c667",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "1604ec77549ba6e445a471779c032c86580298e82f50c3026ae5ea11588b5ede"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "387f9d6942976892fa0745614b7cf2d1599a7bce3423ab90d9143932723ff167"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "caac04bf8b33659fbca6a5e3d1bbbb55e503ad17d669933f3ad8602076b96c06"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "8c5efa346e18539f1613f453aad532983dcc75a1f94b7d2638f75c30d968067e"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateStreamingVectorTx"
+      }
+    },
+    {
+      "id": "ingestion.chunk-mapping.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/chunk-mapping.sql",
+        "function": "migrateChunkMappingTx",
+        "kind": "authored-sql",
+        "task": "AI-03",
+        "acceptedBase": "c2331d4d21945379e123da588dbd7a2a05d21a89"
+      },
+      "file": "sql/95-ingestion/chunk-mapping.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 36,
+      "sha256": "0d32a38dde4d894f42d520e1e2e5064adc912c683049b8b05e807e031224eb05",
+      "statements": [
+        {"ordinal": 1, "sha256": "43e6f6de0a9197427232b6a28cc205906e8606590731c68d3a1b9828dcb27f4d"},
+        {"ordinal": 2, "sha256": "943da61158f1c6bb91e2b915c815986f4a28f88a9e4f836826c5a9c949bbef62"},
+        {"ordinal": 3, "sha256": "3aa8eb5821b70b83bcdafc1fcd9a72469521365201f11c4618a8d1a42c2be484"},
+        {"ordinal": 4, "sha256": "c1bf6c4478d3edd5af6cc6d9aa9bd85c71c4c16d985f0333c72bf8c7c83e9cea"},
+        {"ordinal": 5, "sha256": "afcabae874ffdd8cde80b71864a999b018e0a1490707a63a9dce1c7a943d9705"}
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateChunkMappingTx"
+      }
+    },
+    {
+      "id": "ingestion.streamed-profile.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/streamed-profile.sql",
+        "function": "migrateStreamedProfileTx",
+        "kind": "authored-sql",
+        "task": "AI-03B",
+        "acceptedBase": "16c9cfad9b215ae540ee153d4570601ec4074fbe"
+      },
+      "file": "sql/95-ingestion/streamed-profile.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 37,
+      "sha256": "6f0a7786dde4f3a09f0ac76128e2e956bed6d7156e71fec28e99aea15dd7f01f",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "9414492141e24404fb9aee41b8b2e23245922450c76b3df902737b6406b3281c"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "3f4cb007437da10814656c6574df229c0df8ab519bd5190caf51f53b8428152f"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "deea0c4eaf5c74e45a8dd41b9c80ff24228ba78854ceac0ec75334d3c3618ec6"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateStreamedProfileTx"
       }
     }
   ],

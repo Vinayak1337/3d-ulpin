@@ -10,7 +10,15 @@ import {failDatasetMl,ingestDatasetMl,markDatasetMlRunning} from '../datasets/da
 import {failProjectedJob,ingestProjectedResult,markProjectedRunning} from '../usp/ingestion/projected-publication';
 import {runPrivateMvtJob,failPrivateMvtJob} from '../usp/tiles/publication';
 import {runDocumentJob} from '../usp/ingestion/document-worker';
+import {runLargeOriginalStorageJob} from '../usp/ingestion/large-original';
+import {runStreamingVectorJob} from '../usp/ingestion/streaming-vector-worker';
+import {runChunkMappingJob} from '../usp/ingestion/chunk-mapping-worker';
+import {runStreamedProfileJob} from '../usp/ingestion/streamed-profile-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
+let largeOriginalWorker:Promise<void>|undefined;
+let streamingVectorWorker:Promise<void>|undefined;
+let chunkMappingWorker:Promise<void>|undefined;
+let streamedProfileWorker:Promise<void>|undefined;
 
 type WorkerReply = {
   jobId: string;
@@ -174,6 +182,31 @@ export async function dispatchTick(): Promise<number> {
   );
   await Promise.all(
     pending.rows.map(async (job) => {
+      if(job.operation==='large-original-storage'){
+        // One bounded storage worker per dispatcher process; the SQL upload lease fences peers and restart.
+        if(!largeOriginalWorker)largeOriginalWorker=runLargeOriginalStorageJob(job.id)
+          .catch(()=>{/* The upload job persists its own bounded retry/failure state. */})
+          .finally(()=>{largeOriginalWorker=undefined;});
+        return;
+      }
+      if(job.operation==='streaming-vector'){
+        if(!streamingVectorWorker)streamingVectorWorker=runStreamingVectorJob(job.id)
+          .catch(()=>{/* Fenced attempt and durable job state permit replay after restart. */})
+          .finally(()=>{streamingVectorWorker=undefined;});
+        return;
+      }
+      if(job.operation==='chunk-mapping'){
+        if(!chunkMappingWorker)chunkMappingWorker=runChunkMappingJob(job.id)
+          .catch(()=>{/* The shared attempt fence owns retry and durable terminal state. */})
+          .finally(()=>{chunkMappingWorker=undefined;});
+        return;
+      }
+      if(job.operation==='streamed-profile'){
+        if(!streamedProfileWorker)streamedProfileWorker=runStreamedProfileJob(job.id)
+          .catch(()=>{/* The shared attempt fence owns retry and durable terminal state. */})
+          .finally(()=>{streamedProfileWorker=undefined;});
+        return;
+      }
       if(job.operation==='document-extraction'){
         await runDocumentJob(job.id);return;
       }
