@@ -1420,6 +1420,35 @@
       }
     },
     {
+      "id": "ingestion.large.capacity",
+      "source": {
+        "path": "database/sql/95-ingestion/large-original-capacity.sql",
+        "function": "migrateLargeOriginalTx",
+        "kind": "authored-sql",
+        "task": "AI-01A",
+        "acceptedBase": "5df6d18dca221e7871ba31595f77ba9d7658b08d"
+      },
+      "file": "sql/95-ingestion/large-original-capacity.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; idempotent constraint widening",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 28,
+      "sha256": "db132a1de6bb59000006c02d2476aba0a103209d62989a2c918679e61da9e8a9",
+      "statements": [
+        {"ordinal": 1, "sha256": "86d93a0bd4831ca68c2fc7fd4cf683f6764c5ed6baaa62ddafe9e64e579a2143"},
+        {"ordinal": 2, "sha256": "8391130d28025e61491605518caa93ebd8ecb48799de793bed17b5757784c452"},
+        {"ordinal": 3, "sha256": "8e0da2eed1374077a9bc59b9a5c2ad27b6c8f35ef1a23d69948f2c28bf2bc02e"}
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateLargeOriginalTx"
+      }
+    },
+    {
       "id": "ingestion.events.index",
       "source": {
         "path": "database/sql/95-ingestion/events.sql",
@@ -1436,7 +1465,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 28,
+      "order": 29,
       "sha256": "ce1a8ea8cc8682689e604a41ac1b4dc7478ac8e4868e94dfeb316d2ab7380623",
       "statements": [
         {
@@ -1466,7 +1495,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 29,
+      "order": 30,
       "sha256": "f67ef2ea68524a671477a24daf29bfcd68d2e2a09cc655f6714d866357d2b06a",
       "statements": [
         {
@@ -1516,7 +1545,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 30,
+      "order": 31,
       "sha256": "a8375ab18ccc5cded91da5e4f4ff11660dd7ecdfce12bfa6f18c56544fbb1bd5",
       "statements": [
         {
@@ -1577,7 +1606,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 31,
+      "order": 32,
       "sha256": "c04c41b2cc022e5c3ecb39c70f575c8f68a2b38f569b16d711cc58b0016d56a1",
       "statements": [
         {
@@ -1607,7 +1636,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 32,
+      "order": 33,
       "runtime": {
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateSemanticChunksTx"
@@ -1669,7 +1698,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 33,
+      "order": 34,
       "sha256": "447796c4990f782b79ac3d6c7a348c81e7ee5c6caf46d838ebb3a6ccd1d143c3",
       "statements": [
         {

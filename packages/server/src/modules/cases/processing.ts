@@ -10,7 +10,9 @@ import {failDatasetMl,ingestDatasetMl,markDatasetMlRunning} from '../datasets/da
 import {failProjectedJob,ingestProjectedResult,markProjectedRunning} from '../usp/ingestion/projected-publication';
 import {runPrivateMvtJob,failPrivateMvtJob} from '../usp/tiles/publication';
 import {runDocumentJob} from '../usp/ingestion/document-worker';
+import {runLargeOriginalStorageJob} from '../usp/ingestion/large-original';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
+let largeOriginalWorker:Promise<void>|undefined;
 
 type WorkerReply = {
   jobId: string;
@@ -174,6 +176,13 @@ export async function dispatchTick(): Promise<number> {
   );
   await Promise.all(
     pending.rows.map(async (job) => {
+      if(job.operation==='large-original-storage'){
+        // One bounded storage worker per dispatcher process; the SQL upload lease fences peers and restart.
+        if(!largeOriginalWorker)largeOriginalWorker=runLargeOriginalStorageJob(job.id)
+          .catch(()=>{/* The upload job persists its own bounded retry/failure state. */})
+          .finally(()=>{largeOriginalWorker=undefined;});
+        return;
+      }
       if(job.operation==='document-extraction'){
         await runDocumentJob(job.id);return;
       }
