@@ -10,7 +10,8 @@ from typing import Any
 
 
 TARGETS = ("building.sourceKey", "building.name", "building.geometry")
-CORPUS_VERSION = "usp-field-mapping-corpus-v2"
+CORPUS_VERSION = "usp-field-mapping-corpus-v3"
+SPLITS = ("train", "calibration", "evaluation", "diagnostic")
 
 
 def sha256_file(path: Path) -> str:
@@ -116,19 +117,39 @@ def field_profile(source: dict[str, Any], field: dict[str, Any], features: list[
         f"field {path}; issuer declared type {field['declaredType']}; issuer definition {field['definition']}; "
         f"observed wire types {','.join(field['observedWire']['nonNullTypes']) or 'none'}; "
         f"observed value patterns {shape_summary}; absent {absent}/{len(values)}; "
-        "source representation GeoJSON building footprints"
+        f"source representation {source.get('representation', 'GeoJSON building footprints')}"
     )
+
+
+def _features(sample: dict[str, Any], source: dict[str, Any]) -> list[dict[str, Any]]:
+    """Normalize only the acquired OpenDataSoft records shape in memory."""
+    if source["sample"].get("format", "geojson-feature-collection") == "geojson-feature-collection":
+        features = sample.get("features")
+        if sample.get("type") != "FeatureCollection" or not isinstance(features, list):
+            raise ValueError(f"invalid GeoJSON collection: {source['id']}")
+        return features
+    if source["sample"]["format"] != "opendatasoft-records-v2" or not isinstance(sample.get("results"), list):
+        raise ValueError(f"unsupported sample format: {source['id']}")
+    features = []
+    for record in sample["results"]:
+        shape = record.get("geom")
+        if not isinstance(shape, dict) or shape.get("type") != "Feature" or not isinstance(shape.get("geometry"), dict):
+            raise ValueError(f"invalid nested GeoJSON feature: {source['id']}")
+        features.append({"type": "Feature", "geometry": shape["geometry"],
+                         "properties": {key: value for key, value in record.items() if key != "geom"}})
+    return features
 
 
 def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     corpus = json.loads(corpus_path.read_text())
-    if corpus.get("schemaVersion") != CORPUS_VERSION:
+    version = corpus.get("schemaVersion")
+    if version not in ("usp-field-mapping-corpus-v2", CORPUS_VERSION):
         raise ValueError("unknown corpus version")
     targets = tuple(target["id"] for target in corpus["targets"])
     if targets != TARGETS:
         raise ValueError("target vocabulary changed")
-    train_families: set[str] = set()
-    holdout_families: set[str] = set()
+    allowed_splits = ("train", "holdout") if version.endswith("-v2") else SPLITS
+    split_families: dict[str, set[str]] = {split: set() for split in allowed_splits}
     examples: list[dict[str, Any]] = []
     for source in corpus["sources"]:
         permission = source["permission"]
@@ -137,17 +158,15 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
         if permission["productionEligible"]:
             raise ValueError("foreign experiment must not be marked production eligible")
         split = source["split"]
-        if split not in ("train", "holdout"):
+        if split not in allowed_splits:
             raise ValueError(f"unsupported split: {split}")
-        (train_families if split == "train" else holdout_families).add(source["family"])
+        split_families[split].add(source["family"])
         sample_path = _checked_file(originals_dir, source["sample"])
         _checked_file(originals_dir, source["metadata"])
         if "descriptionPdf" in source:
             _checked_file(originals_dir, source["descriptionPdf"])
         sample = json.loads(sample_path.read_text())
-        features = sample.get("features")
-        if sample.get("type") != "FeatureCollection" or not isinstance(features, list):
-            raise ValueError(f"invalid GeoJSON collection: {source['id']}")
+        features = _features(sample, source)
         if len(features) != source["sample"]["rows"]:
             raise ValueError(f"sample row count mismatch: {source['id']}")
         if source["id"] == "nyc-building-footprints" and any(
@@ -185,8 +204,11 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
         for field in source["excludedFields"]:
             if field.get("decision") != "unknown" or not field.get("evidence") or not field.get("reason"):
                 raise ValueError(f"unknown field lacks reason/evidence: {source['id']}")
-    if not train_families or not holdout_families or train_families & holdout_families:
-        raise ValueError("source families must be disjoint across train and holdout")
+    required_splits = ("train", "holdout") if version.endswith("-v2") else ("train", "calibration", "evaluation")
+    if any(not split_families[split] for split in required_splits):
+        raise ValueError("required source family split is empty")
+    if any(split_families[a] & split_families[b] for a in allowed_splits for b in allowed_splits if a < b):
+        raise ValueError("source families must be disjoint across splits")
     if not any(item["target"] for item in examples if item["split"] == "train"):
         raise ValueError("no positive training labels")
     return corpus, examples
