@@ -7,7 +7,7 @@ import { buildingCode } from '../local/codes';
 
 /** Every uploaded building carries the proposed 3D ULPIN allotted when its import committed, as area imports do. */
 const withCodes = <T extends { id: string; kind: string }>(features: T[] | undefined): T[] | undefined => features?.map((f) => (f.kind === "building" ? { ...f, projectCode: buildingCode(f.id) } : f));
-export const demoImportEnabled = import.meta.env.DEV && import.meta.env.VITE_DEMO_IMPORT === '1';
+export const demoImportEnabled = (import.meta.env.DEV || import.meta.env.VITE_HOSTED_DEMO === '1') && import.meta.env.VITE_DEMO_IMPORT === '1';
 export const isDemoId = (id: string | null | undefined) => demoImportEnabled && Boolean(id?.startsWith('d30d'));
 
 export async function inspectDemoFile(file: File): Promise<Schemas['POST_import_packages_inspect_Response_200_application_json']> {

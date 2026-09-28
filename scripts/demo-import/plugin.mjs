@@ -100,7 +100,7 @@ export function studioDemoImport(){
         const code=await readFile(python,'utf8');
         const binary=layers.some(l=>l.format==='laz'||l.format==='geotiff');
         const interpreter=process.env.ULPIN_DEMO_PYTHON??join(homedir(),'.codex/task-data/nyc-10013-multimodal/venv/bin/python');
-        const child=binary?spawn(interpreter,['-u',python],{stdio:['pipe','pipe','pipe']}):spawn('docker',['exec','-i',process.env.ULPIN_DEMO_GEO_CONTAINER??'ulpin-geo-1','python','-u','-c',code],{stdio:['pipe','pipe','pipe']});
+        const child=binary||process.env.ULPIN_DEMO_PYTHON?spawn(interpreter,['-u',python],{stdio:['pipe','pipe','pipe']}):spawn('docker',['exec','-i',process.env.ULPIN_DEMO_GEO_CONTAINER??'ulpin-geo-1','python','-u','-c',code],{stdio:['pipe','pipe','pipe']});
         job.process=child;let err='';child.stderr.on('data',b=>{err=(err+b).slice(-2000);});
         const exit=new Promise((resolve,reject)=>{child.on('error',reject);child.on('close',code=>code===0?resolve():reject(new Error(err||`Normalizer exited ${code}`)));});
         // Observe immediately, including failures before stdout starts.
@@ -165,6 +165,10 @@ export function studioDemoImport(){
           if(!layers.some(l=>l.document))throw new Error('Include at least one prepared GeoJSON layer to establish the map; LiDAR and rasters are supporting evidence.');
           const jid=id('job:'+hash+':'+intent),areaId=id('area:'+hash+':'+intent);let job=jobs.get(jid);
           if(job&&job.state!=='FAILED')return json(res,200,{id:jid,areaId});
+          if(process.env.ULPIN_HOSTED_DEMO==='1'){
+            if([...jobs.values()].some(j=>j.process||j.pendingLayers))return json(res,409,{message:'Another import is running. Please try again when it finishes.'});
+            if(!job&&jobs.size>=Number(process.env.ULPIN_DEMO_MAX_JOBS??24))return json(res,409,{message:'The hosted import capacity is reached. Existing areas remain available.'});
+          }
           const dir=join(root,jid);await mkdir(dir,{recursive:true,mode:0o700});
           for(const original of originals)await writeFile(join(dir,sha(original.bytes)+'-'+original.name),original.bytes,{mode:0o600});
           const sources=[];

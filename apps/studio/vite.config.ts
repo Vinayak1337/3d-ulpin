@@ -11,11 +11,11 @@ export default defineConfig({
     studioDemoImport(),
     react(),
     {
-      // The local data layer is development-only: keep its service worker out of production output.
+      // Only the explicitly requested hosted demo retains its local workflow service worker.
       name: 'drop-local-data-worker',
       apply: 'build',
       closeBundle() {
-        rmSync(resolve(__dirname, 'dist/mockServiceWorker.js'), { force: true });
+        if (process.env.VITE_HOSTED_DEMO !== '1') rmSync(resolve(__dirname, 'dist/mockServiceWorker.js'), { force: true });
       },
     },
   ],

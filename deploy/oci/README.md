@@ -1,38 +1,71 @@
 # OCI single-VM deployment
 
-This deployment uses one Always Free Ampere A1 VM for Next.js, the dispatcher,
-PostgreSQL/PostGIS, Redis, private MinIO storage, the geometry API, and Celery.
-It requires an ARM64 Ubuntu host with Docker Compose, Node.js 24, pnpm 9.12.0,
-and Caddy. The root `compose.yaml` stays suitable for the local workstation;
-`deploy/oci/compose.yaml` builds PostGIS natively for ARM64.
+The current release serves the React/Vite Studio as static files through Caddy,
+with NestJS on loopback port 3188, the hosted dataset transport on 3190, and a
+separate dispatcher. PostgreSQL/PostGIS, Redis, private MinIO, the geometry API
+and Celery retain their existing Docker volumes. The old Next.js service is
+stopped only after the replacement services and datasets are ready.
 
-The application, database, Redis, geometry API and object store bind only to
-loopback. Caddy is the sole public service on ports 80 and 443. Its hostname
-must resolve to the VM public IP. The proxy rejects foreign browser origins
-before adapting headers for the existing local-only API guard. This is a
-public synthetic demonstration, not officer authentication.
-The deployment also installs a persistent VM firewall rule for ports 80/443;
-the OCI subnet security list must allow those two ports separately.
+Requirements: ARM64 Ubuntu, Docker Compose, Node.js 24, pnpm 9.12.0, Python 3.12
+with `venv`, Caddy, and the repository at `/opt/ulpin/app`. The domain must point
+to the VM; OCI ingress must allow ports 80 and 443. All application and storage
+ports remain bound to loopback.
 
-On the VM, clone the repository to `/opt/ulpin/app`, then run:
+## Data and environment
+
+Transfer the complete `apps/studio/datasets/` directory to
+`/opt/ulpin/shared/datasets/` over SSH and verify file hashes. Keep that directory
+private and outside Git. The eight NYC originals must be under
+`nyc-10013/files/`; their hashes are pinned in
+`scripts/demo-import/nyc-profile.json`. Lake View's six workflow inputs are
+tracked in the repository and also retained in the transferred directory.
+
+The server `.env` owns its database, object-storage and geometry credentials.
+Preserve those values when synchronizing selected provider credentials; never
+replace them with workstation credentials. `.env` and generated environment
+files must have mode 600. `configure-env.mjs` writes only hosted runtime settings
+under `/opt/ulpin/shared`. Paid model dispatch is disabled for this public demo.
+
+This deployment explicitly enables `VITE_HOSTED_DEMO=1`, `VITE_LOCAL_DATA=on`
+and `VITE_DEMO_IMPORT=1`. A normal production build still excludes the local
+workflow layer. Fresh visitors receive the existing Lake View workflow, including
+its floor/register data; existing browser work and explicit resets are preserved.
+NYC is imported through the same multipart API and SSE/acknowledgement flow used
+by Studio: 2,363 features from eight retained source files, including LiDAR,
+elevation and imagery. Repeated deployment reuses the completed import.
+
+NYC map geometry is official source data. Lake View and the existing generated
+property workflow are presentation fixtures, not official ownership or issued
+ULPIN records. Browser-local reviews, requests and edits are not a shared,
+authenticated production registry. The separate hosted dataset files persist
+on the VM across restarts. Preserve that distinction when presenting the site.
+
+## Release
+
+After reviewing and pushing `main`, run on the VM:
 
 ```sh
+cd /opt/ulpin/app
+git fetch origin main
+git merge --ff-only origin/main
 bash deploy/oci/deploy.sh bhuaayam.tech 80.225.204.171.sslip.io
 ```
 
-Set the apex `A` record for `bhuaayam.tech` to the VM's public IPv4 address
-before deployment. Caddy serves the Next.js app at `https://bhuaayam.tech`,
-including its API index at `/api` and versioned routes under `/api/v1`.
-The former `sslip.io` hostname remains available. The Python geometry
-service stays on loopback and is called by the Next.js backend, not by browsers.
+The script takes a private database/configuration backup, preserves `.env` and
+volumes, installs locked dependencies, builds API and Studio, applies migrations,
+starts the new services and prepares both datasets before switching Caddy.
+It validates the Caddy configuration and leaves the old site serving if an
+earlier preparation step fails. Only one deployment can run at a time.
 
-The script creates `.env` only if absent, preserves Docker volumes, starts all
-private services, applies schema migrations, builds the web app, and installs
-systemd/Caddy configuration. It never initializes or overwrites the repository
-data snapshot. Keep private model weights in `.runtime/ml-models` if ML
-inference is needed. Import only designated synthetic packages through Studio.
+Verify `/api/v1/health`, `/api/demo/bootstrap`, and a fresh browser at
+`https://bhuaayam.tech/studio/work`. Open both maps and confirm NYC imagery and
+surface assets load. Check `ulpin-api`, `ulpin-demo`, `ulpin-dispatcher`, Caddy
+and Docker health. `/api/demo/*` and the reserved `d30d` dataset identifiers route
+to the hosted transport; other API routes go to NestJS. Streaming proxy buffering
+is disabled. Foreign browser origins are rejected before loopback adaptation.
 
-For subsequent releases, pull `main` and rerun the command. The GitHub Actions
-deployment workflow performs that step after main is pushed. The workflow uses
-`OCI_HOST`, `OCI_SSH_USER`, `OCI_SSH_PRIVATE_KEY`, and
-`OCI_SSH_KNOWN_HOSTS` repository secrets.
+Backups live in `/opt/ulpin/shared/backups/<UTC timestamp>/`. Keep the previous
+Git revision and Caddy configuration when rolling back. Do not reset Docker
+volumes or restore an older database over new records as a routine rollback.
+This runbook uses a direct SSH release; it does not depend on a GitHub Actions
+workflow being present.
