@@ -16,15 +16,29 @@ import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './events';
 
 const uuid=z.string().uuid();
-export const streamingReaderSha=()=>sha256(readFileSync(join(settings.repositoryRoot,
-  'packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts')));
+const readerFiles=[
+  'packages/contracts/src/usp/streaming-vector.ts',
+  'packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts',
+  'packages/server/src/modules/usp/ingestion/streaming-vector-validation.ts',
+  'packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts',
+  'packages/server/src/modules/usp/ingestion/streaming-vector.ts',
+  'database/sql/95-ingestion/streaming-vector.sql',
+];
+export const streamingReaderSha=()=>fingerprint(readerFiles.map(path=>({path,
+  sha256:sha256(readFileSync(join(settings.repositoryRoot,path)))})));
+
+/** The same case → source prefix precedes every job/attempt/import lock. */
+export async function lockStreamingRowsTx(client:PoolClient,caseId:string,sourceId:string){
+  await client.query('SELECT id FROM cases WHERE id=$1 FOR SHARE',[caseId]);
+  await client.query('SELECT id FROM sources WHERE case_id=$1 AND id=$2 FOR SHARE',[caseId,sourceId]);
+}
 
 /** A retained source and current local access are checked before every mutation/read. */
-export async function streamingContextTx(client:PoolClient,caseId:string,sourceId:string){
+export async function streamingContextTx(client:PoolClient,caseId:string,sourceId:string,lock=false){
   const binding=ingestionBinding(caseId),subject=localOperatorSubject();
-  const current=(await client.query('SELECT id,revision,archived FROM cases WHERE id=$1',[caseId])).rows[0]??notFound('Source case not found.');
+  const current=(await client.query(`SELECT id,revision,archived FROM cases WHERE id=$1${lock?' FOR SHARE':''}`,[caseId])).rows[0]??notFound('Source case not found.');
   if(current.archived)throw new AppError(403,'STREAMING_CASE_ARCHIVED','The source case is archived.');
-  const source=(await client.query('SELECT * FROM sources WHERE case_id=$1 AND id=$2',[caseId,sourceId])).rows[0]??notFound('Retained source not found.');
+  const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('Retained source not found.');
   const owner=source.profile==='geojson-manual-v1'?source.inspection?.actor:source.profile==='large-original-v1'?source.inspection?.largeOriginal?.operatorSubject:null;
   if(owner!==subject)throw new AppError(403,'STREAMING_SOURCE_OPERATOR','This original belongs to another configured local context.');
   if(!['geojson-manual-v1','large-original-v1'].includes(source.profile))throw new AppError(422,'STREAMING_PROFILE','This reader requires a retained GeoJSON original.');
@@ -32,7 +46,7 @@ export async function streamingContextTx(client:PoolClient,caseId:string,sourceI
   return {current,source,binding,latest:Number(latest)===Number(source.revision)};
 }
 export async function assertStreamingInputTx(client:PoolClient,input:StreamingVectorInput){
-  const ctx=await streamingContextTx(client,input.caseId,input.sourceId);
+  const ctx=await streamingContextTx(client,input.caseId,input.sourceId,true);
   const {inputFingerprint,...base}=input;
   if(!ctx.latest||ctx.current.revision!==input.caseRevision||ctx.source.revision!==input.sourceRevision
     ||ctx.source.family_id!==input.sourceFamilyId||ctx.source.sha256!==input.sourceSha256
@@ -51,7 +65,7 @@ export function streamingSlot(row:any){return StreamingVectorSlotSchema.parse({
   issueCode:row.issue_code,resultSha256:row.result_sha256,attempt:row.attempt,fence:Number(row.fence),
 });}
 async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string){
-  const ctx=await streamingContextTx(client,caseId,sourceId);
+  const ctx=await streamingContextTx(client,caseId,sourceId,true);
   const job=(await client.query("SELECT * FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='streaming-vector'",[jobId,caseId,sourceId])).rows[0]??notFound('Streaming import not found.');
   const input=StreamingVectorInputSchema.parse(job.payload),row=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0]??notFound('Streaming import state unavailable.');
   if(input.sourceSha256!==ctx.source.sha256||input.sourceRevision!==ctx.source.revision||input.accessBinding!==ctx.binding.access)
@@ -72,7 +86,7 @@ export class StreamingVectorService{
     const binding=ingestionBinding(caseId),readerSha256=streamingReaderSha();
     return transaction(async client=>{
       await client.query("SELECT pg_advisory_xact_lock(hashtextextended('streaming-vector-admission-v1',0))");
-      const ctx=await streamingContextTx(client,caseId,sourceId);
+      const ctx=await streamingContextTx(client,caseId,sourceId,true);
       const digest=fingerprint({request,caseId,sourceId,access:binding.access,readerSha256}),key=`streaming-vector:${request.requestKey}`;
       const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='streaming-vector'",[caseId,key])).rows[0];
       if(prior){if(prior.payload_hash!==digest)conflict('The import request key names different inputs.');return statusTx(client,caseId,sourceId,prior.result.jobId);}
@@ -109,14 +123,20 @@ export class StreamingVectorService{
     const index=z.number().int().min(0).max(limits.chunks).parse(indexValue);
     const binding=ingestionBinding(caseId);
     const row=await transaction(async client=>{
-      const ctx=await streamingContextTx(client,caseId,sourceId);
-      const job=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='streaming-vector'",[jobId,caseId,sourceId])).rows[0]??notFound('Streaming import not found.');
+      const ctx=await streamingContextTx(client,caseId,sourceId,true);
+      const job=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='streaming-vector' FOR SHARE",[jobId,caseId,sourceId])).rows[0]??notFound('Streaming import not found.');
       const input=StreamingVectorInputSchema.parse(job.payload);
-      if(input.accessBinding!==ctx.binding.access||input.sourceSha256!==ctx.source.sha256||input.sourceRevision!==ctx.source.revision)
+      const {inputFingerprint,...base}=input;
+      if(!ctx.latest||ctx.current.revision!==input.caseRevision||input.readerSha256!==streamingReaderSha()
+        ||fingerprint(base)!==inputFingerprint||input.accessBinding!==ctx.binding.access
+        ||input.subject!==ctx.binding.subject||input.sourceSha256!==ctx.source.sha256
+        ||input.sourceRevision!==ctx.source.revision||input.sourceFamilyId!==ctx.source.family_id
+        ||Number(ctx.source.bytes)!==input.sourceBytes||input.objectKey!==ctx.source.object_key)
         conflict('The pinned original or access context changed.');
-      const slot=(await client.query('SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 AND published=true',
+      const state=(await client.query('SELECT state,unknown_remainder,sealed_chunks,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',[jobId])).rows[0]
+        ??notFound('Streaming import state unavailable.');
+      const slot=(await client.query('SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE',
         [jobId,input.sourceRevision,index])).rows[0]??notFound('This indexed draft slot is not published.');
-      const state=(await client.query('SELECT state,unknown_remainder,sealed_chunks,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
       return {input,slot:streamingSlot(slot),state};
     });
     if(row.state.state==='failed'&&row.state.issue_code==='STREAMING_SOURCE_INTEGRITY')
@@ -132,13 +152,24 @@ export class StreamingVectorService{
         throw new AppError(422,'STREAMING_CHUNK_INTEGRITY','The private draft payload belongs to another source pin.');
     }
     assertIngestionBinding(binding);
-    await transaction(async client=>{
-      const current=await streamingContextTx(client,caseId,sourceId);
-      if(current.binding.access!==row.input.accessBinding||current.source.sha256!==row.input.sourceSha256
-        ||current.source.revision!==row.input.sourceRevision)conflict('The source or access changed during draft read.');
+    const current=await transaction(async client=>{
+      await assertStreamingInputTx(client,row.input);
+      (await client.query("SELECT id FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='streaming-vector' FOR SHARE",
+        [jobId,caseId,sourceId])).rows[0]??notFound('Streaming import not found.');
+      const state=(await client.query('SELECT state,unknown_remainder,sealed_chunks,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',[jobId])).rows[0]
+        ??notFound('Streaming import state unavailable.');
+      const slot=(await client.query('SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE',
+        [jobId,row.input.sourceRevision,index])).rows[0]??notFound('This indexed draft slot is no longer published.');
+      if(slot.result_sha256!==row.slot.resultSha256||slot.object_key!==(row.slot.ref?.key??null)
+        ||slot.object_sha256!==(row.slot.ref?.sha256??null)||Number(slot.bytes)!==row.slot.bytes)
+        conflict('The published draft slot changed during payload read.');
+      if(state.state==='failed'&&state.issue_code==='STREAMING_SOURCE_INTEGRITY')
+        throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original failed its pinned integrity check.');
+      assertIngestionBinding(binding);
+      return state;
     });
     return StreamingVectorChunkResponseSchema.parse({slot:row.slot,payload,
-      sourceComplete:row.state.sealed_chunks!==null&&['completed','completed_with_rejections'].includes(row.state.state),
-      unknownRemainder:row.state.unknown_remainder});
+      sourceComplete:current.sealed_chunks!==null&&['completed','completed_with_rejections'].includes(current.state),
+      unknownRemainder:current.unknown_remainder});
   }
 }

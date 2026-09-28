@@ -7,6 +7,69 @@ const whitespace=(byte:number)=>byte===32||byte===9||byte===10||byte===13;
 const decode=(bytes:Buffer)=>new TextDecoder('utf-8',{fatal:true}).decode(bytes);
 type Framing='feature-collection'|'geojson-seq-rs';
 
+/** Inspect the original JSON tokens before JS can round numbers or replace duplicate keys. */
+function parseSourceValue(raw:Buffer):{value:unknown;issueCode:string|null}{
+  let source:string;
+  try{source=decode(raw);}catch{throw new AppError(422,'GEOJSON_JSON','A complete source value is not valid UTF-8 JSON.');}
+  let at=0,issueCode:string|null=null;
+  const bad=():never=>{throw new AppError(422,'GEOJSON_JSON','A complete source value is not valid UTF-8 JSON.');};
+  const space=()=>{while(at<source.length&&/[ \t\r\n]/.test(source[at]!))at++;};
+  const number=/-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/y;
+  const decimal=(token:string):string|null=>{
+    const match=/^(-?)([0-9]+)(?:\.([0-9]+))?(?:[eE]([+-]?[0-9]+))?$/.exec(token);
+    if(!match)return null;
+    const exponent=match[4]??'0';
+    if(exponent.replace(/^[+-]?0*/, '').length>6)return null;
+    const digits=(match[2]!+(match[3]??'')).replace(/^0+/, '');
+    if(!digits)return '0';
+    const trimmed=digits.replace(/0+$/, '');
+    const scale=Number(exponent)-(match[3]?.length??0)+(digits.length-trimmed.length);
+    return `${match[1]}${trimmed}e${scale}`;
+  };
+  const string=():string=>{
+    const start=at;
+    if(source[at++]!=='"')bad();
+    while(at<source.length){
+      const char=source.charCodeAt(at++);
+      if(char===34){try{return JSON.parse(source.slice(start,at)) as string;}catch{bad();}}
+      if(char===92){if(at>=source.length)bad();at++;}
+      else if(char<32)bad();
+    }
+    return bad();
+  };
+  const node=(depth:number):void=>{
+    if(depth>limits.jsonNesting)throw new AppError(413,'GEOJSON_NESTING_BUDGET','A source value exceeds the JSON nesting limit.');
+    space();const char=source[at];
+    if(char==='"'){string();return;}
+    if(char==='{'||char==='['){
+      at++;space();const object=char==='{',end=object?'}':']',seen=object?new Set<string>():null;
+      if(source[at]===end){at++;return;}
+      while(true){
+        if(object){
+          if(source[at]!=='"')bad();
+          const key=string();if(seen!.has(key))issueCode??='DUPLICATE_JSON_KEY';seen!.add(key);
+          space();if(source[at++]!==':')bad();
+        }
+        node(depth+1);space();
+        if(source[at]===end){at++;return;}
+        if(source[at++]!==',')bad();space();
+      }
+    }
+    if(char==='t'||char==='f'||char==='n'){
+      const literal=char==='t'?'true':char==='f'?'false':'null';
+      if(source.slice(at,at+literal.length)!==literal)bad();at+=literal.length;return;
+    }
+    number.lastIndex=at;const match=number.exec(source);
+    if(!match)return bad();
+    const token=match[0],value=Number(token);
+    if(!Number.isFinite(value)||Object.is(value,-0)||Number.isInteger(value)&&!Number.isSafeInteger(value)
+      ||decimal(token)!==decimal(value.toString()))issueCode??='UNREPRESENTABLE_NUMBER';
+    at=number.lastIndex;
+  };
+  node(0);space();if(at!==source.length)bad();
+  try{return {value:JSON.parse(source),issueCode};}catch{return bad();}
+};
+
 /** One S3 stream, bounded to one complete JSON value. Offsets are byte offsets in the unchanged original. */
 class Cursor {
   private readonly chunks:AsyncIterator<Buffer>;
@@ -46,42 +109,49 @@ class Cursor {
       if(byte===34){inString=true;continue;}
       if(byte===123)brackets.push(125);else if(byte===91)brackets.push(93);
       else if(byte===125||byte===93){if(brackets.pop()!==byte)throw new AppError(422,'GEOJSON_CONTAINER','JSON brackets are malformed.');}
+      if(brackets.length>limits.jsonNesting)throw new AppError(413,'GEOJSON_NESTING_BUDGET','A source value exceeds the JSON nesting limit.');
     }
     const raw=Buffer.from(bytes);
-    // Parse one logical value only. The full collection is never assembled.
-    try{JSON.parse(decode(raw));}catch{throw new AppError(422,'GEOJSON_JSON','A complete source value is not valid UTF-8 JSON.');}
     return {bytes:raw,start,end:this.offset};
   }
   digest(){return this.hash.digest('hex');}
 }
 
-export type SourceFeature={index:number;start:number;end:number;raw:Buffer;feature:unknown};
+export type SourceFeature={index:number;start:number;end:number;raw:Buffer;feature:unknown;valueIssueCode:string|null};
 export async function readStreamingFeatures(body:Readable,framing:Framing,onFeature:(item:SourceFeature)=>Promise<void>){
-  const cursor=new Cursor(body);let index=0;const metadata:Record<string,unknown>={};
+  const cursor=new Cursor(body);let index=0,metadataBytes=0;const metadata:Record<string,unknown>=Object.create(null);
   const feature=async()=>{
     const value=await cursor.value(limits.featureBytes);
-    const parsed=JSON.parse(decode(value.bytes));
-    await onFeature({index:index++,start:value.start,end:value.end,raw:value.bytes,feature:parsed});
+    const parsed=parseSourceValue(value.bytes);
+    await onFeature({index:index++,start:value.start,end:value.end,raw:value.bytes,
+      feature:parsed.value,valueIssueCode:parsed.issueCode});
   };
   if(framing==='feature-collection'){
     await cursor.expect(123);const keys=new Set<string>();let foundFeatures=false;
     while(true){
       const next=await cursor.nonspace();if(next===125){await cursor.take();break;}
       if(keys.size){await cursor.expect(44);}
-      const keyValue=await cursor.value(256),key=JSON.parse(decode(keyValue.bytes));
+      const keyValue=await cursor.value(256),key=parseSourceValue(keyValue.bytes).value;
       if(typeof key!=='string'||keys.has(key))throw new AppError(422,'GEOJSON_CONTAINER','Collection keys must be unique strings.');
-      keys.add(key);await cursor.expect(58);
+      keys.add(key);
+      if(keys.size>limits.metadataFields)throw new AppError(413,'GEOJSON_METADATA_BUDGET','Collection metadata has too many fields.');
+      metadataBytes+=keyValue.bytes.length;
+      if(metadataBytes>limits.metadataBytes)throw new AppError(413,'GEOJSON_METADATA_BUDGET','Collection metadata exceeds this reader profile.');
+      await cursor.expect(58);
       if(key==='features'){
-        if(metadata.type!=='FeatureCollection')throw new AppError(422,'GEOJSON_CONTAINER','Collection type must precede the features array.');
+        if(!Object.hasOwn(metadata,'type')||metadata.type!=='FeatureCollection')throw new AppError(422,'GEOJSON_CONTAINER','Collection type must precede the features array.');
         foundFeatures=true;await cursor.expect(91);
         if(await cursor.nonspace()!==93){while(true){await feature();const delim=await cursor.nonspace();if(delim===93)break;await cursor.expect(44);}}
         await cursor.expect(93);
       }else{
-        const value=await cursor.value(limits.metadataBytes);
-        metadata[key]=JSON.parse(decode(value.bytes));
+        const value=await cursor.value(limits.metadataBytes-metadataBytes);
+        metadataBytes+=value.bytes.length;
+        const parsed=parseSourceValue(value.bytes);
+        if(parsed.issueCode)throw new AppError(422,'GEOJSON_METADATA','Collection metadata has duplicate keys or unrepresentable numbers.');
+        metadata[key]=parsed.value;
       }
     }
-    if(!foundFeatures||metadata.type!=='FeatureCollection')throw new AppError(422,'GEOJSON_CONTAINER','A FeatureCollection with complete features is required.');
+    if(!foundFeatures||!Object.hasOwn(metadata,'type')||metadata.type!=='FeatureCollection')throw new AppError(422,'GEOJSON_CONTAINER','A FeatureCollection with complete features is required.');
   }else{
     while(await cursor.nonspace()!==null){await cursor.expect(30);await feature();
       // RFC 7464 JSON text sequences require LF after each JSON text.
@@ -92,25 +162,11 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
   return {features:index,metadata,bytes:cursor.offset,sha256:cursor.digest()};
 }
 
-type Point=[number,number];
-const orientation=(a:Point,b:Point,c:Point)=>Math.sign((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]));
-const onSegment=(a:Point,b:Point,c:Point)=>Math.min(a[0],b[0])<=c[0]&&c[0]<=Math.max(a[0],b[0])&&Math.min(a[1],b[1])<=c[1]&&c[1]<=Math.max(a[1],b[1]);
-function intersects(a:Point,b:Point,c:Point,d:Point){
-  const x=orientation(a,b,c),y=orientation(a,b,d),u=orientation(c,d,a),v=orientation(c,d,b);
-  return x!==y&&u!==v||x===0&&onSegment(a,b,c)||y===0&&onSegment(a,b,d)||u===0&&onSegment(c,d,a)||v===0&&onSegment(c,d,b);
-}
 function ringIssue(value:unknown):string|null{
   if(!Array.isArray(value)||value.length<4||value.length>2048)return 'RING_BUDGET_OR_SHAPE';
-  const points:Point[]=[];
-  for(const item of value){if(!Array.isArray(item)||item.length<2||item.length>4||item.some(v=>typeof v!=='number'||!Number.isFinite(v)))return 'INVALID_COORDINATE';points.push([item[0],item[1]]);}
-  const n=points.length-1;
-  if(points[0]![0]!==points[n]![0]||points[0]![1]!==points[n]![1])return 'OPEN_RING';
-  let twiceArea=0;for(let i=0;i<n;i++)twiceArea+=points[i]![0]*points[i+1]![1]-points[i+1]![0]*points[i]![1];
-  if(twiceArea===0)return 'ZERO_AREA_RING';
-  for(let i=0;i<n;i++)for(let j=i+2;j<n;j++){
-    if(i===0&&j===n-1)continue;
-    if(intersects(points[i]!,points[i+1]!,points[j]!,points[j+1]!))return 'SELF_INTERSECTION';
-  }
+  for(const item of value)if(!Array.isArray(item)||item.length<2||item.length>4||item.some(v=>typeof v!=='number'||!Number.isFinite(v)))return 'INVALID_COORDINATE';
+  const first=value[0] as number[],last=value.at(-1) as number[];
+  if(first[0]!==last[0]||first[1]!==last[1])return 'OPEN_RING';
   return null;
 }
 export function validateStreamingFeature(value:unknown):string|null{
@@ -125,6 +181,7 @@ export function validateStreamingFeature(value:unknown):string|null{
   const g=geometry as Record<string,unknown>;
   const polygons=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:null;
   if(!Array.isArray(polygons))return 'UNSUPPORTED_GEOMETRY';
+  if(!polygons.length)return 'POLYGON_BUDGET_OR_SHAPE';
   let positions=0;
   for(const polygon of polygons){
     if(!Array.isArray(polygon)||polygon.length<1||polygon.length>128)return 'POLYGON_BUDGET_OR_SHAPE';
@@ -135,8 +192,8 @@ export function validateStreamingFeature(value:unknown):string|null{
   return null;
 }
 export function sourceRecord(item:SourceFeature):StreamingVectorRecord{
-  const issueCode=validateStreamingFeature(item.feature);
+  const issueCode=item.valueIssueCode??validateStreamingFeature(item.feature);
   return {featureIndex:item.index,byteStart:item.start,byteEnd:item.end,
     rawSha256:createHash('sha256').update(item.raw).digest('hex'),
-    disposition:issueCode?'quarantined':'accepted',issueCode,feature:item.feature};
+    disposition:issueCode?'quarantined':'accepted',issueCode,feature:issueCode?null:item.feature};
 }
