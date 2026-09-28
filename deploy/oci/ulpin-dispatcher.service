@@ -1,0 +1,19 @@
+[Unit]
+Description=BhuAayam durable job dispatcher
+After=network-online.target ulpin-api.service
+Wants=ulpin-api.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/ulpin/app
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/ulpin/app/.env
+EnvironmentFile=/opt/ulpin/shared/runtime.env
+ExecStart=/usr/local/bin/pnpm dispatcher
+Restart=always
+RestartSec=5
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
