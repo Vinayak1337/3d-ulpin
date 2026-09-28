@@ -25,7 +25,8 @@ Before recording, open `http://127.0.0.1:5188/studio/work?reset-session` once. I
 | Time | Beat | Where | What to do |
 | --- | --- | --- | --- |
 | 0:00 | 1 Problem | Slide | Records that disagree: deed, plan and survey |
-| 0:30 | 2 Upload | Add files | Drop the Lake View survey; we propose a mapping; Start import; the map fills (roads, parcels, buildings) |
+| 0:30 | How it works | Motion graphic | Adaptive ingestion in six beats, about 75 s; script in [DEMO_NARRATION.md](DEMO_NARRATION.md) |
+| 1:45 | 2 Upload | Add files | Drop the Lake View survey; we propose a mapping; Start import; the map fills (roads, parcels, buildings) |
 | 1:10 | 3 Floors | Lake View Residence → Add files | Drop the five building files; levels stack G + 3 → G + 8 |
 | 1:40 | 3 Deviation | Open register → Deviation check | Sanctioned G + 8 against drone survey: +1 storey, 118 m²; Create finding |
 | 2:20 | 4 Units | Explore floors → F8 → Flat 801 | Level, carpet area, share with source chips; Record reviewed details; Assign code |
@@ -45,6 +46,8 @@ Use Flat 801 or Flat 704 for the card: their carpet area and share are on record
 - Say this in the narration or the closing slide. Don't present sample people or deeds as real records.
 
 ## AI in the video
+
+The narration script for the ingestion segment, including what to say and not say, is in [DEMO_NARRATION.md](DEMO_NARRATION.md).
 
 The app does not call a model in this build. Show AI as a narrated motion-graphic segment, labelled as the pipeline being built:
 
