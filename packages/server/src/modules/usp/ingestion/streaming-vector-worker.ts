@@ -81,20 +81,23 @@ async function terminal(input:StreamingVectorInput,attempt:UspJobAttempt,code:st
     if(!stale)await assertStreamingInputTx(client,input);
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
-    if(!state||state.records!==nextFeatureIndex)conflict('The terminal source position differs from the committed prefix.');
-    const hash=fingerprint({version:limits.version,jobId:input.jobId,sourceRevision:input.sourceRevision,chunkIndex:nextIndex,code});
-    await client.query(`INSERT INTO usp_streaming_vector_slots(job_id,source_revision,chunk_index,status,first_feature_index,last_feature_index,
-      records,accepted,quarantined,bytes,issue_code,result_sha256,attempt,fence)
-      VALUES($1,$2,$3,'quarantined',$4,NULL,0,0,0,0,$5,$6,$7,$8) ON CONFLICT DO NOTHING`,
-      [input.jobId,input.sourceRevision,nextIndex,nextFeatureIndex,code,hash,attempt.number,attempt.fence]);
-    await publishStreamingPrefixTx(client,input);
+    if(!state)conflict('The streaming import state is unavailable.');
+    if(!stale){
+      if(state.records!==nextFeatureIndex)conflict('The terminal source position differs from the committed prefix.');
+      const hash=fingerprint({version:limits.version,jobId:input.jobId,sourceRevision:input.sourceRevision,chunkIndex:nextIndex,code});
+      await client.query(`INSERT INTO usp_streaming_vector_slots(job_id,source_revision,chunk_index,status,first_feature_index,last_feature_index,
+        records,accepted,quarantined,bytes,issue_code,result_sha256,attempt,fence)
+        VALUES($1,$2,$3,'quarantined',$4,NULL,0,0,0,0,$5,$6,$7,$8) ON CONFLICT DO NOTHING`,
+        [input.jobId,input.sourceRevision,nextIndex,nextFeatureIndex,code,hash,attempt.number,attempt.fence]);
+      await publishStreamingPrefixTx(client,input);
+    }
     await client.query('UPDATE usp_job_attempts SET state=$3 WHERE job_id=$1 AND number=$2',[input.jobId,attempt.number,'fenced']);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[input.jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[input.jobId,stale?'stale':'failed',code]);
     await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=$3,unknown_remainder=true,updated_at=now() WHERE job_id=$1',
       [input.jobId,stale?'stale':'failed',code]);
-    await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
-      sourceRevision:input.sourceRevision,jobId:input.jobId,status:stale?'stale':'failed'},input.subject);
+    if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
+      sourceRevision:input.sourceRevision,jobId:input.jobId,status:'failed'},input.subject);
   });
 }
 
@@ -129,7 +132,7 @@ export async function runStreamingVectorJob(jobId:string){
       const current=(await client.query("SELECT status FROM jobs WHERE id=$1 AND operation='streaming-vector' FOR UPDATE",[jobId])).rows[0];
       const row=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
       if(!row||!['queued','running'].includes(row.state))return;
-      const code=error instanceof AppError&&error.status===409?'STREAMING_CONTEXT_STALE':'STREAMING_ATTEMPTS_EXHAUSTED';
+      const code=error instanceof AppError&&[403,404,409].includes(error.status)?'STREAMING_CONTEXT_STALE':'STREAMING_ATTEMPTS_EXHAUSTED';
       const stale=code==='STREAMING_CONTEXT_STALE';
       const stillActive=(await client.query("SELECT 1 FROM usp_job_attempts WHERE job_id=$1 AND state='active' AND lease_until>now() LIMIT 1",[jobId])).rowCount;
       if(!current||!['queued','running'].includes(current.status)||stillActive)return;
@@ -148,8 +151,8 @@ export async function runStreamingVectorJob(jobId:string){
       await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
       await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=$3,unknown_remainder=true WHERE job_id=$1',
         [jobId,stale?'stale':'failed',code]);
-      await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
-        sourceRevision:input.sourceRevision,jobId,status:stale?'stale':'failed'},input.subject);
+      if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
+        sourceRevision:input.sourceRevision,jobId,status:'failed'},input.subject);
     });
     return;
   }
@@ -210,7 +213,7 @@ export async function runStreamingVectorJob(jobId:string){
   }catch(error){
     const code=error instanceof AppError?error.code:'STREAMING_WORKER_ERROR';
     const structural=error instanceof AppError&&[413,422].includes(error.status);
-    const stale=error instanceof AppError&&error.status===409;
+    const stale=error instanceof AppError&&[403,404,409].includes(error.status);
     try{
       if(structural){
         // A later bad value keeps the accepted prefix. No guessed boundary or completion count is recorded.
