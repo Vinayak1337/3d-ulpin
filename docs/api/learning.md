@@ -1,6 +1,6 @@
 # AI-06A offline source-field mapping experiment
 
-**Corpus correction pending, 28 September:** lead checked the retained five-row NYC sample and found `doitt_id`, `bin` and `objectid` are JSON strings. The manifest's reason for excluding `doitt_id` incorrectly calls its wire value numeric. Audit the existing field labels and distinguish issuer-declared types from observed wire types before another training run. The recorded run below remains historical; its candidate stays offline and is not a basis for promotion. Preserve its originals, weights and receipt when recording the corrected experiment.
+**Corrected experiment accepted, 28 September:** all 27 labelled or excluded fields now distinguish issuer-declared types from their unchanged export's wire representation. The lead verified the saved artifact and reproduced its diagnostic predictions after reloading it. The model remains offline: it improved on the base encoder but did not beat the lexical/type baseline and made incorrect mappings. Earlier originals, weights and receipts remain preserved.
 
 This is an **experimental, unpromoted** field/operation candidate. It scores only the three existing building mappings: `building.sourceKey` with `literal_identifier@1`, `building.name` with `literal_text@1`, and `building.geometry` with `geojson_polygon@1`. It does not read arbitrary documents, normalize raster or point-cloud payloads, infer ownership, convert geometry, or change ingestion routing. The deterministic registry and validation remain the authority.
 
