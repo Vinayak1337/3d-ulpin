@@ -8,15 +8,17 @@ import json
 import os
 import random
 import resource
+import signal
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 
-from geo.usp_learning.corpus import lexical_prediction, load_examples, sha256_file
+from geo.usp_learning.corpus import CORPUS_VERSION, lexical_prediction, load_examples, sha256_file
 from geo.usp_learning.model import (
     BASE_CONFIG_SHA256,
     BASE_REVISION,
@@ -32,44 +34,73 @@ from geo.usp_learning.model import (
 )
 
 
+def _peak_rss_bytes() -> int:
+    amount = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return amount if sys.platform == "darwin" else amount * 1024
+
+
+def _alarm(_signum: int, _frame: Any) -> None:
+    raise TimeoutError("bounded fit reached its wall-clock alarm")
+
+
+def _frozen_config(path: Path, corpus_path: Path, examples: list[dict[str, Any]]) -> dict[str, Any]:
+    config = json.loads(path.read_text())
+    if config.get("schemaVersion") != "usp-e5-fit-freeze-v1" or config.get("corpusSha256") != sha256_file(corpus_path):
+        raise ValueError("freeze does not match the checked v3 corpus")
+    if config.get("base") != {"revision": BASE_REVISION, "weightSha256": BASE_WEIGHT_SHA256, "configSha256": BASE_CONFIG_SHA256}:
+        raise ValueError("freeze does not match the pinned base model")
+    actual_splits = {split: sorted({item["family"] for item in examples if item["split"] == split})
+                     for split in ("train", "calibration", "evaluation", "diagnostic")}
+    if config.get("splits") != actual_splits:
+        raise ValueError("freeze source-family roles differ from the corpus")
+    fit = config["fit"]
+    if not 1 <= fit["steps"] <= 256 or fit["cpuThreads"] != 2 or fit["maxFitSeconds"] > 600 or fit["maxPeakProcessRssBytes"] > 6 * 1024**3:
+        raise ValueError("fit exceeds the authorized resource budget")
+    if fit["thresholdPolicy"] != "independent-calibration-exact-fields-v1" or fit["learningRate"] != 2e-5:
+        raise ValueError("unexpected fit/threshold policy")
+    return config
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus", type=Path, required=True)
     parser.add_argument("--originals-dir", type=Path, required=True)
     parser.add_argument("--base-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--steps", type=int, default=24)
-    parser.add_argument("--seed", type=int, default=17)
+    parser.add_argument("--freeze-file", type=Path, required=True)
     args = parser.parse_args()
-    if not 1 <= args.steps <= 64:
-        parser.error("--steps must be in 1..64")
     if args.output_dir.exists():
         parser.error("output directory already exists; candidate artifacts are immutable")
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
-    torch.set_num_threads(2)
-    torch.manual_seed(args.seed)
-    random.seed(args.seed)
-    np.random.seed(args.seed)
     started = time.monotonic()
 
     corpus, examples = load_examples(args.corpus, args.originals_dir)
-    train = [item for item in examples if item["split"] == "train"]
-    holdout = [item for item in examples if item["split"] == "holdout"]
-    if len(train) > 128 or len(holdout) > 128:
+    if corpus["schemaVersion"] != CORPUS_VERSION:
+        raise ValueError("new fit requires the frozen v3 corpus")
+    config = _frozen_config(args.freeze_file, args.corpus, examples)
+    fit = config["fit"]
+    torch.set_num_threads(fit["cpuThreads"])
+    torch.manual_seed(fit["seed"])
+    random.seed(fit["seed"])
+    np.random.seed(fit["seed"])
+    splits = {split: [item for item in examples if item["split"] == split]
+              for split in ("train", "calibration", "evaluation", "diagnostic")}
+    train = splits["train"]
+    if any(len(items) > 128 for items in splits.values()):
         raise ValueError("bounded research corpus limit exceeded")
     tokenizer, model = load_base(args.base_dir)
     with torch.no_grad():
-        base_train_scores = score_matrix(tokenizer, model, train, corpus["targets"])
-        base_holdout_scores = score_matrix(tokenizer, model, holdout, corpus["targets"])
-    base_threshold = choose_train_threshold(train, base_train_scores)
-    base_train = metrics(train, base_train_scores, base_threshold)
-    base_holdout = metrics(holdout, base_holdout_scores, base_threshold)
-    lexical_holdout = metrics(holdout, None, None, [lexical_prediction(item) for item in holdout])
+        base_scores = {split: score_matrix(tokenizer, model, items, corpus["targets"])
+                       for split, items in splits.items()}
+    base_threshold = choose_train_threshold(splits["calibration"], base_scores["calibration"])
+    lexical = {split: metrics(items, None, None, [lexical_prediction(item) for item in items])
+               for split, items in splits.items()}
+    base = {split: metrics(items, base_scores[split], base_threshold) for split, items in splits.items()}
 
     trainable_parameters = freeze_except_last_layer(model)
     initial_layer = {key: value.detach().clone() for key, value in last_layer(model).state_dict().items()}
     model.train()
-    optimizer = torch.optim.AdamW((param for param in model.parameters() if param.requires_grad), lr=2e-5, weight_decay=0.01)
+    optimizer = torch.optim.AdamW((param for param in model.parameters() if param.requires_grad), lr=fit["learningRate"], weight_decay=0.01)
     label_indices = {target["id"]: index for index, target in enumerate(corpus["targets"])}
     labels = torch.zeros((len(train), len(label_indices)), dtype=torch.float32)
     for row, item in enumerate(train):
@@ -80,16 +111,29 @@ def main() -> None:
     if positive_pairs < 2 or negative_pairs < 2:
         raise ValueError("insufficient checked mapping pairs")
     positive_weight = torch.tensor(min(negative_pairs / positive_pairs, 8.0))
+    train_anchor = choose_train_threshold(train, base_scores["train"])
     losses: list[float] = []
-    for _ in range(args.steps):
-        optimizer.zero_grad(set_to_none=True)
-        scores = score_matrix(tokenizer, model, train, corpus["targets"])
-        logits = (scores - base_threshold) * 20.0
-        loss = F.binary_cross_entropy_with_logits(logits, labels, pos_weight=positive_weight)
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_((param for param in model.parameters() if param.requires_grad), 1.0)
-        optimizer.step()
-        losses.append(float(loss.detach()))
+    fit_started = time.monotonic()
+    previous_alarm = signal.signal(signal.SIGALRM, _alarm)
+    signal.alarm(fit["maxFitSeconds"])
+    try:
+        for _ in range(fit["steps"]):
+            optimizer.zero_grad(set_to_none=True)
+            scores = score_matrix(tokenizer, model, train, corpus["targets"])
+            logits = (scores - train_anchor) * 20.0
+            loss = F.binary_cross_entropy_with_logits(logits, labels, pos_weight=positive_weight)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_((param for param in model.parameters() if param.requires_grad), 1.0)
+            optimizer.step()
+            losses.append(float(loss.detach()))
+            if time.monotonic() - fit_started > fit["maxFitSeconds"]:
+                raise TimeoutError("bounded fit exceeded its wall-clock budget")
+            if _peak_rss_bytes() > fit["maxPeakProcessRssBytes"]:
+                raise MemoryError("bounded fit exceeded its process RSS budget")
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, previous_alarm)
+    fit_seconds = time.monotonic() - fit_started
     model.eval()
     max_weight_change = max(
         float((value.detach() - initial_layer[key]).abs().max())
@@ -99,11 +143,7 @@ def main() -> None:
         raise RuntimeError("encoder fine-tuning did not change the last layer")
     del initial_layer
     with torch.no_grad():
-        tuned_train_scores = score_matrix(tokenizer, model, train, corpus["targets"])
-        tuned_holdout_scores = score_matrix(tokenizer, model, holdout, corpus["targets"])
-    tuned_threshold = choose_train_threshold(train, tuned_train_scores)
-    tuned_train = metrics(train, tuned_train_scores, tuned_threshold)
-    tuned_holdout = metrics(holdout, tuned_holdout_scores, tuned_threshold)
+        tuned_calibration_pre_save = score_matrix(tokenizer, model, splits["calibration"], corpus["targets"])
 
     args.output_dir.mkdir(parents=True)
     adapter_path = args.output_dir / "candidate.safetensors"
@@ -112,34 +152,52 @@ def main() -> None:
     _, reloaded = load_base(args.base_dir)
     load_adapter(reloaded, adapter_path, adapter_sha)
     with torch.no_grad():
-        reloaded_scores = score_matrix(tokenizer, reloaded, holdout, corpus["targets"])
-    max_reload_delta = float((reloaded_scores - tuned_holdout_scores).abs().max())
+        tuned_scores = {split: score_matrix(tokenizer, reloaded, items, corpus["targets"])
+                        for split, items in splits.items()}
+    max_reload_delta = float((tuned_scores["calibration"] - tuned_calibration_pre_save).abs().max())
     if max_reload_delta > 1e-5:
         raise RuntimeError(f"adapter reload changed inference scores: {max_reload_delta}")
-    peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    if sys.platform != "darwin":
-        peak_rss *= 1024
+    tuned_threshold = choose_train_threshold(splits["calibration"], tuned_scores["calibration"])
+    tuned = {split: metrics(items, tuned_scores[split], tuned_threshold) for split, items in splits.items()}
+    calibration_coverage = {target["id"]: {"positiveFields": sum(item["target"] == target["id"] for item in splits["calibration"]),
+                                           "wireCompatibleSampleRows": sum(item["wireCompatibleRows"] or 0 for item in splits["calibration"]
+                                                                           if item["target"] == target["id"])}
+                            for target in corpus["targets"]}
+    peak_rss = _peak_rss_bytes()
+    if peak_rss > fit["maxPeakProcessRssBytes"]:
+        raise MemoryError("candidate evaluation exceeded process RSS budget")
     report = {
         "status": "offline_candidate_only",
         "promotion": "blocked_offline_experiment",
-        "evaluationInterpretation": "SF family is excluded from corrected training and threshold choice but was observed during prior development; this is a diagnostic comparison, not fresh generalization.",
+        "evaluationInterpretation": "DC was originally reserved in v3 but has now been observed; this one fixed source-profile correction is diagnostic, not a fresh holdout. Calgary has one geometry positive but no sourceKey/name positive calibration fields. SF was previously inspected and is diagnostic only. Five-row samples do not establish population accuracy or production readiness.",
+        "previousProfileIssue": "Immutable v3/run07 feature text included reviewer-authored target explanations and cannot establish realistic unseen-input performance; this v4 run uses only hash-pinned publisher metadata and observed wire aggregates.",
+        "freeze": {"file": args.freeze_file.name, "sha256": sha256_file(args.freeze_file), "configuration": config},
         "base": {"repo": "intfloat/multilingual-e5-small", "revision": BASE_REVISION, "weightSha256": BASE_WEIGHT_SHA256, "configSha256": BASE_CONFIG_SHA256, "license": "MIT", "fileSha256": {name: sha256_file(args.base_dir / name) for name in ("config.json", "model.safetensors", "sentencepiece.bpe.model", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "README.md")}},
-        "candidate": {"file": adapter_path.name, "sha256": adapter_sha, "fineTunedModule": "BertModel.encoder.layer.11", "trainableParameters": trainable_parameters, "maximumAbsoluteWeightChange": max_weight_change, "steps": args.steps, "seed": args.seed, "optimizer": "AdamW", "learningRate": 2e-5, "reloadMaxCosineDelta": max_reload_delta},
-        "corpus": {"fileSha256": sha256_file(args.corpus), "featureVersion": corpus["featureVersion"], "trainFamilies": sorted({item["family"] for item in train}), "holdoutFamilies": sorted({item["family"] for item in holdout}), "trainFields": len(train), "trainPositiveFields": sum(item["target"] is not None for item in train), "trainPairs": labels.numel(), "trainPositivePairs": positive_pairs, "holdoutFields": len(holdout), "holdoutPositiveFields": sum(item["target"] is not None for item in holdout)},
-        "comparison": {"lexicalHoldout": lexical_holdout, "baseTrain": base_train, "baseHoldout": base_holdout, "tunedTrain": tuned_train, "tunedHoldout": tuned_holdout},
-        "resources": {"elapsedSeconds": round(time.monotonic() - started, 3), "peakProcessRssBytes": peak_rss, "torchThreads": torch.get_num_threads()},
+        "candidate": {"file": adapter_path.name, "sha256": adapter_sha, "fineTunedModule": "BertModel.encoder.layer.11", "trainableParameters": trainable_parameters, "maximumAbsoluteWeightChange": max_weight_change, "steps": fit["steps"], "seed": fit["seed"], "optimizer": "AdamW", "learningRate": fit["learningRate"], "reloadMaxCosineDelta": max_reload_delta},
+        "corpus": {"fileSha256": sha256_file(args.corpus), "featureVersion": corpus["featureVersion"],
+                   "splits": {split: {"families": config["splits"][split], "fields": len(items),
+                                      "positiveFields": sum(item["target"] is not None for item in items)}
+                              for split, items in splits.items()},
+                   "trainPairs": labels.numel(), "trainPositivePairs": positive_pairs,
+                   "sourceOriginals": {source["id"]: {kind: {key: source[kind][key] for key in ("sha256", "bytes", "url")}
+                                                      for kind in ("sample", "metadata")}
+                                       for source in corpus["sources"]}},
+        "comparison": {"thresholdSource": "independent Calgary calibration exact-field decisions; sourceKey/name positive calibration absent",
+                       "calibrationTargetCoverage": calibration_coverage,
+                       "lexical": lexical, "base": base, "savedReloadedTuned": tuned},
+        "resources": {"fitSeconds": round(fit_seconds, 3), "elapsedSeconds": round(time.monotonic() - started, 3), "peakProcessRssBytes": peak_rss, "torchThreads": torch.get_num_threads()},
         "loss": {"first": round(losses[0], 6), "last": round(losses[-1], 6)},
-        "limitations": ["Three foreign building footprint schema families only; no Indian production qualification", "SF diagnostic family was previously observed during development", "No runtime conversion or candidate promotion", "Training rows represent checked fields, not repeated building features"],
+        "limitations": ["Foreign schema learning only; Indian source and permission gap remains", "No production conversion, candidate promotion or runtime routing", "Metadata and five-row responses qualify field labels, not whole-record performance", "MassGIS centroid-derived STRUCT_ID and Vancouver numeric object_id remain unknown for literal stable sourceKey"],
     }
     report_path = args.output_dir / "run.json"
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     print(json.dumps({
         "run": str(report_path), "adapterSha256": adapter_sha,
-        "trainFields": len(train), "holdoutFields": len(holdout),
-        "lexicalHoldoutExact": lexical_holdout["exactFields"],
-        "baseHoldoutExact": base_holdout["exactFields"], "tunedHoldoutExact": tuned_holdout["exactFields"],
+        "trainFields": len(train), "calibrationFields": len(splits["calibration"]), "evaluationFields": len(splits["evaluation"]),
+        "lexicalEvaluationExact": lexical["evaluation"]["exactFields"],
+        "baseEvaluationExact": base["evaluation"]["exactFields"], "tunedEvaluationExact": tuned["evaluation"]["exactFields"],
         "promotion": report["promotion"],
-        "elapsedSeconds": report["resources"]["elapsedSeconds"],
+        "fitSeconds": report["resources"]["fitSeconds"],
     }, sort_keys=True))
 
 
