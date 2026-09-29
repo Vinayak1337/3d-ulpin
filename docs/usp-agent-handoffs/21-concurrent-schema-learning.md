@@ -8,6 +8,8 @@
 
 ## A. Exactly what the learner learns
 
+**User scope addition, 29 September 2026:** after the planned heterogeneous ingestion formats work end to end, fine-tune a separate association capability to link document evidence to the correct canonical buildings and floors. The [AI-08 execution plan](../orchestration/ADAPTIVE_INGESTION_EXECUTION.md#ai-08-final-association-learning--user-addition-29-september) governs its extraction/identity prerequisites, independently reviewed relationship labels, leakage-resistant evaluation and shadow acceptance. The current field mapper remains a separate earlier component; no present document/floor linking qualification follows from it.
+
 Learn how supported source layouts map to our existing concepts: object role, source field/path, target field, permitted conversion, parent-key candidate and an explicit unknown option. The model suggests a constrained conversion plan; the shared executor copies exact identifiers/coordinates, converts declared units and validates the result.
 
 Do not train it to hallucinate a final giant geometry JSON. Never learn property ownership, cadastral authority, CRS or floor boundaries from plausible numbers alone. Layout understanding, image-based building extraction, floor-plan segmentation and visual height estimation are separate tasks with different training sets and qualifications.
