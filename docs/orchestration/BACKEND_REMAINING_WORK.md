@@ -28,6 +28,8 @@ The separate full-product public portal, conversational/MCP assistance, generati
 
 ## Current dispatch and exclusive ownership
 
+Callback update: DATA-LINK-01 is integrated as `b0ddefb`; all three retained/copy hashes and metadata passed lead verification, but source-specific permissions and independent relationship labels remain missing. REVIEW-01 report is integrated as `a4106f9`; it found a P2 native PDF decode-before-size-check issue in `services/geo/geo/area.py`. Lead confirmed the call order and assigns the focused PDF-BOUND-01 correction separately. LEDGER-01 owns the single additive `GET_api_v1_buildings_buildingId_ledger` entry in `apps/api/src/modules/register/operation-manifest.json`. No source or release gate is upgraded by these callbacks.
+
 All implementation bases are `bb15408`; this audit changes documentation only. Workers read the primary checkout's current instructions but write only in their assigned worktrees. Lead owns root plans, the source index/catalogue, generated OpenAPI/client schema, review and integration.
 
 | Assignment | Model requested | Checkout / owned seams | Acceptance boundary |
