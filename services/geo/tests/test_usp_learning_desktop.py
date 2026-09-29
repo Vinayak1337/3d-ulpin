@@ -22,26 +22,32 @@ def checked_examples():
     return path, corpus, examples
 
 
-def test_coverage_blocks_missing_rights_before_a_fit_and_proof_is_exact(tmp_path):
+def test_coverage_requires_eligible_families_and_proof_is_exact(tmp_path):
     from geo.usp_learning.experiment import coverage, make_freeze, validate_freeze
 
     path, corpus, examples = checked_examples()
-    result = coverage(examples)
-    assert result["gaps"] == [
+    prior = coverage([item for item in examples if item["source"] != "gnwt-buildings"])
+    assert prior["gaps"] == [
         "building.sourceKey: fewer than two eligible positive calibration families",
         "building.name: fewer than two eligible positive calibration families",
     ]
+    result = coverage(examples)
+    assert result["fitEligible"] and not result["gaps"]
     assert result["targets"]["building.geometry"]["wireCompatibleWrongTargetControls"] >= 1
     proof_path, freeze_path = tmp_path / "proof.json", tmp_path / "freeze.json"
     proof = input_proof(path, examples)
     write_json_once(proof_path, proof)
     write_json_once(freeze_path, make_freeze(path, proof_path, corpus, examples, REPO))
-    with pytest.raises(ValueError, match="fit blocked"):
-        validate_freeze(freeze_path, path, proof_path, corpus, examples, REPO)
+    assert validate_freeze(freeze_path, path, proof_path, corpus, examples, REPO)["coverage"] == result
     proof["fields"][0]["textSha256"] = "0" * 64
     proof_path.write_text(json.dumps(proof), encoding="utf-8")
     with pytest.raises(ValueError, match="input proof differs"):
         validate_freeze(freeze_path, path, proof_path, corpus, examples, REPO)
+    next(item for item in corpus["sources"] if item["id"] == "gnwt-buildings")["permission"]["trainingEligible"] = False
+    unlicensed = tmp_path / "ineligible.json"
+    unlicensed.write_text(json.dumps(corpus), encoding="utf-8")
+    with pytest.raises(ValueError, match="source not eligible"):
+        load_examples(unlicensed, Path(os.environ["USP_LEARNING_ORIGINALS_DIR"]))
 
 
 def test_supervisor_kills_only_owned_process_tree_on_time_and_rss_limits(tmp_path):
@@ -68,10 +74,12 @@ def test_supervisor_kills_only_owned_process_tree_on_time_and_rss_limits(tmp_pat
                 pass
 
 
-def test_literal_identifier_rejects_real_numeric_building_id(tmp_path):
+@pytest.mark.parametrize("schema_version", ["usp-field-mapping-corpus-v5", "usp-field-mapping-corpus-v6"])
+def test_literal_identifier_rejects_real_numeric_building_id(tmp_path, schema_version):
     from geo.usp_learning.corpus import wire_compatible_rows, wire_observation
 
     path, corpus, _ = checked_examples()
+    corpus["schemaVersion"] = schema_version
     root = Path(os.environ["USP_LEARNING_ORIGINALS_DIR"])
     source = next(item for item in corpus["sources"] if item["id"] == "kitchener-buildings")
     features = json.loads((root / source["sample"]["file"]).read_text(encoding="utf-8"))["features"]

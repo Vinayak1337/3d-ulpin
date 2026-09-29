@@ -11,6 +11,9 @@ from .model import BASE_CONFIG_SHA256, BASE_REVISION, BASE_WEIGHT_SHA256, allowe
 
 CODE_PATHS = (
     "scripts/usp/learning/train.py",
+    "scripts/usp/learning/freeze.py",
+    "scripts/usp/learning/infer.py",
+    "scripts/usp/learning/prepare_calibration_corpus.py",
     "services/geo/geo/usp_learning/corpus.py",
     "services/geo/geo/usp_learning/model.py",
     "services/geo/geo/usp_learning/experiment.py",
@@ -19,7 +22,7 @@ CODE_PATHS = (
 FIT = {
     "steps": 64, "seed": 17, "learningRate": 2e-5, "cpuThreads": 2,
     "optimizer": "AdamW", "weightDecay": 0.01, "maxTokens": 128,
-    "maxFitSeconds": 600, "maxRunSeconds": 900, "maxPeakProcessRssBytes": 6 * 1024**3,
+    "maxFitSeconds": 600, "maxRunSeconds": 600, "maxPeakProcessRssBytes": 6 * 1024**3,
     "maxCudaReservedBytes": 5 * 1024**3, "cudaHeadroomBytes": 1536 * 1024**2,
     "device": "cpu", "precision": "float32", "reloadTolerance": 1e-5,
     "thresholdPolicy": "calibration-zero-errors-positive-macro-recall-v1",

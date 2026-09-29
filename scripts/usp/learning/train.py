@@ -133,7 +133,7 @@ def run_candidate(args: argparse.Namespace, config: dict[str, Any], corpus: dict
 
     def decision_metrics(items: list[dict[str, Any]], scores: Any, threshold: float | None) -> dict[str, Any]:
         if threshold is None:
-            result = metrics(items, None, None, [None] * len(items))
+            result = metrics(items, scores, None, [None] * len(items))
             result.update(calibrationStatus="no_useful_operating_point", decisionThreshold=None)
             return result
         return metrics(items, scores, threshold)
@@ -144,6 +144,13 @@ def run_candidate(args: argparse.Namespace, config: dict[str, Any], corpus: dict
         "reloadMaxCosineDelta": max_reload_delta,
         "calibration": {"base": decision_metrics(calibration, base_calibration, base_threshold),
                         "tuned": decision_metrics(calibration, tuned_calibration, tuned_threshold)},
+        # Retain scores for a failed operating point without another model run.
+        "calibrationScores": {
+            "targets": list(label_indices),
+            "fields": [{"source": item["source"], "path": item["path"]} for item in calibration],
+            "base": base_calibration.detach().cpu().tolist(),
+            "savedReloadedTuned": tuned_calibration.tolist(),
+        },
         "evaluationMayOpen": tuned_threshold is not None,
         "acceptance": config["acceptance"],
     }

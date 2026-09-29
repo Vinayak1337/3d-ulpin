@@ -10,8 +10,9 @@ from typing import Any
 
 
 TARGETS = ("building.sourceKey", "building.name", "building.geometry")
-CORPUS_VERSION = "usp-field-mapping-corpus-v5"
-SOURCE_ONLY_VERSIONS = ("usp-field-mapping-corpus-v4", CORPUS_VERSION)
+CORPUS_VERSION = "usp-field-mapping-corpus-v6"
+LITERAL_TEXT_VERSIONS = ("usp-field-mapping-corpus-v5", CORPUS_VERSION)
+SOURCE_ONLY_VERSIONS = ("usp-field-mapping-corpus-v4", *LITERAL_TEXT_VERSIONS)
 SPLITS = ("train", "calibration", "evaluation", "diagnostic")
 
 
@@ -288,7 +289,7 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
             if not field.get("evidence") or not field.get("definition"):
                 raise ValueError("label lacks independent issuer evidence")
             compatible_rows = wire_compatible_rows(target, path, features) if target is not None else None
-            if (version == CORPUS_VERSION and target in ("building.sourceKey", "building.name")
+            if (version in LITERAL_TEXT_VERSIONS and target in ("building.sourceKey", "building.name")
                     and any(kind != "string" for kind in field["observedWire"]["nonNullTypes"])):
                 raise ValueError(f"literal text target cannot coerce observed values: {source['id']}:{path}")
             if target is not None and field.get("wireCompatibleRows") != compatible_rows:
