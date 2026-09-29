@@ -31,9 +31,12 @@ PYTHONPATH=services/geo /path/to/venv/bin/python \
 ```
 
 The device may be `auto`, `cpu`, or `mps`; CPU uses float32 and MPS uses
-bfloat16. The receipt records
+bfloat16. On Windows the runner places each worker and its children in an
+owned Job Object, limits their combined private bytes, observes combined RSS,
+and terminates the tree on timeout. Each region is capped at 240 seconds and
+the full trial at 600 seconds. The receipt records
 the selected device and dtype, source, model, plan, region, render, artifact,
 and resource hashes. Worker errors or resource caps stop the trial. A no-text
-result is marked unusable, and remaining selected regions are still checked.
+result is marked unusable; a failed region stops the remaining selection.
 Failed runs remain available for inspection. Compare the output with the
 rendered source before deciding whether it is suitable for any later integration.

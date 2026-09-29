@@ -4,14 +4,18 @@ from __future__ import annotations
 
 import hashlib
 import math
-import resource
+import os
 import sys
 import time
 from pathlib import Path
 from typing import Any
 
 import fitz
+import psutil
 from PIL import Image
+
+if os.name != "nt":
+    import resource
 
 
 MODEL_ID = "ibm-granite/granite-docling-258M"
@@ -149,9 +153,13 @@ def extract_region(image_path: Path, model_dir: Path, *, max_new_tokens: int = M
         markdown = DoclingDocument.load_from_doctags(parsed, document_name="Offline candidate region").export_to_markdown()
     except Exception as exc:
         parse_error = f"{type(exc).__name__}: {exc}"
-    peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    if sys.platform != "darwin":
-        peak_rss *= 1024
+    if os.name == "nt":
+        memory = psutil.Process().memory_info()
+        peak_rss = int(getattr(memory, "peak_wset", memory.rss))
+    else:
+        peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        if sys.platform != "darwin":
+            peak_rss *= 1024
     return {
         "modelDerived": True, "nativeText": False, "model": MODEL_ID, "revision": MODEL_REVISION,
         "prompt": PROMPT, "device": device, "dtype": str(dtype), "inputTokens": input_tokens,
