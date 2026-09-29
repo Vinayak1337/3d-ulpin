@@ -18,7 +18,17 @@
         "verticalReference": "NAVD88 height, metres, NOAA GEOID18 distribution",
         "source": "https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9306/20170504_980200.copc.laz",
         "recipe": "Bounding-box selection of unchanged point records; no decimation, reconstruction or interpolation",
-        "captureYear": 2017
+        "captureYear": 2017,
+        "nativeBatchEvidence": {
+          "guide": "docs/evidence/usp/point-batch-handoff.md",
+          "externalPath": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-lidar-2017.laz",
+          "workerCommit": "72225896700c9430985c360cb1b8ee184f96fcce",
+          "correctionCommit": "385f793fa9644de4b14a32e0b7416c4b23f2d6c1",
+          "receipt": "E:/BhuAayam-data/task-data/desktop-ai05b-point/point-http-final.json",
+          "receiptSha256": "1c9f4f94bf3ebbeacae4549dd582d6fc369bda000b864524d3272114213bf4f2",
+          "scope": "Two private native 8192-record batches in a stopped isolated run; not global placement, renderer, height or scale qualification",
+          "standingInstallation": false
+        }
       },
       {
         "name": "nyc-10013-dem-2017.tif",
