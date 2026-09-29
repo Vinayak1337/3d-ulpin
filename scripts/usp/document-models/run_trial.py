@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
 import importlib.metadata
 import json
 import os
@@ -28,6 +29,7 @@ from geo.usp_document_candidates.granite import (
 
 
 MAX_REGION_SECONDS = 240
+MAX_TRIAL_SECONDS = 600
 MAX_PROCESS_RSS_BYTES = 6 * 1024**3
 MAX_SOURCE_BYTES = 16 * 1024**2
 
@@ -36,45 +38,134 @@ def _valid_identifier(value: Any) -> bool:
     return isinstance(value, str) and re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", value) is not None
 
 
-def _stop_process(process: subprocess.Popen[Any]) -> None:
-    if process.poll() is not None:
-        return
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        return
+class _WindowsJob:
+    """Own the worker process tree and enforce a hard private-byte ceiling."""
+
+    def __init__(self, process: subprocess.Popen[Any], memory_cap_bytes: int) -> None:
+        from ctypes import wintypes
+
+        class BasicLimits(ctypes.Structure):
+            _fields_ = [("processTime", ctypes.c_int64), ("jobTime", ctypes.c_int64),
+                        ("flags", wintypes.DWORD), ("minimumWorkingSet", ctypes.c_size_t),
+                        ("maximumWorkingSet", ctypes.c_size_t), ("activeProcessLimit", wintypes.DWORD),
+                        ("affinity", ctypes.c_size_t), ("priorityClass", wintypes.DWORD),
+                        ("schedulingClass", wintypes.DWORD)]
+
+        class IoCounters(ctypes.Structure):
+            _fields_ = [(name, ctypes.c_uint64) for name in (
+                "readOperations", "writeOperations", "otherOperations", "readBytes", "writeBytes", "otherBytes")]
+
+        class ExtendedLimits(ctypes.Structure):
+            _fields_ = [("basic", BasicLimits), ("io", IoCounters),
+                        ("processMemoryLimit", ctypes.c_size_t), ("jobMemoryLimit", ctypes.c_size_t),
+                        ("peakProcessMemory", ctypes.c_size_t), ("peakJobMemory", ctypes.c_size_t)]
+
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel.CreateJobObjectW.argtypes = [ctypes.c_void_p, wintypes.LPCWSTR]
+        kernel.CreateJobObjectW.restype = wintypes.HANDLE
+        kernel.SetInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int,
+                                                    ctypes.c_void_p, wintypes.DWORD]
+        kernel.SetInformationJobObject.restype = wintypes.BOOL
+        kernel.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+        kernel.AssignProcessToJobObject.restype = wintypes.BOOL
+        kernel.QueryInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int,
+                                                      ctypes.c_void_p, wintypes.DWORD, ctypes.c_void_p]
+        kernel.QueryInformationJobObject.restype = wintypes.BOOL
+        kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
+        kernel.TerminateJobObject.restype = wintypes.BOOL
+        kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel.CloseHandle.restype = wintypes.BOOL
+        handle = kernel.CreateJobObjectW(None, None)
+        if not handle:
+            raise ctypes.WinError(ctypes.get_last_error())
+        self.kernel, self.handle, self.limits_type = kernel, handle, ExtendedLimits
+        try:
+            limits = ExtendedLimits()
+            limits.basic.flags = 0x2000 | 0x0200  # Kill on close; job memory limit.
+            limits.jobMemoryLimit = memory_cap_bytes
+            if not kernel.SetInformationJobObject(handle, 9, ctypes.byref(limits), ctypes.sizeof(limits)):
+                raise ctypes.WinError(ctypes.get_last_error())
+            if not kernel.AssignProcessToJobObject(handle, wintypes.HANDLE(int(process._handle))):
+                raise ctypes.WinError(ctypes.get_last_error())
+        except BaseException:
+            self.close()
+            raise
+
+    def peak_private_bytes(self) -> int | None:
+        limits = self.limits_type()
+        if not self.kernel.QueryInformationJobObject(self.handle, 9, ctypes.byref(limits),
+                                                      ctypes.sizeof(limits), None):
+            return None
+        return int(limits.peakJobMemory)
+
+    def terminate(self) -> None:
+        if not self.kernel.TerminateJobObject(self.handle, 1):
+            raise ctypes.WinError(ctypes.get_last_error())
+
+    def close(self) -> None:
+        if self.handle:
+            self.kernel.CloseHandle(self.handle)
+            self.handle = None
+
+
+def _stop_process(process: subprocess.Popen[Any], job: _WindowsJob | None = None) -> None:
+    if job is not None:
+        job.terminate()
+    elif os.name == "nt" and process.poll() is None:
+        try:
+            root = psutil.Process(process.pid)
+            members = [*root.children(recursive=True), root]
+            for member in members:
+                member.kill()
+        except psutil.NoSuchProcess:
+            pass
+    elif process.poll() is None:
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
     try:
         process.wait(timeout=3)
     except subprocess.TimeoutExpired:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        process.wait()
+        if job is not None:
+            job.terminate()
+        elif os.name == "nt":
+            process.kill()
+        else:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        process.wait(timeout=3)
 
 
-def _run_worker(command: list[str], log_path: Path, timeout_seconds: int,
+def _run_worker(command: list[str], log_path: Path, timeout_seconds: float,
                 memory_cap_bytes: int) -> dict[str, Any]:
     env = os.environ.copy()
     env.update({"TOKENIZERS_PARALLELISM": "false", "OMP_NUM_THREADS": "2",
-                "MKL_NUM_THREADS": "2", "OPENBLAS_NUM_THREADS": "2"})
+                "MKL_NUM_THREADS": "2", "OPENBLAS_NUM_THREADS": "2",
+                "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1", "CUDA_VISIBLE_DEVICES": ""})
     started = time.monotonic()
     max_rss = 0
+    peak_job_private: int | None = None
     stop_reason: str | None = None
     with log_path.open("w") as log:
         process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT,
-                                   env=env, start_new_session=True)
+                                   env=env, start_new_session=os.name != "nt",
+                                   creationflags=(subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0))
+        job: _WindowsJob | None = None
         try:
+            if os.name == "nt":
+                job = _WindowsJob(process, memory_cap_bytes)
+            root = psutil.Process(process.pid)
             while process.poll() is None:
                 elapsed = time.monotonic() - started
                 if elapsed > timeout_seconds:
                     stop_reason = "runtime_cap_exceeded"
                     break
                 try:
-                    child = psutil.Process(process.pid)
-                    rss = child.memory_info().rss + sum(
-                        descendant.memory_info().rss for descendant in child.children(recursive=True)
-                    )
+                    members = [root, *root.children(recursive=True)]
+                    rss = sum(member.memory_info().rss for member in members if member.is_running())
                     max_rss = max(max_rss, rss)
                     if rss > memory_cap_bytes:
                         stop_reason = "process_memory_cap_exceeded"
@@ -83,12 +174,16 @@ def _run_worker(command: list[str], log_path: Path, timeout_seconds: int,
                     break
                 time.sleep(0.25)
         finally:
-            if stop_reason:
-                _stop_process(process)
+            if process.poll() is None:
+                _stop_process(process, job)
+            if job is not None:
+                peak_job_private = job.peak_private_bytes()
+                job.close()  # Kill any remaining descendant before returning.
         exit_code = process.wait()
     return {"exitCode": exit_code, "stopReason": stop_reason,
             "elapsedSeconds": round(time.monotonic() - started, 3),
-            "peakObservedRssBytes": max_rss, "logPath": str(log_path),
+            "peakObservedRssBytes": max_rss, "peakJobPrivateBytes": peak_job_private,
+            "logPath": str(log_path),
             "logSha256": sha256_file(log_path)}
 
 
@@ -106,6 +201,7 @@ def main() -> None:
     parser.add_argument("--memory-cap-mib", type=int, default=6144)
     parser.add_argument("--device", choices=("auto", "cpu", "mps"), default="auto")
     args = parser.parse_args()
+    trial_started = time.monotonic()
     if not (1 <= args.max_new_tokens <= MAX_GENERATED_TOKENS):
         parser.error("output token cap exceeds the trial profile")
     if not (1 <= args.region_timeout_seconds <= MAX_REGION_SECONDS):
@@ -160,6 +256,7 @@ def main() -> None:
                    "maxPixelsPerRegion": MAX_PIXELS,
                    "maxImageSide": MAX_SIDE, "maxGeneratedTokens": args.max_new_tokens,
                    "cpuThreads": MAX_CPU_THREADS, "regionTimeoutSeconds": args.region_timeout_seconds,
+                   "trialTimeoutSeconds": MAX_TRIAL_SECONDS,
                    "processMemoryCapBytes": args.memory_cap_mib * 1024**2,
                    "mpsMemoryFraction": MPS_MEMORY_FRACTION, "requestedDevice": args.device},
         "runtime": {"python": sys.version.split()[0], "platform": platform.platform(),
@@ -181,6 +278,8 @@ def main() -> None:
         receipt["regions"].append(item)
         _write_receipt(receipt_path, receipt)
         try:
+            if time.monotonic() - trial_started >= MAX_TRIAL_SECONDS:
+                raise TimeoutError("trial_runtime_cap_exceeded")
             item["render"] = render_pdf_region(original, region["page"], region["bboxNorm"], image_path)
             output_path = args.output_dir / "regions" / region["id"]
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -188,8 +287,11 @@ def main() -> None:
                        "--image", str(image_path), "--model-dir", str(args.model_dir),
                        "--output-dir", str(output_path), "--max-new-tokens", str(args.max_new_tokens),
                        "--cpu-threads", str(MAX_CPU_THREADS), "--device", args.device]
+            remaining = MAX_TRIAL_SECONDS - (time.monotonic() - trial_started)
+            if remaining <= 0:
+                raise TimeoutError("trial_runtime_cap_exceeded")
             item["worker"] = _run_worker(command, args.output_dir / (region["id"] + ".log"),
-                                         args.region_timeout_seconds, args.memory_cap_mib * 1024**2)
+                                         min(args.region_timeout_seconds, remaining), args.memory_cap_mib * 1024**2)
             selection_path = output_path / "runtime-selection.json"
             if selection_path.exists():
                 selection = json.loads(selection_path.read_text())
@@ -232,6 +334,7 @@ def main() -> None:
         if item["status"] == "failed":
             break
     receipt["status"] = "failed" if failed else "completed"
+    receipt["elapsedSeconds"] = round(time.monotonic() - trial_started, 3)
     _write_receipt(receipt_path, receipt)
     print(json.dumps({"trialStatus": receipt["status"], "receipt": str(receipt_path),
                       "completedRegions": sum(item["status"] == "model_derived_extraction" for item in receipt["regions"])}))
