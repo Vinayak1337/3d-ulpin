@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BhuAayam Reel</title>
+<script type="importmap">
+{ "imports": { "three": "/node_modules/.pnpm/three@0.186.1/node_modules/three/build/three.module.js" } }
+</script>
+<link rel="stylesheet" href="reel.css">
+</head>
+<body>
+<div id="viewport">
+  <div id="stage" data-theme="dark">
+    <div id="bg"></div>
+    <canvas id="gl" width="1920" height="1080"></canvas>
+    <div id="glframe"><div class="sbar"><i></i><i></i><i></i><span class="ttl">BhuAayam Studio</span></div></div>
+    <div id="shade"></div>
+    <div id="scenes"></div>
+    <div id="labels"></div>
+    <div id="type"></div>
+    <div id="chrome">
+      <div id="brand"><svg class="mk" viewBox="0 0 80 80"></svg><div><b>BhuAayam</b><small>3D ULPIN</small></div></div>
+      <div id="chapter"><span id="ch-no"></span><span id="ch-name"></span></div>
+      <div id="foot"><span id="foot-l"></span><span id="foot-r">BhuAayam · the 3D property registry</span></div>
+    </div>
+    <div id="wipes"></div>
+    <canvas id="grain" width="480" height="270"></canvas>
+    <div id="fade"></div>
+  </div>
+</div>
+<div id="controls"><button id="play">Play</button><input id="scrub" type="range" min="0" max="1000" value="0"><span id="clock">0.0</span></div>
+<script type="module" src="reel.js"></script>
+</body>
+</html>
