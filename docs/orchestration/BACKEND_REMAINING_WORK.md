@@ -28,6 +28,8 @@ The separate full-product public portal, conversational/MCP assistance, generati
 
 ## Current dispatch and exclusive ownership
 
+SOURCE-KEY-01 returned `78f3dd0`; its bounded source pack is accepted after lead checks of all 11 hashes and native keys/issuer evidence. Kadaster BAG and IGN BD TOPO remain candidates outside the frozen corpus. The source worker is finished; the sole learner may assess them after the unchanged AI-06B comparison returns. No extra fit or corpus edit is assigned by this update.
+
 AI-04E returned candidate `cf6d9e1`; REVIEW-01 owns the report-only review in `backend-review`. Lead verified both workbook originals and the final HTTP receipt hash. XLSX is pending review/integration, not accepted or release-qualified. The document owner retains exclusive correction/Docker ownership; processing is stopped with storage preserved. Generated API/source updates follow acceptance.
 
 Latest learner result: V7 E5 completed one fit but failed useful calibration; its [reviewed handoff](../evidence/usp/v7-fit-handoff.md) preserves unopened evaluation. Next AI-06B is a single retained-Qwen comparison on V7 train/calibration, owned by the same Astra learner in `56f9`; no fitting or corpus/threshold-policy change. Reuse completed DATA-LINK-01 in the now-free `association-sources` worktree for SOURCE-KEY-01: at most two independently issued building-footprint families with documented native string-key meaning and permission. This worker owns only a new source-evidence pack, not `learning-corpus.json`, labels or any model. Its PDF predecessor is finished and integrated. Primary staging stays read-only to both; AI-04E retains document/XLSX code and sole Docker recovery ownership.

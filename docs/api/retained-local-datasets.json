@@ -252,5 +252,114 @@
       "Drawings, footnotes, nested tables, OCR and document-to-property association unqualified",
       "No Indian building, rights, training or release qualification"
     ]
+  },
+  {
+    "id": "nl-bag-pand",
+    "manifest": "E:/BhuAayam-data/task-data/desktop-source-key-01/acquisition-receipt.json",
+    "manifestSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785",
+    "sourceEvidenceManifest": "docs/evidence/usp/footprint-key-sources/manifest.json",
+    "guide": "docs/evidence/usp/footprint-key-sources-handoff.md",
+    "issuer": "Kadaster / PDOK",
+    "dataset": "Dutch BAG building (pand) register, PDOK OGC API v2",
+    "datasetUrl": "https://api.pdok.nl/kadaster/bag/ogc/v2/",
+    "originalUrl": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/items?limit=5",
+    "acquiredAt": "2026-09-29T19:47:38.411265+00:00",
+    "geography": "Netherlands; five sampled features near 6.87 E, 53.32 N",
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "qualification": "Acquired and inspected official source candidate; no learner eligibility, corpus, runtime or production qualification.",
+    "content": {
+      "externalPath": "E:/BhuAayam-data/task-data/desktop-source-key-01/bag-sample.geojson",
+      "bytes": 9263,
+      "sha256": "ce2d5bd723be82714271d82d262680e3cb905175c608f7247be77f9244937950",
+      "format": "geojson",
+      "featureCount": 5,
+      "repositoryBytesVerified": false
+    },
+    "sourceKeyEvidence": {
+      "path": "properties.identificatie",
+      "wireType": "string",
+      "observedDistinct": 5,
+      "observedLength": 16
+    },
+    "terms": {
+      "file": "bag-landing.json",
+      "sha256": "51e2c4115fb22d236511dcad01aef7d2e3a51152745edefacf6497dfa2ecb4fe",
+      "locator": "/links[rel=license] = Public Domain Mark 1.0; https://creativecommons.org/publicdomain/mark/1.0/deed.nl",
+      "additionalPublisherPage": "bag-pdok-publication.html",
+      "additionalPublisherPageSha256": "820f5a79f44a59772cae96c602a102d0c0b533e7e26bcc788a2caf071e0538a4",
+      "interpretation": "issuer marks this BAG service public domain; source-specific ML reuse review remains with sole learner"
+    },
+    "reference": {
+      "horizontal": "OGC CRS84 longitude/latitude, declared in collection CRS list and observed GeoJSON coordinates",
+      "vertical": null,
+      "heightOrFloorSemantics": "not_claimed"
+    },
+    "learning": {
+      "eligibility": "pending-sole-learner-review",
+      "corpusIncluded": false,
+      "split": null
+    },
+    "limitations": [
+      "Five features are a bounded live-service sample, not proof of current nationwide completeness or global key uniqueness by count alone",
+      "GeoJSON top-level UUID id differs from native BAG identificatie; no substitution or coercion",
+      "A BAG pand is a registered building object, not an Indian parcel ULPIN, legal unit or training label"
+    ]
+  },
+  {
+    "id": "fr-ign-bdtopo-batiment",
+    "manifest": "E:/BhuAayam-data/task-data/desktop-source-key-01/acquisition-receipt.json",
+    "manifestSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785",
+    "sourceEvidenceManifest": "docs/evidence/usp/footprint-key-sources/manifest.json",
+    "guide": "docs/evidence/usp/footprint-key-sources-handoff.md",
+    "issuer": "Institut national de l'information géographique et forestière (IGN)",
+    "dataset": "IGN BD TOPO v3.5 building (bâtiment) topographic objects",
+    "datasetUrl": "https://www.data.gouv.fr/datasets/bd-topo-r",
+    "originalUrl": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAME=BDTOPO_V3:batiment&COUNT=5&CRS=EPSG:4326&outputformat=application/json&bbox=-447003.741411712,6094782.887346813,-446392.2451854306,6095394.383573095,EPSG:3857",
+    "acquiredAt": "2026-09-29T19:47:42.510431+00:00",
+    "geography": "France; five WFS features in a bounded Brittany-area query near 4.02 W, 47.93 N",
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "qualification": "Acquired and inspected official source candidate; no learner eligibility, corpus, runtime or production qualification.",
+    "content": {
+      "externalPath": "E:/BhuAayam-data/task-data/desktop-source-key-01/ign-sample.geojson",
+      "bytes": 7456,
+      "sha256": "7a9419936dda8c8dde647882c0f06d307b3d18d10324af2b5050c0394f873fc4",
+      "format": "geojson",
+      "featureCount": 5,
+      "repositoryBytesVerified": false
+    },
+    "sourceKeyEvidence": {
+      "path": "properties.cleabs",
+      "wireType": "string",
+      "observedDistinct": 5,
+      "observedLength": 24
+    },
+    "terms": {
+      "metadataFile": "ign-dataset-metadata.json",
+      "metadataSha256": "2eb4e86a0d755582a1e2cbe8245c1a768f1673d4cae904cf0dc3025efc000270",
+      "metadataLocator": "/organization/name = Institut national de l'information géographique et forestière; /license = lov2",
+      "termsFile": "ign-open-licence.html",
+      "termsSha256": "1b47e7405eebec917e70b20ad08d2bbc60934653eaad3794ccc7db5985027826",
+      "termsUrl": "https://www.data.gouv.fr/pages/legal/licences/etalab-2.0",
+      "termsLocator": "Licence Ouverte 2.0 > Réutilisation de l'Information: permits copying, adapting, extracting, transforming and commercial exploitation with source/date attribution",
+      "interpretation": "issuer-designated open licence supports candidate source review; sole learner decides training eligibility and attribution handling"
+    },
+    "reference": {
+      "horizontal": "WFS request specifies EPSG:4326 output and EPSG:3857 bounding box; observed GeoJSON longitude/latitude",
+      "vertical": null,
+      "heightOrFloorSemantics": "GeoJSON has Z coordinates; their vertical datum and building height semantics were not established"
+    },
+    "learning": {
+      "eligibility": "pending-sole-learner-review",
+      "corpusIncluded": false,
+      "split": null
+    },
+    "limitations": [
+      "Five live WFS features are not a frozen national release or full uniqueness audit",
+      "GeoJSON top-level batiment numeric-looking id differs from native 24-character cleabs",
+      "BD TOPO guide says identifier may change on delete/recreate and split/merge; preserve source version",
+      "Topographic objects and Z coordinates do not establish legal unit, surveyed height datum or Indian property identity"
+    ]
   }
 ]
