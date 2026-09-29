@@ -3,7 +3,8 @@ import {ApiOperation,ApiParam,ApiTags} from '@nestjs/swagger';
 import type {Request} from 'express';
 import {z} from 'zod';
 import {STREAMED_PROFILE_LIMITS,StreamedProfileRequestSchema,StreamedProfileStatusSchema,
-  StreamedProfileGenerationSchema,StreamedMappingAuthorSchema,StreamedMappingReceiptSchema,
+  StreamedProfileGenerationSchema,StreamedMappingAuthorSchema,StreamedPrefixMappingAuthorSchema,
+  StreamedMappingReceiptSchema,
   MappingDecisionSchema} from '@ulpin/contracts/usp';
 import {StreamedProfileService} from '@ulpin/server/modules/usp/ingestion/streamed-profile';
 import {StreamedMappingService} from '@ulpin/server/modules/usp/ingestion/streamed-mapping';
@@ -70,4 +71,27 @@ export class StreamedProfileController{
   read(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
     @Param('recipeId')recipeId:string,@Req()request:Request){noQuery(request);
     return this.mapping.read(caseId,sourceId,jobId,recipeId);}
+  @Post('jobs/:jobId/prefix-recipes') @HttpCode(201) @param('caseId') @param('sourceId') @param('jobId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_streamed_profile_jobs_jobId_prefix_recipes',
+    summary:'Author a source-cited recipe over one immutable observed prefix'})
+  @jsonBody(StreamedPrefixMappingAuthorSchema) @wireResponse(201,StreamedMappingReceiptSchema)
+  async authorPrefix(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
+    @Req()request:Request){noQuery(request);return this.mapping.author(caseId,sourceId,jobId,
+      await readJsonBody(request,JSON_BODY_LIMIT),'prefix');}
+  @Post('jobs/:jobId/prefix-recipes/:recipeId/approve') @HttpCode(200)
+  @param('caseId') @param('sourceId') @param('jobId') @param('recipeId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_streamed_profile_jobs_jobId_prefix_recipes_recipeId_approve',
+    summary:'Approve the exact observed-prefix recipe in the local operator context'})
+  @jsonBody(MappingDecisionSchema) @wireResponse(200,StreamedMappingReceiptSchema)
+  async approvePrefix(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
+    @Param('recipeId')recipeId:string,@Req()request:Request){noQuery(request);
+    return this.mapping.approve(caseId,sourceId,jobId,recipeId,await readJsonBody(request,JSON_BODY_LIMIT),'prefix');}
+  @Get('jobs/:jobId/prefix-recipes/:recipeId')
+  @param('caseId') @param('sourceId') @param('jobId') @param('recipeId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_streamed_profile_jobs_jobId_prefix_recipes_recipeId',
+    summary:'Read one reviewed immutable observed-prefix recipe'})
+  @wireResponse(200,StreamedMappingReceiptSchema)
+  readPrefix(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
+    @Param('recipeId')recipeId:string,@Req()request:Request){noQuery(request);
+    return this.mapping.read(caseId,sourceId,jobId,recipeId,'prefix');}
 }

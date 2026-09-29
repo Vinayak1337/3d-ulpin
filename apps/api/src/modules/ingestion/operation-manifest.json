@@ -571,6 +571,45 @@
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
       "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}/prefix-recipes",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_streamed_profile_jobs_jobId_prefix_recipes",
+      "batch": "AI-03C",
+      "disposition": "added",
+      "nativeController": "streamed-profile",
+      "requestSchema": "StreamedPrefixMappingAuthorSchema",
+      "responseSchema": "StreamedMappingReceiptSchema",
+      "responseStatus": 201,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}/prefix-recipes/{recipeId}/approve",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_streamed_profile_jobs_jobId_prefix_recipes_recipeId_approve",
+      "batch": "AI-03C",
+      "disposition": "added",
+      "nativeController": "streamed-profile",
+      "requestSchema": "MappingDecisionSchema",
+      "responseSchema": "StreamedMappingReceiptSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}/prefix-recipes/{recipeId}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_streamed_profile_jobs_jobId_prefix_recipes_recipeId",
+      "batch": "AI-03C",
+      "disposition": "added",
+      "nativeController": "streamed-profile",
+      "requestSchema": null,
+      "responseSchema": "StreamedMappingReceiptSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
     }
   ]
 }

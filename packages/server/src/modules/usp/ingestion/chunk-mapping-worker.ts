@@ -62,7 +62,9 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawC
     chunkIndex:slot.chunkIndex,rawResultSha256:slot.resultSha256,schemaFingerprint:prepared.schemaFingerprint,
     recipeRevision:input.recipeRevision,
     converterSha256:input.converterSha256,
-    ...(input.profileHash?{profileHash:input.profileHash}:{}),records:prepared.records});
+    ...(input.profileHash?{profileHash:input.profileHash}:{}),
+    ...(input.prefixAdmissionVersion?{prefixAdmissionVersion:input.prefixAdmissionVersion}:{}),
+    records:prepared.records});
   const stored=await storePayload(mapped);
   await transaction(async client=>{
     const {profile,approved}=await assertChunkMappingInputTx(client,input);
@@ -112,8 +114,13 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawC
 }
 async function terminal(input:ChunkMappingInput,attempt:UspJobAttempt,code:string,stale=false,rawResultSha:string|null=null){
   await transaction(async client=>{
-    if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
+    if(stale||code==='STREAMING_SOURCE_INTEGRITY')await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertChunkMappingInputTx(client,input);
+    if(code==='STREAMING_SOURCE_INTEGRITY'){
+      const raw=(await client.query('SELECT issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
+        [input.rawJobId])).rows[0];
+      if(raw?.issue_code!==code)conflict('The raw source integrity issue changed.');
+    }
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
     if(!state)conflict('The mapping state is unavailable.');
@@ -205,10 +212,16 @@ async function complete(input:ChunkMappingInput,attempt:UspJobAttempt){
 
 async function claimFailure(input:ChunkMappingInput,error:unknown){
   const stale=error instanceof AppError&&[403,404,409].includes(error.status);
-  if(!stale&&!(error instanceof AppError&&error.code==='USP_JOB_ATTEMPTS'))throw error;
+  const integrity=error instanceof AppError&&error.code==='STREAMING_SOURCE_INTEGRITY';
+  if(!stale&&!integrity&&!(error instanceof AppError&&error.code==='USP_JOB_ATTEMPTS'))throw error;
   await transaction(async client=>{
-    if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
+    if(stale||integrity)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertChunkMappingInputTx(client,input);
+    if(integrity){
+      const raw=(await client.query('SELECT issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
+        [input.rawJobId])).rows[0];
+      if(raw?.issue_code!=='STREAMING_SOURCE_INTEGRITY')conflict('The raw source integrity issue changed.');
+    }
     const job=(await client.query("SELECT status FROM jobs WHERE id=$1 AND operation='chunk-mapping' FOR UPDATE",[input.jobId])).rows[0];
     const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
     if(!job||!state||!['queued','running'].includes(job.status)||!['queued','running'].includes(state.state))return;
@@ -216,7 +229,7 @@ async function claimFailure(input:ChunkMappingInput,error:unknown){
       [input.jobId])).rowCount;
     if(active)return;
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[input.jobId]);
-    const code=stale?'MAPPING_CONTEXT_STALE':'MAPPING_ATTEMPTS_EXHAUSTED';
+    const code=stale?'MAPPING_CONTEXT_STALE':integrity?'STREAMING_SOURCE_INTEGRITY':'MAPPING_ATTEMPTS_EXHAUSTED';
     if(!stale){
       const last=(await client.query('SELECT number,fence FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1',
         [input.jobId])).rows[0];
