@@ -1,8 +1,9 @@
 // Original score and voice-over for the reel, rendered offline with Web Audio: 120 BPM in A minor, on the film clock.
 // Drums, sidechained bass, pads, arpeggio and a lead hook, sound design cued to what is on screen (wipes, impacts,
 // file seals, chunk publications, clicks and typing in the Studio footage) and the narrator (vo/<voice>/*.wav), with the
-// music ducking under every line. Picture cues are authored on the 104 s clock and mapped through W().
+// music ducking under every line. Picture cues are authored on the reel clock and mapped through W(); inserts arrive as film-time ranges (INS).
 const SR = 48000, BEAT = 0.5, BAR = 2;
+const DROP = 89.75; // the groove runs under the closing headline and stops for Identify · Prove · Govern
 const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 const between = (t, a, b) => t >= a && t < b;
 
@@ -13,7 +14,7 @@ const CHORDS = [
 ];
 const chordAt = (T) => CHORDS[Math.floor(T / (2 * BAR) + 1e-6) % 4];
 
-export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR, VO, VOT, VOICE, filmOfRec }) {
+export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR, VOF, VOICE, filmOfRec, INS }) {
   const ctx = new OfflineAudioContext(2, Math.ceil(DUR * SR), SR);
   const A = inv; // film → authored
   let seed = 9; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
@@ -27,11 +28,12 @@ export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR
   // underground: the whole mix goes muffled, then opens again
   tone.frequency.setValueAtTime(20000, W(69.7)); tone.frequency.exponentialRampToValueAtTime(900, W(70.2)); tone.frequency.setValueAtTime(900, W(75.5)); tone.frequency.exponentialRampToValueAtTime(20000, W(76.0));
 
-  // everything but the voice ducks under the narrator
+  // the music ducks under the narrator; the drums dip a little; hits, whooshes and clicks stay at full punch
   const bed = ctx.createGain(); bed.connect(out);
+  const drumBed = ctx.createGain(); drumBed.connect(out);
   const music = ctx.createGain(); const duck = ctx.createGain(); music.connect(duck).connect(bed);
-  const drums = ctx.createGain(); drums.gain.value = 0.85; drums.connect(bed);
-  const fx = ctx.createGain(); fx.gain.value = 0.75; fx.connect(bed);
+  const drums = ctx.createGain(); drums.gain.value = 0.9; drums.connect(drumBed);
+  const fx = ctx.createGain(); fx.gain.value = 0.9; fx.connect(out);
 
   // reverb: generated stereo impulse
   const ir = ctx.createBuffer(2, SR * 3, SR);
@@ -154,7 +156,7 @@ export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR
   /* ── voice-over ── */
   // fetched one at a time: a simple local server refuses a burst of 31 parallel requests
   const voLines = [];
-  for (const l of VO) voLines.push({ ...l, T: W(VOT[l.id].start) + (l.a >= 90 && l.a < 93 ? 0.15 : 0), d: VOT[l.id].dur, buf: await ctx.decodeAudioData(await (await fetch(`vo/${VOICE}/${l.id}.wav`)).arrayBuffer()) });
+  for (const l of VOF) voLines.push({ ...l, buf: await ctx.decodeAudioData(await (await fetch(`vo/${VOICE}/${l.id}.wav`)).arrayBuffer()) });
   const voBus = ctx.createGain(); voBus.gain.value = 1.9;
   const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 75;
   const pres = ctx.createBiquadFilter(); pres.type = 'peaking'; pres.frequency.value = 3200; pres.gain.value = 2.5; pres.Q.value = 0.8;
@@ -164,16 +166,15 @@ export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR
   const vSend = ctx.createGain(); vSend.gain.value = 0.07; vcomp.connect(vSend).connect(verb);
   for (const l of voLines) { const src = ctx.createBufferSource(); src.buffer = l.buf; src.connect(hp); src.start(l.T); }
   const speaking = (T, pad = 0.25) => voLines.some((l) => T > l.T - pad && T < l.T + l.d + pad);
-  bed.gain.setValueAtTime(1, 0);
-  // Identify · Prove · Govern land just after their hits, so the hit does not mask the first consonant; the bed dips less there
-  for (const l of voLines) { const a = l.T - 0.18, b = l.T + l.d + 0.12; const deep = l.a >= 90 ? 0.6 : 0.4; bed.gain.setTargetAtTime(deep, a, 0.06); bed.gain.setTargetAtTime(1, b, 0.35); }
+  bed.gain.setValueAtTime(1, 0); drumBed.gain.setValueAtTime(1, 0);
+  for (const l of voLines) { const a = l.T - 0.18, b = l.T + l.d + 0.12; const deep = 0.42; bed.gain.setTargetAtTime(deep, a, 0.06); bed.gain.setTargetAtTime(1, b, 0.35); drumBed.gain.setTargetAtTime(0.75, a, 0.06); drumBed.gain.setTargetAtTime(1, b, 0.35); }
 
   /* ── arrangement (sections are authored-time windows, tested through A(T)) ── */
   const inA = (T, a, b) => { const u = A(T); return u >= a && u < b; };
   padBus.frequency.setValueAtTime(650, 0);
   [[3.5, 800], [7.8, 1300], [8.2, 2600], [12, 1800], [26, 1100], [34, 1600], [41.9, 2600], [42.1, 3800], [84, 4200], [90, 5000], [96, 3000], [104, 900]].forEach(([t, f]) => padBus.frequency.linearRampToValueAtTime(f, W(t)));
   const CH = 2 * BAR;
-  for (let T0 = 0; T0 < DUR; T0 += CH) pad(T0, CH, chordAt(T0).pad, A(T0) < 8 ? 1.7 : inA(T0, 90, 96) ? 2.0 : A(T0) >= 96 ? 1.0 : 1);
+  for (let T0 = 0; T0 < W(96); T0 += CH) pad(T0, Math.min(CH, W(96) - T0), chordAt(T0).pad, A(T0) < 8 ? 1.7 : inA(T0, 90, 96) ? 2.0 : 1);
   pad(W(96), DUR - W(96) - 1.5, [57, 64, 69, 71, 76], 1.0);
 
   // intro: heartbeat on the half bar, bells on the words, riser into the logo
@@ -190,26 +191,26 @@ export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR
   chime(W(8.9), [69, 76, 81, 88], 0.9);
   for (let T = W(8.5); T < W(12); T += BEAT / 2) { const c = chordAt(T).pad; pluck(T, c[[0, 2, 4, 3][Math.round(T / BEAT * 2) % 4]] + 12, 0.85, Math.sin(T * 3) * 0.5, 0.35); }
 
-  const kickOn = (T) => inA(T, 12, 26) || (inA(T, 34, 38.6) && Math.round(T / BEAT) % 2 === 0) || inA(T, 38.6, 41.75) || inA(T, 42, 89.75);
-  const stopAt = [W(41.75), W(89.75)];
+  const kickOn = (T) => inA(T, 12, 26) || (inA(T, 34, 38.6) && Math.round(T / BEAT) % 2 === 0) || inA(T, 38.6, 41.75) || inA(T, 42, DROP);
+  const stopAt = [W(41.75), W(DROP)];
   for (let i = 0; i * BEAT < DUR; i++) {
     const T = i * BEAT; const b = i % 4; const u = A(T);
     if (stopAt.some((s) => T >= s - 0.01 && T < s + BEAT * 0.5)) continue;
     const under = u >= 70 && u < 76;
     if (kickOn(T)) kick(T, under ? 1.1 : 1);
-    const full = inA(T, 42, 89.75) || inA(T, 38.6, 41.75);
+    const full = inA(T, 42, DROP) || inA(T, 38.6, 41.75);
     if ((inA(T, 16, 26) || full) && (b === 1 || b === 3)) clap(T, under ? 0.7 : 1);
-    if (inA(T, 12, 41.75) || inA(T, 42, 89.75)) {
+    if (inA(T, 12, 41.75) || inA(T, 42, DROP)) {
       hat(T + BEAT / 2, 0.85, full && !under, 0.3);
       if (inA(T, 16, 41.75) || full) { hat(T + BEAT / 4, 0.45, false, -0.3); hat(T + (3 * BEAT) / 4, 0.5, false, -0.2); }
     }
     const c = chordAt(T);
-    if (inA(T, 12, 26) || inA(T, 34, 41.75) || inA(T, 42, 89.75)) {
+    if (inA(T, 12, 26) || inA(T, 34, 41.75) || inA(T, 42, DROP)) {
       for (const k of [0, 1]) bass(T + k * BEAT / 2, c.root + (k === 1 && b === 3 ? 12 : 0), 0.26, inA(T, 12, 16) ? 0.7 : 1, full ? 1100 : 700);
     } else if (inA(T, 26, 34)) {
       for (let k = 0; k < 4; k++) bass(T + k * BEAT / 4, c.root + (k === 2 ? 12 : 0), 0.12, 0.55, 380 + 900 * ((u - 26) / 8));
     }
-    if (inA(T, 16, 26) || inA(T, 30, 41.75) || inA(T, 42, 90)) {
+    if (inA(T, 16, 26) || inA(T, 30, 41.75) || inA(T, 42, DROP)) {
       for (let k = 0; k < 4; k++) { const tt = T + k * BEAT / 4; const idx = [0, 2, 1, 3, 2, 4, 3, 1][(i * 4 + k) % 8]; pluck(tt, c.pad[idx] + 12, under ? 0.3 : 0.42, (k % 2 ? -1 : 1) * 0.45, 0.2); }
     }
   }
@@ -236,6 +237,15 @@ export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR
   const CUTS = [12, 20, 26, 34, 48, 56, 60.5, 64, 67, 70, 73.5, 76, 80.4, 84];
   for (const c of CUTS) whoosh(W(c), 0.5, 0.9);
   for (const c of [12, 20, 26, 34, 48, 56, 64, 70, 76, 84]) impact(W(c), 0.4);
+  for (const x of INS) {
+    whoosh(x.F, 0.5, 0.9); impact(x.F, 0.4);
+    // a drawn insert brings its own cues, in seconds from its start
+    for (const [kind, s, arg] of x.sfx ?? []) {
+      const T = x.F + s;
+      if (kind === 'key') key(T, 0.8); else if (kind === 'click') click(T, 1.0); else if (kind === 'blip') blip(T, arg, 0.55, 0.12);
+      else if (kind === 'whoosh') whoosh(T, 0.45, 0.6, false); else if (kind === 'chime') chime(T, arg, 0.8); else if (kind === 'impact') impact(T, 0.55);
+    }
+  }
 
   // on-screen cues
   [12.4, 12.65, 12.9].forEach((t) => whoosh(W(t + 0.25), 0.3, 0.45, false));
@@ -254,7 +264,7 @@ export async function score({ sim, fileLand, fileSeal, WALL, events, W, inv, DUR
   whoosh(W(72.1), 0.5, 0.5, false);
   whoosh(W(78.8), 0.5, 0.5);
   chime(W(78.9), [72, 76, 79, 84], 0.9);
-  WALL.forEach((_, i) => blip(W(84.05 + i * 0.5), 79 + [0, 2, 5, 7, 9, 12][i], 0.55, 0.12));
+  WALL.forEach((_, i) => blip(W(84.05 + i * 0.22), 79 + [0, 2, 5, 7, 9, 12][i], 0.55, 0.12));
   for (const e of events) {
     if (e.type !== 'click' && e.type !== 'key') continue;
     const T = filmOfRec(e.t); if (T === null) continue;

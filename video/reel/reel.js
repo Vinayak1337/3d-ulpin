@@ -1,23 +1,21 @@
 // BhuAayam launch reel: motion graphics in the Studio's own design language, cut on a 120 BPM grid,
-// with real Studio recordings (../launch/rec) in browser frames. Every frame is a pure function of t.
+// with real Studio recordings (../launch/rec) in browser frames. Every frame is a pure function of film time T;
+// scenes are authored on their own clock t, which warp.js maps to the film (text holds, narration, inserts).
 import { World } from './world.js';
 import { E, P, clamp, lerp, h, $, $$, css, fmt, rng } from '../launch/lib.js';
 import { buildWarp } from './warp.js';
 
 const params = new URLSearchParams(location.search);
 const RENDER = params.has('render');
-const SCALE = +(params.get('scale') ?? 1), FPS = +(params.get('fps') ?? 30), VOICE = params.get('voice') ?? 'male';
+const SCALE = +(params.get('scale') ?? 1), FPS = +(params.get('fps') ?? 30), VOICE = params.get('voice') ?? 'narrator-qwen';
 if (RENDER) document.body.classList.add('render');
 const stage = $('#stage'), scenesEl = $('#scenes'), typeEl = $('#type'), labelsEl = $('#labels'), canvas = $('#gl');
 function fit() { if (RENDER) return; const k = Math.min(innerWidth / 1920, (innerHeight - 44) / 1080); stage.style.transform = `scale(${k}) translate(-50%, -50%)`; }
 addEventListener('resize', fit); fit();
 
-const VOICES = ['male', 'female'];
-const [data, index, events, VO, ...VOTS] = await Promise.all(['../launch/data/city.json', '../launch/rec/index.json', '../launch/rec/events.json', 'vo/lines.json', ...VOICES.map((v) => `vo/${v}/timing.json`)].map((u) => fetch(u).then((r) => r.json())));
-// one picture for both narrators: the ending holds long enough for the longer read of each line
-const VOD = Object.fromEntries(VO.map((l) => [l.id, Math.max(...VOTS.map((d) => d[l.id].dur))]));
-const warp = buildWarp(VO, VOD); const W = warp.W;
-export const DUR = warp.DUR;
+const [data, index, events, VO, VOT] = await Promise.all(['../launch/data/city.json', '../launch/rec/index.json', '../launch/rec/events.json', 'vo/lines.json', `vo/${VOICE}/timing.json`].map((u) => fetch(u).then((r) => r.json())));
+// the warp is built once every scene and headline is defined (see "timing" below)
+let warp, W, DUR;
 const world = new World(canvas, data, SCALE);
 const B = data.buildings, hero = world.hero;
 const moves = events.filter((e) => e.type === 'move'), clicks = events.filter((e) => e.type === 'click');
@@ -72,8 +70,10 @@ function updType(t) {
 }
 
 /* ───────── wipes ───────── */
-// cut at `at`: a panel covers the frame just before and uncovers just after.
+// cut at authored `at` (or into insert `ins`): a panel covers the frame just before and uncovers just after.
+// Wipes run on the film clock, so they keep their speed wherever the warp holds or inserts.
 const WIPES = [
+  { ins: 'upload', c: '#235347', dir: 'left' }, { ins: 'intake', c: '#f4f7f8', dir: 'slats' }, { ins: 'portal', c: '#235347', dir: 'up' }, { ins: 'request', c: '#d6f478', dir: 'left' },
   { at: 8, c: '#d6f478', dir: 'up' }, { at: 12, c: '#235347', dir: 'slats' }, { at: 20, c: '#d6f478', dir: 'left' },
   { at: 34, c: '#d6f478', dir: 'slats' }, { at: 42, c: '#ffffff', dir: 'flash' }, { at: 56, c: '#235347', dir: 'left' }, { at: 60.5, c: '#f4f7f8', dir: 'slats' },
   { at: 64, c: '#235347', dir: 'up' }, { at: 67, c: '#f4f7f8', dir: 'slats' }, { at: 70, c: '#0b1f1a', dir: 'down' }, { at: 73.5, c: '#f4f7f8', dir: 'slats' },
@@ -86,17 +86,17 @@ for (const w of WIPES) {
   if (w.dir !== 'slats') w.el.style.background = w.c;
   wipesEl.appendChild(w.el); w.d = w.dir === 'flash' ? 0.25 : 0.34;
 }
-function updWipes(t) {
+function updWipes(T) {
   for (const w of WIPES) {
-    const a = w.at - w.d, b = w.at + w.d + 0.1;
-    if (!vis(w.el, t >= a && t < b)) continue;
-    const pi = P(t, a, w.at, E.inCubic), po = P(t, w.at, b, E.outCubic);
-    if (w.dir === 'flash') { w.el.style.opacity = t < w.at ? pi : 1 - po; continue; }
+    const c = w.T, a = c - w.d, b = c + w.d + 0.1;
+    if (!vis(w.el, T >= a && T < b)) continue;
+    const pi = P(T, a, c, E.inCubic), po = P(T, c, b, E.outCubic);
+    if (w.dir === 'flash') { w.el.style.opacity = T < c ? pi : 1 - po; continue; }
     if (w.dir === 'slats') {
-      $$('i', w.el).forEach((s, i) => { const k = i * 0.028; const qi = P(t, a + k, w.at + k * 0.5, E.inCubic), qo = P(t, w.at + k * 0.5, b + k, E.outCubic); s.style.transform = `translateY(${t < w.at + k * 0.5 ? (1 - qi) * 100 : -qo * 100}%)`; });
+      $$('i', w.el).forEach((s, i) => { const k = i * 0.028; const qi = P(T, a + k, c + k * 0.5, E.inCubic), qo = P(T, c + k * 0.5, b + k, E.outCubic); s.style.transform = `translateY(${T < c + k * 0.5 ? (1 - qi) * 100 : -qo * 100}%)`; });
       continue;
     }
-    const v = t < w.at ? 1 - pi : -po; // 1 → 0 → −1
+    const v = T < c ? 1 - pi : -po; // 1 → 0 → −1
     const tf = { up: `translateY(${v * 100}%)`, down: `translateY(${-v * 100}%)`, left: `translateX(${v * 100}%)` }[w.dir];
     w.el.style.transform = tf;
   }
@@ -149,11 +149,11 @@ class Screen {
     else this.rip.style.display = 'none';
   }
 }
-/** A recorded clip over authored [a, b]: pieces [recFrom, recTo, speed] scaled to fill the film window, zoom keys [recTime, scale, fx, fy]. */
-function clip(a, b, pieces, zoom) {
-  const start = W(a), end = W(b); const k = pieces.reduce((n, [r0, r1, sp]) => n + (r1 - r0) / sp, 0) / (end - start);
+/** A recorded clip over film [start, end]: pieces [recFrom, recTo, speed] scaled to fill the window, zoom keys [recTime, scale, fx, fy]. */
+function clip(start, end, pieces, zoom) {
+  const k = pieces.reduce((n, [r0, r1, sp]) => n + (r1 - r0) / sp, 0) / (end - start);
   let acc = 0; const ps = pieces.map(([r0, r1, s]) => { const p = { r0, r1, sp: s * k, f0: acc }; acc += (r1 - r0) / p.sp; return p; });
-  return { a, b, start, end, ps, zoom };
+  return { start, end, ps, zoom };
 }
 function clipAt(c, T) {
   const lt = T - c.start; let p = c.ps[0]; for (const q of c.ps) if (lt >= q.f0) p = q;
@@ -447,13 +447,15 @@ head('m', [['Live on the map.', 'c-ink'], ['While it uploads.', 'c-forest']], 96
 /* 08 · explore: real Studio footage */
 const MAIN = { x: 80, y: 232, w: 1340 };
 const mainScr = new Screen(scenesEl, MAIN.w); mainScr.el.style.display = 'none';
-const CLIPS = {
-  explore: clip(48, 56, [[13.2, 15.6, 1.2], [16.0, 25.6, 1.6]], [[13.2, 1, 960, 540], [15.6, 1.06, 960, 520], [16.0, 1.0, 960, 540], [16.8, 1.7, 1560, 250], [20.4, 1.7, 1560, 250], [21.4, 1, 960, 540], [24.6, 1.05, 960, 540], [25.6, 1.2, 1350, 620]]),
-  floors: clip(60.5, 64, [[78.6, 87.0, 2.4]], [[78.6, 1.18, 1000, 480], [87, 1.3, 1000, 470]]),
-  check: clip(67, 70, [[94.4, 99.8, 1.8]], [[94.4, 1.25, 700, 470], [96.9, 1.3, 700, 470], [97.6, 1.25, 1050, 560], [99.8, 1.3, 1050, 560]]),
-  under: clip(73.5, 76, [[128.6, 133.6, 2]], [[128.6, 1.1, 960, 620], [133.6, 1.25, 960, 660]]),
-  proof: clip(80.4, 84, [[106.3, 113.3, 2.8], [116.3, 119.3, 3]], [[106.3, 1, 960, 540], [107.2, 1.3, 1500, 460], [108.2, 1.1, 1150, 600], [109.6, 1, 960, 540], [113.3, 1.12, 960, 500], [116.3, 1.3, 900, 420], [119.3, 1.35, 900, 400]]),
+// footage windows on the authored clock: [a, b, pieces, zoom]
+const CLIP_AT = {
+  explore: [48, 56, [[13.2, 15.6, 1.2], [16.0, 25.6, 1.6]], [[13.2, 1, 960, 540], [15.6, 1.06, 960, 520], [16.0, 1.0, 960, 540], [16.8, 1.7, 1560, 250], [20.4, 1.7, 1560, 250], [21.4, 1, 960, 540], [24.6, 1.05, 960, 540], [25.6, 1.2, 1350, 620]]],
+  floors: [60.5, 64, [[78.6, 87.0, 2.4]], [[78.6, 1.18, 1000, 480], [87, 1.3, 1000, 470]]],
+  check: [67, 70, [[94.4, 99.8, 1.8]], [[94.4, 1.25, 700, 470], [96.9, 1.3, 700, 470], [97.6, 1.25, 1050, 560], [99.8, 1.3, 1050, 560]]],
+  under: [73.5, 76, [[128.6, 133.6, 2]], [[128.6, 1.1, 960, 620], [133.6, 1.25, 960, 660]]],
+  proof: [80.4, 84, [[106.3, 113.3, 2.8], [116.3, 119.3, 3]], [[106.3, 1, 960, 540], [107.2, 1.3, 1500, 460], [108.2, 1.1, 1150, 600], [109.6, 1, 960, 540], [113.3, 1.12, 960, 500], [116.3, 1.3, 900, 420], [119.3, 1.35, 900, 400]]],
 };
+let CLIPS;
 // [clip, steps for the right column, kicker]
 const FOOT = {
   explore: [['Search', 49.4], ['Fly to it', 51.8], ['Inspect', 53.8]],
@@ -463,21 +465,23 @@ const FOOT = {
   proof: [['Assign 3D ULPIN', 80.5], ['Property Card', 81.9], ['Verify', 83.4]],
 };
 const colEl = h(`<div class="abs" id="fcol" style="left:1470px;top:${MAIN.y + 30}px;width:370px"></div>`); scenesEl.appendChild(colEl);
-function footage(name, t, T, { enter = 'right' } = {}) {
-  const c = CLIPS[name]; const s = mainScr; vis(s.el, true);
+/** A clip in the Studio frame with the "Real Studio" step list. Steps light up by `clock(r)`: authored time for
+ * footage inside a scene, recording time for inserts. */
+function footage(name, t, T, { enter = 'right', c = CLIPS[name], steps = FOOT[name], clock = () => t } = {}) {
+  const s = mainScr; vis(s.el, true);
   const lt = T - c.start;
   const pin = P(lt, 0, 0.75, E.outExpo), pout = P(T, c.end - 0.3, c.end, E.inCubic);
-  const drift = lt * 0.012;
+  const drift = 0.035 * clamp(lt / (c.end - c.start)); // a slow push-in, the same size on short and long clips
   const rotY = enter === 'right' ? (1 - pin) * -24 : (1 - pin) * 24;
   css(s.el, { left: `${MAIN.x}px`, top: `${MAIN.y}px`, opacity: Math.min(1, pin * 1.5), transform: `perspective(2600px) translateX(${(1 - pin) * (enter === 'right' ? 420 : -420)}px) rotateY(${rotY}deg) scale(${1 + drift - pout * 0.02})` });
   return (async () => {
     const { r, sp, z, fx, fy } = clipAt(c, T); await s.frame(r); s.view(z, fx, fy); s.pointer(r, z);
     s.tag.textContent = speedTag(sp); s.tag.classList.toggle('live', Math.abs(sp - 1) < 0.06);
     // right column: step list
-    const steps = FOOT[name];
+    const k = clock(r);
     if (colEl._for !== name) { colEl._for = name; colEl.innerHTML = `<div style="font:700 13px var(--mono);letter-spacing:.2em;color:var(--forest);display:flex;gap:10px;align-items:center"><i style="width:10px;height:10px;border-radius:50%;background:#d03b3b"></i>REAL STUDIO</div>${steps.map(([l], i) => `<div class="stp" style="margin-top:${i ? 26 : 40}px;display:flex;gap:18px;align-items:baseline"><b style="font:800 18px var(--mono);color:var(--forest)">${String(i + 1).padStart(2, '0')}</b><span style="font-size:34px;font-weight:750;letter-spacing:-.025em;line-height:1.1">${l}</span></div>`).join('')}`; }
     vis(colEl, true); colEl.style.opacity = P(lt, 0.2, 0.7) * (1 - P(T, c.end - 0.3, c.end));
-    $$('.stp', colEl).forEach((el, i) => { const a = steps[i][1]; const active = t >= a && (i === steps.length - 1 || t < steps[i + 1][1]); const q = P(t, a, a + 0.4, E.outExpo); css(el, { opacity: t < a ? 0.22 : active ? 1 : 0.45, transform: `translateX(${(1 - q) * -14}px)`, color: active ? 'var(--ink)' : 'var(--muted)' }); });
+    $$('.stp', colEl).forEach((el, i) => { const a = steps[i][1]; const active = k >= a && (i === steps.length - 1 || k < steps[i + 1][1]); const q = P(k, a, a + 0.4, E.outExpo); css(el, { opacity: k < a ? 0.22 : active ? 1 : 0.45, transform: `translateX(${(1 - q) * -14}px)`, color: active ? 'var(--ink)' : 'var(--muted)' }); });
   })();
 }
 scene('explore', 48, 56, { ch: ['06', 'Explore'], bg: '#f4f7f8', grid: 0.8 });
@@ -538,17 +542,18 @@ const WALL = [
   { r: [13.5, 15.7, 0.4], z: [1.05, 960, 540], l: 'City layer' }, { r: [51.5, 63.5, 2], z: [1.1, 960, 520], l: 'Live import' }, { r: [25.4, 31, 0.95], z: [1.2, 900, 480], l: 'Floors' },
   { r: [89.6, 93.4, 0.64], z: [1, 960, 540], l: 'Building register' }, { r: [119.8, 125, 0.87], z: [1.1, 900, 480], l: 'Findings in 3D' }, { r: [135.5, 147, 1.9], z: [1.1, 900, 500], l: 'Public portal' },
 ];
-scene('montage', 84, 90, { theme: 'dark', bg: '#235347', grid: 1, ch: ['11', 'The Studio'], html: `<div id="wall" class="abs" style="left:0;top:0;width:1920px;height:1080px;perspective:2200px"><div id="wallin" class="abs" style="left:0;top:0;width:1920px;height:1080px;transform-style:preserve-3d"></div></div>` }, async (t) => {
+scene('montage', 84, 90, { theme: 'dark', bg: '#235347', grid: 1, ch: ['13', 'The Studio'], html: `<div id="wall" class="abs" style="left:0;top:0;width:1920px;height:1080px;perspective:2200px"><div id="wallin" class="abs" style="left:0;top:0;width:1920px;height:1080px;transform-style:preserve-3d"></div></div>` }, async (t) => {
   const wi = $('#wallin');
   const lt = t - 84;
   wi.style.transform = `translateZ(${lerp(-250, 60, E.inOutSine(clamp(lt / 5.6)))}px) rotateX(${lerp(14, 6, lt / 6)}deg) rotateZ(${lerp(-6, -2, lt / 6)}deg) translateX(${lerp(40, -40, lt / 6)}px)`;
   const jobs = [];
   WALL.forEach((w, i) => {
     const col = i % 3, row = Math.floor(i / 3);
-    const a = 84.05 + i * 0.5; const p = P(t, a, a + 0.6, E.outBack);
-    const zoomOut = i === 5 ? P(t, 88.4, 89.6, E.inOutCubic) : 0;
+    const a = 84.05 + i * 0.22; const p = P(t, a, a + 0.6, E.outBack);
+    // the wall settles back and dims under the closing line
+    const back = P(t, 85.0, 86.4, E.inOutCubic);
     const x = 170 + col * 560, y = 290 + row * 380;
-    css(w.scr.el, { display: 'block', left: `${lerp(x, 80, zoomOut)}px`, top: `${lerp(y, 150, zoomOut)}px`, opacity: P(t, a, a + 0.2) * (i === 5 ? 1 : 1 - zoomOut), transform: `translateZ(${(1 - p) * -400 + zoomOut * 200}px) scale(${lerp(0.6, 1, p) * lerp(1, 3.1, zoomOut)})`, transformOrigin: '0 0', zIndex: i === 5 ? 5 : 1 });
+    css(w.scr.el, { display: 'block', left: `${x}px`, top: `${y}px`, opacity: P(t, a, a + 0.2) * lerp(1, 0.28, back), transform: `translateZ(${(1 - p) * -400 - back * 260}px) scale(${lerp(0.6, 1, p)})`, transformOrigin: '0 0', zIndex: 1 });
     const r = clamp(w.r[0] + Math.max(0, t - a) * w.r[2], w.r[0], w.r[1]);
     jobs.push(w.scr.frame(r).then(() => w.scr.view(w.z[0], w.z[1], w.z[2])));
     w.scr.tag.textContent = w.l;
@@ -556,7 +561,7 @@ scene('montage', 84, 90, { theme: 'dark', bg: '#235347', grid: 1, ch: ['11', 'Th
   await Promise.all(jobs);
 });
 const wallIn = $('#wallin'); for (const w of WALL) { w.scr = new Screen(wallIn, 520, { cursor: false }); w.scr.el.style.display = 'none'; }
-head('s', [['Built for the officer. ', 'c-cream'], ['Open to the citizen.', 'c-lime']], 96, 130, 84.3, 88.3, { st: 1.0 });
+head('xl', [['Built for officers', 'c-cream'], ['and citizens.', 'c-lime']], 96, 330, 85.3, 90.1, { st: 0.35 });
 
 /* 14 · Identify → Prove → Govern */
 scene('ipg', 90, 96, { theme: 'dark', bg: '#0b1f1a', grid: 1, brand: false, html: `
@@ -580,6 +585,7 @@ scene('end', 96, 104, { theme: 'dark', bg: '#0b1f1a', grid: 1, brand: false, htm
   $$('.end-l').forEach((d, i) => { const q = P(t, 97.8 + i * 0.3, 98.5 + i * 0.3, E.outExpo); css(d, { opacity: q, transform: `translateY(${(1 - q) * 20}px)` }); });
   $('#fade').style.opacity = P(t, 102.4, 104, E.inOutSine);
 });
+
 
 /* ───────── 3D choreography ───────── */
 const label = (() => { const pool = new Map(); let used = new Set();
@@ -705,29 +711,174 @@ function updChrome(t, s) {
   $('#foot').style.opacity = s.foot ? 1 : 0; $('#foot-l').textContent = s.foot;
 }
 
+/* ───────── inserts: real Studio clips cut in at authored instants ───────── */
+// Steps light up by recording time. Zoom keys are [recTime, scale, focusX, focusY] on the 1920 × 1080 recording.
+const INSERTS = [
+  { key: 'upload', at: 20, ch: ['02', 'Ingest'], head: [['Checked ', 'c-ink'], ['before import.', 'c-forest']], enter: 'right', min: 5,
+    pieces: [[3.6, 12.9, 1]], zoom: [[3.6, 1.05, 960, 540], [7.6, 1.35, 960, 540], [12.9, 1.35, 1060, 560]],
+    steps: [['Drop the files', 3.6], ['Check what we found', 8.4], ['Start import', 11.3]] },
+  { key: 'intake', at: 34, ch: ['03', 'Understand'], head: [['It will be read ', 'c-ink'], ['like this.', 'c-forest']], enter: 'left', min: 6,
+    pieces: [[42.9, 51.4, 1], [51.4, 66.8, 2.2]], zoom: [[42.9, 1.05, 960, 540], [45.2, 1.35, 960, 540], [50.9, 1.35, 1060, 600], [51.8, 1, 960, 540], [66.8, 1.1, 960, 500]],
+    steps: [['An unfamiliar file', 42.9], ['It will be read like this', 45.2], ['Buildings appear', 51.6]] },
+  { key: 'portal', at: 84, ch: ['11', 'Public portal'], head: [['The same record, ', 'c-ink'], ['in public.', 'c-forest']], enter: 'right', min: 6,
+    pieces: [[134.4, 150, 1]], zoom: [[134.4, 1.3, 700, 380], [137.5, 1.3, 700, 380], [138.6, 1, 960, 540], [142.8, 1, 960, 540], [144, 1.12, 960, 480], [150, 1.18, 1120, 560]],
+    steps: [['Search a building', 134.4], ['Open its record', 142.7], ['Every released flat', 144.4]] },
+  // drawn, not recorded: a citizen's correction, the officer's decision, and the map updating (see drawRequest)
+  { key: 'request', at: 84, ch: ['12', 'Requests'], head: [['Citizens ask. ', 'c-ink'], ['Officers decide.', 'c-forest']], min: 7.5, draw: (lt, L) => drawRequest(lt, L),
+    sfx: [...Array.from({ length: 20 }, (_, i) => ['key', 0.97 + i * 0.075]), ['blip', 2.62, 79], ['click', 3.15], ['blip', 3.32, 84], ['whoosh', 3.55], ['click', 4.75], ['chime', 4.85, [72, 76, 79, 84]], ['impact', 5.08], ['chime', 5.12, [76, 81, 84, 88]], ['blip', 5.72, 88]] },
+];
+/* the request scene: portal form → officer queue and tracking → the building on the map */
+const REQ_TEXT = 'Flat 704 is 81 m² in the approved plan, not 84 m².';
+const reqHTML = `<div id="req" class="abs" style="left:0;top:0;width:1920px;height:1080px">
+  <div class="card" id="rq-form" style="left:96px;top:290px;width:620px;height:610px;overflow:hidden">
+    <div class="sbar">BhuAayam public portal<span class="tag">Request</span></div>
+    <div style="padding:26px 30px">
+      <div style="font-size:31px;font-weight:750;letter-spacing:-.02em">Request a correction</div>
+      <div style="margin-top:6px;color:var(--muted);font-size:19px">Lake View Residence · Flat 704</div>
+      <div style="margin-top:26px;font:700 13px var(--mono);letter-spacing:.14em;color:var(--muted)">WHAT IS WRONG</div>
+      <div id="rq-text" style="margin-top:10px;height:124px;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-size:22px;line-height:1.45"></div>
+      <div id="rq-doc" style="margin-top:16px;display:inline-flex;gap:10px;align-items:center;padding:9px 14px;border-radius:12px;border:1px solid var(--divider);font:600 17px var(--mono)"><b style="width:40px;height:28px;border-radius:6px;background:#b42318;color:#fff;font:800 11px var(--mono);display:grid;place-items:center">PDF</b>plan_F7.pdf</div>
+      <div style="margin-top:24px;display:flex;align-items:center;gap:14px"><span class="btn" id="rq-send">Send request</span><span class="badge" id="rq-ref" style="font:650 16px var(--mono)"></span></div>
+    </div></div>
+  <svg class="abs" style="left:0;top:0;width:1920px;height:1080px;overflow:visible"><path id="rq-path" d="M 716 820 C 745 820, 740 470, 790 470" fill="none" stroke="#235347" stroke-width="3" stroke-dasharray="6 8"/></svg>
+  <div class="card" id="rq-queue" style="left:790px;top:290px;width:600px;height:330px;overflow:hidden">
+    <div class="sbar">BhuAayam Studio<span class="tag">Requests</span></div>
+    <div style="padding:22px 26px">
+      <div style="display:flex;align-items:center;gap:12px"><div style="font:700 19px var(--mono)">RQ-2026-00001</div><span class="badge" id="rq-state"></span></div>
+      <div style="margin-top:10px;font-size:21px;font-weight:600">Correction · Flat 704, Lake View Residence</div>
+      <div style="margin-top:6px;color:var(--muted);font-size:17px">On record 84 m² · approved plan 81 m² · 1 document</div>
+      <div style="margin-top:24px;display:flex;gap:12px"><span class="btn ghost">Not accepted</span><span class="btn" id="rq-accept">Accept</span></div>
+    </div></div>
+  <div class="card" id="rq-track" style="left:790px;top:650px;width:600px;height:250px;padding:24px 28px">
+    <div style="font:700 13px var(--mono);letter-spacing:.14em;color:var(--muted)">TRACK A REQUEST</div>
+    <div style="position:relative;margin-top:34px;height:90px">
+      <div style="position:absolute;left:14px;right:14px;top:13px;height:3px;background:var(--divider)"></div>
+      <div id="rq-bar" style="position:absolute;left:14px;top:13px;height:3px;width:0;background:var(--forest)"></div>
+      ${['Received', 'In review', 'Accepted'].map((x, i) => `<div class="rq-step" style="position:absolute;left:${i * 50}%;top:0;transform:translateX(-${i * 50}%);text-align:${['left', 'center', 'right'][i]}"><i style="display:inline-block;width:29px;height:29px;border-radius:50%;border:3px solid var(--border);background:#fff"></i><div style="margin-top:12px;font-size:19px;font-weight:600">${x}</div></div>`).join('')}
+    </div></div>
+  <div class="card" id="rq-map" style="left:1450px;top:290px;width:380px;height:610px;overflow:hidden;background:#f7faf9">
+    <div class="sbar">Map<span class="tag">Lake View</span></div>
+    <svg id="rq-bld" viewBox="0 0 380 566" style="position:absolute;left:0;top:44px;width:380px;height:566px"></svg>
+    <div id="rq-lbl" class="lbl" style="left:246px;top:330px">Flat 704 · <b id="rq-area">84</b> m²</div>
+    <div id="rq-upd" class="badge b-ok b-dot" style="position:absolute;left:24px;bottom:24px;font-size:16px">Updated on the map</div>
+  </div>
+  <div id="rq-ripple" class="ripple"></div>
+  ${CURSOR.replace('class="cursor"', 'class="cursor" id="rq-cur"')}
+</div>`;
+const insEl = h(`<div class="scene" id="s-ins">${INSERTS.map((I) => `<div class="hd s inl" data-ins="${I.key}" style="left:96px;top:118px">${I.head.map(([x, c]) => `<span class="ln"><span class="li ${c}">${x}</span></span>`).join('')}</div>`).join('')}</div>`);
+scenesEl.insertBefore(insEl, scenesEl.firstChild);
+insEl.insertAdjacentHTML('beforeend', reqHTML); const reqEl = $('#req');
+// the centre of an element in stage pixels (the stage is scaled when rendering)
+const centre = (el) => { const r = el.getBoundingClientRect(), st = $('#stage').getBoundingClientRect(), k = st.width / 1920; return [(r.left - st.left + r.width / 2) / k, (r.top - st.top + r.height / 2) / k]; };
+function drawRequest(lt, L) {
+  // the same slow push-in as the recorded clips
+  css(reqEl, { transform: `scale(${1 + 0.035 * clamp(lt / L)})`, transformOrigin: '960px 600px' });
+  const q = (a, b, e = E.outExpo) => P(lt, a, b, e);
+  const enter = (el, a, dx, dy) => { const p = q(a, a + 0.7); css(el, { opacity: P(lt, a, a + 0.25), transform: `translate(${(1 - p) * dx}px, ${(1 - p) * dy}px) scale(${lerp(0.97, 1, p)})` }); };
+  enter($('#rq-form'), 0.3, 0, 70); enter($('#rq-map'), 0.55, 0, 70); enter($('#rq-queue'), 3.45, 90, 0); enter($('#rq-track'), 3.6, 90, 0);
+  // the citizen types, attaches the plan and sends
+  const n = Math.round(clamp((lt - 0.95) / 1.55) * REQ_TEXT.length);
+  $('#rq-text').innerHTML = `${REQ_TEXT.slice(0, n)}<span style="display:inline-block;width:2px;height:24px;vertical-align:-4px;background:var(--forest);opacity:${lt < 3.1 && Math.floor(lt * 3) % 2 === 0 ? 1 : 0}"></span>`;
+  const pd = q(2.55, 2.95, E.outBack); css($('#rq-doc'), { opacity: P(lt, 2.55, 2.7), transform: `scale(${lerp(0.7, 1, pd)})`, transformOrigin: 'left center' });
+  $('#rq-send').style.transform = `scale(${lt > 3.12 && lt < 3.3 ? 0.95 : 1})`;
+  const acc = lt >= 5.7; const ref = $('#rq-ref');
+  ref.textContent = `RQ-2026-00001 · ${acc ? 'Accepted' : 'Received'}`; ref.className = `badge ${acc ? 'b-ok' : 'b-info'}`;
+  css(ref, { opacity: P(lt, 3.3, 3.45), transform: `scale(${lerp(0.8, 1, q(3.3, 3.7, E.outBack)) * (acc ? lerp(1.12, 1, q(5.7, 6.1)) : 1)})` });
+  const path = $('#rq-path'); const pl = q(3.35, 3.85, E.inOutCubic); path.style.strokeDasharray = `${pl * 700} 700`; path.style.opacity = pl > 0 ? 0.55 : 0;
+  // the officer takes it up and accepts
+  const st = lt >= 4.8 ? ['Accepted', 'b-ok'] : lt >= 4.2 ? ['In review', 'b-info'] : ['Received', 'b-neutral'];
+  $('#rq-state').textContent = st[0]; $('#rq-state').className = `badge ${st[1]}`;
+  $('#rq-accept').style.transform = `scale(${lt > 4.72 && lt < 4.9 ? 0.95 : 1})`;
+  const lit = [3.9, 4.2, 4.85];
+  $$('.rq-step i').forEach((d, i) => { const on = lt >= lit[i]; const p = q(lit[i], lit[i] + 0.4, E.outBack); css(d, { background: on ? 'var(--forest)' : '#fff', borderColor: on ? 'var(--forest)' : 'var(--border)', transform: `scale(${on ? lerp(1.4, 1, p) : 1})` }); });
+  $('#rq-bar').style.width = `calc(${lt >= 4.85 ? 100 : lt >= 4.2 ? 50 : 0}% - 28px * ${lt >= 4.2 ? 1 : 0})`;
+  // the building on the map: Flat 704's floor, then its corrected value
+  const fix = q(5.05, 5.6, E.inOutCubic), flash = P(lt, 5.05, 5.2) * (1 - P(lt, 5.3, 5.9));
+  const F = 12, H = 30, x0 = 172, y0 = 540, R = [130, -75], Lf = [-95, -55];
+  const poly = (pts, fill, stroke, w = 1.2) => `<polygon points="${pts.map((p) => p.join(',')).join(' ')}" fill="${fill}" stroke="${stroke}" stroke-width="${w}" stroke-linejoin="round"/>`;
+  let svg = `<ellipse cx="${x0 + 18}" cy="${y0 + 8}" rx="190" ry="60" fill="#e3ebe8"/>`;
+  for (let i = 0; i < F; i++) {
+    const y = y0 - i * H, f = [x0, y], r = [x0 + R[0], y + R[1]], l = [x0 + Lf[0], y + Lf[1]], up = (p) => [p[0], p[1] - H];
+    const hot = i === 6; const bad = hot && fix < 1, good = hot && fix >= 0.5;
+    const cl = good ? ['#e8f6ee', '#dff0e6', '#235347'] : bad ? ['#fde3df', '#f9d2cc', '#d03b3b'] : ['#eef3f1', '#dde7e4', '#b3c4bf'];
+    svg += poly([l, f, up(f), up(l)], hot && flash > 0.3 ? '#d6f478' : cl[1], cl[2], hot ? 2.4 : 1.2) + poly([f, r, up(r), up(f)], hot && flash > 0.3 ? '#e9fbb0' : cl[0], cl[2], hot ? 2.4 : 1.2);
+    if (i === F - 1) svg += poly([up(f), up(r), [r[0] + Lf[0], r[1] + Lf[1] - H], up(l)], '#f7faf9', '#b3c4bf');
+  }
+  $('#rq-bld').innerHTML = svg;
+  const area = Math.round(lerp(84, 81, fix)); $('#rq-area').textContent = area;
+  css($('#rq-lbl'), { opacity: P(lt, 1.2, 1.5), background: fix >= 1 ? 'var(--forest)' : '', color: fix >= 1 ? '#fff' : '', transform: `translate(-50%, -100%) scale(${1 + flash * 0.12})` });
+  css($('#rq-upd'), { opacity: P(lt, 5.45, 5.65), transform: `translateY(${(1 - q(5.45, 5.9)) * 16}px)` });
+  // one cursor: to Send, then to Accept
+  const cur = $('#rq-cur'), rip = $('#rq-ripple'); const send = centre($('#rq-send')), okb = centre($('#rq-accept'));
+  const m1 = q(2.7, 3.1, E.inOutCubic), m2 = q(4.3, 4.72, E.inOutCubic);
+  const x = lt < 4.3 ? lerp(1000, send[0], m1) : lerp(send[0], okb[0], m2), y = lt < 4.3 ? lerp(1010, send[1], m1) : lerp(send[1], okb[1], m2);
+  vis(cur, lt > 2.65 && lt < 5.6, 'block'); css(cur, { left: `${x - 3}px`, top: `${y - 2}px`, opacity: 1 - P(lt, 5.3, 5.6) });
+  const cl = lt >= 4.75 ? 4.75 : 3.15, rp = P(lt, cl, cl + 0.45);
+  vis(rip, lt >= 3.15 && rp < 1, 'block'); css(rip, { left: `${x - 45}px`, top: `${y - 45}px`, opacity: 1 - rp, transform: `scale(${lerp(0.3, 1.2, rp)})` });
+}
+function updInsert(I, T) {
+  const lt = T - I.F;
+  $$('[data-ins]', insEl).forEach((el) => {
+    if (!vis(el, el.dataset.ins === I.key)) return;
+    $$('.li', el).forEach((li, i) => {
+      const a = 0.35 + i * 0.2; const pin = P(lt, a, a + 0.8, E.outExpo), pout = P(lt, I.L - 0.45 + i * 0.04, I.L - 0.05 + i * 0.04, E.inExpo);
+      css(li, { transform: `translateY(${((1 - pin) * 135 - pout * 135).toFixed(2)}%) rotate(${((1 - pin) * 3).toFixed(2)}deg)`, visibility: pin <= 0 || pout >= 1 ? 'hidden' : 'visible' });
+    });
+  });
+}
+
+/* ───────── timing ───────── */
+// Cuts, and where text sits still long enough to need reading time: after its lines have slid in, until it leaves.
+const END = 104;
+const CUTS = [...new Set([...SC.map((x) => x.a), ...Object.values(CLIP_AT).map((c) => c[0]), END])].sort((x, y) => x - y);
+const holds = TY.filter((x) => x.mode !== 'kick').map((x) => {
+  const n = x.lis ? x.lis.length : 1; const sc = SC.find((c) => x.a >= c.a && x.a < c.b);
+  const a = x.mode === 'fade' ? x.a + 0.7 : x.a + (n - 1) * x.st + 0.8, b = Math.min(x.b - x.out, sc ? sc.b : END);
+  return { a, b, need: 0.6 + x.el.textContent.trim().split(/\s+/).length * 0.3 };
+}).filter((x) => x.b > x.a + 0.05);
+// scene text outside the headline layer: the three Identify · Prove · Govern lines, and the end card's lines
+const words = (sel) => $$(sel).reduce((n, el) => n + el.textContent.split(/\s+/).filter((w) => /\p{L}/u.test(w)).length, 0);
+holds.push({ a: 92.8, b: 94.8, need: 0.6 + words('.ipgd') * 0.3 - 2.6 }, { a: 99.7, b: 102.4, need: 0.6 + words('.end-l') * 0.3 });
+const lines = VO.map((l) => ({ ...l, dur: VOT[l.id].dur }));
+warp = buildWarp({ cuts: CUTS, holds, lines, stops: [90], inserts: INSERTS.map(({ key, at, min }) => ({ key, at, min })), end: END });
+W = warp.W; DUR = warp.DUR;
+CLIPS = Object.fromEntries(Object.entries(CLIP_AT).map(([k, [a, b, pieces, zoom]]) => [k, clip(W(a), W(b), pieces, zoom)]));
+for (const x of warp.inserts) { const I = INSERTS.find((i) => i.key === x.key); Object.assign(I, { F: x.F, L: x.L, clip: I.pieces ? clip(x.F + 0.05, x.F + x.L, I.pieces, I.zoom) : null }); }
+for (const w of WIPES) w.T = w.ins ? INSERTS.find((i) => i.key === w.ins).F : W(w.at);
+// narration on the film clock: scene lines on their authored cue, insert lines just after the insert opens
+const VOF = lines.map((l) => ({ id: l.id, a: l.a ?? INSERTS.find((i) => i.key === l.ins).at, T: l.ins ? INSERTS.find((i) => i.key === l.ins).F + 0.45 : W(l.a) + 0.05, d: l.dur }));
+
 /* ───────── seek ───────── */
 const FOOTAGE = [['explore', 48, 56], ['floors', 60.5, 64], ['check', 67, 70], ['under', 73.5, 76], ['proof', 80.4, 84]];
 let lastT = -1;
 async function seek(T) {
-  T = clamp(T, 0, DUR - 1e-3); const t = warp.inv(T);
-  const s = SC.find((x) => t >= x.a && t < x.b) ?? SC[SC.length - 1];
+  T = clamp(T, 0, DUR - 1e-3); const loc = warp.at(T); const t = loc.t;
+  const I = loc.ins ? INSERTS.find((x) => x.key === loc.ins) : null;
+  const s = I ? { name: 'insert', theme: 'light', bg: '#f4f7f8', grid: 0.8, ch: I.ch, foot: '', brand: true } : SC.find((x) => t >= x.a && t < x.b) ?? SC[SC.length - 1];
   for (const x of SC) vis(x.el, x === s);
+  vis(insEl, !!I); vis(reqEl, I?.key === 'request', 'block');
   updChrome(t, s);
   label.begin();
   const jobs = [];
-  jobs.push(Promise.resolve(s.upd(t)));
-  const f = FOOTAGE.find(([, a, b]) => t >= a && t < b);
-  if (f) { jobs.push(footage(f[0], t, T, { enter: f[0] === 'explore' ? 'right' : 'left' })); $('#foot').style.opacity = 0; } else { vis(mainScr.el, false); vis(colEl, false); }
-  world3d(t);
+  if (I) {
+    updInsert(I, T); $('#foot').style.opacity = 0; vis(canvas, false);
+    if (I.draw) { vis(mainScr.el, false); vis(colEl, false); I.draw(T - I.F, I.L); } else jobs.push(footage(I.key, t, T, { enter: I.enter, c: I.clip, steps: I.steps, clock: (r) => r }));
+  } else {
+    jobs.push(Promise.resolve(s.upd(t)));
+    const f = FOOTAGE.find(([, a, b]) => t >= a && t < b);
+    if (f) { jobs.push(footage(f[0], t, T, { enter: f[0] === 'explore' ? 'right' : 'left' })); $('#foot').style.opacity = 0; } else { vis(mainScr.el, false); vis(colEl, false); }
+    world3d(t);
+  }
   label.end();
-  updType(t); updWipes(t); updGrain(T);
-  if (!(t >= 96)) $('#fade').style.opacity = 0;
+  typeEl.style.display = I ? 'none' : ''; if (!I) updType(t);
+  updWipes(T); updGrain(T);
+  if (s.name !== 'end') $('#fade').style.opacity = 0;
   await Promise.all(jobs);
   lastT = t;
 }
 window.seek = seek; window.DUR = DUR;
-const filmOfRec = (r) => { for (const c of Object.values(CLIPS)) for (const p of c.ps) if (r >= p.r0 && r <= p.r1) return c.start + p.f0 + (r - p.r0) / p.sp; return null; };
-window.cues = { sim, fileLand, fileSeal, FILES, WALL, events, W, inv: warp.inv, DUR, VO, VOT: VOTS[Math.max(0, VOICES.indexOf(VOICE))], VOICE, filmOfRec };
+const filmOfRec = (r) => { for (const c of [...Object.values(CLIPS), ...INSERTS.map((I) => I.clip).filter(Boolean)]) for (const p of c.ps) if (r >= p.r0 && r <= p.r1) return c.start + p.f0 + (r - p.r0) / p.sp; return null; };
+window.cues = { sim, fileLand, fileSeal, FILES, WALL, events, W, inv: warp.inv, DUR, VOF, VOICE, filmOfRec, INS: INSERTS.map(({ key, at, F, L, sfx }) => ({ key, at, F, L, sfx })), END };
 
 await document.fonts.load('800 100px "Noto Sans"'); await document.fonts.load('600 20px "Noto Sans Mono"'); await document.fonts.load('600 30px "Noto Sans Devanagari"'); await document.fonts.ready;
 window.renderAudio = async () => { const { score } = await import('./score.js'); return score(window.cues); };
