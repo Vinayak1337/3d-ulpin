@@ -30,7 +30,7 @@ def extract_reference_table(raw):
             number = index + 2
             parts.append({"id": f"part-{len(parts) + 1}",
                           "text": "\n".join(f"{key}: {row[key]}" for key in header),
-                          "locator": {"row": number, "label": f"CSV row {number}"}})
+                          "locator": {"row": number, "headerRow": 1, "label": f"CSV logical row {number}"}})
     except csv.Error:
         raise InputError("CSV reference table could not be parsed without ambiguity.") from None
     if not parts:

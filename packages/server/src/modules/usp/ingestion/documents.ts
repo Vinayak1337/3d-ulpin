@@ -49,6 +49,23 @@ export async function readDocumentResult(input:DocumentInput,resultHash:string):
   const result=DocumentResultSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
   if(fingerprint(result.input)!==fingerprint(input))throw new AppError(422,'DOCUMENT_RESULT_SCOPE','The extraction result has different source/job pins.');
   if(result.native.parts.some(p=>sha256(p.text)!==p.sha256))throw new AppError(422,'DOCUMENT_PART_INTEGRITY','A native part differs from its exact text hash.');
+  const units=new Map<string,typeof result.native.parts>();
+  for(const part of result.native.parts)if(part.locator.unitId){
+    const group=units.get(part.locator.unitId)??[];group.push(part);units.set(part.locator.unitId,group);
+  }
+  for(const parts of units.values()){
+    const ordered=[...parts].sort((a,b)=>a.locator.segmentIndex!-b.locator.segmentIndex!);
+    const first=ordered[0],count=first.locator.segmentCount,hash=first.locator.unitSha256;
+    let next=0;
+    for(const [index,part] of ordered.entries()){
+      const locator=part.locator;
+      if(locator.segmentIndex!==index||locator.segmentCount!==count||locator.unitSha256!==hash||locator.characterStart!==next)
+        throw new AppError(422,'DOCUMENT_PART_INTEGRITY','A cited native continuation is incomplete or out of order.');
+      next=locator.characterEnd;
+    }
+    if(ordered.length!==count||sha256(ordered.map(part=>part.text).join(''))!==hash)
+      throw new AppError(422,'DOCUMENT_PART_INTEGRITY','A cited native unit differs from its complete text hash.');
+  }
   return result;
 }
 export class DocumentIngestionService{

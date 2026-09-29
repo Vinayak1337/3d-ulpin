@@ -27,7 +27,24 @@ export function documentFormat(bytes:Uint8Array):DocumentResult['native']['forma
   const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/,3);
   return lines.length>1 && lines[0].includes(',') && lines[1].includes(',')?'csv':'text';
 }
-type Extracted={format?:string;sourceSha256?:string;parts:{text:string;locator:{label:string;page?:number;row?:number;line?:number;paragraph?:number;table?:number;column?:number}}[];warnings?:string[]};
+type Extracted={format?:string;sourceSha256?:string;parts:{text:string;locator:{label:string;page?:number;row?:number;line?:number;lineEnd?:number;paragraph?:number;table?:number;column?:number;headerRow?:number}}[];warnings?:string[]};
+/** Keep exact redacted-unit spans; prefer a source line/word boundary for long units. */
+function unitSegments(text:string){
+  const segments:{start:number;end:number}[]=[];
+  for(let start=0;start<text.length;){
+    let end=Math.min(start+DOCUMENT_LIMITS.partCharacters,text.length);
+    if(end<text.length){
+      const halfway=start+Math.floor(DOCUMENT_LIMITS.partCharacters/2);
+      const line=text.lastIndexOf('\n',end-1);
+      if(line>=halfway)end=line+1;
+      else for(let index=end;index>halfway;index--)if(/\s/u.test(text[index-1])){end=index;break;}
+      // JavaScript offsets are UTF-16; a segment cannot end inside a surrogate pair.
+      if(end<text.length && /[\uD800-\uDBFF]/u.test(text[end-1]) && /[\uDC00-\uDFFF]/u.test(text[end]))end--;
+    }
+    segments.push({start,end});start=end;
+  }
+  return segments;
+}
 export async function extractSourceDocument(input:DocumentInput,bytes:Uint8Array,
   extract:(data:unknown)=>Promise<Extracted>=data=>areaGeo<Extracted>('extract',data)):Promise<DocumentResult['native']>{
   let format=documentFormat(bytes);
@@ -45,12 +62,14 @@ export async function extractSourceDocument(input:DocumentInput,bytes:Uint8Array
       const text=String(redactDerivative(raw.text));characters+=text.length;
       if(characters>DOCUMENT_LIMITS.characters)throw new Error('NATIVE_TEXT_LIMIT');
       if(!text.trim())continue;
-      for(let start=0;start<text.length;start+=DOCUMENT_LIMITS.partCharacters){
-        const value=text.slice(start,start+DOCUMENT_LIMITS.partCharacters);if(!value.trim())continue;
+      const unitId=randomUUID(),unitSha256=sha256(text),segments=unitSegments(text);
+      for(const [segmentIndex,{start,end}] of segments.entries()){
+        const value=text.slice(start,end);
         if(parts.length>=DOCUMENT_LIMITS.parts)throw new Error('NATIVE_PART_LIMIT');
         parts.push(DocumentPartSchema.parse({id:randomUUID(),sourceId:input.sourceId,sourceRevision:input.sourceRevision,
           sourceSha256:input.sourceSha256,text:value,sha256:sha256(value),method:'native_text',
-          locator:{...raw.locator,characterStart:start,characterEnd:start+value.length}}));
+          locator:{...redactDerivative(raw.locator),unitId,unitSha256,segmentIndex,
+            segmentCount:segments.length,characterStart:start,characterEnd:end}}));
       }
     }
     return {format,readerSha256:input.readerSha256,code:parts.length?(warnings.some(w=>w.includes('no native text'))?'NATIVE_PARTIAL_TEXT':null):'NATIVE_TEXT_UNAVAILABLE',warnings,parts,

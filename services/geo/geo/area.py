@@ -36,6 +36,7 @@ MAX_EXTENT_M = 50_000
 MAX_DOCUMENT_BYTES = 10 * 1024 * 1024
 MAX_DOCUMENT_TEXT = 250_000
 MAX_DOCUMENT_PAGES = 100
+MAX_PDF_PAGE_CONTENT_BYTES = 8 * 1024 * 1024
 KINDS = {"building", "parcel", "road", "public_land", "utility"}
 WORLD_STATES = {"observed", "planned", "hypothetical", "synthetic"}
 VERTICAL_REFERENCE = "building-relative; not aligned between features"
@@ -577,10 +578,25 @@ def extract_document(data):
                 raise InputError("Native PDF extraction supports at most 100 pages.")
             for index, page in enumerate(reader.pages):
                 contents = page.get_contents()
-                if contents is not None and len(contents.get_data()) > 5 * 1024 * 1024:
+                if contents is not None and len(contents.get_data()) > MAX_PDF_PAGE_CONTENT_BYTES:
                     raise InputError("A PDF page exceeds the native extraction content limit.")
                 text = page.extract_text() or ""
-                add(text, {"page": index + 1, "label": f"PDF page {index + 1}"})
+                # Use paragraph labels only where native blank lines support them.
+                # Many born-digital PDFs have none; keep their exact extracted
+                # line endings in bounded, page-local line groups instead.
+                regions = re.split(r"(\r?\n[ \t]*\r?\n+)", text)
+                if sum(bool(region.strip()) for region in regions[::2]) > 1:
+                    for paragraph_index, offset in enumerate(range(0, len(regions), 2), 1):
+                        paragraph = regions[offset] + (regions[offset + 1] if offset + 1 < len(regions) else "")
+                        add(paragraph, {"page": index + 1, "paragraph": paragraph_index,
+                                        "label": f"PDF page {index + 1}, paragraph {paragraph_index}"})
+                else:
+                    lines = text.splitlines(keepends=True)
+                    for start in range(0, len(lines), 8):
+                        end = min(start + 8, len(lines))
+                        add("".join(lines[start:end]), {"page": index + 1, "line": start + 1,
+                                                       "lineEnd": end,
+                                                       "label": f"PDF page {index + 1}, lines {start + 1}–{end}"})
                 if not text.strip():
                     warnings.append(f"PDF page {index + 1} has no native text; image interpretation/OCR remains unresolved.")
         except InputError:
@@ -632,11 +648,17 @@ def extract_document(data):
                         add(text, {"paragraph": paragraph_index, "label": f"DOCX paragraph {paragraph_index}"})
                     elif child.tag == f"{{{ns['w']}}}tbl":
                         table_index += 1
+                        header_row = None
                         for row_index, row in enumerate(child.findall("w:tr", ns), 1):
+                            if row.find("w:trPr/w:tblHeader", ns) is not None:
+                                header_row = row_index
                             for column_index, cell in enumerate(row.findall("w:tc", ns), 1):
                                 text = "\n".join(paragraph_text(paragraph) for paragraph in cell.findall("w:p", ns))
-                                add(text, {"table": table_index, "row": row_index, "column": column_index,
-                                           "label": f"DOCX table {table_index}, row {row_index}, column {column_index}"})
+                                locator = {"table": table_index, "row": row_index, "column": column_index,
+                                           "label": f"DOCX table {table_index}, row {row_index}, column {column_index}"}
+                                if header_row is not None:
+                                    locator["headerRow"] = header_row
+                                add(text, locator)
                 if any(name.startswith("word/media/") for name in archive.namelist()):
                     warnings.append("Embedded images are retained in the original DOCX but were not interpreted.")
                 warnings.append("DOCX extraction covers native body paragraphs and direct table cells; drawings, headers, footnotes, nested tables, tracked deletions and text boxes require separate review.")
