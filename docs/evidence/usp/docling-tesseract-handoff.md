@@ -1,0 +1,30 @@
+# AI-04F — bounded Docling/Tesseract scan trial
+
+30 September 2026. Offline, CPU-only tool-mechanics trial on one retained crop of the unchanged USGS 1910 topographic map. This is foreign-geography evidence and does not qualify Indian documents, property linkage, or production OCR. The production scanned-document result remains `needs_ocr`.
+
+## Source and bounded execution
+
+The original is `E:/BhuAayam-data/task-data/ulpin-official-runtime-pdf-v1/usgs-central-city-co-1910-topographic-map.pdf`, 9,344,939 bytes, SHA-256 `fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf`. Page 1's retained upper-heading crop is normalized `[0.09, 0.035, 0.39, 0.075]`, PDF point rectangle `[107.133, 52.325, 464.244, 112.125]`. The unchanged 1072×181 PNG is `E:/BhuAayam-data/task-data/desktop-ai04c-scan-trial/preview/candidate-upper.png`, SHA-256 `5736f02aa05953d0364fdde5d78962325c0d6c448a9767628fd30104081ae30e`. Its 96.012 DPI metadata gives the Docling crop page a size of 803.8995×135.7330 points. Every emitted box below is in that **crop-local point frame, bottom-left origin**. The crop-to-original mapping is recorded, but the trial does not publish transformed source-PDF boxes.
+
+The runner is [`run_docling_tesseract.py`](../../../scripts/usp/document-models/run_docling_tesseract.py), SHA-256 `47eeca5da26b3d684afe225f9c740c6c994aa5be213dff35150f7ac3e7e4ec67`. It verifies original, crop, executable, language data, and model bytes before a gated Windows Job starts the worker. The worker uses `ImageFormatOption`, `TesseractCliOcrOptions(mode=FULL_PAGE, lang=["eng"], scale=1.0)`, a local Heron layout model, one crop page, CPU/two threads, a 540-second Docling timeout, a 600-second worker cap and a 6 GiB owned-job private-byte cap. Remote services, external plugins, table, picture, code and formula stages are disabled. The private environment and all attempts are retained under `E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/`; no service, provider, GPU or production OCR API was used.
+
+Pinned inputs:
+
+| Component | Pin and SHA-256 | Terms observed |
+| --- | --- | --- |
+| Docling | `docling-slim==2.131.0`; 77 installed distributions with version and installed `METADATA`/`RECORD` hashes in `installed-distributions.json`, SHA-256 `5e5ff8de6be7451ada59a5de1f384042b3f088c248cfd62bf722a0e8b44d085f` | Docling code MIT. Inventory hashes identify installed metadata, not original wheel archives. |
+| Heron layout | `docling-project/docling-layout-heron@8f39ad3c0b4c58e9c2d2c84a38465abf757272d8`; `model.safetensors` SHA-256 `00333a43451945aaf89db8ca9c0a17e75d1537c17db60fdb91aa95f4c7929e0c`; config and preprocessor hashes are verified in the runner and receipt | Hugging Face model card declares Apache-2.0. |
+| Tesseract CLI | 5.5.1, private executable SHA-256 `ea22b4adaa35ba9f449aaff9f111c97550ecd2220510cdce60c1503465a38357`; conda package SHA-256 `394a3dc0d9ab9ec0b930ecff19a8d27df99c82f321805fcb7a95b732fb024bf7` | Apache-2.0 package. |
+| English language data | `tesseract-ocr/tessdata_fast@87416418657359cb625c412a48b6e1d6d41c29bd`, `eng.traineddata` SHA-256 `7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2` | Repository LICENSE Apache-2.0. |
+
+## Result and visual review
+
+The final supervised run is `attempt-004/receipt.json`, SHA-256 `83c477bc0acd7f253b2cc9630958160201594c1af9c9c7f694a68fd0833d64bd`; `conversion.json` SHA-256 `4dafdfd7ff722c09157a90ca10b7e388ea8c2f4a1c71d9fa279e57b3a1361e4b`. The Windows Job exited 0 after 8.25 seconds, with 795,115,520 observed peak RSS bytes and 981,045,248 peak job private bytes; no cap fired. Docling reported `SUCCESS`, emitted five text items with crop-local boxes, and returned no structured errors.
+
+Visual inspection of the same retained PNG found the three central headings exactly: `UNITED STATES`, `DEPARTMENT OF THE INTERIOR`, `GEOLOGICAL SURVEY`. For example, `UNITED STATES` has box `(137.0, 117.7330, 335.0, 101.7330)` in the recorded bottom-left crop-point frame. Marginal text is incomplete: the visible `105°45′` was read as `105'45'`; `(Monarch Lake 1:24 000)` was truncated to `(Monarch Lake 1:`; the visible right-margin `R.74 W. 40′` was omitted. This is useful mechanics evidence, not complete content coverage. The worker log also reports an orientation/script detection warning because `osd.traineddata` was absent. English text was still emitted. Docling `SUCCESS` must not be interpreted as a complete or accurate page transcription.
+
+Earlier immutable attempts are retained: `attempt-001` failed during isolated Python bootstrap before Docling because the runner's sibling module was not on `sys.path`; `attempt-002` failed at Tesseract language discovery because `TESSDATA_PREFIX` was unset. `attempt-003` completed OCR, but its receipt mislabeled box units as pixels; the separate `attempt-003-review.json` (SHA-256 `0c7f0843868364e4e7d9929df695763d4323dbb93b9939ebb99ccec8a9336756`) records the correction. The final run used the corrected runner and emitted the point-frame label. No attempt or original was deleted.
+
+## Review and qualification boundary
+
+The changed code is a trial runner only. It reuses the existing Windows Job supervisor, verifies hashes and language discovery, refuses reused/in-repository output directories, and writes a receipt even for supervised worker failure. The bootstrap and Tesseract setup defects were fixed after their observed failures. The final run is the targeted regression check for both and for the coordinate-frame correction. `py_compile` and `git diff --check` passed; no service or API journey was run. A production adapter would still need source-PDF page/box mapping, completeness and partial-result rules, cited item publication behind the existing source/job authority, privacy and stale-attempt checks, and a real source-bound API journey. This single foreign map cannot qualify Indian registry OCR or learning ground truth. The worker was requested as GPT-6 Sol/high/default tier; the actual model, effort and per-turn tier were not exposed to this task.
