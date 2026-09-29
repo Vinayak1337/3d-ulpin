@@ -2,7 +2,7 @@
 
 For the agreed end-to-end design and Claude/Studio integration responsibilities, read the [adaptive ingestion workflow](adaptive-ingestion-workflow.md). It separates the target AI/ML and streaming behavior from the currently implemented API profiles.
 
-The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 187 operations and 215 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and fifty-five added operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
+The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 188 operations and 216 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and fifty-six added operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
 
 Desktop ingestion additions: [bounded private GeoTIFF windows](../evidence/usp/raster-window-handoff.md) retain source-linked native windows through four new routes; [native document partitions](../evidence/usp/desktop-document-partition-handoff.md) extend existing cited parts with page/line, header and continuation locators. The checked DEM has unknown vertical reference; scanned text still explicitly needs OCR. These are backend API flows, without renderer or document/building/floor-linking qualification.
 
@@ -11,6 +11,8 @@ Desktop ingestion additions: [bounded private GeoTIFF windows](../evidence/usp/r
 After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs). Its [OpenAPI JSON](http://127.0.0.1:3188/api/docs/openapi.json) and [dataset catalogue](http://127.0.0.1:3188/api/docs/datasets.json) are served by the same loopback backend. Swagger is light-only and opens schemas first. Write execution and the external validator are disabled. These links describe the configured default address; they do not mean a server is currently running.
 
 ## Consolidated building registry PDF
+
+The private `GET /api/v1/buildings/{buildingId}/ledger` supplies a record-backed `building-ledger/1` projection: current source links and exact locators, explicit recorded spaces, bounded revision history, current parcels and their validated official identifier assertions. Partial parcel coverage and missing evidence remain explicit. Current revision-zero proposals return `unrecorded`; technical readiness, rights and deviation remain `not_assessed`. [The checked incomplete-source journey and review](../evidence/usp/building-ledger/handoff.md) do not qualify populated official identifiers, spaces or history against real source records.
 
 `GET /api/v1/buildings/{buildingId}/register?profile=consolidated&format=pdf` downloads a private, deterministic A4 report. Use `format=json` for the same structured `building-registry-summary/1` data or `format=html` for printable HTML. Optional `record={floor-or-space-UUID}` narrows the existing recorded selection. CSV and ZIP are not supported for this profile; default exports remain unchanged.
 

@@ -1386,6 +1386,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/buildings/{buildingId}/ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the private recorded building ledger and explicit missing states */
+        get: operations["GET_api_v1_buildings_buildingId_ledger"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/snapshots": {
         parameters: {
             query?: never;
@@ -21946,6 +21963,83 @@ export interface components {
             };
             scope: string;
         };
+        GET_buildings_buildingId_ledger_Response_200_application_json: {
+            schemaVersion: string;
+            building: {
+                id: string;
+                applicationId: string;
+                revision: number;
+                /** @enum {string} */
+                recordState: "recorded" | "unrecorded";
+                name: string;
+                frame: {
+                    id: string;
+                    benchmark: string;
+                };
+                /** @enum {string} */
+                placement: "local_only" | "geographic";
+            };
+            parcelUlpin: {
+                /** @enum {string} */
+                state: "unknown" | "partial" | "recorded" | "conflicting";
+                parcels: {
+                    id: string;
+                    revision: number;
+                }[];
+                missingParcelIds: string[];
+                assertions: {
+                    parcelId: string;
+                    value: string;
+                    issuer: string;
+                    sourceId: string;
+                    locator: string;
+                }[];
+            };
+            spaces: {
+                /** @enum {string} */
+                state: "recorded" | "absent";
+                records: {
+                    id: string;
+                    applicationId: string;
+                    revision: number;
+                    name: string;
+                    use: string | null;
+                    evidence: {
+                        sourceId: string;
+                        locator: string;
+                    }[];
+                }[];
+            };
+            sources: {
+                id: string;
+                revision: number;
+                name: string;
+                sha256: string;
+                fileUrl: string;
+                locators: string[];
+            }[];
+            history: {
+                feature: {
+                    revision: number;
+                    recordedAt: string;
+                }[];
+                registry: {
+                    recordId: string;
+                    revision: number;
+                    recordedAt: string;
+                }[];
+                featureHasMore: boolean;
+                registryHasMore: boolean;
+            };
+            assessment: {
+                /** @enum {string} */
+                state: "not_assessed";
+                /** @enum {string} */
+                latestCheck: "absent" | "historical";
+                reason: string;
+            };
+            missing: string[];
+        };
         POST_usp_snapshots_Request_application_json: {
             scopeId: string;
             world: {
@@ -41293,6 +41387,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_buildings_buildingId_ledger: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                buildingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_buildings_buildingId_ledger_Response_200_application_json"];
                 };
             };
         };
