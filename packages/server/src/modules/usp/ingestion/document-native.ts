@@ -10,7 +10,8 @@ import {redactDerivative} from '../ingest/redact';
 export function documentReaderSha(){
   const paths=['packages/contracts/src/usp/document-ingestion.ts','packages/server/src/modules/usp/ingestion/document-native.ts',
     'services/geo/geo/area.py','services/geo/geo/native_pdf.py','services/geo/geo/native_schedule.py',
-    'services/geo/geo/native_workbook.py','packages/server/src/modules/usp/ingest/redact.ts'];
+    'services/geo/geo/native_workbook.py','packages/server/src/modules/usp/ingestion/document-model.ts',
+    'packages/server/src/modules/usp/ingest/redact.ts'];
   return sha256(Buffer.concat(paths.flatMap(p=>[Buffer.from(p+'\0'),readFileSync(join(settings.repositoryRoot,p))])));
 }
 /** Bounded byte/container identification. Filenames and claimed MIME do not select a parser. */

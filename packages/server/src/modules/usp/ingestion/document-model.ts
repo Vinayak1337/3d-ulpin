@@ -7,18 +7,32 @@ import type {ModelGateway} from '../../model-gateway/gateway';
 import {localRequestContext} from '../principal';
 import {assertDocumentInputTx} from './document-context';
 
+export function documentPartEligibleForProposal(part:DocumentPart){
+  return part.locator.cellState===undefined || part.locator.cellState==='literal';
+}
+
 export function validateDocumentProposals(raw:unknown,parts:readonly DocumentPart[]){
   const parsed=DocumentModelOutputSchema.safeParse(raw),errors:string[]=[],candidates:DocumentProposal[]=[];
   if(!parsed.success)return {candidates,errors:['The model output does not match the source-document proposal schema.']};
   for(const candidate of parsed.data.candidates){
     const part=parts.find(p=>p.id===candidate.partId);
-    if(!part || !part.text.includes(candidate.quote) || !candidate.quote.includes(candidate.field) ||
+    if(!part || !documentPartEligibleForProposal(part) || !part.text.includes(candidate.quote) || !candidate.quote.includes(candidate.field) ||
       !candidate.quote.includes(candidate.value) || /\[redacted/i.test(candidate.quote) || !candidate.field.trim() || !candidate.value.trim()){
       errors.push('A candidate must quote a selected native source part containing its exact field and value.');continue;
     }
     candidates.push(candidate);
   }
   return {candidates,errors:errors.slice(0,40)};
+}
+export function selectDocumentModelParts(nativeParts:readonly DocumentPart[]){
+  const parts:DocumentPart[]=[];let characters=0;
+  for(const part of nativeParts){
+    if(!documentPartEligibleForProposal(part))continue;
+    const messageBytes=Buffer.byteLength(JSON.stringify([{role:'user',content:JSON.stringify({parts:[...parts,part].map(p=>({partId:p.id,text:p.text,locator:p.locator}))})}]));
+    if(parts.length===DOCUMENT_LIMITS.modelParts || characters+part.text.length>DOCUMENT_LIMITS.modelCharacters || messageBytes>18000)break;
+    parts.push(part);characters+=part.text.length;
+  }
+  return parts;
 }
 export async function reserveDocumentLayout(input:DocumentInput){
   if(input.layoutCap===null || input.layoutCap===0)return false;
@@ -42,19 +56,14 @@ export async function proposeDocument(input:DocumentInput,native:DocumentResult[
   const base={code:null,candidates:[] as DocumentProposal[],validationErrors:[] as string[],calls:[] as DocumentResult['model']['calls']};
   if(input.mode==='native_only')return {...base,status:'not_requested'};
   if(native.status!=='extracted')return {...base,status:'unavailable',code:'MODEL_NATIVE_EVIDENCE_UNAVAILABLE'};
+  const parts=selectDocumentModelParts(native.parts);
+  if(!parts.length)return {...base,status:'needs_input',code:'MODEL_TEXT_SCOPE'};
   if(input.gatewayPolicySha256===null)return {...base,status:'disabled',code:'MODEL_DISABLED'};
   if(input.layoutCap===null || input.layoutCap===0)return {...base,status:'blocked',code:'MODEL_LAYOUT_CAP_UNCONFIGURED'};
   let gateway:ModelGateway|undefined;
   try{gateway=await gatewayFactory();}catch{return {...base,status:'unavailable',code:'MODEL_CONFIGURATION_UNAVAILABLE'};}
   if(!gateway)return {...base,status:'unavailable',code:'MODEL_KEY_UNAVAILABLE'};
   if(!await reserveDocumentLayout(input))return {...base,status:'blocked',code:'MODEL_LAYOUT_CAP'};
-  const parts:DocumentPart[]=[];let characters=0;
-  for(const part of native.parts){
-    const messageBytes=Buffer.byteLength(JSON.stringify([{role:'user',content:JSON.stringify({parts:[...parts,part].map(p=>({partId:p.id,text:p.text,locator:p.locator}))})}]));
-    if(parts.length===DOCUMENT_LIMITS.modelParts || characters+part.text.length>DOCUMENT_LIMITS.modelCharacters || messageBytes>18000)break;
-    parts.push(part);characters+=part.text.length;
-  }
-  if(!parts.length)return {...base,status:'needs_input',code:'MODEL_TEXT_SCOPE'};
   const deadlineAt=new Date(Date.now()+45000),schema=z.toJSONSchema(DocumentModelOutputSchema);
   let repair:unknown;const result:DocumentResult['model']={...base,status:'needs_input'};
   try{
