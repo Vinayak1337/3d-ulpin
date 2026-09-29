@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "association-source-pack/1",
+  "task": "DATA-LINK-01",
+  "status": "unreviewed_source_observations",
+  "preparedAt": "2026-09-29",
+  "baseCommit": "bb15408b6280345b54e5714dbb3f396a233f5202",
+  "sourceCatalogue": "fixtures/usp/D5/gf0-public-plans-v1/manifest.json",
+  "priorEvidence": [
+    "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json",
+    "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json",
+    "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+  ],
+  "privateRoot": "E:/BhuAayam-data/task-data/association-sources-20260929",
+  "newOfficialDownloads": 0,
+  "newOriginalBytesAcquired": 0,
+  "sources": [
+    {
+      "id": "bihar-magnolia-sanctioned-layout.pdf",
+      "privateCopy": "bihar-magnolia-sanctioned-layout-original.pdf",
+      "issuer": "Bihar RERA / project submitter",
+      "sourceFamily": "Magnolia Residency sanctioned layout and architecture set",
+      "url": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+      "portalProjectId": "RERAP2311201700019-3",
+      "sourceVersion": "drawings V5-01 and V5-02 dated 08.06.21",
+      "firstAcquiredAt": "2026-09-25T00:38:59.574536Z",
+      "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "bytes": 2455183,
+      "geography": "Begusarai, Bihar, India",
+      "horizontalCrs": null,
+      "verticalReference": "drawing-relative FFL; surveyed datum unknown",
+      "sourceClass": "planned_drawing",
+      "permissions": {
+        "sourceSpecificReuse": "unconfirmed",
+        "redistribution": "unconfirmed",
+        "mlTraining": "unconfirmed",
+        "evidence": "D5 manifest and DATA-05 acquisition record report no verified source-specific reuse or training licence; public PDF access is not a grant"
+      },
+      "limits": [
+        "Villa Type 5 unit number is blank; drawing cannot select a numbered villa",
+        "drawing title-block Khata/Jamabandi conflicts with linked project-page values in DATA-05 inspection",
+        "planned design is not as-built or title evidence"
+      ]
+    },
+    {
+      "id": "haryana-2831-tower3-plan1.pdf",
+      "privateCopy": "haryana-2831-tower3-plan1.pdf",
+      "issuer": "Haryana RERA / project submitter",
+      "sourceFamily": "Haryana RERA project 2831 uploaded Tower-3 drawing",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc=",
+      "portalProjectId": "2831",
+      "sourceVersion": "portal upload 29-08-2024; drawing Jan-2024",
+      "firstAcquiredAt": "2026-09-25T00:41:16.696207Z",
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "bytes": 1655334,
+      "geography": "Gurugram, Haryana, India",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "sourceClass": "planned_drawing",
+      "permissions": {
+        "sourceSpecificReuse": "unconfirmed",
+        "redistribution": "unconfirmed",
+        "mlTraining": "unconfirmed",
+        "evidence": "D5 manifest and DATA-05 acquisition record report no verified source-specific reuse or training licence; public attachment access is not a grant"
+      },
+      "limits": [
+        "portal project and sheet labels do not establish a canonical building or floor ID",
+        "plan does not establish issued unit rights or as-built state"
+      ]
+    },
+    {
+      "id": "haryana-2831-tower3-section.pdf",
+      "privateCopy": "haryana-2831-tower3-section.pdf",
+      "issuer": "Haryana RERA / project submitter",
+      "sourceFamily": "Haryana RERA project 2831 uploaded Tower-3 section",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA=",
+      "portalProjectId": "2831",
+      "sourceVersion": "sheet Jan-2024; portal upload 29-08-2024",
+      "firstAcquiredAt": "2026-09-25T00:43:08.042067Z",
+      "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "bytes": 2448909,
+      "geography": "Gurugram, Haryana, India",
+      "horizontalCrs": null,
+      "verticalReference": "road LVL +/-0.00 as drawn; surveyed benchmark unknown",
+      "sourceClass": "planned_drawing",
+      "permissions": {
+        "sourceSpecificReuse": "unconfirmed",
+        "redistribution": "unconfirmed",
+        "mlTraining": "unconfirmed",
+        "evidence": "D5 manifest and DATA-05 acquisition record report no verified source-specific reuse or training licence; public attachment access is not a grant"
+      },
+      "limits": [
+        "relative level labels do not establish a surveyed vertical datum",
+        "section does not identify legal units, canonical records or as-built state"
+      ]
+    }
+  ],
+  "useEligibility": {
+    "exactManualAssociationReview": "candidate_source_evidence_only",
+    "ai08Training": "blocked_missing_source_specific_permission_and_independent_labels",
+    "productionRegistryLink": "not_authorized_or_verified"
+  }
+}
