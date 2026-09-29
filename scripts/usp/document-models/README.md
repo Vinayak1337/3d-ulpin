@@ -38,10 +38,17 @@ and stops identity-pinned descendants even where nested Windows jobs do not
 inherit them. Rendering is capped at 60 seconds per region, model
 inference at 240 seconds per region, and these stages share a 600-second
 processing budget. Initial source/model hash and metadata validation occurs
-before that budget and is bounded by input sizes, not by a wall-clock timer.
+before that budget; local plan/model hashing has no separate byte or wall-clock
+ceiling. Receipt finalization is also outside the supervised stage timeout.
 The receipt records
 the selected device and dtype, source, model, plan, region, render, artifact,
 and resource hashes. Worker errors or resource caps stop the trial. A no-text
 result is marked unusable; a failed region stops the remaining selection.
+
+Windows correction accepted on 30 September at `a813636` after [independent
+process-only review](../../../docs/evidence/usp/desktop-backend-review/scan-supervision-review.md).
+The original scan trial remains failed: one region reached its 192-token cap
+and the second timed out. No model inference was repeated at the corrected pin;
+production scans still require OCR and these outputs supply no learning labels.
 Failed runs remain available for inspection. Compare the output with the
 rendered source before deciding whether it is suitable for any later integration.

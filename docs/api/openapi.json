@@ -16606,6 +16606,55 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/buildings/{buildingId}/ledger": {
+      "get": {
+        "operationId": "GET_api_v1_buildings_buildingId_ledger",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_buildings_buildingId_ledger_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read the private recorded building ledger and explicit missing states",
+        "tags": [
+          "officer"
+        ],
+        "x-source-file": "apps/api/src/modules/register/building-ledger.controller.ts",
+        "x-batch": "LEDGER-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
+        "x-max-body-bytes": null,
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/snapshots": {
       "post": {
         "operationId": "POST_api_v1_usp_snapshots",
@@ -135628,6 +135677,359 @@
           "findings",
           "findingQualification",
           "scope"
+        ],
+        "additionalProperties": false
+      },
+      "GET_buildings_buildingId_ledger_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "string"
+          },
+          "building": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "applicationId": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "integer"
+              },
+              "recordState": {
+                "type": "string",
+                "enum": [
+                  "recorded",
+                  "unrecorded"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "frame": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "benchmark": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "benchmark"
+                ],
+                "additionalProperties": false
+              },
+              "placement": {
+                "type": "string",
+                "enum": [
+                  "local_only",
+                  "geographic"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "applicationId",
+              "revision",
+              "recordState",
+              "name",
+              "frame",
+              "placement"
+            ],
+            "additionalProperties": false
+          },
+          "parcelUlpin": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "unknown",
+                  "partial",
+                  "recorded",
+                  "conflicting"
+                ]
+              },
+              "parcels": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "revision": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "revision"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "missingParcelIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "assertions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "parcelId": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "issuer": {
+                      "type": "string"
+                    },
+                    "sourceId": {
+                      "type": "string"
+                    },
+                    "locator": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "parcelId",
+                    "value",
+                    "issuer",
+                    "sourceId",
+                    "locator"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "state",
+              "parcels",
+              "missingParcelIds",
+              "assertions"
+            ],
+            "additionalProperties": false
+          },
+          "spaces": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "recorded",
+                  "absent"
+                ]
+              },
+              "records": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "applicationId": {
+                      "type": "string"
+                    },
+                    "revision": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "use": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "evidence": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sourceId": {
+                            "type": "string"
+                          },
+                          "locator": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "sourceId",
+                          "locator"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "applicationId",
+                    "revision",
+                    "name",
+                    "use",
+                    "evidence"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "state",
+              "records"
+            ],
+            "additionalProperties": false
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "revision": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "fileUrl": {
+                  "type": "string"
+                },
+                "locators": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "name",
+                "sha256",
+                "fileUrl",
+                "locators"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "history": {
+            "type": "object",
+            "properties": {
+              "feature": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "revision": {
+                      "type": "integer"
+                    },
+                    "recordedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "revision",
+                    "recordedAt"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "registry": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "recordId": {
+                      "type": "string"
+                    },
+                    "revision": {
+                      "type": "integer"
+                    },
+                    "recordedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "recordId",
+                    "revision",
+                    "recordedAt"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "featureHasMore": {
+                "type": "boolean"
+              },
+              "registryHasMore": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "feature",
+              "registry",
+              "featureHasMore",
+              "registryHasMore"
+            ],
+            "additionalProperties": false
+          },
+          "assessment": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "not_assessed"
+                ]
+              },
+              "latestCheck": {
+                "type": "string",
+                "enum": [
+                  "absent",
+                  "historical"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "state",
+              "latestCheck",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "building",
+          "parcelUlpin",
+          "spaces",
+          "sources",
+          "history",
+          "assessment",
+          "missing"
         ],
         "additionalProperties": false
       },

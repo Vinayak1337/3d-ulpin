@@ -1,5 +1,7 @@
 # LEDGER-01 private building read
 
+Lead acceptance, 30 September: original `7b4309b` and correction `2fcae26` integrated as `b0ec389` / `e62609b`, with exact-commit re-review `55586a6`. Lead repeated the five focused checks on integrated staging (5/5 passed), backend/client typechecks and API pin/manifest checks (exit 0). Generated OpenAPI/client now include the ledger; total 188 operations / 216 schemas. Positive-source runtime limitations below remain unchanged.
+
 Worktree base: `bb15408b6280345b54e5714dbb3f396a233f5202`. Runtime date: 29 September 2026 UTC. Worker turn reported `approval_policy=never`, `sandbox_mode=danger-full-access`; requested model/effort were GPT-6 Sol/high. The actual model, effort and service tier were not exposed to this worker.
 
 `GET /api/v1/buildings/{buildingId}/ledger` reads the canonical physical feature, its explicitly linked current registry graph, source-authorized locators and retained feature/registry revision timestamps. A current, active revision-zero import is identified as `unrecorded`; it has no invented registry records. Only current confirmed parcel associations with validated `official_ulpin` assertions can populate the parcel field. Raw rights/party data, calculated shares, carpet area, deviation and readiness are omitted. The assessment is explicitly `not_assessed`, and a retained check is marked historical rather than passed. Local-frame records do not require geographic projection. Revision arrays expose `HasMore` when bounded.
