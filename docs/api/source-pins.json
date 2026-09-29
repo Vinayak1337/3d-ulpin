@@ -236,7 +236,7 @@
     "packages/server/src/modules/usp/ingestion/document-authority.ts": "df6d98b2829fee053c8e8972bf6a22337a76aaab6c0232d1aeb3c9f187c3ede8",
     "packages/server/src/modules/usp/ingestion/document-context.ts": "7cd276b1c8ede9935000d099d67b32ddaa46ed287850e48c3273b7383530a1bf",
     "packages/server/src/modules/usp/ingestion/document-model.ts": "689c7559f175dc77e9ed6bb1f2a2e9c2a346d21f303948376968ecdcad2403fe",
-    "packages/server/src/modules/usp/ingestion/document-native.ts": "e1d349ccd9665af95c2dfc35754f0393dd36f0c88400459cd9d9154e19a0a109",
+    "packages/server/src/modules/usp/ingestion/document-native.ts": "263ded146baee7c6bf26326b504af7c8ebc41a4804482c96e2c2120c577d1c3f",
     "packages/server/src/modules/usp/ingestion/document-worker.ts": "7d0a5ac27689abf3916da2a6467485b56efbf6bd6cb7a6946ca745c14f6d13ac",
     "packages/server/src/modules/usp/ingestion/documents.ts": "329d9b9cf8e2d4f0f6cc3ef86b0cd68af31ecb3091146a6ba64adaba3fe73b86",
     "packages/server/src/modules/usp/ingestion/download.ts": "ba50e809a3f703bb86263034d4ee0224ce7347ae7b59f367eee4ec59f9655a2a",
