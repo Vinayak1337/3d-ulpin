@@ -59,7 +59,7 @@ def test_acquired_opendatasoft_shape_nonbuilding_labels_and_profile_privacy():
         pytest.skip("bounded external issuer originals are not configured")
     corpus_path = REPO / "docs/api/learning-corpus.json"
     corpus, examples = load_examples(corpus_path, Path(originals))
-    assert corpus["schemaVersion"] == "usp-field-mapping-corpus-v5"
+    assert corpus["schemaVersion"] == "usp-field-mapping-corpus-v6"
     assert {item["family"] for item in examples if item["split"] == "calibration"}.isdisjoint(
         {item["family"] for item in examples if item["split"] == "evaluation"}
     )
@@ -81,11 +81,13 @@ def test_acquired_opendatasoft_shape_nonbuilding_labels_and_profile_privacy():
     for item in examples:
         if item["split"] == "calibration" and item["target"] is not None and item["wireCompatibleRows"]:
             by_family.setdefault(item["family"], set()).add(item["target"])
-    # GNWT's unresolved licence scope cannot count towards the two-family fit gate.
+    # The retained GNWT licence/layer trace now supplies the second key/name family.
     assert sum(set(("building.sourceKey", "building.name", "building.geometry")) <= targets
-               for targets in by_family.values()) == 1
-    assert not any(item["source"] == "gnwt-buildings" for item in examples)
-    assert corpus["excludedSources"][0]["permission"]["trainingEligible"] is False
+               for targets in by_family.values()) == 2
+    gnwt = next(item for item in corpus["sources"] if item["id"] == "gnwt-buildings")
+    assert gnwt["permission"]["trainingEligible"] is True
+    assert gnwt["permission"]["review"]["catalogueIsopen"] is False
+    assert len([item for item in examples if item["source"] == "gnwt-buildings"]) == 5
     assert all(item["split"] == "calibration" for item in examples if item["source"] == "census-tigerweb-counties")
     assert any(item["split"] == "evaluation" and item["target"] == "building.name" and item["wireCompatibleRows"]
                for item in examples)
