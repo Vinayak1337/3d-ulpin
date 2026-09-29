@@ -1,0 +1,13 @@
+# Native document partitions — AI-04B
+
+Worker `9f3eea20a79c3467217a33e1d1deccb1abff7614`, integrated as `5abc0be` on 29 September 2026. The existing private document API retains page-local paragraphs where native blank lines establish them, or exact eight-line groups otherwise. Each new redacted native unit carries a UUID/hash and complete bounded continuation indexes/character ranges. Reads verify part hashes, contiguous spans and the reconstructed unit hash. Character positions use JavaScript UTF-16 offsets within the extracted, redacted unit, not PDF byte positions. Older receipts remain readable.
+
+CSV rows name their logical row and header row. DOCX table cells retain an explicitly marked repeated header reference; lead review additionally corrected `w:tblHeader` with `w:val=false/0/off` so disabled markers do not establish headers. Multirow/nested header interpretation is not qualified. The source remains separate from the extraction.
+
+The unchanged four-page USGS Fact Sheet 2025-3036 (6,219,868 bytes; SHA256 `5c1576e603b4bb66ff4725329432be66941853838d6ab02544e7b40a0071b5a7`) produced 53 cited parts/units, covering all four pages and retaining its summary heading. The first real run hit the former 5 MiB decompressed PDF-page limit: page 1 contained 6,060,751 bytes. The bounded limit is now 8 MiB; the corrected run passed. No source bytes were changed.
+
+The unchanged USGS 1910 scanned map (9,344,939 bytes; SHA256 `fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf`) returned `needs_ocr`, zero parts and `model:not_requested`. Both originals downloaded byte-identically. No provider/OCR/model run was made.
+
+Private receipt: `E:/BhuAayam-data/task-data/desktop-ai04b-documents/runtime-2026-09-29T17-31-23-708Z.json`, SHA256 `f0944fe259d761c2e74747fd2465a74f2e74b8b897f5c60a92073ad30dcf26ea`, checked by lead. Served geo image ID `sha256:338a4e73941c4baae72def6637cf695be22df7246afbf73828c0ee875333e812`; worker checked extraction-code hashes against the image. Runtime 3192/28000 used the existing isolated prefix profile. Owned API/dispatcher/geo/Celery stopped; PostgreSQL/MinIO/Redis and all volumes remain preserved.
+
+Worker backend typecheck, Python compilation, JS syntax check, final real HTTP smoke, runtime lifecycle and diff checks passed. Long-unit continuation and CSV/DOCX headers have code review but no real-source runtime qualification in this run; the header-marker correction is separately unqualified at runtime. General OCR, document-to-building/floor association and model accuracy remain pending. Full local permissions were verified; Sol/max observed, default tier configured, actual per-turn tier unobserved.

@@ -650,7 +650,8 @@ def extract_document(data):
                         table_index += 1
                         header_row = None
                         for row_index, row in enumerate(child.findall("w:tr", ns), 1):
-                            if row.find("w:trPr/w:tblHeader", ns) is not None:
+                            header = row.find("w:trPr/w:tblHeader", ns)
+                            if header is not None and header.get(f"{{{ns['w']}}}val", "true").lower() not in ("false", "0", "off"):
                                 header_row = row_index
                             for column_index, cell in enumerate(row.findall("w:tc", ns), 1):
                                 text = "\n".join(paragraph_text(paragraph) for paragraph in cell.findall("w:p", ns))

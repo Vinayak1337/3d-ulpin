@@ -3800,7 +3800,7 @@
         "Building source identifiers are not parcel ULPINs or ownership evidence.",
         "No geometry repair or global placement qualification is claimed.",
         "No AI normalization or learned production routing is qualified.",
-        "No 1–7 GB throughput, memory, global placement or frontend rendering qualification follows.",
+        "No 1â€“7 GB throughput, memory, global placement or frontend rendering qualification follows.",
         "Runtime IDs belong to stopped isolated services, not the standing API."
       ]
     },
@@ -3847,16 +3847,69 @@
         "No scanned-map CPU qualification",
         "Model-derived output remains separate from native text and learning labels",
         "No parcel, ownership, Indian registry or whole-document accuracy claim"
+      ],
+      "documentPartitionEvidence": {
+        "guide": "docs/evidence/usp/desktop-document-partition-handoff.md",
+        "workerCommit": "9f3eea20a79c3467217a33e1d1deccb1abff7614",
+        "receipt": "E:/BhuAayam-data/task-data/desktop-ai04b-documents/runtime-2026-09-29T17-31-23-708Z.json",
+        "receiptSha256": "f0944fe259d761c2e74747fd2465a74f2e74b8b897f5c60a92073ad30dcf26ea",
+        "parts": 53,
+        "pages": 4,
+        "modelRequested": false
+      }
+    },
+    {
+      "manifest": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/manifest.json",
+      "manifestSha256": "0a382828c60e5b519da2e7a313f6e26202e511ed2d90e862f6550f4307bd10f5",
+      "guide": "docs/evidence/usp/raster-window-handoff.md",
+      "issuer": "NYS GIS Program Office distribution of NYC survey",
+      "geography": "Bounded lower-Manhattan subset inside ZCTA 10013, not whole postal area",
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "standingInstallation": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-dem-2017.tif",
+        "bytes": 989186,
+        "sha256": "955d7f051c26cc2a26b7a1e9c00bacb9f4e96b6b5611c716d56be6d91e11d317",
+        "kind": "native_grid_derivative",
+        "upstreamRetained": false,
+        "repositoryBytesVerified": false
+      },
+      "originalUrl": "https://gisdata.ny.gov/elevation/DEM/NYC_TopoBathymetric2017/be_NYC_025.tif",
+      "acquiredAt": "2026-09-27T12:46:44.468690+00:00",
+      "terms": {
+        "reference": "https://gisdata.ny.gov/elevation/DEM/NYC_TopoBathymetric2017/be_NYC_025.tif",
+        "note": "NYS public download of NYC survey; no broader redistribution licence inferred",
+        "scope": "Local development/demo; no public redistribution enabled"
+      },
+      "reference": {
+        "horizontal": "EPSG:2263",
+        "vertical": "unknown",
+        "globalPlacement": "not_qualified"
+      },
+      "runtimeEvidence": {
+        "workerCommit": "1e40adbb8cce17c6c11be66443f72652aff1d153",
+        "integratedCommit": "81aef71",
+        "receipt": "E:/BhuAayam-data/task-data/desktop-ai05a-raster/raster-http-receipt.json",
+        "receiptSha256": "60d0e8debbb5524e6351e55abdfd561210cf6e9167a703bee9f7da22d5a787ae",
+        "secondWindowReceipt": "E:/BhuAayam-data/task-data/desktop-ai05a-raster/raster-second-window.json",
+        "secondWindowReceiptSha256": "5c6663aa7b5d6b69d8875f2847654ee288a7863dae75d703b62c59f2b20d4b4c",
+        "scope": "Two bounded native windows, out-of-bounds rejection and foreign-Origin denial; no large-file or vertical-height qualification"
+      },
+      "limitations": [
+        "No verified drone acquisition",
+        "Different survey vintages; no claim of contemporary ground truth",
+        "DEM vertical unit/datum not qualified; no LiDAR minus DEM height calculation",
+        "Imagery and point-cloud evidence do not create ownership, units or new building geometry",
+        "Whole upstream TIFF was not retained; private receipt lineage remains caller_declared."
       ]
     }
   ],
   "offlineLearningCorpus": {
     "manifest": "docs/api/learning-corpus.json",
-    "manifestSha256": "6c0f9c59fe55fc7ab793c5f9eaf20885d2d6bafd657cca2e25b88d2d77abdfd7",
-    "manifestHashScope": "Current Windows CRLF checkout; immutable experiment snapshot uses LF and its own hash below.",
-    "immutableManifestSha256": "bf8163172de050ee1bafa7618714ad080ba62b6f11eda0d82952f00b8771d9f3",
+    "manifestSha256": "d36d6c64fb1609e718f393f188249dffa653160f65383f5bb45d7ea7b28a9b16",
+    "manifestHashScope": "UTF-8 metadata with LF line endings; retained source originals use exact-byte hashes.",
     "guide": "docs/api/learning.md",
-    "scope": "offline foreign-source research only; no production training or promotion",
+    "scope": "offline foreign-source research only; fresh Halifax/Kitchener evaluation unopened until fit freeze",
     "apiInstallation": "not-installed",
     "productionModelPromoted": false,
     "availability": "Originals retained outside Git; manifest pins are not repository-byte verification.",
@@ -3889,8 +3942,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "GeoJSON RFC 7946 WGS84 longitude/latitude; geometry operation still requires independent runtime validation",
-        "supportingEvidence": []
+        "geometryCrs": "GeoJSON RFC 7946 WGS84 longitude/latitude; geometry operation still requires independent runtime validation"
       },
       {
         "id": "nyc-building-footprints",
@@ -3921,8 +3973,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "Issuer metadata says NYC Open Data GeoJSON is EPSG:4326; operation still requires independent runtime validation",
-        "supportingEvidence": []
+        "geometryCrs": "Issuer metadata says NYC Open Data GeoJSON is EPSG:4326; operation still requires independent runtime validation"
       },
       {
         "id": "sf-building-footprints",
@@ -3952,8 +4003,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "GeoJSON RFC 7946 WGS84 longitude/latitude; operation still requires independent runtime validation",
-        "supportingEvidence": []
+        "geometryCrs": "GeoJSON RFC 7946 WGS84 longitude/latitude; operation still requires independent runtime validation"
       },
       {
         "id": "massgis-building-structures",
@@ -3983,8 +4033,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "GeoJSON sample carries EPSG:4326; source layer is EPSG:26986; runtime geometry still needs separate validation",
-        "supportingEvidence": []
+        "geometryCrs": "GeoJSON sample carries EPSG:4326; source layer is EPSG:26986; runtime geometry still needs separate validation"
       },
       {
         "id": "vancouver-building-footprints-2015",
@@ -4015,8 +4064,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "Nested GeoJSON feature coordinates in WGS84 longitude/latitude; 2015 footprints are approximate and parcel-split",
-        "supportingEvidence": []
+        "geometryCrs": "Nested GeoJSON feature coordinates in WGS84 longitude/latitude; 2015 footprints are approximate and parcel-split"
       },
       {
         "id": "census-tigerweb-counties",
@@ -4046,8 +4094,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "GeoJSON output requested at EPSG:4326; these are county boundaries, not building footprints",
-        "supportingEvidence": []
+        "geometryCrs": "GeoJSON output requested at EPSG:4326; these are county boundaries, not building footprints"
       },
       {
         "id": "calgary-buildings",
@@ -4077,8 +4124,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "GeoJSON sample declares CRS84 longitude/latitude; coordinate columns are separate Calgary 3TM center values",
-        "supportingEvidence": []
+        "geometryCrs": "GeoJSON sample declares CRS84 longitude/latitude; coordinate columns are separate Calgary 3TM center values"
       },
       {
         "id": "dc-building-footprints-2021",
@@ -4108,8 +4154,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "Service source is EPSG:26985; GeoJSON sample requested outSR=4326; building structure set includes garages, ruins and monuments",
-        "supportingEvidence": []
+        "geometryCrs": "Service source is EPSG:26985; GeoJSON sample requested outSR=4326; building structure set includes garages, ruins and monuments"
       },
       {
         "id": "chesterfield-buildings",
@@ -4139,16 +4184,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326",
-        "supportingEvidence": [
-          {
-            "file": "desktop-ai06a/rights-review/chesterfield.html",
-            "url": "https://opengisdata.chesterfield.gov/",
-            "bytes": 39570,
-            "sha256": "72cf32909336b45fda7435a9ac77e7319ea19e51e9967cbc88ab67aab70d3dcf",
-            "acquiredAt": "2026-09-29T16:02:28.020976+00:00"
-          }
-        ]
+        "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326"
       },
       {
         "id": "halifax-buildings",
@@ -4178,23 +4214,7 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326; FCODE=BLDG selects footprint class",
-        "supportingEvidence": [
-          {
-            "file": "desktop-ai06a/rights-review/halifax.html",
-            "url": "https://data-hrm.hub.arcgis.com/pages/open-data-licence",
-            "bytes": 67318,
-            "sha256": "1cf3bb2ee0a5fa33f98edb4efb27e8505a4ccd940897ac2897086a8281d7b11c",
-            "acquiredAt": "2026-09-29T16:02:28.021976+00:00"
-          },
-          {
-            "file": "desktop-ai06a/rights-review/halifax-licence-item.json",
-            "url": "https://www.arcgis.com/sharing/rest/content/items/f8c920e2ecf64ae49f525c89648a275d/data?f=json",
-            "bytes": 7460,
-            "sha256": "b07055b3dc679457297a7ce58b3cc34a5491101488abec0046f1c9e90d3b505f",
-            "acquiredAt": "2026-09-29T16:04:24.308993+00:00"
-          }
-        ]
+        "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326; FCODE=BLDG selects footprint class"
       },
       {
         "id": "kitchener-buildings",
@@ -4224,30 +4244,12 @@
           "productionEligible": false,
           "sarvamDerived": false
         },
-        "geometryCrs": "Source layer EPSG:26917; unchanged GeoJSON response requested outSR=4326; source accuracy about +/-1 m, not a survey",
-        "supportingEvidence": [
-          {
-            "file": "desktop-ai06a/rights-review/kitchener.html",
-            "url": "https://www.kitchener.ca/council-and-city-administration/data-and-maps/open-data-licence/",
-            "bytes": 75757,
-            "sha256": "d224c95773905114389a697baf1eb6b702718b0c468fbee68737f4676ba46d24",
-            "acquiredAt": "2026-09-29T16:02:29.069602+00:00"
-          },
-          {
-            "file": "desktop-ai06a/rights-review/kitchener-definitions.html",
-            "url": "https://app2.kitchener.ca/appdocs/GISImages/GIS_Web_External/GIS_Metadata_Open_Data/Building_Outlines.html",
-            "bytes": 33884,
-            "sha256": "13197161c0add6912bd2f97f0855f8bf2c297669755f46336bc435a15ccd4915",
-            "acquiredAt": "2026-09-29T16:02:30.026615+00:00"
-          }
-        ]
-      }
-    ],
-    "excludedSources": [
+        "geometryCrs": "Source layer EPSG:26917; unchanged GeoJSON response requested outSR=4326; source accuracy about +/-1 m, not a survey"
+      },
       {
         "id": "gnwt-buildings",
         "family": "gnwt-atlas-building-footprints",
-        "split": "excluded",
+        "split": "calibration",
         "issuer": "Government of Northwest Territories, Land Management and Administration",
         "geography": "Northwest Territories, Canada",
         "datasetUrl": "https://www.geomatics.gov.nt.ca/en/commissioner-lands-administration-atlas-website",
@@ -4266,47 +4268,47 @@
           "sha256": "a481c0b9827c301238bc65a2df5ee4c9a5d373aff392dd1be973dbbc0a2b1a66"
         },
         "permission": {
-          "basis": "Official ATLAS catalogue explicitly lists Open Government Licence Northwest Territories and unrestricted access; the referenced OGL permits lawful reuse with attribution. This is positive licence evidence, not a finding of absent rights. The catalogue describes the ATLAS website as a whole, while the earlier separate ATLAS_License_Agreement.pdf was not retrieved. Layer-specific applicability and any additional bulk-export terms remain unresolved.",
+          "basis": "The official GNWT ATLAS dataset designation names OGL-NWT and unrestricted access. Its linked public viewer identifies ATLAS_Public layer 8 as Building Footprints, matching the retained service metadata and GNWT copyright. The issuing manual also lists this layer and describes download/service reuse. OGL-NWT permits lawful copying and adaptation with attribution, including this bounded offline schema calibration. No additional agreement appears in the reviewed download instructions.",
           "url": "https://open.canada.ca/data/en/dataset/9e17b0bc-8ad5-07ad-601e-700183763829",
-          "trainingEligible": false,
+          "trainingEligible": true,
           "productionEligible": false,
-          "sarvamDerived": false
-        },
-        "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326; approximate outlines, not legal surveys",
-        "supportingEvidence": [
-          {
-            "file": "desktop-ai06a/rights-review/gnwt-catalogue.json",
-            "url": "https://open.canada.ca/data/api/action/package_show?id=9e17b0bc-8ad5-07ad-601e-700183763829",
-            "bytes": 7248,
-            "sha256": "0fc3601a067c8aa0c8db91d243ce3756925a7a561867f3832ff10af0b942fbfe",
-            "acquiredAt": "2026-09-29T16:02:28.019975+00:00"
-          },
-          {
-            "file": "desktop-ai06a/rights-review/gnwt-license.html",
-            "url": "https://www.gov.nt.ca/en/open-government-licence-northwest-territories",
-            "bytes": 36662,
-            "sha256": "186b2dcc6a9847065d0d651287c8c6f51bdac6711aa1829f43d9ca09919b3409",
-            "acquiredAt": "2026-09-29T16:03:10.919973+00:00"
-          },
-          {
-            "file": "desktop-ai06a/rights-review/gnwt-service.json",
-            "url": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer?f=pjson",
-            "bytes": 4437,
-            "sha256": "d64868099d97aa160ba4c89273eb1e9198def9e36a882241e658fd91c3160a0e",
-            "acquiredAt": "2026-09-29T16:04:24.307994+00:00"
+          "sarvamDerived": false,
+          "licence": "Open Government Licence Northwest Territories 1.0",
+          "licenceUrl": "https://www.gov.nt.ca/en/open-government-licence-northwest-territories",
+          "attribution": "Government of Northwest Territories, Land Management and Administration, Department of Environment and Climate Change. Contient des renseignements visés par la licence du gouvernement ouvert des Territoires du Nord-Ouest.",
+          "review": {
+            "reviewedAt": "2026-09-29",
+            "scope": "Retained five-feature Building Footprints response and publisher field metadata only; calibration only",
+            "catalogueLocators": [
+              "/result/license_id",
+              "/result/license_url",
+              "/result/restrictions",
+              "/result/resources/0"
+            ],
+            "viewerLayerLocator": "/mapServices/0/layers/9",
+            "manualPdfPages": {
+              "downloadInstructions": 15,
+              "publishedServices": 19,
+              "buildingLayerDescription": 21
+            },
+            "catalogueIsopen": false,
+            "licenceRegistryConformance": {
+              "is_okd_compliant": false,
+              "is_osi_compliant": false,
+              "od_conformance": false,
+              "osd_conformance": false
+            },
+            "catalogueFlagInterpretation": "False catalogue/conformance flags are retained; permission rests on the explicit dataset designation and issuing licence text.",
+            "historicalAgreement": "Previously mentioned ATLAS_License_Agreement.pdf remains unretrieved. The current manual gives no separate agreement step; no bulk export workflow was invoked.",
+            "exclusions": [
+              "Personal information, inaccessible records, unauthorized third-party rights and official symbols remain excluded by OGL-NWT.",
+              "Other viewer layers, third-party basemaps/imagery, private records and unrelated export products are outside this decision.",
+              "Approximate outlines do not establish surveyed positions, property rights or official identifiers. No endorsement is implied."
+            ]
           }
-        ],
-        "exclusionReason": "Unresolved layer-specific permission scope; no fit, calibration, evaluation or encoder input from this source."
+        },
+        "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326; approximate outlines, not legal surveys"
       }
-    ],
-    "desktopV5": {
-      "status": "code_and_corpus_accepted_fit_blocked_by_calibration_coverage",
-      "codeCommit": "6f9dc71",
-      "completionReceipt": "E:/BhuAayam-data/task-data/ai-06a-learning/desktop-ai06a/completion-v5/completion-receipt.json",
-      "completionReceiptSha256": "ca33a30f0d2ee1390a6436f2d1a7fe7cf672009ce56a050fc431311b71918011",
-      "trainingStarted": false,
-      "evaluationPredictionsOpened": false,
-      "remainingGap": "One additional eligible positive calibration family for literal building source key and name; GNWT layer-specific terms unresolved."
-    }
+    ]
   }
 }
