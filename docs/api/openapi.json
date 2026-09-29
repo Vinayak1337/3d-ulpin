@@ -177773,6 +177773,164 @@
                   "type": "string",
                   "maxLength": 512
                 }
+              },
+              "archiveInventory": {
+                "type": "object",
+                "properties": {
+                  "sourceSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "coverage": {
+                    "type": "string",
+                    "enum": [
+                      "complete",
+                      "incomplete",
+                      "unknown"
+                    ]
+                  },
+                  "issue": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "CORRUPT_CENTRAL_DIRECTORY",
+                      "MEMBER_COUNT_LIMIT",
+                      "DECLARED_SIZE_LIMIT",
+                      "MEMBER_ISSUES",
+                      "COMPANION_INCOMPLETE"
+                    ]
+                  },
+                  "memberCount": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "declaredExpandedBytes": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "observedExpandedBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "members": {
+                    "maxItems": 256,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "ordinal": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "pathLabel": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 256
+                        },
+                        "declaredBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "actualBytes": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "sha256": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "declaredCrc32": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{8}$"
+                        },
+                        "crc": {
+                          "type": "string",
+                          "enum": [
+                            "match",
+                            "unchecked"
+                          ]
+                        },
+                        "routeHint": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "shapefile",
+                            "pdf",
+                            "csv",
+                            "text",
+                            "docx",
+                            "xlsx",
+                            "json",
+                            "geojson",
+                            "raster",
+                            "point_cloud",
+                            "image"
+                          ]
+                        },
+                        "issue": {
+                          "nullable": true,
+                          "type": "string",
+                          "enum": [
+                            "UNSAFE_PATH",
+                            "DUPLICATE_PATH",
+                            "SPECIAL_ENTRY",
+                            "DIRECTORY",
+                            "ENCRYPTED",
+                            "UNSUPPORTED_COMPRESSION",
+                            "NESTED_ARCHIVE",
+                            "SCRIPT_INERT",
+                            "UNSUPPORTED_FORMAT",
+                            "EXPANSION_LIMIT",
+                            "TIME_LIMIT",
+                            "SIZE_MISMATCH",
+                            "CORRUPT_MEMBER"
+                          ]
+                        },
+                        "companion": {
+                          "type": "string",
+                          "enum": [
+                            "complete",
+                            "incomplete",
+                            "not_applicable"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "ordinal",
+                        "pathLabel",
+                        "declaredBytes",
+                        "actualBytes",
+                        "sha256",
+                        "declaredCrc32",
+                        "crc",
+                        "routeHint",
+                        "issue",
+                        "companion"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "sourceSha256",
+                  "coverage",
+                  "issue",
+                  "memberCount",
+                  "declaredExpandedBytes",
+                  "observedExpandedBytes",
+                  "members"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
