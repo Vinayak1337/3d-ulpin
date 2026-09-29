@@ -3916,10 +3916,10 @@
   ],
   "offlineLearningCorpus": {
     "manifest": "docs/api/learning-corpus.json",
-    "manifestSha256": "d36d6c64fb1609e718f393f188249dffa653160f65383f5bb45d7ea7b28a9b16",
+    "manifestSha256": "81773eaf350d96778bc59c8f0f61a0d66e66cf335edb1ec167dd2ce1efd718c7",
     "manifestHashScope": "UTF-8 metadata with LF line endings; retained source originals use exact-byte hashes.",
     "guide": "docs/api/learning.md",
-    "scope": "offline foreign-source research only; fresh Halifax/Kitchener evaluation unopened until fit freeze",
+    "scope": "Offline foreign-source schema research; V7 is corpus/input freeze only; no model run authorized",
     "apiInstallation": "not-installed",
     "productionModelPromoted": false,
     "availability": "Originals retained outside Git; manifest pins are not repository-byte verification.",
@@ -4318,6 +4318,162 @@
           }
         },
         "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326; approximate outlines, not legal surveys"
+      },
+      {
+        "id": "cambridge-municipal-buildings",
+        "family": "cambridge-municipal-building-points",
+        "split": "train",
+        "issuer": "City of Cambridge GIS",
+        "geography": "Cambridge, Massachusetts, United States",
+        "datasetUrl": "https://www.arcgis.com/sharing/rest/content/items/e7ecb02b5e7c43adbe32567e4b2eb63b?f=json",
+        "acquiredAt": "2026-09-29T18:30:56.108245+00:00",
+        "sample": {
+          "file": "desktop-ai06a/v7-sources/cambridge-sample.json",
+          "url": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0/query?where=SITE_NAME+IS+NOT+NULL+AND+SITE_NAME+%3C%3E+%27%27&outFields=OBJECTID%2CSITE_NAME%2CADDRESS%2CTYPE%2CGlobalID%2CEditDate&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+          "finalUrl": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0/query?where=SITE_NAME+IS+NOT+NULL+AND+SITE_NAME+%3C%3E+%27%27&outFields=OBJECTID%2CSITE_NAME%2CADDRESS%2CTYPE%2CGlobalID%2CEditDate&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+          "acquiredAt": "2026-09-29T18:30:56.108245+00:00",
+          "bytes": 1617,
+          "sha256": "c0bb66ec072aeed06215607d134c5e8b15be1bf03ac02b5e4b0575da20e425a2",
+          "acquisitionReceiptSha256": "66eacc9e410dd9099e72fabb911707a3680ade84224d508d2336c1fb6d37faea",
+          "rows": 5
+        },
+        "metadata": {
+          "file": "desktop-ai06a/v7-sources/cambridge-layer.json",
+          "url": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0?f=pjson",
+          "finalUrl": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0?f=pjson",
+          "acquiredAt": "2026-09-29T18:23:31.189081+00:00",
+          "bytes": 13646,
+          "sha256": "b72a8e54bb2cb06b85541b95cada56426d960cddc6dbbba79c9cae2b5c7547f8",
+          "acquisitionReceiptSha256": "9870530ee2419625e0fbfd0e282d82b8b3eff41d0d176402f179f6bff4606509"
+        },
+        "permission": {
+          "trainingEligible": true,
+          "productionEligible": false,
+          "sarvamDerived": false,
+          "licence": "Public Domain Dedication and License 1.0",
+          "url": "https://www.arcgis.com/sharing/rest/content/items/e7ecb02b5e7c43adbe32567e4b2eb63b?f=json#/licenseInfo",
+          "basis": "The issuing city dictionary links this exact ArcGIS item; its licenseInfo designates PDDL 1.0. The retained PDDL permits database extraction and reuse for any purpose.",
+          "attribution": "City of Cambridge GIS, Municipal Buildings",
+          "scope": "Bounded offline schema research on the retained publisher metadata and five-row sample"
+        },
+        "geometryCrs": "Source EPSG:3857; publisher query returns outSR=4326 GeoJSON"
+      },
+      {
+        "id": "oregon-state-government-buildings",
+        "family": "oregon-state-government-building-points",
+        "split": "train",
+        "issuer": "State of Oregon, OR_FRAMEWORK",
+        "geography": "Oregon, United States",
+        "datasetUrl": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json",
+        "acquiredAt": "2026-09-29T18:30:57.404081+00:00",
+        "sample": {
+          "file": "desktop-ai06a/v7-sources/oregon-sample.json",
+          "url": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0/query?where=NAME+IS+NOT+NULL+AND+NAME+%3C%3E+%27%27+AND+NAME+%3C%3E+%27NO+NAME%27+AND+NAME+%3C%3E+%27UNKNOWN%27&outFields=OBJECTID%2CUNIQUE_ID%2CNAME%2CADDRESS%2CCITY%2CSTATE%2CZIP%2CCOUNTY%2CFIPS%2CNAICSDESCR&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+          "finalUrl": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0/query?where=NAME+IS+NOT+NULL+AND+NAME+%3C%3E+%27%27+AND+NAME+%3C%3E+%27NO+NAME%27+AND+NAME+%3C%3E+%27UNKNOWN%27&outFields=OBJECTID%2CUNIQUE_ID%2CNAME%2CADDRESS%2CCITY%2CSTATE%2CZIP%2CCOUNTY%2CFIPS%2CNAICSDESCR&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+          "acquiredAt": "2026-09-29T18:30:57.404081+00:00",
+          "bytes": 1961,
+          "sha256": "e5810ec518eb9bbe9f2a91f4a20727070f8653e30c8b5ff2e9df7952fe3727e4",
+          "acquisitionReceiptSha256": "00808f65663c1a56a60141f0bd0d6d25c61862e5b1e0a4be6a6ffbb10afc1047",
+          "rows": 5
+        },
+        "metadata": {
+          "file": "desktop-ai06a/v7-sources/oregon-layer.json",
+          "url": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0?f=pjson",
+          "finalUrl": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0?f=pjson",
+          "acquiredAt": "2026-09-29T18:25:16.046602+00:00",
+          "bytes": 18088,
+          "sha256": "886f20700cc9a74f5fe349c13334c5d4553703b4d1317c4833e1953c10f3f676",
+          "acquisitionReceiptSha256": "db8950abda68654a60e887ab7653d34c0d376771204d007fb018b70ed761770e"
+        },
+        "permission": {
+          "trainingEligible": true,
+          "productionEligible": false,
+          "sarvamDerived": false,
+          "licence": "Publisher: Public Domain Information; Public Use",
+          "url": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/licenseInfo",
+          "basis": "The State of Oregon ArcGIS organization publishes this exact item with Access Constraint None (Public Domain Information) and Use Constraint None (Public Use). This is a state-published legacy TGS/HSIP-derived source; original lineage is retained.",
+          "attribution": "State of Oregon, Oregon State Government Buildings; publisher-documented TGS/HSIP lineage",
+          "scope": "Bounded offline schema research on the retained publisher metadata and five-row sample"
+        },
+        "geometryCrs": "Source EPSG:2992; publisher query returns outSR=4326 GeoJSON"
+      },
+      {
+        "id": "tweed-council-buildings",
+        "family": "tweed-council-building-polygons",
+        "split": "train",
+        "issuer": "Tweed Shire Council",
+        "geography": "Tweed Shire, New South Wales, Australia",
+        "datasetUrl": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json",
+        "acquiredAt": "2026-09-29T18:30:58.024168+00:00",
+        "sample": {
+          "file": "desktop-ai06a/v7-sources/tweed-sample.json",
+          "url": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0/query?where=Building_Name+IS+NOT+NULL+AND+Building_Name+%3C%3E+%27%27&outFields=OBJECTID%2CBuilding_Name%2CAsset_Name%2Clocality%2COPEN_DATA%2CTIMESTAMP&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+          "finalUrl": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0/query?where=Building_Name+IS+NOT+NULL+AND+Building_Name+%3C%3E+%27%27&outFields=OBJECTID%2CBuilding_Name%2CAsset_Name%2Clocality%2COPEN_DATA%2CTIMESTAMP&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+          "acquiredAt": "2026-09-29T18:30:58.024168+00:00",
+          "bytes": 3640,
+          "sha256": "963c15784a363e50b282c82057e68397c37ff9279e9d8b48d9f60361f1f9e590",
+          "acquisitionReceiptSha256": "9ac42162ca905c40695779fc9cdf46afc101173bf646063f18edc6f06c6bc744",
+          "rows": 5
+        },
+        "metadata": {
+          "file": "desktop-ai06a/v7-sources/tweed-layer.json",
+          "url": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0?f=pjson",
+          "finalUrl": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0?f=pjson",
+          "acquiredAt": "2026-09-29T18:25:16.046602+00:00",
+          "bytes": 12362,
+          "sha256": "064539d15b61ca2c6ea246f488504f13faee865f0c36a8a8b10e3b7285508793",
+          "acquisitionReceiptSha256": "80f6e2d768940eb775fc5fa25ca5997307269e1d268c26e66d3ec56f4a885eb9"
+        },
+        "permission": {
+          "trainingEligible": true,
+          "productionEligible": false,
+          "sarvamDerived": false,
+          "licence": "Creative Commons Attribution (CC BY; publisher does not specify version)",
+          "url": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json#/licenseInfo",
+          "basis": "The council item explicitly permits distribution, adaptation and building upon the material for commercial and non-commercial purposes with council attribution. Its ownership reservation is retained alongside that licence grant; this decision does not assert transfer of intellectual property rights.",
+          "attribution": "Tweed Shire Council, Council Buildings",
+          "scope": "Bounded offline schema research on the retained publisher metadata and five-row sample"
+        },
+        "geometryCrs": "Source EPSG:28356; publisher query returns outSR=4326 GeoJSON"
+      },
+      {
+        "id": "usgs-wbd-subwatersheds",
+        "family": "usgs-wbd-hydrologic-units",
+        "split": "train",
+        "issuer": "U.S. Geological Survey",
+        "geography": "United States; sampled hydrologic units in Iowa, Minnesota and Georgia",
+        "datasetUrl": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson",
+        "acquiredAt": "2026-09-29T18:34:51.635222+00:00",
+        "sample": {
+          "file": "desktop-ai06a/v7-sources/usgs-wbd-sample-by-id.json",
+          "url": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6/query?objectIds=1%2C2%2C3%2C4%2C5&outFields=objectid%2Ctnmid%2Chuc12%2Cname%2Cstates%2Cglobalid&outSR=4326&returnGeometry=true&f=geojson",
+          "finalUrl": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6/query?objectIds=1%2C2%2C3%2C4%2C5&outFields=objectid%2Ctnmid%2Chuc12%2Cname%2Cstates%2Cglobalid&outSR=4326&returnGeometry=true&f=geojson",
+          "acquiredAt": "2026-09-29T18:34:51.635222+00:00",
+          "bytes": 217057,
+          "sha256": "fe96830d0e10564c013a20ba93a26b769878b9326d02124134c23d91b640784a",
+          "acquisitionReceiptSha256": "ffc2477c424ec821b98508d1a75fa9ce48fcbf5ccd9189abbc9919c94d12dfae",
+          "rows": 5
+        },
+        "metadata": {
+          "file": "desktop-ai06a/v7-sources/usgs-wbd-layer-retry.json",
+          "url": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6?f=json",
+          "finalUrl": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6?f=json",
+          "acquiredAt": "2026-09-29T18:32:54.602221+00:00",
+          "bytes": 7541,
+          "sha256": "a4fafc083d8b55229539ddac1376a14d7196335ee6dfd4bc2ac02e62b44d09d7",
+          "acquisitionReceiptSha256": "307767526fb9c140566092cfe336b27cf4702882ae708bedbef76293987f1b51"
+        },
+        "permission": {
+          "trainingEligible": true,
+          "productionEligible": false,
+          "sarvamDerived": false,
+          "licence": "USGS WBD service: no use constraints; open and non-proprietary",
+          "url": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson#/serviceDescription",
+          "basis": "The official hydro.nationalmap.gov WBD service states Use Constraints None and that all data are open and non-proprietary. Metadata identifies USGS/USDA NRCS WBD lineage. Retain attribution and temporal/scale limitations.",
+          "attribution": "U.S. Geological Survey, Watershed Boundary Dataset; USDA NRCS lineage as documented by the service",
+          "scope": "Bounded offline schema research on the retained publisher metadata and five-row sample"
+        },
+        "geometryCrs": "Source EPSG:3857; publisher query returns outSR=4326 GeoJSON"
       }
     ]
   }
