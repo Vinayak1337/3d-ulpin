@@ -26,7 +26,7 @@ The scenes are authored on their own clock. `warp.js` maps it to the film:
 - Three real Studio clips are cut in at authored instants while the authored clock waits: the Add files dialog ("Checked before import."), adaptive intake of an unfamiliar survey file ("It will be read like this."), and the public portal ("The same record, in public.").
 - Each cut-to-cut segment and each insert is rounded to whole beats at 120 BPM. The picture, the footage speed tags and the score all run through the same map.
 
-The narrator is the founder's own voice, cloned locally with mlx-audio from a short recording by one of two engines, Qwen3-TTS 1.7B Base or Chatterbox (both Apache-2.0). The recording is personal and stays out of the repository (`vo/clone.py` reads it from `~/.cache/bhuaayam-vo/voice/ref.wav`). `clone.py` records each passage until a take passes two checks, Whisper hears the passage's own words and the pace is natural, then levels all passages together. It also records with Sarvam's Bulbul v3 (voice Shubh, Indian English, `python clone.py bulbul`), which reads a list of Sarvam keys from `SARVAM_API_KEYS` and moves to the next key only when an account runs out of credit. Bulbul says the brand best from its Devanagari spelling, and a take only passes once Whisper hears both names.
+The narrator is the founder's own voice, cloned locally with mlx-audio from a short recording by one of two engines, Qwen3-TTS 1.7B Base or Chatterbox (both Apache-2.0). The recording is personal and stays out of the repository (`vo/clone.py` reads it from `~/.cache/bhuaayam-vo/voice/ref.wav`). `clone.py` records each passage until a take passes two checks, Whisper hears the passage's own words and the pace is natural, then levels all passages together. It also records with Sarvam's Bulbul v3 (voice Shubh, Indian English, `python clone.py bulbul`), which uses one explicitly configured `SARVAM_API_KEY` and stops if its credit runs out. For compatibility, `SARVAM_API_KEYS` uses only the first configured key; it never switches accounts automatically. Bulbul says the brand best from its Devanagari spelling, and a take only passes once Whisper hears both names.
 
 `vo/lines.json` holds the script, one passage per scene or insert: `a` is the authored cue, or `ins` names the insert it plays over. `vo/narrator-qwen/`, `vo/narrator-chatterbox/` and `vo/narrator-bulbul/` hold each engine's passages, their durations (`timing.json`) and a record of the kept takes (`takes.json`). Because the holds follow the narration, each engine's film has its own timing. The score ducks the music under every line and keeps the lead melody out of the spoken passages.
 
@@ -41,6 +41,8 @@ The narrator is the founder's own voice, cloned locally with mlx-audio from a sh
 - `render.mjs`: the renderer. `SCALE=2 FPS=60` renders 4K60.
 
 ## Render
+
+The renderer resolves the repository's declared Playwright dependency. Metal is selected only on macOS; other platforms use Chromium's default GPU backend. `GPU=0` explicitly selects software rendering. Install Chromium and FFmpeg for the destination operating system before rendering. Pre-generated narration is already tracked; regenerating cloned narration uses optional Mac MLX tooling and is a separate setup from the ingestion learner.
 
 ```bash
 python3 -m http.server 8790 --bind 127.0.0.1          # from the worktree root

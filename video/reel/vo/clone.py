@@ -113,12 +113,12 @@ def multipart(fields, files=()):
     return out + f'--{b}--\r\n'.encode(), f'multipart/form-data; boundary={b}'
 
 
-SV_KEYS = [k for k in os.environ.get('SARVAM_API_KEYS', os.environ.get('SARVAM_API_KEY', '')).split(',') if k]
+# One explicitly configured account; a legacy list uses only its first key.
+SV_KEYS = [k.strip() for k in (os.environ.get('SARVAM_API_KEY') or os.environ.get('SARVAM_API_KEYS', '')).split(',') if k.strip()][:1]
 
 
 def sv(path, fields=None, files=(), body_json=None):
-    """One Sarvam API call; returns parsed JSON. Out of credit (402) moves on to the next key's account; a rate limit
-    (429) or server error waits and retries on the same key."""
+    """Use one account; stop on exhausted credit. Retry transient errors on that same account."""
     import time
     body, ctype = (json.dumps(body_json).encode(), 'application/json') if body_json is not None else multipart(fields, files)
     for attempt in range(6):
@@ -127,8 +127,8 @@ def sv(path, fields=None, files=(), body_json=None):
             with urllib.request.urlopen(req, timeout=180) as r: return json.loads(r.read())
         except urllib.error.HTTPError as e:
             msg = e.read().decode(errors='replace')[:400]
-            if e.code == 402 and len(SV_KEYS) > 1:
-                SV_KEYS.pop(0); print(f'  Sarvam account out of credit, moving to the next key ({len(SV_KEYS)} left)', flush=True)
+            if e.code == 402:
+                raise SystemExit('Sarvam credit exhausted; narration stopped. No account was switched.')
             elif e.code in (429, 500, 502, 503, 504): time.sleep(2 ** attempt)
             else: raise SystemExit(f'Sarvam {path}: {e.code} {msg}')
     raise SystemExit(f'Sarvam {path}: gave up after retries')

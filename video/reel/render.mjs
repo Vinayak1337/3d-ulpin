@@ -3,20 +3,16 @@
 //   node video/reel/render.mjs stills 1,20,45 out/        → PNG stills at those seconds
 //   node video/reel/render.mjs video out/launch.mp4 [fps] [workers] [from] [to]
 // Serve the worktree root first: python3 -m http.server 8790 --bind 127.0.0.1
-import { createRequire } from 'node:module';
+import { chromium } from '@playwright/test';
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
-const require = createRequire(join(root, 'node_modules/.pnpm/playwright@1.63.0/node_modules/playwright/'));
-const { chromium } = require('playwright');
+import { join } from 'node:path';
 const SCALE = +(process.env.SCALE ?? 1);
 const URL_ = process.env.REEL_URL ?? `http://127.0.0.1:8790/video/reel/index.html?render&scale=${SCALE}&fps=${process.env.FPS ?? 30}&voice=${process.env.VOICE ?? 'narrator-qwen'}`;
 const [mode, arg, ...rest] = process.argv.slice(2);
 const out = rest[0]; // stills: directory · mux: audio file
 const GPU = process.env.GPU !== '0';
-const args = GPU ? ['--use-angle=metal', '--enable-gpu-rasterization', '--ignore-gpu-blocklist'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+const args = GPU ? [...(process.platform === 'darwin' ? ['--use-angle=metal'] : []), '--enable-gpu-rasterization', '--ignore-gpu-blocklist'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
 
 async function open(browser) {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: SCALE });
