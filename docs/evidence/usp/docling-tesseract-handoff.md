@@ -19,6 +19,8 @@ Pinned inputs:
 
 ## Result and visual review
 
+Dependency inventory representation, clarified after independent review: `metadataSha256` hashes `importlib.metadata.read_text('METADATA').encode('utf-8')`, which normalizes Windows CRLF to LF; it is not a raw-file hash for 17 of the 77 distributions. All inventory entries match that representation; all recorded `RECORD` and `WHEEL` hashes also match raw file bytes. The inventory and executed artifacts are unchanged. The runner hash above identifies its LF-normalized source.
+
 The final supervised run is `attempt-004/receipt.json`, SHA-256 `83c477bc0acd7f253b2cc9630958160201594c1af9c9c7f694a68fd0833d64bd`; `conversion.json` SHA-256 `4dafdfd7ff722c09157a90ca10b7e388ea8c2f4a1c71d9fa279e57b3a1361e4b`. The Windows Job exited 0 after 8.25 seconds, with 795,115,520 observed peak RSS bytes and 981,045,248 peak job private bytes; no cap fired. Docling reported `SUCCESS`, emitted five text items with crop-local boxes, and returned no structured errors.
 
 Visual inspection of the same retained PNG found the three central headings exactly: `UNITED STATES`, `DEPARTMENT OF THE INTERIOR`, `GEOLOGICAL SURVEY`. For example, `UNITED STATES` has box `(137.0, 117.7330, 335.0, 101.7330)` in the recorded bottom-left crop-point frame. Marginal text is incomplete: the visible `105°45′` was read as `105'45'`; `(Monarch Lake 1:24 000)` was truncated to `(Monarch Lake 1:`; the visible right-margin `R.74 W. 40′` was omitted. This is useful mechanics evidence, not complete content coverage. The worker log also reports an orientation/script detection warning because `osd.traineddata` was absent. English text was still emitted. Docling `SUCCESS` must not be interpreted as a complete or accurate page transcription.
