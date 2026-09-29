@@ -11,8 +11,10 @@ export interface BuildingLedger {
     placement: 'local_only' | 'geographic';
   };
   parcelUlpin: {
-    state: 'unknown' | 'recorded' | 'conflicting';
-    assertions: Array<{ parcelId: string; value: string; issuer: string; sourceId: string }>;
+    state: 'unknown' | 'partial' | 'recorded' | 'conflicting';
+    parcels: Array<{ id: string; revision: number }>;
+    missingParcelIds: string[];
+    assertions: Array<{ parcelId: string; value: string; issuer: string; sourceId: string; locator: string }>;
   };
   spaces: {
     state: 'recorded' | 'absent';

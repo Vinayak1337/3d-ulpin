@@ -279,7 +279,7 @@ const recordFrom = (r: any): RegistryRecord => ({
   revision: r.revision,
 });
 /** Current, explicitly linked registry graph. Spatial proximity never creates a record link. */
-export async function relatedRegistryRecords(id: string, buildingRevision: number, siteId: string, client?: PoolClient): Promise<RegistryRecord[]> {
+export function relatedRegistryRecordQuery(id: string, buildingRevision: number, siteId: string, maxRecords?: number) {
   const sql =
     `WITH RECURSIVE related AS (
       SELECT r.id FROM registry_records r WHERE r.site_id=$3 AND (r.id=$1 OR r.id IN (
@@ -289,10 +289,16 @@ export async function relatedRegistryRecords(id: string, buildingRevision: numbe
       UNION SELECT l.record_id FROM registry_links l JOIN related x ON l.target_id=x.id
         JOIN registry_records r ON r.id=l.record_id AND r.site_id=$3 WHERE l.kind IN ('within','floor','serves')
     ) SELECT r.* FROM registry_records r WHERE r.id IN (SELECT id FROM related)
-      AND r.revision>0 AND r.site_id=$3 ORDER BY r.kind,r.ordinal LIMIT 2001`;
-  const rows = (await (client ? client.query(sql, [id, buildingRevision, siteId])
-    : query(sql, [id, buildingRevision, siteId]))).rows;
-  if (rows.length > 2000) throw new AppError(422, 'BUILDING_LEDGER_LIMIT', 'This building has too many linked records for one read.');
+      AND r.revision>0 AND r.site_id=$3 ORDER BY r.kind,r.ordinal${maxRecords === undefined ? '' : ' LIMIT $4'}`;
+  return { sql, values: maxRecords === undefined ? [id, buildingRevision, siteId]
+    : [id, buildingRevision, siteId, maxRecords + 1] };
+}
+export async function relatedRegistryRecords(id: string, buildingRevision: number, siteId: string,
+  client?: PoolClient, maxRecords?: number): Promise<RegistryRecord[]> {
+  const { sql, values } = relatedRegistryRecordQuery(id, buildingRevision, siteId, maxRecords);
+  const rows = (await (client ? client.query(sql, values) : query(sql, values))).rows;
+  if (maxRecords !== undefined && rows.length > maxRecords)
+    throw new AppError(422, 'BUILDING_LEDGER_LIMIT', 'This building has too many linked records for one ledger read.');
   return rows.map(recordFrom);
 }
 export async function dossierSources(
