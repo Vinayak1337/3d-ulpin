@@ -14,18 +14,19 @@ from geo.usp_learning.corpus import input_proof, load_examples, publisher_field_
 REPO = Path(__file__).resolve().parents[3]
 
 
-def retained_corpus():
+def retained_corpus(version=None):
     originals = os.environ.get("USP_LEARNING_ORIGINALS_DIR")
     if not originals:
         pytest.skip("retained issuer originals not configured")
     root = Path(originals)
-    path = REPO / "docs/api/learning-corpus.json"
+    path = (root / f"desktop-ai06a/completion-{version}/learning-corpus-{version}-immutable.json"
+            if version else REPO / "docs/api/learning-corpus.json")
     corpus, examples = load_examples(path, root)
     return root, path, corpus, examples
 
 
 def test_v7_preserves_v6_sources_splits_and_exact_inputs():
-    root, path, corpus, examples = retained_corpus()
+    root, path, corpus, examples = retained_corpus(version="v7")
     spec = importlib.util.spec_from_file_location("training_curation", REPO / "scripts/usp/learning/prepare_training_corpus.py")
     curation = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(curation)

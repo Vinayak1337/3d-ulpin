@@ -5,13 +5,15 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
 
 TARGETS = ("building.sourceKey", "building.name", "building.geometry")
-CORPUS_VERSION = "usp-field-mapping-corpus-v7"
-LITERAL_TEXT_VERSIONS = ("usp-field-mapping-corpus-v5", "usp-field-mapping-corpus-v6", CORPUS_VERSION)
+CORPUS_VERSION = "usp-field-mapping-corpus-v8"
+LITERAL_TEXT_VERSIONS = ("usp-field-mapping-corpus-v5", "usp-field-mapping-corpus-v6",
+                         "usp-field-mapping-corpus-v7", CORPUS_VERSION)
 SOURCE_ONLY_VERSIONS = ("usp-field-mapping-corpus-v4", *LITERAL_TEXT_VERSIONS)
 SPLITS = ("train", "calibration", "evaluation", "diagnostic")
 
@@ -150,6 +152,28 @@ def _publisher_field(metadata: str, source: dict[str, Any], field: dict[str, Any
         if len(cells) != 5:
             raise ValueError("publisher markdown field row changed")
         name, alias, description, declared_type, _notes = cells
+    elif evidence["format"] == "wfs-xsd":
+        # Read the retained schema only; never resolve its external schema imports.
+        if "<!DOCTYPE" in metadata.upper() or "<!ENTITY" in metadata.upper():
+            raise ValueError("publisher XML entities/DOCTYPE are unsupported")
+        document = ET.fromstring(metadata)
+        ns = {"xsd": "http://www.w3.org/2001/XMLSchema"}
+        features = [entry for entry in document.findall("xsd:element", ns)
+                    if entry.get("name") == evidence["featureElement"]]
+        if len(features) != 1 or features[0].get("type", "").split(":")[-1] != evidence["complexType"]:
+            raise ValueError("publisher XML feature locator changed")
+        title = features[0].get("name")
+        types = [entry for entry in document.findall("xsd:complexType", ns)
+                 if entry.get("name") == evidence["complexType"]]
+        entries = [entry for node in types for entry in node.findall(
+            "xsd:complexContent/xsd:extension/xsd:sequence/xsd:element", ns)
+                   if entry.get("name") == locator["sourceField"]]
+        if len(types) != 1 or len(entries) != 1:
+            raise ValueError("publisher XML field locator changed")
+        entry = entries[0]
+        annotation = entry.find("xsd:annotation/xsd:documentation", ns)
+        name, alias, description, declared_type = (entry.get("name"), "",
+            "" if annotation is None else "".join(annotation.itertext()).strip(), entry.get("type"))
     else:
         document = json.loads(metadata)
         title = _pointer(document, evidence["titlePointer"])
@@ -157,7 +181,16 @@ def _publisher_field(metadata: str, source: dict[str, Any], field: dict[str, Any
             name, alias, description, declared_type = ("geometry", "", "", _pointer(document, locator["geometryTypePointer"]))
         else:
             entry = _pointer(document, locator["fieldPointer"])
-            if evidence["format"] == "socrata-view-json":
+            if evidence["format"] == "ogc-json-schema":
+                pointer = locator["fieldPointer"]
+                if not pointer.startswith("/properties/") or pointer.count("/") != 2:
+                    raise ValueError("publisher schema field must locate a direct property")
+                name = pointer.rsplit("/", 1)[1].replace("~1", "/").replace("~0", "~")
+                alias, description = entry.get("title") or "", entry.get("description") or ""
+                declared_type = entry.get("type") or entry.get("format")
+                if field["path"] == "geometry" and entry.get("x-ogc-role") != "primary-geometry":
+                    raise ValueError("publisher schema geometry role is missing")
+            elif evidence["format"] == "socrata-view-json":
                 name, alias, description, declared_type = (entry["fieldName"], entry["name"],
                                                            entry.get("description") or "", entry["dataTypeName"])
             elif evidence["format"] == "arcgis-layer-json":
@@ -176,7 +209,7 @@ def _publisher_field(metadata: str, source: dict[str, Any], field: dict[str, Any
     if path != "geometry" and name.casefold() != path.removeprefix("properties.").casefold():
         raise ValueError("metadata field does not match observed property path")
     if path == "geometry" and not ("geom" in declared_type.lower() or "polygon" in declared_type.lower() or
-                                   declared_type in ("varies", "geo_shape")):
+                                   declared_type in ("varies", "geo_shape", "gml:MultiSurfacePropertyType")):
         raise ValueError("geometry metadata locator has a nongeometry type")
     if not title or not name or not declared_type:
         raise ValueError("publisher metadata title/field/type is empty")
