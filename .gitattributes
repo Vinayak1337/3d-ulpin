@@ -35,5 +35,12 @@ database/sql/** -text
 apps/web/public/reference/** -text
 data-source/** -text
 data-source/*.md text eol=lf
+# Exact-byte runtime receipts referenced by docs/api/runtime-qualification.json.
+docs/evidence/usp/nest-migration/runtime-source/phase-2b-2026-09-26.json -text
+docs/evidence/usp/projected-vector-runtime.json -text
+docs/evidence/usp/private-mvt-runtime.json -text
+docs/evidence/usp/semantic-chunks-runtime.json -text
+docs/evidence/usp/document-authority-correction.json -text
+docs/evidence/usp/ingest-04a-sufficiency-runtime.json -text
 docs/engineering-plan/**/*.png -text -diff
 docs/engineering-plan/**/*.jpg -text -diff

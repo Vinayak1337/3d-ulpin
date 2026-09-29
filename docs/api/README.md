@@ -2,7 +2,9 @@
 
 For the agreed end-to-end design and Claude/Studio integration responsibilities, read the [adaptive ingestion workflow](adaptive-ingestion-workflow.md). It separates the target AI/ML and streaming behavior from the currently implemented API profiles.
 
-The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 179 operations and 205 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and forty-seven added operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
+The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 183 operations and 210 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and fifty-one added operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
+
+Desktop ingestion additions: [bounded private GeoTIFF windows](../evidence/usp/raster-window-handoff.md) retain source-linked native windows through four new routes; [native document partitions](../evidence/usp/desktop-document-partition-handoff.md) extend existing cited parts with page/line, header and continuation locators. The checked DEM has unknown vertical reference; scanned text still explicitly needs OCR. These are backend API flows, without renderer or document/building/floor-linking qualification.
 
 After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs). Its [OpenAPI JSON](http://127.0.0.1:3188/api/docs/openapi.json) and [dataset catalogue](http://127.0.0.1:3188/api/docs/datasets.json) are served by the same loopback backend. Swagger is light-only and opens schemas first. Write execution and the external validator are disabled. These links describe the configured default address; they do not mean a server is currently running.
 
@@ -283,6 +285,8 @@ python3 scripts/api/check.py
 ```
 
 Use `--check` on either generator to detect drift without writing. Generation creates an in-memory Nest application, opens no listener and invokes no domain method. [source-pins.json](source-pins.json) pins current producers/contracts; the checker verifies all baseline method/path dispositions, parameter schemas and references. Review the resulting contract changes before handing a regenerated client to the frontend team.
+
+On Windows, use `$env:REPO_DATA='false'` before the command and pass `--tsconfig tsconfig.json` to `tsx`. Generator paths use forward slashes; producer text pins normalize CRLF to LF while preserving every other byte. Dataset metadata is UTF-8; learning-manifest hashes explicitly use LF text. Original source and historical runtime receipt hashes remain exact bytes. Absolute private evidence links are host-specific and are checked separately from repository-relative documentation links.
 
 Natural lease recovery is now qualified for the retained NWIC profile: after an owned dispatcher stop, its unchanged180-second lease expired, canonical attempt2 accepted all733records, and all checks completed within the preset expiry+120-second bound. The [receipt](../evidence/usp/natural-lease-recovery-runtime.json) distinguishes catalogue observation from follow-up reads, preserves old-attempt/immutable-seal checks and discloses sampled health gaps. This is an operator-triggered restart, not automatic failover or continuous availability.
 

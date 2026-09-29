@@ -24,13 +24,13 @@ def checked_content(manifest_path, content):
     data = file.read_bytes()
     if sha(data) != content["sha256"] or len(data) != content["bytes"]:
         raise ValueError(f"Source integrity mismatch: {file.relative_to(ROOT)}")
-    result["repositoryPath"] = str(file.relative_to(ROOT))
+    result["repositoryPath"] = file.relative_to(ROOT).as_posix()
     result["repositoryBytesVerified"] = True
     return result
 
 
 def catalogue():
-    runtime = json.loads((ROOT / 'docs/api/runtime-qualification.json').read_text())
+    runtime = json.loads((ROOT / 'docs/api/runtime-qualification.json').read_text(encoding="utf-8"))
 
     def qualification(manifest):
         evidence = []
@@ -62,10 +62,10 @@ def catalogue():
             entry["manifestVerification"] = asset.get("verification", {})
             assets.append(entry)
         packs.append({
-            "manifest": str(file.relative_to(ROOT)), "manifestSha256": sha(raw),
+            "manifest": file.relative_to(ROOT).as_posix(), "manifestSha256": sha(raw),
             "packId": manifest["packId"], "profile": manifest["profile"],
             "version": manifest["version"], "description": manifest["description"],
-            **qualification(str(file.relative_to(ROOT))),
+            **qualification(file.relative_to(ROOT).as_posix()),
             "missingCapabilities": manifest.get("missingCapabilities", []),
             "assets": assets,
         })
@@ -108,14 +108,14 @@ def catalogue():
     learning_path = ROOT / "docs/api/learning-corpus.json"
     learning_raw = learning_path.read_bytes()
     learning = json.loads(learning_raw)
-    local_sources = json.loads((ROOT / "docs/api/retained-local-datasets.json").read_text())
+    local_sources = json.loads((ROOT / "docs/api/retained-local-datasets.json").read_text(encoding="utf-8"))
     return {
         "schemaVersion": "ulpin-api-dataset-catalog/1",
         "purpose": "Source metadata for API integration; not installed records or permission grants.",
         "guide": "docs/api/real-sources.md",
         "availabilityMeaning": "available refers to checked repository bytes; unavailable may mean retained outside Git. Neither proves an API import.",
         "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
-        "servingObservation": json.loads((ROOT / "docs/api/serving-observation.json").read_text()),
+        "servingObservation": json.loads((ROOT / "docs/api/serving-observation.json").read_text(encoding="utf-8")),
         "packs": packs, "retainedOfficialTestSources": retained,
         # External originals are not reproducible repository assets. Preserve
         # their separately maintained acquisition metadata on every regeneration.
@@ -124,7 +124,8 @@ def catalogue():
         "retainedExternalSources": [source for source in local_sources
                                     if source.get("apiInstallation") != "local-opt-in-demo-only"],
         "offlineLearningCorpus": {
-            "manifest": "docs/api/learning-corpus.json", "manifestSha256": sha(learning_raw),
+            "manifest": "docs/api/learning-corpus.json", "manifestSha256": sha(learning_raw.decode('utf-8').replace('\r\n', '\n').encode('utf-8')),
+            "manifestHashScope": "UTF-8 metadata with LF line endings; retained source originals use exact-byte hashes.",
             "guide": "docs/api/learning.md", "scope": learning["scope"],
             "apiInstallation": "not-installed", "productionModelPromoted": False,
             "availability": "Originals retained outside Git; manifest pins are not repository-byte verification.",
@@ -143,10 +144,10 @@ def main():
     document = catalogue()
     rendered = json.dumps(document, ensure_ascii=False, indent=2) + "\n"
     if args.check:
-        if not OUTPUT.is_file() or OUTPUT.read_text() != rendered:
+        if not OUTPUT.is_file() or OUTPUT.read_text(encoding="utf-8") != rendered:
             raise SystemExit("Dataset catalogue changed; regenerate and review source metadata")
     else:
-        OUTPUT.write_text(rendered)
+        OUTPUT.write_text(rendered, encoding="utf-8", newline="\n")
     print(f"Dataset catalogue: {len(document['packs'])} retained USP packs and {len(document['retainedOfficialTestSources'])} official NYC source manifests; available bytes verified, bounded runtime receipts linked separately")
 
 

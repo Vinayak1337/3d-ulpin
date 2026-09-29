@@ -22,7 +22,7 @@ def operation_inventory(ledger, pins):
     for file in sorted((ROOT / 'apps/api/src/modules').glob('*/operation-manifest.json')):
         path = file.relative_to(ROOT).as_posix()
         require(path in pins['sourceSha256'], f'unpinned operation manifest: {path}')
-        manifest = json.loads(file.read_text())
+        manifest = json.loads(file.read_text(encoding="utf-8"))
         for entry in manifest['operations']:
             key = entry['method'] + ' ' + entry['path']
             require(entry['method'].lower() in METHODS and entry['method'].isupper(),
@@ -44,10 +44,10 @@ def operation_inventory(ledger, pins):
 
 
 def main():
-    spec = json.loads((ROOT / 'docs/api/openapi.json').read_text())
-    pins = json.loads((ROOT / 'docs/api/source-pins.json').read_text())
-    ledger = json.loads((ROOT / 'docs/orchestration/nestjs-operation-ledger.json').read_text())
-    runtime = json.loads((ROOT / 'docs/api/runtime-qualification.json').read_text())
+    spec = json.loads((ROOT / 'docs/api/openapi.json').read_text(encoding="utf-8"))
+    pins = json.loads((ROOT / 'docs/api/source-pins.json').read_text(encoding="utf-8"))
+    ledger = json.loads((ROOT / 'docs/orchestration/nestjs-operation-ledger.json').read_text(encoding="utf-8"))
+    runtime = json.loads((ROOT / 'docs/api/runtime-qualification.json').read_text(encoding="utf-8"))
     runtime_operations = set()
     for run in [runtime, *runtime.get('additionalRuns', [])]:
         receipt_bytes = (ROOT / run['receipt']).read_bytes()
@@ -67,9 +67,13 @@ def main():
                 require((ROOT / source).is_file(), f'missing runtime source manifest: {source}')
     require(spec['openapi'] == '3.0.3', 'expected native Swagger OpenAPI 3.0.3')
     require(pins['schemaVersion'] == 'ulpin-native-openapi-pins/1', 'obsolete source pins')
+    require(pins.get('producerHashScope') in (None, 'crlf-to-lf'), 'unknown producer hash scope')
     for path, digest in pins['sourceSha256'].items():
         file = ROOT / path
-        require(file.is_file() and hashlib.sha256(file.read_bytes()).hexdigest() == digest,
+        content = file.read_bytes() if file.is_file() else b''
+        if pins.get('producerHashScope') == 'crlf-to-lf':
+            content = content.replace(b'\r\n', b'\n')
+        require(file.is_file() and hashlib.sha256(content).hexdigest() == digest,
                 f'producer changed; regenerate/review contract: {path}')
     inventory, baseline = operation_inventory(ledger, pins)
     operations, ids = set(), set()
@@ -125,8 +129,11 @@ def main():
     refs(spec)
     require(spec['x-dataset-catalogue']['repository'] == 'docs/api/datasets.json', 'missing dataset catalogue')
     for document in (ROOT / 'docs/api').glob('*.md'):
-        for target in re.findall(r'\[[^]]+\]\(([^)]+)\)', document.read_text()):
-            if '://' in target or target.startswith('#'):
+        for target in re.findall(r'\[[^]]+\]\(([^)]+)\)', document.read_text(encoding="utf-8")):
+            # Absolute private evidence paths belong to their recorded host.
+            # This link check covers repository-relative documentation only;
+            # source/receipt hashes above remain exact-byte checks.
+            if '://' in target or target.startswith(('#', '/')) or re.match(r'^[A-Za-z]:[/\\]', target):
                 continue
             require((document.parent / target.split('#', 1)[0]).resolve().exists(), f'broken link {document.name}: {target}')
     print(f"API-DOC: {len(operations)} native operations ({len(baseline)} baseline + "

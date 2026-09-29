@@ -53,7 +53,7 @@ export function createApiDocument(app: INestApplication): OpenAPIObject {
       expected.add(key);
     }
   }
-  const sources = controllerFiles(join(root, 'apps/api/src')).map(path => ({path: relative(root, path), text: readFileSync(path, 'utf8')}));
+  const sources = controllerFiles(join(root, 'apps/api/src')).map(path => ({path: relative(root, path).replace(/\\/g, '/'), text: readFileSync(path, 'utf8')}));
   const seen = new Set<string>();
   const schemas = document.components!.schemas ??= {};
   const schemaNames = new Map<string, string>();
