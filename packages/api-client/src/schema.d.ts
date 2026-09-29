@@ -30923,6 +30923,32 @@ export interface components {
                 readerSha256: string;
                 code: string | null;
                 warnings: string[];
+                archiveInventory?: {
+                    sourceSha256: string;
+                    /** @enum {string} */
+                    coverage: "complete" | "incomplete" | "unknown";
+                    /** @enum {string|null} */
+                    issue: "CORRUPT_CENTRAL_DIRECTORY" | "MEMBER_COUNT_LIMIT" | "DECLARED_SIZE_LIMIT" | "MEMBER_ISSUES" | "COMPANION_INCOMPLETE" | null;
+                    memberCount: number | null;
+                    declaredExpandedBytes: number | null;
+                    observedExpandedBytes: number;
+                    members: {
+                        ordinal: number;
+                        pathLabel: string;
+                        declaredBytes: number;
+                        actualBytes: number | null;
+                        sha256: string | null;
+                        declaredCrc32: string;
+                        /** @enum {string} */
+                        crc: "match" | "unchecked";
+                        /** @enum {string} */
+                        routeHint: "none" | "shapefile" | "pdf" | "csv" | "text" | "docx" | "xlsx" | "json" | "geojson" | "raster" | "point_cloud" | "image";
+                        /** @enum {string|null} */
+                        issue: "UNSAFE_PATH" | "DUPLICATE_PATH" | "SPECIAL_ENTRY" | "DIRECTORY" | "ENCRYPTED" | "UNSUPPORTED_COMPRESSION" | "NESTED_ARCHIVE" | "SCRIPT_INERT" | "UNSUPPORTED_FORMAT" | "EXPANSION_LIMIT" | "TIME_LIMIT" | "SIZE_MISMATCH" | "CORRUPT_MEMBER" | null;
+                        /** @enum {string} */
+                        companion: "complete" | "incomplete" | "not_applicable";
+                    }[];
+                };
             } | null;
             model: {
                 /** @enum {string} */
