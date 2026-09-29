@@ -177750,6 +177750,7 @@
                   "text",
                   "csv",
                   "docx",
+                  "xlsx",
                   "png",
                   "jpeg",
                   "archive",
@@ -177970,6 +177971,45 @@
                       "minimum": 0,
                       "exclusiveMinimum": true,
                       "maximum": 9007199254740991
+                    },
+                    "sheet": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "sheetIndex": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sheetId": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "cell": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+                    },
+                    "cellState": {
+                      "type": "string",
+                      "enum": [
+                        "literal",
+                        "empty",
+                        "empty_string",
+                        "whitespace",
+                        "formula_cached",
+                        "formula_uncached",
+                        "error",
+                        "unsupported"
+                      ]
+                    },
+                    "cellType": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 20
                     },
                     "unitId": {
                       "type": "string",

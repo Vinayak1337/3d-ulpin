@@ -15,7 +15,7 @@ The user resumed work after stopping all three desktop workers and requested add
 
 | Priority / scope | Observed gap and smallest next result |
 | --- | --- |
-| Now — supported input families | Bounded native point batches and native CSV/DOCX references are accepted; their exact profiles are in the source index. AI-04E adds native XLSX references. The scanned-region trial failed; its corrected supervision is accepted without an OCR claim. Successful OCR, mixed bundles and broader formats remain separate gaps. |
+| Now — supported input families | Bounded native point batches and native CSV/DOCX/XLSX references are accepted; their exact profiles are in the source index. The scanned-region trial failed; its corrected supervision is accepted without an OCR claim. Successful OCR, mixed bundles and broader formats remain separate gaps. |
 | Now — GF0 source evidence | Existing RERA plans have unresolved reuse/training permission and incomplete property/floor associations. Prepare a small source-cited relationship pack from retained or issuing-authority originals; keep planned/as-built, geography, rights and missing links distinct. This supports later review and AI-08, not an early association fit. |
 | Accepted bounded officer API projection | Private `GET /api/v1/buildings/{buildingId}/ledger` is integrated, with exact evidence access and current-revision filtering. The real revision-0/unrecorded NYC response is qualified; positive official-ID, space and history cases remain unqualified. This slice does not pass RIGHTS-01, HISTORY-02 or GF-READY. |
 | Next — GF0/GF1 contract and exchange qualification | Reconcile producer/consumer contracts and current GF-BACKEND receipts with the gate requirements. Identity lifecycle code exists; reuse it and close only identified runtime gaps. `packages/server/src/modules/usp/exchange.ts` currently emits `vertices: []` and an unsupported geometry loss for every object. Qualified canonical solids/reference support and a loss-aware real-source round trip are still needed before geometry exchange is claimed. |
@@ -27,6 +27,8 @@ The user resumed work after stopping all three desktop workers and requested add
 The separate full-product public portal, conversational/MCP assistance, generative preview, renderer changes, large-scale deployment and concurrent learner promotion are not new implementation assignments. The expressly authorized offline learner work continues below. [H30](../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) governs input sufficiency and reference-scene data; foreign test sources remain in their own geography.
 
 ## Current dispatch and exclusive ownership
+
+AI-04E is accepted as `7d6b0b6` / `ccbfed4`, with correction review `d058007`; generated API/source handoff, integrated 3/3 policy regressions and backend/client typechecks pass. Document and REVIEW-01 owners are finished, processing stopped and storage preserved. The sole active implementation assignment remains AI-06C source-only V8 curation at Astra/high. No additional model fit or final evaluation is assigned.
 
 AI-04E correction `6f62c4e` returned with focused regressions and a new unchanged-source HTTP receipt; lead checked its hash and code delta. REVIEW-01 resumes a targeted correction review in `backend-review`. The document owner remains correction owner and is stopped with storage preserved. Integration/API handoff follows acceptance; AI-06C continues source-only at Astra/high per the user's updated effort preference.
 
