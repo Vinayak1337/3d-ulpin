@@ -28,6 +28,8 @@ The separate full-product public portal, conversational/MCP assistance, generati
 
 ## Current dispatch and exclusive ownership
 
+AI-04E review `630dbae` returned two P2 findings: encoding-unsafe XML declaration rejection and generated empty-cell markers allowed into model proposals. The document owner in `b3eb` resumes corrections on its existing candidate, including narrowly owned `document-model.ts` evidence eligibility/validation, affected reader/policy pin and focused regressions. REVIEW-01 is finished until the correction returns. Native XLSX remains unintegrated; its unchanged real-source receipt is preserved.
+
 AI-06B returned `cc9f108` / `cb2bafd`; REVIEW-02 in `point-review` owns independent report-only review. Calibration passed its unchanged rule with 5/7 positives and zero incorrect accepts; training key coverage remains 0/2 and all final/diagnostic inference remains closed. AI-06C assigns the sole learner source-only V8 preparation from accepted BAG/IGN originals, preserving all V7 source objects, labels, splits and 88 input hashes. No inference, fit, download or promotion is authorized by that curation. REVIEW-01 retains XLSX review.
 
 SOURCE-KEY-01 returned `78f3dd0`; its bounded source pack is accepted after lead checks of all 11 hashes and native keys/issuer evidence. Kadaster BAG and IGN BD TOPO remain candidates outside the frozen corpus. The source worker is finished; the sole learner may assess them after the unchanged AI-06B comparison returns. No extra fit or corpus edit is assigned by this update.
