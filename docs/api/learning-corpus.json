@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "usp-field-mapping-corpus-v7",
+  "schemaVersion": "usp-field-mapping-corpus-v8",
   "featureVersion": "publisher-metadata-profile-v4",
-  "scope": "Offline foreign-source schema research; V7 is corpus/input freeze only; no model run authorized",
+  "scope": "Offline foreign-source schema research; V8 source/input freeze only; no model run authorized",
   "targets": [
     {
       "id": "building.sourceKey",
@@ -3284,10 +3284,769 @@
         }
       ],
       "sourceNotes": "Independent real non-building controls include strings resembling names/keys and actual polygons. USGS refreshed the service in July 2026 but disclaims site-specific regulatory/currentness use. An initial full-order query returned HTTP 504; a bounded object-ID query returned five unchanged complete geometries without simplification. No building semantics are inferred from polygon type."
+    },
+    {
+      "id": "nl-bag-pand",
+      "family": "kadaster-bag-pand",
+      "split": "train",
+      "issuer": "Kadaster / PDOK",
+      "geography": "Netherlands",
+      "datasetUrl": "https://api.pdok.nl/kadaster/bag/ogc/v2/",
+      "acquiredAt": "2026-09-29T19:47:38.411265+00:00",
+      "sample": {
+        "file": "desktop-ai06a/completion-v8/revision-02/originals/bag-sample.geojson",
+        "url": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/items?limit=5",
+        "acquiredAt": "2026-09-29T19:47:38.411265+00:00",
+        "httpStatus": 200,
+        "mediaType": "application/geo+json",
+        "sha256": "ce2d5bd723be82714271d82d262680e3cb905175c608f7247be77f9244937950",
+        "bytes": 9263,
+        "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "desktop-ai06a/completion-v8/revision-02/originals/bag-schema.json",
+        "url": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+        "acquiredAt": "2026-09-29T19:47:38.877248+00:00",
+        "httpStatus": 200,
+        "mediaType": "application/schema+json",
+        "sha256": "d86df0198180362fec2d8fbb512ecd490283e501812a4e532ef703fa887c2de2",
+        "bytes": 1741,
+        "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+      },
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/bag-collection.json",
+          "url": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand?f=json",
+          "acquiredAt": "2026-09-29T19:47:39.342113+00:00",
+          "httpStatus": 200,
+          "mediaType": "application/json",
+          "sha256": "f1ed752d76e8575827cf2846d0de9d1ba8ca754c12e360f9b0fb4b40fd410ccf",
+          "bytes": 3399,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+        },
+        {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/bag-landing.json",
+          "url": "https://api.pdok.nl/kadaster/bag/ogc/v2/?f=json",
+          "acquiredAt": "2026-09-29T19:47:39.812710+00:00",
+          "httpStatus": 200,
+          "mediaType": "application/json",
+          "sha256": "51e2c4115fb22d236511dcad01aef7d2e3a51152745edefacf6497dfa2ecb4fe",
+          "bytes": 4310,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+        },
+        {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/bag-identification-catalogue.html",
+          "url": "https://catalogus.kadaster.nl/bag/nl/page/Identificatie",
+          "acquiredAt": "2026-09-29T19:47:40.706253+00:00",
+          "httpStatus": 200,
+          "mediaType": "text/html; charset=UTF-8",
+          "sha256": "c1bf7c6d6c25fa84e0491b851285e137aa7fa90981c62b3ac7e3229d957d21e4",
+          "bytes": 21970,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+        },
+        {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/bag-pdok-publication.html",
+          "url": "https://www.pdok.nl/ogc-apis/-/article/basisregistratie-adressen-en-gebouwen-ba-1",
+          "acquiredAt": "2026-09-29T19:47:41.727774+00:00",
+          "httpStatus": 200,
+          "mediaType": "text/html;charset=UTF-8",
+          "sha256": "820f5a79f44a59772cae96c602a102d0c0b533e7e26bcc788a2caf071e0538a4",
+          "bytes": 83117,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+        }
+      ],
+      "permission": {
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false,
+        "scope": "Bounded offline foreign schema research from this retained sample; no model run or production qualification",
+        "licence": "Public Domain Mark 1.0 (publisher status mark, not a licence grant)",
+        "url": "https://api.pdok.nl/kadaster/bag/ogc/v2/?f=json",
+        "basis": "Issuer marks this BAG data service public domain; local schema extraction and independent labels use that designated data, without importing rights from unrelated products.",
+        "attribution": "Kadaster / PDOK, BAG Pand; service snapshot 2026-09-29; https://api.pdok.nl/kadaster/bag/ogc/v2/"
+      },
+      "geometryCrs": "OGC CRS84 longitude/latitude; no vertical coordinate in the sample",
+      "representation": "Five unchanged native Polygon features; no row multiplication, simplification, translation or reprojection",
+      "sourceVersion": "Live OGC API v2 snapshot 2026-09-29; no frozen national release",
+      "labelOrigin": "Retained issuer definitions/schema and native wire checks; independent source-only candidate awaiting review",
+      "inputEvidence": {
+        "format": "ogc-json-schema",
+        "titlePointer": "/title"
+      },
+      "fields": [
+        {
+          "path": "geometry",
+          "target": "building.geometry",
+          "definition": "Een zelfstandig bouwwerk, zowel zelfstandig in de manier hoe het is gebouwd als waarvoor het is bedoeld om te gebruiken. Een pand voldoet ook aan de volgende eisen: een pand is direct en voor lange tijd met de aarde verbonden (een pand is niet makkelijk te verplaatsen) en een pand kun je binnengaan en afsluiten. Een eenheid kan alleen een pand zijn als het voldoet aan alle eisen uit de Catalogus BAG 2018. Voor meer informatie zie: bag:pand ",
+          "decision": "positive",
+          "declaredType": "geometry-polygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "geometry",
+            "fieldPointer": "/properties/geometry"
+          },
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json#/properties/geometry",
+          "wireCompatibleRows": 5
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.aantal_verblijfsobjecten",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.bouwjaar",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.documentdatum",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.documentnummer",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.gebruiksdoel",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 1,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.geconstateerd",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.identificatie",
+          "decision": "unknown",
+          "reason": "Issuer defines a unique native object identifier, but retained lifecycle stability wording describes the separate service UUID id. Native identificatie revision stability is unestablished for the fixed stable-key target; do not transfer the UUID claim.",
+          "evidence": "https://catalogus.kadaster.nl/bag/nl/page/Identificatie",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.rdf_seealso",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.status",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.verblijfsobject.href",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 1,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "array"
+            ]
+          }
+        }
+      ],
+      "sourceNotes": "Pand is a registered building, not a parcel, floor or legal unit. Native identificatie keeps all leading zeros but remains unlabelled for missing lifecycle evidence. Top-level service UUID is a separate ID; no substitution."
+    },
+    {
+      "id": "fr-ign-bdtopo-batiment",
+      "family": "ign-bdtopo-batiment",
+      "split": "train",
+      "issuer": "Institut national de l'information géographique et forestière (IGN)",
+      "geography": "Brittany, France",
+      "datasetUrl": "https://www.data.gouv.fr/datasets/bd-topo-r",
+      "acquiredAt": "2026-09-29T19:47:42.510431+00:00",
+      "sample": {
+        "file": "desktop-ai06a/completion-v8/revision-02/originals/ign-sample.geojson",
+        "url": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAME=BDTOPO_V3:batiment&COUNT=5&CRS=EPSG:4326&outputformat=application/json&bbox=-447003.741411712,6094782.887346813,-446392.2451854306,6095394.383573095,EPSG:3857",
+        "acquiredAt": "2026-09-29T19:47:42.510431+00:00",
+        "httpStatus": 200,
+        "mediaType": "application/json;charset=UTF-8",
+        "sha256": "7a9419936dda8c8dde647882c0f06d307b3d18d10324af2b5050c0394f873fc4",
+        "bytes": 7456,
+        "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "desktop-ai06a/completion-v8/revision-02/originals/ign-schema.xml",
+        "url": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+        "acquiredAt": "2026-09-29T19:47:43.153428+00:00",
+        "httpStatus": 200,
+        "mediaType": "application/gml+xml; version=3.2",
+        "sha256": "e02f6bb989a80ab542c583545280b0600025bb5497ac3c363fd54eb799e2472e",
+        "bytes": 4040,
+        "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+      },
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/ign-dataset-metadata.json",
+          "url": "https://www.data.gouv.fr/api/1/datasets/bd-topo-r/",
+          "acquiredAt": "2026-09-29T19:47:44.268508+00:00",
+          "httpStatus": 200,
+          "mediaType": "application/json",
+          "sha256": "2eb4e86a0d755582a1e2cbe8245c1a768f1673d4cae904cf0dc3025efc000270",
+          "bytes": 329695,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+        },
+        {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/ign-open-licence.html",
+          "url": "https://www.data.gouv.fr/pages/legal/licences/etalab-2.0",
+          "acquiredAt": "2026-09-29T19:47:45.122221+00:00",
+          "httpStatus": 200,
+          "mediaType": "text/html;charset=utf-8",
+          "sha256": "1b47e7405eebec917e70b20ad08d2bbc60934653eaad3794ccc7db5985027826",
+          "bytes": 81544,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+        },
+        {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/ign-bdtopo-description.pdf",
+          "url": "https://data.geopf.fr/annexes/ressources/documentation/DC_BDTOPO_3-5.pdf",
+          "acquiredAt": "2026-09-29T19:48:02.692491+00:00",
+          "httpStatus": 200,
+          "mediaType": "application/pdf",
+          "sha256": "0542356dcf921bff5263043fe2af288a018d61d8e0f4d750005142f09cdb7331",
+          "bytes": 5608070,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+        }
+      ],
+      "permission": {
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false,
+        "scope": "Bounded offline foreign schema research from this retained sample; no model run or production qualification",
+        "licence": "Licence Ouverte / Open Licence 2.0",
+        "url": "https://www.data.gouv.fr/pages/legal/licences/etalab-2.0",
+        "basis": "Issuer dataset metadata designates lov2; retained terms expressly permit extraction, transformation and derived information, with source/update-date attribution and no endorsement.",
+        "attribution": "IGN, BD TOPO; dataset last modified 2026-09-25, live WFS snapshot 2026-09-29; https://www.data.gouv.fr/datasets/bd-topo-r; Licence Ouverte 2.0; no IGN endorsement"
+      },
+      "geometryCrs": "WFS EPSG:4326 output, EPSG:3857 query bounds; native GeoJSON longitude/latitude/Z preserved; vertical datum unqualified",
+      "representation": "Five unchanged native MultiPolygon features; no row multiplication, simplification, translation or reprojection",
+      "sourceVersion": "BD TOPO v3.5 guide July 2026; live WFS snapshot 2026-09-29; dataset metadata modified 2026-09-25T00:00:00+00:00",
+      "labelOrigin": "Retained issuer definitions/schema and native wire checks; independent source-only candidate awaiting review",
+      "inputEvidence": {
+        "format": "wfs-xsd",
+        "featureElement": "batiment",
+        "complexType": "batimentType"
+      },
+      "fields": [
+        {
+          "path": "properties.cleabs",
+          "target": "building.sourceKey",
+          "definition": "Identifiant unique de l'objet.",
+          "decision": "positive",
+          "declaredType": "xsd:string",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "cleabs"
+          },
+          "evidence": "https://data.geopf.fr/annexes/ressources/documentation/DC_BDTOPO_3-5.pdf#page=20",
+          "wireCompatibleRows": 5
+        },
+        {
+          "path": "properties.origine_du_batiment",
+          "target": null,
+          "definition": "Précise l'origine de la géométrie du Bâtiment ou Réservoir.",
+          "decision": "negative",
+          "declaredType": "xsd:string",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "origine_du_batiment"
+          },
+          "evidence": "https://data.geopf.fr/annexes/ressources/documentation/DC_BDTOPO_3-5.pdf#page=65"
+        },
+        {
+          "path": "geometry",
+          "target": "building.geometry",
+          "definition": "Type de géométrie : MultiPolygone 3D",
+          "decision": "positive",
+          "declaredType": "gml:MultiSurfacePropertyType",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:MultiPolygon"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "geometrie"
+          },
+          "evidence": "https://data.geopf.fr/annexes/ressources/documentation/DC_BDTOPO_3-5.pdf#page=65",
+          "wireCompatibleRows": 5
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.altitude_maximale_sol",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.altitude_maximale_toit",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.altitude_minimale_sol",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.altitude_minimale_toit",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.appariement_fichiers_fonciers",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.construction_legere",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "boolean"
+            ]
+          }
+        },
+        {
+          "path": "properties.date_creation",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.date_d_apparition",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.date_de_confirmation",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 5,
+            "absentCount": 0,
+            "nonNullTypes": []
+          }
+        },
+        {
+          "path": "properties.date_modification",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.etat_de_l_objet",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.hauteur",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.identifiants_rnb",
+          "decision": "unknown",
+          "reason": "Separate RNB references are not substituted for the native BD TOPO cleabs key; relationship and revision semantics are outside this curation.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.identifiants_sources",
+          "decision": "unknown",
+          "reason": "2 of 5 source-reference values are present null; remaining native values are preserved. These source references are not substituted for cleabs; exact relationship and revision semantics are outside this curation.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 2,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.materiaux_de_la_toiture",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.materiaux_des_murs",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.methode_d_acquisition_altimetrique",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.methode_d_acquisition_planimetrique",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.nature",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.nombre_d_etages",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.nombre_de_logements",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.precision_altimetrique",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.precision_planimetrique",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.sources",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 5,
+            "absentCount": 0,
+            "nonNullTypes": []
+          }
+        },
+        {
+          "path": "properties.usage_1",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.usage_2",
+          "decision": "unknown",
+          "reason": "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings.",
+          "evidence": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 5,
+            "absentCount": 0,
+            "nonNullTypes": []
+          }
+        }
+      ],
+      "sourceNotes": "Guide pages 13/20 define unique Cleabs and preserve it for attribute/geometry edits, with delete/recreate, split and merge exceptions. Source revision remains part of identity. Pages 65/66 distinguish cadastral wall contours from aerial roof contours; all five sampled origins are Cadastre. MultiPolygon Z, heights, storey and dwelling counts do not qualify datum, measurements, floors, units or ownership. WFS service ids and RNB references remain distinct."
     }
   ],
   "labelEncoding": "Issuer-authored title/alias/description/type for model input resolve from exact locators in hash-pinned metadata. Reviewer definitions/evidence/targets and representation are label audit only and never enter v4 encoder text. Observed wire shape/counts derive from unchanged samples; raw record values do not enter features. Prior v3 corpus/run07 is immutable and its answer-bearing reviewer-text model features invalidate a fresh unseen-input claim. The unchanged source-family roles now support one corrected diagnostic fit, not a new DC holdout.",
-  "curationNotes": "V7 appends four independent training families only: Cambridge/Oregon building names, Tweed building names/polygons, and USGS watershed wrong-target controls. Every V6 source object, split, label and exact input is preserved. Point IDs stay unknown because the fixed key target identifies footprint features. No new key-positive family, Indian training qualification, fit, inference, threshold selection, held-out scoring or promotion is claimed.",
+  "curationNotes": "V8 preserves all 16 V7 source objects, labels, splits and 88 inputs. Two independent training families add BAG geometry and IGN Cleabs/geometry plus one geometry-origin negative. BAG native identifier lacks retained lifecycle evidence and stays unknown. Native publisher names/types only; no translated or reviewer-authored descriptions in profiles. No fit, inference, threshold selection, evaluation or promotion.",
   "excludedSources": [],
-  "previousCorpusSha256": "d36d6c64fb1609e718f393f188249dffa653160f65383f5bb45d7ea7b28a9b16"
+  "previousCorpusSha256": "81773eaf350d96778bc59c8f0f61a0d66e66cf335edb1ec167dd2ce1efd718c7"
 }

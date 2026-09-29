@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Append the reviewed V7 training families and freeze inputs without loading a model."""
+"""Append reviewed V7/V8 training sources and freeze inputs without loading a model."""
 
 from __future__ import annotations
 
@@ -8,11 +8,14 @@ import copy
 import json
 from pathlib import Path
 
-from geo.usp_learning.corpus import input_proof, load_examples, sha256_file, wire_compatible_rows, wire_observation
+from geo.usp_learning.corpus import _checked_file, input_proof, load_examples, sha256_file, wire_compatible_rows, wire_observation
 
 
 V6_SHA256 = "d36d6c64fb1609e718f393f188249dffa653160f65383f5bb45d7ea7b28a9b16"
 V6_PROOF_SHA256 = "1883102720f4a1933c8724c2dbeac9523ba52c0bde8d9069f7ee5172fb40daf6"
+V7_SHA256 = "81773eaf350d96778bc59c8f0f61a0d66e66cf335edb1ec167dd2ce1efd718c7"
+V7_PROOF_SHA256 = "b801b049abdea3f8c88bab8f5c72ef2916acf026ad5168fe45518e5c73259559"
+KEY_PACK_SHA256 = "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
 DIRECTORY = Path("desktop-ai06a/v7-sources")
 # Pin the exact bytes reviewed for issuer identity, reuse terms and field semantics.
 REVIEWED_FILES = {
@@ -172,22 +175,133 @@ def training_additions(root: Path) -> list[dict]:
     ]
 
 
-def preserve_v6(previous: dict, current: dict, prior_proof: dict, proof: dict) -> None:
-    """Reject edits, family leakage or changed encoder inputs in the accepted V6 prefix."""
+def preserve_previous(previous: dict, current: dict, prior_proof: dict, proof: dict,
+                      version: str, maximum: int) -> None:
+    """Reject edits, family leakage or changed inputs in the accepted source prefix."""
     size = len(previous["sources"])
     if current["sources"][:size] != previous["sources"]:
-        raise ValueError("V6 source objects, labels or splits changed")
+        raise ValueError(f"{version} source objects, labels or splits changed")
     for key in ("targets", "featureVersion", "labelEncoding", "excludedSources"):
         if current.get(key) != previous.get(key):
-            raise ValueError(f"V6 contract changed: {key}")
+            raise ValueError(f"{version} contract changed: {key}")
     if proof["fields"][:len(prior_proof["fields"])] != prior_proof["fields"]:
-        raise ValueError("V6 exact publisher-only inputs changed")
+        raise ValueError(f"{version} exact publisher-only inputs changed")
     additions = current["sources"][size:]
     prior_families = {source["family"] for source in previous["sources"]}
     families = {source["family"] for source in additions}
-    if (not 1 <= len(families) <= 6 or families & prior_families or len(families) != len(additions)
+    if (not 1 <= len(families) <= maximum or families & prior_families or len(families) != len(additions)
             or any(source["split"] != "train" for source in additions)):
-        raise ValueError("new sources must be independent training families, at most six")
+        raise ValueError(f"new sources must be independent training families, at most {maximum}")
+
+
+def preserve_v6(previous: dict, current: dict, prior_proof: dict, proof: dict) -> None:
+    preserve_previous(previous, current, prior_proof, proof, "V6", 6)
+
+
+def preserve_v7(previous: dict, current: dict, prior_proof: dict, proof: dict) -> None:
+    preserve_previous(previous, current, prior_proof, proof, "V7", 2)
+
+
+def footprint_key_additions(root: Path, output: Path, source_pack: Path) -> list[dict]:
+    """Copy the eleven unchanged retained responses; curate four fields, never rows."""
+    acquisition = source_pack / "acquisition-receipt.json"
+    if sha256_file(acquisition) != KEY_PACK_SHA256:
+        raise ValueError("requires the accepted SOURCE-KEY-01 acquisition receipt")
+    resources = json.loads(acquisition.read_text(encoding="utf-8"))["resources"]
+    if len(resources) != 11 or len({entry["file"] for entry in resources}) != 11:
+        raise ValueError("accepted source pack resource count changed")
+    for entry in resources:
+        _checked_file(source_pack, entry)
+    destination = output / "originals"
+    destination.mkdir()
+    receipts = {}
+    for entry in resources:
+        path = destination / entry["file"]
+        with path.open("xb") as stream:
+            stream.write((source_pack / entry["file"]).read_bytes())
+        receipts[entry["file"]] = {**entry, "file": path.relative_to(root).as_posix(),
+                                  "acquisitionReceiptSha256": KEY_PACK_SHA256}
+    with (output / "acquisition-receipt.json").open("xb") as stream:
+        stream.write(acquisition.read_bytes())
+    bag_schema = json.loads((destination / "bag-schema.json").read_text(encoding="utf-8"))
+    landing = json.loads((destination / "bag-landing.json").read_text(encoding="utf-8"))
+    ign_metadata = json.loads((destination / "ign-dataset-metadata.json").read_text(encoding="utf-8"))
+    if not any(link.get("rel") == "license" and link.get("href") ==
+               "https://creativecommons.org/publicdomain/mark/1.0/deed.nl" for link in landing["links"]):
+        raise ValueError("BAG publisher public-domain designation changed")
+    if ign_metadata["license"] != "lov2":
+        raise ValueError("IGN licence designation changed")
+    sources = []
+    for slug, source_id, family, issuer, geography in (
+        ("bag", "nl-bag-pand", "kadaster-bag-pand", "Kadaster / PDOK", "Netherlands"),
+        ("ign", "fr-ign-bdtopo-batiment", "ign-bdtopo-batiment", "Institut national de l'information géographique et forestière (IGN)", "Brittany, France"),
+    ):
+        sample_name, metadata_name = slug + "-sample.geojson", slug + ("-schema.json" if slug == "bag" else "-schema.xml")
+        features = json.loads((destination / sample_name).read_text(encoding="utf-8"))["features"]
+        geometry_type = "Polygon" if slug == "bag" else "MultiPolygon"
+        if len(features) != 5 or any(feature["geometry"]["type"] != geometry_type for feature in features):
+            raise ValueError("retained native sample shape changed")
+        native_key = "identificatie" if slug == "bag" else "cleabs"
+        keys = [feature["properties"][native_key] for feature in features]
+        if (len(set(keys)) != 5 or not all(isinstance(key, str) and len(key) == (16 if slug == "bag" else 24) for key in keys)):
+            raise ValueError("native key wire representation changed")
+        schema_url = receipts[metadata_name]["url"]
+        guide_url = receipts["ign-bdtopo-description.pdf"]["url"]
+        labels = {"geometry": ("building.geometry", bag_schema["description"] if slug == "bag" else "Type de géométrie : MultiPolygone 3D",
+                    schema_url + "#/properties/geometry" if slug == "bag" else guide_url + "#page=65")}
+        if slug == "ign":
+            labels.update(cleabs=("building.sourceKey", "Identifiant unique de l'objet.", guide_url + "#page=20"),
+                          origine_du_batiment=(None, "Précise l'origine de la géométrie du Bâtiment ou Réservoir.", guide_url + "#page=65"))
+        fields, excluded = [], []
+        for name in [*sorted({key for feature in features for key in feature["properties"]}), "geometry"]:
+            path = "geometry" if name == "geometry" else "properties." + name
+            observed = wire_observation(path, features)
+            if name not in labels:
+                reason = "Outside this bounded curation; retained without a target label. Field presence or type alone does not establish one of the three target meanings."
+                if slug == "bag" and name == "identificatie":
+                    reason = "Issuer defines a unique native object identifier, but retained lifecycle stability wording describes the separate service UUID id. Native identificatie revision stability is unestablished for the fixed stable-key target; do not transfer the UUID claim."
+                elif name == "identifiants_rnb":
+                    reason = "Separate RNB references are not substituted for the native BD TOPO cleabs key; relationship and revision semantics are outside this curation."
+                elif name == "identifiants_sources":
+                    reason = f"{observed['nullCount']} of {len(features)} source-reference values are present null; remaining native values are preserved. These source references are not substituted for cleabs; exact relationship and revision semantics are outside this curation."
+                excluded.append({"path": path, "decision": "unknown", "reason": reason,
+                    "evidence": receipts["bag-identification-catalogue.html"]["url"] if slug == "bag" and name == "identificatie" else schema_url,
+                    "observedWire": observed})
+                continue
+            target, definition, label_url = labels[name]
+            source_field = "geometrie" if slug == "ign" and name == "geometry" else name
+            locator = {"sourceField": source_field}
+            if slug == "bag":
+                locator["fieldPointer"] = "/properties/" + name
+            declared = ("geometry-polygon" if slug == "bag" else "gml:MultiSurfacePropertyType") if name == "geometry" else "xsd:string"
+            field = {"path": path, "target": target, "definition": definition,
+                     "decision": "positive" if target else "negative", "declaredType": declared,
+                     "observedWire": observed, "inputEvidence": locator, "evidence": label_url}
+            if target:
+                field["wireCompatibleRows"] = wire_compatible_rows(target, path, features)
+                if field["wireCompatibleRows"] != 5:
+                    raise ValueError("new positive lacks five compatible native values")
+            fields.append(field)
+        permission = {"trainingEligible": True, "productionEligible": False, "sarvamDerived": False,
+            "scope": "Bounded offline foreign schema research from this retained sample; no model run or production qualification",
+            "licence": "Public Domain Mark 1.0 (publisher status mark, not a licence grant)" if slug == "bag" else "Licence Ouverte / Open Licence 2.0",
+            "url": receipts["bag-landing.json" if slug == "bag" else "ign-open-licence.html"]["url"],
+            "basis": "Issuer marks this BAG data service public domain; local schema extraction and independent labels use that designated data, without importing rights from unrelated products." if slug == "bag" else "Issuer dataset metadata designates lov2; retained terms expressly permit extraction, transformation and derived information, with source/update-date attribution and no endorsement.",
+            "attribution": "Kadaster / PDOK, BAG Pand; service snapshot 2026-09-29; https://api.pdok.nl/kadaster/bag/ogc/v2/" if slug == "bag" else "IGN, BD TOPO; dataset last modified 2026-09-25, live WFS snapshot 2026-09-29; https://www.data.gouv.fr/datasets/bd-topo-r; Licence Ouverte 2.0; no IGN endorsement",
+        }
+        sources.append({"id": source_id, "family": family, "split": "train", "issuer": issuer, "geography": geography,
+            "datasetUrl": "https://api.pdok.nl/kadaster/bag/ogc/v2/" if slug == "bag" else "https://www.data.gouv.fr/datasets/bd-topo-r",
+            "acquiredAt": receipts[sample_name]["acquiredAt"], "sample": {**receipts[sample_name], "rows": 5},
+            "metadata": receipts[metadata_name], "supportingEvidence": [item for name, item in receipts.items() if name.startswith(slug + "-") and name not in (sample_name, metadata_name)],
+            "permission": permission, "geometryCrs": "OGC CRS84 longitude/latitude; no vertical coordinate in the sample" if slug == "bag" else "WFS EPSG:4326 output, EPSG:3857 query bounds; native GeoJSON longitude/latitude/Z preserved; vertical datum unqualified",
+            "representation": "Five unchanged native " + geometry_type + " features; no row multiplication, simplification, translation or reprojection",
+            "sourceVersion": "Live OGC API v2 snapshot 2026-09-29; no frozen national release" if slug == "bag" else "BD TOPO v3.5 guide July 2026; live WFS snapshot 2026-09-29; dataset metadata modified " + ign_metadata["last_modified"],
+            "labelOrigin": "Retained issuer definitions/schema and native wire checks; independent source-only candidate awaiting review",
+            "inputEvidence": {"format": "ogc-json-schema", "titlePointer": "/title"} if slug == "bag" else {"format": "wfs-xsd", "featureElement": "batiment", "complexType": "batimentType"},
+            "fields": fields, "excludedFields": excluded,
+            "sourceNotes": "Pand is a registered building, not a parcel, floor or legal unit. Native identificatie keeps all leading zeros but remains unlabelled for missing lifecycle evidence. Top-level service UUID is a separate ID; no substitution." if slug == "bag" else "Guide pages 13/20 define unique Cleabs and preserve it for attribute/geometry edits, with delete/recreate, split and merge exceptions. Source revision remains part of identity. Pages 65/66 distinguish cadastral wall contours from aerial roof contours; all five sampled origins are Cadastre. MultiPolygon Z, heights, storey and dwelling counts do not qualify datum, measurements, floors, units or ownership. WFS service ids and RNB references remain distinct.",
+        })
+    return sources
 
 
 def write_once(path: Path, value: dict) -> None:
@@ -202,25 +316,39 @@ def main() -> None:
     parser.add_argument("--input-corpus", required=True, type=Path)
     parser.add_argument("--prior-proof", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
+    parser.add_argument("--footprint-key-pack", type=Path, help="Use only the retained SOURCE-KEY-01 pack to append source-only V8")
     args = parser.parse_args()
-    if sha256_file(args.input_corpus) != V6_SHA256 or sha256_file(args.prior_proof) != V6_PROOF_SHA256:
-        parser.error("requires the accepted immutable V6 corpus and exact input proof")
+    v8 = args.footprint_key_pack is not None
+    prior_sha, prior_proof_sha = (V7_SHA256, V7_PROOF_SHA256) if v8 else (V6_SHA256, V6_PROOF_SHA256)
+    version, prior_version = ("v8", "V7") if v8 else ("v7", "V6")
+    if sha256_file(args.input_corpus) != prior_sha or sha256_file(args.prior_proof) != prior_proof_sha:
+        parser.error(f"requires the accepted immutable {prior_version} corpus and exact input proof")
     previous, prior_examples = load_examples(args.input_corpus, args.originals_dir)
     prior_proof = json.loads(args.prior_proof.read_text(encoding="utf-8"))
     if input_proof(args.input_corpus, prior_examples) != prior_proof:
-        raise ValueError("V6 proof no longer replays exactly")
+        raise ValueError(f"{prior_version} proof no longer replays exactly")
     corpus = copy.deepcopy(previous)
     corpus.update(schemaVersion="usp-field-mapping-corpus-v7", previousCorpusSha256=V6_SHA256,
                   scope="Offline foreign-source schema research; V7 is corpus/input freeze only; no model run authorized",
                   curationNotes="V7 appends four independent training families only: Cambridge/Oregon building names, Tweed building names/polygons, and USGS watershed wrong-target controls. Every V6 source object, split, label and exact input is preserved. Point IDs stay unknown because the fixed key target identifies footprint features. No new key-positive family, Indian training qualification, fit, inference, threshold selection, held-out scoring or promotion is claimed.")
-    corpus["sources"].extend(training_additions(args.originals_dir))
+    if v8:
+        args.originals_dir, args.output_dir = args.originals_dir.resolve(), args.output_dir.resolve()
+        if not args.output_dir.is_relative_to(args.originals_dir):
+            raise ValueError("V8 output must be inside the existing originals root")
     args.output_dir.mkdir(parents=True, exist_ok=False)
-    corpus_path = args.output_dir / "learning-corpus-v7-immutable.json"
-    proof_path = args.output_dir / "input-proof-v7.json"
+    if v8:
+        corpus.update(schemaVersion="usp-field-mapping-corpus-v8", previousCorpusSha256=V7_SHA256,
+            scope="Offline foreign-source schema research; V8 source/input freeze only; no model run authorized",
+            curationNotes="V8 preserves all 16 V7 source objects, labels, splits and 88 inputs. Two independent training families add BAG geometry and IGN Cleabs/geometry plus one geometry-origin negative. BAG native identifier lacks retained lifecycle evidence and stays unknown. Native publisher names/types only; no translated or reviewer-authored descriptions in profiles. No fit, inference, threshold selection, evaluation or promotion.")
+        corpus["sources"].extend(footprint_key_additions(args.originals_dir, args.output_dir, args.footprint_key_pack))
+    else:
+        corpus["sources"].extend(training_additions(args.originals_dir))
+    corpus_path = args.output_dir / f"learning-corpus-{version}-immutable.json"
+    proof_path = args.output_dir / f"input-proof-{version}.json"
     write_once(corpus_path, corpus)
     _, examples = load_examples(corpus_path, args.originals_dir)
     proof = input_proof(corpus_path, examples)
-    preserve_v6(previous, corpus, prior_proof, proof)
+    (preserve_v7 if v8 else preserve_v6)(previous, corpus, prior_proof, proof)
     write_once(proof_path, proof)
     counts = {}
     for split in ("train", "calibration", "evaluation", "diagnostic"):
@@ -230,15 +358,15 @@ def main() -> None:
                          "positiveFamiliesByTarget": {target["id"]: sorted({item["family"] for item in subset
                                                        if item["target"] == target["id"] and item["wireCompatibleRows"]})
                                                       for target in corpus["targets"]}}
-    summary = {"schemaVersion": "usp-training-coverage-input-freeze-v7", "corpusSha256": sha256_file(corpus_path),
-               "inputProofSha256": sha256_file(proof_path), "previousCorpusSha256": V6_SHA256,
-               "previousInputProofSha256": V6_PROOF_SHA256, "preservedInputs": len(prior_examples),
+    summary = {"schemaVersion": f"usp-training-coverage-input-freeze-{version}", "corpusSha256": sha256_file(corpus_path),
+               "inputProofSha256": sha256_file(proof_path), "previousCorpusSha256": prior_sha,
+               "previousInputProofSha256": prior_proof_sha, "preservedInputs": len(prior_examples),
                "newFamilies": [source["family"] for source in corpus["sources"][len(previous["sources"]):]],
                "counts": counts, "modelRun": "not_run", "heldOutScoring": "not_run",
-               "gaps": ["No additional footprint-key positive family; point IDs remain unknown",
+               "gaps": ["Only IGN adds a footprint-key positive family; BAG native-key lifecycle stability remains unestablished" if v8 else "No additional footprint-key positive family; point IDs remain unknown",
                         "No qualified Indian named-building/string-key source acquired",
                         "Schema coverage is not model quality, runtime conversion or source accuracy qualification"]}
-    write_once(args.output_dir / "coverage-freeze-v7.json", summary)
+    write_once(args.output_dir / f"coverage-freeze-{version}.json", summary)
     print(json.dumps(summary))
 
 
