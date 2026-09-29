@@ -31,10 +31,15 @@ PYTHONPATH=services/geo /path/to/venv/bin/python \
 ```
 
 The device may be `auto`, `cpu`, or `mps`; CPU uses float32 and MPS uses
-bfloat16. On Windows the runner places each worker and its children in an
-owned Job Object, limits their combined private bytes, observes combined RSS,
-and terminates the tree on timeout. Each region is capped at 240 seconds and
-the full trial at 600 seconds. The receipt records
+bfloat16. On Windows a standard-library bootstrap waits for Job Object
+attachment before executing each renderer or model worker in that same process.
+The job limits its private bytes; the runner observes combined descendant RSS
+and stops identity-pinned descendants even where nested Windows jobs do not
+inherit them. Rendering is capped at 60 seconds per region, model
+inference at 240 seconds per region, and these stages share a 600-second
+processing budget. Initial source/model hash and metadata validation occurs
+before that budget and is bounded by input sizes, not by a wall-clock timer.
+The receipt records
 the selected device and dtype, source, model, plan, region, render, artifact,
 and resource hashes. Worker errors or resource caps stop the trial. A no-text
 result is marked unusable; a failed region stops the remaining selection.
