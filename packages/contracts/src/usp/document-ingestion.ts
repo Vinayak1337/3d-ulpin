@@ -13,10 +13,25 @@ export const DocumentInputSchema=z.strictObject({version:z.literal(DOCUMENT_VERS
   subject:z.string().min(1).max(256),accessSha256:hash,policyVersion:z.literal(DOCUMENT_POLICY),readerSha256:hash,
   gatewayPolicySha256:hash.nullable(),layoutCap:z.number().int().min(0).max(100).nullable(),mode:z.enum(['native_only','propose'])});
 export const DocumentLocatorSchema=z.strictObject({label:z.string().min(1).max(512),page:z.number().int().positive().optional(),
-  row:z.number().int().positive().optional(),line:z.number().int().positive().optional(),
-  paragraph:z.number().int().positive().optional(),table:z.number().int().positive().optional(),column:z.number().int().positive().optional(),characterStart:rev,characterEnd:rev}).refine(v=>v.characterEnd>=v.characterStart);
+  row:z.number().int().positive().optional(),line:z.number().int().positive().optional(),lineEnd:z.number().int().positive().optional(),
+  paragraph:z.number().int().positive().optional(),table:z.number().int().positive().optional(),column:z.number().int().positive().optional(),
+  headerRow:z.number().int().positive().optional(),
+  // Present on newly partitioned parts. Older native receipts remain readable.
+  unitId:id.optional(),unitSha256:hash.optional(),segmentIndex:rev.optional(),segmentCount:z.number().int().positive().optional(),
+  characterStart:rev,characterEnd:rev}).superRefine((value,ctx)=>{
+    if(value.characterEnd<value.characterStart)ctx.addIssue({code:'custom',message:'Character range is reversed.'});
+    if(value.lineEnd!==undefined && (value.line===undefined || value.lineEnd<value.line))
+      ctx.addIssue({code:'custom',message:'A line range needs its first line.'});
+    const group=[value.unitId,value.unitSha256,value.segmentIndex,value.segmentCount];
+    if(group.some(item=>item!==undefined) && group.some(item=>item===undefined))
+      ctx.addIssue({code:'custom',message:'A continuation needs its complete native-unit pin.'});
+    if(value.segmentIndex!==undefined && value.segmentCount!==undefined && value.segmentIndex>=value.segmentCount)
+      ctx.addIssue({code:'custom',message:'Continuation index exceeds its native unit.'});
+  });
 export const DocumentPartSchema=z.strictObject({id,sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
-  text:z.string().min(1).max(DOCUMENT_LIMITS.partCharacters),sha256:hash,locator:DocumentLocatorSchema,method:z.literal('native_text')});
+  text:z.string().min(1).max(DOCUMENT_LIMITS.partCharacters),sha256:hash,locator:DocumentLocatorSchema,method:z.literal('native_text')})
+  .refine(part=>part.locator.unitId===undefined || part.locator.characterEnd-part.locator.characterStart===part.text.length,
+    'A partitioned native part must match its exact character span.');
 export const DocumentProposalSchema=z.strictObject({field:z.string().min(1).max(120),value:z.string().min(1).max(512),
   partId:id,quote:z.string().min(1).max(1000)});
 export const DocumentModelOutputSchema=z.strictObject({candidates:z.array(DocumentProposalSchema).max(40)});
