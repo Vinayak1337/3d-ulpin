@@ -1,5 +1,5 @@
 // Renders the reel frame by frame (deterministic) and encodes it with ffmpeg. SCALE=2 renders 3840 × 2160.
-// The picture is the same for both narrators; VOICE=male|female picks the narration for the audio mode.
+// VOICE picks the narration folder under vo/ (narrator-qwen, narrator-chatterbox or narrator-bulbul); the picture's timing follows it.
 //   node video/reel/render.mjs stills 1,20,45 out/        → PNG stills at those seconds
 //   node video/reel/render.mjs video out/launch.mp4 [fps] [workers] [from] [to]
 // Serve the worktree root first: python3 -m http.server 8790 --bind 127.0.0.1
@@ -12,7 +12,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(join(root, 'node_modules/.pnpm/playwright@1.63.0/node_modules/playwright/'));
 const { chromium } = require('playwright');
 const SCALE = +(process.env.SCALE ?? 1);
-const URL_ = process.env.REEL_URL ?? `http://127.0.0.1:8790/video/reel/index.html?render&scale=${SCALE}&fps=${process.env.FPS ?? 30}&voice=${process.env.VOICE ?? 'male'}`;
+const URL_ = process.env.REEL_URL ?? `http://127.0.0.1:8790/video/reel/index.html?render&scale=${SCALE}&fps=${process.env.FPS ?? 30}&voice=${process.env.VOICE ?? 'narrator-qwen'}`;
 const [mode, arg, ...rest] = process.argv.slice(2);
 const out = rest[0]; // stills: directory · mux: audio file
 const GPU = process.env.GPU !== '0';
