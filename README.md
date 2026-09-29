@@ -28,6 +28,8 @@ The [recorded local milestone](docs/evidence/usp/continuation-2026-09-23/README.
 
 ## Local operation and current cleanup
 
+Moving to another machine: use [the desktop transfer and restore guide](docs/DESKTOP_SETUP.md) alongside the private full-transfer ZIP. It preserves the selected existing databases, object stores and jobs in separate profiles, with configuration encrypted outside Git.
+
 The [startup guide](docs/OFFICER_STARTUP.md) describes the service boundary and current safeguards. The obsolete repository/Uttam snapshot bootstrap and synthetic seed/replay instructions are retired from active use. A private preservation archive is not permission to restore/reseed it. Do not overwrite `.env`, reset populated volumes, export a replacement snapshot or run a historical guide's commands.
 
 The user authorizes assigned backend plan tasks under the [normalized architecture and streaming decisions](docs/usp-agent-handoffs/backend-streaming-plan.md). The lead hardens plans; ordinary workers execute in separate worktrees. One official city/district backend streaming rung is required for the finale; public-portal work remains full product. The user owns UI redesign; preserve compatible API/saved-route behavior and unique inspection capabilities. The lead may work directly or use ordinary authorized Codex tasks, not subagents. No push, deployment or public activation is implied.
