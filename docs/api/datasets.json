@@ -4064,6 +4064,112 @@
         "BD TOPO guide says identifier may change on delete/recreate and split/merge; preserve source version",
         "Topographic objects and Z coordinates do not establish legal unit, surveyed height datum or Indian property identity"
       ]
+    },
+    {
+      "id": "fco-hospitality-2014",
+      "manifest": "docs/evidence/usp/native-xlsx/sources.json",
+      "manifestSha256": "7b2aeaa1257c55040688dd574d8372b4ae329ea392b0092d32650b1646da972a",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "guide": "docs/evidence/usp/native-xlsx-handoff.md",
+      "issuer": "Foreign & Commonwealth Office, United Kingdom",
+      "datasetUrl": "https://www.gov.uk/government/publications/foreign-office-senior-staff-quarterly-returns-january-to-march-2014",
+      "originalUrl": "https://assets.publishing.service.gov.uk/media/5a7d9e6e40f0b630d051c6a5/Senior_Staff_Hospitality_Received__Cabinet_Office_.xlsx",
+      "acquiredAt": "2026-09-29T19:26:07.672363+00:00",
+      "geography": "United Kingdom, test only",
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "standingInstallation": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/desktop-ai04e-native-xlsx/Senior_Staff_Hospitality_Received__Cabinet_Office_.xlsx",
+        "bytes": 25657,
+        "sha256": "aa301b90933f3b779a69a855f271fa7ab6217b5e0a93b279fca7636d675f32f4",
+        "format": "xlsx",
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "reference": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+        "note": "GOV.UK publication footer states Open Government Licence v3.0 except where otherwise stated; no resource-specific exception was visible. Redistribution and ML use were not assessed."
+      },
+      "reference": {
+        "horizontal": null,
+        "vertical": null,
+        "globalPlacement": "not_applicable"
+      },
+      "runtimeEvidence": {
+        "workerCommit": "cf6d9e17aea65a31bc8a0f2d8157b6a47bd595fb",
+        "correctionCommit": "6f62c4ed354b2b67392b7dea7d4c4f717e0cd1c2",
+        "integratedCorrection": "ccbfed4",
+        "review": "docs/evidence/usp/desktop-backend-review/native-xlsx-correction-review.md",
+        "receipt": "E:/BhuAayam-data/task-data/desktop-ai04e-native-xlsx/runtime-2026-09-29T20-09-42-220Z.json",
+        "receiptSha256": "e1644364246c9f8cb3b035343f99c996efc5d6cc2b64778254dcc39d2ebff25d",
+        "readerSha256": "f257cbc6ba64c95f722f6e4094295c302bd00ca1fe253bcbdf90d14466f5aeee",
+        "parts": 354,
+        "scope": "Exact native sheet/cell references, unchanged original downloads and cross-case404; zero provider calls"
+      },
+      "observedStructure": {
+        "sheets": 1,
+        "xmlCellElements": 354,
+        "explicitNoValueCells": 297,
+        "formulaCells": 0
+      },
+      "limitations": [
+        "Published for January–March 2014, but the native sheet title says Q2 July - September 2012-13; the title is retained verbatim and no period is inferred",
+        "Administrative transparency table, not Indian property, floor, geometry, ownership or rights evidence",
+        "No formula recalculation, formatting, OCR, arbitrary-workbook accuracy, property association or training qualification"
+      ]
+    },
+    {
+      "id": "dfe-discharge-coefficient-calculator",
+      "manifest": "docs/evidence/usp/native-xlsx/sources.json",
+      "manifestSha256": "7b2aeaa1257c55040688dd574d8372b4ae329ea392b0092d32650b1646da972a",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "guide": "docs/evidence/usp/native-xlsx-handoff.md",
+      "issuer": "Department for Education, United Kingdom",
+      "datasetUrl": "https://www.gov.uk/government/publications/classvent-and-classcool-school-ventilation-design-tool",
+      "originalUrl": "https://assets.publishing.service.gov.uk/media/5b7add7540f0b64350cbf814/Discharge_coefficient_calculator.xlsx",
+      "acquiredAt": "2026-09-29T19:34:29.037441+00:00",
+      "geography": "United Kingdom, test only",
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "standingInstallation": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/desktop-ai04e-native-xlsx/Discharge_coefficient_calculator.xlsx",
+        "bytes": 28333,
+        "sha256": "860857b1bbbb0dda4a2d5f5446eea7183fe2d7521f116a44f29f102011f0881e",
+        "format": "xlsx",
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "reference": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+        "note": "GOV.UK publication footer states Open Government Licence v3.0 except where otherwise stated; no resource-specific exception was visible. Redistribution and ML use were not assessed."
+      },
+      "reference": {
+        "horizontal": null,
+        "vertical": null,
+        "globalPlacement": "not_applicable"
+      },
+      "runtimeEvidence": {
+        "workerCommit": "cf6d9e17aea65a31bc8a0f2d8157b6a47bd595fb",
+        "correctionCommit": "6f62c4ed354b2b67392b7dea7d4c4f717e0cd1c2",
+        "integratedCorrection": "ccbfed4",
+        "review": "docs/evidence/usp/desktop-backend-review/native-xlsx-correction-review.md",
+        "receipt": "E:/BhuAayam-data/task-data/desktop-ai04e-native-xlsx/runtime-2026-09-29T20-09-42-220Z.json",
+        "receiptSha256": "e1644364246c9f8cb3b035343f99c996efc5d6cc2b64778254dcc39d2ebff25d",
+        "readerSha256": "f257cbc6ba64c95f722f6e4094295c302bd00ca1fe253bcbdf90d14466f5aeee",
+        "parts": 324,
+        "scope": "Exact native sheet/cell references, unchanged original downloads and cross-case404; zero provider calls"
+      },
+      "observedStructure": {
+        "sheets": 2,
+        "xmlCellElements": 324,
+        "formulaCells": 8,
+        "formulaCellsWithoutCachedValue": 0,
+        "hasDrawingPart": true
+      },
+      "limitations": [
+        "Calculation workbook; cached formula results may be stale and are not independent measured facts",
+        "Drawing and printer settings are outside native cell extraction",
+        "Not Indian property, floor, geometry, ownership or rights evidence",
+        "No formula recalculation, formatting, OCR, arbitrary-workbook accuracy, property association or training qualification"
+      ]
     }
   ],
   "offlineLearningCorpus": {

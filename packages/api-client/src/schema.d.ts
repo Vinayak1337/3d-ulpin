@@ -30919,7 +30919,7 @@ export interface components {
                 /** @enum {string} */
                 status: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                 /** @enum {string} */
-                format: "pdf" | "text" | "csv" | "docx" | "png" | "jpeg" | "archive" | "unsupported";
+                format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
                 readerSha256: string;
                 code: string | null;
                 warnings: string[];
@@ -30961,6 +30961,13 @@ export interface components {
                     table?: number;
                     column?: number;
                     headerRow?: number;
+                    sheet?: string;
+                    sheetIndex?: number;
+                    sheetId?: number;
+                    cell?: string;
+                    /** @enum {string} */
+                    cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                    cellType?: string;
                     /** Format: uuid */
                     unitId?: string;
                     unitSha256?: string;
