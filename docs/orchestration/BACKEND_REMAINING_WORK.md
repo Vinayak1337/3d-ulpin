@@ -28,6 +28,8 @@ The separate full-product public portal, conversational/MCP assistance, generati
 
 ## Current dispatch and exclusive ownership
 
+AI-04E correction `6f62c4e` returned with focused regressions and a new unchanged-source HTTP receipt; lead checked its hash and code delta. REVIEW-01 resumes a targeted correction review in `backend-review`. The document owner remains correction owner and is stopped with storage preserved. Integration/API handoff follows acceptance; AI-06C continues source-only at Astra/high per the user's updated effort preference.
+
 AI-06B code/result are accepted as `896594b` / `825fee2`, with independent report `7482545`. REVIEW-02 is finished; its saved-evidence replay found no actionable issue. V8 source-only curation and XLSX corrections remain active with their existing owners. Useful calibration is development-only; no new inference, promotion or release gate is assigned.
 
 AI-04E review `630dbae` returned two P2 findings: encoding-unsafe XML declaration rejection and generated empty-cell markers allowed into model proposals. The document owner in `b3eb` resumes corrections on its existing candidate, including narrowly owned `document-model.ts` evidence eligibility/validation, affected reader/policy pin and focused regressions. REVIEW-01 is finished until the correction returns. Native XLSX remains unintegrated; its unchanged real-source receipt is preserved.
