@@ -98,6 +98,26 @@ export async function loadSealedStreamedProfileTx(client:PoolClient,profileJobId
     conflict('The approved profile generation changed or is incomplete.');
   return {input,profile:body};
 }
+/** Immutable observed coverage stays reviewable as the raw reader advances or later fails framing. */
+export async function loadProvisionalStreamedProfileTx(client:PoolClient,profileJobId:string,generation:number,
+  expectedHash:string,rawJobId:string,caseId:string,sourceId:string){
+  const job=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='streamed-profile' FOR SHARE",
+    [profileJobId,caseId,sourceId])).rows[0]??notFound('Streamed profile job not found.');
+  const input=StreamedProfileInputSchema.parse(job.payload);
+  await assertStreamedProfileInputTx(client,input);
+  await assertRawSourceIntegrityTx(client,input);
+  if(input.rawJobId!==rawJobId)conflict('The observed prefix belongs to another raw source job.');
+  const body=await readStreamedGenerationTx(client,input,generation);
+  if(body.coverage!=='provisional'||!body.unknownRemainder||body.generationHash!==expectedHash
+    ||body.rawChunkIndex!==generation||!body.rawResultSha256||body.accepted===0)
+    conflict('An immutable observed source prefix is required.');
+  const rawSlot=(await client.query(`SELECT result_sha256 FROM usp_streaming_vector_slots
+    WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
+    [rawJobId,input.sourceRevision,generation])).rows[0];
+  if(rawSlot?.result_sha256!==body.rawResultSha256)
+    conflict('The observed prefix no longer matches its published raw chunk.');
+  return {input,profile:body};
+}
 async function statusTx(client:PoolClient,input:StreamedProfileInput){
   await assertStreamedProfileInputTx(client,input);
   const sourceIntegrityFailed=await rawSourceIntegrityTx(client,input);
