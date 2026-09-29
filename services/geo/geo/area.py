@@ -569,18 +569,14 @@ def extract_document(data):
         for index, line in enumerate(text.splitlines()):
             add(line, {"line": index + 1, "label": f"line {index + 1}"})
     elif data["format"] == "pdf":
-        from pypdf import PdfReader
+        from .native_pdf import extract_native_pdf_pages
         try:
-            reader = PdfReader(io.BytesIO(raw), strict=True)
-            if reader.is_encrypted:
-                raise InputError("Encrypted PDFs require an explicitly decrypted source.")
-            if len(reader.pages) > MAX_DOCUMENT_PAGES:
-                raise InputError("Native PDF extraction supports at most 100 pages.")
-            for index, page in enumerate(reader.pages):
-                contents = page.get_contents()
-                if contents is not None and len(contents.get_data()) > MAX_PDF_PAGE_CONTENT_BYTES:
-                    raise InputError("A PDF page exceeds the native extraction content limit.")
-                text = page.extract_text() or ""
+            pages = extract_native_pdf_pages(
+                raw, max_pages=MAX_DOCUMENT_PAGES,
+                max_page_content_bytes=MAX_PDF_PAGE_CONTENT_BYTES,
+                max_text_chars=MAX_DOCUMENT_TEXT,
+            )
+            for index, text in enumerate(pages):
                 # Use paragraph labels only where native blank lines support them.
                 # Many born-digital PDFs have none; keep their exact extracted
                 # line endings in bounded, page-local line groups instead.
