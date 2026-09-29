@@ -3970,7 +3970,7 @@
       "geography": "Netherlands; five sampled features near 6.87 E, 53.32 N",
       "apiInstallation": "not-installed",
       "standingInstallation": false,
-      "qualification": "Acquired and inspected official source candidate; no learner eligibility, corpus, runtime or production qualification.",
+      "qualification": "Reviewed V8 source/input freeze for bounded offline foreign schema research; no model, runtime, association or production qualification.",
       "content": {
         "externalPath": "E:/BhuAayam-data/task-data/desktop-source-key-01/bag-sample.geojson",
         "bytes": 9263,
@@ -3991,7 +3991,7 @@
         "locator": "/links[rel=license] = Public Domain Mark 1.0; https://creativecommons.org/publicdomain/mark/1.0/deed.nl",
         "additionalPublisherPage": "bag-pdok-publication.html",
         "additionalPublisherPageSha256": "820f5a79f44a59772cae96c602a102d0c0b533e7e26bcc788a2caf071e0538a4",
-        "interpretation": "issuer marks this BAG service public domain; source-specific ML reuse review remains with sole learner"
+        "interpretation": "Issuer Public Domain Mark 1.0 supports this reviewed offline schema use; retain Kadaster/PDOK attribution. The mark is not a separate licence grant."
       },
       "reference": {
         "horizontal": "OGC CRS84 longitude/latitude, declared in collection CRS list and observed GeoJSON coordinates",
@@ -3999,14 +3999,20 @@
         "heightOrFloorSemantics": "not_claimed"
       },
       "learning": {
-        "eligibility": "pending-sole-learner-review",
-        "corpusIncluded": false,
-        "split": null
+        "eligibility": "reviewed-offline-schema-research",
+        "corpusIncluded": true,
+        "split": "train",
+        "corpusVersion": "usp-field-mapping-corpus-v8",
+        "review": "docs/evidence/usp/desktop-backend-review/v8-corpus-review.md",
+        "fields": [
+          "geometry"
+        ]
       },
       "limitations": [
         "Five features are a bounded live-service sample, not proof of current nationwide completeness or global key uniqueness by count alone",
         "GeoJSON top-level UUID id differs from native BAG identificatie; no substitution or coercion",
-        "A BAG pand is a registered building object, not an Indian parcel ULPIN, legal unit or training label"
+        "A BAG pand is a registered building object, not an Indian parcel ULPIN or legal unit; only its geometry profile is labelled in V8.",
+        "Native identificatie remains unknown for the stable-key target; retained lifecycle wording applies to the distinct service UUID."
       ]
     },
     {
@@ -4023,7 +4029,7 @@
       "geography": "France; five WFS features in a bounded Brittany-area query near 4.02 W, 47.93 N",
       "apiInstallation": "not-installed",
       "standingInstallation": false,
-      "qualification": "Acquired and inspected official source candidate; no learner eligibility, corpus, runtime or production qualification.",
+      "qualification": "Reviewed V8 source/input freeze for bounded offline foreign schema research; no model, runtime, association or production qualification.",
       "content": {
         "externalPath": "E:/BhuAayam-data/task-data/desktop-source-key-01/ign-sample.geojson",
         "bytes": 7456,
@@ -4046,7 +4052,7 @@
         "termsSha256": "1b47e7405eebec917e70b20ad08d2bbc60934653eaad3794ccc7db5985027826",
         "termsUrl": "https://www.data.gouv.fr/pages/legal/licences/etalab-2.0",
         "termsLocator": "Licence Ouverte 2.0 > Réutilisation de l'Information: permits copying, adapting, extracting, transforming and commercial exploitation with source/date attribution",
-        "interpretation": "issuer-designated open licence supports candidate source review; sole learner decides training eligibility and attribution handling"
+        "interpretation": "Reviewed offline schema use under issuer-designated Licence Ouverte 2.0; preserve IGN attribution, dataset update date and snapshot date without endorsement."
       },
       "reference": {
         "horizontal": "WFS request specifies EPSG:4326 output and EPSG:3857 bounding box; observed GeoJSON longitude/latitude",
@@ -4054,9 +4060,16 @@
         "heightOrFloorSemantics": "GeoJSON has Z coordinates; their vertical datum and building height semantics were not established"
       },
       "learning": {
-        "eligibility": "pending-sole-learner-review",
-        "corpusIncluded": false,
-        "split": null
+        "eligibility": "reviewed-offline-schema-research",
+        "corpusIncluded": true,
+        "split": "train",
+        "corpusVersion": "usp-field-mapping-corpus-v8",
+        "review": "docs/evidence/usp/desktop-backend-review/v8-corpus-review.md",
+        "fields": [
+          "properties.cleabs",
+          "geometry",
+          "properties.origine_du_batiment"
+        ]
       },
       "limitations": [
         "Five live WFS features are not a frozen national release or full uniqueness audit",
@@ -4174,10 +4187,10 @@
   ],
   "offlineLearningCorpus": {
     "manifest": "docs/api/learning-corpus.json",
-    "manifestSha256": "81773eaf350d96778bc59c8f0f61a0d66e66cf335edb1ec167dd2ce1efd718c7",
+    "manifestSha256": "ff9c80d3e1c31dec126d7f534a88c45b37ed0d589b35792ad67d4b2ed850efee",
     "manifestHashScope": "UTF-8 metadata with LF line endings; retained source originals use exact-byte hashes.",
     "guide": "docs/api/learning.md",
-    "scope": "Offline foreign-source schema research; V7 is corpus/input freeze only; no model run authorized",
+    "scope": "Offline foreign-source schema research; V8 source/input freeze only; no model run authorized",
     "apiInstallation": "not-installed",
     "productionModelPromoted": false,
     "availability": "Originals retained outside Git; manifest pins are not repository-byte verification.",
@@ -4732,6 +4745,88 @@
           "scope": "Bounded offline schema research on the retained publisher metadata and five-row sample"
         },
         "geometryCrs": "Source EPSG:3857; publisher query returns outSR=4326 GeoJSON"
+      },
+      {
+        "id": "nl-bag-pand",
+        "family": "kadaster-bag-pand",
+        "split": "train",
+        "issuer": "Kadaster / PDOK",
+        "geography": "Netherlands",
+        "datasetUrl": "https://api.pdok.nl/kadaster/bag/ogc/v2/",
+        "acquiredAt": "2026-09-29T19:47:38.411265+00:00",
+        "sample": {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/bag-sample.geojson",
+          "url": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/items?limit=5",
+          "acquiredAt": "2026-09-29T19:47:38.411265+00:00",
+          "httpStatus": 200,
+          "mediaType": "application/geo+json",
+          "sha256": "ce2d5bd723be82714271d82d262680e3cb905175c608f7247be77f9244937950",
+          "bytes": 9263,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785",
+          "rows": 5
+        },
+        "metadata": {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/bag-schema.json",
+          "url": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/schema?f=json",
+          "acquiredAt": "2026-09-29T19:47:38.877248+00:00",
+          "httpStatus": 200,
+          "mediaType": "application/schema+json",
+          "sha256": "d86df0198180362fec2d8fbb512ecd490283e501812a4e532ef703fa887c2de2",
+          "bytes": 1741,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+        },
+        "permission": {
+          "trainingEligible": true,
+          "productionEligible": false,
+          "sarvamDerived": false,
+          "scope": "Bounded offline foreign schema research from this retained sample; no model run or production qualification",
+          "licence": "Public Domain Mark 1.0 (publisher status mark, not a licence grant)",
+          "url": "https://api.pdok.nl/kadaster/bag/ogc/v2/?f=json",
+          "basis": "Issuer marks this BAG data service public domain; local schema extraction and independent labels use that designated data, without importing rights from unrelated products.",
+          "attribution": "Kadaster / PDOK, BAG Pand; service snapshot 2026-09-29; https://api.pdok.nl/kadaster/bag/ogc/v2/"
+        },
+        "geometryCrs": "OGC CRS84 longitude/latitude; no vertical coordinate in the sample"
+      },
+      {
+        "id": "fr-ign-bdtopo-batiment",
+        "family": "ign-bdtopo-batiment",
+        "split": "train",
+        "issuer": "Institut national de l'information géographique et forestière (IGN)",
+        "geography": "Brittany, France",
+        "datasetUrl": "https://www.data.gouv.fr/datasets/bd-topo-r",
+        "acquiredAt": "2026-09-29T19:47:42.510431+00:00",
+        "sample": {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/ign-sample.geojson",
+          "url": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAME=BDTOPO_V3:batiment&COUNT=5&CRS=EPSG:4326&outputformat=application/json&bbox=-447003.741411712,6094782.887346813,-446392.2451854306,6095394.383573095,EPSG:3857",
+          "acquiredAt": "2026-09-29T19:47:42.510431+00:00",
+          "httpStatus": 200,
+          "mediaType": "application/json;charset=UTF-8",
+          "sha256": "7a9419936dda8c8dde647882c0f06d307b3d18d10324af2b5050c0394f873fc4",
+          "bytes": 7456,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785",
+          "rows": 5
+        },
+        "metadata": {
+          "file": "desktop-ai06a/completion-v8/revision-02/originals/ign-schema.xml",
+          "url": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAME=BDTOPO_V3:batiment",
+          "acquiredAt": "2026-09-29T19:47:43.153428+00:00",
+          "httpStatus": 200,
+          "mediaType": "application/gml+xml; version=3.2",
+          "sha256": "e02f6bb989a80ab542c583545280b0600025bb5497ac3c363fd54eb799e2472e",
+          "bytes": 4040,
+          "acquisitionReceiptSha256": "d908a440ff793e544bf4be6b645a3ce974d67faffba3763f2e854528c2f73785"
+        },
+        "permission": {
+          "trainingEligible": true,
+          "productionEligible": false,
+          "sarvamDerived": false,
+          "scope": "Bounded offline foreign schema research from this retained sample; no model run or production qualification",
+          "licence": "Licence Ouverte / Open Licence 2.0",
+          "url": "https://www.data.gouv.fr/pages/legal/licences/etalab-2.0",
+          "basis": "Issuer dataset metadata designates lov2; retained terms expressly permit extraction, transformation and derived information, with source/update-date attribution and no endorsement.",
+          "attribution": "IGN, BD TOPO; dataset last modified 2026-09-25, live WFS snapshot 2026-09-29; https://www.data.gouv.fr/datasets/bd-topo-r; Licence Ouverte 2.0; no IGN endorsement"
+        },
+        "geometryCrs": "WFS EPSG:4326 output, EPSG:3857 query bounds; native GeoJSON longitude/latitude/Z preserved; vertical datum unqualified"
       }
     ]
   }
