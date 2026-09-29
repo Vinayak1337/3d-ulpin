@@ -610,6 +610,24 @@
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
       "runtimeEvidence": "pending"
-    }
+    },
+    {"method":"POST","path":"/api/v1/ingestion/cases/{caseId}/rasters",
+      "operationId":"POST_api_v1_ingestion_cases_caseId_rasters","batch":"AI-05A","disposition":"added",
+      "nativeController":"raster-window","requestSchema":"RasterRetainSchema multipart",
+      "responseSchema":"RasterRetainReceiptSchema","responseStatus":201,"transportProfile":"multipart-bounded",
+      "maxBodyBytes":17825792,"runtimeEvidence":"pending"},
+    {"method":"POST","path":"/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/raster-windows",
+      "operationId":"POST_api_v1_ingestion_cases_caseId_sources_sourceId_raster_windows","batch":"AI-05A","disposition":"added",
+      "nativeController":"raster-window","requestSchema":"RasterWindowRequestSchema",
+      "responseSchema":"RasterWindowQueueReceiptSchema","responseStatus":202,"transportProfile":"json",
+      "runtimeEvidence":"pending"},
+    {"method":"GET","path":"/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/raster-windows/jobs/{jobId}",
+      "operationId":"GET_api_v1_ingestion_cases_caseId_sources_sourceId_raster_windows_jobs_jobId","batch":"AI-05A","disposition":"added",
+      "nativeController":"raster-window","requestSchema":null,"responseSchema":"RasterWindowStatusSchema",
+      "responseStatus":200,"transportProfile":"private-bounded-read","runtimeEvidence":"pending"},
+    {"method":"GET","path":"/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/raster-windows/jobs/{jobId}/artifact",
+      "operationId":"GET_api_v1_ingestion_cases_caseId_sources_sourceId_raster_windows_jobs_jobId_artifact","batch":"AI-05A","disposition":"added",
+      "nativeController":"raster-window","requestSchema":null,"responseSchema":"binary",
+      "responseStatus":200,"transportProfile":"private-bounded-read","runtimeEvidence":"pending"}
   ]
 }
