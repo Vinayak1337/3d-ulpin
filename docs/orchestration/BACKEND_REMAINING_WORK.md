@@ -28,6 +28,8 @@ The separate full-product public portal, conversational/MCP assistance, generati
 
 ## Current dispatch and exclusive ownership
 
+AI-06B returned `cc9f108` / `cb2bafd`; REVIEW-02 in `point-review` owns independent report-only review. Calibration passed its unchanged rule with 5/7 positives and zero incorrect accepts; training key coverage remains 0/2 and all final/diagnostic inference remains closed. AI-06C assigns the sole learner source-only V8 preparation from accepted BAG/IGN originals, preserving all V7 source objects, labels, splits and 88 input hashes. No inference, fit, download or promotion is authorized by that curation. REVIEW-01 retains XLSX review.
+
 SOURCE-KEY-01 returned `78f3dd0`; its bounded source pack is accepted after lead checks of all 11 hashes and native keys/issuer evidence. Kadaster BAG and IGN BD TOPO remain candidates outside the frozen corpus. The source worker is finished; the sole learner may assess them after the unchanged AI-06B comparison returns. No extra fit or corpus edit is assigned by this update.
 
 AI-04E returned candidate `cf6d9e1`; REVIEW-01 owns the report-only review in `backend-review`. Lead verified both workbook originals and the final HTTP receipt hash. XLSX is pending review/integration, not accepted or release-qualified. The document owner retains exclusive correction/Docker ownership; processing is stopped with storage preserved. Generated API/source updates follow acceptance.
