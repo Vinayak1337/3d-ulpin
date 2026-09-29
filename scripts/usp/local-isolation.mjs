@@ -1,5 +1,6 @@
 /** Fresh, loopback-only Colima profile for the FND integration test. */
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { userInfo } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,8 +30,15 @@ const endpoint = (value, protocol, port, path) => {
 /** Local OS identity attributes process writes; it does not authenticate a human. */
 export function localOperatorProcessProvenance() {
   const {uid, username: account} = userInfo();
-  assert(Number.isSafeInteger(uid) && uid >= 0, 'a local OS uid is required');
   assert(typeof account === 'string' && account.length > 0, 'a local OS account is required');
+  if (process.platform === 'win32') {
+    const output = execFileSync('whoami.exe', ['/user', '/fo', 'csv', '/nh'], {encoding:'utf8', timeout:3000}).trim();
+    const match = output.match(/,"(S-1-[0-9-]+)"$/i);
+    assert(match, 'a local Windows SID is required');
+    const sid = match[1];
+    return {kind:'local_windows_process', subject:`local-windows:${sid}`, sid, account, humanAuthenticated:false};
+  }
+  assert(Number.isSafeInteger(uid) && uid >= 0, 'a local OS uid is required');
   const subject = `local-os:${uid}:${account}`;
   assert(subject.length <= 256 && subject.trim() === subject && !/[\x00-\x1f\x7f]/.test(subject), 'local OS identity cannot form an operator subject');
   return {kind: 'local_os_process', subject, uid, account, humanAuthenticated: false};
@@ -50,8 +58,9 @@ export function assertUspIsolation(env) {
   const persistent = preview && env.ULPIN_PERSISTENT_PREVIEW === '1';
   assert(!env.ULPIN_PERSISTENT_PREVIEW || (persistent && env.ULPIN_FND06_MANUAL_HOLD === '1'));
   const colima = env.ULPIN_ISOLATION_PROFILE === 'local-colima' || ((preview || nest) && process.platform === 'darwin');
-  assert.equal(process.platform, colima ? 'darwin' : 'linux');
-  assert.equal(env.DOCKER_CONTEXT, colima ? 'colima-ulpin' : 'default');
+  const windowsNest = nest && process.platform === 'win32';
+  assert.equal(process.platform, windowsNest ? 'win32' : colima ? 'darwin' : 'linux');
+  assert.equal(env.DOCKER_CONTEXT, windowsNest ? 'desktop-linux' : colima ? 'colima-ulpin' : 'default');
   assert.equal(env.REPO_DATA, 'false');
   assert.match(env.ULPIN_LOCAL_NONCE || '', /^[a-f0-9]{16}$/);
   const suffix = env.ULPIN_LOCAL_NONCE;

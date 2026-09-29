@@ -60,7 +60,7 @@ test('child processes resolve fixtures inside the explicit checkout instead of t
 });
 
 const nonce='a'.repeat(16),secret='a'.repeat(64),subject=localOperatorProcessProvenance().subject;
-const nestEnvironment=port=>({REPO_DATA:'false',ULPIN_ISOLATION_PROFILE:'local-nest',DOCKER_CONTEXT:process.platform==='darwin'?'colima-ulpin':'default',ULPIN_LOCAL_NONCE:nonce,ULPIN_BASELINE_PROJECT:`ulpin-usptest-${nonce}`,
+const nestEnvironment=port=>({REPO_DATA:'false',ULPIN_ISOLATION_PROFILE:'local-nest',DOCKER_CONTEXT:process.platform==='win32'?'desktop-linux':process.platform==='darwin'?'colima-ulpin':'default',ULPIN_LOCAL_NONCE:nonce,ULPIN_BASELINE_PROJECT:`ulpin-usptest-${nonce}`,
   POSTGRES_DB:`ulpin_usptest_${nonce}`,POSTGRES_USER:'ulpin_usptest',POSTGRES_PASSWORD:secret,POSTGRES_PORT:'25432',DATABASE_URL:`postgresql://ulpin_usptest:${secret}@127.0.0.1:25432/ulpin_usptest_${nonce}`,
   S3_ACCESS_KEY:'ulpin_usptest',S3_SECRET_KEY:secret,S3_BUCKET:`ulpin-usptest-${nonce}`,S3_ENDPOINT:'http://127.0.0.1:29000/',S3_PORT:'29000',S3_CONSOLE_PORT:'29001',GEO_PORT:'28000',GEO_URL:'http://127.0.0.1:28000/',GEO_SERVICE_TOKEN:secret,REDIS_URL:'redis://127.0.0.1:26379/0',REDIS_PORT:'26379',
   HOST:'127.0.0.1',ULPIN_NEST_API_PORT:port,PORT:port,API_PORT:port,ULPIN_LOOPBACK_PORTS:port,ULPIN_TEST_URL:`http://127.0.0.1:${port}/`,ULPIN_LOCAL_OPERATOR_SUBJECT:subject});
