@@ -28,6 +28,9 @@ docs/engineering-plan/legacy/** -text
 packages/contracts/schemas/** -text
 services/geo/geo/contracts/** -text
 
+# Executed SQL is SHA-256 pinned in database/manifest.json.
+database/sql/** -text
+
 # Preserve original/source-package and screenshot bytes through every checkout.
 apps/web/public/reference/** -text
 data-source/** -text
