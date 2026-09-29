@@ -75,7 +75,7 @@ Restore only into **new, empty destination databases and volumes**. A safe resto
 
 Use the repository's normal platform scripts only after selecting and checking the restored profile. `REPO_DATA=false` uses `.env` and project `ulpin`; `REPO_DATA=true` selects `.runtime/repo-data.env` and `ulpin-repo`. Worker snapshots should remain archived until specifically needed, or be restored into separate projects with different ports.
 
-The export checks verified every SHA-256, read each database dump's catalogue using `pg_restore --list`, and decompressed every member of the object/queue archives. **A full restore on the destination has not yet been run.** The source Colima VM was stopped again after export; no volume was reset or removed.
+The export checks verified every SHA-256, read each database dump's catalogue using `pg_restore --list`, and decompressed every member of the object/queue archives. The `prefix-worker` profile was subsequently restored and exercised on Windows on 29 September; the other profiles remain archived and are not claimed restored. The source Colima VM was stopped again after export; no populated volume was reset or removed.
 
 ## Dependencies and the two application paths
 
@@ -93,7 +93,9 @@ For the launch reel, recordings restore to `video/launch/rec`; code and accepted
 
 ## Resume ingestion work deliberately
 
-AI-03C's approved-prefix implementation is merged into staging. Backend typecheck, the three focused event checks and generated OpenAPI/client checks passed. Prefix-before-EOF overlap, difficult-source behavior, replay/failure and end-to-end SSE runtime qualification remain pending. Exporting existing records does not pass those gates.
+AI-03C's approved-prefix implementation and Windows restoration runner are merged into staging. The 29 September runtime observed mapped output before raw EOF, exact replay, explicit later-null issues, the natural invalid-polygon quarantine, SSE reconnection and completed-job readback after restart. See [the API handoff](api/README.md#reviewed-prefix-admission-ai-03c) for counts and limits. Active-job interruption and a new induced-integrity-failure check remain unqualified.
+
+For this retained `prefix-worker-20260929` profile, run `node scripts/usp/desktop-prefix-runtime.mjs <action> E:/BhuAayam-data/runtime/prefix-worker-20260929` from its assigned isolated checkout, where `<action>` is `preflight`, `start`, `status` or `stop`. The helper verifies project/volume ownership and Windows SID, refuses a checkout `.env`, uses Docker Desktop and the API's TypeScript configuration, and stops only its recorded application/processing services. It preserves restored storage volumes. Original Mac operator attribution remains unchanged; continuation data is retained through the API under the current operator. The verification API is currently stopped.
 
 AI-06A's latest retained adapter remains the offline V4 candidate in `run-08-v4-correction`. Its coverage checkpoint records the additional Chesterfield/Halifax inputs and unresolved next-source/calibration work. No new fit or production promotion was performed during transfer.
 
