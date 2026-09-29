@@ -59,7 +59,7 @@ def test_acquired_opendatasoft_shape_nonbuilding_labels_and_profile_privacy():
         pytest.skip("bounded external issuer originals are not configured")
     corpus_path = REPO / "docs/api/learning-corpus.json"
     corpus, examples = load_examples(corpus_path, Path(originals))
-    assert corpus["schemaVersion"] == "usp-field-mapping-corpus-v4"
+    assert corpus["schemaVersion"] == "usp-field-mapping-corpus-v5"
     assert {item["family"] for item in examples if item["split"] == "calibration"}.isdisjoint(
         {item["family"] for item in examples if item["split"] == "evaluation"}
     )
@@ -76,6 +76,21 @@ def test_acquired_opendatasoft_shape_nonbuilding_labels_and_profile_privacy():
     profile = next(item["text"] for item in examples
                    if item["source"] == dc["id"] and item["path"] == "properties.GLOBALID")
     assert raw_id not in profile
+
+    by_family = {}
+    for item in examples:
+        if item["split"] == "calibration" and item["target"] is not None and item["wireCompatibleRows"]:
+            by_family.setdefault(item["family"], set()).add(item["target"])
+    # GNWT's unresolved licence scope cannot count towards the two-family fit gate.
+    assert sum(set(("building.sourceKey", "building.name", "building.geometry")) <= targets
+               for targets in by_family.values()) == 1
+    assert not any(item["source"] == "gnwt-buildings" for item in examples)
+    assert corpus["excludedSources"][0]["permission"]["trainingEligible"] is False
+    assert all(item["split"] == "calibration" for item in examples if item["source"] == "census-tigerweb-counties")
+    assert any(item["split"] == "evaluation" and item["target"] == "building.name" and item["wireCompatibleRows"]
+               for item in examples)
+    assert any(item["source"] == "nyc-building-footprints" and item["target"] == "building.name" and item["wireCompatibleRows"]
+               for item in examples)
 
 
 def test_publisher_profile_ignores_reviewer_label_and_rejects_wrong_locator():
