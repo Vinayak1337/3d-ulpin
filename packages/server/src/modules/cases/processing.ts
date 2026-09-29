@@ -15,12 +15,14 @@ import {runStreamingVectorJob} from '../usp/ingestion/streaming-vector-worker';
 import {runChunkMappingJob} from '../usp/ingestion/chunk-mapping-worker';
 import {runStreamedProfileJob} from '../usp/ingestion/streamed-profile-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
+import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
 let streamingVectorWorker:Promise<void>|undefined;
 let chunkMappingWorker:Promise<void>|undefined;
 let streamedProfileWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
+let pointBatchWorker:Promise<void>|undefined;
 
 type WorkerReply = {
   jobId: string;
@@ -201,6 +203,12 @@ export async function dispatchTick(): Promise<number> {
         if(!rasterWindowWorker)rasterWindowWorker=runRasterWindowJob(job.id)
           .catch(()=>{/* The shared attempt fence and durable status own recovery. */})
           .finally(()=>{rasterWindowWorker=undefined;});
+        return;
+      }
+      if(job.operation==='point-batch'){
+        if(!pointBatchWorker)pointBatchWorker=runPointBatchJob(job.id)
+          .catch(()=>{/* The shared attempt fence and durable status own recovery. */})
+          .finally(()=>{pointBatchWorker=undefined;});
         return;
       }
       if(job.operation==='chunk-mapping'){

@@ -34,11 +34,17 @@ const retainedReadProfile={codeSha256:'7ba0d09183675baa615a63a4f72add4f683bb83f1
 // DOC-INGEST-01 changes only unrelated job enrollment and this immutable-read
 // predicate. All remaining compiler fields, including PostGIS, must be exact.
 const preDocumentCodeSha='3d060fda17b9cd542c4c8c2ffb29ad5fafb6cd28e34053235885ce13b3275656';
+// AI-05B adds only point-job enrollment to the shared job authority. These
+// observed pre-point desktop/staging byte digests retain exact non-code pins.
+const prePointCodeShas=new Set([
+  '267a72c05411cff5750ebc76b0ea050fc55f7e05ddeecb07fd70a6ea0920c157',
+  '20f90748a73f2051f3cabba45bc76432cdcae723381a497ddf81c4d7939ed339',
+]);
 export function mvtReadCompilerCompatible(stored:PrivateMvtInput['compiler'],current:PrivateMvtInput['compiler'],hasSourceChunk=false){
   const valid=(pin:PrivateMvtInput['compiler'])=>{const {sha256,...base}=pin;return fingerprint(base)===sha256;};
   if(!valid(stored)||!valid(current))return false;
   if(fingerprint(stored)===fingerprint(current))return true;
-  if(stored.codeSha256===preDocumentCodeSha){
+  if(stored.codeSha256===preDocumentCodeSha||prePointCodeShas.has(stored.codeSha256)){
     const {sha256:_storedHash,codeSha256:_storedCode,...storedProfile}=stored;
     const {sha256:_currentHash,codeSha256:_currentCode,...currentProfile}=current;
     if(fingerprint(storedProfile)===fingerprint(currentProfile))return true;

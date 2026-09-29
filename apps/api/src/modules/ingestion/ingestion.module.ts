@@ -24,6 +24,8 @@ import {StreamedProfileService} from '@ulpin/server/modules/usp/ingestion/stream
 import {StreamedMappingService} from '@ulpin/server/modules/usp/ingestion/streamed-mapping';
 import {RasterWindowController} from './raster-window.controller';
 import {RasterWindowService} from '@ulpin/server/modules/usp/ingestion/raster-window';
+import {PointBatchController} from './point-batch.controller';
+import {PointBatchService} from '@ulpin/server/modules/usp/ingestion/point-batch';
 
-@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController,AdaptiveMappingController,StreamingVectorController,ChunkMappingController,StreamedProfileController,RasterWindowController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService,AdaptiveMappingService,StreamingVectorService,ChunkMappingService,StreamedProfileService,StreamedMappingService,RasterWindowService]})
+@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController,AdaptiveMappingController,StreamingVectorController,ChunkMappingController,StreamedProfileController,RasterWindowController,PointBatchController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService,AdaptiveMappingService,StreamingVectorService,ChunkMappingService,StreamedProfileService,StreamedMappingService,RasterWindowService,PointBatchService]})
 export class IngestionModule {}

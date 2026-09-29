@@ -20,3 +20,4 @@ export * from './streaming-vector';
 export * from './chunk-mapping';
 export * from './streamed-profile';
 export * from './raster-window';
+export * from './point-batch';
