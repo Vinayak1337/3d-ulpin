@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "footprint-key-inspection/1",
+  "status": "candidate_source_inspection",
+  "sampleMethod": "Read five unchanged native GeoJSON features per issuer; inspect their properties and geometry type without coercion, reprojection or edits. Inspect issuer schema and key definitions separately.",
+  "observations": [
+    {
+      "candidateId": "nl-bag-pand",
+      "keyPath": "properties.identificatie",
+      "keyValuesVerbatim": ["0003100000117485", "0003100000117486", "0003100000117487", "0003100000117489", "0003100000117490"],
+      "keyTypes": ["string", "string", "string", "string", "string"],
+      "geometryTypes": ["Polygon", "Polygon", "Polygon", "Polygon", "Polygon"],
+      "otherTopLevelIdKind": "UUID-like GeoJSON feature id; not used as native key",
+      "firstCoordinate": [6.873716714602886, 53.31878855710091],
+      "issuerDefinition": "Kadaster BAG catalog: identification is the unique designation of an object; OGC Pand schema declares identificatie as string and primary geometry as polygon",
+      "permissionState": "publisher_public_domain_mark; learner_review_pending",
+      "matchState": "source_key_candidate_only"
+    },
+    {
+      "candidateId": "fr-ign-bdtopo-batiment",
+      "keyPath": "properties.cleabs",
+      "keyValuesVerbatim": ["BATIMENT0000000316324718", "BATIMENT0000000316324719", "BATIMENT0000000316324721", "BATIMENT0000000316324726", "BATIMENT0000000316324728"],
+      "keyTypes": ["string", "string", "string", "string", "string"],
+      "geometryTypes": ["MultiPolygon", "MultiPolygon", "MultiPolygon", "MultiPolygon", "MultiPolygon"],
+      "otherTopLevelIdKind": "WFS batiment service id; not used as native key",
+      "firstCoordinate": [-4.01525555, 47.9281868, 55.4],
+      "issuerDefinition": "IGN BD TOPO v3.5 guide pages 13 and 20: Cleabs is a required, unique 24-character absolute object key applicable to Bâtiment; stability has documented replacement/split/merge limits",
+      "permissionState": "issuer_dataset_lov2; learner_review_pending",
+      "matchState": "source_key_candidate_only"
+    }
+  ],
+  "discoveryLimitations": [
+    {
+      "lead": "data.gov.in building footprint search",
+      "outcome": "HTTP 200 shell captured; no usable issuer schema/key definition extracted; no absence claim"
+    },
+    {
+      "lead": "Chicago Building Footprints syp8-uezg",
+      "outcome": "issuer portal metadata declares BLDG_ID number; CDB_CITY_I text lacks footprint key semantics; excluded"
+    },
+    {
+      "lead": "Toronto Topographic Mapping Building Outlines 09a930cc-2a52-49b2-866d-52ac7f769a73",
+      "outcome": "five native records have numeric OBJECTID and CKAN row id; no defined native string footprint key; excluded"
+    },
+    {
+      "lead": "IGN BD TOPO unbounded WFS request",
+      "outcome": "one 25-second timeout; bounded spatial request subsequently returned five features and was retained"
+    }
+  ],
+  "unqualified": ["learner label or corpus acceptance", "global source uniqueness audit", "training outcome", "Indian operational footprint", "legal parcel/building identity", "height datum", "runtime or deployment gate"]
+}
