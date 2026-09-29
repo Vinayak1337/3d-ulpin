@@ -9,7 +9,8 @@ import {redactDerivative} from '../ingest/redact';
 
 export function documentReaderSha(){
   const paths=['packages/contracts/src/usp/document-ingestion.ts','packages/server/src/modules/usp/ingestion/document-native.ts',
-    'services/geo/geo/area.py','services/geo/geo/native_pdf.py','services/geo/geo/native_schedule.py','packages/server/src/modules/usp/ingest/redact.ts'];
+    'services/geo/geo/area.py','services/geo/geo/native_pdf.py','services/geo/geo/native_schedule.py',
+    'services/geo/geo/native_workbook.py','packages/server/src/modules/usp/ingest/redact.ts'];
   return sha256(Buffer.concat(paths.flatMap(p=>[Buffer.from(p+'\0'),readFileSync(join(settings.repositoryRoot,p))])));
 }
 /** Bounded byte/container identification. Filenames and claimed MIME do not select a parser. */
@@ -27,7 +28,10 @@ export function documentFormat(bytes:Uint8Array):DocumentResult['native']['forma
   const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/,3);
   return lines.length>1 && lines[0].includes(',') && lines[1].includes(',')?'csv':'text';
 }
-type Extracted={format?:string;sourceSha256?:string;parts:{text:string;locator:{label:string;page?:number;row?:number;line?:number;lineEnd?:number;paragraph?:number;table?:number;column?:number;headerRow?:number}}[];warnings?:string[]};
+type Extracted={format?:string;status?:string;code?:string|null;sourceSha256?:string;
+  parts:{text:string;locator:{label:string;page?:number;row?:number;line?:number;lineEnd?:number;
+    paragraph?:number;table?:number;column?:number;headerRow?:number;sheet?:string;sheetIndex?:number;sheetId?:number;
+    cell?:string;cellState?:string;cellType?:string}}[];warnings?:string[]};
 /** Keep exact redacted-unit spans; prefer a source line/word boundary for long units. */
 function unitSegments(text:string){
   const segments:{start:number;end:number}[]=[];
@@ -53,15 +57,18 @@ export async function extractSourceDocument(input:DocumentInput,bytes:Uint8Array
   if(format==='unsupported')return {...base,status:'unsupported',code:'DOCUMENT_FORMAT_UNSUPPORTED'};
   if(bytes.length>DOCUMENT_LIMITS.nativeBytes)return {...base,status:'tool_error',code:'NATIVE_READER_BYTE_LIMIT'};
   try{
-    const parsed=await extract({format:format==='archive'?'docx':format==='csv'?'csv_reference':format,base64:Buffer.from(bytes).toString('base64')});
+    const parsed=await extract({format:format==='archive'?'archive':format==='csv'?'csv_reference':format,base64:Buffer.from(bytes).toString('base64')});
     if(parsed.sourceSha256!==input.sourceSha256)throw new Error('NATIVE_SOURCE_HASH');
-    if(format==='archive')format='docx';
+    if(format==='archive'){
+      if(parsed.format!=='docx'&&parsed.format!=='xlsx'&&parsed.format!=='archive')throw new Error('NATIVE_FORMAT_MISMATCH');
+      format=parsed.format;
+    }
     const warnings=redactDerivative(parsed.warnings??[]).slice(0,100).map(w=>String(w).slice(0,512));
     const parts:DocumentResult['native']['parts']=[];let characters=0;
     for(const raw of parsed.parts){
       const text=String(redactDerivative(raw.text));characters+=text.length;
       if(characters>DOCUMENT_LIMITS.characters)throw new Error('NATIVE_TEXT_LIMIT');
-      if(!text.trim())continue;
+      if(!text.trim() && raw.locator.cellState!=='whitespace' && raw.locator.cellState!=='formula_cached')continue;
       const unitId=randomUUID(),unitSha256=sha256(text),segments=unitSegments(text);
       for(const [segmentIndex,{start,end}] of segments.entries()){
         const value=text.slice(start,end);
@@ -72,11 +79,13 @@ export async function extractSourceDocument(input:DocumentInput,bytes:Uint8Array
             segmentCount:segments.length,characterStart:start,characterEnd:end}}));
       }
     }
-    return {format,readerSha256:input.readerSha256,code:parts.length?(warnings.some(w=>w.includes('no native text'))?'NATIVE_PARTIAL_TEXT':null):'NATIVE_TEXT_UNAVAILABLE',warnings,parts,
-      status:parts.length?'extracted':format==='pdf'?'needs_ocr':'extracted'};
+    return {format,readerSha256:input.readerSha256,
+      code:parsed.code??(parts.length?(warnings.some(w=>w.includes('no native text'))?'NATIVE_PARTIAL_TEXT':null):'NATIVE_TEXT_UNAVAILABLE'),
+      warnings,parts,status:parsed.status==='unsupported'?'unsupported':parts.length?'extracted':format==='pdf'?'needs_ocr':format==='xlsx'?'unsupported':'extracted'};
   }catch(error){
     const message=error instanceof Error?error.message:'';
-    const encrypted=/^Encrypted PDFs|decrypt|password/i.test(message),unsupported=format==='archive' && /no Word document part|no document body/i.test(message);
+    const encrypted=/^Encrypted PDFs|\bencrypted\b|decrypt|password/i.test(message),
+      unsupported=format==='archive' && /no Word document part|no document body/i.test(message);
     return {...base,status:encrypted?'encrypted':unsupported?'unsupported':'tool_error',
       code:encrypted?'DOCUMENT_ENCRYPTED':unsupported?'ARCHIVE_DOCUMENT_UNSUPPORTED':/^(NATIVE_[A-Z_]+)$/.test(message)?message:'NATIVE_EXTRACTION_FAILED'};
   }

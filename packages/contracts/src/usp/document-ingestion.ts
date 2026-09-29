@@ -4,7 +4,7 @@ export const DOCUMENT_POLICY='source-document-native/1' as const;
 export const DOCUMENT_LIMITS=Object.freeze({originalBytes:16*1024*1024,nativeBytes:10*1024*1024,resultBytes:4*1024*1024,
   characters:250000,parts:10000,partCharacters:4096,page:25,candidates:40,modelCharacters:12000,modelParts:12,jobs:32});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
-export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','png','jpeg','archive','unsupported']);
+export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','png','jpeg','archive','unsupported']);
 export const DocumentOriginalSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),subject:z.string().min(1).max(256),
   format:DocumentFormatSchema,sha256:hash,bytes:z.number().int().positive(),receivedAt:z.iso.datetime()});
 export const DocumentInputSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),jobId:id,caseId:id,caseRevision:rev,
@@ -16,6 +16,11 @@ export const DocumentLocatorSchema=z.strictObject({label:z.string().min(1).max(5
   row:z.number().int().positive().optional(),line:z.number().int().positive().optional(),lineEnd:z.number().int().positive().optional(),
   paragraph:z.number().int().positive().optional(),table:z.number().int().positive().optional(),column:z.number().int().positive().optional(),
   headerRow:z.number().int().positive().optional(),
+  sheet:z.string().min(1).max(128).optional(),sheetIndex:z.number().int().positive().optional(),
+  sheetId:z.number().int().positive().optional(),
+  cell:z.string().regex(/^[A-Z]{1,3}[1-9][0-9]{0,6}$/).optional(),
+  cellState:z.enum(['literal','empty','empty_string','whitespace','formula_cached','formula_uncached','error','unsupported']).optional(),
+  cellType:z.string().min(1).max(20).optional(),
   // Present on newly partitioned parts. Older native receipts remain readable.
   unitId:id.optional(),unitSha256:hash.optional(),segmentIndex:rev.optional(),segmentCount:z.number().int().positive().optional(),
   characterStart:rev,characterEnd:rev}).superRefine((value,ctx)=>{
@@ -27,6 +32,11 @@ export const DocumentLocatorSchema=z.strictObject({label:z.string().min(1).max(5
       ctx.addIssue({code:'custom',message:'A continuation needs its complete native-unit pin.'});
     if(value.segmentIndex!==undefined && value.segmentCount!==undefined && value.segmentIndex>=value.segmentCount)
       ctx.addIssue({code:'custom',message:'Continuation index exceeds its native unit.'});
+    const workbook=[value.sheet,value.sheetIndex,value.sheetId,value.cell,value.cellState];
+    if(workbook.some(item=>item!==undefined) && workbook.some(item=>item===undefined))
+      ctx.addIssue({code:'custom',message:'A workbook citation needs its sheet, index, cell and value state.'});
+    if(value.sheet!==undefined && (value.row===undefined || value.column===undefined))
+      ctx.addIssue({code:'custom',message:'A workbook citation needs its source row and column.'});
   });
 export const DocumentPartSchema=z.strictObject({id,sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
   text:z.string().min(1).max(DOCUMENT_LIMITS.partCharacters),sha256:hash,locator:DocumentLocatorSchema,method:z.literal('native_text')})
