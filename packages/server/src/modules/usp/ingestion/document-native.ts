@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
-import {DocumentPartSchema,DOCUMENT_LIMITS,type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
+import {DocumentPartSchema,DocumentArchiveInventorySchema,DOCUMENT_LIMITS,type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
 import {settings} from '../../../infrastructure/config';
 import {sha256} from '../../../infrastructure/storage';
 import {areaGeo} from '../../areas/areas';
@@ -10,7 +10,8 @@ import {redactDerivative} from '../ingest/redact';
 export function documentReaderSha(){
   const paths=['packages/contracts/src/usp/document-ingestion.ts','packages/server/src/modules/usp/ingestion/document-native.ts',
     'services/geo/geo/area.py','services/geo/geo/native_pdf.py','services/geo/geo/native_schedule.py',
-    'services/geo/geo/native_workbook.py','packages/server/src/modules/usp/ingestion/document-model.ts',
+    'services/geo/geo/native_workbook.py','services/geo/geo/native_archive.py',
+    'packages/server/src/modules/usp/ingestion/document-model.ts',
     'packages/server/src/modules/usp/ingest/redact.ts'];
   return sha256(Buffer.concat(paths.flatMap(p=>[Buffer.from(p+'\0'),readFileSync(join(settings.repositoryRoot,p))])));
 }
@@ -32,7 +33,8 @@ export function documentFormat(bytes:Uint8Array):DocumentResult['native']['forma
 type Extracted={format?:string;status?:string;code?:string|null;sourceSha256?:string;
   parts:{text:string;locator:{label:string;page?:number;row?:number;line?:number;lineEnd?:number;
     paragraph?:number;table?:number;column?:number;headerRow?:number;sheet?:string;sheetIndex?:number;sheetId?:number;
-    cell?:string;cellState?:string;cellType?:string}}[];warnings?:string[]};
+    cell?:string;cellState?:string;cellType?:string}}[];warnings?:string[];
+  archiveInventory?:DocumentResult['native']['archiveInventory']};
 /** Keep exact redacted-unit spans; prefer a source line/word boundary for long units. */
 function unitSegments(text:string){
   const segments:{start:number;end:number}[]=[];
@@ -63,7 +65,11 @@ export async function extractSourceDocument(input:DocumentInput,bytes:Uint8Array
     if(format==='archive'){
       if(parsed.format!=='docx'&&parsed.format!=='xlsx'&&parsed.format!=='archive')throw new Error('NATIVE_FORMAT_MISMATCH');
       format=parsed.format;
+      if(format==='archive' && !parsed.archiveInventory)throw new Error('NATIVE_ARCHIVE_INVENTORY_MISSING');
     }
+    const archiveInventory=parsed.archiveInventory===undefined?undefined:DocumentArchiveInventorySchema.parse(parsed.archiveInventory);
+    if(archiveInventory && (format!=='archive'||archiveInventory.sourceSha256!==input.sourceSha256||parsed.parts.length))
+      throw new Error('NATIVE_ARCHIVE_INVENTORY_SCOPE');
     const warnings=redactDerivative(parsed.warnings??[]).slice(0,100).map(w=>String(w).slice(0,512));
     const parts:DocumentResult['native']['parts']=[];let characters=0;
     for(const raw of parsed.parts){
@@ -80,7 +86,7 @@ export async function extractSourceDocument(input:DocumentInput,bytes:Uint8Array
             segmentCount:segments.length,characterStart:start,characterEnd:end}}));
       }
     }
-    return {format,readerSha256:input.readerSha256,
+    return {format,readerSha256:input.readerSha256,...(archiveInventory?{archiveInventory}:{}),
       code:parsed.code??(parts.length?(warnings.some(w=>w.includes('no native text'))?'NATIVE_PARTIAL_TEXT':null):'NATIVE_TEXT_UNAVAILABLE'),
       warnings,parts,status:parsed.status==='unsupported'?'unsupported':parts.length?'extracted':format==='pdf'?'needs_ocr':format==='xlsx'?'unsupported':'extracted'};
   }catch(error){

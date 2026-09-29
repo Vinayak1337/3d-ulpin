@@ -42,18 +42,41 @@ export const DocumentPartSchema=z.strictObject({id,sourceId:id,sourceRevision:z.
   text:z.string().min(1).max(DOCUMENT_LIMITS.partCharacters),sha256:hash,locator:DocumentLocatorSchema,method:z.literal('native_text')})
   .refine(part=>part.locator.unitId===undefined || part.locator.characterEnd-part.locator.characterStart===part.text.length,
     'A partitioned native part must match its exact character span.');
+// ZIP entries are private inventory metadata, never extracted evidence or a second source authority.
+export const DocumentArchiveMemberSchema=z.strictObject({ordinal:rev,pathLabel:z.string().min(1).max(256),
+  declaredBytes:rev,actualBytes:rev.nullable(),sha256:hash.nullable(),declaredCrc32:z.string().regex(/^[a-f0-9]{8}$/),
+  crc:z.enum(['match','unchecked']),routeHint:z.enum(['none','shapefile','pdf','csv','text','docx','xlsx','json','geojson','raster','point_cloud','image']),
+  issue:z.enum(['UNSAFE_PATH','DUPLICATE_PATH','SPECIAL_ENTRY','DIRECTORY','ENCRYPTED','UNSUPPORTED_COMPRESSION',
+    'NESTED_ARCHIVE','SCRIPT_INERT','UNSUPPORTED_FORMAT','EXPANSION_LIMIT','TIME_LIMIT','SIZE_MISMATCH','CORRUPT_MEMBER']).nullable(),
+  companion:z.enum(['complete','incomplete','not_applicable'])}).superRefine((entry,ctx)=>{
+    if((entry.actualBytes===null)!==(entry.sha256===null) || (entry.crc==='match')!==(entry.sha256!==null))
+      ctx.addIssue({code:'custom',message:'Archive member integrity fields must agree.'});
+  });
+export const DocumentArchiveInventorySchema=z.strictObject({sourceSha256:hash,coverage:z.enum(['complete','incomplete','unknown']),
+  issue:z.enum(['CORRUPT_CENTRAL_DIRECTORY','MEMBER_COUNT_LIMIT','DECLARED_SIZE_LIMIT','MEMBER_ISSUES','COMPANION_INCOMPLETE']).nullable(),
+  memberCount:rev.nullable(),declaredExpandedBytes:rev.nullable(),observedExpandedBytes:rev,
+  members:z.array(DocumentArchiveMemberSchema).max(256)}).superRefine((value,ctx)=>{
+    if(value.members.some((member,index)=>member.ordinal!==index) ||
+      (value.memberCount!==null && value.members.length>value.memberCount) ||
+      (value.coverage==='complete' && (value.issue!==null || value.memberCount!==value.members.length)) ||
+      (value.coverage==='unknown' && value.members.length!==0))
+      ctx.addIssue({code:'custom',message:'Archive inventory coverage and ordinal pins are inconsistent.'});
+  });
 export const DocumentProposalSchema=z.strictObject({field:z.string().min(1).max(120),value:z.string().min(1).max(512),
   partId:id,quote:z.string().min(1).max(1000)});
 export const DocumentModelOutputSchema=z.strictObject({candidates:z.array(DocumentProposalSchema).max(40)});
 export const DocumentResultSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),input:DocumentInputSchema,
   native:z.strictObject({status:z.enum(['extracted','needs_ocr','unsupported','encrypted','tool_error']),format:DocumentFormatSchema,
     readerSha256:hash,code:z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/).nullable(),warnings:z.array(z.string().max(512)).max(100),
-    parts:z.array(DocumentPartSchema).max(DOCUMENT_LIMITS.parts)}),
+    parts:z.array(DocumentPartSchema).max(DOCUMENT_LIMITS.parts),archiveInventory:DocumentArchiveInventorySchema.optional()}),
   model:z.strictObject({status:z.enum(['not_requested','disabled','unavailable','blocked','needs_input','proposed']),
     code:z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/).nullable(),candidates:z.array(DocumentProposalSchema).max(40),
     validationErrors:z.array(z.string().max(512)).max(40),calls:z.array(z.strictObject({callId:id,responseSha256:hash})).max(2)}),
   createdAt:z.iso.datetime()}).superRefine((value,ctx)=>{
-    if(value.native.readerSha256!==value.input.readerSha256 || value.native.parts.some(p=>p.sourceId!==value.input.sourceId ||
+    if(value.native.readerSha256!==value.input.readerSha256 ||
+      (value.native.archiveInventory!==undefined && (value.native.archiveInventory.sourceSha256!==value.input.sourceSha256 ||
+        value.native.format!=='archive' || value.native.parts.length!==0 || value.native.status!=='unsupported' || value.model.candidates.length!==0)) ||
+      value.native.parts.some(p=>p.sourceId!==value.input.sourceId ||
       p.sourceRevision!==value.input.sourceRevision || p.sourceSha256!==value.input.sourceSha256) ||
       new Set(value.native.parts.map(p=>p.id)).size!==value.native.parts.length ||
       value.model.candidates.some(c=>{const p=value.native.parts.find(p=>p.id===c.partId);return !p ||
