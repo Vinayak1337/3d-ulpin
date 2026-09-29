@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "usp-field-mapping-corpus-v6",
+  "schemaVersion": "usp-field-mapping-corpus-v7",
   "featureVersion": "publisher-metadata-profile-v4",
-  "scope": "offline foreign-source research only; fresh Halifax/Kitchener evaluation unopened until fit freeze",
+  "scope": "Offline foreign-source schema research; V7 is corpus/input freeze only; no model run authorized",
   "targets": [
     {
       "id": "building.sourceKey",
@@ -2403,10 +2403,891 @@
           "finalUrl": "https://www.geomatics.gov.nt.ca/sites/geomatics/files/resources/atlas_map_viewer_user_manual_ecc.pdf"
         }
       ]
+    },
+    {
+      "id": "cambridge-municipal-buildings",
+      "family": "cambridge-municipal-building-points",
+      "split": "train",
+      "issuer": "City of Cambridge GIS",
+      "geography": "Cambridge, Massachusetts, United States",
+      "datasetUrl": "https://www.arcgis.com/sharing/rest/content/items/e7ecb02b5e7c43adbe32567e4b2eb63b?f=json",
+      "acquiredAt": "2026-09-29T18:30:56.108245+00:00",
+      "sample": {
+        "file": "desktop-ai06a/v7-sources/cambridge-sample.json",
+        "url": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0/query?where=SITE_NAME+IS+NOT+NULL+AND+SITE_NAME+%3C%3E+%27%27&outFields=OBJECTID%2CSITE_NAME%2CADDRESS%2CTYPE%2CGlobalID%2CEditDate&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+        "finalUrl": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0/query?where=SITE_NAME+IS+NOT+NULL+AND+SITE_NAME+%3C%3E+%27%27&outFields=OBJECTID%2CSITE_NAME%2CADDRESS%2CTYPE%2CGlobalID%2CEditDate&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+        "acquiredAt": "2026-09-29T18:30:56.108245+00:00",
+        "bytes": 1617,
+        "sha256": "c0bb66ec072aeed06215607d134c5e8b15be1bf03ac02b5e4b0575da20e425a2",
+        "acquisitionReceiptSha256": "66eacc9e410dd9099e72fabb911707a3680ade84224d508d2336c1fb6d37faea",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "desktop-ai06a/v7-sources/cambridge-layer.json",
+        "url": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0?f=pjson",
+        "finalUrl": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0?f=pjson",
+        "acquiredAt": "2026-09-29T18:23:31.189081+00:00",
+        "bytes": 13646,
+        "sha256": "b72a8e54bb2cb06b85541b95cada56426d960cddc6dbbba79c9cae2b5c7547f8",
+        "acquisitionReceiptSha256": "9870530ee2419625e0fbfd0e282d82b8b3eff41d0d176402f179f6bff4606509"
+      },
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/v7-sources/cambridge-item.json",
+          "url": "https://www.arcgis.com/sharing/rest/content/items/e7ecb02b5e7c43adbe32567e4b2eb63b?f=json",
+          "finalUrl": "https://www.arcgis.com/sharing/rest/content/items/e7ecb02b5e7c43adbe32567e4b2eb63b?f=json",
+          "acquiredAt": "2026-09-29T18:22:57.916779+00:00",
+          "bytes": 2962,
+          "sha256": "7522007000fb74be993e45c86280ee6c8d0b70a7ec023854670085da94b00e48",
+          "acquisitionReceiptSha256": "905aa1e87f4000df09c835c332f363ad1b5b3a1add35cf0a45f36b328161fd9a"
+        },
+        {
+          "file": "desktop-ai06a/v7-sources/cambridge-service.json",
+          "url": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer?f=pjson",
+          "finalUrl": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer?f=pjson",
+          "acquiredAt": "2026-09-29T18:22:57.918296+00:00",
+          "bytes": 4325,
+          "sha256": "17f5715d08c484dd5b6df1d18b087bce032b452066949331f366e3fc85669489",
+          "acquisitionReceiptSha256": "d6e4ba5348cda3567e4b052e7aa41ac8a14ebcbc93393605e8f99d1570353c8c"
+        },
+        {
+          "file": "desktop-ai06a/v7-sources/cambridge-issuer.html",
+          "url": "https://www.cambridgema.gov/GIS/gisdatadictionary/Landmark/LANDMARK_MunicipalBuildings",
+          "finalUrl": "https://www.cambridgema.gov/gis/gisdatadictionary/landmark/landmark_municipalbuildings",
+          "acquiredAt": "2026-09-29T18:24:07.018926+00:00",
+          "bytes": 152674,
+          "sha256": "e0e61b4b382d7c112488f86df270571590548a4e17bf06278ed7c348e3cc28a6",
+          "acquisitionReceiptSha256": "37649b74803275dcf5698598eb0e71f777ac6cf1cd479c02854ce37ad0375f2e"
+        },
+        {
+          "file": "desktop-ai06a/v7-sources/cambridge-pddl.html",
+          "url": "https://opendatacommons.org/licenses/pddl/1.0/",
+          "finalUrl": "https://opendatacommons.org/licenses/pddl/1-0/",
+          "acquiredAt": "2026-09-29T18:30:55.418149+00:00",
+          "bytes": 41880,
+          "sha256": "d482b3e685c940170cea889e2f8700d2b11484b9dbd6df4c3d781f0c70c9253a",
+          "acquisitionReceiptSha256": "2ab79b73409f59780f62bc6afca25dd055861344da3a0dfaafa0bf74c7eb65ac"
+        }
+      ],
+      "permission": {
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false,
+        "licence": "Public Domain Dedication and License 1.0",
+        "url": "https://www.arcgis.com/sharing/rest/content/items/e7ecb02b5e7c43adbe32567e4b2eb63b?f=json#/licenseInfo",
+        "basis": "The issuing city dictionary links this exact ArcGIS item; its licenseInfo designates PDDL 1.0. The retained PDDL permits database extraction and reuse for any purpose.",
+        "attribution": "City of Cambridge GIS, Municipal Buildings",
+        "scope": "Bounded offline schema research on the retained publisher metadata and five-row sample"
+      },
+      "geometryCrs": "Source EPSG:3857; publisher query returns outSR=4326 GeoJSON",
+      "representation": "Five unchanged GeoJSON Point features; no geometry derivation or rights inference",
+      "labelOrigin": "Publisher definitions and literal wire checks; no learned predictions or external provider labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      },
+      "fields": [
+        {
+          "path": "properties.SITE_NAME",
+          "target": "building.name",
+          "definition": "Issuer dictionary and item description table: SITE_NAME is Name of building",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "SITE_NAME",
+            "fieldPointer": "/fields/1"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/e7ecb02b5e7c43adbe32567e4b2eb63b?f=json#/description",
+          "wireCompatibleRows": 5
+        },
+        {
+          "path": "properties.ADDRESS",
+          "target": null,
+          "definition": "Issuer table: Facility address",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "ADDRESS",
+            "fieldPointer": "/fields/2"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/e7ecb02b5e7c43adbe32567e4b2eb63b?f=json#/description"
+        },
+        {
+          "path": "properties.TYPE",
+          "target": null,
+          "definition": "Issuer table: Type of facility",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "TYPE",
+            "fieldPointer": "/fields/3"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/e7ecb02b5e7c43adbe32567e4b2eb63b?f=json#/description"
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.OBJECTID",
+          "decision": "unknown",
+          "reason": "Numeric row OID is unsupported by literal_identifier@1; stability is unestablished",
+          "evidence": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.GlobalID",
+          "decision": "unknown",
+          "reason": "Identifies a municipal point, not a verified footprint feature; preserve the fixed source-key target scope",
+          "evidence": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.EditDate",
+          "decision": "unknown",
+          "reason": "All five values are present null and the issuing table gives no definition",
+          "evidence": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 5,
+            "absentCount": 0,
+            "nonNullTypes": []
+          }
+        },
+        {
+          "path": "geometry",
+          "decision": "unknown",
+          "reason": "Municipal building locations are points, unsupported by geojson_polygon@1",
+          "evidence": "https://services1.arcgis.com/WnzC35krSYGuYov4/arcgis/rest/services/Municipal_Buildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "object"
+            ]
+          }
+        }
+      ],
+      "sourceNotes": "Independent city-maintained municipal point schema, not the MassGIS footprint product. Names and two non-name text fields are scored. No join to footprints or conversion of point IDs is inferred. EditDate is null, not absent."
+    },
+    {
+      "id": "oregon-state-government-buildings",
+      "family": "oregon-state-government-building-points",
+      "split": "train",
+      "issuer": "State of Oregon, OR_FRAMEWORK",
+      "geography": "Oregon, United States",
+      "datasetUrl": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json",
+      "acquiredAt": "2026-09-29T18:30:57.404081+00:00",
+      "sample": {
+        "file": "desktop-ai06a/v7-sources/oregon-sample.json",
+        "url": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0/query?where=NAME+IS+NOT+NULL+AND+NAME+%3C%3E+%27%27+AND+NAME+%3C%3E+%27NO+NAME%27+AND+NAME+%3C%3E+%27UNKNOWN%27&outFields=OBJECTID%2CUNIQUE_ID%2CNAME%2CADDRESS%2CCITY%2CSTATE%2CZIP%2CCOUNTY%2CFIPS%2CNAICSDESCR&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+        "finalUrl": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0/query?where=NAME+IS+NOT+NULL+AND+NAME+%3C%3E+%27%27+AND+NAME+%3C%3E+%27NO+NAME%27+AND+NAME+%3C%3E+%27UNKNOWN%27&outFields=OBJECTID%2CUNIQUE_ID%2CNAME%2CADDRESS%2CCITY%2CSTATE%2CZIP%2CCOUNTY%2CFIPS%2CNAICSDESCR&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+        "acquiredAt": "2026-09-29T18:30:57.404081+00:00",
+        "bytes": 1961,
+        "sha256": "e5810ec518eb9bbe9f2a91f4a20727070f8653e30c8b5ff2e9df7952fe3727e4",
+        "acquisitionReceiptSha256": "00808f65663c1a56a60141f0bd0d6d25c61862e5b1e0a4be6a6ffbb10afc1047",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "desktop-ai06a/v7-sources/oregon-layer.json",
+        "url": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0?f=pjson",
+        "finalUrl": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0?f=pjson",
+        "acquiredAt": "2026-09-29T18:25:16.046602+00:00",
+        "bytes": 18088,
+        "sha256": "886f20700cc9a74f5fe349c13334c5d4553703b4d1317c4833e1953c10f3f676",
+        "acquisitionReceiptSha256": "db8950abda68654a60e887ab7653d34c0d376771204d007fb018b70ed761770e"
+      },
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/v7-sources/oregon-item.json",
+          "url": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json",
+          "finalUrl": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json",
+          "acquiredAt": "2026-09-29T18:24:36.927832+00:00",
+          "bytes": 4123,
+          "sha256": "f6aeb285909dc5cc443da69c82edb3766e3419ce571b598e8564215e311ac68b",
+          "acquisitionReceiptSha256": "49636d70d45c27fe6d484577e8881ccd0aaf113d03982d8129ed3c02927c9f27"
+        },
+        {
+          "file": "desktop-ai06a/v7-sources/oregon-service.json",
+          "url": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer?f=pjson",
+          "finalUrl": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer?f=pjson",
+          "acquiredAt": "2026-09-29T18:24:36.928832+00:00",
+          "bytes": 8308,
+          "sha256": "1b563442aeffa86076ecc2b4ad4d4d4cdf9141ab8b31238545e5f51b86eee147",
+          "acquisitionReceiptSha256": "cfac84aeaa83b7085f43ad4c410efa0d0d42e8c0e5fef3cfe2c2038741d06a62"
+        },
+        {
+          "file": "desktop-ai06a/v7-sources/oregon-publisher.json",
+          "url": "https://www.arcgis.com/sharing/rest/portals/8PAo5HGmvRMlF2eU?f=json",
+          "finalUrl": "https://www.arcgis.com/sharing/rest/portals/8PAo5HGmvRMlF2eU?f=json",
+          "acquiredAt": "2026-09-29T18:25:17.085438+00:00",
+          "bytes": 28099,
+          "sha256": "ec8be946fb1aaa7ac4752232261f0240499cba83f4dee26b71975d3f4a09856e",
+          "acquisitionReceiptSha256": "3ccd8a341ff3989d15d6f8bec7c3d7f7be96cd2a91c8a43a2123a850ceda5e4e"
+        }
+      ],
+      "permission": {
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false,
+        "licence": "Publisher: Public Domain Information; Public Use",
+        "url": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/licenseInfo",
+        "basis": "The State of Oregon ArcGIS organization publishes this exact item with Access Constraint None (Public Domain Information) and Use Constraint None (Public Use). This is a state-published legacy TGS/HSIP-derived source; original lineage is retained.",
+        "attribution": "State of Oregon, Oregon State Government Buildings; publisher-documented TGS/HSIP lineage",
+        "scope": "Bounded offline schema research on the retained publisher metadata and five-row sample"
+      },
+      "geometryCrs": "Source EPSG:2992; publisher query returns outSR=4326 GeoJSON",
+      "representation": "Five unchanged GeoJSON Point features; no geometry derivation or rights inference",
+      "labelOrigin": "Publisher definitions and literal wire checks; no learned predictions or external provider labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      },
+      "fields": [
+        {
+          "path": "properties.NAME",
+          "target": "building.name",
+          "definition": "Publisher description identifies NAME as building name; the bounded query excludes its NO NAME and UNKNOWN sentinels",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "NAME",
+            "fieldPointer": "/fields/1"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/description",
+          "wireCompatibleRows": 5
+        },
+        {
+          "path": "properties.ADDRESS",
+          "target": null,
+          "definition": "Street address of the facility",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "ADDRESS",
+            "fieldPointer": "/fields/3"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/description"
+        },
+        {
+          "path": "properties.CITY",
+          "target": null,
+          "definition": "City label, not building name",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "CITY",
+            "fieldPointer": "/fields/5"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/description"
+        },
+        {
+          "path": "properties.STATE",
+          "target": null,
+          "definition": "State code",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "STATE",
+            "fieldPointer": "/fields/6"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/description"
+        },
+        {
+          "path": "properties.ZIP",
+          "target": null,
+          "definition": "Postal area code",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "ZIP",
+            "fieldPointer": "/fields/7"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/description"
+        },
+        {
+          "path": "properties.COUNTY",
+          "target": null,
+          "definition": "County label",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "COUNTY",
+            "fieldPointer": "/fields/8"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/description"
+        },
+        {
+          "path": "properties.FIPS",
+          "target": null,
+          "definition": "County geographic code",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "FIPS",
+            "fieldPointer": "/fields/9"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/description"
+        },
+        {
+          "path": "properties.NAICSDESCR",
+          "target": null,
+          "definition": "NAICS activity classification description",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "NAICSDESCR",
+            "fieldPointer": "/fields/12"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/27773de05fac4c338ef11a7c8a55d99a?f=json#/description"
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.OBJECTID",
+          "decision": "unknown",
+          "reason": "Numeric row OID is unsupported by literal_identifier@1",
+          "evidence": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.UNIQUE_ID",
+          "decision": "unknown",
+          "reason": "Publisher Unique ID is a string for the point record; a stable one-to-one footprint identity is unestablished",
+          "evidence": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "geometry",
+          "decision": "unknown",
+          "reason": "Government building or property locations are points, unsupported by geojson_polygon@1",
+          "evidence": "https://services8.arcgis.com/8PAo5HGmvRMlF2eU/arcgis/rest/services/OregonStateGovernmentBuildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "object"
+            ]
+          }
+        }
+      ],
+      "sourceNotes": "Publisher dates original records to 2007-2008; no currentness claim. Query selects five genuinely named records and omits telephone/contact fields. NO NAME means verified unnamed, UNKNOWN means unverified; neither is silently converted into a meaningful name. No source ID is coerced or relabelled as a footprint key."
+    },
+    {
+      "id": "tweed-council-buildings",
+      "family": "tweed-council-building-polygons",
+      "split": "train",
+      "issuer": "Tweed Shire Council",
+      "geography": "Tweed Shire, New South Wales, Australia",
+      "datasetUrl": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json",
+      "acquiredAt": "2026-09-29T18:30:58.024168+00:00",
+      "sample": {
+        "file": "desktop-ai06a/v7-sources/tweed-sample.json",
+        "url": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0/query?where=Building_Name+IS+NOT+NULL+AND+Building_Name+%3C%3E+%27%27&outFields=OBJECTID%2CBuilding_Name%2CAsset_Name%2Clocality%2COPEN_DATA%2CTIMESTAMP&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+        "finalUrl": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0/query?where=Building_Name+IS+NOT+NULL+AND+Building_Name+%3C%3E+%27%27&outFields=OBJECTID%2CBuilding_Name%2CAsset_Name%2Clocality%2COPEN_DATA%2CTIMESTAMP&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&returnGeometry=true&f=geojson",
+        "acquiredAt": "2026-09-29T18:30:58.024168+00:00",
+        "bytes": 3640,
+        "sha256": "963c15784a363e50b282c82057e68397c37ff9279e9d8b48d9f60361f1f9e590",
+        "acquisitionReceiptSha256": "9ac42162ca905c40695779fc9cdf46afc101173bf646063f18edc6f06c6bc744",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "desktop-ai06a/v7-sources/tweed-layer.json",
+        "url": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0?f=pjson",
+        "finalUrl": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0?f=pjson",
+        "acquiredAt": "2026-09-29T18:25:16.046602+00:00",
+        "bytes": 12362,
+        "sha256": "064539d15b61ca2c6ea246f488504f13faee865f0c36a8a8b10e3b7285508793",
+        "acquisitionReceiptSha256": "80f6e2d768940eb775fc5fa25ca5997307269e1d268c26e66d3ec56f4a885eb9"
+      },
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/v7-sources/tweed-item.json",
+          "url": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json",
+          "finalUrl": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json",
+          "acquiredAt": "2026-09-29T18:24:38.190297+00:00",
+          "bytes": 4228,
+          "sha256": "c2bad50a1df8aca75acd0604ee397470583529789bde5253883c45d6ba62503b",
+          "acquisitionReceiptSha256": "b74dda248ad96764153e5425cf2d50e7f5aeabcf82379bdb396b35f617d0ac9a"
+        },
+        {
+          "file": "desktop-ai06a/v7-sources/tweed-service.json",
+          "url": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer?f=pjson",
+          "finalUrl": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer?f=pjson",
+          "acquiredAt": "2026-09-29T18:24:38.275956+00:00",
+          "bytes": 4646,
+          "sha256": "611b302ff41171c6eab50bf6b44c325b6115b7f3019cd5331557ff2e3ff5ba87",
+          "acquisitionReceiptSha256": "64ee54d03c9d9527e4a73268544c360a00512b06dd396b34914873860c402d39"
+        },
+        {
+          "file": "desktop-ai06a/v7-sources/tweed-publisher.json",
+          "url": "https://www.arcgis.com/sharing/rest/portals/KURAxOhGWn5RdCPg?f=json",
+          "finalUrl": "https://www.arcgis.com/sharing/rest/portals/KURAxOhGWn5RdCPg?f=json",
+          "acquiredAt": "2026-09-29T18:25:17.569435+00:00",
+          "bytes": 20649,
+          "sha256": "7347cc2a71537614d6647add22aec484189a92bb0ea7a5bdd532eabbd88b6c4e",
+          "acquisitionReceiptSha256": "818ed0b53d6348063836bafe8f7ac93b135ec451c758f9d7c6be0f80f7c7d97c"
+        }
+      ],
+      "permission": {
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false,
+        "licence": "Creative Commons Attribution (CC BY; publisher does not specify version)",
+        "url": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json#/licenseInfo",
+        "basis": "The council item explicitly permits distribution, adaptation and building upon the material for commercial and non-commercial purposes with council attribution. Its ownership reservation is retained alongside that licence grant; this decision does not assert transfer of intellectual property rights.",
+        "attribution": "Tweed Shire Council, Council Buildings",
+        "scope": "Bounded offline schema research on the retained publisher metadata and five-row sample"
+      },
+      "geometryCrs": "Source EPSG:28356; publisher query returns outSR=4326 GeoJSON",
+      "representation": "Five unchanged GeoJSON Polygon features; no geometry derivation or rights inference",
+      "labelOrigin": "Publisher definitions and literal wire checks; no learned predictions or external provider labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      },
+      "fields": [
+        {
+          "path": "properties.Building_Name",
+          "target": "building.name",
+          "definition": "Publisher description: Includes Building Name; layer display field is Building_Name",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "Building_Name",
+            "fieldPointer": "/fields/1"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json#/description",
+          "wireCompatibleRows": 5
+        },
+        {
+          "path": "geometry",
+          "target": "building.geometry",
+          "definition": "Polygon outline in the council-managed community buildings layer",
+          "decision": "positive",
+          "declaredType": "esriGeometryPolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "geometry",
+            "geometryTypePointer": "/geometryType"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json#/description",
+          "wireCompatibleRows": 5
+        },
+        {
+          "path": "properties.locality",
+          "target": null,
+          "definition": "Locality label",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "locality",
+            "fieldPointer": "/fields/5"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json#/description"
+        },
+        {
+          "path": "properties.TIMESTAMP",
+          "target": null,
+          "definition": "Published timestamp, not a building name or source key",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "TIMESTAMP",
+            "fieldPointer": "/fields/3"
+          },
+          "evidence": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json#/description"
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.OBJECTID",
+          "decision": "unknown",
+          "reason": "Numeric row OID is unsupported by literal_identifier@1",
+          "evidence": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.Asset_Name",
+          "decision": "unknown",
+          "reason": "Could describe the same building asset; authoritative equivalence and key semantics are unestablished, so it is not a negative",
+          "evidence": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.OPEN_DATA",
+          "decision": "unknown",
+          "reason": "All five values are present null with no publisher field definition",
+          "evidence": "https://services1.arcgis.com/KURAxOhGWn5RdCPg/arcgis/rest/services/TSC_Buildings_OD/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 5,
+            "absentCount": 0,
+            "nonNullTypes": []
+          }
+        }
+      ],
+      "sourceNotes": "Attribution retained; council disclaims accuracy/currentness and warns against financial/legal reliance. Asset_Name is ambiguous; OPEN_DATA is null, not absent. No string footprint key is established, and no official parcel identity or property right follows."
+    },
+    {
+      "id": "usgs-wbd-subwatersheds",
+      "family": "usgs-wbd-hydrologic-units",
+      "split": "train",
+      "issuer": "U.S. Geological Survey",
+      "geography": "United States; sampled hydrologic units in Iowa, Minnesota and Georgia",
+      "datasetUrl": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson",
+      "acquiredAt": "2026-09-29T18:34:51.635222+00:00",
+      "sample": {
+        "file": "desktop-ai06a/v7-sources/usgs-wbd-sample-by-id.json",
+        "url": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6/query?objectIds=1%2C2%2C3%2C4%2C5&outFields=objectid%2Ctnmid%2Chuc12%2Cname%2Cstates%2Cglobalid&outSR=4326&returnGeometry=true&f=geojson",
+        "finalUrl": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6/query?objectIds=1%2C2%2C3%2C4%2C5&outFields=objectid%2Ctnmid%2Chuc12%2Cname%2Cstates%2Cglobalid&outSR=4326&returnGeometry=true&f=geojson",
+        "acquiredAt": "2026-09-29T18:34:51.635222+00:00",
+        "bytes": 217057,
+        "sha256": "fe96830d0e10564c013a20ba93a26b769878b9326d02124134c23d91b640784a",
+        "acquisitionReceiptSha256": "ffc2477c424ec821b98508d1a75fa9ce48fcbf5ccd9189abbc9919c94d12dfae",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "desktop-ai06a/v7-sources/usgs-wbd-layer-retry.json",
+        "url": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6?f=json",
+        "finalUrl": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6?f=json",
+        "acquiredAt": "2026-09-29T18:32:54.602221+00:00",
+        "bytes": 7541,
+        "sha256": "a4fafc083d8b55229539ddac1376a14d7196335ee6dfd4bc2ac02e62b44d09d7",
+        "acquisitionReceiptSha256": "307767526fb9c140566092cfe336b27cf4702882ae708bedbef76293987f1b51"
+      },
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/v7-sources/usgs-wbd-service.json",
+          "url": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson",
+          "finalUrl": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson",
+          "acquiredAt": "2026-09-29T18:29:47.937617+00:00",
+          "bytes": 9106,
+          "sha256": "561a1c58281ff4be21b40f8c522a78ac160b271101a766aca6d50dd0789c699f",
+          "acquisitionReceiptSha256": "c9bf55e6307d735c66da1ae3c2ad5790547a99970787bd18b6c21d3c2c3ec666"
+        }
+      ],
+      "permission": {
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false,
+        "licence": "USGS WBD service: no use constraints; open and non-proprietary",
+        "url": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson#/serviceDescription",
+        "basis": "The official hydro.nationalmap.gov WBD service states Use Constraints None and that all data are open and non-proprietary. Metadata identifies USGS/USDA NRCS WBD lineage. Retain attribution and temporal/scale limitations.",
+        "attribution": "U.S. Geological Survey, Watershed Boundary Dataset; USDA NRCS lineage as documented by the service",
+        "scope": "Bounded offline schema research on the retained publisher metadata and five-row sample"
+      },
+      "geometryCrs": "Source EPSG:3857; publisher query returns outSR=4326 GeoJSON",
+      "representation": "Five unchanged GeoJSON Polygon features; no geometry derivation or rights inference",
+      "labelOrigin": "Publisher definitions and literal wire checks; no learned predictions or external provider labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      },
+      "fields": [
+        {
+          "path": "properties.tnmid",
+          "target": null,
+          "definition": "Identifier of a hydrologic-unit feature, not a building footprint",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "tnmid",
+            "fieldPointer": "/fields/1"
+          },
+          "evidence": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson#/description"
+        },
+        {
+          "path": "properties.huc12",
+          "target": null,
+          "definition": "Twelve-digit hydrologic-unit code, not a building source key",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "huc12",
+            "fieldPointer": "/fields/11"
+          },
+          "evidence": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson#/description"
+        },
+        {
+          "path": "properties.name",
+          "target": null,
+          "definition": "Name of the subwatershed, not a building",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "name",
+            "fieldPointer": "/fields/12"
+          },
+          "evidence": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson#/description"
+        },
+        {
+          "path": "properties.states",
+          "target": null,
+          "definition": "State codes for the hydrologic unit",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "states",
+            "fieldPointer": "/fields/10"
+          },
+          "evidence": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson#/description"
+        },
+        {
+          "path": "properties.globalid",
+          "target": null,
+          "definition": "GlobalID of a watershed feature, not a building footprint",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeGlobalID",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "globalid",
+            "fieldPointer": "/fields/19"
+          },
+          "evidence": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson#/description"
+        },
+        {
+          "path": "geometry",
+          "target": null,
+          "definition": "Hydrologic-unit polygon boundary, not a building outline",
+          "decision": "negative",
+          "declaredType": "esriGeometryPolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "geometry",
+            "geometryTypePointer": "/geometryType"
+          },
+          "evidence": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer?f=pjson#/description"
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.objectid",
+          "decision": "unknown",
+          "reason": "Service row OID is outside the selected semantic controls",
+          "evidence": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6?f=json",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        }
+      ],
+      "sourceNotes": "Independent real non-building controls include strings resembling names/keys and actual polygons. USGS refreshed the service in July 2026 but disclaims site-specific regulatory/currentness use. An initial full-order query returned HTTP 504; a bounded object-ID query returned five unchanged complete geometries without simplification. No building semantics are inferred from polygon type."
     }
   ],
   "labelEncoding": "Issuer-authored title/alias/description/type for model input resolve from exact locators in hash-pinned metadata. Reviewer definitions/evidence/targets and representation are label audit only and never enter v4 encoder text. Observed wire shape/counts derive from unchanged samples; raw record values do not enter features. Prior v3 corpus/run07 is immutable and its answer-bearing reviewer-text model features invalidate a fresh unseen-input claim. The unchanged source-family roles now support one corrected diagnostic fit, not a new DC holdout.",
-  "curationNotes": "V6 admits the retained GNWT source to calibration after tracing the OGL-NWT catalogue designation through the actual ATLAS viewer layer and issuing manual. Its original bytes, labels and publisher-only profiles are unchanged. Every V5 eligible family, label and split is unchanged: Halifax/Kitchener remain unopened evaluation; DC/SF remain observed diagnostics; Census supplies the retained non-building polygon calibration control. No numeric identity coercion.",
+  "curationNotes": "V7 appends four independent training families only: Cambridge/Oregon building names, Tweed building names/polygons, and USGS watershed wrong-target controls. Every V6 source object, split, label and exact input is preserved. Point IDs stay unknown because the fixed key target identifies footprint features. No new key-positive family, Indian training qualification, fit, inference, threshold selection, held-out scoring or promotion is claimed.",
   "excludedSources": [],
-  "previousCorpusSha256": "bf8163172de050ee1bafa7618714ad080ba62b6f11eda0d82952f00b8771d9f3"
+  "previousCorpusSha256": "d36d6c64fb1609e718f393f188249dffa653160f65383f5bb45d7ea7b28a9b16"
 }

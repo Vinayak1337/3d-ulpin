@@ -10,8 +10,8 @@ from typing import Any
 
 
 TARGETS = ("building.sourceKey", "building.name", "building.geometry")
-CORPUS_VERSION = "usp-field-mapping-corpus-v6"
-LITERAL_TEXT_VERSIONS = ("usp-field-mapping-corpus-v5", CORPUS_VERSION)
+CORPUS_VERSION = "usp-field-mapping-corpus-v7"
+LITERAL_TEXT_VERSIONS = ("usp-field-mapping-corpus-v5", "usp-field-mapping-corpus-v6", CORPUS_VERSION)
 SOURCE_ONLY_VERSIONS = ("usp-field-mapping-corpus-v4", *LITERAL_TEXT_VERSIONS)
 SPLITS = ("train", "calibration", "evaluation", "diagnostic")
 

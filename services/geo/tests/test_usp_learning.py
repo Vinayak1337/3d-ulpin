@@ -59,7 +59,7 @@ def test_acquired_opendatasoft_shape_nonbuilding_labels_and_profile_privacy():
         pytest.skip("bounded external issuer originals are not configured")
     corpus_path = REPO / "docs/api/learning-corpus.json"
     corpus, examples = load_examples(corpus_path, Path(originals))
-    assert corpus["schemaVersion"] == "usp-field-mapping-corpus-v6"
+    assert corpus["schemaVersion"] == "usp-field-mapping-corpus-v7"
     assert {item["family"] for item in examples if item["split"] == "calibration"}.isdisjoint(
         {item["family"] for item in examples if item["split"] == "evaluation"}
     )
