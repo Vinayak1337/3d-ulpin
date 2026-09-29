@@ -13,6 +13,7 @@ import re
 import signal
 import subprocess
 import sys
+import sysconfig
 import time
 from pathlib import Path
 from typing import Any
@@ -23,15 +24,30 @@ import psutil
 from geo.usp_document_candidates.granite import (
     MAX_CPU_THREADS, MAX_GENERATED_TOKENS, MAX_PIXELS, MAX_SIDE,
     MODEL_ID, MODEL_LICENSE, MODEL_REVISION, MPS_MEMORY_FRACTION,
-    render_pdf_region, sha256_file,
+    sha256_file,
     verify_model_files,
 )
 
 
 MAX_REGION_SECONDS = 240
-MAX_TRIAL_SECONDS = 600
+MAX_RENDER_SECONDS = 60
+MAX_PROCESSING_SECONDS = 600
 MAX_PROCESS_RSS_BYTES = 6 * 1024**3
 MAX_SOURCE_BYTES = 16 * 1024**2
+_WINDOWS_GATE = ("import sys\n"
+                 "if sys.stdin.buffer.read(1) != b'1': raise SystemExit(3)\n"
+                 "import os,site,runpy\n"
+                 "site.main()\n"
+                 "site.addsitedir(os.environ['ULPIN_TRIAL_SITEPACKAGES'])\n"
+                 "sys.path[:0] = [p for p in os.environ.get('PYTHONPATH','').split(os.pathsep) if p]\n"
+                 "command=sys.argv[1:]\n"
+                 "if len(command)<2 or os.path.normcase(command[0])!=os.path.normcase(os.environ['ULPIN_TRIAL_PYTHON']): raise SystemExit(4)\n"
+                 "if command[1]=='-m':\n"
+                 "    sys.argv=command[2:]\n"
+                 "    runpy.run_module(command[2],run_name='__main__',alter_sys=True)\n"
+                 "else:\n"
+                 "    sys.argv=command[1:]\n"
+                 "    runpy.run_path(command[1],run_name='__main__')\n")
 
 
 def _valid_identifier(value: Any) -> bool:
@@ -145,19 +161,32 @@ def _run_worker(command: list[str], log_path: Path, timeout_seconds: float,
     env.update({"TOKENIZERS_PARALLELISM": "false", "OMP_NUM_THREADS": "2",
                 "MKL_NUM_THREADS": "2", "OPENBLAS_NUM_THREADS": "2",
                 "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1", "CUDA_VISIBLE_DEVICES": ""})
+    if os.name == "nt":
+        env["ULPIN_TRIAL_SITEPACKAGES"] = sysconfig.get_paths()["purelib"]
+        env["ULPIN_TRIAL_PYTHON"] = sys.executable
     started = time.monotonic()
     max_rss = 0
     peak_job_private: int | None = None
     stop_reason: str | None = None
+    owned_members: dict[int, psutil.Process] = {}
     with log_path.open("w") as log:
-        process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT,
+        # The isolated stdlib-only bootstrap runs the worker in its own PID
+        # only after Job attachment; no second process can escape that window.
+        launch = ([sys._base_executable, "-I", "-S", "-c", _WINDOWS_GATE, *command]
+                  if os.name == "nt" else command)
+        process = subprocess.Popen(launch, stdin=subprocess.PIPE if os.name == "nt" else subprocess.DEVNULL,
+                                   stdout=log, stderr=subprocess.STDOUT,
                                    env=env, start_new_session=os.name != "nt",
                                    creationflags=(subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0))
         job: _WindowsJob | None = None
         try:
+            root = psutil.Process(process.pid)
+            owned_members[root.pid] = root
             if os.name == "nt":
                 job = _WindowsJob(process, memory_cap_bytes)
-            root = psutil.Process(process.pid)
+                assert process.stdin is not None
+                process.stdin.write(b"1")
+                process.stdin.close()
             while process.poll() is None:
                 elapsed = time.monotonic() - started
                 if elapsed > timeout_seconds:
@@ -165,6 +194,7 @@ def _run_worker(command: list[str], log_path: Path, timeout_seconds: float,
                     break
                 try:
                     members = [root, *root.children(recursive=True)]
+                    owned_members.update((member.pid, member) for member in members)
                     rss = sum(member.memory_info().rss for member in members if member.is_running())
                     max_rss = max(max_rss, rss)
                     if rss > memory_cap_bytes:
@@ -174,15 +204,29 @@ def _run_worker(command: list[str], log_path: Path, timeout_seconds: float,
                     break
                 time.sleep(0.25)
         finally:
+            if process.stdin is not None and not process.stdin.closed:
+                process.stdin.close()  # Failed attachment releases no worker code.
             if process.poll() is None:
                 _stop_process(process, job)
             if job is not None:
                 peak_job_private = job.peak_private_bytes()
                 job.close()  # Kill any remaining descendant before returning.
+            _, survivors = psutil.wait_procs(list(owned_members.values()), timeout=1)
+            for member in survivors:
+                # Some Windows hosts let descendants break away from nested
+                # jobs. Stop only observed, identity-pinned child processes.
+                try:
+                    member.kill()
+                except psutil.NoSuchProcess:
+                    pass
+            _, survivors = psutil.wait_procs(survivors, timeout=3)
+            if survivors:
+                raise RuntimeError("owned_process_tree_survived_shutdown")
         exit_code = process.wait()
     return {"exitCode": exit_code, "stopReason": stop_reason,
             "elapsedSeconds": round(time.monotonic() - started, 3),
             "peakObservedRssBytes": max_rss, "peakJobPrivateBytes": peak_job_private,
+            "gatedStart": os.name == "nt",
             "logPath": str(log_path),
             "logSha256": sha256_file(log_path)}
 
@@ -201,7 +245,6 @@ def main() -> None:
     parser.add_argument("--memory-cap-mib", type=int, default=6144)
     parser.add_argument("--device", choices=("auto", "cpu", "mps"), default="auto")
     args = parser.parse_args()
-    trial_started = time.monotonic()
     if not (1 <= args.max_new_tokens <= MAX_GENERATED_TOKENS):
         parser.error("output token cap exceeds the trial profile")
     if not (1 <= args.region_timeout_seconds <= MAX_REGION_SECONDS):
@@ -238,6 +281,7 @@ def main() -> None:
             if len(pdf) != source["pageCount"]:
                 parser.error(f"original page count changed: {source['id']}")
     model_files = verify_model_files(args.model_dir)
+    processing_started = time.monotonic()
     args.output_dir.mkdir(parents=True)
     receipt_path = args.output_dir / "trial-receipt.json"
     receipt: dict[str, Any] = {
@@ -247,6 +291,7 @@ def main() -> None:
             "runnerSha256": sha256_file(Path(__file__)),
             "adapterSha256": sha256_file(repo / "services/geo/geo/usp_document_candidates/granite.py"),
             "workerSha256": sha256_file(repo / "services/geo/geo/usp_document_candidates/worker.py"),
+            "renderWorkerSha256": sha256_file(repo / "services/geo/geo/usp_document_candidates/render_worker.py"),
             "requirementsSha256": sha256_file(repo / "services/geo/requirements-document-models.txt"),
         },
         "model": {"id": MODEL_ID, "revision": MODEL_REVISION, "license": MODEL_LICENSE,
@@ -256,7 +301,8 @@ def main() -> None:
                    "maxPixelsPerRegion": MAX_PIXELS,
                    "maxImageSide": MAX_SIDE, "maxGeneratedTokens": args.max_new_tokens,
                    "cpuThreads": MAX_CPU_THREADS, "regionTimeoutSeconds": args.region_timeout_seconds,
-                   "trialTimeoutSeconds": MAX_TRIAL_SECONDS,
+                   "renderTimeoutSeconds": MAX_RENDER_SECONDS,
+                   "processingTimeoutSeconds": MAX_PROCESSING_SECONDS,
                    "processMemoryCapBytes": args.memory_cap_mib * 1024**2,
                    "mpsMemoryFraction": MPS_MEMORY_FRACTION, "requestedDevice": args.device},
         "runtime": {"python": sys.version.split()[0], "platform": platform.platform(),
@@ -278,18 +324,30 @@ def main() -> None:
         receipt["regions"].append(item)
         _write_receipt(receipt_path, receipt)
         try:
-            if time.monotonic() - trial_started >= MAX_TRIAL_SECONDS:
-                raise TimeoutError("trial_runtime_cap_exceeded")
-            item["render"] = render_pdf_region(original, region["page"], region["bboxNorm"], image_path)
+            remaining = MAX_PROCESSING_SECONDS - (time.monotonic() - processing_started)
+            if remaining <= 0:
+                raise TimeoutError("processing_runtime_cap_exceeded")
+            render_result = args.output_dir / "rendered" / (region["id"] + ".json")
+            render_command = [sys.executable, "-m", "geo.usp_document_candidates.render_worker",
+                              "--original", str(original), "--page", str(region["page"]),
+                              "--bbox", json.dumps(region["bboxNorm"]), "--image", str(image_path),
+                              "--result", str(render_result)]
+            item["renderWorker"] = _run_worker(
+                render_command, args.output_dir / (region["id"] + ".render.log"),
+                min(MAX_RENDER_SECONDS, remaining), args.memory_cap_mib * 1024**2)
+            if item["renderWorker"]["exitCode"] != 0 or item["renderWorker"]["stopReason"]:
+                raise RuntimeError(item["renderWorker"]["stopReason"] or "render_worker_failed")
+            item["render"] = json.loads(render_result.read_text())
+            item["render"]["resultSha256"] = sha256_file(render_result)
             output_path = args.output_dir / "regions" / region["id"]
             output_path.parent.mkdir(parents=True, exist_ok=True)
             command = [sys.executable, "-m", "geo.usp_document_candidates.worker",
                        "--image", str(image_path), "--model-dir", str(args.model_dir),
                        "--output-dir", str(output_path), "--max-new-tokens", str(args.max_new_tokens),
                        "--cpu-threads", str(MAX_CPU_THREADS), "--device", args.device]
-            remaining = MAX_TRIAL_SECONDS - (time.monotonic() - trial_started)
+            remaining = MAX_PROCESSING_SECONDS - (time.monotonic() - processing_started)
             if remaining <= 0:
-                raise TimeoutError("trial_runtime_cap_exceeded")
+                raise TimeoutError("processing_runtime_cap_exceeded")
             item["worker"] = _run_worker(command, args.output_dir / (region["id"] + ".log"),
                                          min(args.region_timeout_seconds, remaining), args.memory_cap_mib * 1024**2)
             selection_path = output_path / "runtime-selection.json"
@@ -334,7 +392,7 @@ def main() -> None:
         if item["status"] == "failed":
             break
     receipt["status"] = "failed" if failed else "completed"
-    receipt["elapsedSeconds"] = round(time.monotonic() - trial_started, 3)
+    receipt["processingElapsedSeconds"] = round(time.monotonic() - processing_started, 3)
     _write_receipt(receipt_path, receipt)
     print(json.dumps({"trialStatus": receipt["status"], "receipt": str(receipt_path),
                       "completedRegions": sum(item["status"] == "model_derived_extraction" for item in receipt["regions"])}))
