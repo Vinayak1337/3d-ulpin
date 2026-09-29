@@ -74,7 +74,7 @@ def test_supervisor_kills_only_owned_process_tree_on_time_and_rss_limits(tmp_pat
                 pass
 
 
-@pytest.mark.parametrize("schema_version", ["usp-field-mapping-corpus-v5", "usp-field-mapping-corpus-v6"])
+@pytest.mark.parametrize("schema_version", ["usp-field-mapping-corpus-v5", "usp-field-mapping-corpus-v6", "usp-field-mapping-corpus-v7"])
 def test_literal_identifier_rejects_real_numeric_building_id(tmp_path, schema_version):
     from geo.usp_learning.corpus import wire_compatible_rows, wire_observation
 
