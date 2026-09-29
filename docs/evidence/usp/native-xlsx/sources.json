@@ -1,0 +1,43 @@
+{
+  "version": "native-xlsx-sources/1",
+  "acquisitionPurpose": "Private native workbook reader qualification only",
+  "sources": [
+    {
+      "id": "fco-hospitality-2014",
+      "issuer": "Foreign & Commonwealth Office, United Kingdom",
+      "publicationUrl": "https://www.gov.uk/government/publications/foreign-office-senior-staff-quarterly-returns-january-to-march-2014",
+      "originalUrl": "https://assets.publishing.service.gov.uk/media/5a7d9e6e40f0b630d051c6a5/Senior_Staff_Hospitality_Received__Cabinet_Office_.xlsx",
+      "acquiredAtUtc": "2026-09-29T19:26:07.672363+00:00",
+      "privateOriginal": "E:/BhuAayam-data/task-data/desktop-ai04e-native-xlsx/Senior_Staff_Hospitality_Received__Cabinet_Office_.xlsx",
+      "bytes": 25657,
+      "sha256": "aa301b90933f3b779a69a855f271fa7ab6217b5e0a93b279fca7636d675f32f4",
+      "geography": "United Kingdom, test only",
+      "referenceFrame": null,
+      "permission": "GOV.UK publication footer states Open Government Licence v3.0 except where otherwise stated; no resource-specific exception was visible. Redistribution and ML use were not assessed.",
+      "observedStructure": {"sheets": 1, "xmlCellElements": 354, "explicitNoValueCells": 297, "formulaCells": 0},
+      "limitations": [
+        "Published for January–March 2014, but the native sheet title says Q2 July - September 2012-13; the title is retained verbatim and no period is inferred",
+        "Administrative transparency table, not Indian property, floor, geometry, ownership or rights evidence"
+      ]
+    },
+    {
+      "id": "dfe-discharge-coefficient-calculator",
+      "issuer": "Department for Education, United Kingdom",
+      "publicationUrl": "https://www.gov.uk/government/publications/classvent-and-classcool-school-ventilation-design-tool",
+      "originalUrl": "https://assets.publishing.service.gov.uk/media/5b7add7540f0b64350cbf814/Discharge_coefficient_calculator.xlsx",
+      "acquiredAtUtc": "2026-09-29T19:34:29.037441+00:00",
+      "privateOriginal": "E:/BhuAayam-data/task-data/desktop-ai04e-native-xlsx/Discharge_coefficient_calculator.xlsx",
+      "bytes": 28333,
+      "sha256": "860857b1bbbb0dda4a2d5f5446eea7183fe2d7521f116a44f29f102011f0881e",
+      "geography": "United Kingdom, test only",
+      "referenceFrame": null,
+      "permission": "GOV.UK publication footer states Open Government Licence v3.0 except where otherwise stated; no resource-specific exception was visible. Redistribution and ML use were not assessed.",
+      "observedStructure": {"sheets": 2, "xmlCellElements": 324, "formulaCells": 8, "formulaCellsWithoutCachedValue": 0, "hasDrawingPart": true},
+      "limitations": [
+        "Calculation workbook; cached formula results may be stale and are not independent measured facts",
+        "Drawing and printer settings are outside native cell extraction",
+        "Not Indian property, floor, geometry, ownership or rights evidence"
+      ]
+    }
+  ]
+}

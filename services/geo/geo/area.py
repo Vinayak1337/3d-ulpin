@@ -528,8 +528,8 @@ def check_area(data):
 
 def extract_document(data):
     """Extract native text with locators, without interpreting document instructions."""
-    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "text", "csv", "csv_reference"):
-        raise InputError("Native document format must be pdf, docx, text, a CSV reference table or the strict CSV level schedule.")
+    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "archive", "text", "csv", "csv_reference"):
+        raise InputError("Native document format must be pdf, an OOXML archive, text, a CSV reference table or the strict CSV level schedule.")
     encoded = data.get("base64")
     if not isinstance(encoded, str) or len(encoded) > (MAX_DOCUMENT_BYTES + 2) // 3 * 4:
         raise InputError("Document must be base64 with at most 10 MiB of decoded bytes.")
@@ -546,6 +546,7 @@ def extract_document(data):
         from .native_schedule import extract_reference_table
         return {"format": "csv_reference", "method": "native_reference", "sourceSha256": hashlib.sha256(raw).hexdigest(), **extract_reference_table(raw)}
     parts, warnings, total_text = [], [], 0
+    native_format = data["format"]
 
     def add(text, locator):
         nonlocal total_text
@@ -603,11 +604,32 @@ def extract_document(data):
         try:
             with zipfile.ZipFile(io.BytesIO(raw)) as archive:
                 entries = archive.infolist()
-                if len(entries) > 1000 or sum(info.file_size for info in entries) > 30 * 1024 * 1024 or any(info.flag_bits & 1 for info in entries):
-                    raise InputError("DOCX archive is encrypted or exceeds bounded extraction size.")
-                if "word/document.xml" not in archive.namelist():
+                names = [info.filename for info in entries]
+                if (len(entries) > 1000 or sum(info.file_size for info in entries) > 30 * 1024 * 1024
+                        or len(names) != len(set(names))
+                        or any(name.startswith("/") or "\\" in name or ".." in name.split("/") for name in names)):
+                    raise InputError("NATIVE_ARCHIVE_LIMIT")
+                if any(info.flag_bits & 1 for info in entries):
+                    raise InputError("Encrypted document archive is unsupported.")
+                if "xl/workbook.xml" in names and "word/document.xml" not in names:
+                    from .native_workbook import extract_native_workbook
+                    native_format = "xlsx"
+                    result = extract_native_workbook(archive)
+                    result["sourceSha256"] = hashlib.sha256(raw).hexdigest()
+                    result["warnings"].append("Native workbook cells are source references only; no headers, units, geometry, joins or legal facts were inferred.")
+                    return result
+                if "word/document.xml" not in names or "xl/workbook.xml" in names:
+                    if data["format"] == "archive":
+                        return {"format": "archive", "method": "native_parse", "status": "unsupported",
+                                "code": "ARCHIVE_DOCUMENT_UNSUPPORTED", "sourceSha256": hashlib.sha256(raw).hexdigest(),
+                                "parts": [], "warnings": ["This ZIP is not one unambiguous supported OOXML Word document or workbook."],
+                                "characterCount": 0}
                     raise InputError("DOCX has no Word document part.")
-                xml = archive.read("word/document.xml")
+                native_format = "docx"
+                if archive.getinfo("word/document.xml").file_size > 5 * 1024 * 1024:
+                    raise InputError("DOCX XML exceeds limits or contains unsupported entity declarations.")
+                with archive.open("word/document.xml") as member:
+                    xml = member.read(5 * 1024 * 1024 + 1)
                 if len(xml) > 5 * 1024 * 1024 or b"<!DOCTYPE" in xml.upper() or b"<!ENTITY" in xml.upper():
                     raise InputError("DOCX XML exceeds limits or contains unsupported entity declarations.")
                 root = ElementTree.fromstring(xml)
@@ -662,7 +684,7 @@ def extract_document(data):
         except InputError:
             raise
         except (zipfile.BadZipFile, ElementTree.ParseError, KeyError, RuntimeError):
-            raise InputError("DOCX native text could not be parsed.") from None
+            raise InputError("NATIVE_WORKBOOK_INVALID" if native_format == "xlsx" else "DOCX native text could not be parsed.") from None
     warnings.append("Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.")
-    return {"format": data["format"], "method": "native_parse", "status": "ready" if parts else "needs_input",
+    return {"format": native_format, "method": "native_parse", "status": "ready" if parts else "needs_input",
             "sourceSha256": hashlib.sha256(raw).hexdigest(), "parts": parts, "warnings": warnings, "characterCount": total_text}
