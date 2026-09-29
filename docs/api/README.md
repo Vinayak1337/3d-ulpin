@@ -1,6 +1,8 @@
 # Native NestJS API for frontend integration
 
-The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 176 operations and 204 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and forty-four added operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
+For the agreed end-to-end design and Claude/Studio integration responsibilities, read the [adaptive ingestion workflow](adaptive-ingestion-workflow.md). It separates the target AI/ML and streaming behavior from the currently implemented API profiles.
+
+The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 179 operations and 205 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and forty-seven added operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
 
 After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs). Its [OpenAPI JSON](http://127.0.0.1:3188/api/docs/openapi.json) and [dataset catalogue](http://127.0.0.1:3188/api/docs/datasets.json) are served by the same loopback backend. Swagger is light-only and opens schemas first. Write execution and the external validator are disabled. These links describe the configured default address; they do not mean a server is currently running.
 
@@ -283,3 +285,11 @@ python3 scripts/api/check.py
 Use `--check` on either generator to detect drift without writing. Generation creates an in-memory Nest application, opens no listener and invokes no domain method. [source-pins.json](source-pins.json) pins current producers/contracts; the checker verifies all baseline method/path dispositions, parameter schemas and references. Review the resulting contract changes before handing a regenerated client to the frontend team.
 
 Natural lease recovery is now qualified for the retained NWIC profile: after an owned dispatcher stop, its unchanged180-second lease expired, canonical attempt2 accepted all733records, and all checks completed within the preset expiry+120-second bound. The [receipt](../evidence/usp/natural-lease-recovery-runtime.json) distinguishes catalogue observation from follow-up reads, preserves old-attempt/immutable-seal checks and discloses sampled health gaps. This is an operator-triggered restart, not automatic failover or continuous availability.
+
+## Reviewed prefix admission (AI-03C)
+
+An opt-in source-pinned recipe can admit mapped drafts from an immutable observed prefix while the raw reader continues. Under `/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile`, use `POST jobs/{jobId}/prefix-recipes`, `POST jobs/{jobId}/prefix-recipes/{recipeId}/approve`, and `GET jobs/{jobId}/prefix-recipes/{recipeId}`. The author payload uses `streamed-prefix-mapping/1`, pins the profile generation/hash and raw chunk hash/counts, and includes issuer evidence for every operation. Existing sealed-profile recipes remain supported.
+
+Mapped-job admission additionally sets `prefixAdmissionVersion: "streamed-prefix-admission/1"` alongside all three profile pins. The backend requires approval of that exact prefix recipe. Later compatible records still undergo validation and durable key reservation; unknown remainder, quarantines and failed source integrity remain explicit. The profile does not establish whole-source uniqueness or global placement.
+
+The implementation is integrated in staging, with backend typecheck, the existing three event checks and generated contract checks passing. Runtime prefix-before-EOF, replay/failure and difficult-source qualification remain pending on the destination machine; the new operations are not marked runtime-verified.

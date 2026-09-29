@@ -1,0 +1,84 @@
+{
+ "model": "mlx-community/chatterbox-fp16",
+ "gain_db": -2.8,
+ "p01": {
+  "take": 3,
+  "heard": "In most places, a property record is still just a line on a flat map, but cities aren't flat.",
+  "passes": true
+ },
+ "p02": {
+  "take": 1,
+  "heard": "So we built Boa Yem, a property registry in three dimensions.",
+  "passes": true
+ },
+ "p03": {
+  "take": 1,
+  "heard": "Take one flat. The deed says 84 square meters, the plan says 81 and the drone survey finds an extra floor. Today, an officer sorts all of that out by hand.",
+  "passes": true
+ },
+ "p04": {
+  "take": 1,
+  "heard": "With BuhahaHum, you drop in whatever you have and the studio works out what each file is before anything is imported.",
+  "passes": true
+ },
+ "p05": {
+  "take": 1,
+  "heard": "Maps, deeds, plans, spreadsheets, even LiDAR. Every original is sealed at the moment it lands.",
+  "passes": true
+ },
+ "p06": {
+  "take": 2,
+  "heard": "When a file is unfamiliar, AI reads the raw bytes and suggests what each field means. It only suggests. Plain code does the converting so nothing gets made up.",
+  "passes": true
+ },
+ "p07": {
+  "take": 1,
+  "heard": "You see exactly how it will be read. Start the import and the buildings appear as they are converted.",
+  "passes": true
+ },
+ "p08": {
+  "take": 5,
+  "heard": "Big files are split where the meaning allows. AI handles the first chunks while a second model learns from each checked result. Then that model takes over and it gets much faster.",
+  "passes": true
+ },
+ "p09": {
+  "take": 1,
+  "heard": "and there's no waiting around. The city fills in on the map while it's still uploading.",
+  "passes": false
+ },
+ "p10": {
+  "take": 5,
+  "heard": "Search for any building and fly straight to it. Every value links back to the document it came from.",
+  "passes": true
+ },
+ "p11": {
+  "take": 4,
+  "heard": "Every building opens up into floors and every flat gets its own 3D open. Read straight from the documents.",
+  "passes": true
+ },
+ "p12": {
+  "take": 1,
+  "heard": "where the plan and the survey disagree, you see it right there in place, one click and it's a finding on the record.",
+  "passes": true
+ },
+ "p13": {
+  "take": 2,
+  "heard": "It goes underground too. Draw a trench and see which pipes it would cross before anyone starts digging.",
+  "passes": true
+ },
+ "p14": {
+  "take": 3,
+  "heard": "Every flat gets a property card that anyone can verify. The card and the register come from the same revision on the same hash chain.",
+  "passes": true
+ },
+ "p15": {
+  "take": 1,
+  "heard": "and citizens see the same record. They can look up a building, open it and check every flat that's been released.",
+  "passes": true
+ },
+ "p16": {
+  "take": 4,
+  "heard": "That's Buah Yom, built for officers and for citizens.",
+  "passes": true
+ }
+}
