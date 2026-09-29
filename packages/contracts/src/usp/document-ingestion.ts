@@ -57,6 +57,7 @@ export const DocumentResultSchema=z.strictObject({version:z.literal(DOCUMENT_VER
       p.sourceRevision!==value.input.sourceRevision || p.sourceSha256!==value.input.sourceSha256) ||
       new Set(value.native.parts.map(p=>p.id)).size!==value.native.parts.length ||
       value.model.candidates.some(c=>{const p=value.native.parts.find(p=>p.id===c.partId);return !p ||
+        (p.locator.cellState!==undefined && p.locator.cellState!=='literal') ||
         !p.text.includes(c.quote)||!c.quote.includes(c.field)||!c.quote.includes(c.value)||/\[redacted/i.test(c.quote);}))
       ctx.addIssue({code:'custom',message:'Extraction parts and proposed fields must preserve exact source and citation pins'});
   });

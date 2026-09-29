@@ -3,6 +3,7 @@
 import posixpath
 import re
 import xml.etree.ElementTree as ET
+from xml.parsers import expat
 
 from .validation import InputError
 
@@ -33,11 +34,22 @@ def _xml(archive, name):
         raise InputError("NATIVE_WORKBOOK_LIMIT")
     with archive.open(info) as member:
         raw = member.read(MAX_XML_BYTES + 1)
-    if len(raw) > MAX_XML_BYTES or b"<!DOCTYPE" in raw.upper() or b"<!ENTITY" in raw.upper():
+    if len(raw) > MAX_XML_BYTES:
         raise InputError("NATIVE_WORKBOOK_LIMIT")
+    # Expat recognizes DTDs in UTF-8 and UTF-16 before ElementTree can expand
+    # their entities into a materialized workbook tree.
+    guard = expat.ParserCreate()
+
+    def reject_declaration(*_args):
+        raise InputError("NATIVE_WORKBOOK_INVALID")
+
+    guard.StartDoctypeDeclHandler = reject_declaration
+    guard.EntityDeclHandler = reject_declaration
+    guard.ExternalEntityRefHandler = reject_declaration
     try:
+        guard.Parse(raw, True)
         return ET.fromstring(raw)
-    except ET.ParseError:
+    except (expat.ExpatError, ET.ParseError):
         raise InputError("NATIVE_WORKBOOK_INVALID") from None
 
 
