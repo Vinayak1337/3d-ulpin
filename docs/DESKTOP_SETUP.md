@@ -93,6 +93,14 @@ For the launch reel, recordings restore to `video/launch/rec`; code and accepted
 
 ## Resume ingestion work deliberately
 
+### Docker Desktop stale Windows socket recovery
+
+On 29 September Docker Desktop 4.91.0 failed at `Docker/run/sailor-ingest.sock`, then `docker-secrets-engine/engine.sock`, with Windows error 1920. Individual socket removal/renaming failed. With all Docker Desktop/backend processes stopped, inspected runtime directories contained only zero-byte socket entries. Renaming those exact directories within `%LOCALAPPDATA%` to timestamped sibling backups and recreating empty directories restored Engine 29.8.0. [Docker's issue tracker](https://github.com/docker/desktop-feedback/issues/554) records the same failure/workaround. This is a runtime-socket repair, not a data restore or Docker reset.
+
+Preserved directories are `C:/Users/kvina/AppData/Local/Docker/run.saved-ai04b-20260929-2250`, `Docker/run.saved-lead-20260929-224829` and `docker-secrets-engine.saved-lead-20260929-224829` beneath the same local-app-data root. Do not delete them as routine cleanup. PostgreSQL, MinIO and Redis volumes were preserved and the same storage containers restarted. Before any recurrence repair, verify the current processes, exact paths and directory contents again; do not rename a parent Docker data directory, touch virtual disks/volumes, or run concurrent repair workers. The installed application is under `C:/Users/kvina/AppData/Local/Programs/DockerDesktop/`.
+
+### Continue the checked backend lanes
+
 AI-03C's approved-prefix implementation and Windows restoration runner are merged into staging. The 29 September runtime observed mapped output before raw EOF, exact replay, explicit later-null issues, the natural invalid-polygon quarantine, SSE reconnection and completed-job readback after restart. See [the API handoff](api/README.md#reviewed-prefix-admission-ai-03c) for counts and limits. Active-job interruption and a new induced-integrity-failure check remain unqualified.
 
 For this retained `prefix-worker-20260929` profile, run `node scripts/usp/desktop-prefix-runtime.mjs <action> E:/BhuAayam-data/runtime/prefix-worker-20260929` from its assigned isolated checkout, where `<action>` is `preflight`, `start`, `status` or `stop`. The helper verifies project/volume ownership and Windows SID, refuses a checkout `.env`, uses Docker Desktop and the API's TypeScript configuration, and stops only its recorded application/processing services. It preserves restored storage volumes. Original Mac operator attribution remains unchanged; continuation data is retained through the API under the current operator. The verification API is currently stopped.
