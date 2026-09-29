@@ -1,5 +1,7 @@
 # Ingestion learning — field mapping and planned document association
 
+**Open Jev alternatives reviewed, 30 September:** the [corrected comparison](../evidence/usp/prediction-model-fit.md) is integrated as `42ae7bd`. Von is the first small typed-decision comparator to consider after the current Qwen result and NET-01; GLiNER2.5 multilingual is an adjacent source-span/relation extractor. Laya, jevos, JevK5 and the `so1` inference library have distinct language, interface, no-match, memory or question-interference limits. None has been run locally or qualifies document/floor linking. Keep Qwen's current experiment frozen, and require an unresolved task-specific gap before adding the proposed Von pass. The exact user-named OpenAI Decisions API remains unverified in fetched official documentation; documented Responses vision/structured output is a separate interface.
+
 ## Pending local-model network audit — after AI-06D
 
 User instruction, 30 September: after the current Qwen fine-tuning ends, verify that the local model runtime does not send requests outside through remote code, telemetry, SDK integrations or other dependencies. This is a required follow-up before application integration or private-document use; it does not interrupt or repeat the frozen fit. The lead will assign an independent reviewer when the learner returns its exact code, environment and adapter receipts. Current status: **not verified at the network boundary**.
