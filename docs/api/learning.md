@@ -1,4 +1,4 @@
-# Offline pretrained field-mapping learner
+# Ingestion learning — field mapping and planned document association
 
 **Current result, 28 September:** corrected candidate `3a22bb2d92a2858a90e29e99e8a192b03d63701c` is integrated, with an actual saved E5 fine-tune and reproducible inference. It remains experimental and unpromoted. On six DC diagnostic fields, the lexical/type baseline matched6/6; base and tuned E5 matched4/6 and abstained on both positive mappings. This does not justify replacing the existing deterministic conversion/validation path.
 
@@ -15,6 +15,12 @@ The user prioritizes the best supported quality and authorizes Astra and local G
 5. **Review before use.** Astra owns the corpus/trainer implementation; the lead reviews leakage, split enforcement, calibration decisions and reproducible saved inference. Fix concrete defects and run focused checks only. The first fit is a controlled experiment, not an obligation to adopt its model. If it fails to improve, use development evidence to define the next bounded experiment and preserve an untouched final evaluation set; do not repeatedly optimize against disclosed holdout results. Any production integration remains a separate reviewed step with deterministic validation and an abstention/review path.
 
 The current learner is assigned to ordinary task `01a0edae-d7ef-7032-a733-ca686e271ac7`, requested Astra/max, with exclusive learner ownership. Its Git metadata access approval was still pending at the planning check; no new fit or achieved improvement is implied by this plan.
+
+## Final training goal — document links to buildings and floors
+
+On 29 September the user added document-source linking to the correct buildings and floors as a final fine-tuning goal after heterogeneous ingestion works. The current three-target field mapper remains an earlier component. [AI-08 in the execution plan](../orchestration/ADAPTIVE_INGESTION_EXECUTION.md#ai-08-final-association-learning--user-addition-29-september) defines the later dependencies, label corpus and evaluation.
+
+The intended flow is: ingest and extract with citations; identify candidate canonical buildings; resolve source-supported floor references within the correct building; propose the relationship with its evidence or abstain for review. Preserve whole-building and multi-floor documents, ambiguous floor conventions, no-match cases and references to data that arrives later. Train only on permitted independently checked relationships, with documents/building identities and source families separated across evaluation splits. Compare to exact-reference rules, measure wrong-building and wrong-floor links separately, and qualify saved inference in shadow before any production decision. Every link must remain traceable to the original document and the selected record revisions. No association fine-tune or floor-link accuracy is claimed yet.
 
 ## Sources and input provenance
 
