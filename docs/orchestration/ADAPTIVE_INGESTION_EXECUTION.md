@@ -175,6 +175,8 @@ Authorization update,28September: user approved live inference tests. Begin with
 
 ### Pretrained model selection — Hugging Face review
 
+**Desktop refresh, 29 September:** the user authorizes selecting/downloading/testing a suitable open checkpoint. The [current model-fit review and actual GPU inference check](../api/learning.md#open-model-fit-review--desktop-29-september-2026) supersede the older Mac resource/download assumptions below. Keep E5 as the current field-mapping baseline; Qwen3-Reranker-0.6B is downloaded for an isolated development check and later association adaptation. PaddleOCR-VL-1.6, Qwen3 embeddings, Granite multilingual R2 and Qwen3.5 were reviewed by task fit. This does not qualify new parsers or document/floor links and does not start AI-08 early.
+
 User requested pretrained-model research before starting the trainer,28September. Prefer transfer learning over training a language encoder from scratch. Model-card capabilities are candidates to verify on our sources, not qualifications. Host inspected: Apple M3,16GiB unified RAM; about40GiB host disk free, independently of the constrained Colima store. Do not download several large checkpoints or rebuild containers for a small learning experiment.
 
 | Candidate | Existing capability and licence | Decision for this project |
