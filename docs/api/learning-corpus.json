@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "usp-field-mapping-corpus-v4",
+  "schemaVersion": "usp-field-mapping-corpus-v5",
   "featureVersion": "publisher-metadata-profile-v4",
-  "scope": "offline foreign-source research only; no production training or promotion",
+  "scope": "offline foreign-source research only; fresh Halifax/Kitchener evaluation unopened until fit freeze",
   "targets": [
     {
       "id": "building.sourceKey",
@@ -205,7 +205,8 @@
       "inputEvidence": {
         "format": "socrata-view-json",
         "titlePointer": "/name"
-      }
+      },
+      "supportingEvidence": []
     },
     {
       "id": "nyc-building-footprints",
@@ -216,10 +217,10 @@
       "datasetUrl": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue",
       "acquiredAt": "2026-09-28",
       "sample": {
-        "file": "nyc-sample.json",
-        "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?$limit=5&$where=doitt_id%20!=%20353927",
-        "bytes": 6945,
-        "sha256": "e46caaf50521f8ba2427987ace16cb1b64b7b73bbf82dedc9795afa4dea44ed3",
+        "file": "desktop-ai06a/nyc-named-text-sample.json",
+        "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?$where=name%20like%20%27%25A%25%27&$limit=5",
+        "bytes": 5067,
+        "sha256": "e51180df62a501ee8310691723c56a26c03fd6cc08c28c19804c9742c195563f",
         "rows": 5,
         "excludesExistingBenchmarkDoittId": "353927"
       },
@@ -268,11 +269,13 @@
           "declaredType": "text",
           "observedWire": {
             "presentCount": 5,
-            "nullCount": 5,
+            "nullCount": 0,
             "absentCount": 0,
-            "nonNullTypes": []
+            "nonNullTypes": [
+              "string"
+            ]
           },
-          "wireCompatibleRows": 0,
+          "wireCompatibleRows": 5,
           "inputEvidence": {
             "sourceField": "name",
             "fieldLine": 47
@@ -427,7 +430,9 @@
       "inputEvidence": {
         "format": "nyc-markdown-table",
         "titleLine": 1
-      }
+      },
+      "sourceNotes": "V5 sample selects nonempty publisher names; same NYC schema family, five rows are not five independent examples.",
+      "supportingEvidence": []
     },
     {
       "id": "sf-building-footprints",
@@ -641,7 +646,8 @@
       "inputEvidence": {
         "format": "socrata-view-json",
         "titlePointer": "/name"
-      }
+      },
+      "supportingEvidence": []
     },
     {
       "id": "massgis-building-structures",
@@ -842,7 +848,8 @@
       "inputEvidence": {
         "format": "arcgis-layer-json",
         "titlePointer": "/name"
-      }
+      },
+      "supportingEvidence": []
     },
     {
       "id": "vancouver-building-footprints-2015",
@@ -943,12 +950,13 @@
       "inputEvidence": {
         "format": "opendatasoft-dataset-json",
         "titlePointer": "/metas/default/title"
-      }
+      },
+      "supportingEvidence": []
     },
     {
       "id": "census-tigerweb-counties",
       "family": "census-tigerweb-counties-2026",
-      "split": "train",
+      "split": "calibration",
       "issuer": "United States Census Bureau",
       "geography": "Rhode Island counties, United States",
       "datasetUrl": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19",
@@ -1118,7 +1126,8 @@
       "inputEvidence": {
         "format": "arcgis-layer-json",
         "titlePointer": "/name"
-      }
+      },
+      "supportingEvidence": []
     },
     {
       "id": "calgary-buildings",
@@ -1298,12 +1307,13 @@
       "inputEvidence": {
         "format": "socrata-view-json",
         "titlePointer": "/name"
-      }
+      },
+      "supportingEvidence": []
     },
     {
       "id": "dc-building-footprints-2021",
       "family": "dc-planimetrics-2021",
-      "split": "evaluation",
+      "split": "diagnostic",
       "issuer": "District of Columbia Office of the Chief Technology Officer",
       "geography": "Washington, District of Columbia, United States",
       "datasetUrl": "https://catalog.data.gov/dataset/building-footprints-2021",
@@ -1474,8 +1484,833 @@
       "inputEvidence": {
         "format": "arcgis-layer-json",
         "titlePointer": "/name"
-      }
+      },
+      "supportingEvidence": []
+    },
+    {
+      "id": "chesterfield-buildings",
+      "family": "chesterfield-planimetric-footprints",
+      "split": "calibration",
+      "issuer": "Chesterfield County, Virginia",
+      "geography": "Chesterfield County, Virginia, United States",
+      "datasetUrl": "https://opengisdata.chesterfield.gov/",
+      "acquiredAt": "2026-09-29",
+      "sample": {
+        "file": "chesterfield-sample.json",
+        "url": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0/query?where=StructureType%3D1+AND+BuildingName+IS+NOT+NULL&outFields=%2A&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&f=geojson",
+        "bytes": 6229,
+        "sha256": "6187a8e21aa41884d5f08c9f1c28bb623a28302e79910f91ecbbb6874742977e",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "chesterfield-metadata.json",
+        "url": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+        "bytes": 29854,
+        "sha256": "0078de22cacc5ac3c5347f81599d7d707ff5ab72e87dd0cfaf1080880d6ff01f"
+      },
+      "permission": {
+        "basis": "County Open GIS terms allow copying, modification and analysis, including commercial use; local offline evaluation only",
+        "url": "https://opengisdata.chesterfield.gov/",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326",
+      "representation": "Five source GeoJSON polygons, returned with outSR=4326; no property rights inferred",
+      "fields": [
+        {
+          "path": "properties.GlobalID",
+          "definition": "Issuer GlobalID for this footprint feature",
+          "target": "building.sourceKey",
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeGlobalID",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "GlobalID",
+            "fieldPointer": "/fields/6"
+          }
+        },
+        {
+          "path": "properties.BuildingName",
+          "definition": "Publisher Building Name for this structure",
+          "target": "building.name",
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "BuildingName",
+            "fieldPointer": "/fields/1"
+          }
+        },
+        {
+          "path": "geometry",
+          "definition": "Polygon footprint on the BuildingFootprints layer",
+          "target": "building.geometry",
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriGeometryPolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "geometry",
+            "geometryTypePointer": "/geometryType"
+          }
+        },
+        {
+          "path": "properties.BuildingUse",
+          "definition": "Building-use classification code",
+          "target": null,
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeSmallInteger",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "BuildingUse",
+            "fieldPointer": "/fields/2"
+          }
+        },
+        {
+          "path": "properties.Status",
+          "definition": "Feature status code",
+          "target": null,
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeSmallInteger",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 2,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "Status",
+            "fieldPointer": "/fields/4"
+          }
+        },
+        {
+          "path": "properties.Source",
+          "definition": "Collection source code",
+          "target": null,
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeSmallInteger",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "Source",
+            "fieldPointer": "/fields/3"
+          }
+        },
+        {
+          "path": "properties.Shape__Area",
+          "definition": "Polygon area measure",
+          "target": null,
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeDouble",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "Shape__Area",
+            "fieldPointer": "/fields/13"
+          }
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.CamaBuildingID",
+          "decision": "unknown",
+          "reason": "CAMA cross-system building reference; stability and one-to-one footprint identity not established",
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 5,
+            "absentCount": 0,
+            "nonNullTypes": []
+          }
+        },
+        {
+          "path": "properties.BuildingPermitNum",
+          "decision": "unknown",
+          "reason": "Permit number may cover work or more than one feature, not a footprint source key",
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.OBJECTID",
+          "decision": "unknown",
+          "reason": "Service row OID stability across extracts not established",
+          "evidence": "https://services3.arcgis.com/TsynfzBSE6sXfoLq/arcgis/rest/services/Planimetric_ProdA/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        }
+      ],
+      "sourceNotes": "Five of five sampled StructureType=1 polygons have nonempty names and distinct GlobalID strings; no full-population accuracy claim.",
+      "labelOrigin": "Issuer layer metadata and unchanged five-feature response; no model or provider labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      },
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/rights-review/chesterfield.html",
+          "url": "https://opengisdata.chesterfield.gov/",
+          "bytes": 39570,
+          "sha256": "72cf32909336b45fda7435a9ac77e7319ea19e51e9967cbc88ab67aab70d3dcf",
+          "acquiredAt": "2026-09-29T16:02:28.020976+00:00"
+        }
+      ]
+    },
+    {
+      "id": "halifax-buildings",
+      "family": "halifax-building-polygons",
+      "split": "evaluation",
+      "issuer": "Halifax Regional Municipality",
+      "geography": "Halifax, Nova Scotia, Canada",
+      "datasetUrl": "https://data-hrm.hub.arcgis.com/datasets/HRM::buildings-2",
+      "acquiredAt": "2026-09-29",
+      "sample": {
+        "file": "halifax-sample.json",
+        "url": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0/query?where=FCODE%3D%27BLDG%27+AND+BLPOLY_ID+IS+NOT+NULL&outFields=%2A&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&f=geojson",
+        "bytes": 4170,
+        "sha256": "67643be9d45dd329f126f1a166a1c56cedabf2a94269f36e1c6995294d06288b",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "halifax-metadata.json",
+        "url": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+        "bytes": 19188,
+        "sha256": "53c1e233f0e126a9ed6d6da62f5a3864fe910ba691e2d54b683171dc21601454"
+      },
+      "permission": {
+        "basis": "Halifax Buildings open data; Halifax Open Government Licence; local offline evaluation only",
+        "url": "https://data-hrm.hub.arcgis.com/pages/open-data-licence",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326; FCODE=BLDG selects footprint class",
+      "representation": "Five source GeoJSON polygons, returned with outSR=4326; no property rights inferred",
+      "fields": [
+        {
+          "path": "properties.GLOBALID",
+          "definition": "Issuer GlobalID for this polygon feature",
+          "target": "building.sourceKey",
+          "evidence": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeGlobalID",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "GLOBALID",
+            "fieldPointer": "/fields/9"
+          }
+        },
+        {
+          "path": "geometry",
+          "definition": "FCODE=BLDG building polygon footprint",
+          "target": "building.geometry",
+          "evidence": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriGeometryPolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "geometry",
+            "geometryTypePointer": "/geometryType"
+          }
+        },
+        {
+          "path": "properties.FCODE",
+          "definition": "Polygon feature class, not a building name",
+          "target": null,
+          "evidence": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "FCODE",
+            "fieldPointer": "/fields/3"
+          }
+        },
+        {
+          "path": "properties.SOURCE",
+          "definition": "Polygon capture source code",
+          "target": null,
+          "evidence": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "SOURCE",
+            "fieldPointer": "/fields/5"
+          }
+        },
+        {
+          "path": "properties.SACC",
+          "definition": "Spatial accuracy class code",
+          "target": null,
+          "evidence": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "SACC",
+            "fieldPointer": "/fields/6"
+          }
+        },
+        {
+          "path": "properties.Shape__Area",
+          "definition": "Polygon area measure",
+          "target": null,
+          "evidence": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeDouble",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "Shape__Area",
+            "fieldPointer": "/fields/10"
+          }
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.BLPOLY_ID",
+          "decision": "unknown",
+          "reason": "Polygon identifier may also be a usable source reference; not chosen as the single canonical key here",
+          "evidence": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.BL_ID",
+          "decision": "unknown",
+          "reason": "Related building table identifier can cover multiple polygons; not the polygon source key",
+          "evidence": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          }
+        },
+        {
+          "path": "properties.OBJECTID",
+          "decision": "unknown",
+          "reason": "Service row OID stability across extracts not established",
+          "evidence": "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/Buildings/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        }
+      ],
+      "sourceNotes": "The polygon layer has no BL_NAME field. Building names live in related Buildings table; no name label or inferred join is created for this field-profile evaluation.",
+      "labelOrigin": "Issuer layer metadata and unchanged five-feature response; no model or provider labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      },
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/rights-review/halifax.html",
+          "url": "https://data-hrm.hub.arcgis.com/pages/open-data-licence",
+          "bytes": 67318,
+          "sha256": "1cf3bb2ee0a5fa33f98edb4efb27e8505a4ccd940897ac2897086a8281d7b11c",
+          "acquiredAt": "2026-09-29T16:02:28.021976+00:00"
+        },
+        {
+          "file": "desktop-ai06a/rights-review/halifax-licence-item.json",
+          "url": "https://www.arcgis.com/sharing/rest/content/items/f8c920e2ecf64ae49f525c89648a275d/data?f=json",
+          "bytes": 7460,
+          "sha256": "b07055b3dc679457297a7ce58b3cc34a5491101488abec0046f1c9e90d3b505f",
+          "acquiredAt": "2026-09-29T16:04:24.308993+00:00"
+        }
+      ]
+    },
+    {
+      "id": "kitchener-buildings",
+      "family": "kitchener-building-outlines",
+      "split": "evaluation",
+      "issuer": "City of Kitchener",
+      "geography": "Kitchener, Ontario, Canada",
+      "datasetUrl": "https://app2.kitchener.ca/appdocs/GISImages/GIS_Web_External/GIS_Metadata_Open_Data/Building_Outlines.html",
+      "acquiredAt": "2026-09-29",
+      "sample": {
+        "file": "desktop-ai06a/kitchener-sample.json",
+        "url": "https://services1.arcgis.com/qAo1OsXi67t7XgmS/arcgis/rest/services/Building_Outlines/FeatureServer/0/query?where=BUILDING%20IS%20NOT%20NULL%20AND%20BUILDING%20%3C%3E%20%27%27&outFields=*&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&f=geojson",
+        "bytes": 9133,
+        "sha256": "128b7f2269f02a2ae59e64c37ae479087b0250059dd1889e35318d68acaadcda",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "desktop-ai06a/kitchener-metadata.json",
+        "url": "https://services1.arcgis.com/qAo1OsXi67t7XgmS/arcgis/rest/services/Building_Outlines/FeatureServer/0?f=pjson",
+        "bytes": 80796,
+        "sha256": "fd845ad14e2f015d49a1d5d7269c70e9cf750632e961c40becd380c8ea8ecdc0"
+      },
+      "permission": {
+        "basis": "City of Kitchener Open Government Licence permits analysis/adaptation; local offline evaluation only",
+        "url": "https://www.kitchener.ca/council-and-city-administration/data-and-maps/open-data-licence/",
+        "trainingEligible": true,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "Source layer EPSG:26917; unchanged GeoJSON response requested outSR=4326; source accuracy about +/-1 m, not a survey",
+      "representation": "Five source GeoJSON polygons, returned with outSR=4326; no property rights inferred",
+      "fields": [
+        {
+          "path": "properties.BUILDING",
+          "definition": "Issuer data dictionary, BUILDING row: Last known building name",
+          "target": "building.name",
+          "evidence": "https://app2.kitchener.ca/appdocs/GISImages/GIS_Web_External/GIS_Metadata_Open_Data/Building_Outlines.html#Building_Outlines",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "BUILDING",
+            "fieldPointer": "/fields/2"
+          }
+        },
+        {
+          "path": "geometry",
+          "definition": "Polygon at building base in Building_Outlines",
+          "target": "building.geometry",
+          "evidence": "https://services1.arcgis.com/qAo1OsXi67t7XgmS/arcgis/rest/services/Building_Outlines/FeatureServer/0?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriGeometryPolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "geometry",
+            "geometryTypePointer": "/geometryType"
+          }
+        },
+        {
+          "path": "properties.CATEGORY",
+          "definition": "Building category classification, not its name",
+          "target": null,
+          "evidence": "https://services1.arcgis.com/qAo1OsXi67t7XgmS/arcgis/rest/services/Building_Outlines/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "CATEGORY",
+            "fieldPointer": "/fields/3"
+          }
+        },
+        {
+          "path": "properties.SUBCATEGORY",
+          "definition": "Building subtype classification, not its name",
+          "target": null,
+          "evidence": "https://services1.arcgis.com/qAo1OsXi67t7XgmS/arcgis/rest/services/Building_Outlines/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "SUBCATEGORY",
+            "fieldPointer": "/fields/4"
+          }
+        },
+        {
+          "path": "properties.LOCATION",
+          "definition": "Location description, not the publisher building-name field",
+          "target": null,
+          "evidence": "https://services1.arcgis.com/qAo1OsXi67t7XgmS/arcgis/rest/services/Building_Outlines/FeatureServer/0?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "LOCATION",
+            "fieldPointer": "/fields/8"
+          }
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.BUILDINGID",
+          "decision": "unknown",
+          "reason": "Issuer documents a permanent unique numeric building ID; unsupported by literal_identifier@1, which does not coerce JSON numbers.",
+          "evidence": "https://app2.kitchener.ca/appdocs/GISImages/GIS_Web_External/GIS_Metadata_Open_Data/Building_Outlines.html#Building_Outlines",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        },
+        {
+          "path": "properties.OBJECTID",
+          "decision": "unknown",
+          "reason": "Service row OID stability across extracts not established",
+          "evidence": "https://services1.arcgis.com/qAo1OsXi67t7XgmS/arcgis/rest/services/Building_Outlines/FeatureServer/0?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        }
+      ],
+      "sourceNotes": "Five named polygons; numeric BUILDINGID stays unknown for the literal string key target.",
+      "labelOrigin": "Issuer layer metadata and unchanged five-feature response; no model or provider labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      },
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/rights-review/kitchener.html",
+          "url": "https://www.kitchener.ca/council-and-city-administration/data-and-maps/open-data-licence/",
+          "bytes": 75757,
+          "sha256": "d224c95773905114389a697baf1eb6b702718b0c468fbee68737f4676ba46d24",
+          "acquiredAt": "2026-09-29T16:02:29.069602+00:00"
+        },
+        {
+          "file": "desktop-ai06a/rights-review/kitchener-definitions.html",
+          "url": "https://app2.kitchener.ca/appdocs/GISImages/GIS_Web_External/GIS_Metadata_Open_Data/Building_Outlines.html",
+          "bytes": 33884,
+          "sha256": "13197161c0add6912bd2f97f0855f8bf2c297669755f46336bc435a15ccd4915",
+          "acquiredAt": "2026-09-29T16:02:30.026615+00:00"
+        }
+      ]
     }
   ],
-  "labelEncoding": "Issuer-authored title/alias/description/type for model input resolve from exact locators in hash-pinned metadata. Reviewer definitions/evidence/targets and representation are label audit only and never enter v4 encoder text. Observed wire shape/counts derive from unchanged samples; raw record values do not enter features. Prior v3 corpus/run07 is immutable and its answer-bearing reviewer-text model features invalidate a fresh unseen-input claim. The unchanged source-family roles now support one corrected diagnostic fit, not a new DC holdout."
+  "labelEncoding": "Issuer-authored title/alias/description/type for model input resolve from exact locators in hash-pinned metadata. Reviewer definitions/evidence/targets and representation are label audit only and never enter v4 encoder text. Observed wire shape/counts derive from unchanged samples; raw record values do not enter features. Prior v3 corpus/run07 is immutable and its answer-bearing reviewer-text model features invalidate a fresh unseen-input claim. The unchanged source-family roles now support one corrected diagnostic fit, not a new DC holdout.",
+  "curationNotes": "Named NYC rows replace the V4 null-only sample without adding a schema family. Chesterfield supplies all three positive calibration targets. GNWT is retained in excludedSources pending layer-specific licence scope; its positive fields cannot qualify coverage. The entire retained Census county schema moves from training to calibration before any V5 fit, providing independent non-building identifier/name/polygon controls without invented data. DC/SF remain observed diagnostics. Halifax polygons have no name property; its separate related Buildings table is not flattened into this polygon field-mapping input. Kitchener supplies a separate named-polygon evaluation family, but numeric BUILDINGID is excluded from literal string source-key positives.",
+  "excludedSources": [
+    {
+      "id": "gnwt-buildings",
+      "family": "gnwt-atlas-building-footprints",
+      "split": "excluded",
+      "issuer": "Government of Northwest Territories, Land Management and Administration",
+      "geography": "Northwest Territories, Canada",
+      "datasetUrl": "https://www.geomatics.gov.nt.ca/en/commissioner-lands-administration-atlas-website",
+      "acquiredAt": "2026-09-29",
+      "sample": {
+        "file": "desktop-ai06a/gnwt-sample.json",
+        "url": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer/8/query?where=NAME%20IS%20NOT%20NULL%20AND%20NAME%20%3C%3E%20%27%27&outFields=*&orderByFields=OBJECTID&resultRecordCount=5&outSR=4326&f=geojson",
+        "bytes": 4572,
+        "sha256": "cb59c85d22c5778e475366300a282b921f20e99c10f5fecaff233e6e872018f8",
+        "rows": 5
+      },
+      "metadata": {
+        "file": "desktop-ai06a/gnwt-metadata.json",
+        "url": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer/8?f=pjson",
+        "bytes": 6336,
+        "sha256": "a481c0b9827c301238bc65a2df5ee4c9a5d373aff392dd1be973dbbc0a2b1a66"
+      },
+      "permission": {
+        "basis": "Official ATLAS catalogue explicitly lists Open Government Licence Northwest Territories and unrestricted access; the referenced OGL permits lawful reuse with attribution. This is positive licence evidence, not a finding of absent rights. The catalogue describes the ATLAS website as a whole, while the earlier separate ATLAS_License_Agreement.pdf was not retrieved. Layer-specific applicability and any additional bulk-export terms remain unresolved.",
+        "url": "https://open.canada.ca/data/en/dataset/9e17b0bc-8ad5-07ad-601e-700183763829",
+        "trainingEligible": false,
+        "productionEligible": false,
+        "sarvamDerived": false
+      },
+      "geometryCrs": "Source layer EPSG:3857; unchanged GeoJSON response requested outSR=4326; approximate outlines, not legal surveys",
+      "representation": "Five source GeoJSON polygons, returned with outSR=4326; no property rights inferred",
+      "fields": [
+        {
+          "path": "properties.GlobalID",
+          "definition": "Issuer GlobalID for the footprint feature",
+          "target": "building.sourceKey",
+          "evidence": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer/8?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeGlobalID",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "GlobalID",
+            "fieldPointer": "/fields/4"
+          }
+        },
+        {
+          "path": "properties.NAME",
+          "definition": "Publisher Building Name on the footprint feature",
+          "target": "building.name",
+          "evidence": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer/8?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriFieldTypeString",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "string"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "NAME",
+            "fieldPointer": "/fields/1"
+          }
+        },
+        {
+          "path": "geometry",
+          "definition": "Polygon outline on ATLAS Building Footprints",
+          "target": "building.geometry",
+          "evidence": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer/8?f=pjson",
+          "decision": "positive",
+          "declaredType": "esriGeometryPolygon",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "geojson:Polygon"
+            ]
+          },
+          "wireCompatibleRows": 5,
+          "inputEvidence": {
+            "sourceField": "geometry",
+            "geometryTypePointer": "/geometryType"
+          }
+        },
+        {
+          "path": "properties.Max_Height",
+          "definition": "Reported maximum height, not a field name or identifier",
+          "target": null,
+          "evidence": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer/8?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeDouble",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 5,
+            "absentCount": 0,
+            "nonNullTypes": []
+          },
+          "inputEvidence": {
+            "sourceField": "Max_Height",
+            "fieldPointer": "/fields/3"
+          }
+        },
+        {
+          "path": "properties.last_edited_date",
+          "definition": "Edit timestamp, not a building name",
+          "target": null,
+          "evidence": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer/8?f=pjson",
+          "decision": "negative",
+          "declaredType": "esriFieldTypeDate",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          },
+          "inputEvidence": {
+            "sourceField": "last_edited_date",
+            "fieldPointer": "/fields/2"
+          }
+        }
+      ],
+      "excludedFields": [
+        {
+          "path": "properties.OBJECTID",
+          "decision": "unknown",
+          "reason": "Service row OID stability across extracts not established",
+          "evidence": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer/8?f=pjson",
+          "observedWire": {
+            "presentCount": 5,
+            "nullCount": 0,
+            "absentCount": 0,
+            "nonNullTypes": [
+              "number"
+            ]
+          }
+        }
+      ],
+      "sourceNotes": "Five of five queried named polygons have distinct GlobalID strings. Names and outlines do not establish property rights or surveyed locations.",
+      "labelOrigin": "Issuer layer metadata and unchanged five-feature response; no model or provider labels",
+      "inputEvidence": {
+        "format": "arcgis-layer-json",
+        "titlePointer": "/name"
+      },
+      "exclusionReason": "Unresolved layer-specific permission scope; no fit, calibration, evaluation or encoder input from this source.",
+      "supportingEvidence": [
+        {
+          "file": "desktop-ai06a/rights-review/gnwt-catalogue.json",
+          "url": "https://open.canada.ca/data/api/action/package_show?id=9e17b0bc-8ad5-07ad-601e-700183763829",
+          "bytes": 7248,
+          "sha256": "0fc3601a067c8aa0c8db91d243ce3756925a7a561867f3832ff10af0b942fbfe",
+          "acquiredAt": "2026-09-29T16:02:28.019975+00:00"
+        },
+        {
+          "file": "desktop-ai06a/rights-review/gnwt-license.html",
+          "url": "https://www.gov.nt.ca/en/open-government-licence-northwest-territories",
+          "bytes": 36662,
+          "sha256": "186b2dcc6a9847065d0d651287c8c6f51bdac6711aa1829f43d9ca09919b3409",
+          "acquiredAt": "2026-09-29T16:03:10.919973+00:00"
+        },
+        {
+          "file": "desktop-ai06a/rights-review/gnwt-service.json",
+          "url": "https://www.apps.geomatics.gov.nt.ca/arcgis/rest/services/GNWT_Operational/ATLAS_Public/FeatureServer?f=pjson",
+          "bytes": 4437,
+          "sha256": "d64868099d97aa160ba4c89273eb1e9198def9e36a882241e658fd91c3160a0e",
+          "acquiredAt": "2026-09-29T16:04:24.307994+00:00"
+        }
+      ]
+    }
+  ]
 }

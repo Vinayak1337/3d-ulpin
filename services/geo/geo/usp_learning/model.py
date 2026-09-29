@@ -61,6 +61,8 @@ def freeze_except_last_layer(model: Any) -> int:
 
 def embed(tokenizer: Any, model: Any, texts: list[str]) -> torch.Tensor:
     batch = tokenizer(texts, padding=True, truncation=True, max_length=MAX_TOKENS, return_tensors="pt")
+    device = next(model.parameters()).device
+    batch = {key: value.to(device) for key, value in batch.items()}
     hidden = model(**batch).last_hidden_state
     mask = batch["attention_mask"].unsqueeze(-1)
     pooled = (hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
@@ -117,7 +119,7 @@ def predict(examples: list[dict[str, Any]], scores: torch.Tensor, threshold: flo
 
 
 def choose_train_threshold(examples: list[dict[str, Any]], scores: torch.Tensor) -> float:
-    """Optimize exact field decisions on the caller's selected families, breaking ties conservatively."""
+    """Historical threshold, retained for replay and the training loss anchor only."""
     top_scores = [
         max(row[index] for index in allowed)
         for example, row in zip(examples, scores.detach().cpu().tolist())
@@ -138,23 +140,74 @@ def choose_train_threshold(examples: list[dict[str, Any]], scores: torch.Tensor)
     return float(best_threshold)
 
 
+def choose_calibration_threshold(examples: list[dict[str, Any]], scores: torch.Tensor) -> float | None:
+    """Maximize positive recall with zero incorrect accepts and coverage of every target.
+
+    A missing useful operating point is explicit, never an all-abstention success.
+    Call only on the frozen calibration families. No evaluation feedback is used.
+    """
+    if not examples or any(item["split"] != "calibration" for item in examples):
+        raise ValueError("threshold selection requires calibration inputs only")
+    if scores.shape != (len(examples), len(TARGETS)) or not torch.isfinite(scores).all():
+        raise ValueError("invalid calibration scores")
+    top_scores = [max(row[index] for index in allowed)
+                  for item, row in zip(examples, scores.detach().cpu().tolist())
+                  if (allowed := allowed_target_indices(item))]
+    if not top_scores:
+        return None
+    best: tuple[float, float] | None = None
+    for threshold in sorted(set([min(top_scores) - 1e-6] + top_scores)):
+        guesses = predict(examples, scores, threshold)
+        if any(guess is not None and guess != item["target"] for item, guess in zip(examples, guesses)):
+            continue
+        recall = []
+        for target in TARGETS:
+            positives = [guess for item, guess in zip(examples, guesses) if item["target"] == target]
+            correct = positives.count(target)
+            if not correct:
+                break
+            recall.append(correct / len(positives))
+        if len(recall) == len(TARGETS):
+            key = (sum(recall) / len(recall), float(threshold))
+            if best is None or key > best:
+                best = key
+    return best[1] if best is not None else None
+
+
 def metrics(examples: list[dict[str, Any]], scores: torch.Tensor | None, threshold: float | None, guesses: list[str | None] | None = None) -> dict[str, Any]:
     if guesses is None:
         if scores is None or threshold is None:
             raise ValueError("scores and threshold required")
         guesses = predict(examples, scores, threshold)
-    positives = [(item, guess) for item, guess in zip(examples, guesses) if item["target"] is not None]
-    negatives = [(item, guess) for item, guess in zip(examples, guesses) if item["target"] is None]
-    result: dict[str, Any] = {
-        "fields": len(examples), "positiveFields": len(positives), "negativeFields": len(negatives),
-        "exactFields": sum(guess == item["target"] for item, guess in zip(examples, guesses)),
-        "correctPositive": sum(guess == item["target"] for item, guess in positives),
-        "abstainedPositive": sum(guess is None for _, guess in positives),
-        "wrongTargetPositive": sum(guess is not None and guess != item["target"] for item, guess in positives),
-        "falseMappedNegative": sum(guess is not None for _, guess in negatives),
-    }
+    def counts(rows: list[tuple[dict[str, Any], str | None]]) -> dict[str, Any]:
+        positives = [(item, guess) for item, guess in rows if item["target"] is not None]
+        negatives = [(item, guess) for item, guess in rows if item["target"] is None]
+        correct = sum(guess == item["target"] for item, guess in positives)
+        accepted = sum(guess is not None for _, guess in rows)
+        return {
+            "fields": len(rows), "positiveFields": len(positives), "negativeFields": len(negatives),
+            "exactFields": sum(guess == item["target"] for item, guess in rows),
+            "correctPositive": correct,
+            "abstainedPositive": sum(guess is None for _, guess in positives),
+            "wrongTargetPositive": sum(guess is not None and guess != item["target"] for item, guess in positives),
+            "falseMappedNegative": sum(guess is not None for _, guess in negatives),
+            "acceptedFields": accepted, "incorrectMappings": accepted - correct,
+            "precision": correct / accepted if accepted else None,
+            "recall": correct / len(positives) if positives else None,
+        }
+    pairs = list(zip(examples, guesses))
+    result: dict[str, Any] = counts(pairs)
+    result["byTarget"] = {target: counts([(item, guess) for item, guess in pairs if item["target"] == target])
+                          for target in TARGETS}
+    for target in TARGETS:
+        accepted = sum(guess == target for _, guess in pairs)
+        correct = result["byTarget"][target]["correctPositive"]
+        result["byTarget"][target].update(predictedAsTarget=accepted, falsePositive=accepted - correct,
+                                         precision=correct / accepted if accepted else None)
+    result["byFamily"] = {family: counts([(item, guess) for item, guess in pairs if item["family"] == family])
+                          for family in sorted({item["family"] for item in examples})}
     if threshold is not None:
-        result["decisionThreshold"] = round(threshold, 6)
+        result["decisionThreshold"] = float(threshold)
     rows = scores.detach().cpu().tolist() if scores is not None else [None] * len(examples)
     result["decisions"] = [
         {"source": item["source"], "field": item["path"], "expected": item["target"], "predicted": guess,

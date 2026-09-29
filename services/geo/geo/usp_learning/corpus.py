@@ -10,7 +10,8 @@ from typing import Any
 
 
 TARGETS = ("building.sourceKey", "building.name", "building.geometry")
-CORPUS_VERSION = "usp-field-mapping-corpus-v4"
+CORPUS_VERSION = "usp-field-mapping-corpus-v5"
+SOURCE_ONLY_VERSIONS = ("usp-field-mapping-corpus-v4", CORPUS_VERSION)
 SPLITS = ("train", "calibration", "evaluation", "diagnostic")
 
 
@@ -24,9 +25,12 @@ def sha256_file(path: Path) -> str:
 
 def _checked_file(root: Path, receipt: dict[str, Any]) -> Path:
     name = receipt["file"]
-    if Path(name).name != name:
-        raise ValueError(f"source file must be a basename: {name}")
+    relative = Path(name)
+    if relative.is_absolute() or len(relative.parts) == 0 or any(part in ("..", ".") for part in relative.parts) or ":" in name:
+        raise ValueError(f"source file must be a safe relative path: {name}")
     path = root / name
+    if not path.resolve().is_relative_to(root.resolve()):
+        raise ValueError(f"source file escapes originals root: {name}")
     if path.stat().st_size != receipt["bytes"] or sha256_file(path) != receipt["sha256"]:
         raise ValueError(f"source hash/size mismatch: {name}")
     return path
@@ -222,9 +226,9 @@ def _features(sample: dict[str, Any], source: dict[str, Any]) -> list[dict[str, 
 
 
 def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    corpus = json.loads(corpus_path.read_text())
+    corpus = json.loads(corpus_path.read_text(encoding="utf-8"))
     version = corpus.get("schemaVersion")
-    if version not in ("usp-field-mapping-corpus-v2", "usp-field-mapping-corpus-v3", CORPUS_VERSION):
+    if version not in ("usp-field-mapping-corpus-v2", "usp-field-mapping-corpus-v3", *SOURCE_ONLY_VERSIONS):
         raise ValueError("unknown corpus version")
     targets = tuple(target["id"] for target in corpus["targets"])
     if targets != TARGETS:
@@ -232,6 +236,13 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
     allowed_splits = ("train", "holdout") if version.endswith("-v2") else SPLITS
     split_families: dict[str, set[str]] = {split: set() for split in allowed_splits}
     examples: list[dict[str, Any]] = []
+    for excluded in corpus.get("excludedSources", []):
+        if excluded["permission"]["trainingEligible"] or not excluded.get("exclusionReason"):
+            raise ValueError("excluded source needs ineligible permission and an explicit reason")
+        if any(source["family"] == excluded["family"] for source in corpus["sources"]):
+            raise ValueError("excluded family entered the eligible corpus")
+        for evidence in [excluded["sample"], excluded["metadata"], *excluded.get("supportingEvidence", [])]:
+            _checked_file(originals_dir, evidence)
     for source in corpus["sources"]:
         permission = source["permission"]
         if not permission["trainingEligible"] or permission["sarvamDerived"]:
@@ -246,8 +257,10 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
         metadata_path = _checked_file(originals_dir, source["metadata"])
         if "descriptionPdf" in source:
             _checked_file(originals_dir, source["descriptionPdf"])
-        sample = json.loads(sample_path.read_text())
-        metadata = metadata_path.read_text() if version == CORPUS_VERSION else ""
+        for receipt in source.get("supportingEvidence", []):
+            _checked_file(originals_dir, receipt)
+        sample = json.loads(sample_path.read_text(encoding="utf-8"))
+        metadata = metadata_path.read_text(encoding="utf-8") if version in SOURCE_ONLY_VERSIONS else ""
         features = _features(sample, source)
         if len(features) != source["sample"]["rows"]:
             raise ValueError(f"sample row count mismatch: {source['id']}")
@@ -267,7 +280,7 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
         for field in source["fields"]:
             path = field["path"]
             target = field["target"]
-            publisher_type = _publisher_field(metadata, source, field)[4] if version == CORPUS_VERSION else field["declaredType"]
+            publisher_type = _publisher_field(metadata, source, field)[4] if version in SOURCE_ONLY_VERSIONS else field["declaredType"]
             if target is not None and target not in TARGETS:
                 raise ValueError(f"unsupported mapping label: {target}")
             if field.get("decision") != ("positive" if target is not None else "negative"):
@@ -275,12 +288,15 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
             if not field.get("evidence") or not field.get("definition"):
                 raise ValueError("label lacks independent issuer evidence")
             compatible_rows = wire_compatible_rows(target, path, features) if target is not None else None
+            if (version == CORPUS_VERSION and target in ("building.sourceKey", "building.name")
+                    and any(kind != "string" for kind in field["observedWire"]["nonNullTypes"])):
+                raise ValueError(f"literal text target cannot coerce observed values: {source['id']}:{path}")
             if target is not None and field.get("wireCompatibleRows") != compatible_rows:
                 raise ValueError(f"operation wire compatibility contradicts retained original: {source['id']}:{path}")
             examples.append({
                 "source": source["id"], "family": source["family"], "split": split,
                 "path": path, "text": (publisher_field_profile(source, field, features, metadata)
-                                         if version == CORPUS_VERSION else field_profile(source, field, features)),
+                                         if version in SOURCE_ONLY_VERSIONS else field_profile(source, field, features)),
                 "declaredType": publisher_type, "observedWire": field["observedWire"],
                 "wireCompatibleRows": compatible_rows, "target": target,
                 "originalSha256": source["sample"]["sha256"],
@@ -296,6 +312,17 @@ def load_examples(corpus_path: Path, originals_dir: Path) -> tuple[dict[str, Any
     if not any(item["target"] for item in examples if item["split"] == "train"):
         raise ValueError("no positive training labels")
     return corpus, examples
+
+
+def input_proof(corpus_path: Path, examples: list[dict[str, Any]]) -> dict[str, Any]:
+    """Pin every exact source-only input; the corpus hash pins labels and evidence bytes."""
+    return {
+        "schemaVersion": "usp-source-only-input-proof-v5",
+        "corpusSha256": sha256_file(corpus_path),
+        "fields": [{"source": item["source"], "path": item["path"],
+                    "textSha256": hashlib.sha256(item["text"].encode("utf-8")).hexdigest()}
+                   for item in examples],
+    }
 
 
 def lexical_prediction(example: dict[str, Any]) -> str | None:
