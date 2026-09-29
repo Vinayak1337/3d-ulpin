@@ -1,0 +1,5 @@
+# Optional offline AI-06D environment only. Retain the existing 25-package
+# Qwen inference lock (SHA256 c27e534e121858d96dfa531e14374642a43bed9544aeef0426b39353280ab4e3).
+# Install these wheels with --no-deps in a separate venv; never mutate that base.
+peft==0.17.1 --hash=sha256:3d129d64def3d74779c32a080d2567e5f7b674e77d546e3585138216d903f99e
+accelerate==1.10.1 --hash=sha256:3621cff60b9a27ce798857ece05e2b9f56fcc71631cfb31ccf71f0359c311f11
