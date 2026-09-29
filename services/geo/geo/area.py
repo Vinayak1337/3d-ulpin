@@ -548,6 +548,15 @@ def extract_document(data):
     parts, warnings, total_text = [], [], 0
     native_format = data["format"]
 
+    def archive_inventory():
+        from .native_archive import inventory_archive
+        inventory = inventory_archive(raw)
+        return {"format": "archive", "method": "native_inventory", "status": "unsupported",
+                "code": "ARCHIVE_INVENTORY_ONLY" if inventory["coverage"] == "complete" else "ARCHIVE_INVENTORY_INCOMPLETE",
+                "sourceSha256": inventory["sourceSha256"], "archiveInventory": inventory,
+                "parts": [], "warnings": ["ZIP members are inventory metadata only; no member was parsed or admitted as evidence."],
+                "characterCount": 0}
+
     def add(text, locator):
         nonlocal total_text
         total_text += len(text)
@@ -608,9 +617,16 @@ def extract_document(data):
                 if (len(entries) > 1000 or sum(info.file_size for info in entries) > 30 * 1024 * 1024
                         or len(names) != len(set(names))
                         or any(name.startswith("/") or "\\" in name or ".." in name.split("/") for name in names)):
+                    if data["format"] == "archive":
+                        return archive_inventory()
                     raise InputError("NATIVE_ARCHIVE_LIMIT")
                 if any(info.flag_bits & 1 for info in entries):
+                    if data["format"] == "archive":
+                        return archive_inventory()
                     raise InputError("Encrypted document archive is unsupported.")
+                if data["format"] == "archive" and not (
+                        ("xl/workbook.xml" in names) != ("word/document.xml" in names)):
+                    return archive_inventory()
                 if "xl/workbook.xml" in names and "word/document.xml" not in names:
                     from .native_workbook import extract_native_workbook
                     native_format = "xlsx"
@@ -620,10 +636,7 @@ def extract_document(data):
                     return result
                 if "word/document.xml" not in names or "xl/workbook.xml" in names:
                     if data["format"] == "archive":
-                        return {"format": "archive", "method": "native_parse", "status": "unsupported",
-                                "code": "ARCHIVE_DOCUMENT_UNSUPPORTED", "sourceSha256": hashlib.sha256(raw).hexdigest(),
-                                "parts": [], "warnings": ["This ZIP is not one unambiguous supported OOXML Word document or workbook."],
-                                "characterCount": 0}
+                        return archive_inventory()
                     raise InputError("DOCX has no Word document part.")
                 native_format = "docx"
                 if archive.getinfo("word/document.xml").file_size > 5 * 1024 * 1024:
@@ -684,6 +697,8 @@ def extract_document(data):
         except InputError:
             raise
         except (zipfile.BadZipFile, ElementTree.ParseError, KeyError, RuntimeError):
+            if data["format"] == "archive" and native_format == "archive":
+                return archive_inventory()
             raise InputError("NATIVE_WORKBOOK_INVALID" if native_format == "xlsx" else "DOCX native text could not be parsed.") from None
     warnings.append("Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.")
     return {"format": native_format, "method": "native_parse", "status": "ready" if parts else "needs_input",
