@@ -1,6 +1,10 @@
 # Ingestion learning — field mapping and planned document association
 
-**Current result, 28 September:** corrected candidate `3a22bb2d92a2858a90e29e99e8a192b03d63701c` is integrated, with an actual saved E5 fine-tune and reproducible inference. It remains experimental and unpromoted. On six DC diagnostic fields, the lexical/type baseline matched6/6; base and tuned E5 matched4/6 and abstained on both positive mappings. This does not justify replacing the existing deterministic conversion/validation path.
+**Desktop increment, 29 September:** worker `27a845c` is reviewed and integrated as `6f9dc71`. The trainer now has Windows process-tree limits, exact input/code/settings freezes, useful-positive calibration, device-aware tensors and saved/reloaded inference checks. V5 has 62 scored fields across 11 eligible families. No V5 fit or held-out prediction ran: key/name calibration each still has only Chesterfield as an eligible positive family. Geometry has two positive families and a real non-building polygon control. GNWT's catalogue explicitly lists OGL-NWT, but building-layer applicability relative to separate bulk terms remains unresolved; its evidence is retained but excluded. Halifax/Kitchener evaluation remains unopened.
+
+Lead verified all 12 code hashes, retained source hashes and 62 input proofs against `E:/BhuAayam-data/task-data/ai-06a-learning/desktop-ai06a/completion-v5/completion-receipt.json` (SHA256 `ca33a30f0d2ee1390a6436f2d1a7fe7cf672009ce56a050fc431311b71918011`). Worker checks: nine passed, one optional full-NYC skip; the final supervisor correction passed its focused check. CPU development-only unchanged-base reload matched exactly. CUDA and the complete V5 fitting path remain unexecuted. Earlier originals, runs and takeover backups are preserved. Code acceptance is not model qualification; the next assignment addresses the missing eligible calibration family before fitting.
+
+**Historical trained result, 28 September:** corrected candidate `3a22bb2d92a2858a90e29e99e8a192b03d63701c` is integrated, with an actual saved E5 fine-tune and reproducible inference. It remains experimental and unpromoted. On six DC diagnostic fields, the lexical/type baseline matched6/6; base and tuned E5 matched4/6 and abstained on both positive mappings. This does not justify replacing the existing deterministic conversion/validation path.
 
 The learner scores three existing field/operation targets: `building.sourceKey` / `literal_identifier@1`, `building.name` / `literal_text@1`, and `building.geometry` / `geojson_polygon@1`. It does not read arbitrary documents, normalize raster/point-cloud payloads, establish ownership or modify geometry. Semantic matching, per-row operation eligibility and whole-record conversion remain separate checks.
 
@@ -14,7 +18,7 @@ The user prioritizes the best supported quality and authorizes Astra and local G
 4. **Compare actual decisions.** Evaluate the lexical/type baseline, frozen base encoder and saved/reloaded candidate on the same independently labelled inputs. Report counts by target and source family: correct positives, wrong-target positives, abstentions and false mappings of negatives; derive precision/recall only with their denominators. Separate semantic proposals from row-level wire/operation eligibility. Overall exact accuracy alone can reward abstaining on most fields, so inspect calibration tradeoffs without consulting evaluation. A quality-improvement claim requires a measured positive-mapping gain without increased incorrect mappings on the declared comparison; otherwise retain the stronger baseline and describe the observed tradeoff. Small source samples remain diagnostic, even with perfect scores.
 5. **Review before use.** Astra owns the corpus/trainer implementation; the lead reviews leakage, split enforcement, calibration decisions and reproducible saved inference. Fix concrete defects and run focused checks only. The first fit is a controlled experiment, not an obligation to adopt its model. If it fails to improve, use development evidence to define the next bounded experiment and preserve an untouched final evaluation set; do not repeatedly optimize against disclosed holdout results. Any production integration remains a separate reviewed step with deterministic validation and an abstention/review path.
 
-The current learner is assigned to ordinary task `01a0edae-d7ef-7032-a733-ca686e271ac7`, requested Astra/max, with exclusive learner ownership. Its Git metadata access approval was still pending at the planning check; no new fit or achieved improvement is implied by this plan.
+The current learner owner is ordinary task `01a0ede2-c009-7972-ae01-fa4545b54fd9` (AI-06A Learner Full Access), requested Astra/max. Observed turn metadata confirmed that model/effort, approval `never` and `danger-full-access`; actual tier remains unobserved with default configured. The older learner is stopped and must not share its checkout. Local source acquisition and bounded training are already authorized.
 
 ## Final training goal — document links to buildings and floors
 
@@ -91,12 +95,12 @@ Replay the saved candidate without fitting again, from the repository root:
 LEARNING_DATA=/Users/vinayak/.codex/task-data/ai-06a-learning
 PYTHONPATH=services/geo TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=2 \
   "$LEARNING_DATA/venv/bin/python" scripts/usp/learning/infer.py \
-  --corpus docs/api/learning-corpus.json --originals-dir "$LEARNING_DATA" \
+  --corpus "$LEARNING_DATA/learning-corpus-v4-immutable.json" --originals-dir "$LEARNING_DATA" \
   --base-dir "$LEARNING_DATA/base-model" \
   --candidate-dir "$LEARNING_DATA/run-08-v4-correction" --model tuned
 ```
 
-For an explicitly selected new experiment, `train.py` requires `--freeze-file` alongside corpus, originals, base and a new output directory. The old `--steps`/`--seed` flags have been replaced by the pinned configuration. Do not overwrite a run directory or repeatedly tune against DC/SF. New learning qualification needs genuinely new eligible schemas and positive calibration coverage for each enabled target; the desktop quality plan above governs the newly assigned bounded fit. V2/v3 saved inference remains available against their immutable corpus snapshots for historical replay.
+For an explicitly selected new experiment, `freeze.py` writes an exact `--output-proof` and `--output-freeze`; `train.py` requires both `--input-proof` and `--freeze-file` alongside corpus, originals, base and a new output directory. Run `--preflight-only` first; insufficient coverage exits before a model is loaded. The old `--steps`/`--seed` flags have been replaced by pinned configuration. Preserve every run and failed attempt. New learning qualification needs eligible independent schemas and positive calibration coverage for every enabled target. Historical V2–V4 inference uses its matching immutable corpus, not the changing repository manifest.
 
 ## Historical profile correction
 
