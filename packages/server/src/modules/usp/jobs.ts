@@ -5,7 +5,7 @@ import { transaction } from '../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx } from './commands';
 import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, StreamingVectorInputSchema,
-  StreamedProfileInputSchema, ChunkMappingInputSchema } from '@ulpin/contracts/usp';
+  StreamedProfileInputSchema, ChunkMappingInputSchema, RasterWindowInputSchema } from '@ulpin/contracts/usp';
 
 const LEASE_SECONDS = 180;
 const MAX_ATTEMPTS = 3;
@@ -35,6 +35,12 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
       ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
       throw new AppError(422,'DOCUMENT_INPUT_SCOPE','Document jobs must pin their retained source and exact intake context.');
+  } else if(job.operation==='raster-window'){
+    const input=RasterWindowInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
+      throw new AppError(422,'RASTER_INPUT_SCOPE','Raster jobs must pin their retained source and exact intake context.');
   } else if(job.operation==='streaming-vector'){
     const input=StreamingVectorInputSchema.parse(job.payload);
     if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1

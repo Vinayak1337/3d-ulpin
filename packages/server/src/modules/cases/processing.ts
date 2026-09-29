@@ -14,11 +14,13 @@ import {runLargeOriginalStorageJob} from '../usp/ingestion/large-original';
 import {runStreamingVectorJob} from '../usp/ingestion/streaming-vector-worker';
 import {runChunkMappingJob} from '../usp/ingestion/chunk-mapping-worker';
 import {runStreamedProfileJob} from '../usp/ingestion/streamed-profile-worker';
+import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
 let streamingVectorWorker:Promise<void>|undefined;
 let chunkMappingWorker:Promise<void>|undefined;
 let streamedProfileWorker:Promise<void>|undefined;
+let rasterWindowWorker:Promise<void>|undefined;
 
 type WorkerReply = {
   jobId: string;
@@ -193,6 +195,12 @@ export async function dispatchTick(): Promise<number> {
         if(!streamingVectorWorker)streamingVectorWorker=runStreamingVectorJob(job.id)
           .catch(()=>{/* Fenced attempt and durable job state permit replay after restart. */})
           .finally(()=>{streamingVectorWorker=undefined;});
+        return;
+      }
+      if(job.operation==='raster-window'){
+        if(!rasterWindowWorker)rasterWindowWorker=runRasterWindowJob(job.id)
+          .catch(()=>{/* The shared attempt fence and durable status own recovery. */})
+          .finally(()=>{rasterWindowWorker=undefined;});
         return;
       }
       if(job.operation==='chunk-mapping'){

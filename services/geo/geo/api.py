@@ -115,3 +115,13 @@ def area_operation(operation: str, data: dict[str, Any]) -> dict:
         return operations[operation](data)
     except (InputError, KeyError, TypeError, ValueError) as error:
         raise HTTPException(status_code=422, detail=str(error)) from None
+
+
+@app.post('/internal/raster/window', dependencies=[Depends(authorize)])
+def raster_window(data: dict[str, Any]) -> dict:
+    from .raster_window import read_raster_window
+    from .validation import InputError
+    try:
+        return read_raster_window(data)
+    except InputError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from None
