@@ -1,0 +1,231 @@
+{
+  "schemaVersion": "learner-technique-source-notes/1",
+  "sources": [
+    {
+      "id": "qwen-author-training",
+      "url": "https://raw.githubusercontent.com/QwenLM/Qwen3-Embedding/44548aa5f0a0aed1c76d64e19afe47727a325b8f/docs/training/SWIFT.md",
+      "repository": "QwenLM/Qwen3-Embedding",
+      "revision": "44548aa5f0a0aed1c76d64e19afe47727a325b8f",
+      "path": "docs/training/SWIFT.md",
+      "sha256": "ed7fdf9bdcf54784b0cd4d181bf6a2483004a30a1c73316857c5f264526b2fd5",
+      "bytes": 8607
+    },
+    {
+      "id": "swift-guide",
+      "url": "https://raw.githubusercontent.com/modelscope/ms-swift/dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344/docs/source_en/BestPractices/Reranker.md",
+      "repository": "modelscope/ms-swift",
+      "revision": "dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344",
+      "path": "docs/source_en/BestPractices/Reranker.md",
+      "sha256": "37a9c514b7912250de3db2a5ca18346cc1a8fa3a1f28faa8982d714a53452e25",
+      "bytes": 7762
+    },
+    {
+      "id": "swift-qwen-config",
+      "url": "https://raw.githubusercontent.com/modelscope/ms-swift/dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344/examples/train/reranker/qwen3/qwen3_reranker.sh",
+      "repository": "modelscope/ms-swift",
+      "revision": "dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344",
+      "path": "examples/train/reranker/qwen3/qwen3_reranker.sh",
+      "sha256": "fc2348649dc95893a8f2e191c347017b16d749528c73f205aeb5ae96e677153f",
+      "bytes": 973
+    },
+    {
+      "id": "swift-generative-config",
+      "url": "https://raw.githubusercontent.com/modelscope/ms-swift/dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344/examples/train/reranker/train_generative_reranker.sh",
+      "repository": "modelscope/ms-swift",
+      "revision": "dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344",
+      "path": "examples/train/reranker/train_generative_reranker.sh",
+      "sha256": "be4ae6b83483eec63fc38ce32973b26a0e7ad44e014f42bae7bde1a7b4ae04b0",
+      "bytes": 710
+    },
+    {
+      "id": "swift-loss",
+      "url": "https://raw.githubusercontent.com/modelscope/ms-swift/dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344/swift/loss/reranker.py",
+      "repository": "modelscope/ms-swift",
+      "revision": "dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344",
+      "path": "swift/loss/reranker.py",
+      "sha256": "7701a7bf7120aa6a7941742701f85bddca3c54713a989cfb78716d24e6135792",
+      "bytes": 4192
+    },
+    {
+      "id": "st-bce-example",
+      "url": "https://raw.githubusercontent.com/huggingface/sentence-transformers/4a3b5cd6ec718e421f57e824a41ed3fd99595df6/examples/cross_encoder/training/ms_marco/training_ms_marco_bce.py",
+      "repository": "huggingface/sentence-transformers",
+      "revision": "4a3b5cd6ec718e421f57e824a41ed3fd99595df6",
+      "path": "examples/cross_encoder/training/ms_marco/training_ms_marco_bce.py",
+      "sha256": "da18f17db7287d0fd571909470f46ac166c1e0f33f8db11b2b65040a19ec6e46",
+      "bytes": 4828
+    },
+    {
+      "id": "swift-model",
+      "url": "https://raw.githubusercontent.com/modelscope/ms-swift/dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344/swift/model/models/qwen.py",
+      "revision": "dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344",
+      "sha256": "1dbbc8e70b098a4713ad1b3f700afd44b4aae38731c1115e9ebfa309724cf7a6",
+      "bytes": 122142
+    },
+    {
+      "id": "st-ranknet",
+      "url": "https://raw.githubusercontent.com/huggingface/sentence-transformers/4a3b5cd6ec718e421f57e824a41ed3fd99595df6/sentence_transformers/cross_encoder/losses/rank_net.py",
+      "revision": "4a3b5cd6ec718e421f57e824a41ed3fd99595df6",
+      "sha256": "9749619d7c97d7cb1b612a9e2041f4bc3005c98757bcafb91438e97e984060b7",
+      "bytes": 5926
+    },
+    {
+      "id": "st-mining",
+      "url": "https://raw.githubusercontent.com/huggingface/sentence-transformers/4a3b5cd6ec718e421f57e824a41ed3fd99595df6/sentence_transformers/util/hard_negatives.py",
+      "revision": "4a3b5cd6ec718e421f57e824a41ed3fd99595df6",
+      "sha256": "e3d36d889491ebaba8087de7c5e9d424be61d07db2cebf6d3dcf589e1d3b93cb",
+      "bytes": 51464
+    },
+    {
+      "id": "peft-quantization",
+      "url": "https://raw.githubusercontent.com/huggingface/peft/eb74a79a4b6ab7f1e4afe7a54a7d862c36d34ecc/docs/source/developer_guides/quantization.md",
+      "revision": "eb74a79a4b6ab7f1e4afe7a54a7d862c36d34ecc",
+      "sha256": "e9425bb1f20db3e8f0ba37a24c6559a688cb8d7a5571e06ddb65b70373e46aa9",
+      "bytes": 17562
+    },
+    {
+      "id": "converted-qwen-card",
+      "url": "https://huggingface.co/tomaarsen/Qwen3-Reranker-0.6B-seq-cls/raw/6a5829f5079c66e78d911e06fe21931cc00232f7/README.md",
+      "revision": "6a5829f5079c66e78d911e06fe21931cc00232f7",
+      "sha256": "133fc75a6399601351aedde99f456649bad157150623c4993830d5c1878f68c0",
+      "bytes": 18197
+    },
+    {
+      "id": "st-lambda",
+      "url": "https://raw.githubusercontent.com/huggingface/sentence-transformers/4a3b5cd6ec718e421f57e824a41ed3fd99595df6/examples/cross_encoder/training/ms_marco/training_ms_marco_lambda_hard_neg.py",
+      "sha256": "cb22f623f2f29c4e1c40e3bd482d34f16de4316dc91d656498648487ca888bf8",
+      "bytes": 8644,
+      "revision": "4a3b5cd6ec718e421f57e824a41ed3fd99595df6"
+    },
+    {
+      "id": "st-bce-loss",
+      "url": "https://raw.githubusercontent.com/huggingface/sentence-transformers/4a3b5cd6ec718e421f57e824a41ed3fd99595df6/sentence_transformers/cross_encoder/losses/binary_cross_entropy.py",
+      "sha256": "bd9b8219a171f29a354341bbce073c9294e112344df7415f8984df334db6fa6b",
+      "bytes": 6006,
+      "revision": "4a3b5cd6ec718e421f57e824a41ed3fd99595df6"
+    },
+    {
+      "id": "st-license",
+      "url": "https://raw.githubusercontent.com/huggingface/sentence-transformers/4a3b5cd6ec718e421f57e824a41ed3fd99595df6/LICENSE",
+      "sha256": "624b030fd62b8b989dd502d5bb6322cbc0dbb524ab9c9708f32efe33d7275735",
+      "bytes": 11338,
+      "revision": "4a3b5cd6ec718e421f57e824a41ed3fd99595df6"
+    },
+    {
+      "id": "swift-license",
+      "url": "https://raw.githubusercontent.com/modelscope/ms-swift/dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "revision": "dbc395ff028efa4fb8510bfe2d7f7fcc28fd2344"
+    },
+    {
+      "id": "peft-license",
+      "url": "https://raw.githubusercontent.com/huggingface/peft/eb74a79a4b6ab7f1e4afe7a54a7d862c36d34ecc/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "revision": "eb74a79a4b6ab7f1e4afe7a54a7d862c36d34ecc"
+    },
+    {
+      "id": "temperature-scaling",
+      "url": "https://proceedings.mlr.press/v70/guo17a.html",
+      "sha256": "fcd644b81c1d06d034060e3ff8079ccc6acc2213dbf846043b92059ce10d26f8",
+      "bytes": 14452
+    },
+    {
+      "id": "selective-classification",
+      "url": "https://arxiv.org/abs/1705.08500",
+      "sha256": "8af4138386f323f9fa7b57c722911036d4c51b8e3faee8391916e32a46ae7d8c",
+      "bytes": 41254
+    },
+    {
+      "id": "bitsandbytes-install",
+      "url": "https://raw.githubusercontent.com/bitsandbytes-foundation/bitsandbytes/main/docs/source/installation.mdx",
+      "sha256": "698095df38fef2044a137bbf9362c674d46743ca77fed0a1889fdb35d7ed6b8f",
+      "bytes": 19814
+    },
+    {
+      "id": "msmarco-terms",
+      "url": "https://huggingface.co/api/datasets/microsoft/ms_marco",
+      "sha256": "8b774e46d3f2f30f9df02c85381ded3c4da55f924ecc5fa76a0e41dc627bf6bf",
+      "bytes": 3601,
+      "revision": "a47ee7aae8d7d466ba15f9f0bfac3b3681087b3a"
+    },
+    {
+      "id": "scidocs-terms",
+      "url": "https://huggingface.co/api/datasets/MTEB/scidocs-reranking",
+      "sha256": "173aa335c31dfd825afffa23af492e94fc4e907282794f84ee2eda1a3ff8a02b",
+      "bytes": 642,
+      "revision": "56a6d0140cf6356659e2a7c1413286a774468d44"
+    },
+    {
+      "id": "modernbert-card",
+      "url": "https://huggingface.co/api/models/Alibaba-NLP/gte-reranker-modernbert-base",
+      "sha256": "11acec09f28f509c5adec4765605d14d604e0c640fe752dfa4ba82e1e4d58f2a",
+      "bytes": 2152,
+      "revision": "f7481e6055501a30fb19d090657df9ec1f79ab2c"
+    },
+    {
+      "id": "qwen-readme",
+      "url": "https://raw.githubusercontent.com/QwenLM/Qwen3-Embedding/44548aa5f0a0aed1c76d64e19afe47727a325b8f/README.md",
+      "sha256": "cb77a65d92c429684ce41c839f959d151021b9fc37a40b9dfddfdb7449790599",
+      "bytes": 26235,
+      "revision": "44548aa5f0a0aed1c76d64e19afe47727a325b8f"
+    },
+    {
+      "id": "retained-qwen-README.md",
+      "url": "https://huggingface.co/Qwen/Qwen3-Reranker-0.6B/blob/e61197ed45024b0ed8a2d74b80b4d909f1255473/README.md",
+      "revision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
+      "sha256": "5bba8c734f6dd3ae48317b4139317e45a7fce48fc55e15670b23a0dd15492ab6",
+      "bytes": 14742,
+      "method": "read already retained local file; no new model download"
+    },
+    {
+      "id": "retained-qwen-config.json",
+      "url": "https://huggingface.co/Qwen/Qwen3-Reranker-0.6B/blob/e61197ed45024b0ed8a2d74b80b4d909f1255473/config.json",
+      "revision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
+      "sha256": "d479c427a9ca5295218063d4f9aca4f297ab4ac27487cca7af42c84643d51ef0",
+      "bytes": 727,
+      "method": "read already retained local file; no new model download"
+    },
+    {
+      "id": "modernbert-readme",
+      "url": "https://huggingface.co/Alibaba-NLP/gte-reranker-modernbert-base/raw/f7481e6055501a30fb19d090657df9ec1f79ab2c/README.md",
+      "sha256": "02b4dbe7c93b7962270fa44ea8b294986265556ff7dd69492dd708d4a69e606e",
+      "bytes": 14180,
+      "revision": "f7481e6055501a30fb19d090657df9ec1f79ab2c"
+    },
+    {
+      "id": "msmarco-upstream-terms",
+      "url": "https://microsoft.github.io/msmarco/",
+      "sha256": "ab69d6410caaa38b13c395e6d4e0d6b77bab27f2545185c5518d8597acc624c2",
+      "bytes": 107944
+    },
+    {
+      "id": "st-training-overview",
+      "url": "https://raw.githubusercontent.com/huggingface/sentence-transformers/4a3b5cd6ec718e421f57e824a41ed3fd99595df6/docs/cross_encoder/training_overview.md",
+      "sha256": "407bd3606a728545485256743ab1d8537522082cfafc8d2100495731d6639575",
+      "bytes": 80606,
+      "revision": "4a3b5cd6ec718e421f57e824a41ed3fd99595df6"
+    },
+    {
+      "id": "bitsandbytes-install-pinned",
+      "url": "https://raw.githubusercontent.com/bitsandbytes-foundation/bitsandbytes/833649043474794b8fe7a4136e0c40faf077b2e0/docs/source/installation.mdx",
+      "revision": "833649043474794b8fe7a4136e0c40faf077b2e0",
+      "sha256": "698095df38fef2044a137bbf9362c674d46743ca77fed0a1889fdb35d7ed6b8f",
+      "bytes": 19814
+    }
+  ],
+  "retrievedAt": "2026-09-29T20:34:22.630260+00:00",
+  "scope": "Public source code/documentation/model-card/metadata read into memory only. No repository clones, model weights, packages or datasets acquired; no external code executed, model inference or training.",
+  "researchBase": "d59c9e88815fd4e1ff53c68cbd7e0471c07b7081",
+  "searchLimitations": [
+    "Bounded GitHub repository search for Qwen3 reranker finetune/fine-tuning plus Hugging Face model-card discovery did not establish a community fine-tune with reproducible family-separated evaluation and measured advantage for our task. This is not a claim that none exists.",
+    "The inspected popular sequence-classification derivative explicitly describes a converted model; download counts were not used as quality evidence.",
+    "MS MARCO and SciDocs metadata describe the published examples; neither dataset was used."
+  ],
+  "verification": {
+    "kind": "report and source-note consistency only",
+    "noRuntimeClaim": true,
+    "sourceCount": 29
+  }
+}
