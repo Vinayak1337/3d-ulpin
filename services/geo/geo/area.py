@@ -621,7 +621,8 @@ def extract_document(data):
                         return archive_inventory()
                     raise InputError("NATIVE_ARCHIVE_LIMIT")
                 if any(info.flag_bits & 1 for info in entries):
-                    if data["format"] == "archive":
+                    ooxml_candidate = ("xl/workbook.xml" in names) != ("word/document.xml" in names)
+                    if data["format"] == "archive" and not ooxml_candidate:
                         return archive_inventory()
                     raise InputError("Encrypted document archive is unsupported.")
                 if data["format"] == "archive" and not (

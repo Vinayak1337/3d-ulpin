@@ -34,3 +34,10 @@ test('older native receipts without inventory remain readable',()=>{
   assert.equal(DocumentResultSchema.safeParse({version:'source-document/1',input,native,model,
     createdAt:new Date().toISOString()}).success,true);
 });
+
+test('encrypted OOXML reader error retains document recovery status',async()=>{
+  const native=await extractSourceDocument(input,bytes,async()=>{throw new Error('Encrypted document archive is unsupported.');});
+  assert.equal(native.status,'encrypted');
+  assert.equal(native.code,'DOCUMENT_ENCRYPTED');
+  assert.equal(native.archiveInventory,undefined);
+});
