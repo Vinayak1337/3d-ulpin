@@ -1,6 +1,6 @@
 # BhuAayam launch films
 
-**A practical guide to complete product stories, clean motion graphics and reproducible video.**  
+**A practical guide to complete product stories, clean motion graphics and reproducible video.**
 28 September 2026 · Production playbook v1.1
 
 ## 1. The recommendation

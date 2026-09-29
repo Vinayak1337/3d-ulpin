@@ -222,4 +222,3 @@ This handoff was checked against staging 57fe894 on 28 September 2026. No servic
 | Scale and rendering | 1–7 GB end-to-end behavior, all-family normalization, concurrent learned handover and arbitrary scene representations remain separately qualified work. |
 
 For exact schemas and implementation status, read the [API guide](README.md), [OpenAPI](openapi.json), [learning notes](learning.md), [execution plan](../orchestration/ADAPTIVE_INGESTION_EXECUTION.md), [backend decisions](../usp-agent-handoffs/backend-streaming-plan.md) and [frontend goal](../frontend/GOAL.md). This document explains the agreed behavior without replacing those authorities or inventing endpoints.
-
