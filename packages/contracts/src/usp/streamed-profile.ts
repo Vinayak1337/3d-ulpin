@@ -38,12 +38,13 @@ export const StreamedProfileStatusSchema=z.strictObject({version:z.literal(STREA
 const SemanticEvidenceSchema=z.strictObject({target:MappingOperationSchema.shape.target,
   sourcePath:SourcePathSchema,issuer:z.string().min(1).max(500),
   evidenceUrl:z.url().max(2048),meaning:z.enum(['building_source_identity','building_name','building_footprint'])});
-export const StreamedMappingPlanSchema=z.strictObject({version:z.literal('streamed-mapping/1'),
-  mode:z.literal('streamed_mapping'),source:SourcePinSchema,caseId:id,caseRevision:z.number().int().nonnegative(),
+const mappingPlanFields={mode:z.literal('streamed_mapping'),source:SourcePinSchema,caseId:id,caseRevision:z.number().int().nonnegative(),
   rawJobId:id,profileJobId:id,profileGeneration:z.number().int().nonnegative(),profileHash:hash,
-  scope:z.literal('accepted_source_features'),operations:z.array(MappingOperationSchema).min(2).max(3),
+  operations:z.array(MappingOperationSchema).min(2).max(3),
   semanticEvidence:z.array(SemanticEvidenceSchema).min(2).max(3),
-}).superRefine((plan,ctx)=>{
+};
+const MappingPlanBaseSchema=z.strictObject(mappingPlanFields);
+const reviewPlan=(plan:z.infer<typeof MappingPlanBaseSchema>,ctx:z.RefinementCtx)=>{
   const targets=plan.operations.map(op=>op.target);
   if(new Set(targets).size!==targets.length||!targets.includes('building.sourceKey')||!targets.includes('building.geometry'))
     ctx.addIssue({code:'custom',path:['operations'],message:'One source key and one polygon geometry operation are required.'});
@@ -55,16 +56,33 @@ export const StreamedMappingPlanSchema=z.strictObject({version:z.literal('stream
     plan.semanticEvidence.filter(item=>item.target===op.target&&item.sourcePath===op.sourcePath
       &&item.meaning===meanings[op.target]).length!==1))
     ctx.addIssue({code:'custom',path:['semanticEvidence'],message:'Each operation needs matching issuer meaning evidence.'});
+};
+export const StreamedMappingPlanSchema=z.strictObject({...mappingPlanFields,
+  version:z.literal('streamed-mapping/1'),scope:z.literal('accepted_source_features'),
+}).superRefine(reviewPlan);
+/** An immutable observed prefix permits later compatible rows, never a whole-source claim. */
+export const StreamedPrefixMappingPlanSchema=z.strictObject({...mappingPlanFields,
+  version:z.literal('streamed-prefix-mapping/1'),scope:z.literal('observed_prefix_and_later_compatible_features'),
+  prefix:z.strictObject({throughRawChunkIndex:z.number().int().nonnegative().max(4096),
+    rawResultSha256:hash,recordsSeen:z.number().int().positive(),accepted:z.number().int().positive()}),
+}).superRefine((plan,ctx)=>{
+  reviewPlan(plan,ctx);
+  if(plan.profileGeneration!==plan.prefix.throughRawChunkIndex)
+    ctx.addIssue({code:'custom',path:['prefix'],message:'The prefix must name its immutable profile generation.'});
 });
+export const AnyStreamedMappingPlanSchema=z.union([StreamedMappingPlanSchema,StreamedPrefixMappingPlanSchema]);
 export const StreamedMappingAuthorSchema=z.strictObject({requestKey:id,
   expectedRecipeRevision:z.number().int().nonnegative(),plan:StreamedMappingPlanSchema});
+export const StreamedPrefixMappingAuthorSchema=z.strictObject({requestKey:id,
+  expectedRecipeRevision:z.number().int().nonnegative(),plan:StreamedPrefixMappingPlanSchema});
 export const StreamedMappingReceiptSchema=z.strictObject({id,revision:z.number().int().positive(),
-  state:z.enum(['proposed','approved']),plan:StreamedMappingPlanSchema,planHash:hash,
+  state:z.enum(['proposed','approved']),plan:AnyStreamedMappingPlanSchema,planHash:hash,
   authoredBy:z.string().min(1).max(300),authoredAt:z.iso.datetime(),
   approval:z.strictObject({subject:z.string().min(1).max(300),at:z.iso.datetime(),planHash:hash,
     provenance:z.literal('server_configured_local_operator')}).nullable()});
 export type StreamedProfileInput=z.infer<typeof StreamedProfileInputSchema>;
 export type StreamedProfileGeneration=z.infer<typeof StreamedProfileGenerationSchema>;
 export type StreamedProfilePath=z.infer<typeof StreamedProfilePathSchema>;
-export type StreamedMappingPlan=z.infer<typeof StreamedMappingPlanSchema>;
+export type StreamedMappingPlan=z.infer<typeof AnyStreamedMappingPlanSchema>;
+export type StreamedPrefixMappingPlan=z.infer<typeof StreamedPrefixMappingPlanSchema>;
 export type StreamedMappingReceipt=z.infer<typeof StreamedMappingReceiptSchema>;

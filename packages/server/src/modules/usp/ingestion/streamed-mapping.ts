@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
-import {MappingDecisionSchema,StreamedMappingAuthorSchema,StreamedMappingPlanSchema,
+import {MappingDecisionSchema,StreamedMappingAuthorSchema,StreamedPrefixMappingAuthorSchema,AnyStreamedMappingPlanSchema,
   StreamedMappingReceiptSchema,type StreamedMappingPlan,type StreamedMappingReceipt,
   type StreamedProfileGeneration} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
@@ -9,22 +9,27 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {localOperatorSubject} from '../principal';
 import {appendCaseIngestionTx} from './events';
-import {loadSealedStreamedProfileTx} from './streamed-profile';
+import {loadProvisionalStreamedProfileTx,loadSealedStreamedProfileTx} from './streamed-profile';
 
 const uuid=z.string().uuid();
 const unescape=(key:string)=>key.replaceAll('~1','/').replaceAll('~0','~');
 /** Mechanical admission only. Source meaning is separately cited and approved by the local operator. */
 export function compileStreamedMapping(plan:StreamedMappingPlan,profile:StreamedProfileGeneration){
-  if(profile.coverage!=='sealed'||profile.unknownRemainder||profile.accepted===0
+  const prefix=plan.version==='streamed-prefix-mapping/1';
+  if(profile.coverage!==(prefix?'provisional':'sealed')||profile.unknownRemainder!==prefix||profile.accepted===0
     ||plan.profileHash!==profile.generationHash||plan.profileGeneration!==profile.generation
     ||plan.profileJobId!==profile.jobId||plan.rawJobId!==profile.rawJobId
     ||fingerprint(plan.source)!==fingerprint(profile.source))
-    conflict('The exact sealed source profile changed.');
+    conflict('The exact reviewed source profile changed.');
+  if(prefix&&(plan.prefix.throughRawChunkIndex!==profile.rawChunkIndex
+    ||plan.prefix.rawResultSha256!==profile.rawResultSha256
+    ||plan.prefix.recordsSeen!==profile.recordsSeen||plan.prefix.accepted!==profile.accepted))
+    conflict('The observed source prefix changed.');
   if(profile.geometryTypes.some(kind=>!['Polygon','MultiPolygon'].includes(kind)))
     throw new AppError(422,'STREAMED_MAPPING_GEOMETRY','Only observed source polygons are supported.');
   for(const op of plan.operations){
     const path=profile.paths.find(item=>item.path===op.sourcePath);
-    if(!path)throw new AppError(422,'STREAMED_MAPPING_PATH','Choose a path in the sealed source inventory.');
+    if(!path)throw new AppError(422,'STREAMED_MAPPING_PATH','Choose a path in the pinned source inventory.');
     if(op.target==='building.geometry'){
       if(op.sourcePath!=='/features/*/geometry'||op.conversionId!=='geojson_polygon@1'
         ||path.values!==profile.accepted||path.types.length!==1||path.types[0]!=='object')
@@ -44,11 +49,14 @@ export function compileStreamedMapping(plan:StreamedMappingPlan,profile:Streamed
   }
   // No global uniqueness claim is made here. The mapped worker reserves keys across chunks.
 }
-async function validatePlanTx(client:PoolClient,caseId:string,sourceId:string,profileJobId:string,plan:StreamedMappingPlan){
+async function validatePlanTx(client:PoolClient,caseId:string,sourceId:string,profileJobId:string,
+  plan:StreamedMappingPlan,mode:'sealed'|'prefix'){
+  if((plan.version==='streamed-prefix-mapping/1')!==(mode==='prefix'))
+    conflict('The recipe route does not match the reviewed profile scope.');
   if(plan.caseId!==caseId||plan.profileJobId!==profileJobId||plan.source.sourceId!==sourceId)
     conflict('The recipe belongs to another source context.');
-  const {input,profile}=await loadSealedStreamedProfileTx(client,profileJobId,plan.profileGeneration,
-    plan.profileHash,plan.rawJobId,caseId,sourceId);
+  const {input,profile}=await (mode==='prefix'?loadProvisionalStreamedProfileTx:loadSealedStreamedProfileTx)(
+    client,profileJobId,plan.profileGeneration,plan.profileHash,plan.rawJobId,caseId,sourceId);
   if(plan.caseRevision!==input.caseRevision)conflict('The source case revision changed.');
   const source=(await client.query('SELECT profile,inspection FROM sources WHERE id=$1 AND case_id=$2 FOR SHARE',
     [sourceId,caseId])).rows[0]??notFound('Retained source not found.');
@@ -83,13 +91,15 @@ async function save(client:PoolClient,receipt:StreamedMappingReceipt){
     [receipt.id,receipt.revision,receipt]);
 }
 export class StreamedMappingService{
-  async author(caseValue:string,sourceValue:string,profileJobValue:string,value:unknown){
+  async author(caseValue:string,sourceValue:string,profileJobValue:string,value:unknown,mode:'sealed'|'prefix'='sealed'){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),profileJobId=uuid.parse(profileJobValue);
-    const input=StreamedMappingAuthorSchema.parse(value),subject=localOperatorSubject();
+    const input=mode==='prefix'?StreamedPrefixMappingAuthorSchema.parse(value):StreamedMappingAuthorSchema.parse(value);
+    const subject=localOperatorSubject();
     const digest=fingerprint({caseId,sourceId,profileJobId,input,subject});
-    const legacyDigest=fingerprint({input,subject}),key=`streamed-author:${input.requestKey}`;
+    const legacyDigest=mode==='sealed'?fingerprint({input,subject}):digest;
+    const key=`streamed-${mode==='prefix'?'prefix-':''}author:${input.requestKey}`;
     return transaction(async client=>{
-      await validatePlanTx(client,caseId,sourceId,profileJobId,input.plan);
+      await validatePlanTx(client,caseId,sourceId,profileJobId,input.plan,mode);
       const row=(await client.query('SELECT id,body FROM usp_mapping_recipes WHERE case_id=$1 AND source_id=$2 FOR UPDATE',
         [caseId,sourceId])).rows[0];
       const prior=row?StreamedMappingReceiptSchema.safeParse(row.body):null;
@@ -124,18 +134,20 @@ export class StreamedMappingService{
       return receipt;
     });
   }
-  async approve(caseValue:string,sourceValue:string,profileJobValue:string,recipeValue:string,value:unknown){
+  async approve(caseValue:string,sourceValue:string,profileJobValue:string,recipeValue:string,value:unknown,
+    mode:'sealed'|'prefix'='sealed'){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),profileJobId=uuid.parse(profileJobValue);
     const recipeId=uuid.parse(recipeValue),input=MappingDecisionSchema.parse(value),subject=localOperatorSubject();
     const digest=fingerprint({caseId,sourceId,profileJobId,recipeId,input,subject});
-    const legacyDigest=fingerprint({recipeId,input,subject}),key=`streamed-approve:${input.requestKey}`;
+    const legacyDigest=mode==='sealed'?fingerprint({recipeId,input,subject}):digest;
+    const key=`streamed-${mode==='prefix'?'prefix-':''}approve:${input.requestKey}`;
     return transaction(async client=>{
       const row=(await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1 AND case_id=$2 AND source_id=$3',
         [recipeId,caseId,sourceId])).rows[0]??notFound('Streamed mapping recipe not found.');
       const receipt=StreamedMappingReceiptSchema.parse(row.body);
-      const plan=StreamedMappingPlanSchema.parse(receipt.plan);
+      const plan=AnyStreamedMappingPlanSchema.parse(receipt.plan);
       if(fingerprint(plan)!==receipt.planHash)conflict('The recipe content changed after authoring.');
-      await validatePlanTx(client,caseId,sourceId,profileJobId,plan);
+      await validatePlanTx(client,caseId,sourceId,profileJobId,plan,mode);
       const locked=(await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1 AND case_id=$2 AND source_id=$3 FOR UPDATE',
         [recipeId,caseId,sourceId])).rows[0]??notFound('Streamed mapping recipe not found.');
       if(fingerprint(locked.body)!==fingerprint(receipt))conflict('The recipe changed during approval.');
@@ -158,16 +170,17 @@ export class StreamedMappingService{
       return approved;
     });
   }
-  async read(caseValue:string,sourceValue:string,profileJobValue:string,recipeValue:string){
+  async read(caseValue:string,sourceValue:string,profileJobValue:string,recipeValue:string,
+    mode:'sealed'|'prefix'='sealed'){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),profileJobId=uuid.parse(profileJobValue);
     const recipeId=uuid.parse(recipeValue);localOperatorSubject();
     return transaction(async client=>{
       const row=(await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1 AND case_id=$2 AND source_id=$3',
         [recipeId,caseId,sourceId])).rows[0]??notFound('Streamed mapping recipe not found.');
       const receipt=StreamedMappingReceiptSchema.parse(row.body);
-      if(receipt.plan.profileJobId!==profileJobId)conflict('The recipe belongs to another source profile.');
-      await loadSealedStreamedProfileTx(client,profileJobId,receipt.plan.profileGeneration,
-        receipt.plan.profileHash,receipt.plan.rawJobId,caseId,sourceId);
+      if(fingerprint(receipt.plan)!==receipt.planHash)
+        conflict('The recipe content changed after authoring.');
+      await validatePlanTx(client,caseId,sourceId,profileJobId,receipt.plan,mode);
       return receipt;
     });
   }
