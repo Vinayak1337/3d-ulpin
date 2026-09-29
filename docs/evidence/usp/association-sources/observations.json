@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "association-observations/1",
+  "status": "unreviewed",
+  "method": "Visual inspection of retained Poppler page renders, after checking unchanged PDF hashes against D5; page and region text are source locators, not OCR-derived truth.",
+  "recordMatchAssessment": "No canonical registry snapshot was read. No matched, absent or outside-loaded-record claim is made.",
+  "observations": [
+    {
+      "id": "bihar-villa-type5-multilevel",
+      "sourceId": "bihar-magnolia-sanctioned-layout.pdf",
+      "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "nativeBuildingReference": "VILLA TYPE 5",
+      "nativeFloorLabels": ["GROUND FLOOR PLAN", "FIRST FLOOR PLAN", "SECOND FLOOR PLAN", "TERRACE FLOOR PLAN"],
+      "relationKind": "type_drawing_has_multiple_planned_levels",
+      "scope": "building_type_only",
+      "citations": [
+        {
+          "page": 2,
+          "region": "lower drawing strip, ground/first/second/terrace plan captions",
+          "literalText": "GROUND FLOOR PLAN; FIRST FLOOR PLAN; SECOND FLOOR PLAN; TERRACE FLOOR PLAN"
+        },
+        {
+          "page": 2,
+          "region": "right title block",
+          "literalText": "VILLA TYPE 5, UNIT NO.- ----; DRWG. NO.: V5-02"
+        }
+      ],
+      "ambiguity": "specific numbered villa unresolved because unit number is blank",
+      "canonicalBuildingId": null,
+      "canonicalFloorIds": [],
+      "canonicalMatchState": "not_assessed",
+      "reviewState": "unreviewed",
+      "notEvidenceFor": ["specific villa", "legal floor or unit", "as-built state", "ownership"]
+    },
+    {
+      "id": "haryana-2831-tower3-plan",
+      "sourceId": "haryana-2831-tower3-plan1.pdf",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "nativeBuildingReference": "TOWER-03",
+      "nativeFloorLabels": ["2ND FLOOR PLAN", "TYPICAL REFUGE FLOOR-02 (17th, 26th & 35th FLOOR)"],
+      "relationKind": "tower_plan_has_multiple_planned_floor_scopes",
+      "scope": "multiple_native_floors",
+      "citations": [
+        {
+          "page": 1,
+          "region": "upper left plan caption",
+          "literalText": "2ND FLOOR PLAN"
+        },
+        {
+          "page": 1,
+          "region": "lower left plan caption",
+          "literalText": "TYPICAL REFUGE FLOOR-02 (17th, 26th & 35th FLOOR)"
+        },
+        {
+          "page": 1,
+          "region": "lower right title block",
+          "literalText": "TOWER-03 PLAN & AREA CALCULATION; SHEET NO. T3-1"
+        }
+      ],
+      "ambiguity": "native tower and floors supported; no canonical IDs or individual legal unit links established",
+      "canonicalBuildingId": null,
+      "canonicalFloorIds": [],
+      "canonicalMatchState": "not_assessed",
+      "reviewState": "unreviewed",
+      "notEvidenceFor": ["canonical registry identity", "issued unit rights", "as-built state"]
+    },
+    {
+      "id": "haryana-2831-tower3-section-stack",
+      "sourceId": "haryana-2831-tower3-section.pdf",
+      "sourceSha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "nativeBuildingReference": "TOWER-3",
+      "nativeFloorLabels": ["3RD BASEMENT", "2ND BASEMENT", "1ST BASEMENT", "GROUND FLOOR", "17TH FLOOR", "26TH FLOOR", "35TH FLOOR", "42ND FLOOR"],
+      "relationKind": "tower_section_has_vertical_floor_stack",
+      "scope": "whole_building_and_multiple_native_floors",
+      "citations": [
+        {
+          "page": 1,
+          "region": "left edge of SECTION-AA', bottom to top floor-level labels",
+          "literalText": "3RD BASEMENT; 2ND BASEMENT; 1ST BASEMENT; GROUND FLOOR; REFUGE 17TH FLOOR; REFUGE 26TH FLOOR; REFUGE 35TH FLOOR; 42ND FLOOR"
+        },
+        {
+          "page": 1,
+          "region": "lower right title block",
+          "literalText": "TOWER-3 SECTION & ELEVATION; SHEET NO. T3-4"
+        }
+      ],
+      "ambiguity": "native tower scope is explicit; individual canonical floor records and revisions are unknown",
+      "canonicalBuildingId": null,
+      "canonicalFloorIds": [],
+      "canonicalMatchState": "not_assessed",
+      "reviewState": "unreviewed",
+      "notEvidenceFor": ["surveyed elevation", "legal floor or unit", "as-built state", "canonical registry identity"]
+    }
+  ]
+}
