@@ -1,0 +1,13 @@
+# Optional AI-04G host-only OCR environment; never part of the geo service image.
+# Exact installed dependency metadata is retained in the private AI-04F inventory.
+docling-slim[format-pdf,models-local,extract-core]==2.131.0
+docling-core==2.99.0
+docling-ibm-models==4.0.3
+docling-parse==7.22.1
+torch==2.14.0
+torchvision==0.29.0
+transformers==5.17.0
+huggingface-hub==1.33.0
+Pillow==12.3.0
+PyMuPDF==1.25.5
+psutil==7.0.0

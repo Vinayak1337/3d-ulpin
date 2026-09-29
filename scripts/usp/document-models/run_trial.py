@@ -14,6 +14,7 @@ import signal
 import subprocess
 import sys
 import sysconfig
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -156,7 +157,9 @@ def _stop_process(process: subprocess.Popen[Any], job: _WindowsJob | None = None
 
 
 def _run_worker(command: list[str], log_path: Path, timeout_seconds: float,
-                memory_cap_bytes: int) -> dict[str, Any]:
+                memory_cap_bytes: int, max_log_bytes: int | None = None) -> dict[str, Any]:
+    if max_log_bytes is not None and max_log_bytes < 1:
+        raise ValueError("max_log_bytes must be positive")
     env = os.environ.copy()
     env.update({"TOKENIZERS_PARALLELISM": "false", "OMP_NUM_THREADS": "2",
                 "MKL_NUM_THREADS": "2", "OPENBLAS_NUM_THREADS": "2",
@@ -169,15 +172,39 @@ def _run_worker(command: list[str], log_path: Path, timeout_seconds: float,
     peak_job_private: int | None = None
     stop_reason: str | None = None
     owned_members: dict[int, psutil.Process] = {}
-    with log_path.open("w") as log:
+    log_overflow = threading.Event()
+    log_failure = threading.Event()
+    with log_path.open("wb") as log:
         # The isolated stdlib-only bootstrap runs the worker in its own PID
         # only after Job attachment; no second process can escape that window.
         launch = ([sys._base_executable, "-I", "-S", "-c", _WINDOWS_GATE, *command]
                   if os.name == "nt" else command)
         process = subprocess.Popen(launch, stdin=subprocess.PIPE if os.name == "nt" else subprocess.DEVNULL,
-                                   stdout=log, stderr=subprocess.STDOUT,
+                                   stdout=subprocess.PIPE if max_log_bytes is not None else log,
+                                   stderr=subprocess.STDOUT,
                                    env=env, start_new_session=os.name != "nt",
                                    creationflags=(subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0))
+        log_reader: threading.Thread | None = None
+        if max_log_bytes is not None:
+            assert process.stdout is not None
+
+            def _drain_log() -> None:
+                try:
+                    written = 0
+                    while chunk := process.stdout.read1(8192):
+                        remaining = max_log_bytes - written
+                        if remaining > 0:
+                            part = chunk[:remaining]
+                            log.write(part)
+                            written += len(part)
+                        if len(chunk) > remaining:
+                            log_overflow.set()
+                    log.flush()
+                except OSError:
+                    log_failure.set()
+
+            log_reader = threading.Thread(target=_drain_log, name="bounded-worker-log", daemon=True)
+            log_reader.start()
         job: _WindowsJob | None = None
         try:
             root = psutil.Process(process.pid)
@@ -191,6 +218,12 @@ def _run_worker(command: list[str], log_path: Path, timeout_seconds: float,
                 elapsed = time.monotonic() - started
                 if elapsed > timeout_seconds:
                     stop_reason = "runtime_cap_exceeded"
+                    break
+                if log_overflow.is_set():
+                    stop_reason = "log_byte_limit_exceeded"
+                    break
+                if log_failure.is_set():
+                    stop_reason = "log_capture_failed"
                     break
                 try:
                     members = [root, *root.children(recursive=True)]
@@ -211,6 +244,16 @@ def _run_worker(command: list[str], log_path: Path, timeout_seconds: float,
             if job is not None:
                 peak_job_private = job.peak_private_bytes()
                 job.close()  # Kill any remaining descendant before returning.
+            if log_reader is not None:
+                log_reader.join(timeout=3)
+                if log_reader.is_alive():
+                    raise RuntimeError("bounded_log_reader_survived_shutdown")
+                assert process.stdout is not None
+                process.stdout.close()
+                if log_overflow.is_set() and stop_reason is None:
+                    stop_reason = "log_byte_limit_exceeded"
+                if log_failure.is_set() and stop_reason is None:
+                    stop_reason = "log_capture_failed"
             _, survivors = psutil.wait_procs(list(owned_members.values()), timeout=1)
             for member in survivors:
                 # Some Windows hosts let descendants break away from nested
@@ -223,12 +266,15 @@ def _run_worker(command: list[str], log_path: Path, timeout_seconds: float,
             if survivors:
                 raise RuntimeError("owned_process_tree_survived_shutdown")
         exit_code = process.wait()
-    return {"exitCode": exit_code, "stopReason": stop_reason,
+    result = {"exitCode": exit_code, "stopReason": stop_reason,
             "elapsedSeconds": round(time.monotonic() - started, 3),
             "peakObservedRssBytes": max_rss, "peakJobPrivateBytes": peak_job_private,
             "gatedStart": os.name == "nt",
             "logPath": str(log_path),
             "logSha256": sha256_file(log_path)}
+    if max_log_bytes is not None:
+        result.update({"logByteLimit": max_log_bytes, "logTruncated": log_overflow.is_set()})
+    return result
 
 
 def _write_receipt(path: Path, receipt: dict[str, Any]) -> None:
