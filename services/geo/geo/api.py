@@ -125,3 +125,13 @@ def raster_window(data: dict[str, Any]) -> dict:
         return read_raster_window(data)
     except InputError as error:
         raise HTTPException(status_code=422, detail=str(error)) from None
+
+
+@app.post('/internal/point/batch', dependencies=[Depends(authorize)])
+def point_batch(data: dict[str, Any]) -> dict:
+    from .point_batch import read_point_batch
+    from .validation import InputError
+    try:
+        return read_point_batch(data)
+    except InputError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from None

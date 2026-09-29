@@ -23,6 +23,8 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
     status:z.enum(['queued','running','completed','failed','stale'])}),
   z.strictObject({kind:z.literal('raster-window.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','failed','stale'])}),
+  z.strictObject({kind:z.literal('point-batch.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','failed','stale'])}),
   z.strictObject({kind:z.literal('streaming-vector.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','completed_with_rejections','failed','stale'])}),
   z.strictObject({kind:z.literal('streaming-vector.chunk'),sourceId:id,sourceRevision:revision,jobId:id,

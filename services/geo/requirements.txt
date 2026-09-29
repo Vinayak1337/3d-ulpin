@@ -12,3 +12,5 @@ pyproj==3.6.1
 pyshp==2.3.1
 jsonschema==4.26.0
 rasterio==1.4.4
+laspy==2.6.1
+lazrs==0.8.0

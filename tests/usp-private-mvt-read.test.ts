@@ -61,3 +61,15 @@ test('pre-document reads deny unknown code, tampered self-hashes, policy, transf
     }
   }
 });
+
+test('point-job enrollment preserves exact prior MVT reads without weakening runtime pins',()=>{
+  for(const codeSha256 of ['267a72c05411cff5750ebc76b0ea050fc55f7e05ddeecb07fd70a6ea0920c157',
+    '20f90748a73f2051f3cabba45bc76432cdcae723381a497ddf81c4d7939ed339']){
+    const beforePoint=repin({codeSha256});
+    assert.equal(mvtReadCompilerCompatible(beforePoint,current),true);
+    assert.equal(mvtReadCompilerCompatible(beforePoint,current,true),true);
+    assert.equal(mvtReadCompilerCompatible(beforePoint,repin({codeSha256:current.codeSha256,
+      postgis:retained.postgis+' changed'}),true),false);
+    assert.equal(mvtReadCompilerCompatible({...beforePoint,sha256:current.sha256},current,true),false);
+  }
+});
