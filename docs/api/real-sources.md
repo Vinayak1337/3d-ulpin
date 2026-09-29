@@ -6,6 +6,8 @@ Use this index before source-dependent orchestration and frontend/API integratio
 
 ## Desktop ingestion verification — 29 September
 
+30 September: the same retained NYC LAZ derivative now supports [private native point batches](../evidence/usp/point-batch-handoff.md). The checked first/later batches preserve 8,192 native records each, with explicit out-of-range failure, foreign-Origin denial and stale-reader status. The whole parent COPC remains outside the 16 MiB upload profile. Existing issuing-source and derivative lineage remain unchanged; no global placement, height accuracy, renderer, association or scale qualification follows.
+
 The retained NYC DEM crop now supports [two private native raster windows](../evidence/usp/raster-window-handoff.md), with native coordinates/nodata preserved, a clear out-of-bounds failure and foreign-Origin denial. It remains a derivative; the whole upstream TIFF was not retained. Its vertical reference is unknown. [Document partitioning](../evidence/usp/desktop-document-partition-handoff.md) produced 53 cited native units across all four pages of the unchanged USGS fact sheet; the unchanged scanned map explicitly needs OCR. Original hashes were retained. Both isolated processing runtimes are stopped; this does not install these records in another environment or qualify the renderer, large files or building/floor links.
 
 ## Independent learning corpus — current desktop V6, 29 September
