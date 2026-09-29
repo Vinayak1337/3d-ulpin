@@ -3912,6 +3912,49 @@
         "Imagery and point-cloud evidence do not create ownership, units or new building geometry",
         "Whole upstream TIFF was not retained; private receipt lineage remains caller_declared."
       ]
+    },
+    {
+      "manifest": "E:/BhuAayam-data/task-data/desktop-ai04d-native-documents/source-check.json",
+      "manifestSha256": "34e0fe1205cdddc39a0ab09373c5f8936d61cfdf7fe74be6e76078618800f513",
+      "guide": "docs/evidence/usp/native-table-docx-handoff.md",
+      "issuer": "Medicines and Healthcare products Regulatory Agency, United Kingdom",
+      "dataset": "Applicant response template, published 2023-03-03",
+      "datasetUrl": "https://www.gov.uk/government/publications/response-template-for-applicants",
+      "originalUrl": "https://assets.publishing.service.gov.uk/media/640067008fa8f527f4f54b37/Applicant_s_response_template.docx",
+      "acquiredAt": "2026-09-29T19:09:01.754208+00:00",
+      "geography": "United Kingdom; test-only blank document, not a property record",
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "standingInstallation": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/desktop-ai04d-native-documents/Applicant_s_response_template.docx",
+        "bytes": 67023,
+        "sha256": "3d709b94da96e91c83e7c901b3b1dca1b4d1403f0602696eff8c77973d2aae92",
+        "format": "docx",
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "reference": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+        "note": "Issuing publication states OGL v3.0 except where otherwise stated; local native-reader check only. Redistribution and ML use were not assessed.",
+        "issuerPage": "E:/BhuAayam-data/task-data/desktop-ai04d-native-documents/issuer-page-20260930.html",
+        "issuerPageSha256": "3e2c8a655bab5e5e9759b248c9b300f2d1ac431c988cbb06e6c48c5ec48225c1"
+      },
+      "reference": {
+        "horizontal": null,
+        "vertical": null,
+        "globalPlacement": "not_applicable"
+      },
+      "runtimeEvidence": {
+        "servedCodeCommit": "8dc5fc923f9920c627f0cf920a9b6346019f59f6",
+        "receipt": "E:/BhuAayam-data/task-data/desktop-ai04d-native-documents/runtime-2026-09-29T19-15-05-831Z.json",
+        "receiptSha256": "127dd1c3f8ce62adf1fa2b0b0a5dda804e5b5156718948f9dbb0517dcd73079b",
+        "scope": "118 cited native paragraph/table units; unchanged original download; cross-case read denied; model not requested"
+      },
+      "limitations": [
+        "Blank issuer template, not a completed applicant or property record",
+        "No declared table-header row in this original; header-marker behavior unqualified",
+        "Drawings, footnotes, nested tables, OCR and document-to-property association unqualified",
+        "No Indian building, rights, training or release qualification"
+      ]
     }
   ],
   "offlineLearningCorpus": {

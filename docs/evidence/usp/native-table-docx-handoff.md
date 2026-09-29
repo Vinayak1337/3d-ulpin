@@ -1,5 +1,7 @@
 # Native reference CSV and DOCX — AI-04D
 
+Lead review, 30 September: `cc144e5` integrated as `3ef4c6f`. Both original hashes, the private HTTP receipt hash and the cited DOCX paragraph/table texts were independently checked. The issuing publication was retained as `issuer-page-20260930.html` in the private source directory, SHA256 `3e2c8a655bab5e5e9759b248c9b300f2d1ac431c988cbb06e6c48c5ec48225c1`; it links this exact DOCX and states OGL v3.0 except where otherwise stated. The source-check receipt hash is `34e0fe1205cdddc39a0ab09373c5f8936d61cfdf7fe74be6e76078618800f513`. `area.py` matches the reported exact served hash; `native_schedule.py` matches the served worktree after line-ending normalization. An optional image-hash replay could not run because the recorded image was unavailable to the lead's Docker daemon; the lead reused the worker's HTTP evidence rather than replaying that runtime.
+
 AI-04D qualified the existing private document path at `task/desktop-ai04d-native-documents` from `8dc5fc923f9920c627f0cf920a9b6346019f59f6`. No reader, locator, contract or status correction was needed. The current `apps/api` → `packages/server` → `services/geo` flow retained both originals unchanged, completed native-only jobs, and returned source-bound cited parts. The model gateway was disabled; no OCR, provider or model call ran.
 
 | Original | Source and permission | Observed private HTTP result |
