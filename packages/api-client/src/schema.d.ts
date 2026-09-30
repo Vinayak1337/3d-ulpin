@@ -1709,6 +1709,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/evidence/document-association/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare private exact native citations and current building/floor context without accepting an association */
+        post: operations["POST_api_v1_usp_evidence_document_association_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/spatial-datasets/search": {
         parameters: {
             query?: never;
@@ -25439,6 +25456,252 @@ export interface components {
                 };
             };
         };
+        POST_usp_evidence_document_association_preview_Request_application_json: {
+            document: {
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                /** Format: uuid */
+                jobId: string;
+                resultSha256: string;
+            };
+            partIds: string[];
+            scope: {
+                /** @enum {string} */
+                kind: "snapshot";
+                scopeId: string;
+                world: {
+                    namespace: string;
+                    id: string;
+                };
+                manifestId: string;
+                snapshotDigest: string;
+                /** @enum {string} */
+                stage: "draft" | "recorded" | "retained";
+            } | null;
+            targets: {
+                ref: {
+                    namespace: string;
+                    id: string;
+                };
+                revision: number;
+            }[];
+        };
+        POST_usp_evidence_document_association_preview_Response_200_application_json: {
+            data: {
+                /** @enum {string} */
+                version: "document-association-preview/1";
+                /** @enum {string} */
+                state: "available" | "needs_input" | "not_assessed";
+                document: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                };
+                readonly scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                } | null;
+                reasonCodes: string[];
+                source: {
+                    /** @enum {string} */
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                    /** @enum {string} */
+                    nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
+                    readerSha256: string;
+                    code: string | null;
+                    warnings: string[];
+                };
+                citations: {
+                    part: {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        text: string;
+                        sha256: string;
+                        locator: {
+                            label: string;
+                            page?: number;
+                            row?: number;
+                            line?: number;
+                            lineEnd?: number;
+                            paragraph?: number;
+                            table?: number;
+                            column?: number;
+                            headerRow?: number;
+                            sheet?: string;
+                            sheetIndex?: number;
+                            sheetId?: number;
+                            cell?: string;
+                            /** @enum {string} */
+                            cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                            cellType?: string;
+                            /** Format: uuid */
+                            unitId?: string;
+                            unitSha256?: string;
+                            segmentIndex?: number;
+                            segmentCount?: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                        /** @enum {string} */
+                        method: "native_text";
+                    };
+                    identifierEligibility: {
+                        /** @enum {string} */
+                        state: "available" | "not_assessed";
+                        reasonCode: string | null;
+                    };
+                }[];
+                targets: {
+                    readonly pin: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    /** @enum {string} */
+                    kind: "building" | "floor";
+                    label: string;
+                    readonly identifiers: {
+                        scheme: string;
+                        value: string;
+                        issuer: string | null;
+                        readonly source: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        } | null;
+                        /** @enum {string} */
+                        state: "supplied" | "reviewed" | "disputed" | "retired";
+                    }[];
+                    /** @enum {string} */
+                    recordState: "draft" | "recorded" | "retained";
+                    readonly relationsWithinSelection: {
+                        /** @enum {string} */
+                        kind: "within" | "floor" | "serves" | "crosses";
+                        readonly target: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                    }[];
+                    /** @enum {string} */
+                    relationshipCoverage: "complete" | "partial";
+                    /** @enum {string} */
+                    sourceEvidence: "available" | "unavailable";
+                    synthetic: boolean | null;
+                }[];
+                association: {
+                    /** @enum {string} */
+                    state: "not_assessed";
+                    /** @enum {string} */
+                    reasonCode: "source_target_linkage_unqualified";
+                    identifierOverlap: {
+                        /** @enum {string} */
+                        state: "not_assessed";
+                        /** @enum {string} */
+                        reasonCode: "source_key_namespace_unqualified";
+                    };
+                    /** @enum {string} */
+                    population: "explicit_selection_only";
+                };
+                ambiguities: {
+                    multipleFloors: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    }[];
+                    floorsWithoutSelectedParent: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    }[];
+                    duplicateIdentifiers: {
+                        scheme: string;
+                        value: string;
+                        occurrences: {
+                            readonly target: {
+                                readonly ref: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            readonly identifier: {
+                                scheme: string;
+                                value: string;
+                                issuer: string | null;
+                                readonly source: {
+                                    readonly ref: {
+                                        namespace: string;
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                /** @enum {string} */
+                                state: "supplied" | "reviewed" | "disputed" | "retired";
+                            };
+                        }[];
+                    }[];
+                };
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
         GET_spatial_datasets_search_Response_200_application_json: {
             matches: {
                 objectId: string;
@@ -43565,6 +43828,110 @@ export interface operations {
                 content: {
                     "text/plain": string;
                     "text/csv": string;
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_evidence_document_association_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_evidence_document_association_preview_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_document_association_preview_Response_200_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
