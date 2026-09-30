@@ -4268,6 +4268,51 @@
         "No current approved revision, keyed Bihar villa or canonical building/floor association was established.",
         "No API import, model fit, source edit, label or release qualification."
       ]
+    },
+    {
+      "id": "usgs-central-city-private-ocr-api",
+      "sourceManifest": "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json",
+      "issuer": "U.S. Geological Survey, U.S. Department of the Interior",
+      "originalUrl": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Maps/HistoricalTopo/PDF/CO/62500/CO_Central%20City_232520_1910_62500_geo.pdf",
+      "geography": "Central City, Colorado, United States; foreign test_only reader input",
+      "acquiredAt": "2026-09-26T01:59:53Z",
+      "terms": {
+        "state": "documented",
+        "reference": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted",
+        "permittedUses": [
+          "research",
+          "demo"
+        ]
+      },
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "standingInstallation": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/ulpin-official-runtime-pdf-v1/usgs-central-city-co-1910-topographic-map.pdf",
+        "bytes": 9344939,
+        "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+        "format": "pdf",
+        "repositoryBytesVerified": false
+      },
+      "ocrEvidence": {
+        "guide": "docs/evidence/usp/private-ocr-jobs-handoff.md",
+        "workerCommit": "05ebec4ce5c8f845b87276a1d6cc80c68fa7a250",
+        "acceptedCommit": "0272544",
+        "receipt": "E:/BhuAayam-data/task-data/desktop-ai04h-private-ocr/receipt-001/private-ocr-final.json",
+        "receiptSha256": "5c82ffe13d02b66c2d800e068924f1a5f998460ebf3f80a98dbf423e239d1724",
+        "codeScope": "Actual executed file hashes are in the receipt; the run predates candidate commit.",
+        "nativeStatus": "needs_ocr",
+        "selectedRegionItems": 5,
+        "wholePageItems": 0,
+        "wholePageOutputStatus": "partial",
+        "textCompleteness": "unverified",
+        "originalDownloadUnchanged": true,
+        "privateAccessAndAttemptChecks": "passed"
+      },
+      "limitations": [
+        "Single source/page and configured local Windows OCR profile only; whole-page text recovery failed.",
+        "Marginal OCR errors/omissions remain; extracted text is not verified truth.",
+        "No building/floor association, Indian operational facts, learning labels, accuracy or release qualification."
+      ]
     }
   ],
   "offlineLearningCorpus": {
