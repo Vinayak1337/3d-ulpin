@@ -642,5 +642,36 @@
       "Marginal OCR errors/omissions remain; extracted text is not verified truth.",
       "No building/floor association, Indian operational facts, learning labels, accuracy or release qualification."
     ]
+  },
+  {
+    "id": "haryana-approval-evidence-20260930",
+    "manifest": "docs/evidence/usp/haryana-approval-evidence/manifest.json",
+    "manifestSha256": "65d46735378faf1a12237035f6d5d735664510245bc7103282b4b8dac1f3e7f5",
+    "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+    "originKind": "issuing_portal_source_observations",
+    "issuer": "Haryana DTCP and Haryana RERA / project submitter",
+    "geography": "Gurugram, Haryana, India",
+    "apiInstallation": "not-verified",
+    "standingInstallation": false,
+    "sourceCount": 3,
+    "totalOriginalBytes": 5734876,
+    "canonicalMatchState": "not_assessed",
+    "limitations": [
+      "Licensing reference and planned demarcation evidence only; no current T3 sanction or approved revision established.",
+      "Printed demarcation date conflicts with referenced licence date; previous G+41/G+42 source conflict remains.",
+      "Captured mobile/OTP entry is a checked-path finding, not evidence that approval records are absent online.",
+      "No API import, source edit, registry record, training label or release qualification."
+    ],
+    "sourceReview": {
+      "report": "docs/evidence/usp/haryana-approval-evidence/README.md",
+      "observations": "docs/evidence/usp/haryana-approval-evidence/observations.json",
+      "observationsSha256": "4d76f9c8a26f4b20ed0dd0be6dbc8a4d3282f51f7626fad787f147db6376e4bf",
+      "hashScope": "Git/LF metadata bytes; unchanged originals use exact-byte hashes.",
+      "acceptedCandidate": "b0888340887cf214f3edd027c7c1ba906aeb05a8",
+      "observationCount": 5,
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelsCreated": false,
+      "recordsCreated": false
+    }
   }
 ]

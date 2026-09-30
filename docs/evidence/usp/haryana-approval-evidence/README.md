@@ -1,5 +1,7 @@
 # DATA-LINK-04 Haryana approval evidence
 
+Lead acceptance, 30 September: source candidate `b088834` is accepted at this bounded evidence scope. Lead matched all three original hashes/byte counts, five private receipt pins, all four image pins and every observation's source hash/no-record/no-label boundary; captured mobile/OTP form locators also match. Visual checks of licence pp. 1/3 and the demarcation title/date block confirm the licence/endorsement references and retained date conflict (707,594 viewed bytes). The current approved T3 revision and floor-count conflict remain unresolved. The homepage navigation label is the acquisition worker's recorded observation; its homepage bytes were not retained, so this acceptance independently verifies the captured service-entry form, not that navigation chain or all public access paths. No acquisition, model, registry or runtime campaign was repeated. Source worker is stopped; further discovery is unassigned.
+
 A bounded check adds the exact licensing reference **LC-5199/JE(SB)/2023/36904**, dated **31 October 2023**, for licence **225 of 2023**, granted **30 October 2023**. It does not establish the sanctioned or current T3 drawing revision. The missing building-plan approval memo and issuer-approved sheet/revision index remain unresolved.
 
 ## Findings
