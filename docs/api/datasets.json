@@ -1363,8 +1363,25 @@
       "profile": "gf0-structured-codes-v1",
       "version": 1,
       "description": "Public LGD district CSV for literal-code parser testing; no geometry or property rights.",
-      "apiInstallation": "not-verified",
-      "runtimeVerified": false,
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "runtimeVerified": true,
+      "runtimeEvidence": {
+        "receipt": "docs/evidence/usp/document-association-preview-runtime.json",
+        "servedCodeCommit": "fc83d6beeaf8da3d76bf01a3164f42ff78f0cb01",
+        "operations": {
+          "POST /api/v1/usp/evidence/document-association/preview": "Two unchanged LGD CSV source rows with null scope/empty targets return needs_input; preserves literal codes and empty values, with no association or mutation."
+        },
+        "environment": {
+          "kind": "stopped-isolated",
+          "project": "ulpin-usptest-b050544f3d2cb99e",
+          "url": "http://127.0.0.1:3192/api/v1"
+        },
+        "qualification": "Exact native CSV citations and an explicit unavailable-target response; stateless replay, stale/invalid/access denials; positive association remains unqualified.",
+        "unqualified": [
+          "No qualified matched building/floor source; positive association journey remains unqualified.",
+          "Native citation/incomplete-target response only; no original read, extraction, provider, mutation or learning label."
+        ]
+      },
       "missingCapabilities": [
         "spatial_geometry",
         "parcel_identifiers",

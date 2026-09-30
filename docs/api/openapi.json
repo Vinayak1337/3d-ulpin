@@ -20015,6 +20015,208 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/evidence/document-association/preview": {
+      "post": {
+        "operationId": "POST_api_v1_usp_evidence_document_association_preview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "JSON, maximum 1 MiB of received bytes",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_evidence_document_association_preview_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Private exact-scope USP result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_document_association_preview_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "USP denial or common loopback Host/Origin guard denial; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Prepare private exact native citations and current building/floor context without accepting an association",
+        "tags": [
+          "USP document association review"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/document-association.controller.ts",
+        "x-batch": "NEST-12",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Two unchanged LGD CSV source rows with null scope/empty targets return needs_input; preserves literal codes and empty values, with no association or mutation.",
+          "sourceManifests": [
+            "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/document",
+            "/preview",
+            "/controls",
+            "/preparation"
+          ],
+          "receipt": "docs/evidence/usp/document-association-preview-runtime.json",
+          "servedCodeCommit": "fc83d6beeaf8da3d76bf01a3164f42ff78f0cb01",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Exact native CSV citations and an explicit unavailable-target response; stateless replay, stale/invalid/access denials; positive association remains unqualified."
+        },
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/spatial-datasets/search": {
       "get": {
         "operationId": "GET_api_v1_spatial_datasets_search",
@@ -153955,6 +154157,1233 @@
               "createdAt",
               "status",
               "commandSha256"
+            ],
+            "additionalProperties": false
+          },
+          "meta": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "enum": [
+                  "usp/1"
+                ]
+              },
+              "requestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "intake"
+                        ]
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "workspaceId",
+                      "version"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "snapshot"
+                        ]
+                      },
+                      "scopeId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "world": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "manifestId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "snapshotDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "stage": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "recorded",
+                          "retained"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "scopeId",
+                      "world",
+                      "manifestId",
+                      "snapshotDigest",
+                      "stage"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "requestId",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_evidence_document_association_preview_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "type": "object",
+            "properties": {
+              "caseId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "caseRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "jobId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "resultSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "caseId",
+              "caseRevision",
+              "sourceId",
+              "sourceRevision",
+              "sourceSha256",
+              "jobId",
+              "resultSha256"
+            ],
+            "additionalProperties": false
+          },
+          "partIds": {
+            "maxItems": 25,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "scope": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "snapshot"
+                ]
+              },
+              "scopeId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "world": {
+                "type": "object",
+                "properties": {
+                  "namespace": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                  },
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "namespace",
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              "manifestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "snapshotDigest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "stage": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "recorded",
+                  "retained"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "scopeId",
+              "world",
+              "manifestId",
+              "snapshotDigest",
+              "stage"
+            ],
+            "additionalProperties": false
+          },
+          "targets": {
+            "maxItems": 25,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "object",
+                  "properties": {
+                    "namespace": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                    },
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                    }
+                  },
+                  "required": [
+                    "namespace",
+                    "id"
+                  ],
+                  "additionalProperties": false
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "ref",
+                "revision"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "document",
+          "partIds",
+          "scope",
+          "targets"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_evidence_document_association_preview_Response_200_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "enum": [
+                  "document-association-preview/1"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "needs_input",
+                  "not_assessed"
+                ]
+              },
+              "document": {
+                "type": "object",
+                "properties": {
+                  "caseId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "caseRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "jobId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "resultSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "caseId",
+                  "caseRevision",
+                  "sourceId",
+                  "sourceRevision",
+                  "sourceSha256",
+                  "jobId",
+                  "resultSha256"
+                ],
+                "additionalProperties": false
+              },
+              "scope": {
+                "nullable": true,
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "snapshot"
+                    ]
+                  },
+                  "scopeId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "world": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "namespace": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "namespace",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "manifestId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "snapshotDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                  },
+                  "stage": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "recorded",
+                      "retained"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "scopeId",
+                  "world",
+                  "manifestId",
+                  "snapshotDigest",
+                  "stage"
+                ],
+                "additionalProperties": false
+              },
+              "reasonCodes": {
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                }
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "pdf",
+                      "text",
+                      "csv",
+                      "docx",
+                      "xlsx",
+                      "png",
+                      "jpeg",
+                      "archive",
+                      "unsupported"
+                    ]
+                  },
+                  "nativeStatus": {
+                    "type": "string",
+                    "enum": [
+                      "extracted",
+                      "needs_ocr",
+                      "unsupported",
+                      "encrypted",
+                      "tool_error"
+                    ]
+                  },
+                  "readerSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "code": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "warnings": {
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    }
+                  }
+                },
+                "required": [
+                  "format",
+                  "nativeStatus",
+                  "readerSha256",
+                  "code",
+                  "warnings"
+                ],
+                "additionalProperties": false
+              },
+              "citations": {
+                "maxItems": 25,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "part": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "sourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "sourceRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "text": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 4096
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "locator": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 512
+                            },
+                            "page": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "row": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "line": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "lineEnd": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "paragraph": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "table": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "column": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "headerRow": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sheet": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "sheetIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sheetId": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "cell": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+                            },
+                            "cellState": {
+                              "type": "string",
+                              "enum": [
+                                "literal",
+                                "empty",
+                                "empty_string",
+                                "whitespace",
+                                "formula_cached",
+                                "formula_uncached",
+                                "error",
+                                "unsupported"
+                              ]
+                            },
+                            "cellType": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 20
+                            },
+                            "unitId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "unitSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "segmentIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "segmentCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "characterStart": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "characterEnd": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "label",
+                            "characterStart",
+                            "characterEnd"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "native_text"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "sourceId",
+                        "sourceRevision",
+                        "sourceSha256",
+                        "text",
+                        "sha256",
+                        "locator",
+                        "method"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "identifierEligibility": {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "available",
+                            "not_assessed"
+                          ]
+                        },
+                        "reasonCode": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "reasonCode"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "part",
+                    "identifierEligibility"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "targets": {
+                "maxItems": 25,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "pin": {
+                      "readOnly": true,
+                      "type": "object",
+                      "properties": {
+                        "ref": {
+                          "readOnly": true,
+                          "type": "object",
+                          "properties": {
+                            "namespace": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                            },
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                            }
+                          },
+                          "required": [
+                            "namespace",
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "ref",
+                        "revision"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "building",
+                        "floor"
+                      ]
+                    },
+                    "label": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                    },
+                    "identifiers": {
+                      "readOnly": true,
+                      "maxItems": 64,
+                      "type": "array",
+                      "items": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "scheme": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          },
+                          "value": {
+                            "type": "string",
+                            "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                          },
+                          "issuer": {
+                            "nullable": true,
+                            "type": "string",
+                            "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                          },
+                          "source": {
+                            "nullable": true,
+                            "readOnly": true,
+                            "type": "object",
+                            "properties": {
+                              "ref": {
+                                "readOnly": true,
+                                "type": "object",
+                                "properties": {
+                                  "namespace": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                                  },
+                                  "id": {
+                                    "type": "string",
+                                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                                  }
+                                },
+                                "required": [
+                                  "namespace",
+                                  "id"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "revision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "ref",
+                              "revision"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "supplied",
+                              "reviewed",
+                              "disputed",
+                              "retired"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "scheme",
+                          "value",
+                          "issuer",
+                          "source",
+                          "state"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "recordState": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "recorded",
+                        "retained"
+                      ]
+                    },
+                    "relationsWithinSelection": {
+                      "readOnly": true,
+                      "maxItems": 100,
+                      "type": "array",
+                      "items": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "within",
+                              "floor",
+                              "serves",
+                              "crosses"
+                            ]
+                          },
+                          "target": {
+                            "readOnly": true,
+                            "type": "object",
+                            "properties": {
+                              "ref": {
+                                "readOnly": true,
+                                "type": "object",
+                                "properties": {
+                                  "namespace": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                                  },
+                                  "id": {
+                                    "type": "string",
+                                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                                  }
+                                },
+                                "required": [
+                                  "namespace",
+                                  "id"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "revision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "ref",
+                              "revision"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "relationshipCoverage": {
+                      "type": "string",
+                      "enum": [
+                        "complete",
+                        "partial"
+                      ]
+                    },
+                    "sourceEvidence": {
+                      "type": "string",
+                      "enum": [
+                        "available",
+                        "unavailable"
+                      ]
+                    },
+                    "synthetic": {
+                      "nullable": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "pin",
+                    "kind",
+                    "label",
+                    "identifiers",
+                    "recordState",
+                    "relationsWithinSelection",
+                    "relationshipCoverage",
+                    "sourceEvidence",
+                    "synthetic"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "association": {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "reasonCode": {
+                    "type": "string",
+                    "enum": [
+                      "source_target_linkage_unqualified"
+                    ]
+                  },
+                  "identifierOverlap": {
+                    "type": "object",
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "not_assessed"
+                        ]
+                      },
+                      "reasonCode": {
+                        "type": "string",
+                        "enum": [
+                          "source_key_namespace_unqualified"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "reasonCode"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "population": {
+                    "type": "string",
+                    "enum": [
+                      "explicit_selection_only"
+                    ]
+                  }
+                },
+                "required": [
+                  "state",
+                  "reasonCode",
+                  "identifierOverlap",
+                  "population"
+                ],
+                "additionalProperties": false
+              },
+              "ambiguities": {
+                "type": "object",
+                "properties": {
+                  "multipleFloors": {
+                    "maxItems": 25,
+                    "type": "array",
+                    "items": {
+                      "readOnly": true,
+                      "type": "object",
+                      "properties": {
+                        "ref": {
+                          "readOnly": true,
+                          "type": "object",
+                          "properties": {
+                            "namespace": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                            },
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                            }
+                          },
+                          "required": [
+                            "namespace",
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "ref",
+                        "revision"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "floorsWithoutSelectedParent": {
+                    "maxItems": 25,
+                    "type": "array",
+                    "items": {
+                      "readOnly": true,
+                      "type": "object",
+                      "properties": {
+                        "ref": {
+                          "readOnly": true,
+                          "type": "object",
+                          "properties": {
+                            "namespace": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                            },
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                            }
+                          },
+                          "required": [
+                            "namespace",
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "ref",
+                        "revision"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "duplicateIdentifiers": {
+                    "maxItems": 800,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "scheme": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        },
+                        "occurrences": {
+                          "minItems": 2,
+                          "maxItems": 1600,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "target": {
+                                "readOnly": true,
+                                "type": "object",
+                                "properties": {
+                                  "ref": {
+                                    "readOnly": true,
+                                    "type": "object",
+                                    "properties": {
+                                      "namespace": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                                      },
+                                      "id": {
+                                        "type": "string",
+                                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                                      }
+                                    },
+                                    "required": [
+                                      "namespace",
+                                      "id"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "revision": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "ref",
+                                  "revision"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "identifier": {
+                                "readOnly": true,
+                                "type": "object",
+                                "properties": {
+                                  "scheme": {
+                                    "type": "string",
+                                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                                  },
+                                  "issuer": {
+                                    "nullable": true,
+                                    "type": "string",
+                                    "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                                  },
+                                  "source": {
+                                    "nullable": true,
+                                    "readOnly": true,
+                                    "type": "object",
+                                    "properties": {
+                                      "ref": {
+                                        "readOnly": true,
+                                        "type": "object",
+                                        "properties": {
+                                          "namespace": {
+                                            "type": "string",
+                                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                                          },
+                                          "id": {
+                                            "type": "string",
+                                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                                          }
+                                        },
+                                        "required": [
+                                          "namespace",
+                                          "id"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "revision": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": [
+                                      "ref",
+                                      "revision"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "state": {
+                                    "type": "string",
+                                    "enum": [
+                                      "supplied",
+                                      "reviewed",
+                                      "disputed",
+                                      "retired"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "scheme",
+                                  "value",
+                                  "issuer",
+                                  "source",
+                                  "state"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "identifier"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "scheme",
+                        "value",
+                        "occurrences"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "multipleFloors",
+                  "floorsWithoutSelectedParent",
+                  "duplicateIdentifiers"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "version",
+              "state",
+              "document",
+              "scope",
+              "reasonCodes",
+              "source",
+              "citations",
+              "targets",
+              "association",
+              "ambiguities"
             ],
             "additionalProperties": false
           },

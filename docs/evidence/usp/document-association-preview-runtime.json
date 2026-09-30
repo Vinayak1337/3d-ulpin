@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "document-association-preview-api-evidence/1",
+  "kind": "lead projection of preserved observations; no new runtime",
+  "servedCodeCommit": "fc83d6beeaf8da3d76bf01a3164f42ff78f0cb01",
+  "observedAt": "2026-09-30T16:14:08.722Z",
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "originalReceipts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-document-association-preview\\runtime-receipt.json",
+      "sha256": "0467b55d0db0f3395fdf6b7d99f1df1038bf5472d8956308b662b6e57387b93a"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-document-association-preview\\native-preparation-receipt.json",
+      "sha256": "0d0032490e69befd3942bf5b6d43e0d623e612d77c974f0d902ccb71ad90b5fc"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-document-association-preview\\combined-runtime.json",
+      "sha256": "aa7577e379ba354046677e3350b91f9d1f0dcfb4395871893f0eb54227a7b8ad"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-document-association-preview\\cleanup-receipt.json",
+      "sha256": "5112b67c38c255aa20f40dcfdd8db25762b75a27e45a89f76d4695a638ce5abf"
+    }
+  ],
+  "document": {
+    "caseId": "2c5ca5cc-d98a-48e9-9be0-16f2c590d0a3",
+    "caseRevision": 1,
+    "sourceId": "59b3f4b2-0a3a-4acd-9c99-60b989dda5f8",
+    "sourceRevision": 1,
+    "sourceSha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+    "jobId": "a5e60c45-8c42-4811-b70d-643df74bfd01",
+    "resultSha256": "f1b651ac7b21d37dc97831e858175162769d86f200e118a16eeb5e5e467d8d87"
+  },
+  "source": {
+    "bytes": 89622,
+    "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59"
+  },
+  "preview": {
+    "state": "needs_input",
+    "reasonCodes": [
+      "target_selection_unavailable"
+    ],
+    "scope": null,
+    "targets": [],
+    "association": {
+      "state": "not_assessed",
+      "reasonCode": "source_target_linkage_unqualified",
+      "identifierOverlap": {
+        "state": "not_assessed",
+        "reasonCode": "source_key_namespace_unqualified"
+      },
+      "population": "explicit_selection_only"
+    },
+    "citations": [
+      {
+        "partId": "a1200203-7c6d-42b7-971a-d3ec2b5001bc",
+        "sha256": "d2116ea64a074183c77dfa78862e89ea437f9b30fdb52a77d8481a356a11017a",
+        "locator": {
+          "label": "CSV logical row 4",
+          "row": 4,
+          "headerRow": 1,
+          "unitId": "8a82cb95-c876-4413-9973-abdd5825b7d3",
+          "unitSha256": "d2116ea64a074183c77dfa78862e89ea437f9b30fdb52a77d8481a356a11017a",
+          "segmentIndex": 0,
+          "segmentCount": 1,
+          "characterStart": 0,
+          "characterEnd": 287
+        }
+      },
+      {
+        "partId": "96549ada-5671-48be-8a39-4cff263161f2",
+        "sha256": "80bc63e859e8dd57f6d0bdc1378a3fd8ed1fdea3e3ebda56018046b154a0c3bd",
+        "locator": {
+          "label": "CSV logical row 5",
+          "row": 5,
+          "headerRow": 1,
+          "unitId": "307a86ca-a022-4a6f-b99c-083daaae3c5d",
+          "unitSha256": "80bc63e859e8dd57f6d0bdc1378a3fd8ed1fdea3e3ebda56018046b154a0c3bd",
+          "segmentIndex": 0,
+          "segmentCount": 1,
+          "characterStart": 0,
+          "characterEnd": 239
+        }
+      }
+    ]
+  },
+  "controls": {
+    "statelessReplay": true,
+    "staleResultStatus": 409,
+    "invalidPartStatus": 422,
+    "foreignOriginStatus": 403,
+    "retainedJobUnchanged": true
+  },
+  "preparation": {
+    "nativeOnlyRetryCount": 1,
+    "oldJobsUnchanged": true,
+    "sourceUnchanged": true,
+    "model": "not_requested"
+  },
+  "cleanup": {
+    "runAt": "2026-09-30T16:16:17.381Z",
+    "status": {
+      "project": "ulpin-usptest-b050544f3d2cb99e",
+      "processes": {
+        "api": false,
+        "dispatcher": false
+      },
+      "containers": [
+        "ulpin-usptest-b050544f3d2cb99e-redis-1 Up 3 hours",
+        "ulpin-usptest-b050544f3d2cb99e-minio-1 Up 3 hours",
+        "ulpin-usptest-b050544f3d2cb99e-postgres-1 Up 3 hours"
+      ]
+    },
+    "portsFree": [
+      3192,
+      28000
+    ],
+    "populatedStorageRetained": true
+  },
+  "limitations": [
+    "No qualified matched building/floor source; positive association journey remains unqualified.",
+    "Native citation/incomplete-target response only; no original read, extraction, provider, mutation or learning label."
+  ]
+}

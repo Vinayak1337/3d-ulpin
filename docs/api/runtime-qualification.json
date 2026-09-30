@@ -528,6 +528,35 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/document-association-preview-runtime.json",
+      "receiptSha256": "cf6d86ad462b54c8c782a72650a563514bac6fb17b92470295b3afeaeacd2bf4",
+      "servedCodeCommit": "fc83d6beeaf8da3d76bf01a3164f42ff78f0cb01",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-b050544f3d2cb99e",
+        "url": "http://127.0.0.1:3192/api/v1"
+      },
+      "qualification": "Exact native CSV citations and an explicit unavailable-target response; stateless replay, stale/invalid/access denials; positive association remains unqualified.",
+      "unqualified": [
+        "No qualified matched building/floor source; positive association journey remains unqualified.",
+        "Native citation/incomplete-target response only; no original read, extraction, provider, mutation or learning label."
+      ],
+      "operations": {
+        "POST /api/v1/usp/evidence/document-association/preview": {
+          "scope": "Two unchanged LGD CSV source rows with null scope/empty targets return needs_input; preserves literal codes and empty values, with no association or mutation.",
+          "sourceManifests": [
+            "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/document",
+            "/preview",
+            "/controls",
+            "/preparation"
+          ]
+        }
+      }
     }
   ]
 }
