@@ -47,6 +47,9 @@ def catalogue():
                 "runtimeEvidence": {**evidence[0], **({"additionalReceipts": evidence[1:]} if len(evidence) > 1 else {})}}
 
     packs = []
+    offline_reports = {
+        "fixtures/usp/D1/single-roof/manifest.json": "docs/evidence/usp/cityjson-validity-handoff.md",
+    }
     for file in sorted((ROOT / "fixtures/usp").glob("**/manifest.json")):
         raw = file.read_bytes()
         manifest = json.loads(raw)
@@ -66,6 +69,11 @@ def catalogue():
             "packId": manifest["packId"], "profile": manifest["profile"],
             "version": manifest["version"], "description": manifest["description"],
             **qualification(file.relative_to(ROOT).as_posix()),
+            **({"offlineValidationEvidence": {
+                "report": offline_reports[file.relative_to(ROOT).as_posix()],
+                "reportSha256": sha((ROOT / offline_reports[file.relative_to(ROOT).as_posix()]).read_bytes().replace(b'\r\n', b'\n')),
+                "reportHashScope": "crlf-to-lf",
+            }} if file.relative_to(ROOT).as_posix() in offline_reports else {}),
             "missingCapabilities": manifest.get("missingCapabilities", []),
             "assets": assets,
         })

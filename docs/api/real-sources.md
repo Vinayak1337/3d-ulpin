@@ -6,6 +6,8 @@ Use this index before source-dependent orchestration and frontend/API integratio
 
 ## Desktop ingestion verification — 29 September
 
+1 October: [retained D1 offline validity](../evidence/usp/cityjson-validity-handoff.md) is accepted with pinned cjval 0.10.0 and val3dity 2.7.0. The complete supplied CityJSON 2.0 derivative passes schema checks; selected LoD0 MultiSurface and LoD2.2 Solid pass the stated geometry checks/tolerances. Lead verified unchanged original, exact derivatives, receipt/artifact/tool/code pins and six integrated adapter regressions; the successful validator run was not repeated. The initial zero-snap configuration remains inconclusive, with its retained diagnosis and correction. Catalogue links this offline evidence separately from API runtime. No canonical admission, reference accuracy, interior, association or exchange qualification follows.
+
 1 October: [LINK-02 retained-source runtime](../evidence/usp/reviewed-document-links-runtime.json) preserves the LGD original and two historical jobs. The earlier native result is now reader-stale; no retry was justified because this isolated registry has zero sites/records/correction drafts and the source has no genuine building/floor match. New citation routes passed bounded missing/incomplete/foreign-Origin denials. No new source, record, association or label was created; positive persistence/accuracy remain unqualified. Processing is stopped and populated storage retained. The earlier successful preview receipt below remains historical at its exact reader/code revision.
 
 
