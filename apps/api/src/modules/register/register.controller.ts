@@ -2,6 +2,7 @@ import { Controller, Get, Header, HttpCode, Inject, Param, Patch, Post, Req, Res
 import {RegistryDocumentAmendmentSchema,RegistryDocumentAmendmentReceiptSchema,RegistryDocumentEvidenceSchema} from '@ulpin/contracts';
 import {RegistryCityJSONPrepareSchema,RegistryCityJSONReceiptSchema,RegistryCityJSONReadSchema,
   RegistryCityJSONRemoveSchema,RegistryCityJSONRemovalReceiptSchema} from '@ulpin/contracts';
+import {RegistryCityJSONValidationRequestSchema,RegistryCityJSONValidationReceiptSchema,RegistryCityJSONValidationStatusSchema} from '@ulpin/contracts';
 import {AppError} from '@ulpin/server/infrastructure/errors';
 import {PrivateSpatialGuard} from '../spatial/private-spatial.guard';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -29,6 +30,23 @@ function noNativeQuery(req:Request){
 @Controller('api/v1')
 export class RegisterController {
   constructor(@Inject(RegisterService) private readonly service: RegisterService) {}
+
+  @Post('registry-drafts/:draftId/native-exterior/validations') @HttpCode(202)
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_native_exterior_validations',summary:'Enqueue bounded local validation of the exact current private native draft'})
+  @doc.ApiContract(202,doc.requestSchema(RegistryCityJSONValidationReceiptSchema),RegistryCityJSONValidationRequestSchema)
+  async validateNativeExterior(@Param('draftId') draftId:string,@Req() req:Request){
+    noNativeQuery(req);
+    return this.service.enqueueNativeValidation(idSchema.parse(draftId),RegistryCityJSONValidationRequestSchema.parse(await readJsonBody(req,16*1024)));
+  }
+
+  @Get('registry-drafts/:draftId/native-exterior/validations/:jobId')
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_native_exterior_validations_jobId',summary:'Read validation state and bounded result through current private candidate and accepted-attempt authority'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryCityJSONValidationStatusSchema))
+  nativeValidation(@Param('draftId') draftId:string,@Param('jobId') jobId:string,@Req() req:Request){
+    noNativeQuery(req);return this.service.nativeValidation(idSchema.parse(draftId),idSchema.parse(jobId));
+  }
 
   @Post('registry-cityjson-drafts') @HttpCode(201)
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
