@@ -1,5 +1,7 @@
 # OCR-02 — bounded whole-page scan observations
 
+Lead acceptance: implementation `81f6720` and handoff `92eb556` integrate as `2ea97e4` / `ab9930d`. Lead reviewed the seven-file change without blocking findings, matched four primary receipts, seven linked artifacts and 17 executed source-file pins to physical worker bytes and normalized candidate blobs, and independently confirmed unchanged original/source/seven prior jobs with exactly two new retries. The API items equal the direct candidate, and the map title is visible in the retained image. Integrated backend typecheck, four Python and three TypeScript checks pass. No runtime campaign was repeated. [Catalogue projection](whole-page-ocr-runtime.json) preserves the partial/unverified scope; full-page transcription and broad accuracy remain unqualified. Runtime returned to lead; worker stopped.
+
 30 September 2026. **Canonical retained-source API journey passed; processing stopped, populated storage preserved.** Branch `task/desktop-whole-page-ocr`, worktree `C:/Users/kvina/.codex/worktrees/b3eb/3d-ulpin`, accepted base `e1eba7c403f20e65eb0a813f8eabe5d134db90fb`. Implementation/served commit `81f6720f6c58c93a4430654f65d36bcf6db2a4c8`. Read exact primary assignment at `aee471721133736a0ec0cbcf3e39d271b399f921`; staging stayed read-only. Supplied permissions: `never` / `danger-full-access`. Requested GPT-6.1 Sol/high/default-standard; actual model, effort and per-turn tier unobserved. No workers, downloads, installations, providers, GPU or training.
 
 ## Correction and limits

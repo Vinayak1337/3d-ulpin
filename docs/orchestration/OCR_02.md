@@ -1,5 +1,7 @@
 # OCR-02 — recover useful whole-page scan text
 
+**Complete and accepted:** implementation `81f6720` and evidence `92eb556` integrate as `2ea97e4` / `ab9930d`. Lead reviewed code/evidence and passed integrated backend typecheck plus seven focused checks. Whole-page returns a useful map title among 12 partial/unverified items; selected-region candidate is unchanged. No complete transcription/accuracy claim. Worker is stopped; API/dispatcher absent, geo/worker stopped, ports free and populated storage retained. Runtime returned to lead for LINK-02 handoff. Historical instructions below are complete, not a new run.
+
 User authorizes immediate continuation, 30 September 2026. Reuse `AI-04B Documents Full Access`, chat `01a0ee2d-5889-7ac3-a75d-2d2248265c26`, GPT-6.1 Sol/high. Default/standard only; dispatch has no tier field and actual request tier is unobserved. Verify supplied `never` / `danger-full-access` permissions. Read AGENTS, OPERATING_GUIDE, NESTJS_MIGRATION, backend-streaming-plan and the source index/catalogue. Work only in `C:/Users/kvina/.codex/worktrees/b3eb/3d-ulpin`; primary staging is read-only. Preserve completed branches and untracked `.pnpm-store/`. After checking tracked/index cleanliness, create `task/desktop-whole-page-ocr` from accepted `e1eba7c403f20e65eb0a813f8eabe5d134db90fb`. No new chats/subworkers.
 
 ## Outcome and evidence

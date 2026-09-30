@@ -623,6 +623,28 @@
       "repositoryBytesVerified": false
     },
     "ocrEvidence": {
+      "guide": "docs/evidence/usp/whole-page-ocr-handoff.md",
+      "workerCommit": "81f6720f6c58c93a4430654f65d36bcf6db2a4c8",
+      "acceptedCommit": "2ea97e4",
+      "receipt": "E:/BhuAayam-data/task-data/desktop-whole-page-ocr/api/whole-page-ocr-api.json",
+      "receiptSha256": "cf977f1f6801675a3ef8bf46fad9500d27e1c331355c490c567629293e0bd8d5",
+      "codeScope": "Exact served commit plus physical source hashes retained in the receipt.",
+      "nativeStatus": "needs_ocr",
+      "selectedRegionItems": 5,
+      "wholePageItems": 12,
+      "wholePageCheckedText": "CENTRAL CITY, COLO.",
+      "wholePageOutputStatus": "partial",
+      "textCompleteness": "unverified",
+      "selectedCandidateUnchanged": true,
+      "originalDownloadUnchanged": true,
+      "privateAccessAndAttemptChecks": "passed"
+    },
+    "limitations": [
+      "Single source/page and configured local Windows OCR profile only; title recovered but upper headings omitted in whole-page mode.",
+      "Whole-page output includes unreliable detections; confidence is not verified accuracy.",
+      "No building/floor association, Indian operational facts, learning labels, general accuracy or release qualification."
+    ],
+    "previousOcrEvidence": {
       "guide": "docs/evidence/usp/private-ocr-jobs-handoff.md",
       "workerCommit": "05ebec4ce5c8f845b87276a1d6cc80c68fa7a250",
       "acceptedCommit": "0272544",
@@ -636,12 +658,7 @@
       "textCompleteness": "unverified",
       "originalDownloadUnchanged": true,
       "privateAccessAndAttemptChecks": "passed"
-    },
-    "limitations": [
-      "Single source/page and configured local Windows OCR profile only; whole-page text recovery failed.",
-      "Marginal OCR errors/omissions remain; extracted text is not verified truth.",
-      "No building/floor association, Indian operational facts, learning labels, accuracy or release qualification."
-    ]
+    }
   },
   {
     "id": "haryana-approval-evidence-20260930",

@@ -557,6 +557,45 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/whole-page-ocr-runtime.json",
+      "receiptSha256": "a8a77574bf67eec60162771dade2979233455bd8c814522296c26bccbadbc5fd",
+      "servedCodeCommit": "81f6720f6c58c93a4430654f65d36bcf6db2a4c8",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-b050544f3d2cb99e",
+        "url": "http://127.0.0.1:3192/api/v1"
+      },
+      "qualification": "Bounded unchanged USGS scan title recovery and selected-region compatibility; whole-page OCR remains partial/unverified.",
+      "unqualified": [
+        "Whole-page map output includes unreliable detections and omits the three upper headings.",
+        "Only the exact map-title observation and selected-region headings were visually checked; completeness remains unverified.",
+        "Foreign test_only reader evidence; no property relationship, learning label or release-gate qualification."
+      ],
+      "operations": {
+        "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/retry": {
+          "scope": "Two retained-source retries recover 12 partial whole-page OCR items and preserve five selected-region items; unchanged original and prior jobs.",
+          "sourceManifests": [
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/source",
+            "/selections",
+            "/preservation"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}": {
+          "scope": "Distinct native needs_ocr and cited OCR output, method identities, independent pagination and current source/config/attempt checks.",
+          "sourceManifests": [
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/selections",
+            "/controls"
+          ]
+        }
+      }
     }
   ]
 }

@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "whole-page-ocr-api-evidence/1",
+  "kind": "lead projection of preserved observations; no new runtime",
+  "servedCodeCommit": "81f6720f6c58c93a4430654f65d36bcf6db2a4c8",
+  "observedAt": "2026-09-30T17:12:41.138Z",
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "originalReceipts": [
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-whole-page-ocr/api/whole-page-ocr-api.json",
+      "sha256": "cf977f1f6801675a3ef8bf46fad9500d27e1c331355c490c567629293e0bd8d5"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-whole-page-ocr/runtime-pins.json",
+      "sha256": "2fc303be7a2efdf57b5d0dcc29c0d084a6928bba0c23455545b7735edc2de168"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-whole-page-ocr/whole-page-001/receipt.json",
+      "sha256": "aecb3677d19248004241040108a3118040b0d940e189f68452c08fa9dedfeaad"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-whole-page-ocr/cleanup-receipt.json",
+      "sha256": "3572bc52cd2c90de0e7aeec7c80ed87d99efe9135ab384da366b67782268f007"
+    }
+  ],
+  "source": {
+    "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+    "bytes": 9344939,
+    "caseId": "31329b2c-d40c-4063-a518-bb45aa44d00a",
+    "sourceId": "b71e4732-8589-4b7c-96d5-39c0cc945506",
+    "caseRevision": 1,
+    "sourceRevision": 1,
+    "sourceSha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf"
+  },
+  "selections": {
+    "whole": {
+      "jobId": "4f56a26c-44b0-4c85-8c52-cff39380968c",
+      "resultSha256": "b1b88373bcf8310f7524d5cde8ff91edab4d2d62f6b1aeadead3e8327884ad6f",
+      "nativeStatus": "needs_ocr",
+      "modelStatus": "not_requested",
+      "method": "ocr:tesseract-cli-5.5.1:sparse-tsv-v1",
+      "outputStatus": "partial",
+      "textCompleteness": "unverified",
+      "itemCount": 12,
+      "issues": [
+        "low_confidence_words_withheld"
+      ],
+      "execution": {
+        "maxSeconds": 90,
+        "exitCode": 0,
+        "receiptSha256": "e88a1cf2835ec0734749857a26a58776f18c24508b5140841c1d8a9677033ee0",
+        "candidateSha256": "0ce1636ab430fd00e673dc8cd8d9d67c1a76a547b10861e80c9431fb399f7678",
+        "worker": {
+          "exitCode": 0,
+          "stopReason": null,
+          "elapsedSeconds": 1.281,
+          "peakObservedRssBytes": 125788160,
+          "peakJobPrivateBytes": 110583808,
+          "gatedStart": true,
+          "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "checkedText": [
+        {
+          "text": "CENTRAL CITY, COLO.",
+          "label": "text",
+          "method": "ocr:tesseract-cli-sparse-tsv",
+          "sourcePageBoxes": [
+            {
+              "pageNumber": 1,
+              "frame": "pdf_display_page_top_left_points",
+              "box": [
+                969.6142857142856,
+                1418.1142857142856,
+                1092.4178571428572,
+                1448.0142857142857
+              ],
+              "derivedFrom": "tesseract_tsv_pixels_via_mupdf_pixel_origin"
+            }
+          ]
+        }
+      ]
+    },
+    "selected": {
+      "jobId": "28dedb96-0941-468d-ad57-e18743e91f78",
+      "resultSha256": "ce9f7c23dacffecb10d5166a2d37e4ed25f85580be579c540f200860df5f5471",
+      "nativeStatus": "needs_ocr",
+      "modelStatus": "not_requested",
+      "method": "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned",
+      "outputStatus": "complete",
+      "textCompleteness": "unverified",
+      "itemCount": 5,
+      "issues": [
+        "orientation_script_detection_unavailable"
+      ],
+      "execution": {
+        "maxSeconds": 90,
+        "exitCode": 0,
+        "receiptSha256": "e1467eb4b022116554b370b4b15306916bb0ab9548f6a66458fc0f5d0e5f86ab",
+        "candidateSha256": "92fb81b057c5f0f6107b488e883e71a7e6ec00ae6fdab990aa6c20fbd8125ae9",
+        "worker": {
+          "exitCode": 0,
+          "stopReason": null,
+          "elapsedSeconds": 26.969,
+          "peakObservedRssBytes": 805412864,
+          "peakJobPrivateBytes": 975704064,
+          "gatedStart": true,
+          "logSha256": "3fea5428aa23c615d22a59c2ca7ab0537aba636c27eb6d5528c4de9af611f5fa"
+        }
+      },
+      "checkedText": [
+        {
+          "text": "UNITED STATES",
+          "label": "section_header",
+          "method": "ocr:docling-tesseract-cli-full-page",
+          "sourcePageBoxes": [
+            {
+              "pageNumber": 1,
+              "frame": "pdf_display_page_top_left_points",
+              "box": [
+                167.8965,
+                60.001,
+                255.90750000000003,
+                67.113
+              ],
+              "derivedFrom": "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin"
+            }
+          ]
+        },
+        {
+          "text": "DEPARTMENT OF THE INTERIOR",
+          "label": "text",
+          "method": "ocr:docling-tesseract-cli-full-page",
+          "sourcePageBoxes": [
+            {
+              "pageNumber": 1,
+              "frame": "pdf_display_page_top_left_points",
+              "box": [
+                121.224,
+                72.447,
+                303.0245,
+                80.448
+              ],
+              "derivedFrom": "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin"
+            }
+          ]
+        },
+        {
+          "text": "GEOLOGICAL SURVEY",
+          "label": "text",
+          "method": "ocr:docling-tesseract-cli-full-page",
+          "sourcePageBoxes": [
+            {
+              "pageNumber": 1,
+              "frame": "pdf_display_page_top_left_points",
+              "box": [
+                152.339,
+                85.782,
+                270.1315,
+                93.3385
+              ],
+              "derivedFrom": "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "originalDownload": {
+    "bytes": 9344939,
+    "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+    "cacheControl": "private, max-age=60"
+  },
+  "controls": {
+    "status": "passed",
+    "checks": [
+      "source subject denial",
+      "operator configuration drift fences status without items",
+      "missing configured local asset returns unavailable without a worker",
+      "superseded attempt fence denied before result validation"
+    ],
+    "jobId": "28dedb96-0941-468d-ad57-e18743e91f78",
+    "independentPagination": true,
+    "crossCaseStatus": 404,
+    "priorJobStale": true
+  },
+  "preservation": {
+    "priorJobsUnchanged": 7,
+    "newRetries": 2,
+    "sourceUnchanged": true,
+    "selectedCandidateUnchanged": true
+  },
+  "cleanup": {
+    "runAt": "2026-09-30T17:15:16.965Z",
+    "status": {
+      "project": "ulpin-usptest-b050544f3d2cb99e",
+      "processes": {
+        "api": false,
+        "dispatcher": false
+      },
+      "containers": [
+        "ulpin-usptest-b050544f3d2cb99e-redis-1 Up 4 hours",
+        "ulpin-usptest-b050544f3d2cb99e-minio-1 Up 4 hours",
+        "ulpin-usptest-b050544f3d2cb99e-postgres-1 Up 4 hours"
+      ]
+    },
+    "portsFree": [
+      3192,
+      28000
+    ],
+    "scratchEmpty": true,
+    "populatedStoragePreserved": true
+  },
+  "limitations": [
+    "Whole-page map output includes unreliable detections and omits the three upper headings.",
+    "Only the exact map-title observation and selected-region headings were visually checked; completeness remains unverified.",
+    "Foreign test_only reader evidence; no property relationship, learning label or release-gate qualification."
+  ]
+}
