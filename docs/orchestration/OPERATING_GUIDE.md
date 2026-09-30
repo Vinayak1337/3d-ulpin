@@ -61,6 +61,8 @@ Astra, Sol and Luna are the same model family. Their reviews are engineering che
 
 ## Pipeline and ownership
 
+Latest user direction, 30 September: expand useful parallel work beyond one implementation lane. GPT-6.1 Sol is an available ordinary-work choice, not an exclusivity rule; Astra high/xhigh is appropriate for demanding analysis/quality control. Keep one writer per seam and one learner owner; resource-sensitive runtime operations remain explicitly owned. Preserve the no-polling/callback workflow and do not reopen evaluations or repeat completed work to occupy workers.
+
 Normally keep one implementation lane plus only useful verification/research lanes. For the authorized NestJS migration, run multiple independent Sol implementation lanes with exact module ownership after the shared foundation is accepted. Do not launch workers before dependencies are ready. Only the lead dispatches ordinary tasks; delegated owners do not create further tasks or subagents.
 
 An owner finishes -> returns an exact diff or commit and concise evidence -> lead reviews the outcome -> optional manual tester checks a pinned revision. The lead may be that owner. While review/testing runs, scope the next dependency-ready, non-conflicting feature. Use separate worker worktrees from a pinned accepted staging commit; never switch another worker’s checkout or edit its owned files. Do not build dependent work on an unaccepted change merely to keep a worker busy.
