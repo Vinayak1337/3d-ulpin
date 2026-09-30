@@ -26,6 +26,8 @@ All receipts are preserved under `E:/BhuAayam-data/task-data/desktop-ai04h-priva
 
 ## Checks and runtime cleanup
 
+Lead acceptance: `05ebec4` integrated as `0272544`. Review covered the 15 owned files and existing job/source/access boundaries. All ten executed code hashes match the private final receipt and normalized committed code; original bytes/hash also match. On integration, backend typecheck and all eight affected boundary/archive/workbook tests passed (exit 0), including the Windows private-directory check. Prior real-source API evidence is reused at its pinned scope; no second OCR campaign was run by the lead. Generated OpenAPI and the source catalogue are republished separately by the lead.
+
 - `pnpm typecheck:backend`: exit 0 after final code changes.
 - `pnpm exec tsx --test tests/document-ocr-boundary.test.ts tests/document-archive-inventory.test.ts tests/document-workbook-policy.test.ts`: six affected compatibility tests and the byte-bound check passed; initial ACL-test introspection failed because the child could not load PowerShell's `Get-Acl` module. Replacing that test inspection with the .NET ACL API resolved it; the focused boundary rerun passed 2/2, exit 0, including current-account-only access.
 - Retained OCR venv with `PYTHONPATH=services/geo`: `python -m unittest discover -s services/geo/tests -p test_source_ocr_candidate.py -v` passed 3/3, exit 0 (citation mapping, bounded result, bounded supervised log). `py_compile`, smoke-script syntax check and `git diff --check` exited 0.

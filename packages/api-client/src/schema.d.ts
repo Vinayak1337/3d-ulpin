@@ -2541,7 +2541,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read bounded native parts and proposed fields under current source/access/policy pins */
+        /** Read bounded native/OCR observations and proposed fields under current source/access/policy pins */
         get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId"];
         put?: never;
         post?: never;
@@ -2560,7 +2560,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Queue an explicitly requested retry against the unchanged current original */
+        /** Queue a retry or explicit PDF page/region OCR against the unchanged current original */
         post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_documents_retry"];
         delete?: never;
         options?: never;
@@ -31007,6 +31007,61 @@ export interface components {
             }[];
             page: number;
             hasMore: boolean;
+            ocr?: {
+                sourceSha256: string;
+                sourceRevision: number;
+                sourcePage: number;
+                requestedRegion: (number)[] | null;
+                sourcePageFrame: {
+                    /** @enum {string} */
+                    kind: "pdf_display_page_top_left_points";
+                    /** @enum {number} */
+                    rotation: 0;
+                    width: number;
+                    height: number;
+                } | null;
+                /** @enum {string} */
+                method: "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned";
+                /** @enum {string} */
+                toolStatus: "complete" | "partial" | "failed" | "unavailable";
+                /** @enum {string} */
+                outputStatus: "complete" | "partial" | "failed";
+                /** @enum {string} */
+                textCompleteness: "unverified";
+                issues: string[];
+                execution?: {
+                    maxSeconds: number;
+                    exitCode: number | null;
+                    receiptSha256: string | null;
+                    candidateSha256: string | null;
+                    worker: {
+                        exitCode: number;
+                        stopReason: string | null;
+                        elapsedSeconds: number;
+                        peakObservedRssBytes: number;
+                        peakJobPrivateBytes: number | null;
+                        /** @enum {boolean} */
+                        gatedStart: true;
+                        logSha256: string;
+                    } | null;
+                };
+            } | null;
+            ocrItems?: {
+                text: string;
+                label: string;
+                /** @enum {string} */
+                method: "ocr:docling-tesseract-cli-full-page";
+                sourcePageBoxes: {
+                    pageNumber: number;
+                    /** @enum {string} */
+                    frame: "pdf_display_page_top_left_points";
+                    box: (number)[];
+                    /** @enum {string} */
+                    derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin";
+                }[];
+            }[];
+            ocrPage?: number;
+            ocrHasMore?: boolean;
             code: string | null;
         };
         POST_ingestion_cases_caseId_sources_sourceId_documents_retry_Request_application_json: {
@@ -31020,6 +31075,10 @@ export interface components {
              * @enum {string}
              */
             mode: "native_only" | "propose";
+            ocrSelection?: {
+                page: number;
+                region?: (number)[];
+            };
         };
         POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Request_application_json: {
             /** Format: uuid */
@@ -48885,6 +48944,7 @@ export interface operations {
     GET_api_v1_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId: {
         parameters: {
             query?: {
+                ocrPage?: number;
                 page?: number;
             };
             header?: never;
