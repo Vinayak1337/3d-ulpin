@@ -4,13 +4,19 @@ import {randomUUID} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import type {PoolClient} from 'pg';
 import {CITYJSON_VERSION,CityJSONOriginalSchema} from '../packages/contracts/src/usp/cityjson-ingestion';
-import {cityjsonSourceTx,cityjsonInput,assertCityJSONJobRow} from '../packages/server/src/modules/usp/ingestion/cityjson';
+import {cityjsonSourceTx,cityjsonInput,assertCityJSONJobRow,isCityJSONProtectedSource} from '../packages/server/src/modules/usp/ingestion/cityjson';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
 
 // Memory-only application references and real source bytes. No persisted or
 // invented property geometry, official identifier, right or test authority.
+test('a present null/malformed CityJSON marker cannot fall through to legacy downloads',()=>{
+  assert.equal(isCityJSONProtectedSource({profile:'cityjson-native-v1',inspection:{}}),true);
+  for(const marker of [null,false,0,'',{}])
+    assert.equal(isCityJSONProtectedSource({profile:'plan-pdf-v1',inspection:{cityjsonOriginal:marker}}),true);
+  assert.equal(isCityJSONProtectedSource({profile:'plan-pdf-v1',inspection:{}}),false);
+});
 test('source and accepted-attempt fences deny concrete context/payload drift',async()=>{
   const previous=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='cityjson-authority-control';
