@@ -1,0 +1,257 @@
+{
+  "schemaVersion": "haryana-approval-evidence/1",
+  "task": "DATA-LINK-04",
+  "preparedAtUtc": "2026-09-30T16:10:17.055000+00:00",
+  "baseCommit": "dfdeb6f71d300ea4dd73773fd99d9758e2b2c8ac",
+  "primaryHeadObservedReadOnly": "147d80d6f52f1c8c6738b4586e9cd575f6db96d8",
+  "assignmentLeadCommit": "20a1d939ee8236c99f22641785e480d235c116b2",
+  "status": "bounded_source_observations_pending_lead_acceptance",
+  "privateRoot": "E:/BhuAayam-data/task-data/haryana-approval-evidence-20260930",
+  "newOriginals": 3,
+  "newOriginalBytes": 5734876,
+  "sources": [
+    {
+      "id": "licence.pdf",
+      "privatePath": "E:/BhuAayam-data/task-data/haryana-approval-evidence-20260930/licence.pdf",
+      "issuer": "Town and Country Planning Department, Haryana; copy submitted on Haryana RERA project 2831",
+      "sourceClass": "licence_document",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/8494dfeec7NDg2ODE=",
+      "finalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/8494dfeec7NDg2ODE=",
+      "acquiredAtUtc": "2026-09-30T16:02:49.872564+00:00",
+      "httpStatus": 200,
+      "contentType": "application/pdf",
+      "bytes": 1642191,
+      "sha256": "c3162f8e8d2c3141a630974e9c04d296bdaf24cfb38acf09b4272afa7457836f",
+      "identifiers": {
+        "licence": "225 of 2023",
+        "authorityFile": "LC-5199",
+        "endorsement": "LC-5199/JE(SB)/2023/36904"
+      },
+      "dates": {
+        "licenceIssue": "2023-10-30",
+        "endorsement": "2023-10-31",
+        "statedValidUntil": "2028-10-29"
+      },
+      "geography": "Villages Ullahwas/Ullahawas and Behrampur, Sectors 59 & 63A, Gurugram, Haryana, India",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "permissions": {
+        "publicInspection": "public unauthenticated GET used for authorized development research",
+        "sourceSpecificReuse": "unconfirmed",
+        "redistribution": "unconfirmed",
+        "mlTraining": "unconfirmed",
+        "limitation": "Public access is not a source-specific licence or launch/training permission."
+      },
+      "limitations": [
+        "Licensing/migration and land-schedule evidence; cited sections do not identify the T3 sanctioned drawing set or current revision."
+      ]
+    },
+    {
+      "id": "dtcp-online-services.html",
+      "privatePath": "E:/BhuAayam-data/task-data/haryana-approval-evidence-20260930/dtcp-online-services.html",
+      "issuer": "Town and Country Planning Department, Haryana",
+      "sourceClass": "authority_service_entry",
+      "url": "https://ofa.tcpharyana.gov.in/",
+      "finalUrl": "https://ofa.tcpharyana.gov.in/",
+      "acquiredAtUtc": "2026-09-30T16:04:43.969785+00:00",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 41357,
+      "sha256": "6486d5914328668bbb641908d2e57128c414a18a04069593d44d6b55cda58cc1",
+      "identifiers": {},
+      "dates": {},
+      "geography": "Haryana, India; authority service entry, not project geometry",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "permissions": {
+        "publicInspection": "public unauthenticated GET used for authorized development research",
+        "sourceSpecificReuse": "unconfirmed",
+        "redistribution": "unconfirmed",
+        "mlTraining": "unconfirmed",
+        "limitation": "Public access is not a source-specific licence or launch/training permission."
+      },
+      "limitations": [
+        "Captured unauthenticated service entry displays mobile/OTP login; no sign-in or account creation attempted. This does not establish that the document is absent elsewhere online."
+      ]
+    },
+    {
+      "id": "earlier-layout.pdf",
+      "privatePath": "E:/BhuAayam-data/task-data/haryana-approval-evidence-20260930/earlier-layout.pdf",
+      "issuer": "Haryana RERA project 2831 / submitted 4S Developers demarcation drawing",
+      "sourceClass": "planned_demarcation_drawing",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/6747367f30NDI0Mzc=",
+      "finalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/6747367f30NDI0Mzc=",
+      "acquiredAtUtc": "2026-09-30T16:05:25.733883+00:00",
+      "httpStatus": 200,
+      "contentType": "application/pdf",
+      "bytes": 4051328,
+      "sha256": "654bca63834d6a1d7da99304f2bb89c311551240eb47adad5cc2421907bad94a",
+      "identifiers": {
+        "drawingTitle": "DEMARCATION PLAN",
+        "sheet": "01",
+        "referencedLicence": "92 of 2023 dated 21-04-2023"
+      },
+      "dates": {
+        "printedDrawingDate": "FEB. -2022",
+        "portalDocumentListDate": "29-02-2024"
+      },
+      "geography": "Villages Ullahwas/Ullahawas and Behrampur, Sectors 59 & 63A, Gurugram, Haryana, India",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "permissions": {
+        "publicInspection": "public unauthenticated GET used for authorized development research",
+        "sourceSpecificReuse": "unconfirmed",
+        "redistribution": "unconfirmed",
+        "mlTraining": "unconfirmed",
+        "limitation": "Public access is not a source-specific licence or launch/training permission."
+      },
+      "limitations": [
+        "Printed 2022 date and referenced 2023 licence are inconsistent chronologically. Preserve both; date is not accepted as approval/revision evidence. No T3 index is visible."
+      ]
+    }
+  ],
+  "retainedSourcePins": [
+    {
+      "assetId": "haryana-2831-project.html",
+      "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+      "bytes": 108086,
+      "hashVerified": true,
+      "reacquired": false
+    },
+    {
+      "assetId": "haryana-2831-site-plan.pdf",
+      "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "bytes": 3782332,
+      "hashVerified": true,
+      "reacquired": false
+    },
+    {
+      "assetId": "haryana-2831-tower3-plan2.pdf",
+      "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "bytes": 1630108,
+      "hashVerified": true,
+      "reacquired": false
+    },
+    {
+      "assetId": "haryana-2831-tower3-plan1.pdf",
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "bytes": 1655334,
+      "reference": "../association-sources/manifest.json",
+      "reacquired": false
+    },
+    {
+      "assetId": "haryana-2831-tower3-section.pdf",
+      "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "bytes": 2448909,
+      "reference": "../association-sources/manifest.json",
+      "reacquired": false
+    }
+  ],
+  "requestChecks": [
+    {
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/8494dfeec7NDg2ODE=",
+      "requestedAt": "2026-09-30T16:02:49.412450+00:00",
+      "status": 200,
+      "finalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/8494dfeec7NDg2ODE=",
+      "contentType": "application/pdf",
+      "bytes": 1642191,
+      "sha256": "c3162f8e8d2c3141a630974e9c04d296bdaf24cfb38acf09b4272afa7457836f",
+      "acquiredAt": "2026-09-30T16:02:49.872564+00:00",
+      "path": "E:\\BhuAayam-data\\task-data\\haryana-approval-evidence-20260930\\licence.pdf"
+    },
+    {
+      "url": "https://tcpharyana.gov.in/",
+      "requestedAt": "2026-09-30T16:02:49.872564+00:00",
+      "status": 200,
+      "finalUrl": "https://tcpharyana.gov.in/",
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 149599,
+      "sha256": "6000c34f69ade2c409f4ea1e52a49cd05f8df5e262f03c03de57974fa714e440",
+      "acquiredAt": "2026-09-30T16:02:50.571676+00:00",
+      "retainedOriginal": false
+    },
+    {
+      "url": "https://tcpharyana.gov.in/license.htm",
+      "requestedAt": "2026-09-30T16:04:01.013489+00:00",
+      "error": "<urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host>"
+    },
+    {
+      "url": "https://ofa.tcpharyana.gov.in/",
+      "requestedAt": "2026-09-30T16:04:08.788432+00:00",
+      "status": 200,
+      "finalUrl": "https://ofa.tcpharyana.gov.in/",
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 41357,
+      "sha256": "c3cf450e828b184fcc7600b656f18dc116dc2af654df37de294bdf3df9d61501",
+      "acquiredAt": "2026-09-30T16:04:09.402069+00:00",
+      "retainedOriginal": false
+    },
+    {
+      "url": "https://ofa.tcpharyana.gov.in/",
+      "status": 200,
+      "finalUrl": "https://ofa.tcpharyana.gov.in/",
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 41357,
+      "sha256": "6486d5914328668bbb641908d2e57128c414a18a04069593d44d6b55cda58cc1",
+      "acquiredAt": "2026-09-30T16:04:43.969785+00:00",
+      "path": "E:\\BhuAayam-data\\task-data\\haryana-approval-evidence-20260930\\dtcp-online-services.html"
+    },
+    {
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/6747367f30NDI0Mzc=",
+      "requestedAt": "2026-09-30T16:05:25.205887+00:00",
+      "status": 200,
+      "finalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/6747367f30NDI0Mzc=",
+      "contentType": "application/pdf",
+      "bytes": 4051328,
+      "sha256": "654bca63834d6a1d7da99304f2bb89c311551240eb47adad5cc2421907bad94a",
+      "acquiredAt": "2026-09-30T16:05:25.733883+00:00",
+      "path": "E:\\BhuAayam-data\\task-data\\haryana-approval-evidence-20260930\\earlier-layout.pdf",
+      "pages": 1
+    }
+  ],
+  "privateReceipts": [
+    {
+      "path": "E:/BhuAayam-data/task-data/haryana-approval-evidence-20260930/request-log.json",
+      "bytes": 2695,
+      "sha256": "1cb677a3fd3046b6cb5723a099cd487fb00f403f875cb18f7994ec2149d3963f"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/haryana-approval-evidence-20260930/image-index.json",
+      "bytes": 1027,
+      "sha256": "eb6e34c93cbde78fd449b60064e26856718f3491d65c1c301716630ab4a78616"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/haryana-approval-evidence-20260930/licence-native-text.txt",
+      "bytes": 8824,
+      "sha256": "2c5f9e80103e1952e6bc2d9f1218aeb3f67df3bf2299f28f09e27a162c20462c"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/haryana-approval-evidence-20260930/earlier-layout-native-text.txt",
+      "bytes": 8,
+      "sha256": "9e5bcb0d3ef00a1892a5dda0a95391f8935aa95cdb333bf54e9ff86d7a2be3a0"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/haryana-approval-evidence-20260930/validation.json",
+      "bytes": 389,
+      "sha256": "2221933102471bcc06944b890c4254a87872cd839b038934d8b08871c3bd8a55"
+    }
+  ],
+  "execution": {
+    "suppliedPermissions": {
+      "approval_policy": "never",
+      "sandbox_mode": "danger-full-access"
+    },
+    "requestedModel": "gpt-6.1-sol",
+    "requestedEffort": "high",
+    "requestedTier": "default/standard",
+    "actualModel": null,
+    "actualEffort": null,
+    "actualTier": null,
+    "observation": "Actual turn model/effort/tier unexposed.",
+    "registryQueried": false,
+    "recordCreated": false,
+    "trainingLabelCreated": false,
+    "canonicalMatchState": "not_assessed",
+    "ownedResourcesRunning": false
+  }
+}

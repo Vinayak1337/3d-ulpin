@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "haryana-approval-observations/1",
+  "task": "DATA-LINK-04",
+  "observations": [
+    {
+      "id": "licence-authority-reference",
+      "decision": "supported_licence_reference",
+      "evidence": [
+        {
+          "assetId": "licence.pdf",
+          "sha256": "c3162f8e8d2c3141a630974e9c04d296bdaf24cfb38acf09b4272afa7457836f",
+          "page": 1,
+          "region": "Upper half: Form LC-V and licence number; first grant paragraph",
+          "reviewImage": "licence-p1-1.jpg"
+        },
+        {
+          "assetId": "licence.pdf",
+          "sha256": "c3162f8e8d2c3141a630974e9c04d296bdaf24cfb38acf09b4272afa7457836f",
+          "page": 3,
+          "region": "Middle: grant date, validity and endorsement row",
+          "reviewImage": "licence-p3-3.jpg"
+        }
+      ],
+      "visibleText": [
+        "Licence No. 225 of 2023",
+        "10.071875 acres",
+        "7.434375 acres from licence no. 92 of 2023 dated 21.04.2023",
+        "fresh area 2.6375 acres",
+        "Sector-59 & 63A",
+        "30/10/2023",
+        "29/10/2028",
+        "LC-5199/JE(SB)/2023/36904",
+        "31-10-2023"
+      ],
+      "finding": "Corroborates the portal licensing context and adds an exact authority-file/endorsement reference. The native extraction misreads handwritten 36904 as 36909; visual reading governs this observation. Grant, endorsement and stated validity dates are distinct; current validity was not assessed.",
+      "canonicalMatchState": "not_assessed",
+      "recordCreated": false,
+      "trainingLabelCreated": false
+    },
+    {
+      "id": "licence-does-not-select-t3-revision",
+      "decision": "current_approved_set_unresolved",
+      "evidence": [
+        {
+          "assetId": "licence.pdf",
+          "sha256": "c3162f8e8d2c3141a630974e9c04d296bdaf24cfb38acf09b4272afa7457836f",
+          "page": 3,
+          "region": "Copy-forward paragraph and recipient items 1, 12 and 13"
+        }
+      ],
+      "visibleText": [
+        "copy of agreement, LC-IV B, Bilateral agreement, land schedule & zoning plan",
+        "Senior Town Planner, Gurugram alongwith zoning plan"
+      ],
+      "finding": "The cited licensing dispatch concerns licensing/land/zoning companions. It does not identify T3-1/T3-2/T3-4 or prove the 29 April 2024 building-plan sanction, sheet index or current revision. No equivalence between zoning plan and retained S-001/T3 sheets is inferred.",
+      "canonicalMatchState": "not_assessed",
+      "recordCreated": false,
+      "trainingLabelCreated": false
+    },
+    {
+      "id": "latest-layout-is-demarcation",
+      "decision": "supported_demarcation_only_date_conflict",
+      "evidence": [
+        {
+          "assetId": "earlier-layout.pdf",
+          "sha256": "654bca63834d6a1d7da99304f2bb89c311551240eb47adad5cc2421907bad94a",
+          "page": 1,
+          "region": "Right title/legend; lower-right drawing title, date and sheet number",
+          "reviewImage": "layout-title.jpg"
+        },
+        {
+          "assetId": "haryana-2831-project.html",
+          "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+          "htmlLocator": "Document list tr containing IN CASE OF PLOTTED COLONY, THE LATEST LAYOUT PLAN and anchor ending 6747367f30NDI0Mzc="
+        }
+      ],
+      "visibleText": [
+        "DEMARCATION PLAN",
+        "SHEET NO. 01",
+        "FEB. -2022",
+        "LC NO. 92 OF 2023 DATED 21-04-2023",
+        "10.071875 ACRES",
+        "ADDITIONAL LAND LOI GRANTED"
+      ],
+      "finding": "The linked original shows land demarcation and licence migration, not a Tower-3 sanctioned-sheet index. Its printed 2022 date conflicts chronologically with the title reference to a 2023 licence. The portal list date 29-02-2024 cannot correct it or establish approval. No date repair or approved-set conclusion is made.",
+      "canonicalMatchState": "not_assessed",
+      "recordCreated": false,
+      "trainingLabelCreated": false
+    },
+    {
+      "id": "authority-public-path-gap",
+      "decision": "bounded_access_finding",
+      "evidence": [
+        {
+          "assetId": "dtcp-online-services.html",
+          "sha256": "6486d5914328668bbb641908d2e57128c414a18a04069593d44d6b55cda58cc1",
+          "htmlLocator": "form.form-login[action='/'][method='post']; input#txtMobileNo; button#btnEmailverify[value='OTP']; input#txtOtpNoEmial; button[value='Login']"
+        }
+      ],
+      "visibleText": [
+        "Town and Country Planning Department, Haryana",
+        "Online Available Services are",
+        "License Services",
+        "Mobile No",
+        "Send OTP",
+        "Enter Mobile OTP",
+        "Sign In"
+      ],
+      "finding": "The authority homepage public link labelled Building Plan Approval-Self Certification leads to this mobile/OTP login page. No public project/sheet search link was exposed in the captured entry. The separate homepage-linked license.htm GET failed once with WinError 10054. No credentials/contact/bypass or retry loop was used. This is a checked-path/access gap, not evidence that the memo is absent online.",
+      "canonicalMatchState": "not_assessed",
+      "recordCreated": false,
+      "trainingLabelCreated": false
+    },
+    {
+      "id": "preserved-planned-set-and-floor-conflict",
+      "decision": "accepted_prior_observations_preserved",
+      "evidence": [
+        {
+          "assetId": "haryana-2831-project.html",
+          "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+          "reference": "../association-crosswalk/review.md"
+        },
+        {
+          "assetId": "haryana-2831-site-plan.pdf",
+          "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+          "reference": "../association-crosswalk/review.md"
+        },
+        {
+          "assetId": "haryana-2831-tower3-plan2.pdf",
+          "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+          "reference": "../association-crosswalk/review.md"
+        },
+        {
+          "assetId": "haryana-2831-tower3-plan1.pdf",
+          "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+          "reference": "../association-sources/independent-review.md"
+        },
+        {
+          "assetId": "haryana-2831-tower3-section.pdf",
+          "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+          "reference": "../association-sources/independent-review.md"
+        }
+      ],
+      "finding": "Preserve accepted planned T3-1/T3-2/T3-4 context and explicit T3-2 typical-floor lists. Site-plan S-001/JAN-2024 shows T-3 G+41 in the graphic and Tower 3 G+42 in both UNIT DETAIL and TOWER AREA DETAIL. New licence/demarcation observations do not resolve that conflict or select an approved/as-built floor count.",
+      "canonicalMatchState": "not_assessed",
+      "recordCreated": false,
+      "trainingLabelCreated": false
+    }
+  ],
+  "missingEvidence": [
+    "Readable DTCP building-plan approval memo associated with project 2831/licence 225 of 2023, for the portal-displayed approval date 29-04-2024, explicitly identifying the sanctioned T3 sheets.",
+    "Issuer-approved sheet index/revision register showing T3-1/T3-2/T3-4 revisions and subsequent replacement/supersession status.",
+    "Issuing-source clarification of S-001 G+41/G+42 conflict."
+  ],
+  "qualification": "No runtime, canonical relationship accuracy, learning or release qualification."
+}
