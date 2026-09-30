@@ -20,8 +20,11 @@ class PlanGuardTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         subprocess.run(['git', 'init', '-q', str(self.root)], check=True, capture_output=True)
-        (self.root / 'check.py').write_text('# validator\n')
-        subprocess.run(['git', '-C', str(self.root), 'add', 'check.py'], check=True, capture_output=True)
+        # Only this disposable repository: technical source bytes must survive
+        # inherited Git text settings unchanged, just like receipt hashes.
+        (self.root / '.gitattributes').write_bytes(b'*.py -text\n')
+        (self.root / 'check.py').write_bytes(b'# validator\n')
+        subprocess.run(['git', '-C', str(self.root), 'add', '.gitattributes', 'check.py'], check=True, capture_output=True)
         subprocess.run(['git', '-C', str(self.root), '-c', 'user.name=Receipt test', '-c',
                         'user.email=receipt@example.invalid', '-c', 'commit.gpgsign=false',
                         '-c', 'core.hooksPath=/dev/null', 'commit', '--allow-empty', '-qm', 'fixture'],
@@ -32,7 +35,7 @@ class PlanGuardTests(unittest.TestCase):
         (self.h / '00.md').write_text('# Start\n\n[Other](other.md#part)\n')
         (self.h / 'other.md').write_text('# Part\n\n# Part\n')
         (self.root / 'receipt.md').write_text('Recorded baseline only.\n')
-        (self.root / 'check.py').write_text('# validator\n')
+        (self.root / 'check.py').write_bytes(b'# validator\n')
         self.plan = {
             'schemaVersion':'ulpin-release-plan/1', 'currentRelease':'finale_v1', 'nextGate':'GF0',
             'baseline':{'commit':'a'*40, 'receipt':'receipt.md'},
@@ -61,7 +64,7 @@ class PlanGuardTests(unittest.TestCase):
         self.plan['tests']['GF-T0']['attempts'] = []
 
     def pin_attempt(self, path, status='passed', attempt_id='attempt-1'):
-        attempt = {'id':attempt_id, 'receipt':str(path.relative_to(self.root)), 'status':status,
+        attempt = {'id':attempt_id, 'receipt':path.relative_to(self.root).as_posix(), 'status':status,
                    'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
         attempts = self.plan['tests']['GF-T0']['attempts']
         attempts[:] = [a for a in attempts if a['id'] != attempt_id] + [attempt]
@@ -138,7 +141,7 @@ class PlanGuardTests(unittest.TestCase):
     def test_stale_current_work(self):
         p=self.root/'docs/engineering-plan/CURRENT_WORK.md';p.parent.mkdir(parents=True)
         p.write_text('Next gate: OLD\n'+'a'*40)
-        self.plan['entryPoints'].append(str(p.relative_to(self.root)))
+        self.plan['entryPoints'].append(p.relative_to(self.root).as_posix())
         self.rejects('CURRENT_WORK next gate disagrees')
 
     def test_stale_baseline(self):
@@ -179,16 +182,16 @@ class PlanGuardTests(unittest.TestCase):
               'limitations':[], 'unqualifiedClaims':[],
               'environment':{'runtime':'isolated fixture'},'command':'fixture-check','exitCode':0,
               'expectedActual':[{'caseId':'volume','expected':20,'actual':20,'result':'passed'}],
-              'artifacts':[{'path':str(artifact.relative_to(self.root)),
+              'artifacts':[{'path':artifact.relative_to(self.root).as_posix(),
                             'sha256':hashlib.sha256(artifact.read_bytes()).hexdigest()}]}
         path.write_text(json.dumps(data))
-        self.plan['tests']['GF-T0'].update(status='passed',receipts=[str(path.relative_to(self.root))])
+        self.plan['tests']['GF-T0'].update(status='passed',receipts=[path.relative_to(self.root).as_posix()])
         self.pin_attempt(path)
         return path,data
 
     def test_valid_runtime_receipt_and_complete_gate(self):
         path,_=self.passing_runtime_receipt()
-        self.plan['gates'][0].update(status='complete',evidence=[str(path.relative_to(self.root))])
+        self.plan['gates'][0].update(status='complete',evidence=[path.relative_to(self.root).as_posix()])
         self.plan['nextGate']='GF1'
         self.approve_gate(self.plan['gates'][0])
         self.assertEqual(self.errors(), [])
@@ -225,6 +228,8 @@ class PlanGuardTests(unittest.TestCase):
                 p.write_text('<!-- plan-next-gate: GF1 -->\n'+'a'*40)
                 self.plan['entryPoints']=[entry]
                 self.rejects('next-gate declaration disagrees')
+                p.write_text('<!-- plan-next-gate: GF0 -->\n'+'a'*40)
+                self.assertEqual(self.errors(), [])
                 p.unlink()
 
     def test_visible_gate_cannot_conflict_with_declaration(self):
@@ -317,7 +322,7 @@ class PlanGuardTests(unittest.TestCase):
     def plan_validation_receipt(self):
         self.plan['planValidation'].update(status='passed', receipt='plan-receipt.json')
         (self.root/validator.PLAN).write_text(json.dumps(self.plan))
-        paths = [validator.PLAN, 'check.py'] + [str(p.relative_to(self.root)) for p in self.h.rglob('*.md')]
+        paths = [validator.PLAN, 'check.py'] + [p.relative_to(self.root).as_posix() for p in self.h.rglob('*.md')]
         code_commit = subprocess.check_output(['git','-C',str(self.root),'rev-parse','HEAD'],text=True).strip()
         data = {'codeCommit':code_commit, 'checkedAt':'2026-09-24T11:00:00Z',
                 'filesSha256':{p:hashlib.sha256((self.root/p).read_bytes()).hexdigest() for p in paths}}
@@ -337,8 +342,17 @@ class PlanGuardTests(unittest.TestCase):
         self.plan['planValidation'].update(status='passed', receipt='receipt.md')
         self.rejects('unreadable hash receipt')
 
+    def test_plan_validation_keeps_exact_source_bytes(self):
+        self.plan_validation_receipt()
+        self.assertEqual(self.errors(), [])
+        (self.root/'check.py').write_bytes(b'# validator\r\n')
+        self.rejects('stale filesSha256 for check.py')
+        # Repinning changed working bytes still cannot match the original blob.
+        self.plan_validation_receipt()
+        self.rejects('codeCommit does not contain checked source check.py')
+
     def pin_file(self, path):
-        return {'path':str(path.relative_to(self.root)),
+        return {'path':path.relative_to(self.root).as_posix(),
                 'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
 
     def write_record(self, name, data):
@@ -374,7 +388,7 @@ class PlanGuardTests(unittest.TestCase):
     def complete_first_gate(self):
         path, data = self.passing_runtime_receipt()
         gate = self.plan['gates'][0]
-        gate.update(status='complete', evidence=[str(path.relative_to(self.root))])
+        gate.update(status='complete', evidence=[path.relative_to(self.root).as_posix()])
         self.plan['nextGate'] = 'GF1'
         self.approve_gate(gate)
         return gate, path, data
@@ -558,7 +572,7 @@ class PlanGuardTests(unittest.TestCase):
         self.plan['tests']['GF-T0'].update(attempts=[],receipts=[],status='planned')
         self.commit_plan()  # Still reject a removal after it is committed.
         self.rejects('immutable attempt history')
-        self.plan['tests']['GF-T0'].update(attempts=original,receipts=[str(path.relative_to(self.root))],status='failed')
+        self.plan['tests']['GF-T0'].update(attempts=original,receipts=[path.relative_to(self.root).as_posix()],status='failed')
         self.assertEqual(self.errors(), [])
         data['limitations'] = ['Changed after capture']; path.write_text(json.dumps(data)); self.pin_attempt(path,'failed')
         self.rejects('immutable attempt history')
@@ -568,7 +582,7 @@ class PlanGuardTests(unittest.TestCase):
         new_path = path.with_name('retry.json'); data['status'] = 'passed'; data['exitCode'] = 0
         data['expectedActual'][0]['result'] = 'passed'; new_path.write_text(json.dumps(data))
         self.pin_attempt(new_path, 'passed', 'attempt-2')
-        self.plan['tests']['GF-T0'].update(status='passed',receipts=[str(new_path.relative_to(self.root))])
+        self.plan['tests']['GF-T0'].update(status='passed',receipts=[new_path.relative_to(self.root).as_posix()])
         self.assertEqual(self.errors(), [])
         self.plan['tests']['GF-T0']['attempts'].reverse(); self.rejects('immutable attempt history')
 
@@ -585,8 +599,8 @@ class PlanGuardTests(unittest.TestCase):
         data['runAt'] = '2026-09-24T10:05:00Z'; data['review']['reviewedAt'] = '2026-09-24T10:06:00Z'
         new_path = path.with_name('rc.json'); new_path.write_text(json.dumps(data))
         self.pin_attempt(new_path, 'passed', 'rc-attempt')
-        self.plan['tests']['GF-T0']['receipts'] = [str(new_path.relative_to(self.root))]
-        gate5['evidence'] = [str(new_path.relative_to(self.root))]
+        self.plan['tests']['GF-T0']['receipts'] = [new_path.relative_to(self.root).as_posix()]
+        gate5['evidence'] = [new_path.relative_to(self.root).as_posix()]
         self.designate_owner()
         self.approve_gate(gate5,self.owner_identity(),at='2026-09-24T10:07:00Z',completed='2026-09-24T10:08:00Z')
         return gate5, new_path, data
@@ -636,13 +650,13 @@ class PlanGuardTests(unittest.TestCase):
         self.rejects('planValidation: codeCommit is not a verified ancestor')
         data['codeCommit'] = self.commit; data['checkedAt'] = '2999-01-01T00:00:00Z'
         path.write_text(json.dumps(data)); self.rejects('timestamp is in the future')
-        helper = self.h/'tools/new_helper.py'; helper.parent.mkdir(); helper.write_text('# metadata helper')
+        helper = self.h/'tools/new_helper.py'; helper.parent.mkdir(); helper.write_bytes(b'# metadata helper\n')
         path, data = self.plan_validation_receipt(); self.rejects('filesSha256 omits active plan inputs')
-        data['filesSha256'][str(helper.relative_to(self.root))] = hashlib.sha256(helper.read_bytes()).hexdigest()
+        data['filesSha256'][helper.relative_to(self.root).as_posix()] = hashlib.sha256(helper.read_bytes()).hexdigest()
         path.write_text(json.dumps(data)); self.rejects('codeCommit does not contain checked source')
         self.commit_plan()
         path, data = self.plan_validation_receipt()
-        data['filesSha256'][str(helper.relative_to(self.root))] = hashlib.sha256(helper.read_bytes()).hexdigest()
+        data['filesSha256'][helper.relative_to(self.root).as_posix()] = hashlib.sha256(helper.read_bytes()).hexdigest()
         path.write_text(json.dumps(data)); self.assertEqual(self.errors(), [])
 
     def test_gf5_rejects_another_valid_ancestor_instead_of_the_rc(self):

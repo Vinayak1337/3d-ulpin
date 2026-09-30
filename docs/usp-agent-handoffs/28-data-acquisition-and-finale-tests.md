@@ -66,7 +66,7 @@ Drone reconstruction requires actual suitable overlapping images, calibration an
 
 ## 5. Acquisition contract and bounded fallback
 
-Use the existing [usp-data-pack/1 contract](../../packages/contracts/src/usp/data-pack.ts), [D0](../../fixtures/usp/D0) and [D1](../../fixtures/usp/D1) structure. Extend missing metadata through FND with producer/consumer tests; a prose field is not an existing DTO. Store permitted small originals under `fixtures/usp/Dn/<version>`; large/restricted bytes stay in approved private storage, outside Git. Scripts belong to `scripts/usp/data/` after implementation.
+Use the existing [usp-data-pack/1 contract](../../packages/contracts/src/usp/data-pack.ts) and [D1](../../fixtures/usp/D1) structure. The former `fixtures/usp/D0` directory is unavailable in the current tree; retain the [D0/PACK0 history](../evidence/usp/continuation-2026-09-23/README.md). Extend missing metadata through FND with producer/consumer tests; a prose field is not an existing DTO. Store permitted small originals under `fixtures/usp/Dn/<version>`; large/restricted bytes stay in approved private storage, outside Git. Scripts belong to `scripts/usp/data/` after implementation.
 
 Every asset records: pack/version, source family and release, native object IDs, URL/resource ID, acquisition time, original SHA-256/bytes, format/parser, units, horizontal CRS, height type/datum/benchmark, coverage/time, licence/attribution, training/redistribution permission, privacy/purpose (`operational_india`, `test_only`, `authored_demo`), dependencies, exact subset lineage and missing capabilities. Unknown reference metadata stays unknown. Source observations, inferred associations and reviewed facts are separate.
 
