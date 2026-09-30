@@ -9196,8 +9196,26 @@
         "x-batch": "CITYJSON-DRAFT-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Unchanged retained D1 creates one private unrecorded draft; same-key replay returns the same receipt. Slanted-footprint and stale-revision denials publish no partial draft.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/candidate",
+            "/observations",
+            "/preservation"
+          ],
+          "receipt": "docs/evidence/usp/cityjson-draft-runtime.json",
+          "servedCodeCommit": "4bc3e76841c2f27b14c94af10f7360ae0f2767ff",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Private source-native exterior draft preparation/read/replay and bounded denial/privacy behavior; one rollback-only SQL gate observation."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": 16384,
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -9378,8 +9396,26 @@
         "x-batch": "CITYJSON-DRAFT-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Exact selected D1 native geometry/vertices/transform and LoD0 footprint returned privately with no-store; final read remains identical. No analytical admission or reference accuracy qualification.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/observations",
+            "/privateRead",
+            "/original"
+          ],
+          "receipt": "docs/evidence/usp/cityjson-draft-runtime.json",
+          "servedCodeCommit": "4bc3e76841c2f27b14c94af10f7360ae0f2767ff",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Private source-native exterior draft preparation/read/replay and bounded denial/privacy behavior; one rollback-only SQL gate observation."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": null,
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -12935,8 +12971,25 @@
         "x-batch": "NEST-11",
         "x-disposition": "replaced",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Native exterior candidate receives 422 REGISTRY_CITYJSON_UNRECORDED; zero review or recorded revision. Successful recording is unqualified.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/observations",
+            "/preservation"
+          ],
+          "receipt": "docs/evidence/usp/cityjson-draft-runtime.json",
+          "servedCodeCommit": "4bc3e76841c2f27b14c94af10f7360ae0f2767ff",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Private source-native exterior draft preparation/read/replay and bounded denial/privacy behavior; one rollback-only SQL gate observation."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": 2097152,
         "x-dataset-catalogue": "/api/docs/datasets.json"

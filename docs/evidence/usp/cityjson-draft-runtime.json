@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "cityjson-draft-api-evidence/1",
+  "kind": "lead projection of preserved observations; no new runtime",
+  "observedAt": "2026-09-30T22:55:15.505Z",
+  "servedCodeCommit": "4bc3e76841c2f27b14c94af10f7360ae0f2767ff",
+  "acceptedHandoff": "0bd5628c6e8d86238d9a2573993f5cb7fc35e7cb",
+  "originalReceipt": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-cityjson-draft-runtime\\verification-pins.json",
+    "sha256": "4111f258464a0bbdf5a04a4d93cda0e62ca78d4beb63fc106cd020e2668caecc"
+  },
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "outcome": "passed_at_bounded_scope",
+  "candidate": {
+    "draftId": "bacc6fee-3156-438b-9720-8e7a531f9a47",
+    "draftRevision": 1,
+    "recordId": "9ed65d91-836b-4760-b8cc-5d2160882fea",
+    "siteId": "5c79a3c1-ac30-4f2c-b318-d20121976926",
+    "state": "unrecorded",
+    "qualification": "not_assessed"
+  },
+  "observations": [
+    {
+      "label": "prepare-current",
+      "path": "/registry-cityjson-drafts",
+      "status": 201,
+      "responseFile": "prepare-current.json",
+      "responseFileSha256": "4ddef3898578bac2d1d7bd401fc3fc0b19865f97e9b8fd1a21d740fb71612c9b"
+    },
+    {
+      "label": "native",
+      "path": "/registry-drafts/bacc6fee-3156-438b-9720-8e7a531f9a47/native-exterior",
+      "status": 200,
+      "responseFile": "native.json",
+      "responseFileSha256": "91cd575bd66f871ca3b5be99509e0fc86e3b9b85dae02388e9df09371ec99a13"
+    },
+    {
+      "label": "replay",
+      "path": "/registry-cityjson-drafts",
+      "status": 201,
+      "responseFile": "replay.json",
+      "responseFileSha256": "4ddef3898578bac2d1d7bd401fc3fc0b19865f97e9b8fd1a21d740fb71612c9b"
+    },
+    {
+      "label": "generic-draft",
+      "path": "/registry-drafts/bacc6fee-3156-438b-9720-8e7a531f9a47",
+      "status": 200,
+      "responseFile": "generic-draft.json",
+      "responseFileSha256": "d975f59c7581f7d46d55206c651eed7c71a0bda354ba2b8c62c81c86a56acb1c"
+    },
+    {
+      "label": "generic-site",
+      "path": "/sites/5c79a3c1-ac30-4f2c-b318-d20121976926",
+      "status": 200,
+      "responseFile": "generic-site.json",
+      "responseFileSha256": "470f5c5e40eba1bb7799c3e980536cb0ec38c28c9227255a18d72e1a8994a3e5"
+    },
+    {
+      "label": "review-denial",
+      "path": "/registry-drafts/bacc6fee-3156-438b-9720-8e7a531f9a47/review",
+      "status": 422,
+      "responseFile": "review-denial.json",
+      "responseFileSha256": "32fd6ff5c24845e8038838a26fdc8686735aaca960e135f8659a70a0fbd04848"
+    },
+    {
+      "label": "nonexistent-review",
+      "path": "/registry-reviews/9ed65d91-836b-4760-b8cc-5d2160882fea/commit",
+      "status": 404,
+      "responseFile": "nonexistent-review.json",
+      "responseFileSha256": "ebddad8c1d745a3875f45f1a06064cc8dad92c3b5caed49537dd7c9e75ef7b21"
+    },
+    {
+      "label": "unsupported",
+      "path": "/registry-cityjson-drafts",
+      "status": 422,
+      "responseFile": "unsupported.json",
+      "responseFileSha256": "2b201cdac02366c92c485280efcd3e2c5cd3be280971010e494cddca510531d8"
+    },
+    {
+      "label": "stale",
+      "path": "/registry-cityjson-drafts",
+      "status": 409,
+      "responseFile": "stale.json",
+      "responseFileSha256": "090c3ab21d61bb6f52c820e6afc5ce1bbaa3f1784b7c6a042f2684903a0e4617"
+    }
+  ],
+  "privateRead": {
+    "status": 200,
+    "cacheControl": "private, no-store",
+    "sameAsJourney": true
+  },
+  "preservation": {
+    "snapshotSha256": "febbba01db49493ab5a0c312076b6e44bca3f48f593c9fb3b4d073562f7e8133",
+    "counts": {
+      "sites": 1,
+      "records": 1,
+      "drafts": 1,
+      "reviews": 0,
+      "revisions": 0
+    },
+    "preparationOperations": 1,
+    "unchanged": [
+      "D1 source case frame/context/site/revision",
+      "all D1 sources/jobs/metadata/attempts/events/snapshots/prior operations",
+      "ten historical chunk jobs with metadata and attempts"
+    ]
+  },
+  "original": {
+    "bytes": 6783,
+    "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2"
+  },
+  "lockProtocol": {
+    "status": "passed",
+    "gate": "registry-import:88ca2024-d901-4ae4-84cb-a05cac578b2a",
+    "waiting": "advisory",
+    "opposingRowsCompletedAfterRelease": true,
+    "rollbackOnly": true,
+    "scope": "One actual-row advisory protocol observation. No data writes and no wider concurrency qualification."
+  },
+  "limits": [
+    "Unrecorded/not_assessed draft only, source-declared Dutch EPSG:7415/NAP; no canonical geometry/reference/accuracy/analytical/learning/release qualification.",
+    "One actual-row rollback-only advisory protocol observation; no broader concurrency or performance claim.",
+    "Nonexistent-review UUID commit returned 404; generic review exclusion is the recording barrier.",
+    "Future execution must preserve the two exact LF reader bytes. Windows checkout EOL conversion would correctly stale the saved native job again.",
+    "Goal tracker remains paused as reference; no state change."
+  ],
+  "recovery": [
+    {
+      "observation": "First prepare returned 409 STALE_REVISION, with zero publication.",
+      "cause": "Physical CRLF reader bytes hashed to 5b3acfc03646043ceac58813551709f878b9e76c7878a14ffc9a3c6a4849c633, while the accepted job pinned exact LF Git bytes.",
+      "resolution": "Preserved initial bytes/response, restored only the two reader worktree files to exact accepted Git blobs (no text delta), recreated only stopped owned processing containers and kept all stored fences/pins/history unchanged."
+    },
+    {
+      "observation": "Canonical-byte HTTP journey completed all assertions; its final helper comparison exited 1.",
+      "cause": "pg returned Date objects while saved JSON contained ISO strings.",
+      "resolution": "Every HTTP status and source/native/projection assertion passed in the canonical-byte run before its final comparison failed on Date versus ISO timestamp representation. This phase checked the unchanged serialized retained snapshot and persisted reservation/preparation scope without rerunning the HTTP journey."
+    },
+    {
+      "observation": "Initial/journey launches used the retained older private-OCR scratch path; no OCR ran.",
+      "resolution": "Final guarded launch restores the exact accepted whole-page paths/config hash a3d4f6a75198745af23627104ae353eee45b048f8c97fda59612b52861c66030; final native read is unchanged."
+    },
+    {
+      "observation": "Initial baseline helper omitted chunk jobs through an incorrect operation filter.",
+      "resolution": "Corrected before startup; baseline-complete captures the ten historical rows plus metadata/attempts, while original baseline.json remains preserved."
+    }
+  ],
+  "resources": {
+    "processing": "stopped",
+    "storage": "retained"
+  }
+}
