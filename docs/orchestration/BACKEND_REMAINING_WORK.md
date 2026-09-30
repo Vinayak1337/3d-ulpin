@@ -1,5 +1,7 @@
 # Backend remaining work — 29 September 2026
 
+**1 October:** canonical exchange path audit accepted at `46965e9`; no native exterior admission/qualification producer exists. CITYJSON-DRAFT-01 now owns private source-native building draft candidates with code-only verification first. LINK-02 retains exclusive runtime. [Current status](PROJECT_STATUS.md) supersedes all older active-work tables below.
+
 **Superseding continuation:** LINK-02 code/review are accepted through `d95b58b`; API handoff has 196 operations / 226 schemas. OCR-02 is complete. Current assignments are LINK-02 bounded runtime and EXCHANGE-PATH-01 independent code-path audit, detailed in [PROJECT_STATUS.md](PROJECT_STATUS.md). All earlier active-work statements below are historical; no completed review or retired learner is restarted.
 
 **Latest status, 30 September:** this audit's earlier current-work table is historical. [PROJECT_STATUS.md](PROJECT_STATUS.md) is the reconciled status after accepted LINK-01A/API handoff `e1eba7c` (194 operations / 223 schemas). CityJSON, LINK-01A, source acquisition and their reviews are complete; AI-06F is retired from further execution. [OCR-02](OCR_02.md) and [LINK-02](LINK_02.md) are the only new dispatched continuations, committed at `aee4717`: useful whole-page OCR and canonical reviewed document citations, with separate worktrees/files and exclusive OCR runtime ownership. Tool acceptance confirms dispatch, not successful execution. Do not restart old reviews, reader work or the failed learner from the historical prose below.
