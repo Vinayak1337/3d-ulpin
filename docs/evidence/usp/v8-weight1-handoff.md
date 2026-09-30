@@ -1,5 +1,27 @@
 # AI-06F — weight-1 ablation blocked before restricted launch
 
+## Authorized setup recovery: `-02` stopped at wrapper metadata probe
+
+The lead authorized one setup recovery after independently demonstrating the minimal non-inheriting same-owner WriteOwner remedy (probe receipt SHA `c72ceef98cca2245361f4d973feaf030294a1693082aab8cd4d0036ae51c97e8`). Commits **`9f68399703e0c1bbc9158bfba0afebfc9aaa427e`** and **`a8f84c9e2d489fe2c12cb380dd95bea0e3ba0abb`** change only the task-local wrapper: exact empty/resolved/non-reparse/current-owner checks, WO on the two output directories, complete command/readback evidence and owner-grant cleanup. Scope inspection precedes redirecting the child environment so host metadata probes cannot populate scratch before its empty check. Accepted security primitives and learning choices remain unchanged.
+
+**The new setup attempt also stopped before a child or model launch. This time the failure is in the wrapper's metadata-probe dependency, not evidence that the WO remedy failed.** `powershell.exe -NoProfile -NonInteractive -Command ... Get-Acl ...` exited **1**, with `CouldNotAutoloadMatchingModule`: PowerShell found `Get-Acl` in `Microsoft.PowerShell.Security` but could not load that module. The complete command, empty stdout and stderr are retained in `receipts/acl-commands.jsonl`. The parent shell reports PowerShell Core 7.6.5 and its inherited `PSModulePath` lists the bundled Core modules before Windows PowerShell modules. This is consistent with an edition/module-path mismatch in the hardcoded `powershell.exe` subprocess; the underlying module-import failure was not reproduced again after the prescribed stop. A later correction must verify the metadata helper independently before another setup attempt, using a compatible pinned shell/module environment or native ownership inspection.
+
+No owner WO, low label or AppContainer access grant was attempted. The metadata command is the sole recorded ACL/probe command. `owner-scope-cleanup.json` is `[]`: the generic completion text saying owner grants were removed/Medium restored must be read as **zero operations**, not a performed restoration. Profile `CodexAI06F_dc42fa676e5e42b594bf01b48bff7ded` was deleted with HRESULT `0x00000000`, and SID free reported no failure. Completed phases remain empty, output is empty and there is no model-attempt or fit marker. No numerical test, gradient, score, threshold selection or new quality result exists. The required restricted token/Job/output-scope check is still unqualified. No retry/fallback or shared ACL/service change followed.
+
+New retained root: `E:/BhuAayam-model-evaluation/20260930/ai06f-weight1-02/`. Staging exited **0**, validating the accepted runtime/model copies, source proof and 13 code pins. Code was frozen at `a8f84c9`; standard-library checks confirm that positive weight 8 → 1 is still the sole learning-setting delta, with identical pair orders/prompts. The setup invocation exited **1**. All four failure-receipt artifact hashes replayed; wrapper AST and diff checks passed. The six numerical tests remain unrun. All `-01` artifacts and historical commits remain unchanged.
+
+| `-02` artifact | SHA-256 |
+| --- | --- |
+| `completion.json` | `8d5de71023b7c55b7c9930698342f3640ae60ee09680f73be90fd704fddbce04` |
+| `execution/freeze.json` | `a42a1c7534680a6662cd2ccf676879c86f2b9bb8becd4da32cfd235b1b52b6cc` |
+| `runtime-manifest.json` | `c30507c2f2d735858a16f8fe26295d0e7641ade51a6dc3f70957bb9379b8e319` |
+| `stage.json` | `457e9ca81d0adc6f89145f6489261086ef0f70f9c618b30e8d91695926ede97f` |
+| `launch-attempt.json` | `c7727ff84af19eff895c90e9f89c5ebef4bbea2f0571c64116b37f0e2c7f61be` |
+| `receipts/acl-commands.jsonl` | `37c990fdb109a9be1bba7cda5f80530e8f61268d3470b940c2057f7a669e71f9` |
+| `receipts/owner-scope-cleanup.json` | `37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570` |
+
+## Preserved first setup attempt: `-01`
+
 30 September 2026. **Isolation setup failed before any child launch or model execution. No weight-1 fit/result exists.** The one recorded launch attempt stopped on Windows output-directory integrity-label assignment; no unrestricted fallback, retry, new model/corpus, threshold selection, evaluation or promotion followed.
 
 ## Exact blocker and cleanup
