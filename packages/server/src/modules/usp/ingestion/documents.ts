@@ -22,7 +22,20 @@ async function remember(client:PoolClient,caseId:string,key:string,digest:string
   await client.query('INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,$3,$4,$5)',[caseId,key,operationKind,digest,result]);
 }
 export const documentResultKey=(jobId:string,hash:string)=>`document-results/${jobId}/${hash}.json`;
-async function enqueue(client:PoolClient,caseId:string,sourceId:string,mode:DocumentInput['mode'],ocrSelection?:DocumentInput['ocrSelection']){
+/** Recheck the accepted attempt after result I/O, without rescoping its derivative. */
+export async function assertDocumentAcceptedResultTx(client:PoolClient,input:DocumentInput,resultHash:string){
+  const current=(await client.query(`SELECT j.status,j.payload,m.logical_state,m.input_sha256,m.result_ref,a.completion_sha256
+    FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id
+    JOIN usp_job_attempts a ON a.job_id=j.id AND a.fence=m.accepted_fence AND a.state='accepted'
+    WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='document-extraction'`,
+    [input.jobId,input.caseId,input.sourceId])).rows[0];
+  if(!current || current.status!=='succeeded' || current.logical_state!=='succeeded' ||
+    current.result_ref?.sha256!==resultHash || current.completion_sha256!==resultHash ||
+    current.input_sha256!==fingerprint(input) || fingerprint(current.payload)!==fingerprint(input))
+    conflict('The accepted member inspection attempt changed while reading its result.');
+}
+async function enqueue(client:PoolClient,caseId:string,sourceId:string,mode:DocumentInput['mode'],ocrSelection?:DocumentInput['ocrSelection'],
+  archiveSelection?:DocumentInput['archiveSelection']){
   const ctx=await documentSourceTx(client,caseId,sourceId,true);
   if(!ctx.latest)conflict('This source has a newer retained revision.');
   const rows=(await client.query("SELECT id,status,payload FROM jobs WHERE case_id=$1 AND source_id=$2 AND operation='document-extraction' ORDER BY created_at DESC LIMIT 33",[caseId,sourceId])).rows;
@@ -30,10 +43,11 @@ async function enqueue(client:PoolClient,caseId:string,sourceId:string,mode:Docu
   const active=rows.find(j=>['queued','running'].includes(j.status));
   if(active){
     const input=DocumentInputSchema.parse(active.payload);await assertDocumentInputTx(client,input);
-    if(input.mode!==mode || JSON.stringify(input.ocrSelection??null)!==JSON.stringify(ocrSelection??null))
-      conflict('A current document job is already active with a different mode or OCR selection.');return {ctx,jobId:active.id};
+    if(input.mode!==mode || fingerprint(input.ocrSelection??null)!==fingerprint(ocrSelection??null) ||
+      fingerprint(input.archiveSelection??null)!==fingerprint(archiveSelection??null))
+      conflict('A current document job is already active with a different mode or selection.');return {ctx,jobId:active.id};
   }
-  const jobId=randomUUID(),input=documentInput(ctx,jobId,mode,ocrSelection),inputHash=fingerprint(input);
+  const jobId=randomUUID(),input=documentInput(ctx,jobId,mode,ocrSelection,archiveSelection),inputHash=fingerprint(input);
   await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload)
     VALUES($1,$2,$3,'document-extraction',$4,$5,$6)`,[jobId,caseId,sourceId,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:caseId,version:ctx.current.revision+1},sourceId,inputHash);
@@ -125,7 +139,7 @@ export class DocumentIngestionService{
         const job=(await client.query('SELECT payload FROM jobs WHERE id=$1 AND case_id=$2',[prior.jobId,caseId])).rows[0]??notFound('Document job not found.');
         await assertDocumentInputTx(client,DocumentInputSchema.parse(job.payload));return DocumentReceiptSchema.parse(prior);
       }
-      const queued=await enqueue(client,caseId,sourceId,input.mode,input.ocrSelection),result=receipt(queued.ctx,queued.jobId);
+      const queued=await enqueue(client,caseId,sourceId,input.mode,input.ocrSelection,input.archiveSelection),result=receipt(queued.ctx,queued.jobId);
       await remember(client,caseId,key,digest,result);return result;
     });
   }
@@ -143,7 +157,12 @@ export class DocumentIngestionService{
     const {ctx,job,stale}=scope;let result:DocumentResult|null=null;
     if(!stale && job.status==='succeeded' && job.result_ref)result=await readDocumentResult(DocumentInputSchema.parse(job.payload),job.result_ref.sha256);
     // Reauthorize after object I/O; read-time checks never rescope or approve stored evidence.
-    await transaction(async client=>{if(!stale)await assertDocumentInputTx(client,DocumentInputSchema.parse(job.payload));else await documentSourceTx(client,caseId,sourceId);});
+    await transaction(async client=>{
+      if(!stale){
+        const input=DocumentInputSchema.parse(job.payload);await assertDocumentInputTx(client,input);
+        if(result?.archiveInspection)await assertDocumentAcceptedResultTx(client,input,job.result_ref.sha256);
+      }else await documentSourceTx(client,caseId,sourceId);
+    });
     const start=page*DOCUMENT_LIMITS.page,ocrStart=ocrPage*DOCUMENT_LIMITS.page;
     return DocumentStatusSchema.parse({version:DOCUMENT_VERSION,caseId,sourceId,jobId,status:stale?'stale':job.status==='succeeded'?'completed':job.status,
       currentCaseRevision:ctx.current.revision,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,resultSha256:stale?null:job.result_ref?.sha256??null,
@@ -152,7 +171,7 @@ export class DocumentIngestionService{
       ocr:result?.ocr?(({items,...metadata})=>metadata)(result.ocr):null,
       ocrItems:result?.ocr?.items.slice(ocrStart,ocrStart+DOCUMENT_LIMITS.page)??[],ocrPage,
       ocrHasMore:Boolean(result?.ocr && ocrStart+DOCUMENT_LIMITS.page<result.ocr.items.length),
-      code:stale?'DOCUMENT_INPUT_STALE':job.error??null});
+      archiveInspection:result?.archiveInspection??null,code:stale?'DOCUMENT_INPUT_STALE':job.error??null});
   }
   async original(caseValue:string,sourceValue:string){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),ctx=await transaction(client=>documentSourceTx(client,caseId,sourceId));

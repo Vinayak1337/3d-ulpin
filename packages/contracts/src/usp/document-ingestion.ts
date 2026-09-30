@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {GisQuarantineSchema} from '../gis-quarantine';
 export const DOCUMENT_VERSION='source-document/1' as const;
 export const DOCUMENT_POLICY='source-document-native/1' as const;
 export const DOCUMENT_LIMITS=Object.freeze({originalBytes:16*1024*1024,nativeBytes:10*1024*1024,resultBytes:4*1024*1024,
@@ -7,6 +8,8 @@ const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().n
 const ocrBox=z.tuple([z.number().finite(),z.number().finite(),z.number().finite(),z.number().finite()])
   .refine(([x0,y0,x1,y1])=>x0>=0&&y0>=0&&x1>x0&&y1>y0);
 export const DocumentOcrSelectionSchema=z.strictObject({page:z.number().int().min(1).max(8),region:ocrBox.optional()});
+export const DocumentArchiveSelectionSchema=z.strictObject({ordinal:z.number().int().min(0).max(255),
+  memberSha256:hash,memberBytes:z.number().int().min(1).max(8*1024*1024)});
 export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','png','jpeg','archive','unsupported']);
 export const DocumentOriginalSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),subject:z.string().min(1).max(256),
   format:DocumentFormatSchema,sha256:hash,bytes:z.number().int().positive(),receivedAt:z.iso.datetime()});
@@ -15,8 +18,9 @@ export const DocumentInputSchema=z.strictObject({version:z.literal(DOCUMENT_VERS
   sourceBytes:z.number().int().positive().max(DOCUMENT_LIMITS.originalBytes),objectKey:z.string().min(1).max(512),
   subject:z.string().min(1).max(256),accessSha256:hash,policyVersion:z.literal(DOCUMENT_POLICY),readerSha256:hash,
   gatewayPolicySha256:hash.nullable(),layoutCap:z.number().int().min(0).max(100).nullable(),mode:z.enum(['native_only','propose']),
-  ocrSelection:DocumentOcrSelectionSchema.optional(),ocrConfigSha256:hash.optional()})
-  .refine(value=>(value.ocrSelection===undefined)===(value.ocrConfigSha256===undefined),'OCR selection needs its operator configuration pin.');
+  ocrSelection:DocumentOcrSelectionSchema.optional(),ocrConfigSha256:hash.optional(),archiveSelection:DocumentArchiveSelectionSchema.optional()})
+  .refine(value=>(value.ocrSelection===undefined)===(value.ocrConfigSha256===undefined),'OCR selection needs its operator configuration pin.')
+  .refine(value=>!value.archiveSelection || (!value.ocrSelection && value.mode==='native_only'),'Archive inspection requires native_only and excludes OCR.');
 export const DocumentLocatorSchema=z.strictObject({label:z.string().min(1).max(512),page:z.number().int().positive().optional(),
   row:z.number().int().positive().optional(),line:z.number().int().positive().optional(),lineEnd:z.number().int().positive().optional(),
   paragraph:z.number().int().positive().optional(),table:z.number().int().positive().optional(),column:z.number().int().positive().optional(),
@@ -109,6 +113,29 @@ export const DocumentOcrSchema=DocumentOcrBaseSchema.superRefine((value,ctx)=>{
       (value.sourcePageFrame!==null&&(cite.box[2]>value.sourcePageFrame.width+0.01||cite.box[3]>value.sourcePageFrame.height+0.01)))))
       ctx.addIssue({code:'custom',message:'OCR boxes must cite the selected source page frame.'});
   });
+// A cited derivative profile, never document text or a canonical GIS import.
+export const DocumentArchiveInspectionSchema=z.strictObject({
+  lineage:z.strictObject({version:z.literal('archive-member/1'),outerSha256:hash,
+    ...DocumentArchiveSelectionSchema.shape,pathLabel:z.string().min(1).max(256),routeHint:z.literal('geojson'),
+    declaredCrc32:z.string().regex(/^[a-f0-9]{8}$/),crc:z.literal('match'),companion:z.literal('not_applicable'),
+    inventoryCoverage:DocumentArchiveInventorySchema.shape.coverage,inventoryIssue:DocumentArchiveInventorySchema.shape.issue,
+    unselectedIssues:z.array(z.strictObject({ordinal:DocumentArchiveMemberSchema.shape.ordinal,
+      issue:DocumentArchiveMemberSchema.shape.issue,companion:DocumentArchiveMemberSchema.shape.companion})).max(255)}),
+  inspection:z.strictObject({sourceSha256:hash,bytes:z.number().int().min(1).max(8*1024*1024),
+    format:z.literal('geojson'),layers:z.array(z.string()).max(0),layer:z.null(),sourceCrs:z.literal('EPSG:4326'),
+    crsEvidence:z.enum(['Declared OGC CRS84','RFC 7946 GeoJSON longitude/latitude']),
+    featureCount:z.number().int().min(1).max(2000),geometryTypes:z.array(z.string()).max(16),
+    fields:z.array(z.strictObject({name:z.string(),complete:z.boolean(),unique:z.boolean(),idEligible:z.boolean()})).max(256),
+    featureIdEligible:z.boolean(),suggestedIdField:z.string().nullable(),suggestedNameField:z.string().nullable(),
+    quarantine:GisQuarantineSchema.optional()})
+}).superRefine((value,ctx)=>{
+  const {lineage,inspection}=value;
+  if(lineage.memberSha256!==inspection.sourceSha256 || lineage.memberBytes!==inspection.bytes ||
+    (inspection.quarantine && (inspection.quarantine.sourceSha256!==lineage.memberSha256 ||
+      inspection.quarantine.total!==inspection.featureCount || inspection.quarantine.sourceId!==undefined ||
+      inspection.quarantine.sourceRevision!==undefined)))
+    ctx.addIssue({code:'custom',message:'Member inspection must cite the exact selected bytes without independent source identity.'});
+});
 export const DocumentResultSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),input:DocumentInputSchema,
   native:z.strictObject({status:z.enum(['extracted','needs_ocr','unsupported','encrypted','tool_error']),format:DocumentFormatSchema,
     readerSha256:hash,code:z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/).nullable(),warnings:z.array(z.string().max(512)).max(100),
@@ -116,8 +143,23 @@ export const DocumentResultSchema=z.strictObject({version:z.literal(DOCUMENT_VER
   model:z.strictObject({status:z.enum(['not_requested','disabled','unavailable','blocked','needs_input','proposed']),
     code:z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/).nullable(),candidates:z.array(DocumentProposalSchema).max(40),
     validationErrors:z.array(z.string().max(512)).max(40),calls:z.array(z.strictObject({callId:id,responseSha256:hash})).max(2)}),
-  ocr:DocumentOcrSchema.optional(),createdAt:z.iso.datetime()}).superRefine((value,ctx)=>{
+  ocr:DocumentOcrSchema.optional(),archiveInspection:DocumentArchiveInspectionSchema.optional(),createdAt:z.iso.datetime()}).superRefine((value,ctx)=>{
+    if(value.archiveInspection && value.native.archiveInventory){
+      const inventory=value.native.archiveInventory,lineage=value.archiveInspection.lineage,member=inventory.members[lineage.ordinal];
+      if(!member || member.issue!==null || member.sha256!==lineage.memberSha256 || member.actualBytes!==lineage.memberBytes ||
+        member.routeHint!==lineage.routeHint || member.pathLabel!==lineage.pathLabel || member.crc!==lineage.crc ||
+        member.declaredCrc32!==lineage.declaredCrc32 || member.companion!==lineage.companion ||
+        inventory.coverage!==lineage.inventoryCoverage || inventory.issue!==lineage.inventoryIssue)
+        ctx.addIssue({code:'custom',message:'Selected member lineage must agree with the retained archive inventory.'});
+    }
     if(value.native.readerSha256!==value.input.readerSha256 ||
+      (Boolean(value.input.archiveSelection)!==Boolean(value.archiveInspection)) ||
+      (value.archiveInspection!==undefined && (!value.native.archiveInventory || value.ocr!==undefined ||
+        value.archiveInspection.lineage.outerSha256!==value.input.sourceSha256 ||
+        value.archiveInspection.lineage.ordinal!==value.input.archiveSelection?.ordinal ||
+        value.archiveInspection.lineage.memberSha256!==value.input.archiveSelection?.memberSha256 ||
+        value.archiveInspection.lineage.memberBytes!==value.input.archiveSelection?.memberBytes ||
+        value.model.status!=='not_requested')) ||
       (value.ocr!==undefined && (!value.input.ocrSelection || value.ocr.sourceSha256!==value.input.sourceSha256 ||
         value.ocr.sourceRevision!==value.input.sourceRevision || value.ocr.sourcePage!==value.input.ocrSelection.page ||
         JSON.stringify(value.ocr.requestedRegion)!==JSON.stringify(value.input.ocrSelection.region??null))) ||
@@ -136,7 +178,9 @@ export const DocumentRetainSchema=z.strictObject({requestKey:id,expectedCaseRevi
   familyId:id.optional(),expectedSourceRevision:z.number().int().positive().optional(),
   mode:z.enum(['native_only','propose']).default('propose')});
 export const DocumentRetrySchema=z.strictObject({requestKey:id,expectedCaseRevision:rev,expectedSourceRevision:z.number().int().positive(),
-  sourceSha256:hash,mode:z.enum(['native_only','propose']).default('propose'),ocrSelection:DocumentOcrSelectionSchema.optional()});
+  sourceSha256:hash,mode:z.enum(['native_only','propose']).default('propose'),ocrSelection:DocumentOcrSelectionSchema.optional(),
+  archiveSelection:DocumentArchiveSelectionSchema.optional()})
+  .refine(value=>!value.archiveSelection || (!value.ocrSelection && value.mode==='native_only'),'Archive inspection requires native_only and excludes OCR.');
 export const DocumentReceiptSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),caseId:id,caseRevision:rev,
   sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,bytes:z.number().int().positive(),jobId:id});
 export const DocumentStatusSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),caseId:id,sourceId:id,jobId:id,
@@ -144,7 +188,8 @@ export const DocumentStatusSchema=z.strictObject({version:z.literal(DOCUMENT_VER
   sourceSha256:hash,resultSha256:hash.nullable(),native:DocumentResultSchema.shape.native.omit({parts:true}).nullable(),
   model:DocumentResultSchema.shape.model.nullable(),parts:z.array(DocumentPartSchema).max(25),
   page:rev,hasMore:z.boolean(),ocr:DocumentOcrBaseSchema.omit({items:true}).nullable().optional(),
-  ocrItems:z.array(DocumentOcrItemSchema).max(25).optional(),ocrPage:rev.optional(),ocrHasMore:z.boolean().optional(),code:z.string().nullable()});
+  ocrItems:z.array(DocumentOcrItemSchema).max(25).optional(),ocrPage:rev.optional(),ocrHasMore:z.boolean().optional(),
+  archiveInspection:DocumentArchiveInspectionSchema.nullable().optional(),code:z.string().nullable()});
 export type DocumentInput=z.infer<typeof DocumentInputSchema>;
 export type DocumentPart=z.infer<typeof DocumentPartSchema>;
 export type DocumentResult=z.infer<typeof DocumentResultSchema>;

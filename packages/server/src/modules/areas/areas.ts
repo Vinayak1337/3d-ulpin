@@ -71,8 +71,9 @@ type Normalized = {
   disposition?: GisGeometryDisposition;
 };
 export async function areaGeo<T>(
-  operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis",
+  operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis" | "inspect-archive-member",
   input: unknown,
+  maxResultBytes?: number,
 ): Promise<T> {
   const response = await fetch(
     `${settings.geoUrl}/internal/area/${operation}`,
@@ -96,7 +97,20 @@ export async function areaGeo<T>(
         : "The area processor could not complete this operation.",
     );
   }
-  return response.json();
+  if(maxResultBytes===undefined)return response.json();
+  if(!Number.isSafeInteger(maxResultBytes)||maxResultBytes<1)throw new Error('Invalid processor response cap.');
+  const reader=response.body?.getReader(),chunks:Uint8Array[]=[];let size=0;
+  if(!reader)throw new AppError(503,'AREA_PROCESSING','The processor returned no result body.');
+  try{
+    while(true){
+      const {done,value}=await reader.read();if(done)break;
+      size+=value.byteLength;
+      if(size>maxResultBytes)throw new AppError(413,'AREA_RESULT_LIMIT','The processor result exceeds its byte cap.');
+      chunks.push(value);
+    }
+  }catch(error){await reader.cancel().catch(()=>{});throw error;}
+  finally{reader.releaseLock();}
+  return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks)));
 }
 function areaFrom(row: any): MapArea {
   return {

@@ -9,10 +9,11 @@ import {assertDocumentInputTx} from './document-context';
 import {extractSourceDocument} from './document-native';
 import {proposeDocument} from './document-model';
 import {runSourceOcr} from './document-ocr';
+import {inspectDocumentArchive} from './document-archive';
 import {documentResultKey,readDocumentResult} from './documents';
 import {appendCaseIngestionTx} from './events';
 
-type Dependencies={extract?:typeof extractSourceDocument;propose?:typeof proposeDocument;ocr?:typeof runSourceOcr};
+type Dependencies={extract?:typeof extractSourceDocument;propose?:typeof proposeDocument;ocr?:typeof runSourceOcr;archive?:typeof inspectDocumentArchive};
 export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
   const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='document-extraction'",[jobId])).rows[0]??notFound('Document job not found.');
   if(!['queued','running'].includes(job.status))return;
@@ -51,9 +52,11 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
     await authorize();
     const ocr=input.ocrSelection?await (dependencies.ocr??runSourceOcr)(input,original,deadline):undefined;
     await authorize();
+    const archiveInspection=input.archiveSelection?await (dependencies.archive??inspectDocumentArchive)(input,original):undefined;
+    await authorize();
     const model=await (dependencies.propose??proposeDocument)(input,native,authorize);
     const result=DocumentResultSchema.parse({version:'source-document/1',input,native,model,
-      ...(ocr?{ocr}:{}),createdAt:new Date().toISOString()});
+      ...(ocr?{ocr}:{}),...(archiveInspection?{archiveInspection}:{}),createdAt:new Date().toISOString()});
     const bytes=Buffer.from(JSON.stringify(result));
     if(bytes.length>DOCUMENT_LIMITS.resultBytes)throw new AppError(413,'DOCUMENT_RESULT_LIMIT','The extraction derivative exceeds its bounded result size.');
     const hash=sha256(bytes),asset={assetId:`document:${jobId}`,version:1,sha256:hash};
