@@ -19,6 +19,7 @@ Lead snapshot after accepted staging `a6944c064f806defeefeb3f1f77d2025cc7d01a9`:
 
 | Lane | State/outcome | Requested model |
 | --- | --- | --- |
+| DATA-LINK-04 | **New independent source assignment:** acquire the specifically missing Haryana approval memo/sheet-revision evidence through relevant issuing sources. Reuses accepted drawing observations; no repeated review, registry changes or learning labels. | GPT-6.1 Sol/high |
 | BUNDLE-02B | **Complete and integrated:** implementation `e7e806a`, independent acceptance `f3fd8c0`; final receipt and all 15 executed source pins matched. Integrated backend typecheck, 9 affected tests and generated API/client checks pass. Review is finished. | Astra/xhigh reviewer, now idle |
 | CITYJSON-02 / 02R | **Implementation and real API journey returned at `2c19bb4`; review assigned.** Four final read routes passed with no-store and exact original/native hashes. Processing stopped, storage preserved. Lead holds runtime until integration, then association verification follows. | GPT-6.1 Sol/high review |
 | AI-06F / 06F-R | **Single fit ran; required reload failed.** Restricted preflight and six numerical checks passed; 51 updates/adapter/development scores saved. Reload error 1455 and reported Job peak above the configured cap leave the outcome incomplete. Saved-code/resource review assigned; learner stopped, no second fit or promotion. | Astra/xhigh review |
