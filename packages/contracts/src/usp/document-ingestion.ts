@@ -4,6 +4,9 @@ export const DOCUMENT_POLICY='source-document-native/1' as const;
 export const DOCUMENT_LIMITS=Object.freeze({originalBytes:16*1024*1024,nativeBytes:10*1024*1024,resultBytes:4*1024*1024,
   characters:250000,parts:10000,partCharacters:4096,page:25,candidates:40,modelCharacters:12000,modelParts:12,jobs:32});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
+const ocrBox=z.tuple([z.number().finite(),z.number().finite(),z.number().finite(),z.number().finite()])
+  .refine(([x0,y0,x1,y1])=>x0>=0&&y0>=0&&x1>x0&&y1>y0);
+export const DocumentOcrSelectionSchema=z.strictObject({page:z.number().int().min(1).max(8),region:ocrBox.optional()});
 export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','png','jpeg','archive','unsupported']);
 export const DocumentOriginalSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),subject:z.string().min(1).max(256),
   format:DocumentFormatSchema,sha256:hash,bytes:z.number().int().positive(),receivedAt:z.iso.datetime()});
@@ -11,7 +14,9 @@ export const DocumentInputSchema=z.strictObject({version:z.literal(DOCUMENT_VERS
   caseContextSha256:hash,sourceId:id,familyId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
   sourceBytes:z.number().int().positive().max(DOCUMENT_LIMITS.originalBytes),objectKey:z.string().min(1).max(512),
   subject:z.string().min(1).max(256),accessSha256:hash,policyVersion:z.literal(DOCUMENT_POLICY),readerSha256:hash,
-  gatewayPolicySha256:hash.nullable(),layoutCap:z.number().int().min(0).max(100).nullable(),mode:z.enum(['native_only','propose'])});
+  gatewayPolicySha256:hash.nullable(),layoutCap:z.number().int().min(0).max(100).nullable(),mode:z.enum(['native_only','propose']),
+  ocrSelection:DocumentOcrSelectionSchema.optional(),ocrConfigSha256:hash.optional()})
+  .refine(value=>(value.ocrSelection===undefined)===(value.ocrConfigSha256===undefined),'OCR selection needs its operator configuration pin.');
 export const DocumentLocatorSchema=z.strictObject({label:z.string().min(1).max(512),page:z.number().int().positive().optional(),
   row:z.number().int().positive().optional(),line:z.number().int().positive().optional(),lineEnd:z.number().int().positive().optional(),
   paragraph:z.number().int().positive().optional(),table:z.number().int().positive().optional(),column:z.number().int().positive().optional(),
@@ -65,6 +70,45 @@ export const DocumentArchiveInventorySchema=z.strictObject({sourceSha256:hash,co
 export const DocumentProposalSchema=z.strictObject({field:z.string().min(1).max(120),value:z.string().min(1).max(512),
   partId:id,quote:z.string().min(1).max(1000)});
 export const DocumentModelOutputSchema=z.strictObject({candidates:z.array(DocumentProposalSchema).max(40)});
+export const DocumentOcrItemSchema=z.strictObject({text:z.string().min(1).max(2048)
+  .refine(value=>new TextEncoder().encode(value).length<=2048,'OCR item exceeds its byte cap.'),label:z.string().max(64),
+  method:z.literal('ocr:docling-tesseract-cli-full-page'),sourcePageBoxes:z.array(z.strictObject({
+    pageNumber:z.number().int().min(1).max(8),frame:z.literal('pdf_display_page_top_left_points'),box:ocrBox,
+    derivedFrom:z.literal('docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin')})).min(1).max(4)});
+export const DocumentOcrExecutionSchema=z.strictObject({maxSeconds:z.number().int().min(1).max(90),
+  exitCode:z.number().int().nullable(),receiptSha256:hash.nullable(),candidateSha256:hash.nullable(),
+  worker:z.strictObject({exitCode:z.number().int(),stopReason:z.string().max(120).nullable(),
+    elapsedSeconds:z.number().finite().nonnegative(),peakObservedRssBytes:rev,peakJobPrivateBytes:rev.nullable(),
+    gatedStart:z.literal(true),logSha256:hash}).nullable()});
+const DocumentOcrBaseSchema=z.strictObject({sourceSha256:hash,sourceRevision:z.number().int().positive(),
+  sourcePage:z.number().int().min(1).max(8),requestedRegion:ocrBox.nullable(),
+  sourcePageFrame:z.strictObject({kind:z.literal('pdf_display_page_top_left_points'),rotation:z.literal(0),
+    width:z.number().positive().max(2000),height:z.number().positive().max(2000)}).nullable(),
+  method:z.literal('ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned'),
+  toolStatus:z.enum(['complete','partial','failed','unavailable']),outputStatus:z.enum(['complete','partial','failed']),
+  textCompleteness:z.literal('unverified'),issues:z.array(z.string().min(1).max(200)).max(32),
+  items:z.array(DocumentOcrItemSchema).max(64),execution:DocumentOcrExecutionSchema.optional()});
+export const DocumentOcrSchema=DocumentOcrBaseSchema.superRefine((value,ctx)=>{
+    if((value.toolStatus==='unavailable'||value.toolStatus==='failed')&&value.outputStatus!=='failed')
+      ctx.addIssue({code:'custom',message:'Unavailable OCR cannot publish completed output.'});
+    if(value.outputStatus==='complete'&&!value.items.length)
+      ctx.addIssue({code:'custom',message:'Empty OCR output must be partial.'});
+    if(value.items.reduce((size,item)=>size+new TextEncoder().encode(item.text).length,0)>32*1024)
+      ctx.addIssue({code:'custom',message:'OCR output exceeds its total text byte cap.'});
+    if(value.outputStatus!=='failed' && value.execution && (value.execution.exitCode!==0 ||
+      !value.execution.worker || value.execution.worker.exitCode!==0 || value.execution.worker.stopReason!==null ||
+      !value.execution.receiptSha256 || !value.execution.candidateSha256))
+      ctx.addIssue({code:'custom',message:'Published OCR output needs its completed bounded execution receipt.'});
+    if(value.items.length && value.sourcePageFrame===null)
+      ctx.addIssue({code:'custom',message:'Cited OCR items need the source page frame.'});
+    if(value.items.some(item=>item.sourcePageBoxes.some(cite=>value.requestedRegion!==null &&
+      (cite.box[0]<value.requestedRegion[0]-1||cite.box[1]<value.requestedRegion[1]-1||
+        cite.box[2]>value.requestedRegion[2]+1||cite.box[3]>value.requestedRegion[3]+1))))
+      ctx.addIssue({code:'custom',message:'OCR boxes must stay in the selected source region.'});
+    if(value.items.some(item=>item.sourcePageBoxes.some(cite=>cite.pageNumber!==value.sourcePage ||
+      (value.sourcePageFrame!==null&&(cite.box[2]>value.sourcePageFrame.width+0.01||cite.box[3]>value.sourcePageFrame.height+0.01)))))
+      ctx.addIssue({code:'custom',message:'OCR boxes must cite the selected source page frame.'});
+  });
 export const DocumentResultSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),input:DocumentInputSchema,
   native:z.strictObject({status:z.enum(['extracted','needs_ocr','unsupported','encrypted','tool_error']),format:DocumentFormatSchema,
     readerSha256:hash,code:z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/).nullable(),warnings:z.array(z.string().max(512)).max(100),
@@ -72,8 +116,12 @@ export const DocumentResultSchema=z.strictObject({version:z.literal(DOCUMENT_VER
   model:z.strictObject({status:z.enum(['not_requested','disabled','unavailable','blocked','needs_input','proposed']),
     code:z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/).nullable(),candidates:z.array(DocumentProposalSchema).max(40),
     validationErrors:z.array(z.string().max(512)).max(40),calls:z.array(z.strictObject({callId:id,responseSha256:hash})).max(2)}),
-  createdAt:z.iso.datetime()}).superRefine((value,ctx)=>{
+  ocr:DocumentOcrSchema.optional(),createdAt:z.iso.datetime()}).superRefine((value,ctx)=>{
     if(value.native.readerSha256!==value.input.readerSha256 ||
+      (value.ocr!==undefined && (!value.input.ocrSelection || value.ocr.sourceSha256!==value.input.sourceSha256 ||
+        value.ocr.sourceRevision!==value.input.sourceRevision || value.ocr.sourcePage!==value.input.ocrSelection.page ||
+        JSON.stringify(value.ocr.requestedRegion)!==JSON.stringify(value.input.ocrSelection.region??null))) ||
+      (value.input.ocrSelection!==undefined && value.ocr===undefined) ||
       (value.native.archiveInventory!==undefined && (value.native.archiveInventory.sourceSha256!==value.input.sourceSha256 ||
         value.native.format!=='archive' || value.native.parts.length!==0 || value.native.status!=='unsupported' || value.model.candidates.length!==0)) ||
       value.native.parts.some(p=>p.sourceId!==value.input.sourceId ||
@@ -88,14 +136,15 @@ export const DocumentRetainSchema=z.strictObject({requestKey:id,expectedCaseRevi
   familyId:id.optional(),expectedSourceRevision:z.number().int().positive().optional(),
   mode:z.enum(['native_only','propose']).default('propose')});
 export const DocumentRetrySchema=z.strictObject({requestKey:id,expectedCaseRevision:rev,expectedSourceRevision:z.number().int().positive(),
-  sourceSha256:hash,mode:z.enum(['native_only','propose']).default('propose')});
+  sourceSha256:hash,mode:z.enum(['native_only','propose']).default('propose'),ocrSelection:DocumentOcrSelectionSchema.optional()});
 export const DocumentReceiptSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),caseId:id,caseRevision:rev,
   sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,bytes:z.number().int().positive(),jobId:id});
 export const DocumentStatusSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),caseId:id,sourceId:id,jobId:id,
   status:z.enum(['queued','running','completed','failed','stale']),currentCaseRevision:rev,sourceRevision:z.number().int().positive(),
   sourceSha256:hash,resultSha256:hash.nullable(),native:DocumentResultSchema.shape.native.omit({parts:true}).nullable(),
   model:DocumentResultSchema.shape.model.nullable(),parts:z.array(DocumentPartSchema).max(25),
-  page:rev,hasMore:z.boolean(),code:z.string().nullable()});
+  page:rev,hasMore:z.boolean(),ocr:DocumentOcrBaseSchema.omit({items:true}).nullable().optional(),
+  ocrItems:z.array(DocumentOcrItemSchema).max(25).optional(),ocrPage:rev.optional(),ocrHasMore:z.boolean().optional(),code:z.string().nullable()});
 export type DocumentInput=z.infer<typeof DocumentInputSchema>;
 export type DocumentPart=z.infer<typeof DocumentPartSchema>;
 export type DocumentResult=z.infer<typeof DocumentResultSchema>;

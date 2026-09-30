@@ -11,7 +11,10 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
 const image='ulpin-geo:desktop-ai03c-b10ec8c';
 const labels=['api','dispatcher'];
 const bareKeys=['SystemRoot','WINDIR','PATH','TEMP','TMP','USERPROFILE','APPDATA','LOCALAPPDATA'];
-const safeEnv=env=>Object.fromEntries([...bareKeys.map(key=>[key,process.env[key]]),...Object.entries(env),
+const ocrKeys=['ULPIN_DOCUMENT_OCR_PYTHON','ULPIN_DOCUMENT_OCR_MODELS','ULPIN_DOCUMENT_OCR_TESSERACT',
+  'ULPIN_DOCUMENT_OCR_TESSDATA','ULPIN_DOCUMENT_OCR_SCRATCH'];
+const safeEnv=env=>Object.fromEntries([...bareKeys.map(key=>[key,process.env[key]]),
+  ...ocrKeys.map(key=>[key,process.env[key]]),...Object.entries(env),
   ['ULPIN_FIXTURE_ROOT',join(root,'fixtures')]].filter(([,value])=>typeof value==='string'));
 function command(file,args,env={},timeout=300000){
   try{return execFileSync(file,args,{cwd:root,env:safeEnv(env),encoding:'utf8',timeout,stdio:['ignore','pipe','pipe']}).trim();}

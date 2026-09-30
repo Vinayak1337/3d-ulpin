@@ -32,14 +32,16 @@ export class DocumentsController{
   @Get('cases/:caseId/sources/:sourceId/documents/jobs/:jobId')
   @param('caseId') @param('sourceId') @param('jobId')
   @ApiQuery({name:'page',required:false,schema:{type:'integer',minimum:0,maximum:399}})
-  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId',summary:'Read bounded native parts and proposed fields under current source/access/policy pins'})
+  @ApiQuery({name:'ocrPage',required:false,schema:{type:'integer',minimum:0,maximum:2}})
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId',summary:'Read bounded native/OCR observations and proposed fields under current source/access/policy pins'})
   @wireResponse(200,DocumentStatusSchema)
-  status(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,@Param('jobId') jobId:string,@Query('page') page?:string){
-    return this.documents.status(caseId,sourceId,jobId,page===undefined?0:Number(page));
+  status(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,@Param('jobId') jobId:string,@Query('page') page?:string,
+    @Query('ocrPage') ocrPage?:string){
+    return this.documents.status(caseId,sourceId,jobId,page===undefined?0:Number(page),ocrPage===undefined?0:Number(ocrPage));
   }
   @Post('cases/:caseId/sources/:sourceId/documents/retry')
   @HttpCode(201) @param('caseId') @param('sourceId')
-  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_documents_retry',summary:'Queue an explicitly requested retry against the unchanged current original'})
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_documents_retry',summary:'Queue a retry or explicit PDF page/region OCR against the unchanged current original'})
   @jsonBody(DocumentRetrySchema) @wireResponse(201,DocumentReceiptSchema)
   async retry(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,@Req() request:Request){
     return this.documents.retry(caseId,sourceId,DocumentRetrySchema.parse(await readJsonBody(request,JSON_BODY_LIMIT)));

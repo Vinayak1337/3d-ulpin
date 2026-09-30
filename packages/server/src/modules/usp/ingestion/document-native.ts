@@ -12,6 +12,10 @@ export function documentReaderSha(){
     'services/geo/geo/area.py','services/geo/geo/native_pdf.py','services/geo/geo/native_schedule.py',
     'services/geo/geo/native_workbook.py','services/geo/geo/native_archive.py',
     'packages/server/src/modules/usp/ingestion/document-model.ts',
+    'packages/server/src/modules/usp/ingestion/document-ocr.ts',
+    'scripts/usp/document-models/run_source_ocr.py',
+    'scripts/usp/document-models/run_trial.py',
+    'services/geo/geo/usp_document_candidates/docling_tesseract.py',
     'packages/server/src/modules/usp/ingest/redact.ts'];
   return sha256(Buffer.concat(paths.flatMap(p=>[Buffer.from(p+'\0'),readFileSync(join(settings.repositoryRoot,p))])));
 }

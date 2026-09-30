@@ -8,10 +8,11 @@ import {claimUspJobAttempt,acceptUspJobAttempt,assertUspJobAttemptTx} from '../j
 import {assertDocumentInputTx} from './document-context';
 import {extractSourceDocument} from './document-native';
 import {proposeDocument} from './document-model';
+import {runSourceOcr} from './document-ocr';
 import {documentResultKey,readDocumentResult} from './documents';
 import {appendCaseIngestionTx} from './events';
 
-type Dependencies={extract?:typeof extractSourceDocument;propose?:typeof proposeDocument};
+type Dependencies={extract?:typeof extractSourceDocument;propose?:typeof proposeDocument;ocr?:typeof runSourceOcr};
 export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
   const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='document-extraction'",[jobId])).rows[0]??notFound('Document job not found.');
   if(!['queued','running'].includes(job.status))return;
@@ -25,6 +26,12 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
       const active=Number((await client.query(`SELECT count(*)::int n FROM usp_job_attempts a JOIN jobs j ON j.id=a.job_id
         WHERE j.operation='document-extraction' AND j.payload->>'subject'=$1 AND a.state='active' AND a.lease_until>now()`,[input.subject])).rows[0].n);
       if(active>=2)throw new AppError(409,'DOCUMENT_WORKER_BUSY','The bounded document workers are occupied.');
+      if(input.ocrSelection){
+        await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',['document-ocr-global']);
+        const ocrActive=Number((await client.query(`SELECT count(*)::int n FROM usp_job_attempts a JOIN jobs j ON j.id=a.job_id
+          WHERE j.operation='document-extraction' AND j.payload ? 'ocrSelection' AND a.state='active' AND a.lease_until>now()`)).rows[0].n);
+        if(ocrActive>=1)throw new AppError(409,'DOCUMENT_WORKER_BUSY','The bounded OCR worker is occupied.');
+      }
     });
   }catch(error){
     if(error instanceof AppError && error.code==='DOCUMENT_WORKER_BUSY')return;
@@ -42,8 +49,11 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
     if(original.length!==input.sourceBytes || sha256(original)!==input.sourceSha256)throw new AppError(422,'SOURCE_INTEGRITY','The retained original differs from its receipt.');
     const native=await (dependencies.extract??extractSourceDocument)(input,original);
     await authorize();
+    const ocr=input.ocrSelection?await (dependencies.ocr??runSourceOcr)(input,original,deadline):undefined;
+    await authorize();
     const model=await (dependencies.propose??proposeDocument)(input,native,authorize);
-    const result=DocumentResultSchema.parse({version:'source-document/1',input,native,model,createdAt:new Date().toISOString()});
+    const result=DocumentResultSchema.parse({version:'source-document/1',input,native,model,
+      ...(ocr?{ocr}:{}),createdAt:new Date().toISOString()});
     const bytes=Buffer.from(JSON.stringify(result));
     if(bytes.length>DOCUMENT_LIMITS.resultBytes)throw new AppError(413,'DOCUMENT_RESULT_LIMIT','The extraction derivative exceeds its bounded result size.');
     const hash=sha256(bytes),asset={assetId:`document:${jobId}`,version:1,sha256:hash};
