@@ -12,8 +12,8 @@ import {amendRegistryDocumentCitationsTx,readRegistryDocumentCitationsTx,assertR
   assertDocumentReviewContext} from '../packages/server/src/modules/registry/registry-document-evidence';
 import {registryDocumentSnapshotView} from '../packages/server/src/modules/usp/snapshots';
 import {assertAssociationSnapshotTargetTx} from '../packages/server/src/modules/usp/ingestion/document-association-targets';
-import {buildExchange} from '../packages/server/src/modules/usp/exchange';
-import {commitRegistryReviewTx} from '../packages/server/src/modules/registry/registry';
+import {buildExchange,compareExchange} from '../packages/server/src/modules/usp/exchange';
+import {commitRegistryReviewTx,createRegistryDraftTx} from '../packages/server/src/modules/registry/registry';
 import {associationDocumentInputTx} from '../packages/server/src/modules/usp/ingestion/document-association-authority';
 import {documentInput} from '../packages/server/src/modules/usp/ingestion/document-context';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
@@ -44,13 +44,14 @@ function fixture(){
   const record:RegistryRecord={...body,id:randomUUID(),siteId,identifier:'technical-reference',revision:1};
   const state={draft:{id:draftId,site_id:siteId,case_id:randomUUID(),status:'draft',revision:1,records:[structuredClone(record)],created_at:'2026-09-30T00:00:00Z'},
     row:{id:record.id,site_id:siteId,kind:record.kind,revision:1,body:structuredClone(body)},fence:1,
-    operations:new Map<string,any>(),writes:0,reads:0,sourceChecks:0};
+    operations:new Map<string,any>(),history:new Map<number,any>([[1,structuredClone(body)]]),writes:0,reads:0,sourceChecks:0};
   const client={query:async(sql:string,args:any[]=[])=>{
     let rows:any[]=[];
     if(sql.includes('SELECT site_id FROM registry_drafts'))rows=[{site_id:siteId}];
     else if(sql.includes('SELECT * FROM registry_drafts'))rows=[structuredClone(state.draft)];
     else if(sql.includes('FROM registry_sites'))rows=[{id:siteId}];
-    else if(sql.includes('CASE WHEN r.revision'))rows=[{site_id:siteId,kind:record.kind,body:structuredClone(state.row.body)}];
+    else if(sql.includes('CASE WHEN r.revision'))rows=[{site_id:siteId,kind:record.kind,
+      body:structuredClone(args[1]===state.row.revision?state.row.body:state.history.get(args[1]))}];
     else if(sql.includes('FROM registry_records'))rows=[structuredClone(state.row)];
     else if(sql.includes('SELECT accepted_fence'))rows=[{accepted_fence:state.fence}];
     else if(sql.includes('SELECT payload_hash,result FROM operations'))rows=state.operations.has(args[1])?[state.operations.get(args[1])]:[];
@@ -157,6 +158,52 @@ test('private read rechecks authority; exact locator/hash drift and wrong subjec
     recordId:f.record.id,expectedRecordRevision:1,remove:[pin.id]},revoked);
   assert.equal(receipt.draftRevision,3);assert.deepEqual(f.state.draft.records[0].documentCitations,[]);
 }));
+test('recorded unavailable citations can open/reuse a hidden correction and be explicitly removed without resolving private evidence',()=>attributed(async()=>{
+  for(const unavailable of [403,409]){
+    const f=fixture();await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies);
+    const pin=f.state.draft.records[0].documentCitations![0];
+    const recordedBody={...f.body,documentCitations:[structuredClone(pin)]},savedBody=structuredClone(recordedBody);
+    const savedHistory=structuredClone(f.state.history.get(1)),savedOriginalResult=structuredClone(f.result);
+    f.state.row.revision=2;f.state.row.body=recordedBody as typeof f.state.row.body;
+    f.state.draft.status='recorded';
+    const oldDraft=structuredClone(f.state.draft),key=randomUUID();let created=false;
+    const client={query:async(sql:string,args:any[]=[])=>{
+      if(sql.includes('SELECT * FROM registry_sites'))return {rows:[{id:f.siteId,identifier:'technical-site',revision:2,
+        frame:{id:'technical-control',horizontalUnit:'m',verticalUnit:'m',benchmark:'technical-control'},synthetic:true}]};
+      if(sql.includes('SELECT * FROM registry_records'))return {rows:[{...structuredClone(f.state.row),identifier:f.record.identifier}]};
+      if(sql.includes('SELECT * FROM registry_drafts WHERE site_id'))
+        return {rows:created && (!sql.includes('request_key')||args[1]===key)?[structuredClone(f.state.draft)]:[]};
+      if(sql.startsWith('INSERT INTO cases'))return {rows:[]};
+      if(sql.startsWith('INSERT INTO registry_drafts')){
+        f.state.draft={id:args[0],site_id:args[1],case_id:args[2],records:JSON.parse(args[3]),revision:1,status:'draft',created_at:'2026-09-30T00:00:00Z'};
+        created=true;return {rows:[structuredClone(f.state.draft)]};
+      }
+      return f.client.query(sql,args);
+    }} as unknown as PoolClient;
+    let reads=0,sourceChecks=0;
+    const denied={...f.dependencies,source:async()=>{sourceChecks++;throw new AppError(unavailable,'DOCUMENT_UNAVAILABLE','Unavailable');},
+      result:async()=>{reads++;return f.result;}};
+    const fresh=await createRegistryDraftTx(client,f.siteId,f.record.id,undefined,key);
+    assert.equal(fresh.status,'draft');assert.equal(fresh.records[0].revision,2);
+    assert.equal(Object.hasOwn(fresh.records[0],'documentCitations'),false);
+    assert.deepEqual(f.state.draft.records[0].documentCitations,[pin]);
+    assert.deepEqual(await createRegistryDraftTx(client,f.siteId,f.record.id,undefined,key),fresh);
+    assert.deepEqual(await createRegistryDraftTx(client,f.siteId,f.record.id),fresh);
+    assert.equal(reads,0);assert.equal(sourceChecks,0);
+    await assert.rejects(()=>readRegistryDocumentCitationsTx(client,fresh.id,denied),status(unavailable));
+    await assert.rejects(()=>assertRegistryDocumentCitationsTx(client,f.siteId,f.state.draft.records[0],false,denied),status(unavailable));
+    assert.throws(()=>assertCitationEdit(f.state.draft.records[0],{documentCitations:[]}));
+    const removal=await amendRegistryDocumentCitationsTx(client,fresh.id,{requestKey:randomUUID(),expectedDraftRevision:1,
+      recordId:f.record.id,expectedRecordRevision:2,remove:[pin.id]},denied);
+    assert.equal(removal.draftRevision,2);assert.deepEqual(f.state.draft.records[0].documentCitations,[]);
+    assert.equal(reads,0);
+    assert.deepEqual(f.state.row.body,savedBody);assert.deepEqual(f.state.history.get(1),savedHistory);
+    assert.deepEqual(oldDraft.records[0].documentCitations,[pin]);assert.deepEqual(f.result,savedOriginalResult);
+    await assert.rejects(()=>amendRegistryDocumentCitationsTx(client,fresh.id,{...f.request,requestKey:randomUUID(),
+      expectedDraftRevision:2,expectedRecordRevision:2},denied),status(unavailable));
+    assert.deepEqual(f.state.draft.records[0].documentCitations,[]);
+  }
+}));
 test('generic registry/snapshot/exchange projections omit citations while immutable raw/hash and internal exact target checks stay intact',()=>attributed(async()=>{
   const f=fixture();await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies);
   const record=f.state.draft.records[0],raw={id:record.id,site_id:f.siteId,kind:record.kind,identifier:record.identifier,revision:1,
@@ -175,9 +222,18 @@ test('generic registry/snapshot/exchange projections omit citations while immuta
   const exchange=buildExchange({scope,frame:{horizontal:'EPSG:32643',vertical:'technical-control',unit:'m'},licenceFamily:null,
     records:[{id:record.id,pin,bodySha256:digest,body:raw,sourceIds:[f.input.sourceId],licenceFamily:null}],
     sources:[{id:f.input.sourceId,revision:1,sha256:'a'.repeat(64),licenceFamily:null,bodySha256:'a'.repeat(64),metadata:{issuer:null}}]});
-  assert.equal(JSON.stringify(exchange).includes('documentCitations'),false);
+  assert.equal(Object.hasOwn(exchange.sidecar.records[0].body.body,'documentCitations'),false);
+  assert.deepEqual(exchange.sidecar.omissions,[{field:'documentCitations',category:'omitted_by_profile',
+    reason:'Private document citation pins are excluded from this general exchange profile.'}]);
+  assert.equal(JSON.stringify(exchange).includes(record.documentCitations![0].id),false);
+  assert.equal(JSON.stringify(exchange).includes(record.documentCitations![0].locator.label),false);
   assert.equal(exchange.sidecar.records[0].bodySha256,digest);
   assert.equal(exchange.sidecar.records[0].bodyProjection.sha256,fingerprint(view));
+  const roundTrip=compareExchange(exchange,exchange.cityJson,exchange.sidecar);
+  const changedOmission=compareExchange(exchange,exchange.cityJson,{...exchange.sidecar,omissions:[]});
+  assert.equal(roundTrip.comparisons.some(item=>item.field==='sidecar.omissions'&&item.category==='conflict'),false);
+  assert.equal(roundTrip.comparisons.some(item=>item.field==='documentCitations'&&item.category==='omitted_by_profile'),true);
+  assert.equal(changedOmission.comparisons.some(item=>item.field==='sidecar.omissions'&&item.category==='conflict'),true);
   assert.deepEqual(raw,saved);
   const review={records:[record],documentReviewContext:documentReviewContext()};
   assert.doesNotThrow(()=>assertDocumentReviewContext(review));

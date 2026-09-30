@@ -149,6 +149,8 @@ export function buildExchange(input: { scope: SnapshotScope; frame: { horizontal
     access: 'private', codeNamespace: 'P3/1', frame: input.frame,
     exportLicenceFamily: input.licenceFamily,
     requestedPins: input.records.map(record => record.pin),
+    omissions:[{field:'documentCitations',category:'omitted_by_profile',
+      reason:'Private document citation pins are excluded from this general exchange profile.'}],
     records: allowedRecords.map(record => ({ ...record,
       bodyProjection:{profile:'registry-private-projection/1',sha256:fingerprint(record.body),
         sha256Basis:'canonical_served_body',capturedBodySha256:record.bodySha256,capturedBodyHashBasis:'immutable_captured_body'},
@@ -244,6 +246,8 @@ export function compareExchange(expected: ReturnType<typeof buildExchange>, supp
   report.push(...hierarchyConflicts(city.CityObjects));
   if (sidecar && canonical(sidecar.losses) !== canonical(expected.losses))
     report.push({ objectId: null, field: 'sidecar.losses', category: 'conflict' });
+  if(sidecar && canonical(sidecar.omissions)!==canonical(expected.sidecar.omissions))
+    report.push({objectId:null,field:'sidecar.omissions',category:'conflict'});
   if (canonical(city.metadata) !== canonical(expected.cityJson.metadata))
     report.push({ objectId: null, field: 'CityJSON.metadata', category: 'conflict' });
   for (const id of Object.keys(city.CityObjects)) if (!expected.cityJson.CityObjects[id])
@@ -280,6 +284,8 @@ export function compareExchange(expected: ReturnType<typeof buildExchange>, supp
     field: `source.${source.id}@${source.revision}.sha256`, category: sidecar ? 'exact' : 'omitted_by_profile' });
   for (const loss of expected.losses) report.push({ objectId: loss.objectId, field: loss.field,
     category: loss.category, detail: loss.reason });
+  for(const omission of expected.sidecar.omissions)report.push({objectId:null,field:omission.field,
+    category:'omitted_by_profile',detail:omission.reason});
   return { profile: 'P3-CJ/1', manifestId: expected.sidecar.manifestId,
     state: report.some(row => row.category === 'conflict') ? 'conflict' : 'compared',
     comparisons: report, mutation: 'none; reviewed commands are required' };
