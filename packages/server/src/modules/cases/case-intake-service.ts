@@ -1,3 +1,4 @@
+import {CityJSONIngestionService} from '../usp/ingestion/cityjson';
 import { AppError } from '../../infrastructure/errors';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { largeOriginalDownload } from '../usp/ingestion/download';
@@ -28,6 +29,8 @@ export class CaseIntakeService {
 
   async sourceFile(id: string) {
     const source = await getSource(id);
+    if(source.profile==='cityjson-native-v1'||source.inspection?.cityjsonOriginal)
+      return new CityJSONIngestionService().original(source.case_id,id);
     if(source.inspection?.documentOriginal)return new DocumentIngestionService().original(source.case_id,id);
     await transaction(client=>documentAuthorityTx(client,source,'original'));
     const bytes = await readObject(source.object_key);
