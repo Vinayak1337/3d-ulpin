@@ -1,5 +1,7 @@
 # NestJS backend migration and delivery ledger
 
+**Validation publication bounded, 1 October:** CITYJSON-VALIDITY-02 may add an optional cancellation signal to `storage.ts::putOriginal`, with existing streaming verification only for the opted-in path. Existing no-signal callers remain unchanged. Validation publication/replay verification must stay under its finite deadline with exact size/hash and conditional creation; no unbounded fallback or broad storage refactor. No runtime transfer.
+
 **Reader checkout fix accepted, 1 October:** CITYJSON-EOL-01 code `e9a7486` / handoff `9995539` integrate as `614d7d8` / `31b458d`. Two exact-path LF attribute rules preserve the accepted reader digest across autocrlf checkouts. Lead matched the receipt, original blobs, retained before/after checkout bytes and preserved existing attribute prefix; integrated attributes resolve correctly. No Python/source/hash-rule/saved-pin changes or runtime rerun. Owner stopped; validation-job implementation continues with its coordinated `jobs.ts` seam. Existing populated checkouts still require byte verification before serving.
 
 **Validation job registration coordinated, 1 October:** CITYJSON-VALIDITY-02 also owns the narrow additive operation guard/import in `usp/jobs.ts::registerUspJobInputTx`; the existing allowlist requires it. Domain locks remain before registration's job lock; existing operations, attempt/fence semantics and limits stay unchanged. No SQL change identified. EOL lane remains independent; no runtime transferred.
