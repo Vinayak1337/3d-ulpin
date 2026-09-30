@@ -98,13 +98,15 @@ async function historicalTargetTx(client:PoolClient,siteId:string,record:Registr
     !row.body||fingerprint(row.body)!==pin.target.bodySha256)
     conflict('The immutable recorded target citation pin changed or is unavailable.');
 }
-/** All callers use the canonical transaction; exact result I/O is followed by source/attempt rechecks. */
+/** Private reads and writes retain aggregate authority locks through the final checks.
+ * Read-only review preparation uses its repeatable-read snapshot, then revalidates with locks before persistence. */
 export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId:string,record:RegistryRecord,
-  lock=false,dependencies:Dependencies=defaults){
+  lock=false,dependencies:Dependencies=defaults,protectAggregate=false){
   const citations=RegistryDocumentCitationsSchema.parse(record.documentCitations??[]);
   if(!citations.length)return [];
   requireCorrection(record);
   const ctx=context(),entries:{pin:RegistryDocumentCitation;part:DocumentResult['native']['parts'][number]}[]=[];
+  const checked:{pin:RegistryDocumentCitation;input:DocumentInput;source:Awaited<ReturnType<Dependencies['registrySource']>>;fence:number}[]=[];
   const groups=new Map<string,RegistryDocumentCitation[]>();
   for(const pin of citations){
     if(pin.selection.subject!==ctx.principal.subject)
@@ -129,6 +131,23 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
     const current=await dependencies.registrySource(client,siteId,first.document.sourceId);
     if(fingerprint(current)!==fingerprint(source)||await acceptedFenceTx(client,input.jobId)!==fence)
       conflict('The document source or accepted attempt changed during its read.');
+    checked.push({pin:first,input,source,fence});
+  }
+  // Finish every object read before acquiring the complete authority lock set.
+  // The canonical helper locks the case (including source-family changes) and
+  // exact source/job/accepted-attempt rows until the caller's transaction ends.
+  // Use stable ordering for the final aggregate lock acquisition.
+  checked.sort((a,b)=>a.input.caseId.localeCompare(b.input.caseId)||
+    a.input.sourceId.localeCompare(b.input.sourceId)||a.input.jobId.localeCompare(b.input.jobId));
+  if(lock||protectAggregate)
+    for(const item of checked)await dependencies.source(client,ctx,item.pin.document,item.input,true);
+  // Protected callers validate again only after the complete lock set is held:
+  // a source can change during lock acquisition or later groups' result I/O.
+  for(const item of checked){
+    await dependencies.source(client,ctx,item.pin.document,item.input);
+    const current=await dependencies.registrySource(client,siteId,item.pin.document.sourceId);
+    if(fingerprint(current)!==fingerprint(item.source)||await acceptedFenceTx(client,item.input.jobId)!==item.fence)
+      conflict('The aggregate document source or accepted attempt changed during its read.');
   }
   return entries;
 }
@@ -189,7 +208,8 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     await dependencies.registrySource(client,draft.site_id,request.add.document.sourceId);
   }
   // Removal remains useful when the removed source is unavailable; retained/additional citations still require current authority.
-  const next=applyCitationAmendment(record,added,request.remove);
+  const remove=request.clearAll?(record.documentCitations??[]).map(pin=>pin.id):request.remove;
+  const next=applyCitationAmendment(record,added,remove);
   await assertRegistryDocumentCitationsTx(client,draft.site_id,next,true,dependencies);
   await currentTargetTx(client,draft.site_id,record,true,dependencies);
   const changed=fingerprint(record.documentCitations??[])!==fingerprint(next.documentCitations??[]);
@@ -205,7 +225,7 @@ export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:
   const {draft,record}=await lockedDraftTx(client,draftId);
   const expected=draft.status==='recorded'?{...record,revision:record.revision+1}:record;
   await currentTargetTx(client,draft.site_id,expected,false,dependencies);
-  const citations=await assertRegistryDocumentCitationsTx(client,draft.site_id,record,false,dependencies);
+  const citations=await assertRegistryDocumentCitationsTx(client,draft.site_id,record,false,dependencies,true);
   await currentTargetTx(client,draft.site_id,expected,false,dependencies);
   const current=await lockedDraftTx(client,draftId);
   if(fingerprint(current)!==fingerprint({draft,record}))conflict('The draft changed during its private evidence read.');

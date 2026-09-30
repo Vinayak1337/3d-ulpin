@@ -20,8 +20,11 @@ export const RegistryDocumentAmendmentSchema=z.strictObject({requestKey:z.uuid()
   recordId:z.uuid(),expectedRecordRevision:revision,
   add:z.strictObject({document:DocumentAssociationSourceSchema,partIds:z.array(z.uuid()).min(1).max(25)}).optional(),
   remove:z.array(hash).max(25).default([]),
+  clearAll:z.literal(true).optional(),
 }).superRefine((value,ctx)=>{
-  if(!value.add&&!value.remove.length)ctx.addIssue({code:'custom',message:'Select citations to add or remove.'});
+  if(!value.add&&!value.remove.length&&!value.clearAll)ctx.addIssue({code:'custom',message:'Select citations to add, remove or explicitly clear.'});
+  if(value.clearAll&&(value.add||value.remove.length))
+    ctx.addIssue({code:'custom',message:'Clear all citations as a separate amendment.'});
   if(value.add && new Set(value.add.partIds).size!==value.add.partIds.length)
     ctx.addIssue({code:'custom',message:'Select each native part once.'});
   if(new Set(value.remove).size!==value.remove.length)

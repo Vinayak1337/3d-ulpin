@@ -71,9 +71,13 @@ const status=(code:number)=>(error:any)=>error.status===code;
 test('amendment selection accepts only bounded exact IDs and server-derived citation data',()=>{
   const f=fixture();assert(RegistryDocumentAmendmentSchema.safeParse(f.request).success);
   for(const request of [{...f.request,text:'caller text'},
+    {...f.request,clearAll:true},
+    {...f.request,add:undefined,clearAll:true,remove:[digest]},
+    {...f.request,add:undefined,clearAll:false},
     {...f.request,add:{...f.request.add,partIds:[f.part.id,f.part.id]}},
     {...f.request,add:{...f.request.add,partIds:Array.from({length:26},()=>randomUUID())}},
     {...f.request,add:undefined,remove:[]}])assert(!RegistryDocumentAmendmentSchema.safeParse(request).success);
+  assert(RegistryDocumentAmendmentSchema.safeParse({...f.request,add:undefined,clearAll:true}).success);
 });
 test('canonical amendment preserves other bytes, derives exact pins, deduplicates and fences replay/stale submissions',()=>attributed(async()=>{
   const f=fixture();
@@ -123,7 +127,9 @@ test('extracted source authority uses actual canonical source/input/accepted-res
       sha256:digest,bytes:1,receivedAt:'2026-09-30T00:00:00Z'}}};
   const input=documentInput({current,source,binding,context:fingerprint({frame:null,context:null,siteId:f.siteId}),latest:true},f.input.jobId,'native_only');
   const pin={...f.request.add.document};let acceptedHash=digest;
+  const sqlCalls:string[]=[];
   const client={query:async(sql:string)=>{
+    sqlCalls.push(sql);
     if(sql.includes('FROM cases'))return {rows:[current]};
     if(sql.includes('max(revision)'))return {rows:[{revision:1}]};
     if(sql.includes('FROM sources'))return {rows:[source]};
@@ -133,6 +139,9 @@ test('extracted source authority uses actual canonical source/input/accepted-res
     return {rows:[{job_id:input.jobId}]};
   }} as unknown as PoolClient;
   assert.deepEqual(await associationDocumentInputTx(client,localRequestContext(randomUUID()),pin,undefined,true),input);
+  for(const table of ['jobs','sources','usp_job_metadata','usp_job_attempts'])
+    assert(sqlCalls.some(sql=>sql.includes(`FROM ${table} WHERE`)&&sql.includes('FOR SHARE')),table);
+  assert(sqlCalls.some(sql=>sql.includes('FROM cases')&&sql.includes('FOR UPDATE')));
   current.archived=true;
   await assert.rejects(()=>associationDocumentInputTx(client,localRequestContext(randomUUID()),pin),status(403));
   current.archived=false;source.inspection.documentOriginal.subject='wrong-subject';
@@ -144,6 +153,12 @@ test('private read rechecks authority; exact locator/hash drift and wrong subjec
   const f=fixture();await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies);
   const read=await readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies);
   assert.deepEqual(read.citations[0].part,f.part);
+  // The snapshot phase of canonical review is READ ONLY; it is validated again
+  // with locks before review persistence, so this phase must not request locks.
+  await assertRegistryDocumentCitationsTx(f.client,f.siteId,f.state.draft.records[0],false,{...f.dependencies,
+    source:async(_client:PoolClient,_ctx:unknown,_pin:unknown,_expected?:DocumentInput,lock=false)=>{
+      assert.equal(lock,false);return f.input;
+    }});
   let reads=0;
   const revoked={...f.dependencies,source:async()=>{throw new AppError(403,'DOCUMENT_DENIED','Revoked');},result:async()=>{reads++;return f.result;}};
   await assert.rejects(()=>readRegistryDocumentCitationsTx(f.client,f.draftId,revoked),status(403));assert.equal(reads,0);
@@ -158,7 +173,7 @@ test('private read rechecks authority; exact locator/hash drift and wrong subjec
     recordId:f.record.id,expectedRecordRevision:1,remove:[pin.id]},revoked);
   assert.equal(receipt.draftRevision,3);assert.deepEqual(f.state.draft.records[0].documentCitations,[]);
 }));
-test('recorded unavailable citations can open/reuse a hidden correction and be explicitly removed without resolving private evidence',()=>attributed(async()=>{
+test('fresh clients can open/reuse an unavailable citation correction and explicitly clear it from the exposed response',()=>attributed(async()=>{
   for(const unavailable of [403,409]){
     const f=fixture();await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies);
     const pin=f.state.draft.records[0].documentCitations![0];
@@ -193,9 +208,17 @@ test('recorded unavailable citations can open/reuse a hidden correction and be e
     await assert.rejects(()=>readRegistryDocumentCitationsTx(client,fresh.id,denied),status(unavailable));
     await assert.rejects(()=>assertRegistryDocumentCitationsTx(client,f.siteId,f.state.draft.records[0],false,denied),status(unavailable));
     assert.throws(()=>assertCitationEdit(f.state.draft.records[0],{documentCitations:[]}));
-    const removal=await amendRegistryDocumentCitationsTx(client,fresh.id,{requestKey:randomUUID(),expectedDraftRevision:1,
-      recordId:f.record.id,expectedRecordRevision:2,remove:[pin.id]},denied);
+    // This request uses only the actual public response, without inaccessible
+    // citation IDs, source locators or any previously resolved document text.
+    const clear={requestKey:randomUUID(),expectedDraftRevision:fresh.revision,
+      recordId:fresh.records[0].id,expectedRecordRevision:fresh.records[0].revision,clearAll:true};
+    await assert.rejects(()=>amendRegistryDocumentCitationsTx(client,fresh.id,
+      {...clear,expectedDraftRevision:fresh.revision+1},denied),status(409));
+    assert.deepEqual(f.state.draft.records[0].documentCitations,[pin]);
+    const removal=await amendRegistryDocumentCitationsTx(client,fresh.id,clear,denied);
     assert.equal(removal.draftRevision,2);assert.deepEqual(f.state.draft.records[0].documentCitations,[]);
+    assert.deepEqual(await amendRegistryDocumentCitationsTx(client,fresh.id,clear,denied),removal);
+    assert.equal((await readRegistryDocumentCitationsTx(client,fresh.id,denied)).citations.length,0);
     assert.equal(reads,0);
     assert.deepEqual(f.state.row.body,savedBody);assert.deepEqual(f.state.history.get(1),savedHistory);
     assert.deepEqual(oldDraft.records[0].documentCitations,[pin]);assert.deepEqual(f.result,savedOriginalResult);
@@ -203,6 +226,49 @@ test('recorded unavailable citations can open/reuse a hidden correction and be e
       expectedDraftRevision:2,expectedRecordRevision:2},denied),status(unavailable));
     assert.deepEqual(f.state.draft.records[0].documentCitations,[]);
   }
+}));
+
+test('private aggregate read rejects A revoked during B I/O and final checks run under all authority locks',()=>attributed(async()=>{
+  const a=fixture(),b=fixture();let revoked=false,rechecksAfterRevocation=0;
+  const events:{kind:string;sourceId:string;locked?:boolean}[]=[];
+  const dependencies={...a.dependencies,
+    source:async(_client:PoolClient,_ctx:unknown,pin:any,expected?:DocumentInput,lock=false)=>{
+      events.push({kind:'authority',sourceId:pin.sourceId,locked:lock});
+      if(revoked&&pin.sourceId===a.input.sourceId){
+        rechecksAfterRevocation++;throw new AppError(403,'DOCUMENT_DENIED','A revoked during B I/O');
+      }
+      const input=pin.sourceId===a.input.sourceId?a.input:b.input;
+      if(expected)assert.deepEqual(input,expected);
+      return input;
+    },
+    result:async(input:DocumentInput)=>{
+      events.push({kind:'result',sourceId:input.sourceId});
+      if(input.sourceId===b.input.sourceId){if(revokeOnB)revoked=true;return structuredClone(b.result);}
+      return structuredClone(a.result);
+    }};
+  let revokeOnB=false;
+  await amendRegistryDocumentCitationsTx(a.client,a.draftId,a.request,dependencies);
+  await amendRegistryDocumentCitationsTx(a.client,a.draftId,{...a.request,requestKey:randomUUID(),expectedDraftRevision:2,
+    add:b.request.add},dependencies);
+  events.length=0;
+  const available=await readRegistryDocumentCitationsTx(a.client,a.draftId,dependencies);
+  assert.equal(available.citations.length,2);
+  const lastObjectRead=events.map(event=>event.kind).lastIndexOf('result');
+  const finalEvents=events.slice(lastObjectRead+1),lockedSources=new Set<string>();
+  for(const event of finalEvents){
+    assert.notEqual(event.kind,'result');
+    if(event.locked)lockedSources.add(event.sourceId);
+    // Initial per-group rechecks may precede aggregate locks; the final pass
+    // must revisit both groups after all locks have been acquired.
+  }
+  assert.deepEqual(lockedSources,new Set([a.input.sourceId,b.input.sourceId]));
+  const lastLock=finalEvents.map(event=>!!event.locked).lastIndexOf(true);
+  assert.deepEqual(new Set(finalEvents.slice(lastLock+1).map(event=>event.sourceId)),lockedSources);
+  events.length=0;revokeOnB=true;
+  await assert.rejects(()=>readRegistryDocumentCitationsTx(a.client,a.draftId,dependencies),status(403));
+  assert.equal(rechecksAfterRevocation,1);
+  assert.deepEqual(events.filter(event=>event.kind==='result').map(event=>event.sourceId),[a.input.sourceId,b.input.sourceId]);
+  assert.equal(a.state.writes,2);
 }));
 test('generic registry/snapshot/exchange projections omit citations while immutable raw/hash and internal exact target checks stay intact',()=>attributed(async()=>{
   const f=fixture();await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies);
