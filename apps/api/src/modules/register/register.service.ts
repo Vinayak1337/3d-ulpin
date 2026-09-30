@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {amendRegistryDocumentCitations,readRegistryDocumentCitations} from '@ulpin/server/modules/registry/registry-document-evidence';
+import {prepareRegistryCityJSONDraft,readRegistryCityJSONDraft,removeRegistryCityJSONDraft} from '@ulpin/server/modules/registry/cityjson-draft';
 import type { z } from 'zod';
 import {
   commitRegistryReview, createRegistryDraft, createSite, draftDetail,
@@ -17,6 +18,9 @@ import type {
 
 @Injectable()
 export class RegisterService {
+  prepareNativeExterior(input:unknown){return prepareRegistryCityJSONDraft(input);}
+  nativeExterior(draftId:string){return readRegistryCityJSONDraft(draftId);}
+  removeNativeExterior(draftId:string,input:unknown){return removeRegistryCityJSONDraft(draftId,input);}
   amendDocumentCitations(draftId:string,input:unknown){return amendRegistryDocumentCitations(draftId,input);}
   documentCitations(draftId:string){return readRegistryDocumentCitations(draftId);}
   listSites() { return listSites(); }

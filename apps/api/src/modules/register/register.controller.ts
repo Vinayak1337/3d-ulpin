@@ -1,5 +1,7 @@
 import { Controller, Get, Header, HttpCode, Inject, Param, Patch, Post, Req, Res,UseGuards } from '@nestjs/common';
 import {RegistryDocumentAmendmentSchema,RegistryDocumentAmendmentReceiptSchema,RegistryDocumentEvidenceSchema} from '@ulpin/contracts';
+import {RegistryCityJSONPrepareSchema,RegistryCityJSONReceiptSchema,RegistryCityJSONReadSchema,
+  RegistryCityJSONRemoveSchema,RegistryCityJSONRemovalReceiptSchema} from '@ulpin/contracts';
 import {AppError} from '@ulpin/server/infrastructure/errors';
 import {PrivateSpatialGuard} from '../spatial/private-spatial.guard';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -18,11 +20,41 @@ import * as doc from './documentation';
 async function body<T extends z.ZodType>(request: Request, schema: T): Promise<z.infer<T>> {
   return schema.parse(await readJsonBody(request, 2 * 1024 * 1024));
 }
+function noNativeQuery(req:Request){
+  if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
+    throw new AppError(422,'REGISTRY_CITYJSON_QUERY','This native draft operation has no query fields.');
+}
 
 @ApiTags('registry')
 @Controller('api/v1')
 export class RegisterController {
   constructor(@Inject(RegisterService) private readonly service: RegisterService) {}
+
+  @Post('registry-cityjson-drafts') @HttpCode(201)
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'POST_api_v1_registry_cityjson_drafts',summary:'Prepare one private unrecorded source-native building exterior draft'})
+  @doc.ApiContract(201,doc.requestSchema(RegistryCityJSONReceiptSchema),RegistryCityJSONPrepareSchema)
+  async prepareNativeExterior(@Req() req:Request){
+    noNativeQuery(req);
+    return this.service.prepareNativeExterior(RegistryCityJSONPrepareSchema.parse(await readJsonBody(req,16*1024)));
+  }
+
+  @Get('registry-drafts/:draftId/native-exterior')
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_native_exterior',summary:'Resolve private native exterior geometry through current source and accepted-job authority'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryCityJSONReadSchema))
+  nativeExterior(@Param('draftId') draftId:string,@Req() req:Request){
+    noNativeQuery(req);return this.service.nativeExterior(idSchema.parse(draftId));
+  }
+
+  @Post('registry-drafts/:draftId/native-exterior/remove') @HttpCode(200)
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_native_exterior_remove',summary:'Explicitly remove a native draft candidate without resolving private source pins'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryCityJSONRemovalReceiptSchema),RegistryCityJSONRemoveSchema)
+  async removeNativeExterior(@Param('draftId') draftId:string,@Req() req:Request){
+    noNativeQuery(req);
+    return this.service.removeNativeExterior(idSchema.parse(draftId),RegistryCityJSONRemoveSchema.parse(await readJsonBody(req,16*1024)));
+  }
 
   @Post('registry-imports')
   @HttpCode(201)

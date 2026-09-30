@@ -1,5 +1,5 @@
 import { requireQualifiedGeometryRecords } from '../usp/geometry';
-import { RegistryMetadataSchema,RegistryDocumentCitationsSchema } from '@ulpin/contracts';
+import { RegistryMetadataSchema,RegistryDocumentCitationsSchema,RegistryCityJSONCandidateSchema } from '@ulpin/contracts';
 import {assertRegistryDocumentCitationsTx,assertCitationEdit,publicRegistryBody,publicRegistryDraft,publicRegistryReview,
   documentReviewContext,assertDocumentReviewContext} from './registry-document-evidence';
 import { assertRegistryMetadataTx } from './registry-metadata';
@@ -38,6 +38,12 @@ import {
 const binding = z
   .object({ sourceId: idSchema, locator: z.string().trim().min(1).max(500) })
   .strict();
+/** Presence, including malformed/null values, cannot bypass draft-only admission. */
+export function assertNoNativeCandidates(records:readonly {nativeExteriorCandidate?:unknown}[]) {
+  if(records.some(record=>Object.hasOwn(record,'nativeExteriorCandidate')))
+    throw new AppError(422,'REGISTRY_CITYJSON_UNRECORDED',
+      'Remove the native exterior candidate explicitly before generic editing or review. Recording requires a separately qualified admission path.');
+}
 export function openRegistryRing(ring: RegistryBody["footprint"]) {
   const first = ring[0],
     last = ring.at(-1);
@@ -79,6 +85,7 @@ export const recordBodySchema = z
     synthetic: z.boolean(),
     registryMetadata: RegistryMetadataSchema.optional(),
     documentCitations: RegistryDocumentCitationsSchema.optional(),
+    nativeExteriorCandidate: RegistryCityJSONCandidateSchema.optional(),
   })
   .strict();
 export const editDraftSchema = z
@@ -168,10 +175,14 @@ export async function createSite(
   frame: RegistrySite["frame"],
   synthetic = true,
 ) {
+  return transaction(client=>createRegistrySiteTx(client,name,frame,synthetic));
+}
+/** Same canonical allocator, inside the caller's atomic draft preparation. */
+export async function createRegistrySiteTx(client:PoolClient,name:string,frame:RegistrySite["frame"],synthetic=true) {
   const id = randomUUID();
   return siteFrom(
     (
-      await query(
+      await client.query(
         "INSERT INTO registry_sites(id,identifier,name,frame,synthetic) VALUES($1,$2,$3,$4,$5) RETURNING *",
         [id, propertyIdentifier(id), name, frame, synthetic],
       )
@@ -252,6 +263,7 @@ async function reserveRecord(
   site: RegistrySite,
   body: RegistryBody,
 ): Promise<RegistryRecord> {
+  assertNoNativeCandidates([body]);
   if(body.documentCitations?.length)
     throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Document citations require an existing recorded correction.');
   const id = randomUUID(),
@@ -298,6 +310,7 @@ export async function createRegistryDraft(
 export async function createRegistryDraftTx(
   client:PoolClient,siteId:string,recordId?:string,body?:RegistryBody,requestKey?:string,
 ) {
+    if(body)assertNoNativeCandidates([body]);
     const site = siteFrom(await siteRow(client, siteId, true));
     if (body) await assertRegistryMetadataTx(client, siteId, body.kind, body.registryMetadata);
     if (requestKey) {
@@ -308,6 +321,7 @@ export async function createRegistryDraftTx(
         )
       ).rows[0];
       if (previous) {
+        assertNoNativeCandidates(previous.records);
         if(recordId && ((previous.records as RegistryRecord[]).length!==1||previous.records[0].id!==recordId))
           conflict('This request key names a different correction target.');
         if(recordId){
@@ -404,6 +418,7 @@ export async function editRegistryDraft(
     const old =
       (d.records as RegistryRecord[]).find((r) => r.id === input.recordId) ??
       notFound();
+    assertNoNativeCandidates([...d.records,input.body]);
     if (old.kind !== input.body.kind)
       throw new AppError(
         422,
@@ -454,6 +469,7 @@ async function evidenceChecks(
   records: RegistryRecord[],
   lock=false,
 ) {
+  assertNoNativeCandidates(records);
   for (const r of records) {
     recordBodySchema.parse(bodyOnly(r));
     await assertRegistryMetadataTx(client, site.id, r.kind, r.registryMetadata);
@@ -739,6 +755,7 @@ export async function commitRegistryReviewTx(
       )
     ).rows[0];
     const review = row.body as RegistryReview;
+    assertNoNativeCandidates([...d.records,...review.records,...review.before]);
     assertDocumentReviewContext(review);
     if (row.committed) {
       for(const record of review.records)await assertRegistryDocumentCitationsTx(client,site.id,record,true);

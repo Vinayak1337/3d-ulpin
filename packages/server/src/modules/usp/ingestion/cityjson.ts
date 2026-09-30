@@ -101,17 +101,33 @@ export async function readCityJSONResult(input:CityJSONInput,hash:string):Promis
     throw new AppError(422,'CITYJSON_RESULT_SCOPE','The selection receipt belongs to another original or job.');
   return result;
 }
-async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string){
-  const ctx=await cityjsonSourceTx(client,caseId,sourceId);
+async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string,lock=false){
+  const ctx=await cityjsonSourceTx(client,caseId,sourceId,lock);
   const job=(await client.query(`SELECT j.*,m.result_ref,m.input_sha256,m.logical_state,m.accepted_fence,
     a.state attempt_state,a.fence attempt_fence,a.input_sha256 attempt_input_sha256,a.completion_sha256
     FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id LEFT JOIN usp_job_attempts a ON a.job_id=j.id AND a.fence=m.accepted_fence
-    WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='cityjson-native'`,[jobId,caseId,sourceId])).rows[0]??notFound('CityJSON selection job not found.');
+    WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='cityjson-native'${lock?' FOR SHARE OF j,m':''}`,[jobId,caseId,sourceId])).rows[0]??notFound('CityJSON selection job not found.');
   const input=CityJSONInputSchema.parse(job.payload);
   assertCityJSONJobRow(job,input);
   if(job.status==='succeeded')assertCityJSONJobRow(job,input,true);
-  let stale=false;try{await assertCityJSONInputTx(client,input);}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
+  let stale=false;try{await assertCityJSONInputTx(client,input,lock);}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
   return {ctx,job,input,stale};
+}
+/** Same-client accepted-source authority for private downstream draft writes. */
+export async function acceptedCityJSONTx(client:PoolClient,pin:{caseId:string;caseRevision:number;sourceId:string;
+  sourceRevision:number;sourceSha256:string;jobId:string;resultSha256:string},lock=false){
+  const row=await statusTx(client,pin.caseId,pin.sourceId,pin.jobId,lock);
+  if(row.stale||row.input.caseRevision!==pin.caseRevision||row.input.sourceRevision!==pin.sourceRevision||
+    row.input.sourceSha256!==pin.sourceSha256||row.job.result_ref?.sha256!==pin.resultSha256)
+    conflict('Choose the exact current accepted CityJSON result.');
+  assertCityJSONJobRow(row.job,row.input,true);
+  if(lock){
+    const attempt=(await client.query('SELECT state,input_sha256,completion_sha256 FROM usp_job_attempts WHERE job_id=$1 AND fence=$2 FOR SHARE',
+      [pin.jobId,row.job.accepted_fence])).rows[0];
+    if(!attempt||attempt.state!=='accepted'||attempt.input_sha256!==fingerprint(row.input)||attempt.completion_sha256!==pin.resultSha256)
+      conflict('The accepted CityJSON attempt changed.');
+  }
+  return row;
 }
 export class CityJSONIngestionService{
   async retain(caseValue:string,raw:unknown,file:{name:string;bytes:Uint8Array}){
