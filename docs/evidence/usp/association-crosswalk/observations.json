@@ -1,0 +1,282 @@
+{
+  "schemaVersion": "association-crosswalk-review/1",
+  "reviewDate": "2026-09-30",
+  "base": "a6866e971ed02747e9b6dc8e12ad2169b31f0afc",
+  "sourcePins": [
+    {
+      "assetId": "bihar-approved-layout.pdf",
+      "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "bytes": 2455183,
+      "hashVerified": true
+    },
+    {
+      "assetId": "bihar-land-location.pdf",
+      "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+      "bytes": 1581661,
+      "hashVerified": true
+    },
+    {
+      "assetId": "bihar-project.html",
+      "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+      "bytes": 132607,
+      "hashVerified": true
+    },
+    {
+      "assetId": "haryana-2831-project.html",
+      "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+      "bytes": 108086,
+      "hashVerified": true
+    },
+    {
+      "assetId": "haryana-2831-site-plan.pdf",
+      "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "bytes": 3782332,
+      "hashVerified": true
+    },
+    {
+      "assetId": "haryana-2831-tower3-plan2.pdf",
+      "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "bytes": 1630108,
+      "hashVerified": true
+    }
+  ],
+  "observations": [
+    {
+      "id": "bihar-layout-type-only",
+      "decision": "supported_type_level_only",
+      "evidence": [
+        {
+          "assetId": "bihar-approved-layout.pdf",
+          "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+          "page": 1,
+          "region": "Right title block; V5-01, date 08.06.21, Villa Type 5 unit field and land identifiers",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\bihar-layout-title1.jpg"
+        }
+      ],
+      "visibleText": [
+        "VILLA TYPE 5, UNIT NO. - ____",
+        "KHESRA NO. 1659 KHATA NO.-35",
+        "JAMABANDI 333",
+        "V5-01",
+        "08.06.21"
+      ],
+      "finding": "The unit number remains blank. Byte identity with the earlier plan gives no new approval revision or numbered-villa selection.",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false,
+      "recordCreated": false
+    },
+    {
+      "id": "bihar-project-fields",
+      "decision": "source_fields_observed_unreconciled",
+      "evidence": [
+        {
+          "assetId": "bihar-project.html",
+          "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+          "page": null,
+          "region": "Land Ownership Details, Building Details and approval fields"
+        }
+      ],
+      "visibleText": [
+        "Part of survey plot no 1659, Khata no 40, Jamabandi no 330",
+        "Magnolia Residency 3 Duplex 12",
+        "Date of approval (MAP): 1899-12-30"
+      ],
+      "finding": "The project-level table names 12 duplex apartments but supplies no per-villa number/type crosswalk. The displayed 1899-12-30 value is not accepted as a usable drawing approval date; its cause is unknown.",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false,
+      "recordCreated": false
+    },
+    {
+      "id": "bihar-land-grouped-identifiers",
+      "decision": "partial_reconciliation_conflict_remains",
+      "evidence": [
+        {
+          "assetId": "bihar-land-location.pdf",
+          "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+          "page": 15,
+          "region": "Receipt header; handwritten Jamabandi number",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\land15-top-read.jpg"
+        },
+        {
+          "assetId": "bihar-land-location.pdf",
+          "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+          "page": 18,
+          "region": "Upright mutation-table row; Jamabandi, Khata and Khesra groups",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\land18-table-read.jpg"
+        },
+        {
+          "assetId": "bihar-land-location.pdf",
+          "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+          "page": 19,
+          "region": "Receipt header; handwritten Jamabandi number",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\land19-top-read.jpg"
+        },
+        {
+          "assetId": "bihar-land-location.pdf",
+          "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+          "page": 20,
+          "region": "Printed rent receipt header and identifier row",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\land20-details-read.jpg"
+        },
+        {
+          "assetId": "bihar-land-location.pdf",
+          "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+          "page": 21,
+          "region": "Information request, Nature of Information required",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\land21-request-read.jpg"
+        },
+        {
+          "assetId": "bihar-land-location.pdf",
+          "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+          "page": 22,
+          "region": "Corrected-orientation Jamabandi copy header and plot table",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\land22-table-read.jpg"
+        }
+      ],
+      "visibleText": [
+        "p18: Jamabandi 330; Khata 40, 35, 212; Khesra 1641, 1659, 1660",
+        "p20: Jamabandi 330; Khata 212, 35, 40; Khesra 1641, 1659, 1660; date 26-08-2021",
+        "p22: Jamabandi 330; dated November 16, 2019"
+      ],
+      "finding": "Khata 35 and 40 coexist in the grouped retained land record, so their difference alone is not proof of different property. The grouped columns do not establish a one-to-one 35-to-1659 mapping or explain/correct the drawing Jamabandi 333. Pages 15/19 and the p21 request also visibly reference 330; dense handwritten annotations and faint/clipped p22 row-level Khata mappings remain untranscribed. No numbered villa is selected.",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false,
+      "recordCreated": false
+    },
+    {
+      "id": "haryana-project-listing",
+      "decision": "project_document_grouping_supported_revision_not_established",
+      "evidence": [
+        {
+          "assetId": "haryana-2831-project.html",
+          "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+          "page": null,
+          "region": "Approval fields and document-list rows 3,10,11,14"
+        }
+      ],
+      "visibleText": [
+        "Latest layout approval: 29-04-2024",
+        "Building Plans approval: 29-04-2024",
+        "APPROVED SITE PLAN; BUILDING PLAN-TOWER-3 PLAN-1; PLAN-2; SECTION ELEVATION; listed 29-08-2024"
+      ],
+      "finding": "The retained HTML links the exact site-plan and T3-2 issuing URLs in project 2831. Approval-field and upload-list dates do not provide a sheet revision register or prove the exact current T3-1/T3-2/T3-4 approved pair/set.",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false,
+      "recordCreated": false
+    },
+    {
+      "id": "haryana-site-floor-conflict",
+      "decision": "conflicting_source_labels",
+      "evidence": [
+        {
+          "assetId": "haryana-2831-site-plan.pdf",
+          "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+          "page": 1,
+          "region": "Central T-3 tower graphic",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\haryana-site-towers.jpg"
+        },
+        {
+          "assetId": "haryana-2831-site-plan.pdf",
+          "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+          "page": 1,
+          "region": "Lower-right UNIT DETAIL and bottom TOWER AREA DETAIL tables",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\haryana-site-tables.jpg"
+        },
+        {
+          "assetId": "haryana-2831-site-plan.pdf",
+          "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+          "page": 1,
+          "region": "Bottom-right project/title block",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\haryana-site-title.jpg"
+        }
+      ],
+      "visibleText": [
+        "T-3 G+41",
+        "UNIT DETAIL: TOWER 3 G+42",
+        "TOWER AREA DETAIL: TOWER 3 G+42",
+        "SITE PLAN / PLAN & AREA CALCULATION; S-001; JAN-2024"
+      ],
+      "finding": "The same retained sheet contains G+41 versus G+42. Do not choose one as the approved/built floor count. Project, architect and sheet/date support native planned drawing-set context only.",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false,
+      "recordCreated": false
+    },
+    {
+      "id": "haryana-t3-2-floor-scopes",
+      "decision": "native_planned_floor_scopes_supported",
+      "evidence": [
+        {
+          "assetId": "haryana-2831-tower3-plan2.pdf",
+          "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+          "page": 1,
+          "region": "Left/main Typical Floor-01 caption",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\haryana-plan2-floor01.jpg"
+        },
+        {
+          "assetId": "haryana-2831-tower3-plan2.pdf",
+          "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+          "page": 1,
+          "region": "Right/main Typical Floor-02 caption",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\haryana-plan2-floor02.jpg"
+        },
+        {
+          "assetId": "haryana-2831-tower3-plan2.pdf",
+          "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+          "page": 1,
+          "region": "Bottom-right title block",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\haryana-plan2-title-read.jpg"
+        }
+      ],
+      "visibleText": [
+        "TYPICAL FLOOR-01 (3rd to 12th, 14th to 16th, 18th to 20th, 22nd to 25th, 27th & 29th, 31st to 34th, 36th to 37th & 39th to 41st FLOOR)",
+        "TYPICAL FLOOR-02 (13rd, 21st, 30th & 38th FLOOR)",
+        "TOWER-03 / PLAN & AREA CALCULATION; T3-2; JAN-2024"
+      ],
+      "finding": "T3-2 provides two explicitly scoped typical-floor drawings in the native planned Tower-3 set. Preserve the printed lists, including gaps and the printed 13rd spelling; do not infer omitted floors, unit rights or canonical floor IDs.",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false,
+      "recordCreated": false
+    },
+    {
+      "id": "haryana-t3-2-approval-stamp",
+      "decision": "approval_revision_unresolved",
+      "evidence": [
+        {
+          "assetId": "haryana-2831-tower3-plan2.pdf",
+          "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+          "page": 1,
+          "region": "Upper-right sanction stamp and signatures",
+          "reviewImage": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\haryana-plan2-sanction.jpg"
+        }
+      ],
+      "visibleText": [
+        "SANCTIONED / TO BE READ WITH THIS OFFICE / MEMO NO.: / DATED:"
+      ],
+      "finding": "A sanction stamp and signatures are visible, but a memo number/date is not readable in this region. No current approved sheet revision or paired revision is established.",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false,
+      "recordCreated": false
+    }
+  ],
+  "method": {
+    "sources": "Six retained originals only; existing native text/renders and bounded source-region JPEGs; no OCR or download",
+    "imageIndex": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\review-recovery\\image-index.json",
+    "newViewedImages": 15,
+    "newViewedBytes": 2079410,
+    "largestImageBytes": 352865,
+    "maxPerViewBytes": 358400,
+    "maxTotalBytes": 2097152,
+    "permissionProfile": "never / danger-full-access supplied",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedEffort": "high",
+    "requestedSpeed": "default/standard",
+    "observedModelEffortTier": "unexposed"
+  },
+  "remainingGaps": [
+    "Versioned keyed Bihar villa/type/site-position schedule",
+    "Issuing-source reconciliation of Jamabandi 333 versus 330 and exact Khata/Khesra mapping",
+    "Haryana revision register with exact current approved T3-1/T3-2/T3-4 sheet identities and readable memo",
+    "Canonical registry comparison and building/floor crosswalk",
+    "Source-specific launch/reuse/training permission remains unconfirmed"
+  ]
+}
