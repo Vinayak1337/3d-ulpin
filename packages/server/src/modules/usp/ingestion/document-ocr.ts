@@ -10,23 +10,26 @@ import {documentFormat} from './document-native';
 
 const names=['ULPIN_DOCUMENT_OCR_PYTHON','ULPIN_DOCUMENT_OCR_MODELS','ULPIN_DOCUMENT_OCR_TESSERACT',
   'ULPIN_DOCUMENT_OCR_TESSDATA','ULPIN_DOCUMENT_OCR_SCRATCH'] as const;
-const method='ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned' as const;
+const doclingMethod='ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned' as const;
+const sparseMethod='ocr:tesseract-cli-5.5.1:sparse-tsv-v1' as const;
+const expectedMethod=(input:OcrInput)=>input.ocrSelection?.region?doclingMethod:sparseMethod;
 const resultLimit=128*1024,receiptLimit=64*1024;
 type OcrInput=Pick<DocumentInput,'jobId'|'sourceSha256'|'sourceRevision'|'sourceBytes'|'ocrSelection'>;
 export function documentOcrConfigSha(){
-  return sha256(JSON.stringify(names.map(name=>process.env[name]??null)));
+  return sha256(JSON.stringify({strategy:'source-ocr/2',wholePage:sparseMethod,selectedRegion:doclingMethod,
+    psm:11,language:'eng',minimumWordConfidence:60,paths:names.map(name=>process.env[name]??null)}));
 }
 const candidate=z.object({schemaVersion:z.literal('source-ocr-candidate/1'),sourceSha256:z.string(),sourceBytes:z.number(),
   sourcePage:z.number(),sourcePageFrame:DocumentOcrSchema.shape.sourcePageFrame.unwrap(),
   selection:z.object({kind:z.enum(['whole_page','selected_region']),sourcePageBox:z.array(z.number()).length(4),
-    textCompleteness:z.literal('unverified')}),method:z.literal(method),
+    textCompleteness:z.literal('unverified')}),method:DocumentOcrSchema.shape.method,
   toolStatus:z.enum(['complete','partial','failed','unavailable']),outputStatus:z.enum(['complete','partial','failed']),
   issues:z.array(z.string()),items:z.array(DocumentOcrSchema.shape.items.element)});
 const receiptSchema=z.object({schemaVersion:z.literal('source-ocr-attempt/1'),
   source:z.object({sha256:z.string(),bytes:z.number(),page:z.number(),region:z.array(z.number()).length(4).nullable()}),
   limits:z.object({workerSeconds:z.number(),memoryBytes:z.literal(6*1024**3),cpuThreads:z.literal(2),
     resultBytes:z.literal(resultLimit)}),worker:DocumentOcrExecutionSchema.shape.worker.unwrap().strip(),
-  result:z.object({sha256:z.string().nullable()})});
+  result:z.object({sha256:z.string().nullable(),method:DocumentOcrSchema.shape.method})});
 
 /** Check the opened file before reading; growth still cannot exceed the fixed buffer. */
 export async function readBoundedOcrArtifact(path:string,limit:number){
@@ -63,7 +66,7 @@ export async function privateOcrDirectory(scratch:string,jobId:string){
 function unavailable(input:OcrInput,code:string):NonNullable<DocumentResult['ocr']>{
   return DocumentOcrSchema.parse({sourceSha256:input.sourceSha256,sourceRevision:input.sourceRevision,
     sourcePage:input.ocrSelection!.page,requestedRegion:input.ocrSelection!.region??null,sourcePageFrame:null,
-    method,toolStatus:'unavailable',outputStatus:'failed',textCompleteness:'unverified',issues:[code],items:[]});
+    method:expectedMethod(input),toolStatus:'unavailable',outputStatus:'failed',textCompleteness:'unverified',issues:[code],items:[]});
 }
 function failed(input:OcrInput,code:string):NonNullable<DocumentResult['ocr']>{
   return {...unavailable(input,code),toolStatus:'failed'};
@@ -144,10 +147,11 @@ export async function runSourceOcr(input:OcrInput,original:Uint8Array,deadline:n
       }
       return finish(failed(input,'OCR_SUPERVISOR_FAILED'));
     }
-    if(!receipt||receipt.result.sha256!==execution.candidateSha256||receipt.worker.exitCode!==0||receipt.worker.stopReason!==null)
+    if(!receipt||receipt.result.sha256!==execution.candidateSha256||receipt.result.method!==expectedMethod(input)||
+      receipt.worker.exitCode!==0||receipt.worker.stopReason!==null)
       return finish(failed(input,'OCR_RECEIPT_INVALID'));
     const raw=candidate.parse(JSON.parse(bytes.toString('utf8')));
-    if(raw.sourceSha256!==input.sourceSha256||raw.sourceBytes!==input.sourceBytes||raw.sourcePage!==input.ocrSelection.page||
+    if(raw.method!==expectedMethod(input)||raw.sourceSha256!==input.sourceSha256||raw.sourceBytes!==input.sourceBytes||raw.sourcePage!==input.ocrSelection.page||
       JSON.stringify(raw.selection.sourcePageBox)!==JSON.stringify(input.ocrSelection.region??[0,0,raw.sourcePageFrame.width,raw.sourcePageFrame.height])||
       raw.selection.kind!==(input.ocrSelection.region?'selected_region':'whole_page')||
       raw.items.reduce((n,item)=>n+Buffer.byteLength(item.text,'utf8'),0)>32*1024)return finish(failed(input,'OCR_RESULT_SCOPE'));

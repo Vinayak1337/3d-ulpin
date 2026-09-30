@@ -21,6 +21,7 @@ sys.path.insert(0, str(REPO / "services" / "geo"))
 from geo.usp_document_candidates.docling_tesseract import (  # noqa: E402
     MAX_ITEMS, MAX_RESULT_BYTES, SourceOcrError, encode_result_bounded,
     extract_source_page, sha256_file, verify_assets, verify_source,
+    DOCLING_METHOD, TSV_METHOD,
 )
 from run_trial import _run_worker  # noqa: E402
 
@@ -30,12 +31,13 @@ MAX_MEMORY_BYTES = 6 * 1024**3
 MAX_LOG_BYTES = 2 * 1024**2
 
 
-def _failure_result(source_hash: str, page: int, exc: Exception) -> dict[str, Any]:
+def _failure_result(source_hash: str, page: int, exc: Exception, region: list[float] | None = None) -> dict[str, Any]:
     code = exc.code if isinstance(exc, SourceOcrError) else "unexpected_worker_error"
     return {
         "schemaVersion": "source-ocr-candidate/1",
         "sourceSha256": source_hash,
         "sourcePage": page,
+        "method": TSV_METHOD if region is None else DOCLING_METHOD,
         "toolStatus": "unavailable" if isinstance(exc, SourceOcrError) and exc.unsupported else "failed",
         "outputStatus": "failed",
         "selection": {"rasterProcessing": "none", "textCompleteness": "unverified"},
@@ -53,7 +55,7 @@ def _worker(args: argparse.Namespace) -> int:
         )
     except Exception as exc:
         traceback.print_exc()
-        result = _failure_result(args.expected_source_sha256, args.page, exc)
+        result = _failure_result(args.expected_source_sha256, args.page, exc, args.region)
     try:
         (args.output / "result.json").write_bytes(encode_result_bounded(result))
     except SourceOcrError:
@@ -154,6 +156,8 @@ def main() -> int:
                    "sha256": sha256_file(result_path) if result_path.is_file()
                    and result_path.stat().st_size <= MAX_RESULT_BYTES else None,
                    "toolStatus": result.get("toolStatus") if result is not None else None,
+                   "method": result.get("method") if result is not None else None,
+                   "strategy": result.get("strategy") if result is not None else None,
                    "outputStatus": result.get("outputStatus") if result is not None else None,
                    "itemCount": len(result.get("items", [])) if result is not None else None,
                    "issues": result.get("issues") if result is not None else None},

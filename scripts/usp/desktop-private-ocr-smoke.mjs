@@ -7,8 +7,9 @@ import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {assertLocalOperatorProcess,assertUspIsolation} from './local-isolation.mjs';
 
-const [phase,runtime,outputRoot]=process.argv.slice(2);
-assert(['live','missing','recovered','final'].includes(phase)&&runtime&&outputRoot&&process.argv.length===5);
+const [phase,runtime,outputRoot,retainedReceipt]=process.argv.slice(2);
+assert(['live','missing','recovered','final','whole-page'].includes(phase)&&runtime&&outputRoot&&
+  process.argv.length===(phase==='whole-page'?6:5));
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
 const env=JSON.parse(readFileSync(join(runtime,'run.env.json'),'utf8'));
 const owner=JSON.parse(readFileSync(join(runtime,'ownership.json'),'utf8'));
@@ -16,7 +17,8 @@ assert.equal(owner.project,assertUspIsolation(env).project);assertLocalOperatorP
 assert.equal(env.ULPIN_MODEL_GATEWAY_ENABLED,'0');
 mkdirSync(outputRoot,{recursive:true});
 const file=join(outputRoot,'private-ocr-api.json');
-const destination=phase==='final'?join(outputRoot,'private-ocr-final.json'):file;
+const destination=phase==='whole-page'?join(outputRoot,'whole-page-ocr-api.json'):
+  phase==='final'?join(outputRoot,'private-ocr-final.json'):file;
 const source='E:/BhuAayam-data/task-data/ulpin-official-runtime-pdf-v1/usgs-central-city-co-1910-topographic-map.pdf';
 const expected='fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf';
 const hash=value=>createHash('sha256').update(value).digest('hex');
@@ -47,7 +49,56 @@ async function assertOriginal(receipt){
   return {bytes:actual.length,sha256:hash(actual),cacheControl:response.headers.get('cache-control')};
 }
 let record;
-if(phase==='final'){
+if(phase==='whole-page'){
+  assert(!existsSync(destination),'Preserve existing receipts.');assert(retainedReceipt);
+  const previous=readFileSync(retainedReceipt),prior=JSON.parse(previous.toString('utf8'));
+  assert.equal(prior.source.sha256,expected);
+  const old=await call(path({...prior.source,jobId:prior.selected.jobId}));
+  assert.equal(old.status,'stale');assert.equal(old.sourceSha256,expected);
+  const retained={...prior.source,caseRevision:old.currentCaseRevision,sourceRevision:old.sourceRevision,sourceSha256:expected};
+  const whole=await retry(retained,{page:1}),wholeResult=await wait(whole);
+  assert.equal(wholeResult.ocr.method,'ocr:tesseract-cli-5.5.1:sparse-tsv-v1');
+  assert.equal(wholeResult.ocr.toolStatus,'complete');assert.equal(wholeResult.ocr.outputStatus,'partial');
+  assert(wholeResult.ocrItems.some(item=>item.text==='CENTRAL CITY, COLO.'));
+  assert(wholeResult.ocr.issues.includes('low_confidence_words_withheld'));
+  const selected=await retry(retained,{page:1,region}),selectedResult=await wait(selected);
+  assert.equal(selectedResult.ocr.method,'ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned');
+  assert.equal(selectedResult.ocr.outputStatus,'complete');assert.equal(selectedResult.ocrItems.length,5);
+  assert(['UNITED STATES','DEPARTMENT OF THE INTERIOR','GEOLOGICAL SURVEY'].every(text=>
+    selectedResult.ocrItems.some(item=>item.text.includes(text))));
+  for(const result of [wholeResult,selectedResult]){
+    assert.equal(result.native.status,'needs_ocr');assert.deepEqual(result.parts,[]);
+    assert.equal(result.model.status,'not_requested');assert.equal(result.ocr.sourceSha256,expected);
+    assert.equal(result.ocr.textCompleteness,'unverified');assert.equal(result.ocr.execution.maxSeconds,90);
+    assert.equal(result.ocr.execution.worker.gatedStart,true);assert.equal(result.ocr.execution.worker.stopReason,null);
+    assert.equal(result.ocr.execution.worker.exitCode,0);assert(result.ocr.execution.worker.peakJobPrivateBytes<=6*1024**3);
+    assert(result.ocrItems.every(item=>item.sourcePageBoxes.every(cite=>cite.pageNumber===1 &&
+      cite.box[0]>=0 && cite.box[1]>=0 && cite.box[2]<=result.ocr.sourcePageFrame.width &&
+      cite.box[3]<=result.ocr.sourcePageFrame.height && cite.frame==='pdf_display_page_top_left_points')));
+  }
+  const page=await call(path(whole)+'?page=0&ocrPage=1');assert.deepEqual(page.ocrItems,[]);
+  await call(`/ingestion/cases/${randomUUID()}/sources/${retained.sourceId}/documents/jobs/${whole.jobId}`,404);
+  const bare=['SystemRoot','WINDIR','PATH','TEMP','TMP','USERPROFILE','APPDATA','LOCALAPPDATA'];
+  const ocrKeys=['ULPIN_DOCUMENT_OCR_PYTHON','ULPIN_DOCUMENT_OCR_MODELS','ULPIN_DOCUMENT_OCR_TESSERACT',
+    'ULPIN_DOCUMENT_OCR_TESSDATA','ULPIN_DOCUMENT_OCR_SCRATCH'];
+  const childEnv=Object.fromEntries([...bare.map(key=>[key,process.env[key]]),...Object.entries(env),
+    ...ocrKeys.map(key=>[key,process.env[key]]),['ULPIN_FIXTURE_ROOT',join(root,'fixtures')]].filter(([,value])=>typeof value==='string'));
+  const controls=JSON.parse(execFileSync(process.execPath,['--import','tsx','scripts/usp/desktop-private-ocr-controls.ts',
+    retained.caseId,retained.sourceId,selected.jobId],{cwd:root,env:childEnv,encoding:'utf8',windowsHide:true,timeout:30000}));
+  assert.equal(controls.status,'passed');
+  const codePaths=['packages/contracts/src/usp/document-ingestion.ts',
+    'packages/server/src/modules/usp/ingestion/document-ocr.ts','packages/server/src/modules/usp/ingestion/document-context.ts',
+    'scripts/usp/document-models/run_source_ocr.py','scripts/usp/document-models/run_trial.py',
+    'scripts/usp/desktop-private-ocr-smoke.mjs','services/geo/geo/usp_document_candidates/docling_tesseract.py'];
+  record={version:'whole-page-ocr-api/1',status:'passed',runAt:new Date().toISOString(),project:owner.project,
+    codeHead:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),
+    codeSha256:Object.fromEntries(codePaths.map(path=>[path,hash(readFileSync(join(root,path)))])),
+    previousReceiptSha256:hash(previous),source:retained,whole:{receipt:whole,result:wholeResult},
+    selected:{receipt:selected,result:selectedResult},original:await assertOriginal(retained),controls,
+    independentPagination:true,crossCaseStatus:404,priorJobStale:true,
+    limitations:['Whole-page map output includes unreliable detections and omits the three upper headings.',
+      'Only the exact map-title observation and selected-region headings were visually checked; completeness remains unverified.']};
+}else if(phase==='final'){
   assert(!existsSync(destination),'Preserve the existing final receipt.');
   const previous=readFileSync(file),prior=JSON.parse(previous.toString('utf8'));
   const retained={...prior.source,sourceSha256:prior.source.sha256};
@@ -135,6 +186,6 @@ if(phase==='final'){
     outputStatus:result.ocr.outputStatus,issues:result.ocr.issues,items:result.ocrItems.length};
   if(phase==='recovered')record.status='passed';
 }
-writeFileSync(destination,JSON.stringify(record,null,2)+'\n');
+writeFileSync(destination,JSON.stringify(record,null,2)+'\n',phase==='whole-page'?{flag:'wx'}:undefined);
 console.log(JSON.stringify({phase,status:record.status,sourceSha256:expected,selected:record.selected?.items,
   whole:record.whole?.outputStatus,missing:record.missing?.toolStatus,recovered:record.recovered?.items}));

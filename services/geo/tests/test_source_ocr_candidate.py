@@ -12,11 +12,33 @@ import fitz
 
 from geo.usp_document_candidates.docling_tesseract import (
     MAX_RESULT_BYTES, SourceOcrError, _selection, collect_items,
-    encode_result_bounded, source_page_box,
+    encode_result_bounded, source_page_box, collect_tsv_items,
 )
 
 
 class SourceOcrCandidateTests(unittest.TestCase):
+    def test_sparse_tsv_keeps_literal_words_and_maps_pixels_without_docling_dpi(self) -> None:
+        header = "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n"
+        tsv = header + (
+            "5\t1\t1\t1\t1\t1\t137\t18\t40\t16\t90\t001\n"
+            "5\t1\t1\t1\t1\t2\t180\t18\t50\t16\t88\tTITLE\n"
+            "5\t1\t2\t1\t1\t1\t0\t0\t10\t10\t12\tnoise\n"
+            "5\t2\t3\t1\t1\t1\t0\t0\t10\t10\t95\twrong-page\n")
+        frame = {"pageNumber": 3, "pageFrame": {"width": 1190.37, "height": 1495},
+                 "render": {"scale": 3.0, "pixelOrigin": [321,156], "pixels": [1072,181]}}
+        items, issues, partial = collect_tsv_items(tsv, frame, 64)
+        self.assertEqual([i["text"] for i in items], ["001 TITLE"])
+        cite = items[0]["sourcePageBoxes"][0]
+        self.assertEqual(cite["pageNumber"], 3)
+        self.assertEqual(cite["derivedFrom"], "tesseract_tsv_pixels_via_mupdf_pixel_origin")
+        self.assertEqual(cite["box"], [458/3,174/3,551/3,190/3])
+        self.assertEqual(issues, ["low_confidence_words_withheld", "invalid_tesseract_word_withheld"])
+        self.assertTrue(partial)
+        empty, empty_issues, empty_partial = collect_tsv_items(header, frame, 64)
+        self.assertEqual(empty, [])
+        self.assertIn("no_ocr_text_emitted", empty_issues)
+        self.assertTrue(empty_partial)
+
     def test_crop_box_maps_to_original_page_and_rejects_unknown_origin(self) -> None:
         # Geometry from the retained page-1 heading crop and its actual PNG DPI.
         crop_height = 181 * 72 / 96.012
