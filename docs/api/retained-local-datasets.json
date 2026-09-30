@@ -547,8 +547,25 @@
     },
     "limitations": [
       "This ZIP is a preserved local assembly, not an issuer-original archive; retain per-member provenance and terms.",
-      "Scripts are inert; inventory does not qualify content processing, source associations or Indian operational facts."
-    ]
+      "Scripts remain inert. Member inspection does not qualify canonical GIS admission, property associations or Indian operational facts."
+    ],
+    "memberInspectionEvidence": {
+      "guide": "docs/evidence/usp/archive-member-api-handoff.md",
+      "review": "docs/evidence/usp/desktop-backend-review/archive-member-api-review.md",
+      "workerCommit": "a15ebc55b3834da1a2ca3bac840c21c462fe4c49",
+      "integratedCommit": "e7e806a",
+      "receipt": "E:/BhuAayam-data/task-data/desktop-archive-member-api/receipt-001.json",
+      "receiptSha256": "c3ee6a297c96c139de1a1756133abe4285ac757bf6baa2a58425a319a5518685",
+      "ordinal": 24,
+      "memberBytes": 1103282,
+      "memberSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "resultSha256": "29c6ae64fbb795ca04689de5038a276efcec0d2481dde23fda99bf59e2f33f41",
+      "features": 1662,
+      "acceptedFeatures": 1661,
+      "quarantinedFeatures": 1,
+      "complete": false,
+      "scope": "Exact private queued GeoJSON-member inspection and original download in stopped isolated runtime; no canonical GIS or property admission."
+    }
   },
   {
     "id": "rera-association-crosswalk-checkpoint-20260930",
