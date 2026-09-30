@@ -4,9 +4,9 @@
   "module": "EvidenceModule",
   "moduleImport": "./modules/evidence/evidence.module",
   "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
-  "schemaSource": ["apps/api/src/modules/evidence/evidence.schemas.ts", "apps/api/src/modules/evidence/evidence.http.ts"],
+  "schemaSource": ["apps/api/src/modules/evidence/evidence.schemas.ts", "apps/api/src/modules/evidence/evidence.http.ts", "packages/contracts/src/document-association.ts"],
   "runtimeEvidence": {
-    "openApi": "18 native method/path/operationId entries generated in memory without a listener",
+    "openApi": "18 retained native entries plus one LINK-01A entry; added route metadata verified without a listener",
     "transport": "1 MiB received-byte and malformed-body tests passed",
     "statefulServices": "not run in this batch; integrated owned-service acceptance pending",
     "sourceAccuracy": "not qualified by these code checks"
@@ -19,6 +19,7 @@
     { "method": "POST", "path": "/api/v1/usp/targets/vertical", "operationId": "POST_api_v1_usp_targets_vertical", "disposition": "retained", "controller": "SnapshotEvidenceController.vertical", "schemaKey": "targetVertical", "runtimeEvidence": "metadata-only" },
     { "method": "POST", "path": "/api/v1/usp/evidence/original", "operationId": "POST_api_v1_usp_evidence_original", "disposition": "retained", "controller": "OriginalEvidenceController.original", "schemaKey": "original", "runtimeEvidence": "metadata-and-binary-helper-only" },
     { "method": "POST", "path": "/api/v1/usp/evidence/part", "operationId": "POST_api_v1_usp_evidence_part", "disposition": "retained", "controller": "OriginalEvidenceController.part", "schemaKey": "exactPart", "runtimeEvidence": "metadata-only" },
+    { "method": "POST", "path": "/api/v1/usp/evidence/document-association/preview", "operationId": "POST_api_v1_usp_evidence_document_association_preview", "disposition": "added", "controller": "DocumentAssociationController.preview", "requestSchema": "DocumentAssociationPreviewRequestSchema", "responseSchema": "DocumentAssociationPreviewSchema", "runtimeEvidence": "pending" },
     { "method": "POST", "path": "/api/v1/usp/proposals/prepare", "operationId": "POST_api_v1_usp_proposals_prepare", "disposition": "retained", "controller": "DecisionEvidenceController.prepare", "schemaKey": "prepare", "runtimeEvidence": "metadata-only" },
     { "method": "POST", "path": "/api/v1/usp/proposals/commit", "operationId": "POST_api_v1_usp_proposals_commit", "disposition": "retained", "controller": "DecisionEvidenceController.commit", "schemaKey": "commit", "runtimeEvidence": "metadata-only" },
     { "method": "POST", "path": "/api/v1/usp/identity/reviews", "operationId": "POST_api_v1_usp_identity_reviews", "disposition": "retained", "controller": "DecisionEvidenceController.review", "schemaKey": "identityReview", "runtimeEvidence": "metadata-only" },
