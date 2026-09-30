@@ -64,8 +64,11 @@ const source = z.strictObject({ id: z.uuid(), revision: z.number().int().positiv
   metadata: z.record(z.string(), z.unknown()).describe('Format-specific captured source fields; private object key removed'),
 });
 const exchangeRecord = z.strictObject({ id: z.uuid(), pin, bodySha256: sha256,
-  // Exact canonical registry bodies vary by source profile and retain their own fields.
-  body: z.record(z.string(), z.unknown()).describe('Exact canonical registry body; source-profile fields remain dynamic'),
+  // General exchange omits private citation pins; the captured hash is not the served-body hash.
+  body: z.record(z.string(), z.unknown()).describe('Registry body projection with private document citations omitted; source-profile fields remain dynamic'),
+  bodyProjection: z.strictObject({ profile: z.literal('registry-private-projection/1'), sha256,
+    sha256Basis: z.literal('canonical_served_body'), capturedBodySha256: sha256,
+    capturedBodyHashBasis: z.literal('immutable_captured_body') }),
   sourceIds: z.array(z.uuid()),
   licenceFamily: z.string().nullable(), omittedFromCityJson: z.boolean() });
 const sidecar = z.strictObject({ profile: z.literal('P3-CJ/1'), manifestId: id,
@@ -73,6 +76,8 @@ const sidecar = z.strictObject({ profile: z.literal('P3-CJ/1'), manifestId: id,
   cityJsonEncoding: z.literal('JSON.stringify UTF-8'), access: z.literal('private'),
   codeNamespace: z.literal('P3/1'), frame, exportLicenceFamily: z.string().nullable(),
   requestedPins: z.array(pin), records: z.array(exchangeRecord), sources: z.array(source),
+  omissions: z.array(z.strictObject({ field: z.literal('documentCitations'),
+    category: z.literal('omitted_by_profile'), reason: z.string() })),
   losses: z.array(loss),
 });
 const ladm = z.strictObject({ profile: z.literal('P3-LADM/1'), basis: z.string(),
