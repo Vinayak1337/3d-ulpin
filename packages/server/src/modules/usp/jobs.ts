@@ -1,4 +1,7 @@
 import type { PoolClient } from 'pg';
+import {RegistryCityJSONValidationInputSchema} from '@ulpin/contracts';
+import {fingerprint} from '../cases/domain';
+import {ingestionBinding,assertIngestionBinding} from './ingestion/events';
 import { UspJobProjectionSchema, UspAssetRefSchema, UspScopeSchema,
   type AssetRef, type UspScope } from '@ulpin/contracts/usp';
 import { transaction } from '../../infrastructure/db';
@@ -47,6 +50,15 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
       ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
       throw new AppError(422,'CITYJSON_INPUT_SCOPE','CityJSON jobs must pin their unchanged source and exact intake context.');
+  } else if(job.operation==='cityjson-validation'){
+    const input=RegistryCityJSONValidationInputSchema.parse(job.payload),source=input.candidate.input,
+      binding=ingestionBinding(source.caseId),digest=fingerprint(input);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||source.caseId!==job.case_id||source.sourceId!==job.source_id||source.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||inputSha256!==digest
+      ||source.subject!==binding.subject||source.accessSha256!==binding.access)
+      throw new AppError(422,'CITYJSON_VALIDATION_INPUT_SCOPE','Validation jobs must enroll the exact server-derived source/draft input and private context.');
+    assertIngestionBinding(binding);
   } else if(job.operation==='point-batch'){
     const input=PointBatchInputSchema.parse(job.payload);
     if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id

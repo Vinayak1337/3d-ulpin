@@ -34,3 +34,44 @@ Executable hashes identify the measured installation. A rebuild on another machi
 - A valid exterior shell establishes no reference accuracy, Indian placement, interiors, ownership, building matching, canonical admission, analytical eligibility, SFCGAL operation support or GF-EXCHANGE round trip. Inspection/native APIs retain their existing authority and behavior.
 
 Focused regression command: `python -m unittest discover -s tests -p test_cityjson_validity_adapter.py -v`.
+## Private server job integration
+
+`server.py` is the supervisor for the additive `cityjson-validation` operation.
+The API accepts only `requestKey` and `expectedDraftRevision` at
+`POST /api/v1/registry-drafts/{draftId}/native-exterior/validations`; status/result
+is read at the same path with `/{jobId}`. Both require the existing private guard.
+The server derives source/selection/tool/access pins from the current unrecorded
+candidate; a completed valid result does not admit or qualify registry geometry.
+
+Configure the dispatcher process with absolute paths (no `.env` changes needed):
+
+- `ULPIN_CITYJSON_VALIDATOR_PYTHON`: explicit Python executable.
+- `ULPIN_CITYJSON_VALIDATOR_PYTHON_SHA256`: exact physical executable SHA-256.
+- `ULPIN_CITYJSON_VALIDATOR_TOOLS_ROOT`: retained pinned tooling directory,
+  presently `E:/BhuAayam-data/task-data/desktop-cityjson-validity/`.
+- `ULPIN_CITYJSON_VALIDATOR_SCRATCH_ROOT`: existing private directory outside Git.
+
+No PATH lookup, extension fetching, provider access or source uploads are enabled.
+Python uses `-I -B` with only SystemRoot and private TEMP/TMP. Executable/DLL,
+adapter, supervisor, tool lock, configuration and relevant code bytes are pinned
+at enrollment and checked again. Physical checkout bytes matter; saved receipt
+hashes are not substituted for current bytes. Unsupported/missing/changed
+configuration fails closed with a controlled code and preserves previous history.
+
+The Windows x86-64 supervisor owns a kill-on-close Job Object for its descendants
+and the fixed host-wide `Global\ULPIN-CityJSON-Validation-v1` mutex across dispatcher
+processes. Busy hosts require an explicit retry. The native validation deadline
+is 120 seconds; source/report I/O is individually bounded, and the complete
+worker/publication has a 300-second cancellation deadline with live lease checks.
+Native tools run outside database transactions. This is offline configuration,
+not an OS network-sandbox claim. Other platforms currently abstain.
+
+Bounded raw reports and the full private receipt are immutable private objects;
+ordinary API reads expose only controlled codes, source locators, version/hash
+pins and separate document/selected-geometry verdicts. Result JSON uses a fixed
+32 KiB whitespace-padded envelope for exact bounded streaming. Scratch is removed
+after owned processes exit; crashes can leave private scratch requiring review.
+An interrupted/expired job does not rerun tools automatically. Use a fresh request
+key for an explicit new job; replay returns the same enrolled job after current
+authority checks. Prior jobs/reports are retained. Archived `run-final` evidence
+is used only by no-service parser controls, never enrolled as a runtime result.

@@ -65,8 +65,9 @@ export async function putOriginal(
   key: string,
   bytes: Uint8Array,
   mimeType: string,
+  signal?: AbortSignal,
 ) {
-  await s3().send(
+  try {await s3().send(
     new PutObjectCommand({
       Bucket: settings.s3Bucket,
       Key: key,
@@ -75,7 +76,13 @@ export async function putOriginal(
       IfNoneMatch: "*",
       Metadata: { sha256: sha256(bytes) },
     }),
-  );
+    signal ? {abortSignal: signal} : undefined,
+  );} catch(error) {
+    // Opt-in fenced publication may replay an immutable content address. Other
+    // failures (including abort/timeouts) remain failures, never prior success.
+    if(!signal || (error as {$metadata?:{httpStatusCode?:number}}).$metadata?.httpStatusCode!==412)throw error;
+  }
+  if(signal){await verifyObjectStream(key,bytes.length,sha256(bytes),30_000,undefined,signal);return;}
   const stored = await readObject(key);
   if (stored.length !== bytes.length || sha256(stored) !== sha256(bytes)) {
     throw new AppError(

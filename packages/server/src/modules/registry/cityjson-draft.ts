@@ -197,6 +197,18 @@ export async function prepareRegistryCityJSONDraftTx(client:PoolClient,raw:unkno
   return response;
 }
 export const prepareRegistryCityJSONDraft=(raw:unknown)=>transaction(client=>prepareRegistryCityJSONDraftTx(client,raw));
+/** Current same-client authority for validation. Source gate precedes destination/job locks; no process I/O. */
+export async function registryCityJSONAuthorityTx(client:PoolClient,draftId:string,accepted=acceptedCityJSONTx){
+  draftId=uuid.parse(draftId);
+  const lookup=(await client.query('SELECT site_id,records FROM registry_drafts WHERE id=$1',[draftId])).rows[0]??notFound();
+  const sourceCaseId=uuid.parse(RegistryCityJSONCandidateSchema.parse(nativeRecord(lookup).nativeExteriorCandidate).input.caseId);
+  await lockSourceCaseDestinationTx(client,sourceCaseId);
+  const {site,draft}=await lockedDraft(client,draftId,sourceCaseId,lookup),record=nativeRecord(draft),candidate=currentCandidate(site,draft,record);
+  const authority=await accepted(client,sourcePin(candidate),true);
+  if(fingerprint(authority.input)!==fingerprint(candidate.input)||Number(authority.job.accepted_fence)!==candidate.acceptedFence)
+    conflict('The retained candidate no longer names its exact accepted attempt.');
+  return {site,draft,record,candidate};
+}
 export async function readRegistryCityJSONDraftTx(client:PoolClient,draftId:string,dependencies:Dependencies=defaults){
   draftId=uuid.parse(draftId);
   // Lookup only: acquire the source-case gate before destination rows, then

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {amendRegistryDocumentCitations,readRegistryDocumentCitations} from '@ulpin/server/modules/registry/registry-document-evidence';
 import {prepareRegistryCityJSONDraft,readRegistryCityJSONDraft,removeRegistryCityJSONDraft} from '@ulpin/server/modules/registry/cityjson-draft';
+import {enqueueCityJSONValidation,readCityJSONValidationStatus} from '@ulpin/server/modules/registry/cityjson-validation';
 import type { z } from 'zod';
 import {
   commitRegistryReview, createRegistryDraft, createSite, draftDetail,
@@ -18,6 +19,8 @@ import type {
 
 @Injectable()
 export class RegisterService {
+  enqueueNativeValidation(draftId:string,input:unknown){return enqueueCityJSONValidation(draftId,input);}
+  nativeValidation(draftId:string,jobId:string){return readCityJSONValidationStatus(draftId,jobId);}
   prepareNativeExterior(input:unknown){return prepareRegistryCityJSONDraft(input);}
   nativeExterior(draftId:string){return readRegistryCityJSONDraft(draftId);}
   removeNativeExterior(draftId:string,input:unknown){return removeRegistryCityJSONDraft(draftId,input);}
