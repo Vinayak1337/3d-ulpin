@@ -223,6 +223,7 @@ export * from './registry';
 export * from './gis-quarantine';
 export * from './registry-metadata';
 export * from './building-registry-report';
+export * from './document-association';
 export * from './area';
 
 export * from "./spatial";
