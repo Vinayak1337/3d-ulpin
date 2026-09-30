@@ -225,6 +225,7 @@ export * from './registry-metadata';
 export * from './building-registry-report';
 export * from './document-association';
 export * from './registry-document-evidence';
+export * from './registry-cityjson-draft';
 export * from './area';
 
 export * from "./spatial";

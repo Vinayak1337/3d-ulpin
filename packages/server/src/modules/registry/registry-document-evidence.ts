@@ -27,10 +27,11 @@ export function assertDocumentReviewContext(review:{documentReviewContext?:Regis
     (!review.documentReviewContext||fingerprint(review.documentReviewContext)!==fingerprint(documentReviewContext())))
     throw new AppError(403,'REGISTRY_DOCUMENT_REVIEW_DENIED','The reviewed document access context is unavailable.');
 }
-/** General registry projections never serve private document locators or text. */
+/** General projections hide private citations, native pins and derived geometry. */
 export function publicRegistryBody<T extends object>(body:T):T{
-  const {documentCitations:_privateCitations,...publicBody}=body as T&{documentCitations?:unknown};
-  return publicBody as T;
+  const {documentCitations:_privateCitations,nativeExteriorCandidate:_privateNative,...publicBody}=
+    body as T&{documentCitations?:unknown;nativeExteriorCandidate?:unknown};
+  return (Object.hasOwn(body,'nativeExteriorCandidate')?{...publicBody,footprint:[]}:publicBody) as T;
 }
 export function publicRegistryDraft<T extends {records:RegistryRecord[]}>(draft:T):T{
   return {...draft,records:draft.records.map(publicRegistryBody)};

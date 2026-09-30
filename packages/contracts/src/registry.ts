@@ -8,6 +8,7 @@ import type {
 } from "./index";
 import type {RegistryMetadata} from './registry-metadata';
 import type {RegistryDocumentCitation,RegistryDocumentReviewContext} from './registry-document-evidence';
+import type {RegistryCityJSONCandidate} from './registry-cityjson-draft';
 export type RegistryKind = "parcel" | "building" | "floor" | "space";
 export type SpaceUse = "apartment" | "common" | "basement" | "utility" | "unspecified";
 export interface RegistryRight {
@@ -34,6 +35,8 @@ export interface RegistryBody {
   synthetic: boolean;
   registryMetadata?: RegistryMetadata;
   documentCitations?: RegistryDocumentCitation[];
+  /** Private, unrecorded physical candidate. Generic recording must reject it. */
+  nativeExteriorCandidate?: RegistryCityJSONCandidate;
 }
 export interface RegistryRecord extends RegistryBody {
   id: string;
