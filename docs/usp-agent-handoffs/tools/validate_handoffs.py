@@ -61,7 +61,7 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
             try:
                 markdown_cache[path] = path.read_text(encoding='utf-8')
             except (OSError, UnicodeError) as exc:
-                fail(f'{path.relative_to(root)}: unreadable UTF-8 Markdown: {exc}')
+                fail(f'{path.relative_to(root).as_posix()}: unreadable UTF-8 Markdown: {exc}')
                 markdown_cache[path] = ''
         return markdown_cache[path]
 
@@ -380,7 +380,8 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
             fail(f'{entry}: consolidated baseline missing or stale')
     for path in sorted(docs):
         content = markdown(path)
-        name = str(path.relative_to(root))
+        # Manifest keys and Git object paths use repository (POSIX) separators.
+        name = path.relative_to(root).as_posix()
         if name not in plan.get('entryPoints', []) and (
                 '<!-- plan-next-gate:' in content or re.search(r'Next gate:\s*[A-Z0-9-]+', prose(content).replace('*', ''))):
             fail(f'{name}: gate declarations are allowed only in entry points')
@@ -420,10 +421,10 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
                 if not isinstance(hashes, dict) or not hashes:
                     fail('planValidation: missing filesSha256')
                 else:
-                    needed = {str(p.relative_to(root)) for p in docs} | {relative_plan, check.get('validator'), check.get('tests')}
+                    needed = {p.relative_to(root).as_posix() for p in docs} | {relative_plan, check.get('validator'), check.get('tests')}
                     tools_dir = root / 'docs/usp-agent-handoffs/tools'
                     code_inputs = {check.get('validator'), check.get('tests')} | {
-                        str(p.relative_to(root)) for p in tools_dir.rglob('*.py')}
+                        p.relative_to(root).as_posix() for p in tools_dir.rglob('*.py')}
                     needed.update(code_inputs)
                     if isinstance(receipt, dict) and re.fullmatch(r'[0-9a-f]{40}', str(receipt.get('codeCommit', ''))):
                         for source in code_inputs:
