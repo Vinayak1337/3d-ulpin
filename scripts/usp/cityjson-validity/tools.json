@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "cityjson-validity-tools/1",
+  "platform": "windows-x86_64",
+  "tools": {
+    "cjval": {
+      "version": "0.10.0",
+      "origin": "https://github.com/cityjson/cjval",
+      "commit": "40db6dd698cfe9de5a88a4a1aac4a5173095d86f",
+      "license": "MIT",
+      "attribution": "Hugo Ledoux; cjval contributors",
+      "downloadUrl": "https://crates.io/api/v1/crates/cjval/0.10.0/download",
+      "downloadSha256": "0bf1a5c7c573e78d0ae5ba7a4f60dbbff877c54c18eb7fc97d642a762720214c",
+      "cargoLockSha256": "972b3a334d5ee1832efcc9e26c8ca39f4fbbbde22c280f72e54b85a526af0054",
+      "rustVersion": "1.98.1",
+      "build": [
+        "cargo",
+        "build",
+        "--release",
+        "--locked",
+        "--features",
+        "build-binary",
+        "--bin",
+        "cjval"
+      ],
+      "embeddedSchemaSha256": {
+        "schemas/20/appearance.schema.json": "69d5c01ce61cb7967c036ee9d2dfd9b5c2ae8c0c9622b66acc97cdf7c778f815",
+        "schemas/20/cityjson.min.schema.json": "74e128f4505429775fb97da4132a06e2fb3b88116332d7f6893529841fb3505e",
+        "schemas/20/cityjson.schema.json": "f1cb4b5e5087fea7bc88e8330ea1f999c0d1ddc29839331d25e5fa248fd365de",
+        "schemas/20/cityjsonfeature.min.schema.json": "7374a31db91c1ddb59d3021573932739eeb3c8c96f737c2c2f9ed1fc69e1dd0a",
+        "schemas/20/cityjsonfeature.schema.json": "0578b9ac6b7edae7a69b5a94a5fddac840a4df49b4da9b3ce9b576aa7d229898",
+        "schemas/20/cityobjects.schema.json": "d8f5504a3246319aa083d87ba55cc763979c7bcd5f98c120d26c63463b6ee6ac",
+        "schemas/20/geomprimitives.schema.json": "9f81ce7fb367a0434427c1bb14858455d94201490d968b6e82a282403149f438",
+        "schemas/20/geomtemplates.schema.json": "7af467f5e73b3ab418e7dffd26fa2ea8b0aefae20b9b625d018e794fb5ca10a5",
+        "schemas/20/metadata.schema.json": "2dd186ba48def3adb967ef4bbd5c65183a09d8929d5ed09753dd3739adb7144f"
+      },
+      "files": [
+        {
+          "path": "cjval-source/cjval-0.10.0/target/release/cjval.exe",
+          "sha256": "54f7c4f31261bf4e3974ff30f6ad1d987e75fb909bfbcf7df539f5686189ed85",
+          "executable": true
+        }
+      ]
+    },
+    "val3dity": {
+      "version": "2.7.0",
+      "origin": "https://github.com/tudelft3d/val3dity",
+      "commit": "fbe9e4d65376e1c3f63401f15967485783f78c0a",
+      "license": "GPL-3.0",
+      "attribution": "Hugo Ledoux; val3dity contributors",
+      "downloadUrl": "https://github.com/tudelft3d/val3dity/releases/download/2.7.0/val3dity-win64.zip",
+      "downloadSha256": "cf8d3f025cd52aafc9ea370296a2430baa4aa39ce44a8b3ba1d8b3a540d8a5a7",
+      "files": [
+        {
+          "path": "val3dity-native/boost_filesystem.dll",
+          "sha256": "6c946b31b5ba1f9feea445f4e5e31cd5557639e3184630f9060606e53da43563",
+          "executable": false
+        },
+        {
+          "path": "val3dity-native/geos.dll",
+          "sha256": "39ee23ada037f082e6821bb4e38cdfac0096e4badfe45f00afba39cb15ab91ac",
+          "executable": false
+        },
+        {
+          "path": "val3dity-native/geos_c.dll",
+          "sha256": "cc4e92e7d65fec7081b35dceb9d4167510267b20460506c0b7c0025fb9c1f980",
+          "executable": false
+        },
+        {
+          "path": "val3dity-native/libgmp-10.dll",
+          "sha256": "8b542bac53a8335446a333fc7cbe8ba6caef547ec1bd3d3d3b5aeb615e2bbc00",
+          "executable": false
+        },
+        {
+          "path": "val3dity-native/libmpfr-6.dll",
+          "sha256": "40f9d5ce5714247c24378ca575cc1bff1702cf2a448a7f7cf6e703a2219ade5f",
+          "executable": false
+        },
+        {
+          "path": "val3dity-native/val3dity.exe",
+          "sha256": "7bffd5cf94f4e8adac094a4fac576efe8cd7335d86da2eeeaf1e00b3e0a87809",
+          "executable": true
+        }
+      ]
+    }
+  }
+}
