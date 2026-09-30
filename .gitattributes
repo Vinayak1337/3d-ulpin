@@ -49,3 +49,4 @@ docs/engineering-plan/**/*.png -text -diff
 docs/engineering-plan/**/*.jpg -text -diff
 
 docs/evidence/usp/reviewed-document-links-runtime.json -text
+docs/evidence/usp/cityjson-draft-runtime.json -text

@@ -633,6 +633,57 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/cityjson-draft-runtime.json",
+      "receiptSha256": "9986cf0af1e69a68fe7bae21f97ca16321040b0e991a98a5db0b548a290be36e",
+      "servedCodeCommit": "4bc3e76841c2f27b14c94af10f7360ae0f2767ff",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-b050544f3d2cb99e",
+        "url": "http://127.0.0.1:3192/api/v1"
+      },
+      "qualification": "Private source-native exterior draft preparation/read/replay and bounded denial/privacy behavior; one rollback-only SQL gate observation.",
+      "unqualified": [
+        "Canonical admission, geometry/reference/accuracy qualification and analytical use",
+        "Floor/unit/rights and document association",
+        "Removal runtime, successful recording and exchange round trip",
+        "Learning, scale, deployment and release gates"
+      ],
+      "operations": {
+        "POST /api/v1/registry-cityjson-drafts": {
+          "scope": "Unchanged retained D1 creates one private unrecorded draft; same-key replay returns the same receipt. Slanted-footprint and stale-revision denials publish no partial draft.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/candidate",
+            "/observations",
+            "/preservation"
+          ]
+        },
+        "GET /api/v1/registry-drafts/{draftId}/native-exterior": {
+          "scope": "Exact selected D1 native geometry/vertices/transform and LoD0 footprint returned privately with no-store; final read remains identical. No analytical admission or reference accuracy qualification.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/observations",
+            "/privateRead",
+            "/original"
+          ]
+        },
+        "POST /api/v1/registry-drafts/{draftId}/review": {
+          "scope": "Native exterior candidate receives 422 REGISTRY_CITYJSON_UNRECORDED; zero review or recorded revision. Successful recording is unqualified.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/observations",
+            "/preservation"
+          ]
+        }
+      }
     }
   ]
 }
