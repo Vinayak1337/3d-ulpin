@@ -1,5 +1,7 @@
 # CITYJSON-DRAFT-01 — source-native exterior candidate in a registry draft
 
+**Code returned, 1 October:** implementation `53318fa4632fa3f29f7f4288d34ba8f20c8836ac`, handoff `c4d967be1d3525e043928c150debe9bf458df9a5`; pins verified by lead. Owner is stopped; [independent review](CITYJSON_DRAFT_01_REVIEW.md) receives the exact new draft-write/private-read boundary. Candidate remains unintegrated and runtime unrun/lead-owned. Prior assignment below remains its scope; no new implementation or runtime continuation is dispatched until review result.
+
 Assigned 1 October 2026 after accepted [canonical path audit](../evidence/usp/canonical-exchange-path-audit.md), integrated as `46965e9`. Reuse `AI-04B Documents Full Access`, chat `01a0ee2d-5889-7ac3-a75d-2d2248265c26`, GPT-6.1 Sol/xhigh/default-standard. Actual request tier is unobserved; no Fast/priority. Verify supplied `never` / `danger-full-access` permissions. Read current AGENTS, OPERATING_GUIDE, NESTJS_MIGRATION, normalized backend decisions, H00/release manifest and relevant H01/H02/H26–H28/H30/H99. Consult the official source index/catalogue and accepted native CityJSON/API evidence before input selection.
 
 Clean-check tracked files/index in `C:/Users/kvina/.codex/worktrees/b3eb/3d-ulpin`; preserve the completed OCR branch and untracked `.pnpm-store/`. Create `task/desktop-cityjson-draft` from the exact accepted lead handoff supplied in dispatch. Primary staging is read-only. No new chats/subworkers. OCR and native CityJSON implementation/reviews are complete and are not repeated.
