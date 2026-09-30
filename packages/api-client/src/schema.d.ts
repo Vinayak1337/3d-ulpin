@@ -754,6 +754,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/registry-cityjson-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare one private unrecorded source-native building exterior draft */
+        post: operations["POST_api_v1_registry_cityjson_drafts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/registry-drafts/{draftId}/native-exterior": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve private native exterior geometry through current source and accepted-job authority */
+        get: operations["GET_api_v1_registry_drafts_draftId_native_exterior"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/registry-drafts/{draftId}/native-exterior/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Explicitly remove a native draft candidate without resolving private source pins */
+        post: operations["POST_api_v1_registry_drafts_draftId_native_exterior_remove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/registry-imports": {
         parameters: {
             query?: never;
@@ -6976,6 +7027,263 @@ export interface components {
             stale?: boolean;
             error?: string;
         };
+        POST_registry_cityjson_drafts_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            destination: {
+                /** @enum {string} */
+                kind: "source_site";
+            } | {
+                /** @enum {string} */
+                kind: "existing_site";
+                /** Format: uuid */
+                siteId: string;
+                expectedSiteRevision: number;
+            };
+            source: {
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                /** Format: uuid */
+                jobId: string;
+                resultSha256: string;
+            };
+            buildingObjectId: string;
+            objectId: string;
+            /** Format: starts_with */
+            geometryPointer: string;
+            /** Format: starts_with */
+            footprintSurfacePointer: string;
+        };
+        POST_registry_cityjson_drafts_Response_201_application_json: {
+            /** Format: uuid */
+            draftId: string;
+            draftRevision: number;
+            /** Format: uuid */
+            recordId: string;
+            /** Format: uuid */
+            siteId: string;
+            /** @enum {string} */
+            state: "unrecorded";
+            /** @enum {string} */
+            qualification: "not_assessed";
+        };
+        POST_registry_cityjson_drafts_Response_400_application_json: {
+            error: {
+                code: string;
+                message: string;
+                requestId: string;
+                /** @description Source-shaped JSON value retained without interpretation */
+                details?: unknown;
+            };
+        };
+        GET_registry_drafts_draftId_native_exterior_Response_200_application_json: {
+            /** Format: uuid */
+            draftId: string;
+            draftRevision: number;
+            /** Format: uuid */
+            recordId: string;
+            candidate: {
+                /** @enum {string} */
+                version: "registry-cityjson-draft/1";
+                /** @enum {string} */
+                state: "unrecorded";
+                /** @enum {string} */
+                qualification: "not_assessed";
+                intentSha256: string;
+                input: {
+                    /** @enum {string} */
+                    version: "cityjson-native/1";
+                    /** Format: uuid */
+                    jobId: string;
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    caseContextSha256: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    sourceFamilyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    sourceBytes: number;
+                    objectKey: string;
+                    subject: string;
+                    accessSha256: string;
+                    readerSha256: string;
+                    /** @enum {string} */
+                    selection: "complete_bounded_source";
+                };
+                resultSha256: string;
+                acceptedFence: number;
+                artifact: {
+                    key: string;
+                    sha256: string;
+                    bytes: number;
+                    /** @enum {string} */
+                    mediaType: "application/json";
+                    /** @enum {string} */
+                    profile: "source-native-cityjson/1";
+                };
+                site: {
+                    /** Format: uuid */
+                    id: string;
+                    revision: number;
+                    frameSha256: string;
+                };
+                readonly representation: {
+                    readonly ref: {
+                        /** @enum {string} */
+                        namespace: "representation";
+                        id: string;
+                    };
+                    revision: number;
+                    readonly entity: {
+                        namespace: string;
+                        id: string;
+                    };
+                    readonly frame: {
+                        readonly ref: {
+                            /** @enum {string} */
+                            namespace: "frame";
+                            id: string;
+                        };
+                        revision: number;
+                    } | null;
+                    /** @enum {string} */
+                    role: "unspecified" | "design_outline" | "recorded_road_land" | "restriction" | "ground_footprint" | "roof_projection" | "exterior" | "floor_boundary" | "unit_boundary" | "recorded_parcel" | "road_surface" | "alignment" | "public_land" | "terrain_surface" | "display_only";
+                    geometry: {
+                        /** @enum {string} */
+                        profile: "planar";
+                        geometry: {
+                            /** @enum {string} */
+                            type: "Point";
+                            readonly coordinates: (number)[];
+                        } | {
+                            /** @enum {string} */
+                            type: "LineString";
+                            readonly coordinates: (number)[][];
+                        } | {
+                            /** @enum {string} */
+                            type: "Polygon";
+                            readonly coordinates: (number)[][][];
+                        } | {
+                            /** @enum {string} */
+                            type: "MultiPolygon";
+                            readonly coordinates: (number)[][][][];
+                        };
+                    } | {
+                        /** @enum {string} */
+                        profile: "prism";
+                        footprint: {
+                            /** @enum {string} */
+                            type: "Polygon";
+                            readonly coordinates: (number)[][][];
+                        } | {
+                            /** @enum {string} */
+                            type: "MultiPolygon";
+                            readonly coordinates: (number)[][][][];
+                        };
+                        readonly interval: {
+                            lowerMetres: number;
+                            upperMetres: number;
+                            readonly reference: {
+                                readonly ref: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                        } | null;
+                    } | {
+                        /** @enum {string} */
+                        profile: "asset";
+                        readonly asset: {
+                            readonly ref: {
+                                /** @enum {string} */
+                                namespace: "asset";
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        format: string;
+                    } | {
+                        /** @enum {string} */
+                        profile: "unavailable";
+                        reason: string;
+                    };
+                    readonly sourceParts: {
+                        readonly ref: {
+                            /** @enum {string} */
+                            namespace: "source_part";
+                            id: string;
+                        };
+                        revision: number;
+                    }[];
+                };
+                selection: {
+                    buildingObjectId: string;
+                    objectId: string;
+                    /** Format: starts_with */
+                    buildingPointer: string;
+                    /** Format: starts_with */
+                    objectPointer: string;
+                    /** Format: starts_with */
+                    geometryPointer: string;
+                    geometrySha256: string;
+                    objectSha256: string;
+                    /** Format: starts_with */
+                    footprintSurfacePointer: string;
+                    footprintSha256: string;
+                    /** Format: starts_with */
+                    verticesPointer: string;
+                    verticesSha256: string;
+                    /** Format: starts_with */
+                    transformPointer: string | null;
+                    transformSha256: string;
+                };
+                reference: {
+                    /** @enum {string} */
+                    state: "declared";
+                    /** @enum {string} */
+                    crs: "EPSG:7415";
+                    /** @enum {string} */
+                    vertical: "NAP";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                };
+            };
+            native: {
+                building: unknown;
+                object: unknown;
+                geometry: unknown;
+                encodedVertices: (number)[][];
+                transform: unknown;
+                footprintSurface: unknown;
+            };
+        };
+        POST_registry_drafts_draftId_native_exterior_remove_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedDraftRevision: number;
+            /** Format: uuid */
+            recordId: string;
+        };
+        POST_registry_drafts_draftId_native_exterior_remove_Response_200_application_json: {
+            /** Format: uuid */
+            draftId: string;
+            draftRevision: number;
+            /** Format: uuid */
+            recordId: string;
+            /** Format: uuid */
+            siteId: string;
+            /** @enum {string} */
+            state: "removed";
+        };
         POST_registry_imports_Request_application_json: {
             /** Format: uuid */
             caseId: string;
@@ -6986,15 +7294,6 @@ export interface components {
         POST_registry_imports_Response_201_application_json: {
             draftId: string;
             siteId: string;
-        };
-        POST_registry_imports_Response_400_application_json: {
-            error: {
-                code: string;
-                message: string;
-                requestId: string;
-                /** @description Source-shaped JSON value retained without interpretation */
-                details?: unknown;
-            };
         };
         GET_sites_Response_200_application_json: {
             id: string;
@@ -7960,6 +8259,176 @@ export interface components {
                     /** @enum {string} */
                     qualification: "not_assessed";
                 }[];
+                nativeExteriorCandidate?: {
+                    /** @enum {string} */
+                    version: "registry-cityjson-draft/1";
+                    /** @enum {string} */
+                    state: "unrecorded";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    intentSha256: string;
+                    input: {
+                        /** @enum {string} */
+                        version: "cityjson-native/1";
+                        /** Format: uuid */
+                        jobId: string;
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        caseContextSha256: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        /** Format: uuid */
+                        sourceFamilyId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        objectKey: string;
+                        subject: string;
+                        accessSha256: string;
+                        readerSha256: string;
+                        /** @enum {string} */
+                        selection: "complete_bounded_source";
+                    };
+                    resultSha256: string;
+                    acceptedFence: number;
+                    artifact: {
+                        key: string;
+                        sha256: string;
+                        bytes: number;
+                        /** @enum {string} */
+                        mediaType: "application/json";
+                        /** @enum {string} */
+                        profile: "source-native-cityjson/1";
+                    };
+                    site: {
+                        /** Format: uuid */
+                        id: string;
+                        revision: number;
+                        frameSha256: string;
+                    };
+                    readonly representation: {
+                        readonly ref: {
+                            /** @enum {string} */
+                            namespace: "representation";
+                            id: string;
+                        };
+                        revision: number;
+                        readonly entity: {
+                            namespace: string;
+                            id: string;
+                        };
+                        readonly frame: {
+                            readonly ref: {
+                                /** @enum {string} */
+                                namespace: "frame";
+                                id: string;
+                            };
+                            revision: number;
+                        } | null;
+                        /** @enum {string} */
+                        role: "unspecified" | "design_outline" | "recorded_road_land" | "restriction" | "ground_footprint" | "roof_projection" | "exterior" | "floor_boundary" | "unit_boundary" | "recorded_parcel" | "road_surface" | "alignment" | "public_land" | "terrain_surface" | "display_only";
+                        geometry: {
+                            /** @enum {string} */
+                            profile: "planar";
+                            geometry: {
+                                /** @enum {string} */
+                                type: "Point";
+                                readonly coordinates: (number)[];
+                            } | {
+                                /** @enum {string} */
+                                type: "LineString";
+                                readonly coordinates: (number)[][];
+                            } | {
+                                /** @enum {string} */
+                                type: "Polygon";
+                                readonly coordinates: (number)[][][];
+                            } | {
+                                /** @enum {string} */
+                                type: "MultiPolygon";
+                                readonly coordinates: (number)[][][][];
+                            };
+                        } | {
+                            /** @enum {string} */
+                            profile: "prism";
+                            footprint: {
+                                /** @enum {string} */
+                                type: "Polygon";
+                                readonly coordinates: (number)[][][];
+                            } | {
+                                /** @enum {string} */
+                                type: "MultiPolygon";
+                                readonly coordinates: (number)[][][][];
+                            };
+                            readonly interval: {
+                                lowerMetres: number;
+                                upperMetres: number;
+                                readonly reference: {
+                                    readonly ref: {
+                                        namespace: string;
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                            } | null;
+                        } | {
+                            /** @enum {string} */
+                            profile: "asset";
+                            readonly asset: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            format: string;
+                        } | {
+                            /** @enum {string} */
+                            profile: "unavailable";
+                            reason: string;
+                        };
+                        readonly sourceParts: {
+                            readonly ref: {
+                                /** @enum {string} */
+                                namespace: "source_part";
+                                id: string;
+                            };
+                            revision: number;
+                        }[];
+                    };
+                    selection: {
+                        buildingObjectId: string;
+                        objectId: string;
+                        /** Format: starts_with */
+                        buildingPointer: string;
+                        /** Format: starts_with */
+                        objectPointer: string;
+                        /** Format: starts_with */
+                        geometryPointer: string;
+                        geometrySha256: string;
+                        objectSha256: string;
+                        /** Format: starts_with */
+                        footprintSurfacePointer: string;
+                        footprintSha256: string;
+                        /** Format: starts_with */
+                        verticesPointer: string;
+                        verticesSha256: string;
+                        /** Format: starts_with */
+                        transformPointer: string | null;
+                        transformSha256: string;
+                    };
+                    reference: {
+                        /** @enum {string} */
+                        state: "declared";
+                        /** @enum {string} */
+                        crs: "EPSG:7415";
+                        /** @enum {string} */
+                        vertical: "NAP";
+                        /** @enum {string} */
+                        qualification: "not_assessed";
+                    };
+                };
             };
             /** Format: uuid */
             requestKey?: string;
@@ -9564,6 +10033,176 @@ export interface components {
                     /** @enum {string} */
                     qualification: "not_assessed";
                 }[];
+                nativeExteriorCandidate?: {
+                    /** @enum {string} */
+                    version: "registry-cityjson-draft/1";
+                    /** @enum {string} */
+                    state: "unrecorded";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    intentSha256: string;
+                    input: {
+                        /** @enum {string} */
+                        version: "cityjson-native/1";
+                        /** Format: uuid */
+                        jobId: string;
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        caseContextSha256: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        /** Format: uuid */
+                        sourceFamilyId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        objectKey: string;
+                        subject: string;
+                        accessSha256: string;
+                        readerSha256: string;
+                        /** @enum {string} */
+                        selection: "complete_bounded_source";
+                    };
+                    resultSha256: string;
+                    acceptedFence: number;
+                    artifact: {
+                        key: string;
+                        sha256: string;
+                        bytes: number;
+                        /** @enum {string} */
+                        mediaType: "application/json";
+                        /** @enum {string} */
+                        profile: "source-native-cityjson/1";
+                    };
+                    site: {
+                        /** Format: uuid */
+                        id: string;
+                        revision: number;
+                        frameSha256: string;
+                    };
+                    readonly representation: {
+                        readonly ref: {
+                            /** @enum {string} */
+                            namespace: "representation";
+                            id: string;
+                        };
+                        revision: number;
+                        readonly entity: {
+                            namespace: string;
+                            id: string;
+                        };
+                        readonly frame: {
+                            readonly ref: {
+                                /** @enum {string} */
+                                namespace: "frame";
+                                id: string;
+                            };
+                            revision: number;
+                        } | null;
+                        /** @enum {string} */
+                        role: "unspecified" | "design_outline" | "recorded_road_land" | "restriction" | "ground_footprint" | "roof_projection" | "exterior" | "floor_boundary" | "unit_boundary" | "recorded_parcel" | "road_surface" | "alignment" | "public_land" | "terrain_surface" | "display_only";
+                        geometry: {
+                            /** @enum {string} */
+                            profile: "planar";
+                            geometry: {
+                                /** @enum {string} */
+                                type: "Point";
+                                readonly coordinates: (number)[];
+                            } | {
+                                /** @enum {string} */
+                                type: "LineString";
+                                readonly coordinates: (number)[][];
+                            } | {
+                                /** @enum {string} */
+                                type: "Polygon";
+                                readonly coordinates: (number)[][][];
+                            } | {
+                                /** @enum {string} */
+                                type: "MultiPolygon";
+                                readonly coordinates: (number)[][][][];
+                            };
+                        } | {
+                            /** @enum {string} */
+                            profile: "prism";
+                            footprint: {
+                                /** @enum {string} */
+                                type: "Polygon";
+                                readonly coordinates: (number)[][][];
+                            } | {
+                                /** @enum {string} */
+                                type: "MultiPolygon";
+                                readonly coordinates: (number)[][][][];
+                            };
+                            readonly interval: {
+                                lowerMetres: number;
+                                upperMetres: number;
+                                readonly reference: {
+                                    readonly ref: {
+                                        namespace: string;
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                            } | null;
+                        } | {
+                            /** @enum {string} */
+                            profile: "asset";
+                            readonly asset: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            format: string;
+                        } | {
+                            /** @enum {string} */
+                            profile: "unavailable";
+                            reason: string;
+                        };
+                        readonly sourceParts: {
+                            readonly ref: {
+                                /** @enum {string} */
+                                namespace: "source_part";
+                                id: string;
+                            };
+                            revision: number;
+                        }[];
+                    };
+                    selection: {
+                        buildingObjectId: string;
+                        objectId: string;
+                        /** Format: starts_with */
+                        buildingPointer: string;
+                        /** Format: starts_with */
+                        objectPointer: string;
+                        /** Format: starts_with */
+                        geometryPointer: string;
+                        geometrySha256: string;
+                        objectSha256: string;
+                        /** Format: starts_with */
+                        footprintSurfacePointer: string;
+                        footprintSha256: string;
+                        /** Format: starts_with */
+                        verticesPointer: string;
+                        verticesSha256: string;
+                        /** Format: starts_with */
+                        transformPointer: string | null;
+                        transformSha256: string;
+                    };
+                    reference: {
+                        /** @enum {string} */
+                        state: "declared";
+                        /** @enum {string} */
+                        crs: "EPSG:7415";
+                        /** @enum {string} */
+                        vertical: "NAP";
+                        /** @enum {string} */
+                        qualification: "not_assessed";
+                    };
+                };
             };
         };
         POST_registry_drafts_draftId_document_citations_Request_application_json: {
@@ -38183,6 +38822,315 @@ export interface operations {
             };
         };
     };
+    POST_api_v1_registry_cityjson_drafts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_registry_cityjson_drafts_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            201: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_registry_drafts_draftId_native_exterior: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_registry_drafts_draftId_native_exterior_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_registry_drafts_draftId_native_exterior_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_remove_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_remove_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                };
+            };
+        };
+    };
     POST_api_v1_registry_imports: {
         parameters: {
             query?: never;
@@ -38215,7 +39163,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38226,7 +39174,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38237,7 +39185,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38248,7 +39196,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38259,7 +39207,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38270,7 +39218,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38281,7 +39229,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -38314,7 +39262,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38325,7 +39273,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38336,7 +39284,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38347,7 +39295,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38358,7 +39306,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38369,7 +39317,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38380,7 +39328,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -38417,7 +39365,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38428,7 +39376,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38439,7 +39387,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38450,7 +39398,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38461,7 +39409,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38472,7 +39420,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38483,7 +39431,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -38518,7 +39466,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38529,7 +39477,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38540,7 +39488,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38551,7 +39499,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38562,7 +39510,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38573,7 +39521,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38584,7 +39532,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -38619,7 +39567,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38630,7 +39578,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38641,7 +39589,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38652,7 +39600,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38663,7 +39611,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38674,7 +39622,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38685,7 +39633,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -38720,7 +39668,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38731,7 +39679,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38742,7 +39690,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38753,7 +39701,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38764,7 +39712,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38775,7 +39723,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38786,7 +39734,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -38825,7 +39773,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38836,7 +39784,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38847,7 +39795,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38858,7 +39806,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38869,7 +39817,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38880,7 +39828,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38891,7 +39839,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -38930,7 +39878,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38941,7 +39889,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38952,7 +39900,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38963,7 +39911,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38974,7 +39922,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38985,7 +39933,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38996,7 +39944,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39035,7 +39983,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39046,7 +39994,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39057,7 +40005,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39068,7 +40016,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39079,7 +40027,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39090,7 +40038,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39101,7 +40049,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39136,7 +40084,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39147,7 +40095,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39158,7 +40106,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39169,7 +40117,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39180,7 +40128,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39191,7 +40139,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39202,7 +40150,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39238,7 +40186,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39249,7 +40197,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39260,7 +40208,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39271,7 +40219,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39282,7 +40230,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39293,7 +40241,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39304,7 +40252,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39339,7 +40287,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39350,7 +40298,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39361,7 +40309,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39372,7 +40320,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39383,7 +40331,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39394,7 +40342,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39405,7 +40353,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39440,7 +40388,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39451,7 +40399,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39462,7 +40410,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39473,7 +40421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39484,7 +40432,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39495,7 +40443,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39506,7 +40454,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39541,7 +40489,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39552,7 +40500,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39563,7 +40511,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39574,7 +40522,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39585,7 +40533,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39596,7 +40544,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39607,7 +40555,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39646,7 +40594,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39657,7 +40605,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39668,7 +40616,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39679,7 +40627,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39690,7 +40638,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39701,7 +40649,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39712,7 +40660,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39747,7 +40695,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39758,7 +40706,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39769,7 +40717,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39780,7 +40728,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39791,7 +40739,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39802,7 +40750,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39813,7 +40761,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39852,7 +40800,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39863,7 +40811,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39874,7 +40822,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39885,7 +40833,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39896,7 +40844,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39907,7 +40855,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39918,7 +40866,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -39957,7 +40905,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39968,7 +40916,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39979,7 +40927,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39990,7 +40938,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40001,7 +40949,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40012,7 +40960,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40023,7 +40971,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -40062,7 +41010,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40073,7 +41021,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40084,7 +41032,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40095,7 +41043,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40106,7 +41054,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40117,7 +41065,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40128,7 +41076,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -40165,7 +41113,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40176,7 +41124,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40187,7 +41135,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40198,7 +41146,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40209,7 +41157,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40220,7 +41168,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40231,7 +41179,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -40268,7 +41216,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40279,7 +41227,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40290,7 +41238,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40301,7 +41249,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40312,7 +41260,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40323,7 +41271,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40334,7 +41282,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -40373,7 +41321,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40384,7 +41332,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40395,7 +41343,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40406,7 +41354,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40417,7 +41365,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40428,7 +41376,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40439,7 +41387,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -40474,7 +41422,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40485,7 +41433,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40496,7 +41444,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40507,7 +41455,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40518,7 +41466,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40529,7 +41477,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40540,7 +41488,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -40573,7 +41521,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40584,7 +41532,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40595,7 +41543,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40606,7 +41554,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40617,7 +41565,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40628,7 +41576,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40639,7 +41587,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -40674,7 +41622,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40685,7 +41633,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40696,7 +41644,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40707,7 +41655,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40718,7 +41666,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40729,7 +41677,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40740,7 +41688,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -40786,7 +41734,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40797,7 +41745,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40808,7 +41756,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40819,7 +41767,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40830,7 +41778,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40841,7 +41789,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40852,7 +41800,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -40891,7 +41839,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40902,7 +41850,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40913,7 +41861,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40924,7 +41872,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40935,7 +41883,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40946,7 +41894,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40957,7 +41905,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41007,7 +41955,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41018,7 +41966,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41029,7 +41977,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41040,7 +41988,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41051,7 +41999,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41062,7 +42010,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41073,7 +42021,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41110,7 +42058,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41121,7 +42069,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41132,7 +42080,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41143,7 +42091,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41154,7 +42102,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41165,7 +42113,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41176,7 +42124,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41213,7 +42161,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41224,7 +42172,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41235,7 +42183,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41246,7 +42194,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41257,7 +42205,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41268,7 +42216,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41279,7 +42227,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41314,7 +42262,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41325,7 +42273,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41336,7 +42284,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41347,7 +42295,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41358,7 +42306,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41369,7 +42317,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41380,7 +42328,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41415,7 +42363,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41426,7 +42374,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41437,7 +42385,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41448,7 +42396,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41459,7 +42407,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41470,7 +42418,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41481,7 +42429,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41520,7 +42468,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41531,7 +42479,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41542,7 +42490,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41553,7 +42501,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41564,7 +42512,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41575,7 +42523,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41586,7 +42534,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41625,7 +42573,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41636,7 +42584,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41647,7 +42595,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41658,7 +42606,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41669,7 +42617,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41680,7 +42628,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41691,7 +42639,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41730,7 +42678,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41741,7 +42689,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41752,7 +42700,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41763,7 +42711,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41774,7 +42722,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41785,7 +42733,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41796,7 +42744,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41835,7 +42783,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41846,7 +42794,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41857,7 +42805,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41868,7 +42816,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41879,7 +42827,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41890,7 +42838,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41901,7 +42849,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -41938,7 +42886,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41949,7 +42897,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41960,7 +42908,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41971,7 +42919,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41982,7 +42930,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41993,7 +42941,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42004,7 +42952,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -42039,7 +42987,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42050,7 +42998,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42061,7 +43009,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42072,7 +43020,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42083,7 +43031,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42094,7 +43042,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42105,7 +43053,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -42144,7 +43092,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42155,7 +43103,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42166,7 +43114,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42177,7 +43125,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42188,7 +43136,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42199,7 +43147,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42210,7 +43158,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -42249,7 +43197,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42260,7 +43208,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42271,7 +43219,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42282,7 +43230,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42293,7 +43241,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42304,7 +43252,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42315,7 +43263,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -42355,7 +43303,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42366,7 +43314,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42377,7 +43325,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42388,7 +43336,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42399,7 +43347,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42410,7 +43358,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42421,7 +43369,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
@@ -42461,7 +43409,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42472,7 +43420,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42483,7 +43431,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42494,7 +43442,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42505,7 +43453,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42516,7 +43464,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42527,7 +43475,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_imports_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
                 };
             };
         };
