@@ -9,6 +9,10 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import csv
+import io
+import subprocess
+import time
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +31,10 @@ MAX_ITEM_TEXT_BYTES = 2_048
 MAX_TOTAL_TEXT_BYTES = 32 * 1024
 MAX_RESULT_BYTES = 128 * 1024
 MAX_ISSUES = 32
+MAX_TSV_BYTES = 2 * 1024**2
+DOCLING_METHOD = "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned"
+TSV_METHOD = "ocr:tesseract-cli-5.5.1:sparse-tsv-v1"
+TSV_CONFIG = {"psm": 11, "language": "eng", "minimumWordConfidence": 60}
 
 MODEL_REVISION = "8f39ad3c0b4c58e9c2d2c84a38465abf757272d8"
 MODEL_HASHES = {
@@ -273,18 +281,117 @@ def encode_result_bounded(result: dict[str, Any]) -> bytes:
     return payload
 
 
+def collect_tsv_items(tsv: str, frame: dict[str, Any], max_items: int) -> tuple[list[dict[str, Any]], list[str], bool]:
+    """Keep cited TSV lines; confidence filtering never establishes accuracy."""
+    if not 1 <= max_items <= MAX_ITEMS:
+        raise SourceOcrError("invalid_item_limit")
+    reader = csv.DictReader(io.StringIO(tsv), delimiter="\t", quoting=csv.QUOTE_NONE)
+    expected = ["level", "page_num", "block_num", "par_num", "line_num", "word_num",
+                "left", "top", "width", "height", "conf", "text"]
+    if reader.fieldnames != expected:
+        raise SourceOcrError("invalid_tesseract_tsv")
+    groups: dict[tuple[int, ...], list[tuple[str, list[float]]]] = {}
+    issues: list[str] = []
+    width, height = frame["render"]["pixels"]
+    for row in reader:
+        if row.get("level") != "5":
+            continue
+        try:
+            if None in row or any(row[key] is None for key in expected):
+                raise ValueError()
+            if not row["text"].strip():
+                continue
+            page, block, paragraph, line, word = (int(row[key]) for key in
+                ("page_num", "block_num", "par_num", "line_num", "word_num"))
+            x, y, w, h = (int(row[key]) for key in ("left", "top", "width", "height"))
+            confidence = float(row["conf"])
+            if (page != 1 or min(block, paragraph, line, word) < 1 or x < 0 or y < 0
+                    or min(w, h) <= 0 or x + w > width or y + h > height
+                    or not math.isfinite(confidence) or not 0 <= confidence <= 100):
+                raise ValueError()
+        except (ValueError, TypeError):
+            _append_issue(issues, "invalid_tesseract_word_withheld")
+            continue
+        if confidence < TSV_CONFIG["minimumWordConfidence"]:
+            _append_issue(issues, "low_confidence_words_withheld")
+            continue
+        groups.setdefault((page, block, paragraph, line), []).append((row["text"], [x, y, x+w, y+h]))
+    items: list[dict[str, Any]] = []
+    total = 0
+    for words in groups.values():
+        if len(items) >= max_items:
+            _append_issue(issues, "item_limit_reached")
+            break
+        text = " ".join(word[0] for word in words)
+        size = len(text.encode("utf-8"))
+        if size > MAX_ITEM_TEXT_BYTES or total + size > MAX_TOTAL_TEXT_BYTES:
+            _append_issue(issues, "text_byte_limit_reached")
+            continue
+        boxes = [word[1] for word in words]
+        pixel_box = [min(b[0] for b in boxes), min(b[1] for b in boxes),
+                     max(b[2] for b in boxes), max(b[3] for b in boxes)]
+        scale = frame["render"]["scale"]
+        ox, oy = frame["render"]["pixelOrigin"]
+        mapped = [(ox+pixel_box[0])/scale, (oy+pixel_box[1])/scale,
+                  (ox+pixel_box[2])/scale, (oy+pixel_box[3])/scale]
+        page_frame = frame["pageFrame"]
+        if mapped[2] > page_frame["width"] + 0.01 or mapped[3] > page_frame["height"] + 0.01:
+            _append_issue(issues, "ocr_box_outside_source_page")
+            continue
+        items.append({"text": text, "label": "text", "method": "ocr:tesseract-cli-sparse-tsv",
+                      "sourcePageBoxes": [{"pageNumber": frame["pageNumber"],
+                        "frame": "pdf_display_page_top_left_points", "box": mapped,
+                        "derivedFrom": "tesseract_tsv_pixels_via_mupdf_pixel_origin"}]})
+        total += size
+    if not items:
+        _append_issue(issues, "no_ocr_text_emitted")
+    return items, issues, bool(issues)
+
+
+def extract_sparse_tsv(png_path: Path, tesseract: Path, tessdata: Path,
+                       frame: dict[str, Any], max_items: int, seconds: float) -> tuple[list[dict[str, Any]], list[str], bool]:
+    output = png_path.with_suffix(".ocr")
+    if seconds <= 0:
+        raise SourceOcrError("ocr_deadline")
+    subprocess.run([str(tesseract), str(png_path), str(output), "--tessdata-dir", str(tessdata),
+                    "-l", TSV_CONFIG["language"], "--psm", str(TSV_CONFIG["psm"]), "tsv"],
+                   stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, check=True,
+                   timeout=max(0.1, seconds))
+    path = output.with_suffix(".ocr.tsv")
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_TSV_BYTES + 1)
+    if len(raw) > MAX_TSV_BYTES:
+        raise SourceOcrError("tesseract_tsv_byte_limit_exceeded")
+    return collect_tsv_items(raw.decode("utf-8"), frame, max_items)
+
+
 def extract_source_page(source: Path, expected_sha256: str, page_number: int,
                         region: list[float] | None, png_path: Path,
                         models: Path, tesseract: Path, tessdata: Path,
                         max_items: int = MAX_ITEMS, max_seconds: int = 600) -> dict[str, Any]:
     """Run one source-bound OCR selection inside an externally supervised tree."""
+    started = time.monotonic()
+    assets = verify_assets(models, tesseract, tessdata)
+    frame = render_pdf_selection(source, expected_sha256, page_number, region, png_path)
+    if region is None:
+        items, issues, partial = extract_sparse_tsv(png_path, tesseract, tessdata, frame,
+                                                  max_items, max_seconds - (time.monotonic()-started) - 2)
+        return {
+            "schemaVersion": "source-ocr-candidate/1", "sourceSha256": frame["source"]["sha256"],
+            "sourceBytes": frame["source"]["bytes"], "sourcePage": frame["pageNumber"],
+            "sourcePageFrame": frame["pageFrame"],
+            "selection": {"kind": "whole_page", "sourcePageBox": frame["requestedRegion"],
+                          "rasterProcessing": "complete", "textCompleteness": "unverified"},
+            "render": frame["render"], "toolStatus": "complete",
+            "outputStatus": "partial" if partial else "complete", "method": TSV_METHOD,
+            "strategy": TSV_CONFIG, "items": items, "issues": issues,
+            "contentCaution": "OCR-derived observations; confidence is not accuracy; omitted or incorrect text is possible; no native-text or learning-label claim",
+        }
     from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
     from docling.datamodel.base_models import ConversionStatus, InputFormat
     from docling.datamodel.pipeline_options import OcrMode, PdfPipelineOptions, TesseractCliOcrOptions
     from docling.document_converter import DocumentConverter, ImageFormatOption
 
-    assets = verify_assets(models, tesseract, tessdata)
-    frame = render_pdf_selection(source, expected_sha256, page_number, region, png_path)
     options = PdfPipelineOptions(
         artifacts_path=models,
         accelerator_options=AcceleratorOptions(device=AcceleratorDevice.CPU, num_threads=2),
@@ -335,7 +442,7 @@ def extract_source_page(source: Path, expected_sha256: str, page_number: int,
         "render": frame["render"],
         "toolStatus": tool_status,
         "outputStatus": output_status,
-        "method": "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned",
+        "method": DOCLING_METHOD,
         "items": items,
         "issues": issues,
         "contentCaution": "OCR-derived observations; omitted or incorrect text is possible; no native-text or learning-label claim",

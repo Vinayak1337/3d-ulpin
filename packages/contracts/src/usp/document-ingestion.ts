@@ -76,9 +76,10 @@ export const DocumentProposalSchema=z.strictObject({field:z.string().min(1).max(
 export const DocumentModelOutputSchema=z.strictObject({candidates:z.array(DocumentProposalSchema).max(40)});
 export const DocumentOcrItemSchema=z.strictObject({text:z.string().min(1).max(2048)
   .refine(value=>new TextEncoder().encode(value).length<=2048,'OCR item exceeds its byte cap.'),label:z.string().max(64),
-  method:z.literal('ocr:docling-tesseract-cli-full-page'),sourcePageBoxes:z.array(z.strictObject({
+  method:z.enum(['ocr:docling-tesseract-cli-full-page','ocr:tesseract-cli-sparse-tsv']),sourcePageBoxes:z.array(z.strictObject({
     pageNumber:z.number().int().min(1).max(8),frame:z.literal('pdf_display_page_top_left_points'),box:ocrBox,
-    derivedFrom:z.literal('docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin')})).min(1).max(4)});
+    derivedFrom:z.enum(['docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin',
+      'tesseract_tsv_pixels_via_mupdf_pixel_origin'])})).min(1).max(4)});
 export const DocumentOcrExecutionSchema=z.strictObject({maxSeconds:z.number().int().min(1).max(90),
   exitCode:z.number().int().nullable(),receiptSha256:hash.nullable(),candidateSha256:hash.nullable(),
   worker:z.strictObject({exitCode:z.number().int(),stopReason:z.string().max(120).nullable(),
@@ -88,11 +89,16 @@ const DocumentOcrBaseSchema=z.strictObject({sourceSha256:hash,sourceRevision:z.n
   sourcePage:z.number().int().min(1).max(8),requestedRegion:ocrBox.nullable(),
   sourcePageFrame:z.strictObject({kind:z.literal('pdf_display_page_top_left_points'),rotation:z.literal(0),
     width:z.number().positive().max(2000),height:z.number().positive().max(2000)}).nullable(),
-  method:z.literal('ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned'),
+  method:z.enum(['ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned','ocr:tesseract-cli-5.5.1:sparse-tsv-v1']),
   toolStatus:z.enum(['complete','partial','failed','unavailable']),outputStatus:z.enum(['complete','partial','failed']),
   textCompleteness:z.literal('unverified'),issues:z.array(z.string().min(1).max(200)).max(32),
   items:z.array(DocumentOcrItemSchema).max(64),execution:DocumentOcrExecutionSchema.optional()});
 export const DocumentOcrSchema=DocumentOcrBaseSchema.superRefine((value,ctx)=>{
+    const sparse=value.method==='ocr:tesseract-cli-5.5.1:sparse-tsv-v1';
+    if(value.items.some(item=>item.method!==(sparse?'ocr:tesseract-cli-sparse-tsv':'ocr:docling-tesseract-cli-full-page')||
+      item.sourcePageBoxes.some(cite=>cite.derivedFrom!==(sparse?'tesseract_tsv_pixels_via_mupdf_pixel_origin':
+        'docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin'))))
+      ctx.addIssue({code:'custom',message:'OCR method and source-box derivation must identify the same extractor.'});
     if((value.toolStatus==='unavailable'||value.toolStatus==='failed')&&value.outputStatus!=='failed')
       ctx.addIssue({code:'custom',message:'Unavailable OCR cannot publish completed output.'});
     if(value.outputStatus==='complete'&&!value.items.length)
