@@ -1,4 +1,85 @@
-# AI-06F — weight-1 ablation blocked before restricted launch
+# AI-06F — single weight-1 fit completed; reload/resource failure
+
+## Latest continuation: `-03`, 30 September 2026
+
+**The single authorized weight-1 fit completed all 51 updates under the restricted launcher and saved the adapter and all 69 × 3 development margins/probabilities. The run then failed during the required independent reload, before threshold selection or decision matrices. It is not a completed or accepted model result.** No second fit, model reload, fallback, held-out/diagnostic inference or promotion followed. Earlier setup failures below remain preserved historical evidence.
+
+Primary staging was read-only at `00941e0d9e0a9234953839d2da6dec74a1bb9c4a`. Owned worktree remains `C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin`, branch `task/desktop-qwen-lora-weight1`. Wrapper correction: **`1926e03d6a5d87b5272bee56cf69a956f68dc5c2`**, on the existing `7a5b0d1` / `9f68399` / `a8f84c9` preparation history. Supplied permissions are `never` / `danger-full-access`. Assignment requests Astra/high/default-standard; actual model/effort/tier are not independently exposed. No new worker or service was launched.
+
+### Helper recovery before staging
+
+The task-local wrapper now pins the verified absolute Core 7.6.5 executable and security manifest hashes, uses separate immutable command receipts plus the command ledger, checks metadata before profile creation, restores the host environment before cleanup inspection, and reports zero cleanup operations honestly. The accepted security harness is unchanged.
+
+The actual path/owner/WO/Low/readback/Medium/removal helpers passed on two tiny new directories before copying a runtime. They verified resolved empty scopes, no reparse ancestors, current ownership, exactly one non-inheriting owner WO ACE, inherited Low label, then zero explicit owner grants and Medium label on cleanup. No helper fixes/retries were needed after the shell correction. Retained helper root: `E:/BhuAayam-model-evaluation/20260930/ai06f-helper-a6dac137ebf94486b10109717e9ad125`.
+
+- `helper-result.json`: `89cb39fd755e6a1c57d714041d9d83db7cfd25393c5074c5595538ddd30bdb2b`.
+- `receipts/acl-commands.jsonl`: `05c189a1ff71d95bea89d5c7505a146b4f8b26bf3a5bbb7eab34c4f515a2fe18`.
+- Core executable: `362a356ce7f0940ec74f73a8fc2c990a2cc24a38a11c90bbd8eca947110ad139`; security manifest: `60e8b93ee7a9111d38912c7d45ce83a56dccf772bd974b96bd3cc4c678744560`.
+
+### Actual restricted execution and failure
+
+Fresh root: `E:/BhuAayam-model-evaluation/20260930/ai06f-weight1-03`. Stage exited **0** after checking the four accepted runtime/model trees, separate copies, unchanged source proof, 13 code files and the relocated runtime manifest. Weight 8 → 1 is the sole learning-setting delta; training plan, token lengths, selected inputs and selection policy match the old freeze.
+
+1. Restricted preflight exited **0**: actual expected AppContainer SID, zero capabilities and Job membership; output/scratch writes succeeded; writes to code/model/inputs/runtime/execution and an ungranted private-canary read were denied. The launcher validated the token before resume and inherited only two handles.
+2. All **six** numerical tests passed under the restricted token (test runner 0.034 s), including default-weight compatibility and unchanged negative loss.
+3. Frozen-byte and gradient preflights passed. There were 1,146,880 trainable parameters across 112 tensors; no optimizer update occurred in the gradient probe. Three epochs completed 17/34/51 updates in **78.047 s**. The final adapter and full training/calibration score matrices were saved.
+4. Required reload failed in the second `load_base()` at `safetensors.safe_open`, with **Windows OSError 1455: “The paging file is too small for this operation to complete.”** The child and overall run exited **1**. `reload.json`, `selection.json` and `result.json` are absent. Exact reload equality, decision matrices, recovered-key counts and final acceptance are unqualified.
+
+The failure's message does not isolate host commit exhaustion from the configured Job boundary. Do not infer a need to enlarge the system pagefile or relax the cap. No such change was made.
+
+| Observed quantity | Value |
+| --- | --- |
+| Supervised fit child, including byte checks/loading/scoring | 161.078 s, within 600 s |
+| External sampled peak RSS/working set | 4,030,197,760 bytes, below 6 GiB; monitor failure null |
+| Reported peak Job memory | **7,066,611,712 bytes**, above configured 6,442,450,944 bytes |
+| Last saved CUDA allocated/reserved peaks (epoch 3) | 1,319,489,536 / 1,350,565,888 bytes |
+| Last saved minimum sampled free GPU memory | 6,005,194,752 bytes |
+
+**The Job-memory discrepancy is unresolved and must not be reported as a passed 6 GiB committed-memory envelope.** The accepted harness sets Job memory and kill-on-close flags and reports `PeakJobMemoryUsed`, but the observed peak exceeds the configured bound. The harness was not changed or rerun. Final post-reload GPU resource summary is unavailable; epoch receipts and saved scores do not replace it. The concrete resource/reload failure ends this assigned model attempt.
+
+### Saved-score comparison only
+
+Standard-library inspection of the retained matrices performed no model execution or threshold selection. Values below are the relevant target probabilities, not accepted mappings.
+
+| Development field/target | Weight 8 | Weight 1 |
+| --- | ---: | ---: |
+| USGS negative polygon → geometry | 0.997409046 | 0.977370739 |
+| Census negative polygon → geometry | 0.999322772 | 0.996570349 |
+| Cambridge SITE_NAME → name | 0.156104907 | 0.104477316 |
+| Oregon NAME → name | 0.433981478 | 0.388617992 |
+| IGN cleabs → source key | 0.051845472 | 0.027795624 |
+
+The Census negative remains above all calibration keys/names (highest key 0.996321559; highest name 0.968856215). Thus lowering the positive weight did not repair that score ordering. This arithmetic observation does not supply the missing reload verification or a completed threshold/result receipt. Original weight-8 status remains `development_fail`.
+
+### Cleanup, verification and receipt pins
+
+All 16 AppContainer grant revocations exited **0**, SID freeing succeeded and profile deletion returned `0x00000000`. Both owner-WO cleanup/readback checks passed, with Medium labels restored and zero explicit owner grants. Profile was `CodexAI06F_4188563a20fc4c948e0fa268b280a24f`; SID was `S-1-15-2-3819759794-207903007-975184578-2297559337-2299269112-1515958363-3187844933`. A post-run process query found no Python command containing this stage or runner. Source/runtime originals and prior attempt artifacts are preserved.
+
+Postcheck exited **0**: all 65 completion-listed artifact hashes and all 13 frozen/working code pins matched; Python AST parsing passed; the sole settings delta and exact plan/token/input/policy equality passed; old weight-8 freeze/result/scores and both prior attempts' completion-listed artifacts matched. No broad runtime campaign or new inference occurred. `completion.json` lists `child-fit` among observed/completed phases, but its child receipt has exit **1**: that list is not a success claim.
+
+| Artifact relative to `-03` | SHA-256 |
+| --- | --- |
+| `completion.json` | `e2eb5b39d27d815b76f848bcc0bda9ebc56bae6a9603f0ce46176e9d50872759` |
+| `execution/freeze.json` | `aebb1aee161e3842cfa40d4dc745632ebad81a273a27d9baa21d046299f1dae0` |
+| `runtime-manifest.json` | `1069110044d7aabd26b5f69668a400bf8f9e7d299a0a5fac486d254bbce24628` |
+| `stage.json` | `20fd170f0f6fa027fcacdba259afd85724c5314166b3e68871adf512de36b97d` |
+| `receipts/child-preflight.json` | `951cfdb8a6a55459b77a467898b852fb5b39325ce334d38d0aec50e008b6da7d` |
+| `receipts/child-tests.json` | `14358571a5561fb4c76186b881919fd6a95f022723ac0d7301c13f49d5334a98` |
+| `receipts/child-fit.json` | `bada6b914b277a6fae8f8ac8be71d8dcf6f371b9b800dc9ab4086dbe3c215d05` |
+| `execution/run/scores.json` | `83029bbd22ebba3f1930555c79f1ecce033f9049f763d4089c33b4f61cfe7bed` |
+| `execution/run/adapter/adapter_model.safetensors` | `743dda48ed1acbd20df55338f6f4ae6ad0083f40bbc8da5585603161cfca36c8` |
+| `receipts/owner-scope-cleanup.json` | `d446d5b68bcded4dce04a38c8532a7df1d41c72557da9bfbd1814853003fffcd` |
+| `postcheck.json` | `f21b2093c364d45cf0de500527ae90d4040d59afb9af857722cfa8815bb0716f` |
+
+Actual commands in the owned worktree:
+
+```powershell
+& 'C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe' -I -S scripts/usp/learning/run_weight1_isolated.py helper-check
+& 'E:/BhuAayam-model-evaluation/20260929/.venv-v8-lora/Scripts/python.exe' -B scripts/usp/learning/run_weight1_isolated.py stage
+& 'E:/BhuAayam-model-evaluation/20260929/.venv-v8-lora/Scripts/python.exe' -B scripts/usp/learning/run_weight1_isolated.py run
+```
+
+Exits: **0 / 0 / 1** respectively. Host logs are retained alongside the stage as `ai06f-weight1-03-stage.log` and `ai06f-weight1-03-run.log`. Return this exact incomplete outcome and resource discrepancy to lead; further model execution requires a new assignment. No release/operational/association/learning acceptance follows.
 
 ## Authorized setup recovery: `-02` stopped at wrapper metadata probe
 
