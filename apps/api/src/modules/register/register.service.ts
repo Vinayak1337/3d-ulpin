@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import {amendRegistryDocumentCitations,readRegistryDocumentCitations} from '@ulpin/server/modules/registry/registry-document-evidence';
 import type { z } from 'zod';
 import {
   commitRegistryReview, createRegistryDraft, createSite, draftDetail,
@@ -16,6 +17,8 @@ import type {
 
 @Injectable()
 export class RegisterService {
+  amendDocumentCitations(draftId:string,input:unknown){return amendRegistryDocumentCitations(draftId,input);}
+  documentCitations(draftId:string){return readRegistryDocumentCitations(draftId);}
   listSites() { return listSites(); }
   createSite(input: z.infer<typeof createSiteInput>) { return createSite(input.name, input.frame, input.synthetic); }
   site(siteId: string) { return siteDetail(siteId); }

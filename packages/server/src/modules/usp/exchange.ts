@@ -4,7 +4,7 @@ import { UspExchangeCompareSchema, UspExchangeExportSchema,
 import { canonical, fingerprint } from '../cases/domain';
 import { AppError } from '../../infrastructure/errors';
 import { sha256 } from '../../infrastructure/storage';
-import { assertLocalUsp, readManifest, readSnapshotBody,readSnapshotOriginal } from './snapshots';
+import { assertLocalUsp, readManifest, readSnapshotBody,readSnapshotOriginal,registryDocumentSnapshotView } from './snapshots';
 
 type Json = Record<string, any>;
 type Source = { id: string; revision: number; sha256: string; licenceFamily: string | null;
@@ -66,6 +66,7 @@ function mapping(records: ExchangeRecord[], cityObjects: Json, losses: Loss[]) {
 
 export function buildExchange(input: { scope: SnapshotScope; frame: { horizontal: string; vertical: string; unit: string };
   records: ExchangeRecord[]; sources: Source[]; licenceFamily: string | null }) {
+  input={...input,records:input.records.map(record=>({...record,body:registryDocumentSnapshotView(record.body)}))};
   const losses: Loss[] = [], cityObjects: Json = {};
   const sources = new Map(input.sources.map(source => [source.id, source]));
   // Decide visibility once. A withheld record cannot reappear through the sidecar or LADM report.
@@ -148,7 +149,10 @@ export function buildExchange(input: { scope: SnapshotScope; frame: { horizontal
     access: 'private', codeNamespace: 'P3/1', frame: input.frame,
     exportLicenceFamily: input.licenceFamily,
     requestedPins: input.records.map(record => record.pin),
-    records: allowedRecords.map(record => ({ ...record, omittedFromCityJson: !cityObjects[record.id] })),
+    records: allowedRecords.map(record => ({ ...record,
+      bodyProjection:{profile:'registry-private-projection/1',sha256:fingerprint(record.body),
+        sha256Basis:'canonical_served_body',capturedBodySha256:record.bodySha256,capturedBodyHashBasis:'immutable_captured_body'},
+      omittedFromCityJson: !cityObjects[record.id] })),
     sources: input.sources.filter(source => allowedSourceIds.has(source.id)).map(source => ({ ...source })), losses };
   return { cityJson, sidecar, ladm: mapping(allowedRecords, cityObjects, losses), losses };
 }

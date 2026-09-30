@@ -1,5 +1,7 @@
 import { requireQualifiedGeometryRecords } from '../usp/geometry';
-import { RegistryMetadataSchema } from '@ulpin/contracts';
+import { RegistryMetadataSchema,RegistryDocumentCitationsSchema } from '@ulpin/contracts';
+import {assertRegistryDocumentCitationsTx,assertCitationEdit,publicRegistryBody,publicRegistryDraft,publicRegistryReview,
+  documentReviewContext,assertDocumentReviewContext} from './registry-document-evidence';
 import { assertRegistryMetadataTx } from './registry-metadata';
 import { readPreparationBuild } from "../cases/preparation-continuation";
 import { randomUUID } from "node:crypto";
@@ -76,6 +78,7 @@ export const recordBodySchema = z
     officialUlpin: z.string().trim().min(1).max(100).optional(),
     synthetic: z.boolean(),
     registryMetadata: RegistryMetadataSchema.optional(),
+    documentCitations: RegistryDocumentCitationsSchema.optional(),
   })
   .strict();
 export const editDraftSchema = z
@@ -212,7 +215,7 @@ export async function siteDetail(id: string): Promise<RegistryDetail> {
         [id],
       )
     ).rows.map(draftFrom);
-    return { site, records, sources, drafts };
+    return { site, records:records.map(publicRegistryBody), sources, drafts:drafts.map(publicRegistryDraft) };
   });
 }
 export async function resolveRecord(identifier: string) {
@@ -238,9 +241,9 @@ export async function resolveRecord(identifier: string) {
       )
     ).rows;
     return {
-      record,
+      record:publicRegistryBody(record),
       site: siteFrom(await siteRow(client, row.site_id)),
-      history,
+      history:history.map(entry=>({...entry,body:publicRegistryBody(entry.body)})),
     };
   });
 }
@@ -249,6 +252,8 @@ async function reserveRecord(
   site: RegistrySite,
   body: RegistryBody,
 ): Promise<RegistryRecord> {
+  if(body.documentCitations?.length)
+    throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Document citations require an existing recorded correction.');
   const id = randomUUID(),
     prefix = { parcel: "P", building: "B", floor: "F", space: "S" }[body.kind];
   const ordinal = Number(
@@ -296,9 +301,17 @@ export async function createRegistryDraft(
         )
       ).rows[0];
       if (previous) {
+        if(recordId && ((previous.records as RegistryRecord[]).length!==1||previous.records[0].id!==recordId))
+          conflict('This request key names a different correction target.');
+        if(recordId){
+          const current=(await client.query('SELECT revision,kind FROM registry_records WHERE id=$1 AND site_id=$2 AND revision>0',[recordId,siteId])).rows[0];
+          if(!current||previous.records[0].revision!==current.revision||previous.records[0].kind!==current.kind)
+            conflict('This correction request refers to an older recorded target.');
+        }
         for (const record of previous.records as RegistryRecord[])
-          await assertRegistryMetadataTx(client, siteId, record.kind, record.registryMetadata);
-        return draftFrom(previous);
+          {await assertRegistryMetadataTx(client, siteId, record.kind, record.registryMetadata);
+          await assertRegistryDocumentCitationsTx(client,siteId,record,true);}
+        return publicRegistryDraft(draftFrom(previous));
       }
     }
     let record: RegistryRecord;
@@ -312,13 +325,20 @@ export async function createRegistryDraft(
         ).rows[0] ?? notFound();
       record = recordFrom(row);
       await assertRegistryMetadataTx(client, siteId, record.kind, record.registryMetadata);
+      await assertRegistryDocumentCitationsTx(client,siteId,record,true);
       const existing = (
         await client.query(
           "SELECT * FROM registry_drafts WHERE site_id=$1 AND status='draft' AND records @> $2::jsonb ORDER BY created_at DESC LIMIT 1",
           [siteId, JSON.stringify([{ id: recordId }])],
         )
       ).rows[0];
-      if (existing) return draftFrom(existing);
+      if (existing) {
+        const proposed=(existing.records as RegistryRecord[]).find(item=>item.id===recordId);
+        if(!proposed||proposed.revision!==record.revision||proposed.kind!==record.kind)
+          conflict('The existing correction targets an older recorded revision.');
+        await assertRegistryDocumentCitationsTx(client,siteId,proposed,true);
+        return publicRegistryDraft(draftFrom(existing));
+      }
     } else {
       if (!body)
         throw new AppError(
@@ -346,27 +366,29 @@ export async function createRegistryDraft(
         siteId,
       ],
     );
-    return draftFrom(
+    return publicRegistryDraft(draftFrom(
       (
         await client.query(
           "INSERT INTO registry_drafts(id,site_id,case_id,records,request_key) VALUES($1,$2,$3,$4,$5) RETURNING *",
           [id, siteId, caseId, JSON.stringify([record]), requestKey || null],
         )
       ).rows[0],
-    );
+    ));
   });
 }
 export async function draftDetail(id: string) {
-  return draftFrom(
+  return publicRegistryDraft(draftFrom(
     (await query("SELECT * FROM registry_drafts WHERE id=$1", [id])).rows[0] ??
       notFound(),
-  );
+  ));
 }
 export async function editRegistryDraft(
   id: string,
   input: z.infer<typeof editDraftSchema>,
 ) {
   return transaction(async (client) => {
+    const initial=(await client.query('SELECT site_id FROM registry_drafts WHERE id=$1',[id])).rows[0]??notFound();
+    await siteRow(client,initial.site_id,true);
     const d =
       (
         await client.query(
@@ -386,8 +408,10 @@ export async function editRegistryDraft(
         "A correction cannot change the record kind.",
       );
     await assertRegistryMetadataTx(client, d.site_id, input.body.kind, input.body.registryMetadata);
+    assertCitationEdit(old,input.body);
     const value = {
       ...input.body,
+      ...(old.documentCitations!==undefined?{documentCitations:old.documentCitations}:{}),
       footprint: openRegistryRing(input.body.footprint),
       id: old.id,
       siteId: old.siteId,
@@ -410,24 +434,27 @@ export async function editRegistryDraft(
     const records = d.records.map((r: RegistryRecord) =>
       r.id === old.id ? value : r,
     );
-    return draftFrom(
+    await assertRegistryDocumentCitationsTx(client,d.site_id,value,true);
+    return publicRegistryDraft(draftFrom(
       (
         await client.query(
           "UPDATE registry_drafts SET records=$2,revision=revision+1 WHERE id=$1 RETURNING *",
           [id, JSON.stringify(records)],
         )
       ).rows[0],
-    );
+    ));
   });
 }
 async function evidenceChecks(
   client: PoolClient,
   site: RegistrySite,
   records: RegistryRecord[],
+  lock=false,
 ) {
   for (const r of records) {
     recordBodySchema.parse(bodyOnly(r));
     await assertRegistryMetadataTx(client, site.id, r.kind, r.registryMetadata);
+    await assertRegistryDocumentCitationsTx(client,site.id,r,lock);
     if (site.synthetic && r.officialUlpin)
       throw new AppError(
         422,
@@ -630,12 +657,13 @@ export async function prepareRegistryReview(
     frame: snapshot.site.frame,
     draftRevision: expectedRevision,
     siteRevision: expectedSiteRevision,
+    ...(snapshot.combined.some(record=>record.documentCitations?.length)?{documentReviewContext:documentReviewContext()}:{}),
   });
   await requireQualifiedGeometryRecords('FIND', 'registry_record', snapshot.combined.filter(record => record.geometry));
   const result = await registryGeo<BuildResult>("check", {
     frame: snapshot.site.frame,
     validatorVersion: "registry-relationships-v2",
-    records: snapshot.combined,
+    records: snapshot.combined.map(publicRegistryBody),
     inputFingerprint,
   });
   const computed = new Map(result.units.map((u) => [u.id, u]));
@@ -656,12 +684,22 @@ export async function prepareRegistryReview(
     })),
     committed: false,
     preparationFingerprint: snapshot.preparationFingerprint,
+    ...(snapshot.combined.some(record=>record.documentCitations?.length)?{documentReviewContext:documentReviewContext()}:{}),
   };
-  await query(
-    "INSERT INTO registry_reviews(id,draft_id,body) VALUES($1,$2,$3)",
-    [review.id, draftId, review],
-  );
-  return review;
+  await transaction(async client=>{
+    const site=siteFrom(await siteRow(client,snapshot.site.id,true));
+    const draft=draftFrom((await client.query('SELECT * FROM registry_drafts WHERE id=$1 FOR UPDATE',[draftId])).rows[0]??notFound());
+    const current=await currentRecords(client,site.id),ids=new Set(draft.records.map(record=>record.id));
+    const combined=[...current.filter(record=>!ids.has(record.id)),...draft.records];
+    if(draft.status!=='draft'||fingerprint(draft)!==fingerprint(snapshot.d)||fingerprint(site)!==fingerprint(snapshot.site)||
+      fingerprint(combined)!==fingerprint(snapshot.combined))conflict('Registry inputs changed while preparing the review.');
+    assertDocumentReviewContext(review);
+    await evidenceChecks(client,site,combined,true);
+    if(await linkedPreparationFingerprint(client,draft.caseId,true)!==snapshot.preparationFingerprint)
+      conflict('Related preparation changed while checking this review.');
+    await client.query('INSERT INTO registry_reviews(id,draft_id,body) VALUES($1,$2,$3)',[review.id,draftId,review]);
+  });
+  return publicRegistryReview(review);
 }
 export async function commitRegistryReview(
   id: string,
@@ -698,12 +736,15 @@ export async function commitRegistryReviewTx(
       )
     ).rows[0];
     const review = row.body as RegistryReview;
-    if (row.committed)
-      return {
+    assertDocumentReviewContext(review);
+    if (row.committed) {
+      for(const record of review.records)await assertRegistryDocumentCitationsTx(client,site.id,record,true);
+      return publicRegistryReview({
         ...review,
         committed: true,
         acknowledgement: row.acknowledgement,
-      };
+      });
+    }
     if (
       d.status !== "draft" ||
       d.revision !== review.draftRevision ||
@@ -742,10 +783,16 @@ export async function commitRegistryReviewTx(
         frame: site.frame,
         draftRevision: d.revision,
         siteRevision: site.revision,
+        ...(combined.some(record=>record.documentCitations?.length)?{documentReviewContext:documentReviewContext()}:{}),
       }) !== review.inputFingerprint
     )
       conflict("Review inputs changed.");
-    await evidenceChecks(client, site, combined);
+    for(const record of review.records){
+      const proposed=(d.records as RegistryRecord[]).find(item=>item.id===record.id);
+      if(!proposed||fingerprint(proposed.documentCitations??[])!==fingerprint(record.documentCitations??[]))
+        conflict('The reviewed document citation amendment changed.');
+    }
+    await evidenceChecks(client, site, combined,true);
     const next = site.revision + 1;
     for (const record of review.records) {
       const body = { ...record };
@@ -791,11 +838,11 @@ export async function commitRegistryReviewTx(
       "UPDATE registry_reviews SET committed=true,acknowledgement=$2 WHERE id=$1",
       [id, acknowledgement.trim()],
     );
-    return {
+    return publicRegistryReview({
       ...review,
       committed: true,
       acknowledgement: acknowledgement.trim(),
-    };
+    });
 }
 export async function registryQuery(
   siteId: string,
@@ -857,7 +904,7 @@ export async function registryQuery(
       ...input,
       frame: snapshot.site.frame,
       queryFrame: input.frame,
-      records: snapshot.records,
+      records: snapshot.records.map(publicRegistryBody),
     },
   );
   return {

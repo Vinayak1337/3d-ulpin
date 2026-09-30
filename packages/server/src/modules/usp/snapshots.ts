@@ -207,7 +207,15 @@ export async function readSnapshotBody(ctx: RequestContext, scope: SnapshotScope
     throw new AppError(409, 'USP_REVISION_UNAVAILABLE', 'The exact captured revision is unavailable.');
   }
   if(pin.ref.namespace==='source_revision')return transaction(async client=>{const view=documentSnapshotView(found.body,await documentAuthorityTx(client,found.body));assertLocalUsp(ctx);return view;});
+  if(pin.ref.namespace==='registry_record')return registryDocumentSnapshotView(found.body);
   return found.body;
+}
+
+/** Serving projection only. Stored snapshot body/hash remain unchanged. */
+export function registryDocumentSnapshotView<T extends Record<string,any>>(row:T):T{
+  if(!row.body||!Object.hasOwn(row.body,'documentCitations'))return row;
+  const {documentCitations:_privateCitations,...body}=row.body;
+  return {...row,body};
 }
 
 /** Exact original I/O with current canonical document checks on both sides. */
