@@ -2,7 +2,7 @@
 
 Lead audit of accepted `staging@bb15408b6280345b54e5714dbb3f396a233f5202`. A fresh fetch found `origin/staging@bab851744dc80a40393a17be4046f723380f191f`, with 15 local commits ahead and no remote-only commits. The primary checkout was clean. This is an implementation and evidence inventory, not a release pass. [The release manifest](../usp-agent-handoffs/release-plan.json) still has GF0 as the next gate; GF0–GF5 and all full-product gates remain pending.
 
-The user resumed work after stopping all three desktop workers and requested additional independent backend work. Follow the [operating guide](OPERATING_GUIDE.md); ordinary local-project chats, separate worktrees, verified full permissions, one writer per seam, default service tier and completion callbacks. No frontend implementation, public activation, push or deployment is assigned.
+The opening audit pin is historical. The current status table below supersedes assignment and callback history. Follow the [operating guide](OPERATING_GUIDE.md), verified full permissions, one writer per seam, default/standard speed for every model, and completion callbacks. No frontend implementation, public activation, push or deployment is assigned.
 
 ## Accepted work to reuse
 
@@ -14,9 +14,26 @@ The user resumed work after stopping all three desktop workers and requested add
 
 ## Remaining backend work, in dependency order
 
-**Current assignments, 30 September (supersedes earlier callback history):**
+### Current useful work — reconciled 30 September
 
-Future dispatch must follow the latest mandatory model/effort/tier policy in AGENTS and the operating guide: GPT-6.1 Sol high/xhigh + explicit priority, or Astra high/xhigh + explicit standard. Current assignments/settings remain unchanged. Older requested/unobserved-tier notes below are historical evidence, not permission for another unverified-tier launch.
+| Lane | Actual state and concrete next result |
+| --- | --- |
+| BUNDLE-02A | **Accepted at `c68b51b`.** Review `998e8f9` was already complete; its selected-companion P2 is closed by the lead. Reuse the helper. Do not reopen inventory, member-reader implementation or the same review. |
+| CITYJSON-01 | **Accepted at `2c3777f`**, from candidate `d46b186`. Lead reviewed the four files, matched final source/output/receipt hashes, and ran six focused tests successfully. Exact output matches the retained real D1 receipt; missing floors remain explicit. Local reader only, API/registry wiring remains distinct. Worker finished. |
+| AI-06E | **Accepted diagnosis at `030caf3`**, from `7659b88`. Lead replay of eight pinned saved train/calibration inputs reproduced the arithmetic exactly; only the script hash differed because of checkout CRLF. No model run. Worker finished; another fit is not assigned. |
+| NET-01 | **Correction candidate returned: `320bda8`.** All owned changes/checkpoints preserved in `backend-review`; worker stopped. Review the exact handle/token/cleanup corrections against the completed `86e991d` findings before accepting enforcement. No model scoring or extra generic network campaign is needed for review. |
+| AI-04H | **Finishing direct bridge checks and candidate handoff.** Final API replay is blocked by Docker's sailor-ingest socket failure; the official startup attempt failed and automatic approval review rejected the exact-path deletion. Preserve the earlier API receipt at its actual code revision; do not call it final-code verification. Do not repeatedly retry the same recovery or bypass the rejection. This lane remains the only document/API/Docker owner until callback and explicit handoff. |
+| DATA-LINK-03 | **Failed request, checkpoint recovered.** HTTP 413 after acquisition; lead hash-verified six originals / 9,689,977 bytes and saved [metadata](../evidence/usp/association-crosswalk/manifest.json). Includes two HTML pages and a byte-identical earlier Bihar PDF. Visual/revision/canonical crosswalk review is unfinished. Reuse these bytes with compact context; do not repeat discovery or resend the oversized history. |
+
+Near-term product priority: finish the existing OCR job result and its affected API verification, then hand off the document seam for selected archive-member processing through the existing source/job authority. CityJSON API/registry admission follows as a separate supported profile. Source-crosswalk review can proceed independently from the recovered bytes; canonical building/floor matches and final association training remain later steps. Standalone readers and research reports are enabling work, not completed user workflows or release passes.
+
+Every next assignment must name an uncompleted product outcome or an observed defect, a dependency-ready owner and a small acceptance check. No repeat migration, completed archive review, generic model comparison, source rediscovery or verification-only campaign to fill idle workers. After two failed attempts at the same defect, retain the evidence and choose a genuinely different path or keep that claim open; do not restart the entire task. The model remains `development_fail` with a null threshold. The proposed positive-weight ablation is a recommendation, not an active fit.
+
+Default/standard (1×) is mandatory for **all** workers/tasks; no Fast/priority/1.5×. GPT-6.1 Sol and Astra remain high/xhigh only. Local config already specifies default; actual running-turn overrides are unobserved and have not been changed by prompt text.
+
+### Historical assignment scopes — preserved, not live status
+
+Future dispatch follows the updated AGENTS/operating guide: default/standard speed for both models, high/xhigh reasoning. Requested/unobserved-tier notes below record earlier assignments only.
 
 Parallel expansion authorized by the user: keep the three implementation continuations below, adding these independent lanes from the completed lead handoff. GPT-6.1 Sol is available, not exclusive; use Astra high/xhigh when the work benefits.
 

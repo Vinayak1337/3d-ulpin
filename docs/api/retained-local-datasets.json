@@ -549,5 +549,25 @@
       "This ZIP is a preserved local assembly, not an issuer-original archive; retain per-member provenance and terms.",
       "Scripts are inert; inventory does not qualify content processing, source associations or Indian operational facts."
     ]
+  },
+  {
+    "id": "rera-association-crosswalk-checkpoint-20260930",
+    "manifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+    "manifestSha256": "a8e7ec61bbc94324fec3d48890290bdca99c3fed0a5393b1c67cd8b6781561d6",
+    "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+    "originKind": "issuing_portal_acquisition_checkpoint",
+    "issuer": "Bihar RERA and Haryana RERA / project submitters",
+    "geography": "Separate Bihar and Haryana project families, India",
+    "apiInstallation": "not-verified",
+    "standingInstallation": false,
+    "sourceCount": 6,
+    "totalOriginalBytes": 9689977,
+    "canonicalMatchState": "not_assessed",
+    "limitations": [
+      "The six-original bound includes two HTML project pages; one PDF is byte-identical to the earlier plan.",
+      "Native-text and render checkpoints remain private, but their observations were not promoted by this recovery.",
+      "No current approved revision, keyed Bihar villa or canonical building/floor association was established.",
+      "No API import, model fit, source edit, label or release qualification."
+    ]
   }
 ]

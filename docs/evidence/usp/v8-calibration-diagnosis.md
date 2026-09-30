@@ -82,6 +82,8 @@ This uses the [accepted pointwise/abstention research](learner-technique-reuse.m
 
 ## Reproduction, hashes and limitations
 
+Lead acceptance: integrated as `030caf3`. A standard-library-only replay on the same eight pinned artifacts exited 0 and reproduced every arithmetic field. Private `v8-calibration-diagnosis-lead-01.json` SHA-256 is `0d678a57392a41364324f635c0c5613abbf04f07f73a0a9f40ff669b8633329c`; the sole difference from the saved final output is `scriptSha256` due to Git's CRLF checkout, and its LF-normalized script hash matches. No model was imported or executed. The experiment recommendation remains unassigned.
+
 Ran with standard-library isolation from the owned worktree:
 
 ```powershell

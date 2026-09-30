@@ -6,6 +6,8 @@ Use this index before source-dependent orchestration and frontend/API integratio
 
 ## Desktop ingestion verification — 29 September
 
+30 September: the [source-native CityJSON reader](../evidence/usp/native-cityjson-handoff.md) is accepted at local-reader scope. The unchanged D1 original preserves two exact objects, 62 vertices, hierarchy/LoDs and three slanted LoD2.2 roofs; the lead reproduced the independent oracle checks and exact saved output. Missing floor data remains null. This does not add API/registry import, geometry exchange, global placement or interior qualification.
+
 30 September: the [selected ZIP member reader](../evidence/usp/archive-member-reader-handoff.md) is accepted after [review and lead companion correction](../evidence/usp/desktop-backend-review/archive-member-reader-review.md). Exact District SHX and NYC original GeoJSON member bytes/lineage are verified, the real NYC script is denied, and ambiguous/ineligible companions in the selected group are rejected. This local helper prepares bytes for later processing; it adds no API member admission, GIS import or property association. Existing source and assembly provenance remain unchanged.
 
 30 September: [private ZIP inventory](../evidence/usp/bundle-inventory-handoff.md) and its [correction review](../evidence/usp/desktop-backend-review/bundle-inventory-review.md) qualify the retained Karnataka District ZIP (7 members) and existing locally assembled NYC context ZIP (76 members) for bounded inventory, exact-original download and access-checked status. Companion integrity is reported; scripts remain inert and no member content is admitted. The catalogue links the exact receipt and original hashes separately from GIS import/accuracy, training and launch-clearance claims. DOCX/XLSX behavior and encrypted OOXML status are preserved. The runtime is stopped with populated storage retained.
@@ -25,6 +27,8 @@ The unchanged USGS 1910 scan had one bounded offline Granite Docling trial: the 
 The retained NYC DEM crop now supports [two private native raster windows](../evidence/usp/raster-window-handoff.md), with native coordinates/nodata preserved, a clear out-of-bounds failure and foreign-Origin denial. It remains a derivative; the whole upstream TIFF was not retained. Its vertical reference is unknown. [Document partitioning](../evidence/usp/desktop-document-partition-handoff.md) produced 53 cited native units across all four pages of the unchanged USGS fact sheet; the unchanged scanned map explicitly needs OCR. Original hashes were retained. Both isolated processing runtimes are stopped; this does not install these records in another environment or qualify the renderer, large files or building/floor links.
 
 ## Independent learning corpus — current desktop V8, 30 September
+
+Current result: the later V8 LoRA fit failed useful calibration. The accepted [saved-output diagnosis](../evidence/usp/v8-calibration-diagnosis.md) identifies cross-target score ordering and negative-polygon regression without reading held-out families or running another model. Source qualification below remains unchanged; no candidate is promoted.
 
 The [V8 manifest](learning-corpus.json), accepted as `a8a9edc` after [source-only review](../evidence/usp/desktop-backend-review/v8-corpus-review.md) `d6ab5fd`, includes 18 official families / 92 fields. The retained [BAG/IGN source pack](../evidence/usp/footprint-key-sources-handoff.md) adds four training fields: BAG geometry; IGN `cleabs`, geometry and a geometry-origin negative. BAG `identificatie` stays unknown: its leading-zero native string is distinct from the service UUID whose stability is documented. Only IGN adds a supported footprint-key family; 36 other properties are unknown exclusions. All 16 V7 source objects/splits and 88 prior input hashes are unchanged.
 
@@ -94,6 +98,8 @@ Private [manifest](/Users/vinayak/.codex/task-data/nyc-zcta-10013-context/manife
 Sidewalk/water kinds and bounded multi-layer delivery remain contract gaps. Do not misclassify water as public land or every park polygon as grass: the parks layer includes courts and Greenstreets. These sources do not supply individual tree positions, lane markings, street labels, terrain or rights. See the manifest for source terms and exact derivation; no synthetic records or geometry were introduced.
 
 ## Retained packs and API journeys
+
+DATA-LINK-03's [recovered acquisition checkpoint](../evidence/usp/association-crosswalk/manifest.json) preserves six hash-verified Bihar/Haryana originals (four PDFs, two HTML pages; 9,689,977 bytes) after an HTTP 413 interrupted the worker. One PDF matches the earlier Bihar plan byte-for-byte. Exact issuing URLs, acquisition receipts, terms and separate geographies are retained in the manifest/catalogue. Crosswalk/revision observations still need source review; canonical matches remain `not_assessed` and no training labels were created. Reuse these originals rather than downloading them again.
 
 The [machine-readable dataset catalogue](datasets.json) links the retained manifests, issuer/original URLs, hashes, permission/reference metadata and repository-byte checks. It does not claim API installation. Regenerate with `python3 scripts/api/build-dataset-catalog.py`; `--check` verifies metadata and available original bytes without starting services.
 
