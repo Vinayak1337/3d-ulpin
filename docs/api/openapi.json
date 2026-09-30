@@ -32380,7 +32380,27 @@
             "project": "ulpin-usptest-d546a4764d77205d",
             "nonce": "d546a4764d77205d"
           },
-          "limitation": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188."
+          "limitation": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188.",
+          "additionalReceipts": [
+            {
+              "scope": "Distinct native needs_ocr and cited OCR output, method identities, independent pagination and current source/config/attempt checks.",
+              "sourceManifests": [
+                "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/selections",
+                "/controls"
+              ],
+              "receipt": "docs/evidence/usp/whole-page-ocr-runtime.json",
+              "servedCodeCommit": "81f6720f6c58c93a4430654f65d36bcf6db2a4c8",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-b050544f3d2cb99e",
+                "url": "http://127.0.0.1:3192/api/v1"
+              },
+              "limitation": "Bounded unchanged USGS scan title recovery and selected-region compatibility; whole-page OCR remains partial/unverified."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
@@ -32621,7 +32641,28 @@
             "project": "ulpin-usptest-d546a4764d77205d",
             "nonce": "d546a4764d77205d"
           },
-          "limitation": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188."
+          "limitation": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188.",
+          "additionalReceipts": [
+            {
+              "scope": "Two retained-source retries recover 12 partial whole-page OCR items and preserve five selected-region items; unchanged original and prior jobs.",
+              "sourceManifests": [
+                "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/source",
+                "/selections",
+                "/preservation"
+              ],
+              "receipt": "docs/evidence/usp/whole-page-ocr-runtime.json",
+              "servedCodeCommit": "81f6720f6c58c93a4430654f65d36bcf6db2a4c8",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-b050544f3d2cb99e",
+                "url": "http://127.0.0.1:3192/api/v1"
+              },
+              "limitation": "Bounded unchanged USGS scan title recovery and selected-region compatibility; whole-page OCR remains partial/unverified."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "json",
@@ -180973,7 +181014,8 @@
               "method": {
                 "type": "string",
                 "enum": [
-                  "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned"
+                  "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned",
+                  "ocr:tesseract-cli-5.5.1:sparse-tsv-v1"
                 ]
               },
               "toolStatus": {
@@ -181126,7 +181168,8 @@
                 "method": {
                   "type": "string",
                   "enum": [
-                    "ocr:docling-tesseract-cli-full-page"
+                    "ocr:docling-tesseract-cli-full-page",
+                    "ocr:tesseract-cli-sparse-tsv"
                   ]
                 },
                 "sourcePageBoxes": {
@@ -181171,7 +181214,8 @@
                       "derivedFrom": {
                         "type": "string",
                         "enum": [
-                          "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin"
+                          "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin",
+                          "tesseract_tsv_pixels_via_mupdf_pixel_origin"
                         ]
                       }
                     },

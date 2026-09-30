@@ -31369,7 +31369,7 @@ export interface components {
                     height: number;
                 } | null;
                 /** @enum {string} */
-                method: "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned";
+                method: "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned" | "ocr:tesseract-cli-5.5.1:sparse-tsv-v1";
                 /** @enum {string} */
                 toolStatus: "complete" | "partial" | "failed" | "unavailable";
                 /** @enum {string} */
@@ -31398,14 +31398,14 @@ export interface components {
                 text: string;
                 label: string;
                 /** @enum {string} */
-                method: "ocr:docling-tesseract-cli-full-page";
+                method: "ocr:docling-tesseract-cli-full-page" | "ocr:tesseract-cli-sparse-tsv";
                 sourcePageBoxes: {
                     pageNumber: number;
                     /** @enum {string} */
                     frame: "pdf_display_page_top_left_points";
                     box: (number)[];
                     /** @enum {string} */
-                    derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin";
+                    derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
                 }[];
             }[];
             ocrPage?: number;
