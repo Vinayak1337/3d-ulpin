@@ -1,5 +1,7 @@
 # EXCHANGE-PATH-01 — canonical geometry to exchange dependency audit
 
+**Complete and accepted, 1 October:** report `a49ce108` integrates as `46965e9` after lead code/source-pin checks. No qualifying producer exists and current export cannot represent the retained exterior. The bounded next implementation is [CITYJSON-DRAFT-01](CITYJSON_DRAFT_01.md); this audit and the earlier native CityJSON review are closed.
+
 User authorized remaining-backend audit and independent workers. Reuse Sol backend reviewer chat `01a0ee66-61d0-70b2-8b7d-9d225e3762c3`, GPT-6.1 Sol/high/default-standard; actual tier unobserved. Verify supplied never/danger-full-access permissions. Clean-check `C:/Users/kvina/.codex/worktrees/backend-review/3d-ulpin`; preserve the completed CityJSON review branch, then create `task/desktop-canonical-exchange-path` from the exact final lead handoff supplied in dispatch. Staging is read-only. No new chats/subworkers.
 
 Read current AGENTS, OPERATING_GUIDE, NESTJS_MIGRATION, normalized backend decisions, H00/release manifest, relevant H01/H02/H26–H28/H30/H99, official source index/catalogue and referenced retained D1/CityJSON evidence. This is not another native CityJSON reader review or broad project audit.
