@@ -1,5 +1,15 @@
 # CITYJSON-DRAFT-01-R — private exterior draft admission review
 
+## Exact lock correction review, 1 October
+
+Resume only closure of the P2 against correction `b48660ceaac7c41d77249a9e44847eb7ff5fe2bd`, handoff `3f1101ad3bb31104ab52abbafaf6dc370db170d0`, baseline `c4d967be1d3525e043928c150debe9bf458df9a5`. Keep your completed report/history and existing review worktree; inspect candidate via Git or fast-forward/merge only after clean-state reconciliation, without discarding the review commit. Own only an appended correction review in the existing report. Same Astra/xhigh/default-standard requested, actual tier unobserved, never/danger-full-access verified from current turn. No new workers.
+
+Check the six-file correction's shared lowercase source-case gate before destination/case rows and caller advisory locks, existing-case source-workspace and manual author/decide participation, native read lookup/site/case revalidation, replay and removal behavior. In particular confirm leaving exported workspace/large-original unchanged avoids a new case-before-gate inversion. Inspect actual opposing writers; no broad repeat of the completed feature review. Gate helper is not invoked from the chunk conversion/profile path, but changing whole service.ts changes its existing converter digest: preserve exact historical fences and ensure the handoff states stale status/chunk/replay consequences; no compatibility bypass is assigned.
+
+Lead matched the correction receipt (8,047 bytes; `8eb3194f96de2c95cf2d6a7cb1512fb5e388ad8e2958f5106c022cfb1efd59e6`), six physical/Git code pins, sources, five evidence artifacts, unchanged prior receipt and updated handoff. Owner's three selected protocol controls and backend typecheck pass; reuse these unless a concrete unresolved concern needs a small check. No SQL/runtime contention evidence exists. No services/DB/Docker query/start, validity rerun, generated files or production edits. Return scoped closure or actionable findings, commit only your report, callback lead then stop. Validity tooling integrated separately without changes to your production seams.
+
+## Original completed review
+
 **Review complete, changes requested:** report `5760a014` accepted as `6da5fb7`; one P2 site/case lock-order cycle with source-workspace creation. No other actionable defect established. Reviewer is stopped; implementation owner receives the focused correction. A later review is only the exact correction/closure, not a repeat of the full review.
 
 1 October 2026. Reuse `REVIEW-02 Point Batch Integrity`, chat `01a0ee77-a909-7ff2-a828-3b89024ffeb6`, Astra/xhigh/default-standard. The new canonical draft reservations and private source/artifact boundary warrant independent review; prior CityJSON and LINK-02 reviews remain closed. Actual tier is unobserved; no Fast/priority. Verify supplied `never` / `danger-full-access` permissions. Read current AGENTS/OPERATING_GUIDE/NESTJS_MIGRATION/backend decisions, [assignment](CITYJSON_DRAFT_01.md), relevant H01/H26/H28/H30/H99, source index/catalogue and the candidate handoff.

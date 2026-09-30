@@ -451,6 +451,11 @@
           "No frontend, scale, learning or release gate pass."
         ]
       },
+      "offlineValidationEvidence": {
+        "report": "docs/evidence/usp/cityjson-validity-handoff.md",
+        "reportSha256": "375c30e9e3e58a274a0038e3b6bd91625e3efa44e2a77a7137bcbc54ff6b0d7d",
+        "reportHashScope": "crlf-to-lf"
+      },
       "missingCapabilities": [
         "product_parser_qualification",
         "triangulated_roof_rendering",
