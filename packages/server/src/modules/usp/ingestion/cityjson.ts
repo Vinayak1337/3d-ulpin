@@ -16,6 +16,11 @@ import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 
 const uuid=z.uuid().transform(value=>value.toLowerCase());
+/** A present malformed/null marker is protected, never a legacy fallback. */
+export function isCityJSONProtectedSource(source:{profile?:unknown;inspection?:unknown}){
+  return source.profile==='cityjson-native-v1'||Boolean(source.inspection&&typeof source.inspection==='object'
+    &&Object.prototype.hasOwnProperty.call(source.inspection,'cityjsonOriginal'));
+}
 export const cityjsonReaderSha=()=>sha256(Buffer.concat(['native_cityjson.py','cityjson_processing.py'].map(file=>readFileSync(join(settings.repositoryRoot,'services/geo/geo',file)))));
 export const cityjsonResultKey=(jobId:string,hash:string)=>`cityjson-native/${jobId}/${hash}.json`;
 export const cityjsonArtifactKey=(jobId:string,hash:string)=>`cityjson-native/${jobId}/${hash}.native.json`;
