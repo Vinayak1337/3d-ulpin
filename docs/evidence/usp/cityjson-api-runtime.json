@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "cityjson-api-read-evidence/1",
+  "kind": "lead projection of preserved observations; no new runtime",
+  "servedCodeCommit": "b44adbccbf0e4250b9ae3216ccf9a5736639f8db",
+  "observedAt": "2026-09-30T15:34:18.897Z",
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "url": "http://127.0.0.1:3192/api/v1",
+  "originalReceipts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-cityjson-api\\final-code-read.json",
+      "sha256": "80109957aa34bc4e99024dd7e73584c7e2845a33c48d1fb17f2c046009473776"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-cityjson-api\\final-verification.json",
+      "sha256": "339550f9f0e197c964757e86e90353e29945fd949ae82bbcf9397e117f309376"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-cityjson-api\\receipt.json",
+      "sha256": "da902f70f0421e33e942c4ea2c245d65b3c7a2de670c6859204ee8733c1ebdc6"
+    }
+  ],
+  "checks": {
+    "generic-original": {
+      "label": "generic-original",
+      "path": "/sources/9d10dcce-fb65-4ba4-9bb8-7ad164ac9d8c/file",
+      "status": 200,
+      "bytes": 6783,
+      "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+      "cacheControl": "private, no-store"
+    },
+    "dedicated-original": {
+      "label": "dedicated-original",
+      "path": "/ingestion/cases/88ca2024-d901-4ae4-84cb-a05cac578b2a/sources/9d10dcce-fb65-4ba4-9bb8-7ad164ac9d8c/cityjson/original",
+      "status": 200,
+      "bytes": 6783,
+      "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+      "cacheControl": "private, no-store"
+    },
+    "native": {
+      "label": "native",
+      "path": "/ingestion/cases/88ca2024-d901-4ae4-84cb-a05cac578b2a/sources/9d10dcce-fb65-4ba4-9bb8-7ad164ac9d8c/cityjson/jobs/b1afbd0e-f480-45c8-b28b-4c9f19fe09a3/native",
+      "status": 200,
+      "bytes": 33168,
+      "sha256": "634685e1901b7e247878212262e45bf860942b1863490d7b8b67bda0b210022e",
+      "cacheControl": "private, no-store"
+    },
+    "status": {
+      "label": "status",
+      "path": "/ingestion/cases/88ca2024-d901-4ae4-84cb-a05cac578b2a/sources/9d10dcce-fb65-4ba4-9bb8-7ad164ac9d8c/cityjson/jobs/b1afbd0e-f480-45c8-b28b-4c9f19fe09a3",
+      "status": 200,
+      "bytes": 1391,
+      "sha256": "960c608b66ae4d5038cf5a8b4853429fe0b0a3d9c6159e973e93da87caf26da1",
+      "cacheControl": "private, no-store"
+    }
+  },
+  "cleanup": {
+    "stopCommand": "node scripts/usp/desktop-prefix-runtime.mjs stop E:/BhuAayam-data/runtime/prefix-worker-20260929",
+    "exit": 0,
+    "status": {
+      "project": "ulpin-usptest-b050544f3d2cb99e",
+      "processes": {
+        "api": false,
+        "dispatcher": false
+      },
+      "containers": [
+        "ulpin-usptest-b050544f3d2cb99e-redis-1 Up 2 hours",
+        "ulpin-usptest-b050544f3d2cb99e-minio-1 Up 2 hours",
+        "ulpin-usptest-b050544f3d2cb99e-postgres-1 Up 2 hours"
+      ]
+    },
+    "processingStopped": true,
+    "populatedStoragePreserved": true,
+    "runtimeOwnership": "returned_to_lead"
+  },
+  "earlierProcessing": {
+    "servedCodeCommit": "2b5af327730b726838aee2f2214e8008ef320cb3",
+    "receipt": "E:\\BhuAayam-data\\task-data\\desktop-cityjson-api\\receipt.json",
+    "sha256": "da902f70f0421e33e942c4ea2c245d65b3c7a2de670c6859204ee8733c1ebdc6",
+    "scope": "Source/job/outage-retry/access observations belong to this earlier revision; not a final-revision repeat."
+  },
+  "limitations": [
+    "Dutch exterior with null floor count; no Indian placement, canonical geometry, interiors, rights or association qualification.",
+    "No new compiler compatibility allowance; retained MVT generations in another installation require reconciliation.",
+    "No frontend, scale, learning or release gate pass."
+  ]
+}

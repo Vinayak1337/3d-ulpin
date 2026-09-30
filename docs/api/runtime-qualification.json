@@ -474,6 +474,60 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/cityjson-api-runtime.json",
+      "receiptSha256": "041867503a94fa9135079c80cfb5bfc3b0e474ccb468c26ff081f1285d3f99e8",
+      "servedCodeCommit": "b44adbccbf0e4250b9ae3216ccf9a5736639f8db",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-b050544f3d2cb99e",
+        "url": "http://127.0.0.1:3192/api/v1"
+      },
+      "qualification": "Exact original/native artifact and status reads with private,no-store in the preserved final read. Earlier processing/recovery is pinned separately in the linked handoff.",
+      "unqualified": [
+        "Dutch exterior with null floor count; no Indian placement, canonical geometry, interiors, rights or association qualification.",
+        "No new compiler compatibility allowance; retained MVT generations in another installation require reconciliation.",
+        "No frontend, scale, learning or release gate pass."
+      ],
+      "operations": {
+        "GET /api/v1/sources/{sourceId}/file": {
+          "scope": "Preserved final generic-original HTTP 200/private,no-store observation; exact byte/hash identity where applicable.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/generic-original"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/cityjson/original": {
+          "scope": "Preserved final dedicated-original HTTP 200/private,no-store observation; exact byte/hash identity where applicable.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/dedicated-original"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/cityjson/jobs/{jobId}/native": {
+          "scope": "Preserved final native HTTP 200/private,no-store observation; exact byte/hash identity where applicable.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/native"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/cityjson/jobs/{jobId}": {
+          "scope": "Preserved final status HTTP 200/private,no-store observation; exact byte/hash identity where applicable.",
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/status"
+          ]
+        }
+      }
     }
   ]
 }
