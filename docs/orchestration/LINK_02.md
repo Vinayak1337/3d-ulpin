@@ -1,5 +1,7 @@
 # LINK-02 — persist exact document citations through registry review
 
+**Runtime continuation complete, 1 October:** owner handoff `d8ef819` records served `7092714` equal to accepted `e234fa55`. The lead verified all reported receipt/artifact/code pins. Nine bounded HTTP observations passed; registry prerequisites are absent, so successful persistence/association remains unqualified. No fabricated record or unnecessary extraction retry. Owner stopped and runtime returned to lead with storage preserved. The continuation below is historical and must not be rerun without a newly available genuine target/source prerequisite.
+
 User authorizes immediate continuation, 30 September 2026. Reuse `CITYJSON-01`, chat `01a0f260-a4f8-7210-a884-8d690873f6bf`, GPT-6.1 Sol/xhigh for the source-access and transactional review boundary. Default/standard only; dispatch cannot set or attest request tier. Verify supplied `never` / `danger-full-access` permissions. Read AGENTS, OPERATING_GUIDE, NESTJS_MIGRATION, backend-streaming-plan, H00/release manifest and relevant H01/H02/H26/H28/H30/H99 contracts. Work only in `C:/Users/kvina/.codex/worktrees/desktop-raster/3d-ulpin`; primary staging is read-only. Preserve the completed CityJSON branch and clean-check before creating `task/desktop-reviewed-document-links` from accepted `e1eba7c403f20e65eb0a813f8eabe5d134db90fb`. No new chats/subworkers. Do not reopen completed CityJSON implementation/review.
 
 ## Smallest useful flow

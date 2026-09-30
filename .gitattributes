@@ -47,3 +47,5 @@ docs/evidence/usp/document-association-preview-runtime.json -text
 docs/evidence/usp/whole-page-ocr-runtime.json -text
 docs/engineering-plan/**/*.png -text -diff
 docs/engineering-plan/**/*.jpg -text -diff
+
+docs/evidence/usp/reviewed-document-links-runtime.json -text

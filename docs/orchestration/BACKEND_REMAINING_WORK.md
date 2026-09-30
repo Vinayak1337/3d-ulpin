@@ -1,5 +1,7 @@
 # Backend remaining work — 29 September 2026
 
+**LINK-02 runtime complete, 1 October:** missing/incomplete/access denial checks and original/history preservation accepted; no actual canonical target/correction exists. Positive persisted association still needs that prerequisite. Owner stopped; lead holds runtime for the accepted CITYJSON-DRAFT-01 checkpoint. Do not repeat the same empty-registry journey.
+
 **1 October:** canonical exchange path audit accepted at `46965e9`; no native exterior admission/qualification producer exists. CITYJSON-DRAFT-01 now owns private source-native building draft candidates with code-only verification first. LINK-02 retains exclusive runtime. [Current status](PROJECT_STATUS.md) supersedes all older active-work tables below.
 
 **Superseding continuation:** LINK-02 code/review are accepted through `d95b58b`; API handoff has 196 operations / 226 schemas. OCR-02 is complete. Current assignments are LINK-02 bounded runtime and EXCHANGE-PATH-01 independent code-path audit, detailed in [PROJECT_STATUS.md](PROJECT_STATUS.md). All earlier active-work statements below are historical; no completed review or retired learner is restarted.
