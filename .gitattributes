@@ -42,5 +42,6 @@ docs/evidence/usp/private-mvt-runtime.json -text
 docs/evidence/usp/semantic-chunks-runtime.json -text
 docs/evidence/usp/document-authority-correction.json -text
 docs/evidence/usp/ingest-04a-sufficiency-runtime.json -text
+docs/evidence/usp/cityjson-api-runtime.json -text
 docs/engineering-plan/**/*.png -text -diff
 docs/engineering-plan/**/*.jpg -text -diff

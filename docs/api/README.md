@@ -2,9 +2,11 @@
 
 For the agreed end-to-end design and Claude/Studio integration responsibilities, read the [adaptive ingestion workflow](adaptive-ingestion-workflow.md). It separates the target AI/ML and streaming behavior from the currently implemented API profiles.
 
-The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 188 operations and 216 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and fifty-six added operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
+The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 193 operations and 221 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and sixty-one added operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
 
 Desktop ingestion additions: [bounded private GeoTIFF windows](../evidence/usp/raster-window-handoff.md) retain source-linked native windows through four new routes; [native document partitions](../evidence/usp/desktop-document-partition-handoff.md) extend existing cited parts with page/line, header and continuation locators. The checked DEM has unknown vertical reference; scanned text still explicitly needs OCR. These are backend API flows, without renderer or document/building/floor-linking qualification.
+
+[Private native CityJSON ingestion](../evidence/usp/cityjson-api-handoff.md) adds five routes for original retention, queued processing/retry, bounded private status, exact native artifact and original download. The generic original route shares its access authority and no-store policy. The checked Dutch exterior preserves two objects, 62 vertices and unknown floors. This is source-native inspection, not canonical geometry admission or geometry exchange. The independent review and preserved final-read catalogue evidence are linked from the handoff/source index.
 
 [Native CSV/DOCX verification](../evidence/usp/native-table-docx-handoff.md) reused the existing document routes: the unchanged LGD table produced 785 cited rows with empty values and literal codes preserved; an official MHRA DOCX produced 118 native paragraph/table units. Original downloads and cross-case denial passed. These reference outputs require semantic/target review and provide no property or floor association by themselves.
 
@@ -70,6 +72,7 @@ For Vite, proxy `/api` to the local API and configure `API_ALLOWED_ORIGINS` with
 | Large original receipt | 7 added | Durable byte parts, resume/status, whole-original verification, one source publication and scoped abort/retry cleanup; conversion remains unsupported |
 | Sufficiency | 3 added | Source-pinned task decisions, bounded needs-input and existing-evidence or Not sure answers |
 | Source document intake | 3 added | Original-first queued extraction, bounded source-linked parts/status and current-pin retry; model proposals remain separately configured |
+| Source-native CityJSON | 5 added | Retained original, canonical job/retry, bounded private native result and exact original/artifact downloads; canonical geometry admission is separate |
 | Private ingestion events | 1 added | Committed case-ingestion notifications with scoped SSE cursors, bounded replay and explicit context resync |
 | Private administrative tiles | 5 added | Standard MVT, source-bound coherent generations, canonical pick lookup and fenced recovery over admitted NWIC observations |
 | Projected-vector admission | 5 added | Exact NWIC district ZIP through canonical jobs;733 dispositions,720 geographic admissions,13 quarantined native geometries, bounded private metadata/geometry reads |
