@@ -22,10 +22,10 @@ function uploadFile(form: FormData, message: string): File {
   if (!(file instanceof File)) throw new AppError(400, 'MISSING_FILE', message);
   return file;
 }
-function download(bytes: Uint8Array, mimeType: string, disposition: string) {
+function download(bytes: Uint8Array, mimeType: string, disposition: string, cacheControl='private, max-age=60') {
   return new globalThis.Response(new Uint8Array(bytes), {headers: {
     'Content-Type': mimeType, 'Content-Disposition': disposition,
-    'Cache-Control': 'private, max-age=60', 'X-Content-Type-Options': 'nosniff',
+    'Cache-Control': cacheControl, 'X-Content-Type-Options': 'nosniff',
   }});
 }
 
@@ -78,7 +78,8 @@ export class CasesController {
         return;
       }
       const file = await this.cases.sourceFile(id);
-      await sendWebResponse(response, download(file.bytes, file.mimeType, `inline; filename*=UTF-8''${encodeURIComponent(file.name)}`));
+      await sendWebResponse(response, download(file.bytes, file.mimeType, `inline; filename*=UTF-8''${encodeURIComponent(file.name)}`,
+        'cacheControl' in file?file.cacheControl:undefined));
     }finally{streamed?.close();response.off('close',disconnect);controller.abort();}
   }
 

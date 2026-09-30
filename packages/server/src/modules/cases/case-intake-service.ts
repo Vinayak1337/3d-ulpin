@@ -30,7 +30,7 @@ export class CaseIntakeService {
   async sourceFile(id: string) {
     const source = await getSource(id);
     if(isCityJSONProtectedSource(source))
-      return new CityJSONIngestionService().original(source.case_id,id);
+      return {...await new CityJSONIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
     if(source.inspection?.documentOriginal)return new DocumentIngestionService().original(source.case_id,id);
     await transaction(client=>documentAuthorityTx(client,source,'original'));
     const bytes = await readObject(source.object_key);
@@ -42,6 +42,7 @@ export class CaseIntakeService {
   }
   async streamedSourceFile(id:string,signal:AbortSignal){
     const source=await getSource(id);
+    if(isCityJSONProtectedSource(source))return null;
     return source.profile==='large-original-v1'?largeOriginalDownload(id,signal):null;
   }
 }
