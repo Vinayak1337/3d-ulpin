@@ -1,4 +1,5 @@
 import {RegistryMetadataSchema,type DocumentAssociationTarget} from '@ulpin/contracts';
+import type {PoolClient} from 'pg';
 import type {RequestContext,SnapshotScope,TargetPin} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
@@ -32,6 +33,15 @@ function sourceIds(body:Row['body']){
   if(ids.size>256)throw new AppError(413,'DOCUMENT_ASSOCIATION_TARGET_LIMIT','Select a smaller evidence context.');
   return ids;
 }
+/** Exact raw comparison stays inside this assertion; no captured private body is returned. */
+export async function assertAssociationSnapshotTargetTx(client:PoolClient,scope:SnapshotScope,pin:TargetPin,current:Row|undefined){
+  const saved=(await client.query(`SELECT body,body_sha256 FROM usp_snapshot_bodies
+    WHERE manifest_id=$1 AND namespace='registry_record' AND object_id=$2 AND revision=$3`,
+    [scope.manifestId,pin.ref.id,pin.revision])).rows[0];
+  if(!saved||fingerprint(saved.body)!==saved.body_sha256)
+    conflict('The exact captured target revision is unavailable.');
+  assertCurrentAssociationTarget(saved.body as Row,current,pin,scope);
+}
 /** Delegates snapshot membership/resolution and source access to existing readers. */
 export async function associationTargets(ctx:RequestContext,scope:SnapshotScope|null,pins:readonly TargetPin[]):Promise<DocumentAssociationTarget[]>{
   assertLocalUsp(ctx);if(!scope)return [];
@@ -52,7 +62,7 @@ export async function associationTargets(ctx:RequestContext,scope:SnapshotScope|
         c.code project_code,c.status project_status,s.location project_location FROM registry_records r
         LEFT JOIN usp_project_codes c ON c.record_id=r.id LEFT JOIN usp_project_identity_state s ON s.record_id=r.id
         WHERE r.id=$1 AND r.site_id=$2`,[pin.ref.id,scope.scopeId])).rows[0] as Row|undefined;
-      assertCurrentAssociationTarget(captured,current,pin,scope);
+      await assertAssociationSnapshotTargetTx(client,scope,pin,current);
       for(const id of ids)await registrySourceTx(client,scope.scopeId,id);
       assertLocalUsp(ctx);
     });

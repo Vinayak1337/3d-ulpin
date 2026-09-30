@@ -1,4 +1,7 @@
-import { Controller, Get, HttpCode, Inject, Param, Patch, Post, Req, Res } from '@nestjs/common';
+import { Controller, Get, Header, HttpCode, Inject, Param, Patch, Post, Req, Res,UseGuards } from '@nestjs/common';
+import {RegistryDocumentAmendmentSchema,RegistryDocumentAmendmentReceiptSchema,RegistryDocumentEvidenceSchema} from '@ulpin/contracts';
+import {AppError} from '@ulpin/server/infrastructure/errors';
+import {PrivateSpatialGuard} from '../spatial/private-spatial.guard';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import type { z } from 'zod';
@@ -117,6 +120,27 @@ export class RegisterController {
   @ApiOperation({ operationId: 'GET_api_v1_registry_drafts_draftId', summary: 'Read a registry draft' })
   @doc.ApiContract(200, doc.registryDraft)
   draft(@Param('draftId') draftId: string) { return this.service.draftDetail(idSchema.parse(draftId)); }
+
+  @Post('registry-drafts/:draftId/document-citations') @HttpCode(200)
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_document_citations',summary:'Amend exact native citations on one current building or floor correction'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryDocumentAmendmentReceiptSchema),RegistryDocumentAmendmentSchema)
+  async amendDocumentCitations(@Param('draftId') draftId:string,@Req() req:Request){
+    if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
+      throw new AppError(422,'REGISTRY_DOCUMENT_QUERY','This citation operation has no query fields.');
+    const input=RegistryDocumentAmendmentSchema.parse(await readJsonBody(req,32*1024));
+    return this.service.amendDocumentCitations(idSchema.parse(draftId),input);
+  }
+
+  @Get('registry-drafts/:draftId/document-citations')
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_document_citations',summary:'Read exact native citations through current private source and draft authority'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryDocumentEvidenceSchema))
+  documentCitations(@Param('draftId') draftId:string,@Req() req:Request){
+    if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
+      throw new AppError(422,'REGISTRY_DOCUMENT_QUERY','This citation operation has no query fields.');
+    return this.service.documentCitations(idSchema.parse(draftId));
+  }
 
   @Patch('registry-drafts/:draftId')
   @ApiOperation({ operationId: 'PATCH_api_v1_registry_drafts_draftId', summary: 'Edit a registry draft at the expected revision' })

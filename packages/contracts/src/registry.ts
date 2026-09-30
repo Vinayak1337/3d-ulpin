@@ -7,6 +7,7 @@ import type {
   SourceRevision,
 } from "./index";
 import type {RegistryMetadata} from './registry-metadata';
+import type {RegistryDocumentCitation,RegistryDocumentReviewContext} from './registry-document-evidence';
 export type RegistryKind = "parcel" | "building" | "floor" | "space";
 export type SpaceUse = "apartment" | "common" | "basement" | "utility" | "unspecified";
 export interface RegistryRight {
@@ -32,6 +33,7 @@ export interface RegistryBody {
   officialUlpin?: string;
   synthetic: boolean;
   registryMetadata?: RegistryMetadata;
+  documentCitations?: RegistryDocumentCitation[];
 }
 export interface RegistryRecord extends RegistryBody {
   id: string;
@@ -63,6 +65,7 @@ export interface RegistryDraft {
   createdAt: string;
 }
 export interface RegistryReview {
+  documentReviewContext?: RegistryDocumentReviewContext;
   preparationFingerprint?: string;
   id: string;
   draftId: string;

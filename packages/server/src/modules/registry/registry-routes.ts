@@ -1,4 +1,5 @@
 import { idSchema } from '../../infrastructure/validation';
+import {amendRegistryDocumentCitations,readRegistryDocumentCitations} from './registry-document-evidence';
 import { AppError } from '../../infrastructure/errors';
 import {
   createSite, listSites, siteDetail, resolveRecord, createRegistryDraft,
@@ -19,6 +20,19 @@ const json = (value: unknown, status = 200) =>
 async function readBody(request: Request): Promise<unknown> {
   try { return await request.json(); }
   catch { throw new AppError(400, 'INVALID_JSON', 'Request body must be valid JSON.'); }
+}
+async function readCitationBody(request:Request){
+  const reader=request.body?.getReader(),chunks:Uint8Array[]=[];let size=0;
+  if(!reader)throw new AppError(400,'INVALID_JSON','Request body must be valid JSON.');
+  try{
+    for(;;){const chunk=await reader.read();if(chunk.done)break;
+      size+=chunk.value.byteLength;
+      if(size>32*1024){await reader.cancel();throw new AppError(413,'REGISTRY_DOCUMENT_INPUT_LIMIT','Citation selection exceeds 32 KiB.');}
+      chunks.push(chunk.value);
+    }
+  }finally{reader.releaseLock();}
+  try{return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks)));}
+  catch{throw new AppError(400,'INVALID_JSON','Request body must be valid JSON.');}
 }
 
 /** Temporary standard-Request compatibility adapter; native Nest routes call the services directly. */
@@ -63,6 +77,13 @@ export async function registryRoutes(request: Request, p: string[]): Promise<Res
   }
   if (p[0] === 'registry-drafts') {
     const id = idSchema.parse(p[1]);
+    if(p.length===3&&p[2]==='document-citations'){
+      if(new URL(request.url).searchParams.size)throw new AppError(422,'REGISTRY_DOCUMENT_QUERY','This citation operation has no query fields.');
+      if(method==='GET')return json(await readRegistryDocumentCitations(id));
+      if(method==='POST'){
+        return json(await amendRegistryDocumentCitations(id,await readCitationBody(request)));
+      }
+    }
     if (p.length === 2 && method === 'GET') return json(await draftDetail(id));
     if (p.length === 2 && method === 'PATCH')
       return json(await editRegistryDraft(id, editDraftSchema.parse(await readBody(request))));

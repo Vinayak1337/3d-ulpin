@@ -1,0 +1,215 @@
+import {randomUUID} from 'node:crypto';
+import type {PoolClient} from 'pg';
+import {RegistryDocumentAmendmentSchema,RegistryDocumentAmendmentReceiptSchema,RegistryDocumentCitationSchema,
+  RegistryDocumentCitationsSchema,RegistryDocumentEvidenceSchema,RegistryDocumentReviewContextSchema,
+  type RegistryRecord,type RegistryDocumentCitation,type RegistryDocumentReviewContext} from '@ulpin/contracts';
+import {DocumentPartSchema,type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
+import {transaction} from '../../infrastructure/db';
+import {AppError,conflict,notFound} from '../../infrastructure/errors';
+import {sha256} from '../../infrastructure/storage';
+import {fingerprint} from '../cases/domain';
+import {localRequestContext} from '../usp/principal';
+import {associationDocumentInputTx} from '../usp/ingestion/document-association-authority';
+import {readDocumentResult} from '../usp/ingestion/documents';
+import {documentPartEligibleForProposal} from '../usp/ingestion/document-model';
+import {registrySourceTx,registryMetadataEvidence} from './registry-metadata';
+import {RegistryMetadataSchema} from '@ulpin/contracts';
+
+type Dependencies={source:typeof associationDocumentInputTx;result:typeof readDocumentResult;registrySource:typeof registrySourceTx};
+const defaults:Dependencies={source:associationDocumentInputTx,result:readDocumentResult,registrySource:registrySourceTx};
+const context=()=>localRequestContext(randomUUID());
+export function documentReviewContext():RegistryDocumentReviewContext{
+  const ctx=context();return RegistryDocumentReviewContextSchema.parse({subject:ctx.principal.subject,
+    entitlementVersion:ctx.principal.entitlementVersion,accessViewId:ctx.accessViewId,policyVersion:ctx.policyVersion});
+}
+export function assertDocumentReviewContext(review:{documentReviewContext?:RegistryDocumentReviewContext;records:RegistryRecord[]}){
+  if((review.documentReviewContext||review.records.some(record=>record.documentCitations?.length)) &&
+    (!review.documentReviewContext||fingerprint(review.documentReviewContext)!==fingerprint(documentReviewContext())))
+    throw new AppError(403,'REGISTRY_DOCUMENT_REVIEW_DENIED','The reviewed document access context is unavailable.');
+}
+/** General registry projections never serve private document locators or text. */
+export function publicRegistryBody<T extends object>(body:T):T{
+  const {documentCitations:_privateCitations,...publicBody}=body as T&{documentCitations?:unknown};
+  return publicBody as T;
+}
+export function publicRegistryDraft<T extends {records:RegistryRecord[]}>(draft:T):T{
+  return {...draft,records:draft.records.map(publicRegistryBody)};
+}
+export function publicRegistryReview<T extends {records:RegistryRecord[];before:RegistryRecord[]}>(review:T):T{
+  return {...publicRegistryDraft(review),before:review.before.map(publicRegistryBody)};
+}
+function requireCorrection(record:RegistryRecord){
+  if(!['building','floor'].includes(record.kind)||!Number.isSafeInteger(record.revision)||record.revision<1)
+    throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Choose an existing recorded building or floor correction.');
+}
+export function assertCitationEdit(old:RegistryRecord,body:{documentCitations?:RegistryDocumentCitation[]}){
+  if(body.documentCitations!==undefined && fingerprint(body.documentCitations)!==fingerprint(old.documentCitations??[]))
+    throw new AppError(422,'REGISTRY_DOCUMENT_AMENDMENT_REQUIRED','Use the exact document citation amendment operation.');
+}
+async function currentTargetTx(client:PoolClient,siteId:string,record:RegistryRecord,lock=false,dependencies=defaults){
+  requireCorrection(record);
+  const row=(await client.query(`SELECT r.id,r.site_id,r.kind,r.revision,r.body,c.status project_status FROM registry_records r
+    LEFT JOIN usp_project_codes c ON c.record_id=r.id WHERE r.id=$1 AND r.site_id=$2${lock?' FOR SHARE OF r':''}`,[record.id,siteId])).rows[0];
+  if(!row||row.kind!==record.kind||Number(row.revision)!==record.revision||['retired','cancelled_error'].includes(row.project_status))
+    conflict('The recorded citation target changed. Start from its exact current correction.');
+  const ids=new Set<string>();
+  for(const evidence of [...(row.body.evidence??[]),...(row.body.rights??[]).map((right:any)=>right.evidence),
+    ...Object.values(row.body.geometry?.bindings??{})] as any[])
+    if(evidence?.sourceId)ids.add(evidence.sourceId);
+  if(row.body.registryMetadata)for(const evidence of registryMetadataEvidence(RegistryMetadataSchema.parse(row.body.registryMetadata)))
+    ids.add(evidence.sourceId);
+  if(ids.size>256)throw new AppError(413,'REGISTRY_DOCUMENT_TARGET_LIMIT','Use a smaller recorded evidence context.');
+  for(const id of ids)await dependencies.registrySource(client,siteId,id);
+  return row;
+}
+export function literalCitationParts(result:DocumentResult,input:DocumentInput,ids:readonly string[]){
+  if(fingerprint(result.input)!==fingerprint(input))conflict('The exact document result input changed.');
+  if(result.native.status!=='extracted'||result.native.readerSha256!==input.readerSha256||input.archiveSelection)
+    throw new AppError(422,'REGISTRY_DOCUMENT_NATIVE_REQUIRED','Select literal parts from an accepted native document result.');
+  const byId=new Map<string,DocumentResult['native']['parts'][number]>();
+  for(const raw of result.native.parts){
+    const part=DocumentPartSchema.parse(raw);
+    if(byId.has(part.id))throw new AppError(422,'REGISTRY_DOCUMENT_PART_INTEGRITY','Native part IDs must be unique.');
+    byId.set(part.id,part);
+  }
+  return ids.map(id=>{
+    const part=byId.get(id);
+    if(!part||part.sourceId!==input.sourceId||part.sourceRevision!==input.sourceRevision||part.sourceSha256!==input.sourceSha256||
+      sha256(part.text)!==part.sha256 || !documentPartEligibleForProposal(part)||!part.text.trim()||/\[redacted/i.test(part.text))
+      throw new AppError(422,'REGISTRY_DOCUMENT_PART_SELECTION','Choose exact eligible literal native parts from this result.');
+    return part;
+  });
+}
+async function acceptedFenceTx(client:PoolClient,jobId:string){
+  const row=(await client.query('SELECT accepted_fence FROM usp_job_metadata WHERE job_id=$1',[jobId])).rows[0];
+  const fence=Number(row?.accepted_fence);
+  if(!Number.isSafeInteger(fence)||fence<1)conflict('The accepted document attempt is unavailable.');
+  return fence;
+}
+/** Check immutable historical target pins; later record revisions do not rewrite selection history. */
+async function historicalTargetTx(client:PoolClient,siteId:string,record:RegistryRecord,pin:RegistryDocumentCitation){
+  if(pin.target.recordId!==record.id||pin.target.revision>record.revision)
+    conflict('The document citation belongs to another recorded target revision.');
+  const row=(await client.query(`SELECT r.site_id,r.kind,c.status project_status,CASE WHEN r.revision=$2 THEN r.body ELSE h.body END body
+    FROM registry_records r LEFT JOIN registry_revisions h ON h.record_id=r.id AND h.revision=$2
+    LEFT JOIN usp_project_codes c ON c.record_id=r.id
+    WHERE r.id=$1`,[record.id,pin.target.revision])).rows[0];
+  if(!row||row.site_id!==siteId||row.kind!==record.kind||['retired','cancelled_error'].includes(row.project_status)||
+    !row.body||fingerprint(row.body)!==pin.target.bodySha256)
+    conflict('The immutable recorded target citation pin changed or is unavailable.');
+}
+/** All callers use the canonical transaction; exact result I/O is followed by source/attempt rechecks. */
+export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId:string,record:RegistryRecord,
+  lock=false,dependencies:Dependencies=defaults){
+  const citations=RegistryDocumentCitationsSchema.parse(record.documentCitations??[]);
+  if(!citations.length)return [];
+  requireCorrection(record);
+  const ctx=context(),entries:{pin:RegistryDocumentCitation;part:DocumentResult['native']['parts'][number]}[]=[];
+  const groups=new Map<string,RegistryDocumentCitation[]>();
+  for(const pin of citations){
+    if(pin.selection.subject!==ctx.principal.subject)
+      throw new AppError(403,'REGISTRY_DOCUMENT_DENIED','This document citation is unavailable to the current operator.');
+    await historicalTargetTx(client,siteId,record,pin);
+    const key=fingerprint(pin.document);groups.set(key,[...(groups.get(key)??[]),pin]);
+  }
+  for(const group of groups.values()){
+    const first=group[0],source=await dependencies.registrySource(client,siteId,first.document.sourceId);
+    const input=await dependencies.source(client,ctx,first.document,undefined,lock),fence=await acceptedFenceTx(client,input.jobId);
+    if(source.revision!==input.sourceRevision||source.sha256!==input.sourceSha256)conflict('The site document source pins changed.');
+    const result=await dependencies.result(input,first.document.resultSha256);
+    const parts=literalCitationParts(result,input,group.map(pin=>pin.partId));
+    for(const [index,pin] of group.entries()){
+      const part=parts[index];
+      if(pin.id!==citationId(pin)||pin.inputSha256!==fingerprint(input)||pin.readerSha256!==input.readerSha256||pin.acceptedFence!==fence||
+        pin.selection.accessSha256!==input.accessSha256||pin.partSha256!==part.sha256||fingerprint(pin.locator)!==fingerprint(part.locator))
+        conflict('The exact native part, reader, accepted attempt or access pin changed.');
+      entries.push({pin,part});
+    }
+    await dependencies.source(client,ctx,first.document,input,lock);
+    const current=await dependencies.registrySource(client,siteId,first.document.sourceId);
+    if(fingerprint(current)!==fingerprint(source)||await acceptedFenceTx(client,input.jobId)!==fence)
+      conflict('The document source or accepted attempt changed during its read.');
+  }
+  return entries;
+}
+export function citationId(pin:Pick<RegistryDocumentCitation,'document'|'partId'|'target'>){
+  return fingerprint({document:pin.document,partId:pin.partId,target:pin.target});
+}
+export function applyCitationAmendment(record:RegistryRecord,added:RegistryDocumentCitation[],remove:readonly string[]){
+  const old=RegistryDocumentCitationsSchema.parse(record.documentCitations??[]);
+  if(remove.some(id=>!old.some(pin=>pin.id===id)))conflict('A selected citation to remove is absent from this draft.');
+  const byId=new Map(old.filter(pin=>!remove.includes(pin.id)).map(pin=>[pin.id,pin]));
+  for(const pin of added){
+    if(remove.includes(pin.id))throw new AppError(422,'REGISTRY_DOCUMENT_SELECTION','Do not add and remove the same citation.');
+    if(!byId.has(pin.id))byId.set(pin.id,pin);
+  }
+  const documentCitations=RegistryDocumentCitationsSchema.parse([...byId.values()]);
+  return {...record,documentCitations};
+}
+async function lockedDraftTx(client:PoolClient,draftId:string,recordId?:string,lock=false){
+  const initial=(await client.query('SELECT site_id FROM registry_drafts WHERE id=$1',[draftId])).rows[0]??notFound();
+  if(lock)await client.query('SELECT id FROM registry_sites WHERE id=$1 FOR UPDATE',[initial.site_id]);
+  const draft=(await client.query(`SELECT * FROM registry_drafts WHERE id=$1${lock?' FOR UPDATE':''}`,[draftId])).rows[0]??notFound();
+  if(draft.site_id!==initial.site_id)conflict('The draft site changed.');
+  const records=draft.records as RegistryRecord[];
+  if(records.length!==1 || (recordId&&records[0].id!==recordId))
+    throw new AppError(422,'REGISTRY_DOCUMENT_DRAFT_SCOPE','Amend one existing building or floor correction per draft.');
+  requireCorrection(records[0]);return {draft,record:records[0]};
+}
+/** Existing operations holds only the idempotency receipt; citations live solely in registry_drafts/records/history. */
+export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId:string,raw:unknown,dependencies:Dependencies=defaults){
+  const request=RegistryDocumentAmendmentSchema.parse(raw),{draft,record}=await lockedDraftTx(client,draftId,request.recordId,true);
+  if(draft.status!=='draft'||record.revision!==request.expectedRecordRevision)conflict('Use the exact active correction and recorded target revision.');
+  const target=await currentTargetTx(client,draft.site_id,record,true,dependencies),ctx=context();
+  const operationKey=`registry-document-citations:${draftId}:${request.requestKey}`;
+  const digest=fingerprint({request,subject:ctx.principal.subject,reviewContext:documentReviewContext()});
+  const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='registry-document-citations'",
+    [draft.case_id,operationKey])).rows[0];
+  if(prior){
+    const receipt=RegistryDocumentAmendmentReceiptSchema.parse(prior.result);
+    if(prior.payload_hash!==digest||draft.revision!==receipt.draftRevision)conflict('This amendment request or its draft changed.');
+    await assertRegistryDocumentCitationsTx(client,draft.site_id,record,true,dependencies);return receipt;
+  }
+  if(draft.revision!==request.expectedDraftRevision)conflict('The draft changed. Refresh before amending its exact citations.');
+  const added:RegistryDocumentCitation[]=[];
+  if(request.add){
+    const source=await dependencies.registrySource(client,draft.site_id,request.add.document.sourceId);
+    const input=await dependencies.source(client,ctx,request.add.document,undefined,true),fence=await acceptedFenceTx(client,input.jobId);
+    if(source.revision!==input.sourceRevision||source.sha256!==input.sourceSha256)conflict('The source-site pins changed.');
+    const result=await dependencies.result(input,request.add.document.resultSha256);
+    for(const part of literalCitationParts(result,input,request.add.partIds)){
+      const targetPin={recordId:record.id,revision:record.revision,bodySha256:fingerprint(target.body)};
+      const pin={document:request.add.document,partId:part.id,target:targetPin};
+      added.push(RegistryDocumentCitationSchema.parse({...pin,id:citationId(pin),version:'registry-document-citation/1',
+        inputSha256:fingerprint(input),readerSha256:input.readerSha256,acceptedFence:fence,partSha256:part.sha256,locator:part.locator,
+        selection:{subject:ctx.principal.subject,accessSha256:input.accessSha256,selectedAt:new Date().toISOString()},
+        associationState:'operator_selected',qualification:'not_assessed'}));
+    }
+    await dependencies.source(client,ctx,request.add.document,input,true);
+    await dependencies.registrySource(client,draft.site_id,request.add.document.sourceId);
+  }
+  // Removal remains useful when the removed source is unavailable; retained/additional citations still require current authority.
+  const next=applyCitationAmendment(record,added,request.remove);
+  await assertRegistryDocumentCitationsTx(client,draft.site_id,next,true,dependencies);
+  await currentTargetTx(client,draft.site_id,record,true,dependencies);
+  const changed=fingerprint(record.documentCitations??[])!==fingerprint(next.documentCitations??[]);
+  if(changed)await client.query('UPDATE registry_drafts SET records=$2,revision=revision+1 WHERE id=$1',[draftId,JSON.stringify([next])]);
+  const receipt=RegistryDocumentAmendmentReceiptSchema.parse({draftId,draftRevision:draft.revision+(changed?1:0),
+    recordId:record.id,recordRevision:record.revision,changed});
+  await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'registry-document-citations',$3,$4)",
+    [draft.case_id,operationKey,digest,receipt]);
+  return receipt;
+}
+export const amendRegistryDocumentCitations=(draftId:string,raw:unknown)=>transaction(client=>amendRegistryDocumentCitationsTx(client,draftId,raw));
+export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:string,dependencies:Dependencies=defaults){
+  const {draft,record}=await lockedDraftTx(client,draftId);
+  const expected=draft.status==='recorded'?{...record,revision:record.revision+1}:record;
+  await currentTargetTx(client,draft.site_id,expected,false,dependencies);
+  const citations=await assertRegistryDocumentCitationsTx(client,draft.site_id,record,false,dependencies);
+  await currentTargetTx(client,draft.site_id,expected,false,dependencies);
+  const current=await lockedDraftTx(client,draftId);
+  if(fingerprint(current)!==fingerprint({draft,record}))conflict('The draft changed during its private evidence read.');
+  return RegistryDocumentEvidenceSchema.parse({draftId,draftRevision:draft.revision,recordId:record.id,
+    recordRevision:record.revision,citations,associationState:'operator_selected',qualification:'not_assessed'});
+}
+export const readRegistryDocumentCitations=(draftId:string)=>transaction(client=>readRegistryDocumentCitationsTx(client,draftId));

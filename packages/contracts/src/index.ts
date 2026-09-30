@@ -224,6 +224,7 @@ export * from './gis-quarantine';
 export * from './registry-metadata';
 export * from './building-registry-report';
 export * from './document-association';
+export * from './registry-document-evidence';
 export * from './area';
 
 export * from "./spatial";
