@@ -4264,10 +4264,21 @@
       "canonicalMatchState": "not_assessed",
       "limitations": [
         "The six-original bound includes two HTML project pages; one PDF is byte-identical to the earlier plan.",
-        "Native-text and render checkpoints remain private, but their observations were not promoted by this recovery.",
+        "Completed source review supports only partial Bihar identifier reconciliation and native planned Haryana floor scopes, with unresolved identifier/floor-count/revision conflicts.",
         "No current approved revision, keyed Bihar villa or canonical building/floor association was established.",
         "No API import, model fit, source edit, label or release qualification."
-      ]
+      ],
+      "sourceReview": {
+        "report": "docs/evidence/usp/association-crosswalk/review.md",
+        "observations": "docs/evidence/usp/association-crosswalk/observations.json",
+        "observationsSha256": "5e59703ff10e59b2baf7e5f497609c5c98c5d240f73185501da9288f76a1fc7d",
+        "hashScope": "Git/LF metadata bytes; unchanged originals use exact-byte hashes.",
+        "acceptedCommit": "82952e7",
+        "observationCount": 7,
+        "canonicalMatchState": "not_assessed",
+        "trainingLabelsCreated": false,
+        "recordsCreated": false
+      }
     },
     {
       "id": "usgs-central-city-private-ocr-api",
