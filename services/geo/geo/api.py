@@ -136,3 +136,8 @@ def point_batch(data: dict[str, Any]) -> dict:
         return read_point_batch(data)
     except InputError as error:
         raise HTTPException(status_code=422, detail=str(error)) from None
+
+
+# Dedicated router; existing area-operation dispatch remains unchanged.
+from .cityjson_processing import make_cityjson_router
+app.include_router(make_cityjson_router(authorize))

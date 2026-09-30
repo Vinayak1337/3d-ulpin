@@ -16,12 +16,14 @@ import {runChunkMappingJob} from '../usp/ingestion/chunk-mapping-worker';
 import {runStreamedProfileJob} from '../usp/ingestion/streamed-profile-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
+import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
 let streamingVectorWorker:Promise<void>|undefined;
 let chunkMappingWorker:Promise<void>|undefined;
 let streamedProfileWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
+let cityjsonWorker:Promise<void>|undefined;
 let pointBatchWorker:Promise<void>|undefined;
 
 type WorkerReply = {
@@ -203,6 +205,12 @@ export async function dispatchTick(): Promise<number> {
         if(!rasterWindowWorker)rasterWindowWorker=runRasterWindowJob(job.id)
           .catch(()=>{/* The shared attempt fence and durable status own recovery. */})
           .finally(()=>{rasterWindowWorker=undefined;});
+        return;
+      }
+      if(job.operation==='cityjson-native'){
+        if(!cityjsonWorker)cityjsonWorker=runCityJSONJob(job.id)
+          .catch(()=>{/* Canonical fenced job status owns recovery. */})
+          .finally(()=>{cityjsonWorker=undefined;});
         return;
       }
       if(job.operation==='point-batch'){
