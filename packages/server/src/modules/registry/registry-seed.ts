@@ -6,6 +6,7 @@ import type {
 } from "@ulpin/contracts";
 import { transaction } from "../../infrastructure/db";
 import { propertyIdentifier } from "../../shared/identifiers";
+import { lockSourceCaseDestinationTx } from '../cases/source-case-lock';
 import {
   getCase,
   fingerprint,
@@ -35,9 +36,7 @@ export async function importRegistryCase(
     conflict("Build the current case before importing.");
   return transaction(async (client) => {
     // Serialize import destinations and retries for a workspace before allocating identities.
-    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [
-      `registry-import:${caseId}`,
-    ]);
+    await lockSourceCaseDestinationTx(client,caseId);
     if (!siteId) {
       const attached = (
         await client.query("SELECT site_id FROM cases WHERE id=$1", [caseId])

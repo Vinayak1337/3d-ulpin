@@ -12,6 +12,7 @@ import { putOriginal, readObject, sha256 } from '../../../infrastructure/storage
 import { inspectGisBytes } from '../../cases/gis-inspection';
 import { originalAttempt } from '../../cases/original-attempt';
 import { fingerprint } from '../../cases/domain';
+import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
 import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
@@ -137,6 +138,7 @@ export class ManualIngestionService {
     if(input.plan.caseId!==caseId || input.plan.source.sourceId!==sourceId)throw new AppError(422,'MAPPING_SCOPE','Recipe paths and source pins must name this retained source workspace.');
     const digest=fingerprint({input,subject}),key=`manual-author:${input.requestKey}`;
     return transaction(async client=>{
+      await lockSourceCaseDestinationTx(client,caseId);
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
       await validate(client,input.plan,scope);await destination(client,input.destination);
       const prior=(await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1 FOR UPDATE',[sourceId])).rows[0]?.body as MappingReceipt|undefined;
@@ -162,6 +164,7 @@ export class ManualIngestionService {
     const caseId=uuid.parse(caseIdValue),recipeId=uuid.parse(recipeIdValue),input=MappingDecisionSchema.parse(value),subject=localOperatorSubject();
     const digest=fingerprint({recipeId,input,subject}),key=`manual-${action}:${input.requestKey}`;
     return transaction(async client=>{
+      await lockSourceCaseDestinationTx(client,caseId);
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
       const receipt=(await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1 AND case_id=$2 FOR UPDATE',[recipeId,caseId])).rows[0]?.body as MappingReceipt|undefined;
       if(!receipt)notFound('Manual recipe not found.');
