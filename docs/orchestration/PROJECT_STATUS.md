@@ -19,7 +19,7 @@ Lead snapshot after accepted staging `147d80d`: CityJSON implementation and revi
 
 | Lane | State/outcome | Requested model |
 | --- | --- | --- |
-| DATA-LINK-04 | **New independent source assignment:** acquire the specifically missing Haryana approval memo/sheet-revision evidence through relevant issuing sources. Reuses accepted drawing observations; no repeated review, registry changes or learning labels. | GPT-6.1 Sol/high |
+| DATA-LINK-04 | **Complete; source findings accepted from `b088834`.** Three new originals add an exact licence-file reference and a demarcation-date conflict. Actual building-plan approval/revision index remains missing; no canonical matches/labels. Worker stopped; no repeat search assigned. | GPT-6.1 Sol/high |
 | BUNDLE-02B | **Complete and integrated:** implementation `e7e806a`, independent acceptance `f3fd8c0`; final receipt and all 15 executed source pins matched. Integrated backend typecheck, 9 affected tests and generated API/client checks pass. Review is finished. | Astra/xhigh reviewer, now idle |
 | CITYJSON-02 / 02R | **Complete and integrated through `147d80d`:** implementation `d24765e`, fixes `ae510f2`/`0570891`, handoff `d5d6a95`, review `147d80d`. No actionable review finding. Integrated backend typecheck and two authority checks pass. LINK receives the stopped isolated runtime on compatible code. | GPT-6.1 Sol/high; reviewer stopped |
 | AI-06F / 06F-R | **Review complete at `d7f091b`; candidate retired from execution.** Saved scores cannot meet the frozen criterion; reload and Job-envelope qualification also failed/incomplete. Wrapper's missing Job-peak acceptance check blocks reuse; its code remains unintegrated. No salvage fit/reload or promotion. | Astra/xhigh; learner/reviewer stopped |
