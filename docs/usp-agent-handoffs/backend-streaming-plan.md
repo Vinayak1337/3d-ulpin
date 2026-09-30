@@ -6,7 +6,7 @@ Current execution order is superseded by the [NestJS migration ledger](../orches
 
 ## Decisions and source normalization
 
-- Implement backend plan tasks in separate worker worktrees. The lead hardens and integrates plans directly. Latest user direction: new ordinary worker assignments use GPT-6 Sol only, default service tier, no Fast/priority. Resume orchestration on worker callbacks instead of polling; see the operating guide.
+- Implement backend plan tasks in separate worker worktrees. The lead hardens and integrates plans directly. Latest user direction: ordinary worker assignments use GPT-6.1 Sol with priority authorized; reserve Astra at standard/default speed for the most demanding work or highest-quality control. Follow the operating guide's observed-tier reporting limits. Resume orchestration on worker callbacks instead of polling.
 - Keep every public-portal capability in `full_product`: public tiles, search, records, verify, corrections, submissions and sign-in. Finale card verification remains the authorized same-device workflow. No public service activation or deployment is authorized.
 - Adopt `packages/server` as the gradual backend destination and keep `packages/contracts` as the wire contract. `apps/studio`, its role-gated admin routes, `apps/global`, shared scene and shared UI are user-owned target boundaries. This plan chooses or changes no frontend framework, renderer, dependency or component. Do not create those apps as a backend scaffolding task.
 - Keep existing clients and saved URLs working through thin adapters and compatibility exports. Freeze new frontend work in `apps/web`; permit assigned backend extraction and security fixes there. Do not bulk-move its server directory or delete it before consumers migrate.
