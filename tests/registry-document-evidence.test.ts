@@ -13,6 +13,7 @@ import {amendRegistryDocumentCitationsTx,readRegistryDocumentCitationsTx,assertR
 import {registryDocumentSnapshotView} from '../packages/server/src/modules/usp/snapshots';
 import {assertAssociationSnapshotTargetTx} from '../packages/server/src/modules/usp/ingestion/document-association-targets';
 import {buildExchange,compareExchange} from '../packages/server/src/modules/usp/exchange';
+import {CityJsonExportResultSchema} from '../apps/api/src/modules/evidence/evidence.schemas';
 import {commitRegistryReviewTx,createRegistryDraftTx} from '../packages/server/src/modules/registry/registry';
 import {associationDocumentInputTx} from '../packages/server/src/modules/usp/ingestion/document-association-authority';
 import {documentInput} from '../packages/server/src/modules/usp/ingestion/document-context';
@@ -295,6 +296,7 @@ test('generic registry/snapshot/exchange projections omit citations while immuta
   assert.equal(JSON.stringify(exchange).includes(record.documentCitations![0].locator.label),false);
   assert.equal(exchange.sidecar.records[0].bodySha256,digest);
   assert.equal(exchange.sidecar.records[0].bodyProjection.sha256,fingerprint(view));
+  assert.doesNotThrow(()=>CityJsonExportResultSchema.parse(exchange));
   const roundTrip=compareExchange(exchange,exchange.cityJson,exchange.sidecar);
   const changedOmission=compareExchange(exchange,exchange.cityJson,{...exchange.sidecar,omissions:[]});
   assert.equal(roundTrip.comparisons.some(item=>item.field==='sidecar.omissions'&&item.category==='conflict'),false);

@@ -1,5 +1,7 @@
 # NestJS backend migration and delivery ledger
 
+**LINK-02 integrated and handoff checked, 30 September:** implementation/corrections and owner handoff integrate through `65f6a31`; independent closure `d95b58b` closes all four findings. Integrated backend typecheck, 18 focused regressions and one no-listener Nest route test pass. Lead also fixes two additive manifest dispositions and strict exchange response metadata; the affected schema regression, API typecheck and generated OpenAPI/client checks pass (196 operations / 226 schemas). [LINK-02](LINK_02.md#accepted-code-and-compatible-runtime-continuation) receives exclusive guarded runtime on the final compatible handoff. [EXCHANGE-PATH-01](EXCHANGE_PATH_01.md) independently traces the missing canonical geometry/qualification/export path without services or production edits. Positive citation runtime/accuracy and all release gates remain unqualified. Older pending-review instructions below are historical.
+
 Owner: lead. Authorized by the user on 26 September 2026. Read this before every migration assignment, review or integration. This is the current execution document; it supersedes older instructions to retain Next.js as the application backend. It does not change GF0–GF5 acceptance or authorize frontend work.
 
 ## Active ingestion increment — 28 September 2026
