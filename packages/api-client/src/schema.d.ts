@@ -2541,7 +2541,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read bounded native/OCR observations and proposed fields under current source/access/policy pins */
+        /** Read bounded native/OCR observations, selected member GIS inspection and proposed fields under current source/access/policy pins */
         get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId"];
         put?: never;
         post?: never;
@@ -2560,7 +2560,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Queue a retry or explicit PDF page/region OCR against the unchanged current original */
+        /** Queue a retry, PDF page/region OCR or exactly pinned GeoJSON archive member inspection against the unchanged current original */
         post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_documents_retry"];
         delete?: never;
         options?: never;
@@ -31062,6 +31062,80 @@ export interface components {
             }[];
             ocrPage?: number;
             ocrHasMore?: boolean;
+            archiveInspection?: {
+                lineage: {
+                    /** @enum {string} */
+                    version: "archive-member/1";
+                    outerSha256: string;
+                    ordinal: number;
+                    memberSha256: string;
+                    memberBytes: number;
+                    pathLabel: string;
+                    /** @enum {string} */
+                    routeHint: "geojson";
+                    declaredCrc32: string;
+                    /** @enum {string} */
+                    crc: "match";
+                    /** @enum {string} */
+                    companion: "not_applicable";
+                    /** @enum {string} */
+                    inventoryCoverage: "complete" | "incomplete" | "unknown";
+                    /** @enum {string|null} */
+                    inventoryIssue: "CORRUPT_CENTRAL_DIRECTORY" | "MEMBER_COUNT_LIMIT" | "DECLARED_SIZE_LIMIT" | "MEMBER_ISSUES" | "COMPANION_INCOMPLETE" | null;
+                    unselectedIssues: {
+                        ordinal: number;
+                        /** @enum {string|null} */
+                        issue: "UNSAFE_PATH" | "DUPLICATE_PATH" | "SPECIAL_ENTRY" | "DIRECTORY" | "ENCRYPTED" | "UNSUPPORTED_COMPRESSION" | "NESTED_ARCHIVE" | "SCRIPT_INERT" | "UNSUPPORTED_FORMAT" | "EXPANSION_LIMIT" | "TIME_LIMIT" | "SIZE_MISMATCH" | "CORRUPT_MEMBER" | null;
+                        /** @enum {string} */
+                        companion: "complete" | "incomplete" | "not_applicable";
+                    }[];
+                };
+                inspection: {
+                    sourceSha256: string;
+                    bytes: number;
+                    /** @enum {string} */
+                    format: "geojson";
+                    layers: string[];
+                    /** @enum {string|null} */
+                    layer: null;
+                    /** @enum {string} */
+                    sourceCrs: "EPSG:4326";
+                    /** @enum {string} */
+                    crsEvidence: "Declared OGC CRS84" | "RFC 7946 GeoJSON longitude/latitude";
+                    featureCount: number;
+                    geometryTypes: string[];
+                    fields: {
+                        name: string;
+                        complete: boolean;
+                        unique: boolean;
+                        idEligible: boolean;
+                    }[];
+                    featureIdEligible: boolean;
+                    suggestedIdField: string | null;
+                    suggestedNameField: string | null;
+                    quarantine?: {
+                        total: number;
+                        accepted: number;
+                        rejected: number;
+                        rejections: {
+                            featureIndex: number;
+                            sourceKey: string | null;
+                            /** @enum {string} */
+                            code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
+                            reason: string;
+                        }[];
+                        /** @enum {string} */
+                        version: "gis-quarantine/1";
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        sourceId?: string;
+                        sourceRevision?: number;
+                        message: string;
+                        /** @enum {boolean} */
+                        complete: false;
+                    };
+                };
+            } | null;
             code: string | null;
         };
         POST_ingestion_cases_caseId_sources_sourceId_documents_retry_Request_application_json: {
@@ -31078,6 +31152,11 @@ export interface components {
             ocrSelection?: {
                 page: number;
                 region?: (number)[];
+            };
+            archiveSelection?: {
+                ordinal: number;
+                memberSha256: string;
+                memberBytes: number;
             };
         };
         POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Request_application_json: {
