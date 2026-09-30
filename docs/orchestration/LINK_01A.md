@@ -30,6 +30,8 @@ Review the changed code, run backend typecheck and only focused currentness/acce
 
 ## Implementation checkpoint and independent review
 
+Runtime sequencing update: CITYJSON-02 has now stopped and returned services, but its final code is awaiting independent review. Lead retains ownership until that code is accepted/integrated; LINK-01A will then verify on the compatible integrated backend, preserving new CityJSON original-access checks. Do not start the older preview-only branch against those newly installed protected sources.
+
 Latest callback: **independent code review complete, no actionable finding**, report commit `f0393471b6d0870a716dc43517712dd803c93708` in the preserved review worktree. Lead read the exact report. It verifies the existing case-revision-to-intake-version mapping and source/target/publication boundaries. Reviewer is stopped; do not repeat this review. Implementation `e915af9` and report remain unintegrated pending the already scoped real API journey. CITYJSON-02 still owns runtime.
 
 Candidate `e915af9c447c8967d1b5a39a71b00073b5c7629e` returned from the assigned base. Twelve owned files implement the stateless preview and its focused checks. Worker reports backend typecheck, four source/target/citation checks, a real Nest provider/route metadata check without a listener, smoke syntax and whitespace passing. Source/target associations and overlap remain `not_assessed`; no new links or labels. Live API journey is unrun, candidate is not integrated and the implementation owner is stopped pending review/runtime handoff.
