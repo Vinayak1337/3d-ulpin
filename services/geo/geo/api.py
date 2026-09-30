@@ -105,10 +105,11 @@ def registry_operation(operation: str, data: dict[str, Any]) -> dict:
 def area_operation(operation: str, data: dict[str, Any]) -> dict:
     from .area import check_area, extract_document, normalize_area
     from .gis_inspection import inspect_gis
+    from .archive_member_inspection import inspect_archive_member
     from .image_derivative import crop_image
     from .officer import resolve_profile_request
     from .validation import InputError
-    operations = {'inspect-gis': inspect_gis, 'normalize': normalize_area, 'check': check_area, 'extract': extract_document, 'crop': crop_image, 'profile': resolve_profile_request}
+    operations = {'inspect-archive-member': inspect_archive_member, 'inspect-gis': inspect_gis, 'normalize': normalize_area, 'check': check_area, 'extract': extract_document, 'crop': crop_image, 'profile': resolve_profile_request}
     if operation not in operations:
         raise HTTPException(status_code=404, detail='Unknown area operation.')
     try:

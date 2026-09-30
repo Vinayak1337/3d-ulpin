@@ -32,17 +32,22 @@ export async function documentSourceTx(client:PoolClient,caseId:string,sourceId:
   return {...scope,source,latest};
 }
 export function documentInput(ctx:Awaited<ReturnType<typeof documentSourceTx>>,jobId:string,mode:DocumentInput['mode'],
-  ocrSelection?:DocumentInput['ocrSelection']):DocumentInput{
+  ocrSelection?:DocumentInput['ocrSelection'],archiveSelection?:DocumentInput['archiveSelection']):DocumentInput{
   return DocumentInputSchema.parse({version:'source-document/1',jobId,caseId:ctx.current.id,caseRevision:ctx.current.revision,
     caseContextSha256:ctx.context,sourceId:ctx.source.id,familyId:ctx.source.family_id,sourceRevision:ctx.source.revision,
     sourceSha256:ctx.source.sha256,sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,
     subject:ctx.binding.subject,accessSha256:ctx.binding.access,policyVersion:DOCUMENT_POLICY,readerSha256:documentReaderSha(),
     gatewayPolicySha256:mode==='propose'?documentGatewayHash():null,layoutCap:mode==='propose'?documentLayoutCap():null,mode,
-    ...(ocrSelection?{ocrSelection,ocrConfigSha256:documentOcrConfigSha()}: {})});
+    ...(ocrSelection?{ocrSelection,ocrConfigSha256:documentOcrConfigSha()}: {}),...(archiveSelection?{archiveSelection}:{})});
 }
 export async function assertDocumentInputTx(client:PoolClient,input:DocumentInput,lock=false){
   const ctx=await documentSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest || fingerprint(documentInput(ctx,input.jobId,input.mode,input.ocrSelection))!==fingerprint(input))
+  if(!ctx.latest || fingerprint(documentInput(ctx,input.jobId,input.mode,input.ocrSelection,input.archiveSelection))!==fingerprint(input))
     conflict('The document source, case, reader, access or model policy changed. Retry under current pins.');
+  const job=(await client.query(`SELECT payload,input_fingerprint FROM jobs
+    WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='document-extraction'`,[input.jobId,input.caseId,input.sourceId])).rows[0];
+  if((input.archiveSelection || job?.payload?.archiveSelection) &&
+    (!job || job.input_fingerprint!==fingerprint(input) || fingerprint(job.payload)!==fingerprint(input)))
+    conflict('The archive selection differs from its registered document job input.');
   return ctx;
 }
