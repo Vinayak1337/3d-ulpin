@@ -8,6 +8,7 @@ import {transaction} from '../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../infrastructure/errors';
 import {sha256} from '../../infrastructure/storage';
 import {fingerprint} from '../cases/domain';
+import {lockSourceCaseDestinationTx} from '../cases/source-case-lock';
 import {ingestionBinding,assertIngestionBinding} from '../usp/ingestion/events';
 import {acceptedCityJSONTx,readCityJSONResult,boundedCityJSONObject} from '../usp/ingestion/cityjson';
 import {createRegistryDraftTx,createRegistrySiteTx,openRegistryRing} from './registry';
@@ -102,11 +103,13 @@ function compareAuthority(before:Awaited<ReturnType<typeof acceptedCityJSONTx>>,
   if(fingerprint(before.input)!==fingerprint(after.input)||before.job.accepted_fence!==after.job.accepted_fence||
     fingerprint(before.job.result_ref)!==fingerprint(after.job.result_ref))conflict('The accepted native attempt changed during object I/O.');
 }
-async function lockedDraft(client:PoolClient,draftId:string){
-  const initial=(await client.query('SELECT site_id FROM registry_drafts WHERE id=$1',[draftId])).rows[0]??notFound();
+async function lockedDraft(client:PoolClient,draftId:string,protectedSourceCaseId?:string,lookup?:{site_id:string}){
+  const initial=lookup??(await client.query('SELECT site_id FROM registry_drafts WHERE id=$1',[draftId])).rows[0]??notFound();
   const site=(await client.query('SELECT * FROM registry_sites WHERE id=$1 FOR UPDATE',[initial.site_id])).rows[0]??notFound();
   const draft=(await client.query('SELECT * FROM registry_drafts WHERE id=$1 FOR UPDATE',[draftId])).rows[0]??notFound();
   if(draft.site_id!==site.id||draft.status!=='draft')conflict('Choose an active native exterior draft.');
+  if(protectedSourceCaseId&&uuid.parse(RegistryCityJSONCandidateSchema.parse(nativeRecord(draft).nativeExteriorCandidate).input.caseId)!==protectedSourceCaseId)
+    conflict('The native draft source case changed while acquiring its authority locks.');
   return {site,draft};
 }
 function nativeRecord(draft:any){
@@ -131,7 +134,7 @@ function nativeRepresentation(recordId:string,jobId:string){return {ref:{namespa
     asset:{ref:{namespace:'asset',id:`cityjson:${jobId}`},revision:1},format:'source-native-cityjson/1'},sourceParts:[]};}
 export async function prepareRegistryCityJSONDraftTx(client:PoolClient,raw:unknown,dependencies:Dependencies=defaults){
   const request=RegistryCityJSONPrepareSchema.parse(raw),binding=ingestionBinding(request.source.caseId);
-  await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[`registry-import:${request.source.caseId}`]);
+  await lockSourceCaseDestinationTx(client,request.source.caseId);
   let site:any;
   if(request.destination.kind==='existing_site'){
     site=(await client.query('SELECT * FROM registry_sites WHERE id=$1 FOR UPDATE',[request.destination.siteId])).rows[0]??notFound();
@@ -152,7 +155,8 @@ export async function prepareRegistryCityJSONDraftTx(client:PoolClient,raw:unkno
       conflict('The existing native draft was amended or removed; no duplicate was created.');
     const record=nativeRecord(state.draft);
     const candidate=currentCandidate(state.site,state.draft,record);
-    if(candidate.intentSha256!==intent||record.id!==duplicate.result.receipt.recordId||state.site.id!==duplicate.result.receipt.siteId)
+    if(candidate.intentSha256!==intent||uuid.parse(candidate.input.caseId)!==request.source.caseId||
+      record.id!==duplicate.result.receipt.recordId||state.site.id!==duplicate.result.receipt.siteId)
       conflict('The existing native draft was amended or removed; no duplicate was created.');
     const authority=await dependencies.accepted(client,sourcePin(candidate),true);
     if(fingerprint(authority.input)!==fingerprint(candidate.input)||Number(authority.job.accepted_fence)!==candidate.acceptedFence)
@@ -194,7 +198,13 @@ export async function prepareRegistryCityJSONDraftTx(client:PoolClient,raw:unkno
 }
 export const prepareRegistryCityJSONDraft=(raw:unknown)=>transaction(client=>prepareRegistryCityJSONDraftTx(client,raw));
 export async function readRegistryCityJSONDraftTx(client:PoolClient,draftId:string,dependencies:Dependencies=defaults){
-  draftId=uuid.parse(draftId);const {site,draft}=await lockedDraft(client,draftId),record=nativeRecord(draft),candidate=currentCandidate(site,draft,record);
+  draftId=uuid.parse(draftId);
+  // Lookup only: acquire the source-case gate before destination rows, then
+  // revalidate both lookup identities under their canonical row locks.
+  const lookup=(await client.query('SELECT site_id,records FROM registry_drafts WHERE id=$1',[draftId])).rows[0]??notFound();
+  const sourceCaseId=uuid.parse(RegistryCityJSONCandidateSchema.parse(nativeRecord(lookup).nativeExteriorCandidate).input.caseId);
+  await lockSourceCaseDestinationTx(client,sourceCaseId);
+  const {site,draft}=await lockedDraft(client,draftId,sourceCaseId,lookup),record=nativeRecord(draft),candidate=currentCandidate(site,draft,record);
   const before=await dependencies.accepted(client,sourcePin(candidate),true);
   if(fingerprint(before.input)!==fingerprint(candidate.input)||Number(before.job.accepted_fence)!==candidate.acceptedFence)
     conflict('The retained candidate no longer names its exact accepted attempt.');

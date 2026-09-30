@@ -7,6 +7,7 @@ import { fingerprint } from "./domain";
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { documentProfileFormats } from "../../shared/document-formats";
 import { assertPackageDocumentAuthority } from "../areas/package-authority";
+import { lockSourceCaseDestinationTx } from './source-case-lock';
 
 export const sourceWorkspaceSchema = z.object({
   requestKey: z.string().uuid(), areaId: z.string().uuid(), expectedAreaRevision: z.number().int().nonnegative(),
@@ -25,6 +26,7 @@ export async function sourceWorkspaceForCase(caseId: string) {
 export async function createSourceWorkspace(value: unknown): Promise<ImportPackage> {
   const input = sourceWorkspaceSchema.parse(value), digest = fingerprint(input);
   return transaction(async client => {
+    if(input.caseId)await lockSourceCaseDestinationTx(client,input.caseId);
     await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [`source-workspace:${input.caseId || input.requestKey}`]);
     const key = `source-workspace:${input.requestKey}`;
     const prior = (await client.query("SELECT body FROM import_packages WHERE operation_key=$1", [key])).rows[0]?.body;

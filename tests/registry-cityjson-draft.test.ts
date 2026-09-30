@@ -10,6 +10,9 @@ import {sha256} from '../packages/server/src/infrastructure/storage';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {acceptedCityJSONTx,cityjsonSourceTx,cityjsonInput} from '../packages/server/src/modules/usp/ingestion/cityjson';
+import {createSourceWorkspace} from '../packages/server/src/modules/cases/source-workspaces';
+import {ManualIngestionService} from '../packages/server/src/modules/usp/ingestion/service';
+import {importRegistryCase} from '../packages/server/src/modules/registry/registry-seed';
 import {prepareRegistryCityJSONDraftTx,readRegistryCityJSONDraftTx,removeRegistryCityJSONDraftTx,
   selectCityJSONExterior,nativePointer} from '../packages/server/src/modules/registry/cityjson-draft';
 import {assertNoNativeCandidates,createRegistryDraftTx,commitRegistryReviewTx} from '../packages/server/src/modules/registry/registry';
@@ -53,10 +56,12 @@ function fixture(artifactBytes=Buffer.from(JSON.stringify(envelope()))){
   const request={requestKey:randomUUID(),destination:{kind:'source_site' as const},source:{caseId,caseRevision:1,sourceId,sourceRevision:1,
     sourceSha256:input.sourceSha256,jobId,resultSha256:fingerprint(result)},...selection};
   const state={sites:new Map<string,any>(),drafts:new Map<string,any>(),operations:new Map<string,any>(),reserved:[] as any[],
-    reads:0,checks:0,writes:0,fence:1,denied:false,afterRead:undefined as (()=>void)|undefined,input:structuredClone(input),result:structuredClone(result)};
+    queries:[] as {sql:string;args:any[]}[],reads:0,checks:0,writes:0,fence:1,denied:false,afterRead:undefined as (()=>void)|undefined,input:structuredClone(input),result:structuredClone(result)};
   const client={query:async(sql:string,args:any[]=[])=>{
+    state.queries.push({sql,args});
     let rows:any[]=[];
     if(sql.includes('pg_advisory_xact_lock')){}
+    else if(sql.includes('SELECT site_id,records FROM registry_drafts')){const d=state.drafts.get(args[0]);rows=d?[structuredClone(d)]:[];}
     else if(sql.includes('SELECT site_id FROM registry_drafts')){const d=state.drafts.get(args[0]);rows=d?[{site_id:d.site_id}]:[];}
     else if(sql.includes('FROM registry_sites'))rows=state.sites.has(args[0])?[structuredClone(state.sites.get(args[0]))]:[];
     else if(sql.includes('SELECT id FROM registry_drafts'))rows=[...state.drafts.values()].filter(d=>d.site_id===args[0]&&d.request_key===args[1]).map(d=>({id:d.id}));
@@ -203,4 +208,104 @@ test('explicit removal succeeds without source I/O, clears private footprint and
   assert.deepEqual(await removeRegistryCityJSONDraftTx(f.client,receipt.draftId,request),removed);
   await assert.rejects(()=>prepareRegistryCityJSONDraftTx(f.client,f.request,f.dependencies),status(409));
   assert.equal(f.state.drafts.size,1);
+}));
+
+// Protocol controls below run real entry points against query doubles. The
+// cooperative gate models sequencing only; PostgreSQL contention is unrun.
+const gateSql='SELECT pg_advisory_xact_lock(hashtext($1))';
+function deferred(){let resolve!:()=>void;const promise=new Promise<void>(r=>resolve=r);return {promise,resolve};}
+async function memoryPool<T>(client:any,work:()=>Promise<T>){
+  const globals=globalThis as any,previous=globals.ulpinPool;
+  globals.ulpinPool={connect:async()=>({...client,release(){}})};
+  try{return await work();}finally{if(previous===undefined)delete globals.ulpinPool;else globals.ulpinPool=previous;}
+}
+test('lock protocol serializes the opposing source-workspace writer before native destination rows',()=>attributed(async()=>{
+  const f=fixture(),caseHeld=deferred(),finishWriter=deferred(),writerDone=deferred(),nativeWaiting=deferred();
+  const site=await f.dependencies.createSite(f.client,'technical destination',{id:'EPSG:7415',horizontalUnit:'m',verticalUnit:'m',benchmark:'NAP'},false);
+  const area={id:randomUUID(),site_id:site.id,name:'technical destination',revision:0,reference:null};
+  const writerQueries:{sql:string;args:any[]}[]=[],events:string[]=[];
+  const writer={query:async(sql:string,args:any[]=[])=>{
+    writerQueries.push({sql,args});let rows:any[]=[];
+    if(sql===gateSql){assert.equal(args[0],`registry-import:${f.input.caseId}`);events.push('writer gate');}
+    else if(sql==='COMMIT'){events.push('writer commit');writerDone.resolve();}
+    else if(sql.includes('FROM cases')&&sql.includes('FOR UPDATE')){events.push('writer case');caseHeld.resolve();await finishWriter.promise;rows=[{id:f.input.caseId}];}
+    else if(sql.includes('SELECT id FROM map_areas')){events.push('writer area');rows=[{id:area.id}];}
+    else if(sql.includes('FROM map_areas a'))rows=[area];
+    else if(sql.includes('SELECT frame FROM registry_sites')){events.push('writer site');rows=[{frame:site.frame}];}
+    else if(['BEGIN','ROLLBACK'].includes(sql)||sql.includes('pg_advisory_xact_lock')||sql.startsWith('INSERT ')||
+      sql.includes('FROM import_packages')||sql.includes('FROM registry_case_feature_mappings')||sql.includes('FROM sources')){}
+    else throw new Error('Unexpected technical writer SQL: '+sql);
+    return {rows,rowCount:rows.length};
+  }};
+  const native={query:async(sql:string,args:any[]=[])=>{
+    if(sql===gateSql){events.push('native waits for gate');nativeWaiting.resolve();await writerDone.promise;events.push('native gate');}
+    if(sql.includes('registry_sites')&&sql.includes('FOR UPDATE'))events.push('native site');
+    return (f.client.query as any)(sql,args);
+  }} as unknown as PoolClient;
+  await memoryPool(writer,async()=>{
+    const pendingWriter=createSourceWorkspace({requestKey:randomUUID(),caseId:f.input.caseId,areaId:area.id,expectedAreaRevision:0,
+      name:'technical source workspace',worldStatus:'observed'});
+    await caseHeld.promise;
+    const pendingNative=prepareRegistryCityJSONDraftTx(native,{...f.request,destination:{kind:'existing_site',siteId:site.id,expectedSiteRevision:0}},f.dependencies);
+    await nativeWaiting.promise;assert(!events.includes('native site'));
+    finishWriter.resolve();await pendingWriter;await pendingNative;
+  });
+  assert.equal(writerQueries[1].sql,gateSql); // BEGIN, shared gate, then the old workspace-specific lock.
+  assert(events.indexOf('writer case')<events.indexOf('writer area')&&events.indexOf('writer area')<events.indexOf('writer site'));
+  assert(events.indexOf('writer commit')<events.indexOf('native site'));
+}));
+test('lock protocol gates native read/replay and revalidates lookup case/site identities before source authority',()=>attributed(async()=>{
+  const f=fixture(),receipt=await prepareRegistryCityJSONDraftTx(f.client,f.request,f.dependencies),key=`registry-import:${f.input.caseId}`;
+  f.state.queries=[];await readRegistryCityJSONDraftTx(f.client,receipt.draftId,f.dependencies);
+  assert.equal(f.state.queries[0].sql,'SELECT site_id,records FROM registry_drafts WHERE id=$1');
+  assert.equal(f.state.queries[1].sql,gateSql);assert.equal(f.state.queries[1].args[0],key);
+  assert(f.state.queries[2].sql.includes('registry_sites')&&f.state.queries[2].sql.includes('FOR UPDATE'));
+  f.state.queries=[];await prepareRegistryCityJSONDraftTx(f.client,f.request,f.dependencies);
+  assert.equal(f.state.queries[0].sql,gateSql);assert.equal(f.state.queries[0].args[0],key);
+  const originalDraft=structuredClone(f.state.drafts.get(receipt.draftId)),checks=f.state.checks;
+  f.state.drafts.get(receipt.draftId).records[0].nativeExteriorCandidate.input.caseId=randomUUID();
+  await assert.rejects(()=>prepareRegistryCityJSONDraftTx(f.client,f.request,f.dependencies),status(409));
+  assert.equal(f.state.checks,checks);f.state.drafts.set(receipt.draftId,structuredClone(originalDraft));
+  for(const change of [(d:any)=>d.site_id=randomUUID(),(d:any)=>d.records[0].nativeExteriorCandidate.input.caseId=randomUUID()]){
+    const client={query:async(sql:string,args:any[])=>{
+      if(sql===gateSql)change(f.state.drafts.get(receipt.draftId));return (f.client.query as any)(sql,args);
+    }} as unknown as PoolClient;
+    await assert.rejects(()=>readRegistryCityJSONDraftTx(client,receipt.draftId,f.dependencies),status(409));
+    assert.equal(f.state.checks,checks);f.state.drafts.set(receipt.draftId,structuredClone(originalDraft));
+  }
+  f.state.queries=[];await removeRegistryCityJSONDraftTx(f.client,receipt.draftId,{requestKey:randomUUID(),expectedDraftRevision:1,recordId:receipt.recordId});
+  assert(!f.state.queries.some(q=>q.sql===gateSql)); // No source case is locked or resolved by removal.
+  await assert.rejects(()=>prepareRegistryCityJSONDraftTx(f.client,f.request,f.dependencies),status(409));
+}));
+test('lock protocol gates manual author/decide and canonical import before their established row order',()=>attributed(async()=>{
+  const caseId=randomUUID(),sourceId=randomUUID(),digest='a'.repeat(64),stopped=new Error('technical row boundary');
+  let queries:{sql:string;args:any[]}[]=[];
+  const stopAtCase={query:async(sql:string,args:any[]=[])=>{
+    queries.push({sql,args});if(sql.includes('FROM cases')&&sql.includes('FOR UPDATE'))throw stopped;return {rows:[],rowCount:0};
+  }};
+  const manual=new ManualIngestionService(),input={requestKey:randomUUID(),expectedRecipeRevision:1};
+  const author={...input,expectedRecipeRevision:0,plan:{version:'manual-geojson/1',mode:'manual_mapping',caseId,workspaceRevision:1,
+    workspaceFingerprint:digest,source:{sourceId,familyId:sourceId,sourceRevision:1,sourceSha256:digest,schemaFingerprint:digest},
+    operations:[{target:'building.sourceKey',sourcePath:'/features/*/id',conversionId:'literal_identifier@1'},
+      {target:'building.geometry',sourcePath:'/features/*/geometry',conversionId:'geojson_polygon@1'}]},
+    destination:{kind:'new_area',namespace:'technical-control',name:'technical-control'}};
+  for(const run of [()=>manual.author(caseId,sourceId,author),()=>manual.decide(caseId,randomUUID(),input,'approve'),
+    ()=>manual.decide(caseId,randomUUID(),input,'execute')]){
+    queries=[];await memoryPool(stopAtCase,()=>assert.rejects(run,error=>error===stopped));
+    assert.equal(queries[1].sql,gateSql);assert.equal(queries[1].args[0],`registry-import:${caseId}`);
+    assert(queries[2].sql.includes('FROM cases')&&queries[2].sql.includes('FOR UPDATE'));
+  }
+  const snapshotId=randomUUID(),frame={id:'EPSG:7415',horizontalUnit:'m',verticalUnit:'m',benchmark:'NAP'};
+  queries=[];
+  const importer={query:async(sql:string,args:any[]=[])=>{
+    queries.push({sql,args});let rows:any[]=[];
+    if(sql.includes('FROM registry_sites')&&sql.includes('FOR UPDATE'))throw stopped;
+    if(sql.includes('SELECT * FROM cases'))rows=[{id:caseId,revision:1,frame,current_snapshot_id:snapshotId,
+      created_at:'2026-10-01T00:00:00Z',updated_at:'2026-10-01T00:00:00Z'}];
+    if(sql.includes('FROM snapshots'))rows=[{body:{id:snapshotId,revision:1,inputFingerprint:digest}}];
+    return {rows,rowCount:rows.length};
+  }};
+  await memoryPool(importer,()=>assert.rejects(()=>importRegistryCase(randomUUID(),caseId.toUpperCase(),1),error=>error===stopped));
+  const gateIndex=queries.findIndex(q=>q.sql===gateSql),siteIndex=queries.findIndex(q=>q.sql.includes('FROM registry_sites')&&q.sql.includes('FOR UPDATE'));
+  assert(gateIndex>=0&&gateIndex<siteIndex);assert.equal(queries[gateIndex].args[0],`registry-import:${caseId}`);
 }));
