@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "reviewed-document-links-api-evidence/1",
+  "kind": "lead projection of preserved observations; no new runtime",
+  "observedAt": "2026-09-30T18:49:04.679Z",
+  "servedCodeCommit": "7092714f8899c6af880384a9a48b22ce3c6e6af9",
+  "acceptedHandoff": "e234fa55dc4c1e4f90b6abe834d7a7dcf9f44772",
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "outcome": "prerequisite_gap",
+  "originalReceipt": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-reviewed-document-links\\runtime-001\\runtime-receipt.json",
+    "sha256": "39ca0cc35e441c603d5fe56996fcf78208c8d5adc78cc6ea6df0925573bf1e27"
+  },
+  "source": {
+    "id": "59b3f4b2-0a3a-4acd-9c99-60b989dda5f8",
+    "caseId": "2c5ca5cc-d98a-48e9-9be0-16f2c590d0a3",
+    "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+    "bytes": 89622,
+    "status": "stale",
+    "code": "DOCUMENT_INPUT_STALE",
+    "siteId": null
+  },
+  "gap": "No registry site, recorded building/floor, correction draft or geometry qualification; retained LGD source has no site binding or genuine building/floor match.",
+  "observations": [
+    {
+      "label": "guarded-health",
+      "status": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "label": "actual-empty-registry",
+      "status": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "label": "retained-lgd-current-status",
+      "status": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "label": "unchanged-lgd-original",
+      "status": 200,
+      "cacheControl": "private, max-age=60"
+    },
+    {
+      "label": "citation-read-without-correction",
+      "status": 404,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "label": "incomplete-citation-amendment",
+      "status": 422,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "label": "explicit-clear-without-correction",
+      "status": 404,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "label": "foreign-origin-get",
+      "status": 403,
+      "cacheControl": "no-store"
+    },
+    {
+      "label": "foreign-origin-post",
+      "status": 403,
+      "cacheControl": "no-store"
+    }
+  ],
+  "preservation": {
+    "sourceAndPriorJobsUnchanged": true,
+    "priorJobs": 2,
+    "registryCounts": {
+      "sites": 0,
+      "records": 0,
+      "drafts": 0,
+      "reviews": 0,
+      "qualifications": 0,
+      "citation_operations": 0
+    },
+    "nativeRetryCount": 0,
+    "originalBytes": 89622,
+    "originalSha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59"
+  },
+  "historyPins": {
+    "sourceBodySha256": "98a89383b6808f9027651f044b29ca6eb80f56e4ee2dc9e42edd0568da85b094",
+    "jobs": [
+      {
+        "id": "145de63a-1934-4191-b92a-ad2240a91be9",
+        "status": "succeeded",
+        "bodySha256": "d4e486a308401c1b54e090dbe36ab1496b9f00e7ce73bf8b3933f01dfc810558"
+      },
+      {
+        "id": "a5e60c45-8c42-4811-b70d-643df74bfd01",
+        "status": "succeeded",
+        "bodySha256": "691ecf09c12f6ead7166f097e06a7d9c6fc6585c0ed2a974e3a8bb373cc47a26"
+      }
+    ]
+  },
+  "resources": {
+    "processingStopped": true,
+    "populatedStorageRetained": true,
+    "cleanupArtifact": "cleanup.json"
+  },
+  "qualified": [
+    "actual empty/incomplete/missing-correction and foreign-Origin API responses; unchanged retained LGD bytes"
+  ],
+  "unqualified": [
+    "Successful citation amendment/read and persisted review/commit",
+    "SQL concurrency",
+    "Positive source-target association accuracy",
+    "Release and learning gates"
+  ],
+  "successfulMutationAttempted": false
+}

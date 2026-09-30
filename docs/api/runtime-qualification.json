@@ -596,6 +596,43 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/reviewed-document-links-runtime.json",
+      "receiptSha256": "7c3b139ca3f61eef3bae6a1a9aef478a39173170b1cbe2975ae60b56b7f30935",
+      "servedCodeCommit": "7092714f8899c6af880384a9a48b22ce3c6e6af9",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-b050544f3d2cb99e",
+        "url": "http://127.0.0.1:3192/api/v1"
+      },
+      "qualification": "Missing-correction, incomplete-input and foreign-Origin denial behavior only. No eligible registry target existed; successful persistence remains unqualified.",
+      "unqualified": [
+        "Successful citation amendment/read and persisted review/commit",
+        "SQL concurrency",
+        "Positive source-target association accuracy",
+        "Release and learning gates"
+      ],
+      "operations": {
+        "GET /api/v1/registry-drafts/{draftId}/document-citations": {
+          "scope": "Absent correction returns 404 and foreign Origin returns 403; no resolved citation or positive target was available.",
+          "sourceManifests": [],
+          "evidencePointers": [
+            "/observations",
+            "/gap",
+            "/preservation"
+          ]
+        },
+        "POST /api/v1/registry-drafts/{draftId}/document-citations": {
+          "scope": "Incomplete clearAll returns 422; schema-valid absent correction returns 404; foreign Origin returns 403. No successful amendment, review or commit.",
+          "sourceManifests": [],
+          "evidencePointers": [
+            "/observations",
+            "/successfulMutationAttempted",
+            "/preservation"
+          ]
+        }
+      }
     }
   ]
 }

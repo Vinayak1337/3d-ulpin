@@ -11974,8 +11974,24 @@
         "x-batch": "NEST-11",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Incomplete clearAll returns 422; schema-valid absent correction returns 404; foreign Origin returns 403. No successful amendment, review or commit.",
+          "sourceManifests": [],
+          "evidencePointers": [
+            "/observations",
+            "/successfulMutationAttempted",
+            "/preservation"
+          ],
+          "receipt": "docs/evidence/usp/reviewed-document-links-runtime.json",
+          "servedCodeCommit": "7092714f8899c6af880384a9a48b22ce3c6e6af9",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Missing-correction, incomplete-input and foreign-Origin denial behavior only. No eligible registry target existed; successful persistence remains unqualified."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": 32768,
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -12154,8 +12170,24 @@
         "x-batch": "NEST-11",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Absent correction returns 404 and foreign Origin returns 403; no resolved citation or positive target was available.",
+          "sourceManifests": [],
+          "evidencePointers": [
+            "/observations",
+            "/gap",
+            "/preservation"
+          ],
+          "receipt": "docs/evidence/usp/reviewed-document-links-runtime.json",
+          "servedCodeCommit": "7092714f8899c6af880384a9a48b22ce3c6e6af9",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Missing-correction, incomplete-input and foreign-Origin denial behavior only. No eligible registry target existed; successful persistence remains unqualified."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": null,
         "x-dataset-catalogue": "/api/docs/datasets.json"
