@@ -21,6 +21,7 @@ import { getArea, getPackage, currentAreaCheckFingerprint } from "../areas/areas
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { fingerprint } from "../cases/domain";
 import { assertPackageDocumentAuthority } from "../areas/package-authority";
+import { publicRegistryBody } from "../registry/registry-document-evidence";
 
 export async function physicalFeature(
   id: string,
@@ -293,13 +294,17 @@ export function relatedRegistryRecordQuery(id: string, buildingRevision: number,
   return { sql, values: maxRecords === undefined ? [id, buildingRevision, siteId]
     : [id, buildingRevision, siteId, maxRecords + 1] };
 }
-export async function relatedRegistryRecords(id: string, buildingRevision: number, siteId: string,
+async function readRelatedRegistryRecords(id: string, buildingRevision: number, siteId: string,
   client?: PoolClient, maxRecords?: number): Promise<RegistryRecord[]> {
   const { sql, values } = relatedRegistryRecordQuery(id, buildingRevision, siteId, maxRecords);
   const rows = (await (client ? client.query(sql, values) : query(sql, values))).rows;
   if (maxRecords !== undefined && rows.length > maxRecords)
     throw new AppError(422, 'BUILDING_LEDGER_LIMIT', 'This building has too many linked records for one ledger read.');
   return rows.map(recordFrom);
+}
+export async function relatedRegistryRecords(id: string, buildingRevision: number, siteId: string,
+  client?: PoolClient, maxRecords?: number): Promise<RegistryRecord[]> {
+  return (await readRelatedRegistryRecords(id, buildingRevision, siteId, client, maxRecords)).map(publicRegistryBody);
 }
 export async function dossierSources(
   sourceIds: string[],
@@ -357,7 +362,9 @@ export async function buildingDossier(id: string): Promise<BuildingDossier & {
           : ("suggested" as const),
     };
   });
-  const records = await relatedRegistryRecords(id, building.revision, area.siteId);
+  // Canonical geometry qualification compares the complete stored bodies;
+  // only the response projections below omit private document citation pins.
+  const records = await readRelatedRegistryRecords(id, building.revision, area.siteId);
   const staleDetailLinks = associations.filter(
     (a) =>
       a.fromId === id &&
@@ -512,7 +519,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier & {
     localGeometries.map((item) => [item.id, item.geometry]),
   );
   const detailedScene = records.map((r) => ({
-    record: r,
+    record: publicRegistryBody(r),
     localGeometry: localById.get(r.id),
     geographicGeometry: geographicById.get(r.id),
     lower: r.geometry?.lower,
@@ -552,7 +559,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier & {
     parcels,
     parcelIdentifiers,
     groups,
-    records,
+    records: records.map(publicRegistryBody),
     detailedScene,
     sources,
     preparations,

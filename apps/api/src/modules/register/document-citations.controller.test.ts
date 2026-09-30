@@ -20,6 +20,8 @@ test('canonical register owns private citation routes with bounded exact selecti
     assert.equal(request.additionalProperties,false);
     assert.equal(request.properties.add.properties.partIds.maxItems,25);
     assert.equal(request.properties.remove.maxItems,25);
+    assert.deepEqual(request.properties.clearAll.enum,[true]);
+    assert.equal(request.required.includes('clearAll'),false);
     assert.equal('text' in request.properties,false);
   }finally{await app.close();}
 });

@@ -3,6 +3,7 @@ import { legacyUrl } from "../../shared/legacy-url";
 import { query, transaction } from "../../infrastructure/db";
 import { getArea } from "./areas";
 import { conflict, notFound, AppError } from "../../infrastructure/errors";
+import { publicRegistryBody } from "../registry/registry-document-evidence";
 
 export async function syncLegacyIdentifiers() {
   // A reviewed stored association is a resolver binding, never an assertion of national issuance.
@@ -122,7 +123,7 @@ export async function resolveAreaIdentifier(identifier: string) {
       const match = matches.find((m: any) => m.feature?.id === canonical.id);
       if (match)
         match.record = {
-          ...row.body,
+          ...publicRegistryBody(row.body),
           id: row.id,
           identifier: row.identifier,
           revision: row.revision,
@@ -139,7 +140,7 @@ export async function resolveAreaIdentifier(identifier: string) {
       kind: "registry_record",
       feature: parentBuilding[0]?.body,
       record: {
-        ...row.body,
+        ...publicRegistryBody(row.body),
         id: row.id,
         identifier: row.identifier,
         siteId: row.site_id,
@@ -152,13 +153,13 @@ export async function resolveAreaIdentifier(identifier: string) {
           : [],
       parentParcels: links
         .filter((r) => r.kind === "parcel")
-        .map((r) => ({ ...r.body, id: r.id, identifier: r.identifier })),
+        .map((r) => ({ ...publicRegistryBody(r.body), id: r.id, identifier: r.identifier })),
       relatedBuildings: [
         ...new Map(
           [
             ...parentBuilding.map((p) => ({ ...p.body, feature: p.body })),
             ...related.map((r) => ({
-              ...r.body,
+              ...publicRegistryBody(r.body),
               id: r.id,
               identifier: r.identifier,
             })),
