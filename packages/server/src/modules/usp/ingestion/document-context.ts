@@ -5,6 +5,7 @@ import {fingerprint} from '../../cases/domain';
 import {ingestionBinding,assertIngestionBinding} from './events';
 import {documentReaderSha} from './document-native';
 import {modelGatewayPolicyHash} from '../../model-gateway/runtime';
+import {documentOcrConfigSha} from './document-ocr';
 
 export function documentLayoutCap(){
   const value=process.env.ULPIN_DOCUMENT_MODEL_LAYOUT_CAP;
@@ -30,16 +31,18 @@ export async function documentSourceTx(client:PoolClient,caseId:string,sourceId:
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   return {...scope,source,latest};
 }
-export function documentInput(ctx:Awaited<ReturnType<typeof documentSourceTx>>,jobId:string,mode:DocumentInput['mode']):DocumentInput{
+export function documentInput(ctx:Awaited<ReturnType<typeof documentSourceTx>>,jobId:string,mode:DocumentInput['mode'],
+  ocrSelection?:DocumentInput['ocrSelection']):DocumentInput{
   return DocumentInputSchema.parse({version:'source-document/1',jobId,caseId:ctx.current.id,caseRevision:ctx.current.revision,
     caseContextSha256:ctx.context,sourceId:ctx.source.id,familyId:ctx.source.family_id,sourceRevision:ctx.source.revision,
     sourceSha256:ctx.source.sha256,sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,
     subject:ctx.binding.subject,accessSha256:ctx.binding.access,policyVersion:DOCUMENT_POLICY,readerSha256:documentReaderSha(),
-    gatewayPolicySha256:mode==='propose'?documentGatewayHash():null,layoutCap:mode==='propose'?documentLayoutCap():null,mode});
+    gatewayPolicySha256:mode==='propose'?documentGatewayHash():null,layoutCap:mode==='propose'?documentLayoutCap():null,mode,
+    ...(ocrSelection?{ocrSelection,ocrConfigSha256:documentOcrConfigSha()}: {})});
 }
 export async function assertDocumentInputTx(client:PoolClient,input:DocumentInput,lock=false){
   const ctx=await documentSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest || fingerprint(documentInput(ctx,input.jobId,input.mode))!==fingerprint(input))
+  if(!ctx.latest || fingerprint(documentInput(ctx,input.jobId,input.mode,input.ocrSelection))!==fingerprint(input))
     conflict('The document source, case, reader, access or model policy changed. Retry under current pins.');
   return ctx;
 }

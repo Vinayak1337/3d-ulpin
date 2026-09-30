@@ -49,7 +49,7 @@ def _worker(args: argparse.Namespace) -> int:
         result = extract_source_page(
             args.source, args.expected_source_sha256, args.page, args.region,
             args.output / "render.png", args.models, args.tesseract, args.tessdata,
-            args.max_items,
+            args.max_items, args.max_seconds,
         )
     except Exception as exc:
         traceback.print_exc()
@@ -90,6 +90,7 @@ def main() -> int:
     parser.add_argument("--tesseract", type=Path, required=True)
     parser.add_argument("--tessdata", type=Path, required=True)
     parser.add_argument("--max-items", type=int, default=MAX_ITEMS)
+    parser.add_argument("--max-seconds", type=int, default=MAX_WORKER_SECONDS)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
@@ -99,6 +100,8 @@ def main() -> int:
         parser.error("output must be a new directory outside Git")
     if not 1 <= args.max_items <= MAX_ITEMS:
         parser.error("max-items exceeds the bounded profile")
+    if not 1 <= args.max_seconds <= MAX_WORKER_SECONDS:
+        parser.error("max-seconds exceeds the bounded profile")
     source = verify_source(args.source, args.expected_source_sha256)
     assets = verify_assets(args.models, args.tesseract, args.tessdata)
     packages = {name: importlib.metadata.version(name) for name in (
@@ -116,12 +119,13 @@ def main() -> int:
                       "--tesseract", str(args.tesseract),
                       "--tessdata", str(args.tessdata),
                       "--max-items", str(args.max_items),
+                      "--max-seconds", str(args.max_seconds),
                       "--output", str(args.output)]
     if args.region is not None:
         worker_command.extend(["--region", *(str(value) for value in args.region)])
     os.environ["PATH"] = str(args.tesseract.parent) + os.pathsep + os.environ["PATH"]
     os.environ["TESSDATA_PREFIX"] = str(args.tessdata)
-    worker = _run_worker(worker_command, args.output / "worker.log", MAX_WORKER_SECONDS,
+    worker = _run_worker(worker_command, args.output / "worker.log", args.max_seconds,
                          MAX_MEMORY_BYTES, max_log_bytes=MAX_LOG_BYTES)
     result_path = args.output / "result.json"
     result, disposition = _read_bounded_result(result_path)
@@ -142,7 +146,7 @@ def main() -> int:
         "limits": {"sourceBytes": 16 * 1024**2, "sourcePages": 8,
                    "renderPixels": 1_600_000, "renderSide": 1_400,
                    "items": args.max_items, "resultBytes": MAX_RESULT_BYTES,
-                   "logBytes": MAX_LOG_BYTES, "workerSeconds": MAX_WORKER_SECONDS,
+                   "logBytes": MAX_LOG_BYTES, "workerSeconds": args.max_seconds,
                    "memoryBytes": MAX_MEMORY_BYTES, "cpuThreads": 2},
         "worker": worker,
         "result": {"disposition": disposition,

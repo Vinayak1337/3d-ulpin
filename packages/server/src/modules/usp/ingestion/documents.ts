@@ -22,7 +22,7 @@ async function remember(client:PoolClient,caseId:string,key:string,digest:string
   await client.query('INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,$3,$4,$5)',[caseId,key,operationKind,digest,result]);
 }
 export const documentResultKey=(jobId:string,hash:string)=>`document-results/${jobId}/${hash}.json`;
-async function enqueue(client:PoolClient,caseId:string,sourceId:string,mode:DocumentInput['mode']){
+async function enqueue(client:PoolClient,caseId:string,sourceId:string,mode:DocumentInput['mode'],ocrSelection?:DocumentInput['ocrSelection']){
   const ctx=await documentSourceTx(client,caseId,sourceId,true);
   if(!ctx.latest)conflict('This source has a newer retained revision.');
   const rows=(await client.query("SELECT id,status,payload FROM jobs WHERE case_id=$1 AND source_id=$2 AND operation='document-extraction' ORDER BY created_at DESC LIMIT 33",[caseId,sourceId])).rows;
@@ -30,9 +30,10 @@ async function enqueue(client:PoolClient,caseId:string,sourceId:string,mode:Docu
   const active=rows.find(j=>['queued','running'].includes(j.status));
   if(active){
     const input=DocumentInputSchema.parse(active.payload);await assertDocumentInputTx(client,input);
-    if(input.mode!==mode)conflict('A current document job is already active with a different model mode.');return {ctx,jobId:active.id};
+    if(input.mode!==mode || JSON.stringify(input.ocrSelection??null)!==JSON.stringify(ocrSelection??null))
+      conflict('A current document job is already active with a different mode or OCR selection.');return {ctx,jobId:active.id};
   }
-  const jobId=randomUUID(),input=documentInput(ctx,jobId,mode),inputHash=fingerprint(input);
+  const jobId=randomUUID(),input=documentInput(ctx,jobId,mode,ocrSelection),inputHash=fingerprint(input);
   await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload)
     VALUES($1,$2,$3,'document-extraction',$4,$5,$6)`,[jobId,caseId,sourceId,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:caseId,version:ctx.current.revision+1},sourceId,inputHash);
@@ -124,12 +125,13 @@ export class DocumentIngestionService{
         const job=(await client.query('SELECT payload FROM jobs WHERE id=$1 AND case_id=$2',[prior.jobId,caseId])).rows[0]??notFound('Document job not found.');
         await assertDocumentInputTx(client,DocumentInputSchema.parse(job.payload));return DocumentReceiptSchema.parse(prior);
       }
-      const queued=await enqueue(client,caseId,sourceId,input.mode),result=receipt(queued.ctx,queued.jobId);
+      const queued=await enqueue(client,caseId,sourceId,input.mode,input.ocrSelection),result=receipt(queued.ctx,queued.jobId);
       await remember(client,caseId,key,digest,result);return result;
     });
   }
-  async status(caseValue:string,sourceValue:string,jobValue:string,pageValue=0){
-    const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue),page=z.number().int().min(0).max(399).parse(pageValue);
+  async status(caseValue:string,sourceValue:string,jobValue:string,pageValue=0,ocrPageValue=0){
+    const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue),page=z.number().int().min(0).max(399).parse(pageValue),
+      ocrPage=z.number().int().min(0).max(2).parse(ocrPageValue);
     const scope=await transaction(async client=>{
       await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
       const ctx=await documentSourceTx(client,caseId,sourceId);
@@ -142,11 +144,15 @@ export class DocumentIngestionService{
     if(!stale && job.status==='succeeded' && job.result_ref)result=await readDocumentResult(DocumentInputSchema.parse(job.payload),job.result_ref.sha256);
     // Reauthorize after object I/O; read-time checks never rescope or approve stored evidence.
     await transaction(async client=>{if(!stale)await assertDocumentInputTx(client,DocumentInputSchema.parse(job.payload));else await documentSourceTx(client,caseId,sourceId);});
-    const start=page*DOCUMENT_LIMITS.page;
+    const start=page*DOCUMENT_LIMITS.page,ocrStart=ocrPage*DOCUMENT_LIMITS.page;
     return DocumentStatusSchema.parse({version:DOCUMENT_VERSION,caseId,sourceId,jobId,status:stale?'stale':job.status==='succeeded'?'completed':job.status,
       currentCaseRevision:ctx.current.revision,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,resultSha256:stale?null:job.result_ref?.sha256??null,
       native:result?(({parts,...native})=>native)(result.native):null,model:result?.model??null,
-      parts:result?.native.parts.slice(start,start+DOCUMENT_LIMITS.page)??[],page,hasMore:Boolean(result && start+DOCUMENT_LIMITS.page<result.native.parts.length),code:stale?'DOCUMENT_INPUT_STALE':job.error??null});
+      parts:result?.native.parts.slice(start,start+DOCUMENT_LIMITS.page)??[],page,hasMore:Boolean(result && start+DOCUMENT_LIMITS.page<result.native.parts.length),
+      ocr:result?.ocr?(({items,...metadata})=>metadata)(result.ocr):null,
+      ocrItems:result?.ocr?.items.slice(ocrStart,ocrStart+DOCUMENT_LIMITS.page)??[],ocrPage,
+      ocrHasMore:Boolean(result?.ocr && ocrStart+DOCUMENT_LIMITS.page<result.ocr.items.length),
+      code:stale?'DOCUMENT_INPUT_STALE':job.error??null});
   }
   async original(caseValue:string,sourceValue:string){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),ctx=await transaction(client=>documentSourceTx(client,caseId,sourceId));

@@ -276,7 +276,7 @@ def encode_result_bounded(result: dict[str, Any]) -> bytes:
 def extract_source_page(source: Path, expected_sha256: str, page_number: int,
                         region: list[float] | None, png_path: Path,
                         models: Path, tesseract: Path, tessdata: Path,
-                        max_items: int = MAX_ITEMS) -> dict[str, Any]:
+                        max_items: int = MAX_ITEMS, max_seconds: int = 600) -> dict[str, Any]:
     """Run one source-bound OCR selection inside an externally supervised tree."""
     from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
     from docling.datamodel.base_models import ConversionStatus, InputFormat
@@ -288,7 +288,7 @@ def extract_source_page(source: Path, expected_sha256: str, page_number: int,
     options = PdfPipelineOptions(
         artifacts_path=models,
         accelerator_options=AcceleratorOptions(device=AcceleratorDevice.CPU, num_threads=2),
-        document_timeout=540,
+        document_timeout=max(1, min(540, max_seconds - 5)),
         do_ocr=True,
         ocr_options=TesseractCliOcrOptions(mode=OcrMode.FULL_PAGE, lang=["eng"], scale=1.0,
                                             tesseract_cmd=str(tesseract), path=str(tessdata)),
