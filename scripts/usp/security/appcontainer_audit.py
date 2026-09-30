@@ -100,6 +100,9 @@ k32.GetExitCodeProcess.argtypes = [w.HANDLE, ctypes.POINTER(w.DWORD)]
 k32.SetHandleInformation.argtypes = [w.HANDLE, w.DWORD, w.DWORD]
 k32.GetStdHandle.argtypes = [w.DWORD]
 k32.GetStdHandle.restype = w.HANDLE
+k32.CreateFileW.argtypes = [w.LPCWSTR, w.DWORD, w.DWORD, ctypes.POINTER(SECURITY_ATTRIBUTES),
+                          w.DWORD, w.DWORD, w.HANDLE]
+k32.CreateFileW.restype = w.HANDLE
 k32.TerminateProcess.argtypes = [w.HANDLE, w.UINT]
 k32.CloseHandle.argtypes = [w.HANDLE]
 k32.LocalFree.argtypes = [w.LPVOID]
@@ -112,6 +115,8 @@ k32.ResumeThread.argtypes = [w.HANDLE]
 adv.OpenProcessToken.argtypes = [w.HANDLE, w.DWORD, ctypes.POINTER(w.HANDLE)]
 adv.GetTokenInformation.argtypes = [w.HANDLE, w.DWORD, w.LPVOID, w.DWORD, ctypes.POINTER(w.DWORD)]
 adv.ConvertSidToStringSidW.argtypes = [w.LPVOID, ctypes.POINTER(w.LPWSTR)]
+adv.FreeSid.argtypes = [w.LPVOID]
+adv.FreeSid.restype = w.LPVOID
 
 
 def win_error(where: str) -> OSError:
@@ -154,17 +159,76 @@ def token_data(process: w.HANDLE) -> dict:
         k32.CloseHandle(token)
 
 
+def require_container_token(observed: dict, expected_sid: str) -> None:
+    if (observed.get("isAppContainer") is not True or
+            observed.get("appContainerSid") != expected_sid or
+            type(observed.get("capabilityCount")) is not int or observed["capabilityCount"] != 0):
+        raise RuntimeError(f"AppContainer token rejected before resume: {observed}")
+
+
+def validate_descendant(observation: dict, expected_sid: str) -> dict:
+    require_container_token(observation["token"], expected_sid)
+    if observation["exitCode"] != 0 or observation["outputTruncated"]:
+        raise RuntimeError("descendant probe failed or output was truncated")
+    records = [json.loads(line) for line in observation["output"].splitlines() if line.strip()]
+    tokens = [row for row in records if row.get("kind") == "token"]
+    if len(tokens) != 3 or {row.get("role") for row in tokens} != {"parent", "descendantBeforeResume", "descendant"}:
+        raise RuntimeError("descendant probe did not report all three actual tokens")
+    for token in tokens:
+        require_container_token(token, expected_sid)
+    results = [row for row in records if row.get("kind") == "childResult"]
+    if len(results) != 1 or results[0] != {"kind": "childResult", "created": True,
+                                         "preResumeValidated": True, "resumeSucceeded": True, "exitCode": 0}:
+        raise RuntimeError("descendant create/validation/resume/exit result failed")
+    return {"tokens": tokens, "childResult": results[0]}
+
+
+class CleanupError(RuntimeError):
+    def __init__(self, outcomes: list[dict]):
+        self.outcomes = outcomes
+        super().__init__("owned audit cleanup failed: " + json.dumps(outcomes))
+
+
+def cleanup_scope(granted: list[Path], expected_sid: str | None, name: str, sid: w.LPVOID) -> None:
+    """Attempt every owned cleanup action; any error makes the audit fail."""
+    outcomes = []
+    for path in reversed(granted):
+        outcome = {"aclRevokePath": str(path)}
+        try:
+            revoke = subprocess.run(["icacls", str(path), "/remove:g", "*" + expected_sid],
+                                    capture_output=True, text=True, timeout=30)
+            outcome.update(exitCode=revoke.returncode, failed=revoke.returncode != 0)
+        except Exception as error:
+            outcome.update(errorType=type(error).__name__, failed=True)
+        outcomes.append(outcome)
+    try:
+        freed = adv.FreeSid(sid)
+        outcomes.append({"sidFreeFailed": bool(freed), "failed": bool(freed)})
+    except Exception as error:
+        outcomes.append({"sidFreeErrorType": type(error).__name__, "failed": True})
+    try:
+        deleted = uenv.DeleteAppContainerProfile(name)
+        outcomes.append({"profileDeleteHresult": f"0x{deleted & 0xffffffff:08x}", "failed": deleted != 0})
+    except Exception as error:
+        outcomes.append({"profileDeleteErrorType": type(error).__name__, "failed": True})
+    for outcome in outcomes:
+        print(json.dumps(outcome), file=sys.stderr)
+    if any(outcome["failed"] for outcome in outcomes):
+        raise CleanupError(outcomes)
+
+
 def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
            job_memory_bytes: int | None = None) -> dict:
     size = ctypes.c_size_t()
-    k32.InitializeProcThreadAttributeList(None, 1, 0, ctypes.byref(size))
+    k32.InitializeProcThreadAttributeList(None, 2, 0, ctypes.byref(size))
     if ctypes.get_last_error() != 122 or not size.value:
         raise win_error("InitializeProcThreadAttributeList size")
     attrs = ctypes.create_string_buffer(size.value)
-    if not k32.InitializeProcThreadAttributeList(attrs, 1, 0, ctypes.byref(size)):
+    if not k32.InitializeProcThreadAttributeList(attrs, 2, 0, ctypes.byref(size)):
         raise win_error("InitializeProcThreadAttributeList")
     read = w.HANDLE()
     write = w.HANDLE()
+    safe_input = w.HANDLE()
     sa = SECURITY_ATTRIBUTES(ctypes.sizeof(SECURITY_ATTRIBUTES), None, True)
     try:
         caps = SECURITY_CAPABILITIES(sid, None, 0, 0)
@@ -175,10 +239,18 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
             raise win_error("CreatePipe")
         if not k32.SetHandleInformation(read, 1, 0):
             raise win_error("SetHandleInformation")
+        safe_input = k32.CreateFileW("NUL", 0x80000000, 0x3, ctypes.byref(sa), 3, 0, None)
+        if safe_input == ctypes.c_void_p(-1).value:
+            safe_input = w.HANDLE()
+            raise win_error("CreateFileW NUL input")
+        inherited_handles = (w.HANDLE * 2)(safe_input, write)
+        if not k32.UpdateProcThreadAttribute(attrs, 0, 0x20002, inherited_handles,
+                                             ctypes.sizeof(inherited_handles), None, None):
+            raise win_error("UpdateProcThreadAttribute handle allowlist")
         si = STARTUPINFOEXW()
         si.StartupInfo.cb = ctypes.sizeof(si)
         si.StartupInfo.dwFlags = 0x100
-        si.StartupInfo.hStdInput = k32.GetStdHandle(-10)
+        si.StartupInfo.hStdInput = safe_input
         si.StartupInfo.hStdOutput = write
         si.StartupInfo.hStdError = write
         si.lpAttributeList = ctypes.cast(attrs, w.LPVOID)
@@ -200,7 +272,7 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
             "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
         }
         environment = ctypes.create_unicode_buffer("\0".join(f"{key}={value}" for key, value in sorted(safe_env.items())) + "\0\0")
-        flags = 0x00080000 | 0x00000400 | (0x4 if job_memory_bytes else 0)
+        flags = 0x00080000 | 0x00000400 | 0x4
         if not k32.CreateProcessW(str(exe), command, None, None, True, flags,
                                   ctypes.cast(environment, w.LPVOID), "C:\\Windows\\System32",
                                   ctypes.byref(si), ctypes.byref(pi)):
@@ -209,6 +281,7 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
         completed = False
         try:
             observed_token = token_data(pi.hProcess)
+            require_container_token(observed_token, sid_string(sid))
             if job_memory_bytes:
                 job = k32.CreateJobObjectW(None, None)
                 if not job:
@@ -220,8 +293,8 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
                     raise win_error("SetInformationJobObject")
                 if not k32.AssignProcessToJobObject(job, pi.hProcess):
                     raise win_error("AssignProcessToJobObject")
-                if k32.ResumeThread(pi.hThread) != 1:
-                    raise win_error("ResumeThread")
+            if k32.ResumeThread(pi.hThread) != 1:
+                raise win_error("ResumeThread")
             k32.CloseHandle(write)
             write = w.HANDLE()
             chunks: list[bytes] = []
@@ -272,20 +345,28 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
                 raise RuntimeError(f"output reader did not complete: {state}")
             completed = True
         finally:
-            if job:
-                k32.CloseHandle(job)
-            if not completed:
-                k32.TerminateProcess(pi.hProcess, 1)
-            k32.CloseHandle(pi.hThread)
-            k32.CloseHandle(pi.hProcess)
+            try:
+                if job:
+                    k32.CloseHandle(job)
+                if not completed:
+                    if k32.WaitForSingleObject(pi.hProcess, 0) == 0x102 and not k32.TerminateProcess(pi.hProcess, 1):
+                        raise win_error("TerminateProcess rejected/failed child")
+                    if k32.WaitForSingleObject(pi.hProcess, 5000) != 0:
+                        raise RuntimeError("owned child did not exit during cleanup")
+            finally:
+                k32.CloseHandle(pi.hThread)
+                k32.CloseHandle(pi.hProcess)
         return {"token": observed_token, "pid": pi.dwProcessId, "exitCode": exit_code.value,
                 "output": b"".join(chunks).decode(errors="replace"),
-                "outputTruncated": state["truncated"], "peakJobMemoryBytes": peak_job_memory}
+                "outputTruncated": state["truncated"], "peakJobMemoryBytes": peak_job_memory,
+                "inheritedHandleCount": 2, "stdinSource": "NUL", "tokenValidatedBeforeResume": True}
     finally:
         if read.value:
             k32.CloseHandle(read)
         if write.value:
             k32.CloseHandle(write)
+        if safe_input:
+            k32.CloseHandle(safe_input)
         k32.DeleteProcThreadAttributeList(attrs)
 
 
@@ -307,6 +388,7 @@ def main() -> None:
     if result != 0:
         raise OSError(result, f"CreateAppContainerProfile HRESULT 0x{result & 0xffffffff:08x}")
     granted = []
+    expected_sid = None
     try:
         expected_sid = sid_string(sid)
         if args.replay_root:
@@ -325,21 +407,17 @@ def main() -> None:
                                  (audit / "model", "(OI)(CI)(RX)"),
                                  (audit / "development", "(OI)(CI)(RX)"), (script, "(RX)"),
                                  (audit / "net01_probe.exe", "(RX)")):
+                granted.append(path)  # Also revoke a grant that reports partial failure.
                 grant = subprocess.run(["icacls", str(path), "/grant", f"*{expected_sid}:{rights}"],
                                        capture_output=True, text=True)
                 if grant.returncode != 0:
                     raise OSError(f"scoped ACL grant failed: {path}: {grant.stdout} {grant.stderr}")
-                granted.append(path)
             os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", HF_HUB_DISABLE_TELEMETRY="1",
                               TOKENIZERS_PARALLELISM="false", OMP_NUM_THREADS="2", MKL_NUM_THREADS="2",
                               CUBLAS_WORKSPACE_CONFIG=":4096:8")
             preflight = launch(audit / "net01_probe.exe", ["child"], sid, 5000,
                                job_memory_bytes=6 * 1024**3)
-            if (preflight["exitCode"] != 0 or not preflight["token"]["isAppContainer"] or
-                    preflight["token"]["appContainerSid"] != expected_sid or
-                    preflight["token"]["capabilityCount"] != 0 or
-                    preflight["output"].count("appcontainer_sid=" + expected_sid) != 2):
-                raise RuntimeError("replay profile or descendant token/capabilities not verified")
+            validate_descendant(preflight, expected_sid)
             tcp = launch(Path(r"C:\Windows\System32\curl.exe"),
                          ["--noproxy", "*", "--verbose", "--max-time", "2",
                           "http://203.0.113.1:9/net01"], sid, 5000)
@@ -364,7 +442,7 @@ def main() -> None:
                                             sid, timeout, job_memory_bytes=6 * 1024**3)
                 print(json.dumps({"mode": mode, "observation": observations[mode]}), flush=True)
                 if observations[mode]["exitCode"] != 0:
-                    break
+                    raise RuntimeError(f"{mode} child failed: {observations[mode]['exitCode']}")
             print(json.dumps({"profile": name, "expectedSid": expected_sid,
                               "scriptSha256": hashlib.sha256(script.read_bytes()).hexdigest(),
                               "stageVerificationSha256": hashlib.sha256(receipt.read_bytes()).hexdigest(),
@@ -378,11 +456,11 @@ def main() -> None:
                                  (audit / "runtime/base", "(OI)(CI)(RX)"),
                                  (audit / "runtime/retained-site-packages", "(OI)(CI)(RX)"),
                                  (audit / "runtime/lora-venv", "(OI)(CI)(RX)")):
+                granted.append(path)
                 grant = subprocess.run(["icacls", str(path), "/grant", f"*{expected_sid}:{rights}"],
                                        capture_output=True, text=True)
                 if grant.returncode != 0:
                     raise OSError(f"scoped ACL grant failed: {path}: {grant.stdout} {grant.stderr}")
-                granted.append(path)
             os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", HF_HUB_DISABLE_TELEMETRY="1")
             observed = launch(exe, ["-B", "-I", "-c", "import torch,transformers,peft; print(torch.__version__,transformers.__version__,peft.__version__)"], sid, 20000)
             print(json.dumps({"profile": name, "expectedSid": expected_sid,
@@ -395,11 +473,11 @@ def main() -> None:
             for path, rights in ((exe.parent.parent.parent, "(RX)"),
                                  (exe.parent.parent, "(RX)"),
                                  (exe.parent, "(OI)(CI)(RX)")):
+                granted.append(path)
                 grant = subprocess.run(["icacls", str(path), "/grant", f"*{expected_sid}:{rights}"],
                                        capture_output=True, text=True)
                 if grant.returncode != 0:
                     raise OSError(f"scoped ACL grant failed: {path}: {grant.stdout} {grant.stderr}")
-                granted.append(path)
             observed = launch(exe, ["-I", "-S", "-c", "print('python-clone-started')"], sid, 5000)
             print(json.dumps({"profile": name, "expectedSid": expected_sid,
                               "pythonExeSha256": hashlib.sha256(exe.read_bytes()).hexdigest(),
@@ -409,13 +487,14 @@ def main() -> None:
             if exe.name != "net01_probe.exe" or exe.parent.name != "net01-audit-20260930":
                 raise ValueError("native probe must live in the dedicated owned audit directory")
             for path in (exe.parent, exe):
+                granted.append(path)
                 grant = subprocess.run(["icacls", str(path), "/grant", f"*{expected_sid}:(RX)"],
                                        capture_output=True, text=True)
                 if grant.returncode != 0:
                     raise OSError(f"scoped ACL grant failed: {path}: {grant.stdout} {grant.stderr}")
-                granted.append(path)
             results = [{"protocol": "token", **launch(exe, ["child"], sid, 5000,
                                                        job_memory_bytes=6 * 1024**3)}]
+            validate_descendant(results[0], expected_sid)
             for protocol in ("tcp", "udp"):
                 kind = socket.SOCK_STREAM if protocol == "tcp" else socket.SOCK_DGRAM
                 with socket.socket(socket.AF_INET, kind) as listener:
@@ -495,13 +574,7 @@ def main() -> None:
             observed["profile"] = name
             print(json.dumps(observed, indent=2))
     finally:
-        for path in reversed(granted):
-            revoke = subprocess.run(["icacls", str(path), "/remove:g", "*" + expected_sid],
-                                    capture_output=True, text=True)
-            print(json.dumps({"aclRevokePath": str(path), "exitCode": revoke.returncode}), file=sys.stderr)
-        k32.LocalFree(sid)
-        deleted = uenv.DeleteAppContainerProfile(name)
-        print(json.dumps({"profileDeleteHresult": f"0x{deleted & 0xffffffff:08x}"}), file=sys.stderr)
+        cleanup_scope(granted, expected_sid, name, sid)
 
 
 if __name__ == "__main__":
