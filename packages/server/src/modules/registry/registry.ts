@@ -290,7 +290,14 @@ export async function createRegistryDraft(
   body?: RegistryBody,
   requestKey?: string,
 ) {
-  return transaction(async (client) => {
+  return transaction(client=>createRegistryDraftTx(client,siteId,recordId,body,requestKey));
+}
+/** Caller-owned correction creation; copied citation pins remain hidden audit
+ * history until explicit amendment/review. Opening a correction does not accept
+ * retained evidence or resolve private text, and must remain useful for removal. */
+export async function createRegistryDraftTx(
+  client:PoolClient,siteId:string,recordId?:string,body?:RegistryBody,requestKey?:string,
+) {
     const site = siteFrom(await siteRow(client, siteId, true));
     if (body) await assertRegistryMetadataTx(client, siteId, body.kind, body.registryMetadata);
     if (requestKey) {
@@ -309,8 +316,7 @@ export async function createRegistryDraft(
             conflict('This correction request refers to an older recorded target.');
         }
         for (const record of previous.records as RegistryRecord[])
-          {await assertRegistryMetadataTx(client, siteId, record.kind, record.registryMetadata);
-          await assertRegistryDocumentCitationsTx(client,siteId,record,true);}
+          await assertRegistryMetadataTx(client, siteId, record.kind, record.registryMetadata);
         return publicRegistryDraft(draftFrom(previous));
       }
     }
@@ -325,7 +331,6 @@ export async function createRegistryDraft(
         ).rows[0] ?? notFound();
       record = recordFrom(row);
       await assertRegistryMetadataTx(client, siteId, record.kind, record.registryMetadata);
-      await assertRegistryDocumentCitationsTx(client,siteId,record,true);
       const existing = (
         await client.query(
           "SELECT * FROM registry_drafts WHERE site_id=$1 AND status='draft' AND records @> $2::jsonb ORDER BY created_at DESC LIMIT 1",
@@ -336,7 +341,6 @@ export async function createRegistryDraft(
         const proposed=(existing.records as RegistryRecord[]).find(item=>item.id===recordId);
         if(!proposed||proposed.revision!==record.revision||proposed.kind!==record.kind)
           conflict('The existing correction targets an older recorded revision.');
-        await assertRegistryDocumentCitationsTx(client,siteId,proposed,true);
         return publicRegistryDraft(draftFrom(existing));
       }
     } else {
@@ -374,7 +378,6 @@ export async function createRegistryDraft(
         )
       ).rows[0],
     ));
-  });
 }
 export async function draftDetail(id: string) {
   return publicRegistryDraft(draftFrom(
