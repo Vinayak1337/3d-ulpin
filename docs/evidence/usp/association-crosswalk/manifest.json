@@ -1,0 +1,223 @@
+{
+  "schemaVersion": "association-crosswalk-checkpoint/1",
+  "recoveredAt": "2026-09-30T13:11:45.652272+00:00",
+  "scope": "Hash-verified acquisition checkpoint only; source crosswalk visual/revision review unfinished.",
+  "workerThread": "01a0f260-aa2d-7772-8546-f8ac5d7fb2c8",
+  "workerFailure": "HTTP 413: request exceeds 32 MiB at local responses endpoint; do not retry the oversized history or repeat acquisition.",
+  "assets": [
+    {
+      "id": "bihar-approved-layout.pdf",
+      "originKind": "issuing_portal_original",
+      "issuer": "Bihar RERA / project submitter",
+      "geography": "Begusarai, Bihar, India",
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3ApprovedLayoutPlan.pdf",
+      "acquiredAt": "2026-09-30T12:56:27.312736+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "mediaType": "application/pdf",
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-approved-layout.pdf",
+        "bytes": 2455183,
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "repositoryBytesVerified": false,
+        "leadExactBytesVerified": true
+      },
+      "acquisitionReceipt": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-approved-layout.pdf.receipt.json",
+        "sha256": "451114f1792f4e3ecdea377c7c4268f40cc73c0e52443c877bbfc1c23489a7a6"
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "status": "not_assessed"
+      },
+      "sourceInterpretation": "not_assessed_in_checkpoint_recovery",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false,
+      "sameBytesAs": {
+        "manifest": "fixtures/usp/D5/gf0-public-plans-v1/manifest.json",
+        "assetId": "bihar-magnolia-sanctioned-layout.pdf",
+        "scope": "Byte identity only; an alternate portal URL does not prove a newer approval."
+      }
+    },
+    {
+      "id": "bihar-land-location.pdf",
+      "originKind": "issuing_portal_original",
+      "issuer": "Bihar RERA / project submitter",
+      "geography": "Begusarai, Bihar, India",
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3LanddocumentsLocation.pdf",
+      "acquiredAt": "2026-09-30T12:56:26.991908+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "mediaType": "application/pdf",
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-land-location.pdf",
+        "bytes": 1581661,
+        "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+        "repositoryBytesVerified": false,
+        "leadExactBytesVerified": true
+      },
+      "acquisitionReceipt": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-land-location.pdf.receipt.json",
+        "sha256": "68cfb594da6a392e0c995b2f75259dbc6bf7b34786005f88983bad1391cf53a3"
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "status": "not_assessed"
+      },
+      "sourceInterpretation": "not_assessed_in_checkpoint_recovery",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false
+    },
+    {
+      "id": "bihar-project.html",
+      "originKind": "issuing_portal_original",
+      "issuer": "Bihar RERA / project submitter",
+      "geography": "Begusarai, Bihar, India",
+      "originalUrl": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+      "acquiredAt": "2026-09-30T12:55:36.807272+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "mediaType": "text/html; charset=utf-8",
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-project.html",
+        "bytes": 132607,
+        "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+        "repositoryBytesVerified": false,
+        "leadExactBytesVerified": true
+      },
+      "acquisitionReceipt": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-project-system-trust.receipt.json",
+        "sha256": "59d06623cdc0bad801d949ffe76814ef9ce2194330d995b83ab94ffe374a9de7"
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "status": "not_assessed"
+      },
+      "sourceInterpretation": "not_assessed_in_checkpoint_recovery",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false
+    },
+    {
+      "id": "haryana-2831-project.html",
+      "originKind": "issuing_portal_original",
+      "issuer": "Haryana RERA / project submitter",
+      "geography": "Haryana, India; project 2831",
+      "originalUrl": "https://haryanarera.gov.in/view_project/project_preview_open/2831",
+      "acquiredAt": "2026-09-30T12:55:17.366887+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "mediaType": "text/html; charset=UTF-8",
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-project.html",
+        "bytes": 108086,
+        "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+        "repositoryBytesVerified": false,
+        "leadExactBytesVerified": true
+      },
+      "acquisitionReceipt": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-project.html.receipt.json",
+        "sha256": "b5c64626c4bcfcae500057f239fc43ea5c16fcf4d5cc4828b3261c9f84a12298"
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "status": "not_assessed"
+      },
+      "sourceInterpretation": "not_assessed_in_checkpoint_recovery",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false
+    },
+    {
+      "id": "haryana-2831-site-plan.pdf",
+      "originKind": "issuing_portal_original",
+      "issuer": "Haryana RERA / project submitter",
+      "geography": "Haryana, India; project 2831",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+      "acquiredAt": "2026-09-30T12:56:26.540725+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "mediaType": "application/pdf",
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-site-plan.pdf",
+        "bytes": 3782332,
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "repositoryBytesVerified": false,
+        "leadExactBytesVerified": true
+      },
+      "acquisitionReceipt": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-site-plan.pdf.receipt.json",
+        "sha256": "4cd58908e66c5ba016a0d869de4713c2c777baa354e36f22f42c4d7d27e88b33"
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "status": "not_assessed"
+      },
+      "sourceInterpretation": "not_assessed_in_checkpoint_recovery",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false
+    },
+    {
+      "id": "haryana-2831-tower3-plan2.pdf",
+      "originKind": "issuing_portal_original",
+      "issuer": "Haryana RERA / project submitter",
+      "geography": "Haryana, India; project 2831",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/b76ed9cb4dNDg2NTg=",
+      "acquiredAt": "2026-09-30T12:56:26.681798+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "mediaType": "application/pdf",
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-tower3-plan2.pdf",
+        "bytes": 1630108,
+        "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+        "repositoryBytesVerified": false,
+        "leadExactBytesVerified": true
+      },
+      "acquisitionReceipt": {
+        "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-tower3-plan2.pdf.receipt.json",
+        "sha256": "2a0f57fa668ee8ba38fae8f247ea85e12af1a2a2f275d43400968a6371ba9b24"
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "status": "not_assessed"
+      },
+      "sourceInterpretation": "not_assessed_in_checkpoint_recovery",
+      "canonicalMatchState": "not_assessed",
+      "trainingLabelCreated": false
+    }
+  ],
+  "preservedFailedAcquisition": {
+    "externalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-project.html.receipt.json",
+    "sha256": "34e619037f26030ce3ea90d5d0159f7aeaa28dca81aee900eb103c3f7eecd198",
+    "status": "Initial Python TLS validation failed; separate Windows-system-trust success is preserved without replacing this receipt."
+  },
+  "limitations": [
+    "The six-original bound includes two HTML project pages; one PDF is byte-identical to the earlier plan.",
+    "Native-text and render checkpoints remain private, but their observations were not promoted by this recovery.",
+    "No current approved revision, keyed Bihar villa or canonical building/floor association was established.",
+    "No API import, model fit, source edit, label or release qualification."
+  ]
+}

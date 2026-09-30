@@ -6,6 +6,8 @@ Requested GPT-6.1 Sol/high; actual model/effort and service tier are not indepen
 
 ## Delivered behavior
 
+Lead acceptance: candidate `d46b186` integrated as `2c3777f`. The lead reviewed all four files, ran the six focused tests (exit 0), matched private receipt/verification/output hashes, and reproduced the exact saved output from the unchanged original. The initial exact working-file hash comparison differed because Git checked out CRLF; LF-normalized reader/CLI hashes match the final receipt. Scope stays local structural reading only; no repeated CLI campaign or API claim.
+
 `services/geo/geo/native_cityjson.py` reads UTF-8 CityJSON 2.0, standalone CityJSONFeature and the retained 3DBAG feature/header envelope using the standard library. It preserves the complete parsed source document, exact source IDs/hierarchy, attributes (including null and unknown fields), encoded vertices, transform, metadata and semantics. The unchanged original stays separate: JSON value preservation does not claim byte-preserving reserialization. SHA-256 and RFC 6901 pointers bind projections to the original.
 
 Solid shell/surface/ring nesting and MultiSurface surface/ring nesting are structurally checked without flattening; hole rings and null semantic assignments are retained. Face projections point to native rings and semantic records. Unknown geometry is retained at its pointer with `unsupported` status; mixed results report `partial_unsupported`. Malformed supported geometry fails the whole read with a typed error and locator; no partial success is published. Unresolved hierarchy links remain literal IDs with explicit issues, rather than inferred objects.
