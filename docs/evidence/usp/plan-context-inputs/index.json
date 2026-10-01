@@ -1,0 +1,515 @@
+{
+  "version": "plan-context-input-index/1",
+  "baseCommit": "7a13389b2600d172b347c0edf36ce7424276ef69",
+  "scope": "Local emitted OCR candidates only. Roles are navigation annotations, not operational properties or qualified learning labels.",
+  "newAttempts": 4,
+  "allNewEmittedItems": 38,
+  "completeRawObservations": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\observations.json",
+    "bytes": 45745,
+    "sha256": "18d4b18859e55dc6583ae7acdf60382818b54d4aa8b55edf1e91d2a476905403"
+  },
+  "verification": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\verification.json",
+    "bytes": 7758,
+    "sha256": "d619f539d5a8c3a22f629a156f9c1466dbdea254acc276a4a278d7efbf65c39a"
+  },
+  "itemHashScheme": "SHA-256 of sorted-key compact UTF-8 JSON with ensure_ascii=false",
+  "canonicalMatchState": "not_assessed",
+  "apiJobEnvelopeCreated": false,
+  "trainingLabelsCreated": false,
+  "gaps": [
+    "T3-1 title rendering failed; no title OCR or affine exists.",
+    "T3-2 sheet token TH is unreliable; date/project tail is noisy.",
+    "T3-4 T34 loses sheet separators; date and SCALE label are merged; project tail is noisy.",
+    "No current approved revision, canonical relationship, surveyed datum or G+41/G+42 resolution."
+  ],
+  "textCompleteness": "unverified",
+  "citationConvention": {
+    "page": 1,
+    "frame": "pdf_display_page_top_left_points",
+    "method": "ocr:docling-tesseract-cli-full-page",
+    "derivedFrom": "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin"
+  },
+  "sources": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\haryana-2831-tower3-plan1.pdf",
+      "bytes": 1655334,
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\haryana-2831-tower3-plan2.pdf",
+      "bytes": 1630108,
+      "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\haryana-2831-tower3-section.pdf",
+      "bytes": 2448909,
+      "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b"
+    }
+  ],
+  "selections": [
+    {
+      "id": "t3-1-title",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "page": 1,
+      "region": [
+        2250.0,
+        1025.0,
+        2555.0,
+        1685.0
+      ],
+      "candidate": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-1-title\\result.json",
+        "bytes": 379,
+        "sha256": "5c3df71fd2de68da99762241537b2fb90a5616f1e33460d4a057584b2cdf9235"
+      },
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-1-title\\receipt.json",
+        "bytes": 2971,
+        "sha256": "22df5cc4898dfe07140d75d2761d750787b66833aafd94fe7fadf7b4bbfca17e"
+      },
+      "newAttempt": true,
+      "frame": null,
+      "render": null,
+      "toolStatus": "failed",
+      "outputStatus": "failed",
+      "issues": [
+        "render_pixel_limit_exceeded"
+      ]
+    },
+    {
+      "id": "t3-2-title",
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "page": 1,
+      "region": [
+        2250.0,
+        990.0,
+        2565.0,
+        1690.0
+      ],
+      "candidate": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-2-title\\result.json",
+        "bytes": 6514,
+        "sha256": "e051c2e3c27129effb778596e49e85ea23ee1e3578f2d3e6476b433b91e19e9d"
+      },
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-2-title\\receipt.json",
+        "bytes": 2996,
+        "sha256": "5bb13a84241d478d0806144d7f7ab00df1993903335235fbcedee2496664476b"
+      },
+      "newAttempt": true,
+      "frame": {
+        "kind": "pdf_display_page_top_left_points",
+        "rotation": 0,
+        "width": 2586.0,
+        "height": 1694.0
+      },
+      "render": {
+        "scale": 2.0,
+        "pixelOrigin": [
+          4500,
+          1980
+        ],
+        "pixels": [
+          630,
+          1400
+        ],
+        "dpi": [
+          96.012,
+          96.012
+        ],
+        "pngBytes": 852732,
+        "pngSha256": "993c9ba18897f6e6e8979c95e85dc8a489772406fe4d6234ce3c60bcbd4666d9"
+      },
+      "toolStatus": "complete",
+      "outputStatus": "complete",
+      "issues": [
+        "orientation_script_detection_unavailable"
+      ]
+    },
+    {
+      "id": "t3-4-title",
+      "sourceSha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "page": 1,
+      "region": [
+        2180.0,
+        1870.0,
+        2525.0,
+        2570.0
+      ],
+      "candidate": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-4-title\\result.json",
+        "bytes": 6437,
+        "sha256": "3334c23db3c8277da59ff04b7042ee0b2e0dba8a7e4a54f6c8d05dda8da62f93"
+      },
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-4-title\\receipt.json",
+        "bytes": 2997,
+        "sha256": "b5fee27729b58a622429803bb4d19c01639ce89e19efd55026b9f76af467a123"
+      },
+      "newAttempt": true,
+      "frame": {
+        "kind": "pdf_display_page_top_left_points",
+        "rotation": 0,
+        "width": 2545.0,
+        "height": 2590.0
+      },
+      "render": {
+        "scale": 2.0,
+        "pixelOrigin": [
+          4360,
+          3740
+        ],
+        "pixels": [
+          690,
+          1400
+        ],
+        "dpi": [
+          96.012,
+          96.012
+        ],
+        "pngBytes": 1084102,
+        "pngSha256": "29ab16584d6240d3ebca2f6398d483093aa4496b9bf672d7f424dee33be4dca3"
+      },
+      "toolStatus": "complete",
+      "outputStatus": "complete",
+      "issues": [
+        "orientation_script_detection_unavailable"
+      ]
+    },
+    {
+      "id": "t3-2-floor01",
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "page": 1,
+      "region": [
+        530.0,
+        755.0,
+        920.0,
+        870.0
+      ],
+      "candidate": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-2-floor01\\result.json",
+        "bytes": 2538,
+        "sha256": "7941adcaa4eecfe20c4f890183c8fc560941b04abd0f241b846de021bf513f30"
+      },
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-2-floor01\\receipt.json",
+        "bytes": 2992,
+        "sha256": "f24713003789b3710143a5fed7a46572dae38bbe8c97690f7d17cb5dfa00f762"
+      },
+      "newAttempt": true,
+      "frame": {
+        "kind": "pdf_display_page_top_left_points",
+        "rotation": 0,
+        "width": 2586.0,
+        "height": 1694.0
+      },
+      "render": {
+        "scale": 3.0,
+        "pixelOrigin": [
+          1590,
+          2265
+        ],
+        "pixels": [
+          1170,
+          345
+        ],
+        "dpi": [
+          96.012,
+          96.012
+        ],
+        "pngBytes": 203230,
+        "pngSha256": "356325a4e6d8656e3f2e52cd91908f91ac7156a3d9e36f49f55ace5a5043a3f6"
+      },
+      "toolStatus": "complete",
+      "outputStatus": "complete",
+      "issues": [
+        "orientation_script_detection_unavailable"
+      ]
+    },
+    {
+      "id": "t3-2-floor02-reused",
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "page": 1,
+      "region": [
+        1820.0,
+        750.0,
+        2130.0,
+        825.0
+      ],
+      "candidate": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-large-plan-ocr-20261002\\trial-001\\result.json",
+        "bytes": 1305,
+        "sha256": "3fef032598e08a90c61eb7c6bd1afd64bf32650d78fb673d83bfe9864f3faab3"
+      },
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-large-plan-ocr-20261002\\trial-001\\receipt.json",
+        "bytes": 2988,
+        "sha256": "6d9c05421d2c9310e7e0dcbd5021b725f06c2d66566a44251ae1d64d61ff210b"
+      },
+      "newAttempt": false,
+      "frame": {
+        "kind": "pdf_display_page_top_left_points",
+        "rotation": 0,
+        "width": 2586.0,
+        "height": 1694.0
+      },
+      "render": {
+        "scale": 3.0,
+        "pixelOrigin": [
+          5460,
+          2250
+        ],
+        "pixels": [
+          930,
+          225
+        ],
+        "dpi": [
+          96.012,
+          96.012
+        ],
+        "pngBytes": 98669,
+        "pngSha256": "81bb39d3f38c3f9873fdae4809c1dd8d9f825f7643411ac2cb7f11cae24d3403"
+      },
+      "toolStatus": "complete",
+      "outputStatus": "complete",
+      "issues": [
+        "orientation_script_detection_unavailable"
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "selection": "t3-2-title",
+      "ordinal": 1,
+      "itemSha256": "9c3cadf3544f6d544f8fb2c540d14b061c97c6c98cc7e3335a209870cf985cf8",
+      "role": "project-paragraph",
+      "text": "PROPOSED BUILDING PLAN FOR RESIDENTIAL COLONY UNDER NILP POLICY DATED 11.05.2022 OVER AN AREA MEASURING 10.071875 ACRES LICENSE NO. 225 OF 2023 DATED 30/10/2023 (7.434375 Acres UNDER MIGRATION FROM LICENSE NO. 92 OF 2023 DATED 21-04-2023 GRANTED FOR DDJAY AFFORDABLE PLOTTED COLONY AND FRESH APPLIED AREA MEASURING 2.6375 Acres )IN SECTOR-59&63A, GURUGRAM MANESAR URBAN COMPLEX BEING DEVELOPED BY - 4S DEVELOPERS Pov oeT . | aia iii)",
+      "boxes": [
+        [
+          2272.00275,
+          1046.007,
+          2540.703,
+          1291.371
+        ]
+      ]
+    },
+    {
+      "selection": "t3-2-title",
+      "ordinal": 3,
+      "itemSha256": "d61a07f42214416ab6fd42cd74da282e23ee5b8ade9612eb018e89218ebe93db",
+      "role": "architect",
+      "text": "VIKAS AHLAWAT ARCHITECTS",
+      "boxes": [
+        [
+          2301.33975,
+          1348.7115,
+          2516.03325,
+          1359.3795
+        ]
+      ]
+    },
+    {
+      "selection": "t3-2-title",
+      "ordinal": 8,
+      "itemSha256": "6511c63da0f1fdfa44324c7c88282df8999bb22f7dd680ab5d29692f32b08223",
+      "role": "tower-title",
+      "text": "TOWER03",
+      "boxes": [
+        [
+          2280.6705,
+          1569.40575,
+          2368.6815,
+          1581.40725
+        ]
+      ]
+    },
+    {
+      "selection": "t3-2-title",
+      "ordinal": 9,
+      "itemSha256": "9d04e178c4e57b016d6c5223565dadc2af6d36d06d40e506c46f0c95867bf37a",
+      "role": "drawing-title",
+      "text": "PLAN & AREA CALCULATION",
+      "boxes": [
+        [
+          2305.34025,
+          1590.075,
+          2460.693,
+          1598.74275
+        ]
+      ]
+    },
+    {
+      "selection": "t3-2-title",
+      "ordinal": 11,
+      "itemSha256": "376771a3b30ffbf3acd704f3462c09aece04a019f15b46420e1e4102b35b1400",
+      "role": "noisy-date-token",
+      "text": "—_-JAN-2024",
+      "boxes": [
+        [
+          2342.67825,
+          1626.0795,
+          2387.3505,
+          1635.414
+        ]
+      ]
+    },
+    {
+      "selection": "t3-2-title",
+      "ordinal": 16,
+      "itemSha256": "8ee8fddb8402530667678927fe088e4ee37f88482ec00fa31a505fa8cddbd122",
+      "role": "unreliable-sheet-token",
+      "text": "TH",
+      "boxes": [
+        [
+          2493.36375,
+          1644.0817499999998,
+          2516.7,
+          1653.41625
+        ]
+      ]
+    },
+    {
+      "selection": "t3-4-title",
+      "ordinal": 2,
+      "itemSha256": "c6965c857ed05aed55f4d761638681bcbcde18803c3f0651dd79489b76e16b42",
+      "role": "project-paragraph",
+      "text": "PROPOSED BUILDING PLAN FOR RESIDENTIAL COLONY UNDER NILP POLICY DATED 11.05.2022 OVER AN AREA MEASURING 10.071875 ACRES LICENSE NO. 225 OF 2023 DATED 30/10/2023 (7.434375 Acres UNDER MIGRATION FROM LICENSE NO. 92 OF 2023 DATED 21-04-2023 GRANTED FOR DDJAY AFFORDABLE PLOTTED COLONY AND FRESH APPLIED AREA MEASURING 2.6375 Acres )IN SECTOR-59&63A, GURUGRAM MANESAR URBAN COMPLEX BEING DEVELOPED BY - 4S DEVELOPERS Pov UT : eu: D E",
+      "boxes": [
+        [
+          2205.3365,
+          1898.67025,
+          2504.70725,
+          2165.37025
+        ]
+      ]
+    },
+    {
+      "selection": "t3-4-title",
+      "ordinal": 4,
+      "itemSha256": "3306636a3434f831e6a7cfe705a036c6a25d822b78128573de25e0ba13eb5da3",
+      "role": "architect",
+      "text": "VIKAS AHLAWAT ARCHITECTS",
+      "boxes": [
+        [
+          2237.3405,
+          2206.70875,
+          2476.0370000000003,
+          2218.71025
+        ]
+      ]
+    },
+    {
+      "selection": "t3-4-title",
+      "ordinal": 10,
+      "itemSha256": "09231cb145e56c2cf431d07fcc819b8de214cd5126270d32fa8284cd23746195",
+      "role": "tower-title",
+      "text": "TOWER-3",
+      "boxes": [
+        [
+          2213.3375,
+          2452.7395,
+          2294.681,
+          2466.74125
+        ]
+      ]
+    },
+    {
+      "selection": "t3-4-title",
+      "ordinal": 11,
+      "itemSha256": "83a1103a7ec0b130dd9d951d6116e48df2bd0c5ed09ea499460ee8643f720619",
+      "role": "drawing-title",
+      "text": "SECTION & ELEVATION",
+      "boxes": [
+        [
+          2240.67425,
+          2476.07575,
+          2384.0255,
+          2486.077
+        ]
+      ]
+    },
+    {
+      "selection": "t3-4-title",
+      "ordinal": 13,
+      "itemSha256": "4c52a4ed68d099cfcf7f86e4ffbde405fdc44be8a07dccd101729f956d0dd560",
+      "role": "merged-date-and-scale-label",
+      "text": "SCALE:- JAN-2024",
+      "boxes": [
+        [
+          2208.67025,
+          2541.41725,
+          2252.67575,
+          2552.08525
+        ],
+        [
+          2282.6795,
+          2515.4139999999998,
+          2331.35225,
+          2526.74875
+        ]
+      ]
+    },
+    {
+      "selection": "t3-4-title",
+      "ordinal": 15,
+      "itemSha256": "71b5c6c66accf44b1b5ee9a246a124ed515cd75d0c8d8c0541618531387218c7",
+      "role": "sheet-token-with-lost-separators",
+      "text": "T34",
+      "boxes": [
+        [
+          2450.03375,
+          2536.08325,
+          2476.0370000000003,
+          2546.7512500000003
+        ]
+      ]
+    },
+    {
+      "selection": "t3-2-floor01",
+      "ordinal": 3,
+      "itemSha256": "8815d8a57f8e80efdce87e448976e30bfd38f56f2ad1e3656ceda3d6d05658c3",
+      "role": "floor-caption-heading",
+      "text": "TYPICAL FLOOR - 01",
+      "boxes": [
+        [
+          661.572,
+          781.6700000000001,
+          796.6999999999999,
+          792.3380000000001
+        ]
+      ]
+    },
+    {
+      "selection": "t3-2-floor01",
+      "ordinal": 4,
+      "itemSha256": "a1d012449851a540d9cab8460a8fde547be1026134e94ea8daf8babc4427efdf",
+      "role": "literal-floor-scope",
+      "text": "(3rd to 12th , 14th to 16th , 18th to 20th , 22nd to 25th , 27th & 29th,31st to 34th , 36th to 37th & 39th to 41st FLOOR)",
+      "boxes": [
+        [
+          607.343,
+          798.1165,
+          850.4845,
+          843.9
+        ]
+      ]
+    },
+    {
+      "selection": "t3-2-floor02-reused",
+      "ordinal": 0,
+      "itemSha256": "770fb5cd4abb2ceb9d0f56632738d1030c68bf61bfd37ecee9ac1bbd9519c901",
+      "role": "literal-floor-caption",
+      "text": "TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)",
+      "boxes": [
+        [
+          1856.8935000000001,
+          770.0025,
+          2062.697,
+          799.784
+        ]
+      ]
+    }
+  ]
+}
