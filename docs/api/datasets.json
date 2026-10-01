@@ -521,7 +521,13 @@
         "manifest": "docs/evidence/usp/cityjson-reference-evidence/manifest.json",
         "manifestSha256": "45f83588bbc80c0a54064415e357a797c500286a0ca443b579d7705c0168c796",
         "manifestHashScope": "crlf-to-lf",
-        "scope": "Source-declared Dutch RD/NAP axes and metre units; issuer quality-field interpretation. Not independent object accuracy, API release binding or qualified transformation."
+        "scope": "Source-declared Dutch RD/NAP axes and metre units; issuer quality-field interpretation. Not independent object accuracy, API release binding or qualified transformation.",
+        "documentEnrollment": {
+          "manifest": "docs/evidence/usp/reference-document-enrollment/manifest.json",
+          "manifestSha256": "3ed365cd798a4edec16979722cd89f7006dcda87e4fb0d162b60a553415ca3e5",
+          "manifestHashScope": "crlf-to-lf",
+          "scope": "Two separate source-only cases with accepted literal reference-document parts. No attachment to D1, reviewed applicability, accuracy or admission qualification."
+        }
       },
       "missingCapabilities": [
         "product_parser_qualification",

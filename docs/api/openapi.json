@@ -806,6 +806,23 @@
                 "url": "http://127.0.0.1:3192/api/v1"
               },
               "limitation": "Exact original/native artifact and status reads with private,no-store in the preserved final read. Earlier processing/recovery is pinned separately in the linked handoff."
+            },
+            {
+              "sourceManifests": [
+                "docs/evidence/usp/reference-document-enrollment/manifest.json"
+              ],
+              "scope": "Both original bytes/hash/size preserved; existing private,max-age=60 response. No new access-race or privacy qualification.",
+              "evidencePointers": [
+                "/enrollments"
+              ],
+              "receipt": "docs/evidence/usp/reference-document-enrollment/runtime.json",
+              "servedCodeCommit": "64dc4e7fc7f553625361f15ffd46e2cabd16b90c",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-b050544f3d2cb99e",
+                "url": "http://127.0.0.1:3192/api/v1"
+              },
+              "limitation": "Two source-only reference document enrollments, exact native literal text parts, replay and original reads; earlier geometry/registry/validation history preserved."
             }
           ]
         },
@@ -3358,8 +3375,25 @@
         "x-batch": "NEST-10",
         "x-disposition": "replaced",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "sourceManifests": [
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Two separate evidence workspaces named from retained issuer documents; no property or geometry records.",
+          "evidencePointers": [
+            "/enrollments",
+            "/preservation"
+          ],
+          "receipt": "docs/evidence/usp/reference-document-enrollment/runtime.json",
+          "servedCodeCommit": "64dc4e7fc7f553625361f15ffd46e2cabd16b90c",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Two source-only reference document enrollments, exact native literal text parts, replay and original reads; earlier geometry/registry/validation history preserved."
+        },
         "x-operation-manifest": "apps/api/src/modules/intake/operation-manifest.json",
         "x-transport-profile": "json",
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -33766,7 +33800,27 @@
             "project": "ulpin-usptest-d546a4764d77205d",
             "nonce": "d546a4764d77205d"
           },
-          "limitation": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188."
+          "limitation": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188.",
+          "additionalReceipts": [
+            {
+              "sourceManifests": [
+                "docs/evidence/usp/reference-document-enrollment/manifest.json"
+              ],
+              "scope": "Two unchanged reference originals retained in native_only mode; same-key replay creates no duplicate source/job.",
+              "evidencePointers": [
+                "/enrollments",
+                "/sameKeyReplay"
+              ],
+              "receipt": "docs/evidence/usp/reference-document-enrollment/runtime.json",
+              "servedCodeCommit": "64dc4e7fc7f553625361f15ffd46e2cabd16b90c",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-b050544f3d2cb99e",
+                "url": "http://127.0.0.1:3192/api/v1"
+              },
+              "limitation": "Two source-only reference document enrollments, exact native literal text parts, replay and original reads; earlier geometry/registry/validation history preserved."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "multipart",
@@ -34045,6 +34099,23 @@
                 "url": "http://127.0.0.1:3192/api/v1"
               },
               "limitation": "Bounded unchanged USGS scan title recovery and selected-region compatibility; whole-page OCR remains partial/unverified."
+            },
+            {
+              "sourceManifests": [
+                "docs/evidence/usp/reference-document-enrollment/manifest.json"
+              ],
+              "scope": "Accepted literal UTF-8 extraction and bounded no-store pages for XML/HTML, with exact selected lines and disclosed redactions. No semantic markup parser.",
+              "evidencePointers": [
+                "/enrollments"
+              ],
+              "receipt": "docs/evidence/usp/reference-document-enrollment/runtime.json",
+              "servedCodeCommit": "64dc4e7fc7f553625361f15ffd46e2cabd16b90c",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-b050544f3d2cb99e",
+                "url": "http://127.0.0.1:3192/api/v1"
+              },
+              "limitation": "Two source-only reference document enrollments, exact native literal text parts, replay and original reads; earlier geometry/registry/validation history preserved."
             }
           ]
         },
