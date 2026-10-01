@@ -1,5 +1,7 @@
 # MODEL-EGRESS-02-R — mandatory Qwen containment review
 
+**Lead correction closure, 1 October:** host-loader P2 below is closed by `5c536ff8f43222b1ffece08184e0d4d9e639fb6f`, integrated with the reviewed adapter as `8310531` / `9114718`. Lead inspected both direct-source loaders and the cache-positive/source-drift regression. Correction verification/commit receipts match SHA `a0e853b4f166649bf619e07e31facde461e842fa1271802631b04b8276b08bce` / `4cfffee0a7a23af497107c9d19af9df49034c8386ab351cb852d62d4d3551634`; nine artifact/history and four physical/Git source pins match. All six integrated stdlib controls pass (exit 0, 0.166 seconds), including both valid-cache bypasses and refusal before compilation; the new private receipt is `E:/BhuAayam-data/task-data/desktop-model-egress-enforcement/host-loader-fae962bb41344ee2b926ade8e4aa91ef/cache-regression.json`. No further actionable defect established in the assigned correction. Accept no-model Windows adapter/source-loading scope; complete sandbox evidence is reused, not rerun. Historical profiles remain historical, and Qwen/model/private-data/network/release limits below remain unqualified.
+
 ## Disposition and pins
 
 **One P2 correction is required before accepting the reusable launcher: the host's source pin does not cover executable Python caches.** The saved no-model controls and strict Job-peak rejection reconcile successfully. No Qwen execution, private-data enablement or release qualification follows.
