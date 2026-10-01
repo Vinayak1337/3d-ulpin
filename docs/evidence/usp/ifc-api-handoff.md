@@ -1,5 +1,7 @@
 # IFC-02 - private source/job checkpoint
 
+**Lead integration, 1 October:** original workflow, retry/cache corrections and closure integrate through `205bdb1`. Lead matches closure receipt SHA `1dd86613da90bf84b7f32c8ba0b96268f5d3a68115cafc4593acbdde3733de5c`, reuses completed source/profile/native proof and passes 18 integrated authority/cache/compatibility controls (one configured-process check explicitly skipped), one no-listener five-route check and backend typechecks. A fresh profile/2 for the integrated checkout is still required before a native runtime assignment; no saved owner profile is repointed. Real HTTP/SQL/private-object persistence remains unrun while Docker is unavailable. Generic retry refuses IFC before mutation; current writers remain strict and saved read-profile exceptions remain exact.
+
 1 October 2026. Code `f20e97a6701a8866c9df9455eb438c15098c838c`, tree `ce700854d406c63defb7be9e7eaf33f9ee96ee35`, from exact base `d42b2fb8df0c2021a0f1106015ff830db0cd5acc`, branch `task/desktop-ifc-private-api`. Shared ownership amendments: lead `88693837` and `6f56c274`. Primary staging remained read only. Supplied permissions: `never` / `danger-full-access`; requested Sol6.1/xhigh/default-standard. Actual per-turn model/effort/tier were not exposed.
 
 ## Delivered
