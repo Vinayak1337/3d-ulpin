@@ -530,6 +530,26 @@
               "Actual rollback-only common-gate observation uses existing reference/workspace/site/case rows; no competing recorded-citation commit or universal deadlock-freedom claim.",
               "No new ingestion/OCR/native processing/model/provider/GPU, frontend/generated changes, public deployment, repeated completed code tests or release-gate advancement."
             ]
+          },
+          {
+            "receipt": "docs/evidence/usp/cityjson-admission-readiness-runtime.json",
+            "servedCodeCommit": "7678c07cafcf4ef1cf4ade23329107555c607ed0",
+            "operations": {
+              "POST /api/v1/registry-drafts/{draftId}/native-exterior/admission-assessment": "Private bounded revision-5 assessment with five exact authorized selections, null validation and explicit missing qualification; no validator configuration forwarded by guarded launch, actual OS environment unobserved."
+            },
+            "environment": {
+              "kind": "stopped-isolated",
+              "project": "ulpin-usptest-b050544f3d2cb99e",
+              "url": "http://127.0.0.1:3192/api/v1"
+            },
+            "qualification": "Current native draft admission checklist without selected validation, stable repeat and stale revision/historical-job denials; retained authorities and objects unchanged.",
+            "unqualified": [
+              "Qualified only four read-only admission HTTP calls on this pinned retained foreign draft; not reference applicability/accuracy, admission/recording/post-write qualification, learning, performance, frontend, deployment or release.",
+              "Historical supplied job fails draft-revision authority before validator configuration; no current validation or saved-pin rewrite and no validator campaign was needed.",
+              "Native original bytes are separately preserved/verified by receipt helper; the API correctly retains originalBytes:not_reverified.",
+              "Actual OS process environment is not read; configuration-absence qualification is based on verified guarded launch provenance and successful HTTP omission. No per-turn tier observation.",
+              "Accepted immutable container code reused by exact observed container IDs/images/no mounts; no fresh Python source copying/execution or lock campaign."
+            ]
           }
         ]
       },

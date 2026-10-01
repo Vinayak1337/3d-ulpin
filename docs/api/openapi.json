@@ -9879,7 +9879,30 @@
             "project": "ulpin-usptest-b050544f3d2cb99e",
             "url": "http://127.0.0.1:3192/api/v1"
           },
-          "limitation": "Private read-only admission assessment on retained passed/failed structural results, stable replay, safe denials and unchanged sources/registry/validation history."
+          "limitation": "Private read-only admission assessment on retained passed/failed structural results, stable replay, safe denials and unchanged sources/registry/validation history.",
+          "additionalReceipts": [
+            {
+              "sourceManifests": [
+                "fixtures/usp/D1/single-roof/manifest.json",
+                "docs/evidence/usp/reference-document-enrollment/manifest.json"
+              ],
+              "scope": "Private bounded revision-5 assessment with five exact authorized selections, null validation and explicit missing qualification; no validator configuration forwarded by guarded launch, actual OS environment unobserved.",
+              "evidencePointers": [
+                "/journey",
+                "/environment",
+                "/preservation",
+                "/cleanup"
+              ],
+              "receipt": "docs/evidence/usp/cityjson-admission-readiness-runtime.json",
+              "servedCodeCommit": "7678c07cafcf4ef1cf4ade23329107555c607ed0",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-b050544f3d2cb99e",
+                "url": "http://127.0.0.1:3192/api/v1"
+              },
+              "limitation": "Current native draft admission checklist without selected validation, stable repeat and stale revision/historical-job denials; retained authorities and objects unchanged."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": 16384,

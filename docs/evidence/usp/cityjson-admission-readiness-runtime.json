@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "cityjson-admission-readiness-runtime/1",
+  "servedCodeCommit": "7678c07cafcf4ef1cf4ade23329107555c607ed0",
+  "acceptedLeadCommit": "32b4b62c11d2dc2a79716d3675141b87eaeee83c",
+  "originalReceipt": {
+    "path": "E:/BhuAayam-data/task-data/desktop-cityjson-admission-readiness-runtime/verification.json",
+    "bytes": 61221,
+    "sha256": "032eb72413436dcc2bd5d719abebc78efeb082d9f097d6143da4938371584232"
+  },
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "outcome": "passed_at_bounded_read_only_scope",
+  "sourceManifests": [
+    "fixtures/usp/D1/single-roof/manifest.json",
+    "docs/evidence/usp/reference-document-enrollment/manifest.json"
+  ],
+  "journey": {
+    "draftId": "bacc6fee-3156-438b-9720-8e7a531f9a47",
+    "draftRevision": 5,
+    "selectedReferenceParts": 5,
+    "selectionState": "operator_selected",
+    "validation": null,
+    "structuralValidity": "not_assessed",
+    "originalBytesFinding": "not_reverified",
+    "reviewedReference": "not_assessed",
+    "accuracyMetres": null,
+    "admission": "unavailable",
+    "missing": [
+      "accepted_structural_validation",
+      "reviewed_reference_evidence",
+      "reference_accuracy_check",
+      "native_admission_review",
+      "post_write_qualification"
+    ],
+    "assessmentSha256": "6012d4937e4844f59b93e7ff1a9f7bf43ce10b1dc123e9f01d79797d90d5b41d",
+    "referencesSha256": "aeb200467a568960b9b86ba63f48bb4a4907c93652f2fe1e72454cf8fa91f29a",
+    "responseBytes": 6334,
+    "responseSha256": "e39067feb0c70220c64c3d545a09fcca885db1115556ca399c55dc0c5e92d920",
+    "repeatResponseByteIdentical": true,
+    "guardedNoValidatorConfigurationRuntimePassed": true,
+    "observations": [
+      {
+        "name": "omitted",
+        "method": "POST",
+        "path": "/registry-drafts/bacc6fee-3156-438b-9720-8e7a531f9a47/native-exterior/admission-assessment",
+        "request": {
+          "expectedDraftRevision": 5
+        },
+        "status": 200,
+        "cacheControl": "private, no-store",
+        "bytes": 6334,
+        "responseSha256": "e39067feb0c70220c64c3d545a09fcca885db1115556ca399c55dc0c5e92d920",
+        "elapsedMs": 438,
+        "errorCode": null,
+        "errorMessage": null
+      },
+      {
+        "name": "repeat",
+        "method": "POST",
+        "path": "/registry-drafts/bacc6fee-3156-438b-9720-8e7a531f9a47/native-exterior/admission-assessment",
+        "request": {
+          "expectedDraftRevision": 5
+        },
+        "status": 200,
+        "cacheControl": "private, no-store",
+        "bytes": 6334,
+        "responseSha256": "e39067feb0c70220c64c3d545a09fcca885db1115556ca399c55dc0c5e92d920",
+        "elapsedMs": 534,
+        "errorCode": null,
+        "errorMessage": null
+      },
+      {
+        "name": "stale",
+        "method": "POST",
+        "path": "/registry-drafts/bacc6fee-3156-438b-9720-8e7a531f9a47/native-exterior/admission-assessment",
+        "request": {
+          "expectedDraftRevision": 4
+        },
+        "status": 409,
+        "cacheControl": "private, no-store",
+        "bytes": 137,
+        "responseSha256": "5a570d005a54011d28eb01611c802d2037995b14c9aec3e971922ab2a67ba0df",
+        "elapsedMs": 55,
+        "errorCode": "STALE_REVISION",
+        "errorMessage": "Pin the current native draft revision."
+      },
+      {
+        "name": "historical",
+        "method": "POST",
+        "path": "/registry-drafts/bacc6fee-3156-438b-9720-8e7a531f9a47/native-exterior/admission-assessment",
+        "request": {
+          "expectedDraftRevision": 5,
+          "validationJobId": "8dfb4724-b4e8-4c11-a910-492303ae6df6"
+        },
+        "status": 409,
+        "cacheControl": "private, no-store",
+        "bytes": 163,
+        "responseSha256": "21bc4be64c200488e089b1d1f26146b5af3e557933f1eb48778281697b73068e",
+        "elapsedMs": 98,
+        "errorCode": "STALE_REVISION",
+        "errorMessage": "The enrolled native draft, candidate, site or footprint changed."
+      }
+    ],
+    "historicalValidationJob": "8dfb4724-b4e8-4c11-a910-492303ae6df6",
+    "historicalDraftRevision": 1,
+    "savedValidatorProducerSha256": "262ec0e47a56e3130b2a7a552ef2132cecd4e3bb70f19e74abae685104bc858d",
+    "savedPinsUnchanged": true,
+    "validatorsInvoked": false
+  },
+  "environment": {
+    "guard": "scripts/usp/desktop-prefix-runtime.mjs",
+    "retainedRunEnvironmentHash": "4b34569b40d80f70e91ae7d3cb1c62c1e68c746c8afba96d7c25aea7e691d6c4",
+    "validatorKeysForwarded": [],
+    "ocrKeysForwarded": [],
+    "modelGatewayEnabled": false,
+    "processOnlyAbsence": true,
+    "actualOSProcessEnvironment": "unobserved",
+    "basis": "Verified retained run.env.json contains no validator fields, worker root .env absent; helper removes validator keys before spawning the unchanged guarded runner, whose safeEnv only forwards present values. Omission HTTP succeeds without them.",
+    "configurationFilesUnchanged": true,
+    "guardRequiredFullRuntime": true
+  },
+  "preservation": {
+    "globalCounts": {
+      "cases": 39,
+      "sources": 36,
+      "jobs": 73,
+      "metadata": 73,
+      "attempts": 73,
+      "events": 0,
+      "operations": 133
+    },
+    "bucketEntries": 1364,
+    "draftId": "bacc6fee-3156-438b-9720-8e7a531f9a47",
+    "draftRevision": 5,
+    "retainedParts": 5,
+    "exactAllAuthoritySnapshotsUnchanged": true,
+    "noNewReviewRecordedRevisionJobAttemptOperationOrObject": true,
+    "exactBeforeAfterFinalAndAcceptedReferenceSnapshotEquality": true,
+    "objectsUnchanged": 13
+  },
+  "cleanup": {
+    "applicationAndProcessingStopped": true,
+    "storageRetained": true,
+    "portsFree": [
+      3192,
+      28000
+    ],
+    "scratchEmpty": true
+  },
+  "limits": [
+    "Qualified only four read-only admission HTTP calls on this pinned retained foreign draft; not reference applicability/accuracy, admission/recording/post-write qualification, learning, performance, frontend, deployment or release.",
+    "Historical supplied job fails draft-revision authority before validator configuration; no current validation or saved-pin rewrite and no validator campaign was needed.",
+    "Native original bytes are separately preserved/verified by receipt helper; the API correctly retains originalBytes:not_reverified.",
+    "Actual OS process environment is not read; configuration-absence qualification is based on verified guarded launch provenance and successful HTTP omission. No per-turn tier observation.",
+    "Accepted immutable container code reused by exact observed container IDs/images/no mounts; no fresh Python source copying/execution or lock campaign."
+  ]
+}
