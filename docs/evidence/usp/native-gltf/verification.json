@@ -1,0 +1,282 @@
+{
+  "schemaVersion": "gltf-local-verification/1",
+  "recordedAt": "2026-10-01T15:50:28.137997+00:00",
+  "codeCommit": "f0a7f0d8439690d3e93f0153317e1741eb45d158",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native",
+  "checks": [
+    {
+      "name": "compile_owned_sources",
+      "exitCode": 0,
+      "command": "compile(file_bytes, path, exec) for the three owned Python files"
+    },
+    {
+      "name": "focused_tests",
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\env\\Scripts\\python.exe",
+        "-I",
+        "C:\\Users\\kvina\\.codex\\worktrees\\desktop-gltf\\3d-ulpin\\services\\geo\\tests\\test_native_gltf.py",
+        "-v"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-gltf\\3d-ulpin",
+      "startedAt": "2026-10-01T15:47:19.491211+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "test_bounds_nonfinite_index_and_unsupported (__main__.NativeGltfTest.test_bounds_nonfinite_index_and_unsupported) ... ok\ntest_embedded_and_external_no_resolution (__main__.NativeGltfTest.test_embedded_and_external_no_resolution) ... ok\ntest_original_lock_and_fresh_hash_guards (__main__.NativeGltfTest.test_original_lock_and_fresh_hash_guards) ... Original differs from expected SHA-256; worker was not started.\nOutput requires a fresh directory and an existing parent.\nok\ntest_original_projection_and_exact_spans (__main__.NativeGltfTest.test_original_projection_and_exact_spans) ... ok\ntest_output_bound (__main__.NativeGltfTest.test_output_bound) ... ok\ntest_scene_and_json_structure_controls (__main__.NativeGltfTest.test_scene_and_json_structure_controls) ... ok\ntest_supervision_timeout_memory_process_and_gate (__main__.NativeGltfTest.test_supervision_timeout_memory_process_and_gate) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.269s\n\nOK\n"
+    },
+    {
+      "name": "Box.glb",
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\env\\Scripts\\python.exe",
+        "-I",
+        "C:\\Users\\kvina\\.codex\\worktrees\\desktop-gltf\\3d-ulpin\\scripts\\usp\\desktop-gltf-read.py",
+        "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.glb",
+        "--expected-sha256",
+        "ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e",
+        "--output-dir",
+        "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\final-glb"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-gltf\\3d-ulpin",
+      "startedAt": "2026-10-01T15:47:19.955266+00:00",
+      "exitCode": 0,
+      "stdout": "{\"status\": \"inspected_local\", \"sourceSha256\": \"ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e\", \"outputDirectory\": \"E:\\\\BhuAayam-data\\\\task-data\\\\desktop-gltf-native\\\\final-glb\", \"counts\": {\"nodes\": 2, \"primitives\": 1, \"projectedPositions\": 24, \"projectedIndices\": 36}}\n",
+      "stderr": ""
+    },
+    {
+      "name": "Box.gltf",
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\env\\Scripts\\python.exe",
+        "-I",
+        "C:\\Users\\kvina\\.codex\\worktrees\\desktop-gltf\\3d-ulpin\\scripts\\usp\\desktop-gltf-read.py",
+        "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.gltf",
+        "--expected-sha256",
+        "4a0d69eecfce0672a50b71dc218cbacec6c53fe2445040c235c6314b1b2c41b9",
+        "--output-dir",
+        "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\final-external-gltf"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-gltf\\3d-ulpin",
+      "startedAt": "2026-10-01T15:47:20.081945+00:00",
+      "exitCode": 0,
+      "stdout": "{\"status\": \"inspected_partial\", \"sourceSha256\": \"4a0d69eecfce0672a50b71dc218cbacec6c53fe2445040c235c6314b1b2c41b9\", \"outputDirectory\": \"E:\\\\BhuAayam-data\\\\task-data\\\\desktop-gltf-native\\\\final-external-gltf\", \"counts\": {\"nodes\": 2, \"primitives\": 1, \"projectedPositions\": 0, \"projectedIndices\": 0}}\n",
+      "stderr": ""
+    }
+  ],
+  "executedFinalOutputs": [
+    {
+      "directory": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\final-glb",
+      "receipt": {
+        "schemaVersion": "gltf-local-receipt/1",
+        "sourcePath": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.glb",
+        "sourceSha256": "ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e",
+        "sourceBytes": 1664,
+        "status": "inspected_local",
+        "counts": {
+          "nodes": 2,
+          "primitives": 1,
+          "projectedPositions": 24,
+          "projectedIndices": 36
+        },
+        "artifact": {
+          "name": "gltf.json",
+          "bytes": 5775,
+          "sha256": "3640eeb9cdeb91cef30caa9af3e94f89fddaf6000e2c685ebac250d8d0329ebe"
+        },
+        "codeSha256": {
+          "reader": "ead757af867520e12e388a18250fb870bf188b618c5beb80ccea49e416aa4217",
+          "cli": "48ad36d110d978a31a467417de96ddef6cd18efa5117585cb179018990402af8",
+          "packageInit": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a"
+        },
+        "pythonVersion": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+        "pythonSha256": "200d001707ed494066ef00e31e38330e32490c2a74a450ca5d66d2179396fd0e",
+        "workerPythonPath": "C:\\Python313\\python.exe",
+        "workerPythonSha256": "d932e5e2f324d57f392e8fd063dcf6d0185be8a664c57c6d24e7762ed02c28ca",
+        "supervision": {
+          "flags": 8968,
+          "activeProcessLimit": 1,
+          "processMemoryLimitBytes": 2147483648,
+          "jobMemoryLimitBytes": 2147483648,
+          "peakJobPrivateBytes": 25653248,
+          "deadlineSeconds": 45,
+          "observedSeconds": 0.055554,
+          "computePoolThreads": 1,
+          "osThreadCeiling": null,
+          "importAfterJobAttachment": true,
+          "workerPid": 3944,
+          "stdoutBytes": 313,
+          "stderrBytes": 0
+        },
+        "sourceWriteDeniedThroughPublication": true,
+        "qualification": "test_only local inspection; no API, accuracy, scale or release gate"
+      },
+      "geometryProjectionStatus": "available",
+      "selectedScene": {
+        "index": 0,
+        "origin": "source",
+        "pointer": "/scenes/0",
+        "roots": [
+          0
+        ]
+      },
+      "bufferDependencies": [
+        {
+          "pointer": "/buffers/0",
+          "kind": "glb_bin",
+          "status": "available",
+          "originalByteOffset": 1016,
+          "byteLength": 648,
+          "sha256": "3266a8e39b9f425b3341cbe5eec7849f44310256bfa651e6b8b40c85ce0ccafb",
+          "fetched": false
+        }
+      ],
+      "primitiveStatuses": [
+        {
+          "pointer": "/meshes/0/primitives/0",
+          "status": "available_local_projection"
+        }
+      ]
+    },
+    {
+      "directory": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\final-external-gltf",
+      "receipt": {
+        "schemaVersion": "gltf-local-receipt/1",
+        "sourcePath": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.gltf",
+        "sourceSha256": "4a0d69eecfce0672a50b71dc218cbacec6c53fe2445040c235c6314b1b2c41b9",
+        "sourceBytes": 2898,
+        "status": "inspected_partial",
+        "counts": {
+          "nodes": 2,
+          "primitives": 1,
+          "projectedPositions": 0,
+          "projectedIndices": 0
+        },
+        "artifact": {
+          "name": "gltf.json",
+          "bytes": 4532,
+          "sha256": "992c6ad19fb4c4e7efc23a5cd24babde2cde3acb7889a71ff30fcd2af553a8bb"
+        },
+        "codeSha256": {
+          "reader": "ead757af867520e12e388a18250fb870bf188b618c5beb80ccea49e416aa4217",
+          "cli": "48ad36d110d978a31a467417de96ddef6cd18efa5117585cb179018990402af8",
+          "packageInit": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a"
+        },
+        "pythonVersion": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+        "pythonSha256": "200d001707ed494066ef00e31e38330e32490c2a74a450ca5d66d2179396fd0e",
+        "workerPythonPath": "C:\\Python313\\python.exe",
+        "workerPythonSha256": "d932e5e2f324d57f392e8fd063dcf6d0185be8a664c57c6d24e7762ed02c28ca",
+        "supervision": {
+          "flags": 8968,
+          "activeProcessLimit": 1,
+          "processMemoryLimitBytes": 2147483648,
+          "jobMemoryLimitBytes": 2147483648,
+          "peakJobPrivateBytes": 25522176,
+          "deadlineSeconds": 45,
+          "observedSeconds": 0.055321,
+          "computePoolThreads": 1,
+          "osThreadCeiling": null,
+          "importAfterJobAttachment": true,
+          "workerPid": 35324,
+          "stdoutBytes": 313,
+          "stderrBytes": 0
+        },
+        "sourceWriteDeniedThroughPublication": true,
+        "qualification": "test_only local inspection; no API, accuracy, scale or release gate"
+      },
+      "geometryProjectionStatus": "unavailable",
+      "selectedScene": {
+        "index": 0,
+        "origin": "source",
+        "pointer": "/scenes/0",
+        "roots": [
+          0
+        ]
+      },
+      "bufferDependencies": [
+        {
+          "pointer": "/buffers/0",
+          "kind": "external_uri",
+          "status": "needs_input",
+          "uri": "Box0.bin",
+          "reason": "EXTERNAL_BUFFER_NOT_RESOLVED",
+          "byteLength": 648,
+          "sha256": null,
+          "fetched": false
+        }
+      ],
+      "primitiveStatuses": [
+        {
+          "pointer": "/meshes/0/primitives/0",
+          "status": "needs_input"
+        }
+      ]
+    }
+  ],
+  "originalsAfter": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.glb",
+      "bytes": 1664,
+      "sha256": "ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e",
+      "matchesAcquisition": true
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.gltf",
+      "bytes": 2898,
+      "sha256": "4a0d69eecfce0672a50b71dc218cbacec6c53fe2445040c235c6314b1b2c41b9",
+      "matchesAcquisition": true
+    }
+  ],
+  "evidenceArtifacts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\checks.json",
+      "bytes": 4026,
+      "sha256": "4489cc73fdf819db4d1809ea9f7e8b4ae785270b3e83b1efb5f53e522a57200f"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\acquisition.json",
+      "bytes": 3845,
+      "sha256": "d5e723376ed173932ca515b4b76dbea0b33da201cf88f2d856eb66adc51e165f"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\runtime-lock.json",
+      "bytes": 5935,
+      "sha256": "7bba0d73c62a3dc9ea42386736eee0a6db59a0ce7bf69c1ef1c7b5927dcce22e"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\final-glb\\gltf.json",
+      "bytes": 5775,
+      "sha256": "3640eeb9cdeb91cef30caa9af3e94f89fddaf6000e2c685ebac250d8d0329ebe"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\final-glb\\receipt.json",
+      "bytes": 1687,
+      "sha256": "865dc2e68c37bf32ca31fba3083144eb446ffbb25707aaf35a378b80de9ff149"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\final-external-gltf\\gltf.json",
+      "bytes": 4532,
+      "sha256": "992c6ad19fb4c4e7efc23a5cd24babde2cde3acb7889a71ff30fcd2af553a8bb"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\final-external-gltf\\receipt.json",
+      "bytes": 1689,
+      "sha256": "677769bfdda1489e8cd6f8752277f859f4e1c699a82284bdf49355798989f223"
+    }
+  ],
+  "temporaryDirectoriesRemaining": [],
+  "correctionsDuringDevelopment": [
+    "First venv child launch failed with Windows quota 101 because its redirector needed another process; switched to the base interpreter, preserving the one-process Job. No result was published.",
+    "Initial aggregate-buffer regression observed the earlier GLB size error; moved aggregate length preflight before all decoding. Seven final test groups pass."
+  ],
+  "qualification": {
+    "localCodeControls": "passed",
+    "unchangedFileCliJourneys": "passed for the two retained variants",
+    "apiRuntime": "unrun; not registered",
+    "operationalAccuracy": "unqualified",
+    "learning": "unqualified",
+    "rendering": "unrun",
+    "scale": "unrun",
+    "releaseGate": "unqualified",
+    "linux": "unsupported; CLI refuses non-Windows",
+    "osThreadCeiling": null,
+    "servicesStarted": false,
+    "liveProvidersUsed": false
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "gltf-local-runtime-lock/1",
+  "codeCommit": "f0a7f0d8439690d3e93f0153317e1741eb45d158",
+  "assignedBase": "f687cd29d17925f5893d7d1cddcfe31d30300177",
+  "observedStagingBeforeImplementation": "410fdf28b2d5471878205f49d716a99ef684640a",
+  "runtime": "CPython standard library only; isolated -I -S base interpreter child; no third-party runtime dependencies",
+  "pythonVersion": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+  "parentInterpreter": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\env\\Scripts\\python.exe",
+    "bytes": 255320,
+    "sha256": "200d001707ed494066ef00e31e38330e32490c2a74a450ca5d66d2179396fd0e"
+  },
+  "workerInterpreter": {
+    "path": "C:\\Python313\\python.exe",
+    "bytes": 105816,
+    "sha256": "d932e5e2f324d57f392e8fd063dcf6d0185be8a664c57c6d24e7762ed02c28ca"
+  },
+  "pythonDll": {
+    "path": "C:\\Python313\\python313.dll",
+    "bytes": 6123864,
+    "sha256": "41ec4fc4e5bc8b207258590238f7f050b13fdfee84c4a7b1ecff6e945d031a10"
+  },
+  "stdlib": [
+    {
+      "module": "json",
+      "path": "C:\\Python313\\Lib\\json\\__init__.py",
+      "bytes": 14379,
+      "sha256": "feb17670e443e5db2723f217727dcc5d5e155c40e4e6935b16061c88542f24e7"
+    },
+    {
+      "module": "json.decoder",
+      "path": "C:\\Python313\\Lib\\json\\decoder.py",
+      "bytes": 13236,
+      "sha256": "9c1530bb0b07f7435161f1005c14fc458b973f35f6e1802e4c175494c06891b0"
+    },
+    {
+      "module": "json.encoder",
+      "path": "C:\\Python313\\Lib\\json\\encoder.py",
+      "bytes": 16592,
+      "sha256": "955cb7cc721e3881f084c2e334eb66d6a1f0fc08457b3e06cccbea218b3819fe"
+    },
+    {
+      "module": "base64",
+      "path": "C:\\Python313\\Lib\\base64.py",
+      "bytes": 22241,
+      "sha256": "82a7c36fd4b58f4222e7ddd0f2fb9da39527e72da75ab04270e4734974b717b6"
+    },
+    {
+      "module": "struct",
+      "path": "C:\\Python313\\Lib\\struct.py",
+      "bytes": 272,
+      "sha256": "eadbcc540c3b6496e52449e712eca3694e31e1d935af0f1e26cff0e3cc370945"
+    },
+    {
+      "module": "ctypes",
+      "path": "C:\\Python313\\Lib\\ctypes\\__init__.py",
+      "bytes": 19374,
+      "sha256": "2e63f01ac6b8ffc1acfa4eec4c253eef8fbd65e09506d690cb3be71a2d78303a"
+    },
+    {
+      "module": "subprocess",
+      "path": "C:\\Python313\\Lib\\subprocess.py",
+      "bytes": 91718,
+      "sha256": "970207fdd712c92f7dc14d1623d2574f7e0910ceb0b5c37652a7a0850f35a396"
+    },
+    {
+      "module": "tempfile",
+      "path": "C:\\Python313\\Lib\\tempfile.py",
+      "bytes": 33363,
+      "sha256": "9bd059599988556e2737d974bad655943b2c11285a4342643475e214654b57c5"
+    },
+    {
+      "module": "threading",
+      "path": "C:\\Python313\\Lib\\threading.py",
+      "bytes": 56901,
+      "sha256": "7f1e2d5046791b112c5c2f37a06036ae92d6892a7a54541187a0393261510778"
+    },
+    {
+      "module": "pathlib",
+      "path": "C:\\Python313\\Lib\\pathlib\\__init__.py",
+      "bytes": 308,
+      "sha256": "62b3b842bda77ca6245f8c8657b8c72540e383fb9aa70e4c3a705947cc8611fd"
+    }
+  ],
+  "code": [
+    {
+      "path": "services/geo/geo/native_gltf.py",
+      "physicalBytes": 33199,
+      "physicalSha256": "ead757af867520e12e388a18250fb870bf188b618c5beb80ccea49e416aa4217",
+      "gitBytes": 33199,
+      "gitSha256": "ead757af867520e12e388a18250fb870bf188b618c5beb80ccea49e416aa4217",
+      "physicalEqualsGit": true
+    },
+    {
+      "path": "scripts/usp/desktop-gltf-read.py",
+      "physicalBytes": 15836,
+      "physicalSha256": "48ad36d110d978a31a467417de96ddef6cd18efa5117585cb179018990402af8",
+      "gitBytes": 15836,
+      "gitSha256": "48ad36d110d978a31a467417de96ddef6cd18efa5117585cb179018990402af8",
+      "physicalEqualsGit": true
+    },
+    {
+      "path": "services/geo/tests/test_native_gltf.py",
+      "physicalBytes": 11690,
+      "physicalSha256": "894b8999c0175e1b9658f65af57dca03f402d076e90869b9a125493f805cdd9c",
+      "gitBytes": 11690,
+      "gitSha256": "894b8999c0175e1b9658f65af57dca03f402d076e90869b9a125493f805cdd9c",
+      "physicalEqualsGit": true
+    },
+    {
+      "path": "services/geo/geo/__init__.py",
+      "physicalBytes": 75,
+      "physicalSha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+      "gitBytes": 74,
+      "gitSha256": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+      "physicalEqualsGit": false
+    }
+  ],
+  "parserChoice": {
+    "evaluated": "pygltflib 1.16.5",
+    "evaluatedWheel": {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\upstream\\pygltflib-1.16.5-py3-none-any.whl",
+      "bytes": 27557,
+      "sha256": "41d3349c59dcf1586faeaee29c967be07ac2bf7cecdb8ae2b527da1f25afdaac"
+    },
+    "wheelUrl": "https://files.pythonhosted.org/packages/91/d6/7eb8a0e4eb30add2b76c957a41107a5f2ba26472d656e2733728bec0476b/pygltflib-1.16.5-py3-none-any.whl",
+    "installed": false,
+    "reason": "Accessor.byteOffset=0, normalized=False and empty lists are inserted by dataclass defaults. Raw JSON declarations and a small strict GLB/accessor profile preserve absence and provide exact source offsets without a resolver or normalizer."
+  },
+  "supervisorOrigin": {
+    "path": "scripts/usp/document-models/run_trial.py",
+    "physicalSha256": "7b222f53865f49289fd67c81c0a2514bf5493c4469c9f45eabcfff0efa684c2f",
+    "gitSha256": "458ebe7507dcde7e1c22cb3d05ab0bdcc1c3261896bcc656d17f05f5bc2953c8",
+    "reuse": "Windows Job structure and pre-import gate pattern adapted locally; not imported or edited"
+  },
+  "settings": {
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoningEffort": "xhigh",
+    "observedModel": null,
+    "observedReasoningEffort": null,
+    "requestedSpeed": "default/standard",
+    "observedPerTurnServiceTier": null,
+    "permissionPolicy": "never",
+    "sandboxMode": "danger-full-access",
+    "permissionEvidence": "Supplied actual turn permission instructions; model/reasoning/tier metadata is not separately exposed."
+  }
+}
