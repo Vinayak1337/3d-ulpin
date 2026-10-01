@@ -1992,7 +1992,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Assemble private explicitly selected accepted document/CityJSON fragments without establishing an association */
+        /** Assemble private explicitly selected accepted native document/OCR/CityJSON fragments without establishing an association */
         post: operations["POST_api_v1_usp_evidence_source_fusion_context"];
         delete?: never;
         options?: never;
@@ -27884,6 +27884,26 @@ export interface components {
                     resultBytes: number;
                 };
                 objectIds: string[];
+            } | {
+                /** @enum {string} */
+                kind: "document_ocr";
+                pin: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    readerSha256: string;
+                    inputSha256: string;
+                    acceptedFence: number;
+                    resultBytes: number;
+                };
+                itemOrdinals: number[];
             })[];
         };
         POST_usp_evidence_source_fusion_context_Response_200_application_json: {
@@ -28086,6 +28106,111 @@ export interface components {
                     hierarchyIssues: (string | number | boolean | (null) | unknown[] | {
                         [key: string]: unknown;
                     })[];
+                } | {
+                    pin: {
+                        caseId: unknown;
+                        caseRevision: number;
+                        sourceId: unknown;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        jobId: unknown;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    kind: "document_ocr";
+                    /** @enum {string} */
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                    /** @enum {string} */
+                    nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
+                    nativeCode: string | null;
+                    nativeWarnings: string[];
+                    ocrInput: {
+                        selection: {
+                            page: number;
+                            region?: (number)[];
+                        } | null;
+                        configSha256: string | null;
+                    };
+                    ocr: {
+                        sourceSha256: string;
+                        sourceRevision: number;
+                        sourcePage: number;
+                        requestedRegion: (number)[] | null;
+                        sourcePageFrame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            /** @enum {number} */
+                            rotation: 0;
+                            width: number;
+                            height: number;
+                        } | null;
+                        /** @enum {string} */
+                        method: "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned" | "ocr:tesseract-cli-5.5.1:sparse-tsv-v1";
+                        /** @enum {string} */
+                        toolStatus: "complete" | "partial" | "failed" | "unavailable";
+                        /** @enum {string} */
+                        outputStatus: "complete" | "partial" | "failed";
+                        /** @enum {string} */
+                        textCompleteness: "unverified";
+                        issues: string[];
+                        execution?: {
+                            maxSeconds: number;
+                            exitCode: number | null;
+                            receiptSha256: string | null;
+                            candidateSha256: string | null;
+                            worker: {
+                                exitCode: number;
+                                stopReason: string | null;
+                                elapsedSeconds: number;
+                                peakObservedRssBytes: number;
+                                peakJobPrivateBytes: number | null;
+                                /** @enum {boolean} */
+                                gatedStart: true;
+                                logSha256: string;
+                            } | null;
+                        };
+                    } | null;
+                    /** @enum {string} */
+                    capability: "selected_ocr_observations" | "selection_required" | "ocr_unavailable";
+                    /** @enum {string} */
+                    gap: "none" | "selection_required" | "ocr_missing" | "ocr_failed" | "ocr_unavailable" | "ocr_empty";
+                    coverage: {
+                        selectedItems: number;
+                        availableItems: number;
+                        storedItems: number;
+                        /** @enum {string} */
+                        scope: "explicit_selection_only";
+                        /** @enum {string} */
+                        nativeExtraction: "separate";
+                    };
+                    /** @enum {string} */
+                    itemHashBasis: "accepted_result_pin_item_ordinal_and_literal_observation";
+                    observations: {
+                        key: string;
+                        ordinal: number;
+                        itemSha256: string;
+                        item: {
+                            text: string;
+                            label: string;
+                            /** @enum {string} */
+                            method: "ocr:docling-tesseract-cli-full-page" | "ocr:tesseract-cli-sparse-tsv";
+                            sourcePageBoxes: {
+                                pageNumber: number;
+                                /** @enum {string} */
+                                frame: "pdf_display_page_top_left_points";
+                                box: (number)[];
+                                /** @enum {string} */
+                                derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
+                            }[];
+                        };
+                    }[];
                 })[];
                 association: {
                     /** @enum {string} */

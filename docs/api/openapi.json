@@ -23421,7 +23421,7 @@
             }
           }
         },
-        "summary": "Assemble private explicitly selected accepted document/CityJSON fragments without establishing an association",
+        "summary": "Assemble private explicitly selected accepted native document/OCR/CityJSON fragments without establishing an association",
         "tags": [
           "USP combined source context"
         ],
@@ -168868,6 +168868,105 @@
                     "objectIds"
                   ],
                   "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "document_ocr"
+                      ]
+                    },
+                    "pin": {
+                      "type": "object",
+                      "properties": {
+                        "caseId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "caseRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "sourceRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "jobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "resultSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 4194304
+                        }
+                      },
+                      "required": [
+                        "caseId",
+                        "caseRevision",
+                        "sourceId",
+                        "sourceRevision",
+                        "sourceSha256",
+                        "jobId",
+                        "resultSha256",
+                        "readerSha256",
+                        "inputSha256",
+                        "acceptedFence",
+                        "resultBytes"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "itemOrdinals": {
+                      "maxItems": 25,
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 63
+                      }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "pin",
+                    "itemOrdinals"
+                  ],
+                  "additionalProperties": false
                 }
               ]
             }
@@ -169917,6 +170016,586 @@
                         "objects",
                         "coverage",
                         "hierarchyIssues"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "pin": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {},
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {},
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {},
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "readerSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "inputSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "acceptedFence": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "resultBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 4194304
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256",
+                            "readerSha256",
+                            "inputSha256",
+                            "acceptedFence",
+                            "resultBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "namespace": {
+                          "type": "string"
+                        },
+                        "sourceSetRole": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected_fragment"
+                          ]
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "document_ocr"
+                          ]
+                        },
+                        "format": {
+                          "type": "string",
+                          "enum": [
+                            "pdf",
+                            "text",
+                            "csv",
+                            "docx",
+                            "xlsx",
+                            "png",
+                            "jpeg",
+                            "archive",
+                            "unsupported"
+                          ]
+                        },
+                        "nativeStatus": {
+                          "type": "string",
+                          "enum": [
+                            "extracted",
+                            "needs_ocr",
+                            "unsupported",
+                            "encrypted",
+                            "tool_error"
+                          ]
+                        },
+                        "nativeCode": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "nativeWarnings": {
+                          "maxItems": 100,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "maxLength": 512
+                          }
+                        },
+                        "ocrInput": {
+                          "type": "object",
+                          "properties": {
+                            "selection": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "page": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 8
+                                },
+                                "region": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                }
+                              },
+                              "required": [
+                                "page"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "configSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "selection",
+                            "configSha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "ocr": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourcePage": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 8
+                            },
+                            "requestedRegion": {
+                              "nullable": true,
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "sourcePageFrame": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pdf_display_page_top_left_points"
+                                  ]
+                                },
+                                "rotation": {
+                                  "type": "number",
+                                  "enum": [
+                                    0
+                                  ]
+                                },
+                                "width": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 14400
+                                },
+                                "height": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 14400
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "rotation",
+                                "width",
+                                "height"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "method": {
+                              "type": "string",
+                              "enum": [
+                                "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned",
+                                "ocr:tesseract-cli-5.5.1:sparse-tsv-v1"
+                              ]
+                            },
+                            "toolStatus": {
+                              "type": "string",
+                              "enum": [
+                                "complete",
+                                "partial",
+                                "failed",
+                                "unavailable"
+                              ]
+                            },
+                            "outputStatus": {
+                              "type": "string",
+                              "enum": [
+                                "complete",
+                                "partial",
+                                "failed"
+                              ]
+                            },
+                            "textCompleteness": {
+                              "type": "string",
+                              "enum": [
+                                "unverified"
+                              ]
+                            },
+                            "issues": {
+                              "maxItems": 32,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              }
+                            },
+                            "execution": {
+                              "type": "object",
+                              "properties": {
+                                "maxSeconds": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 90
+                                },
+                                "exitCode": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "receiptSha256": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "candidateSha256": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "worker": {
+                                  "nullable": true,
+                                  "type": "object",
+                                  "properties": {
+                                    "exitCode": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "stopReason": {
+                                      "nullable": true,
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    "elapsedSeconds": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "peakObservedRssBytes": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "peakJobPrivateBytes": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "gatedStart": {
+                                      "type": "boolean",
+                                      "enum": [
+                                        true
+                                      ]
+                                    },
+                                    "logSha256": {
+                                      "type": "string",
+                                      "pattern": "^[a-f0-9]{64}$"
+                                    }
+                                  },
+                                  "required": [
+                                    "exitCode",
+                                    "stopReason",
+                                    "elapsedSeconds",
+                                    "peakObservedRssBytes",
+                                    "peakJobPrivateBytes",
+                                    "gatedStart",
+                                    "logSha256"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "maxSeconds",
+                                "exitCode",
+                                "receiptSha256",
+                                "candidateSha256",
+                                "worker"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "sourceSha256",
+                            "sourceRevision",
+                            "sourcePage",
+                            "requestedRegion",
+                            "sourcePageFrame",
+                            "method",
+                            "toolStatus",
+                            "outputStatus",
+                            "textCompleteness",
+                            "issues"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "capability": {
+                          "type": "string",
+                          "enum": [
+                            "selected_ocr_observations",
+                            "selection_required",
+                            "ocr_unavailable"
+                          ]
+                        },
+                        "gap": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "selection_required",
+                            "ocr_missing",
+                            "ocr_failed",
+                            "ocr_unavailable",
+                            "ocr_empty"
+                          ]
+                        },
+                        "coverage": {
+                          "type": "object",
+                          "properties": {
+                            "selectedItems": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 25
+                            },
+                            "availableItems": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 64
+                            },
+                            "storedItems": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 64
+                            },
+                            "scope": {
+                              "type": "string",
+                              "enum": [
+                                "explicit_selection_only"
+                              ]
+                            },
+                            "nativeExtraction": {
+                              "type": "string",
+                              "enum": [
+                                "separate"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "selectedItems",
+                            "availableItems",
+                            "storedItems",
+                            "scope",
+                            "nativeExtraction"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "itemHashBasis": {
+                          "type": "string",
+                          "enum": [
+                            "accepted_result_pin_item_ordinal_and_literal_observation"
+                          ]
+                        },
+                        "observations": {
+                          "maxItems": 25,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "ordinal": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 63
+                              },
+                              "itemSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "item": {
+                                "type": "object",
+                                "properties": {
+                                  "text": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 2048
+                                  },
+                                  "label": {
+                                    "type": "string",
+                                    "maxLength": 64
+                                  },
+                                  "method": {
+                                    "type": "string",
+                                    "enum": [
+                                      "ocr:docling-tesseract-cli-full-page",
+                                      "ocr:tesseract-cli-sparse-tsv"
+                                    ]
+                                  },
+                                  "sourcePageBoxes": {
+                                    "minItems": 1,
+                                    "maxItems": 4,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "pageNumber": {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 8
+                                        },
+                                        "frame": {
+                                          "type": "string",
+                                          "enum": [
+                                            "pdf_display_page_top_left_points"
+                                          ]
+                                        },
+                                        "box": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ]
+                                          },
+                                          "minItems": 4,
+                                          "maxItems": 4
+                                        },
+                                        "derivedFrom": {
+                                          "type": "string",
+                                          "enum": [
+                                            "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin",
+                                            "tesseract_tsv_pixels_via_mupdf_pixel_origin"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "pageNumber",
+                                        "frame",
+                                        "box",
+                                        "derivedFrom"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "text",
+                                  "label",
+                                  "method",
+                                  "sourcePageBoxes"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "ordinal",
+                              "itemSha256",
+                              "item"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "pin",
+                        "namespace",
+                        "sourceSetRole",
+                        "kind",
+                        "format",
+                        "nativeStatus",
+                        "nativeCode",
+                        "nativeWarnings",
+                        "ocrInput",
+                        "ocr",
+                        "capability",
+                        "gap",
+                        "coverage",
+                        "itemHashBasis",
+                        "observations"
                       ],
                       "additionalProperties": false
                     }
@@ -195593,13 +196272,13 @@
                     "type": "number",
                     "minimum": 0,
                     "exclusiveMinimum": true,
-                    "maximum": 2000
+                    "maximum": 14400
                   },
                   "height": {
                     "type": "number",
                     "minimum": 0,
                     "exclusiveMinimum": true,
-                    "maximum": 2000
+                    "maximum": 14400
                   }
                 },
                 "required": [
