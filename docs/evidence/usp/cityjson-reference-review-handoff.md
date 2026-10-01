@@ -1,0 +1,37 @@
+# CITYJSON-REFERENCE-REVIEW-01 — scoped officer reference review
+
+Code **`8d79bcc42822f473481056cdef4334f8b04907d3`**, exact base **`1098ca79e3a6f4dc6a5f27abcb173af69d1db7f0`**, checkout `C:/Users/kvina/.codex/worktrees/backend-review/3d-ulpin`, branch `task/desktop-cityjson-reference-officer-review`. Requested branch `task/desktop-cityjson-reference-review` was occupied by the completed lock-review worktree at `57664a0`; that checkpoint was preserved and the lead notified. Staging stayed read-only and was observed at `8be3868ecad676477b2b2798aa09810a6c930c15` during continuation. Supplied never/danger-full-access; GPT-6.1 Sol/xhigh/default-standard requested, actual per-turn model/effort/tier unexposed. [Assignment](../../orchestration/CITYJSON_REFERENCE_REVIEW_01.md).
+
+## Delivered
+
+Two private operations, both response 200, with `PrivateSpatialGuard`, `private, no-store`, no query fields, 16 KiB request and 32 KiB result bounds:
+
+- POST `/api/v1/registry-drafts/{draftId}/native-exterior/references/reviews`
+- GET `/api/v1/registry-drafts/{draftId}/native-exterior/references/reviews/{reviewId}`
+
+The existing operations store accepts the isolated versioned kind **`registry-cityjson-reference-review/1`**: text kind, JSONB result and primary key `(case_id,operation_key,kind)`. The new path only inserts an immutable receipt. Every selected reference receives one bounded purpose/disposition/rationale; object-control support and caller-supplied principal/time/accuracy/ID are rejected. Principal/context, time, ID and fingerprints are server-derived. No draft revision bump or generic registry review/recording body is created.
+
+Accepted complete sorted reference/native/workspace gates precede row locks and private document I/O. Exact native, document, part, fence and access authority is rechecked before insertion. Same-key replay requires identical payload/context and the still-current aggregate. Explicit reads validate the stored digest and current draft/site/native/reference/context authority; stale authorized evidence returns 409, missing or inaccessible evidence a uniform controlled 404. History is preserved. Admission reuses this same-client authority without acquiring late gates, then repeats its aggregate after native/validation I/O.
+
+Admission accepts optional explicit `referenceReviewId` and returns a separate bounded summary plus review actions. Omission performs no review lookup. Existing selected/omitted validation behavior remains. Scope **`selected_reference_conventions`** and outcome **`supports_declared_convention`** mean only an officer's judgment about selected reference-system definitions/delivery conventions. Independent object applicability/controls, accuracy (`not_assessed`, metres null), admission and post-write qualification remain unqualified. The four existing independent reference/accuracy/admission/post-write gaps remain; omitted validation additionally requires accepted structural validation. Full reads exclude request key and principal/context; summaries also exclude rationale, source text and private paths.
+
+## Verification
+
+| Command | Actual result |
+| --- | --- |
+| `pnpm exec tsx --test tests/registry-cityjson-reference-review.test.ts tests/registry-cityjson-admission.test.ts` | Exit 0; 10 passed, zero skips |
+| `pnpm exec tsx --test tests/registry-cityjson-reference-review.test.ts` | Exit 0; final 3 passed, zero skips |
+| `pnpm typecheck:backend` | Exit 0; server/API |
+| `pnpm exec tsx --tsconfig apps/api/tsconfig.json E:/BhuAayam-data/task-data/desktop-cityjson-reference-review/route-schema-control.mts` | Final exit 0; route/guard/cache/operation/schema metadata, no listener |
+| `git diff --cached --check` | Exit 0; exactly nine owned code files staged |
+| `node E:/BhuAayam-data/task-data/desktop-cityjson-reference-review/build-receipt.mjs` | Final exit 0; accepted physical/Git/source/result reconciliation |
+
+These are **no-service controls over retained real revision-5 evidence using authority/query/object-read doubles**, not new HTTP/PostgreSQL persistence or SQL-contention acceptance. Retained five-part EPSG/3DBAG evidence produces one immutable review, exact read/replay, unchanged draft and explicit admission summary. Controls cover wrong/missing IDs, request conflict, stale selection/aggregate/context, revocation before/during I/O, no forged qualification, conflicting disposition, omission and insertion/gate ordering. The native artifact's actual 33,168 bytes are read and verified; its accepted result authority remains doubled. Operator conclusions are separate from source truth and learning labels.
+
+Final control `control-final.json`: **47,350 bytes**, SHA **`46f13b258c07ebb68cbbc259009b5109a2b04baa869c0d66ebd830b39cdd60e7`**. Review ID **`0ad62466e914bbc4a6bbd4cf42a6d417b053a00fd4c707b6a0652a91465d0156`**, review SHA **`f4f2da93c239299ffbb58f184e8f815800e2b6587a6dbd1611883325a68f1302`**, assessment SHA **`6c4894c3375d57d712a9f1d4c2e6408730c340317671c3b043689eae996a98e6`**; serialized outputs **2,597 / 7,144 bytes**. These hashes include the generated control request key/server time and are specific to that run.
+
+Private receipt: **`E:/BhuAayam-data/task-data/desktop-cityjson-reference-review/verification.json`**, **40,879 bytes**, SHA **`774ba541570ea8f1139b7b4f6ecc825f5537bd9203c17643000d4289915462cb`**. It pins nine feature files, 19 unchanged accepted reader files, nine unchanged validator producer files, 20 preserved seams, retained originals/results and check/helper artifacts. Document-reader aggregate remains **`e745ab9bf180da35d3fd59be8021da0f0944b203b34debb83549a590921d6166`**; CityJSON-reader aggregate **`377edfe71f3d08e0a1f4fb710441022b9a26fdadd0efa70724d0d1dea0f3d398`**. Original D1 SHA remains **`5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2`**, native artifact **`634685e1901b7e247878212262e45bf860942b1863490d7b8b67bda0b210022e`**.
+
+Self-review corrected the control's purpose assignment from inferred result format to retained enrollment identity: both HTML/XML results are literal text. Initial output/log retained; production code unchanged. The route helper initially used a nonexported Swagger constants subpath; corrected to its existing absolute file. The receipt helper initially exceeded Node's default 1 MiB Git-blob buffer on unchanged OpenAPI; corrected to a bounded 8 MiB local buffer. Both failures are preserved. Earlier `lock-order-control.*` material is retained historical reproduction evidence and was not rerun or used to qualify this feature.
+
+**Remaining boundary:** lead review, generated OpenAPI/client publication and separately assigned real API persistence journey. No SQL/schema, hashed draft/validation/document producer, original, saved pin, generic registry commit/review, generated artifact or frontend change. Runtime remains stopped/lead-owned; no services/DB/API/Docker/validators/providers/models were queried or started. No owned resources remain. The accepted physical EOL status entries `services/geo/geo/area.py`, `native_archive.py`, `native_pdf.py` remain with empty content/index diffs and unchanged accepted bytes. Authorized callback to the lead, then owner stops.
