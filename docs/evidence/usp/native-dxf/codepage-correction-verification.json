@@ -1,0 +1,231 @@
+{
+  "schemaVersion": "dxf-codepage-correction/1",
+  "runAt": "2026-10-01T15:57:57.170273+00:00",
+  "codeCommit": "ec13cc57acfc0a5d0e6e7d324203f4cb36c4b6b2",
+  "preservedCheckpoint": "e165b344122937573c826c018aad1f1d4ba0294d",
+  "dispatchCommit": "5549c664ad2819bf892ea2eb35b6222bfe8c0826",
+  "scope": "one P2 codepage declaration correction; memory-only header controls are not qualification truth",
+  "command": [
+    "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\env\\Scripts\\python.exe",
+    "-B",
+    "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\codepage-correction-01\\verify-codepage-correction.py"
+  ],
+  "exitCode": 0,
+  "checks": {
+    "twoChangedFilesASTParse": "passed",
+    "focusedRegressionTests": 1,
+    "fiveObservedEncodingCases": "passed",
+    "allUnchangedSampleProjectionFieldsMatchSavedResultsExcludingSupervision": "passed",
+    "sourcesAndPriorReceiptsUnchanged": "passed"
+  },
+  "observedCases": [
+    {
+      "inputSha256": "cbca9feb9732cf232c65305aef32af8fb0dfcbb3a444e5e508529ac9b72680c4",
+      "inputBytes": 6797,
+      "error": {
+        "status": "unsupported",
+        "code": "CODEPAGE_UNSUPPORTED",
+        "message": "Declared DXF codepage is unsupported; text was not decoded.",
+        "locator": {
+          "tagIndex": 3,
+          "codeLine": 7,
+          "valueLine": 8,
+          "headerVariable": "$DWGCODEPAGE",
+          "rawValue": "ANSI_9999",
+          "rawValueTruncated": false
+        }
+      }
+    },
+    {
+      "inputSha256": "a5233680b2ce3496ea3c5c680fa9104df2ecac2062bb0022bd2ba2bccf987ff3",
+      "inputBytes": 6797,
+      "status": "available",
+      "encoding": {
+        "name": "cp1252",
+        "basis": "declared_codepage"
+      },
+      "sourceCodepage": [
+        {
+          "tagIndex": 3,
+          "code": 3,
+          "rawValue": "ANSI_1252"
+        }
+      ],
+      "entitiesIncludingChildren": 4,
+      "supervision": {
+        "memoryLimitBytes": 2147483648,
+        "childDeadlineSeconds": 45,
+        "parserProcesses": 1,
+        "threadEnvironmentLimit": 2,
+        "observedSeconds": 0.340637,
+        "memoryGuard": "geo.native_pdf._install_memory_limit"
+      }
+    },
+    {
+      "inputSha256": "b476d3e53fe24c1db3c701d20b2bebd774f7bd7966b12d81891505b9b29e4d21",
+      "inputBytes": 6766,
+      "status": "available",
+      "encoding": {
+        "name": "cp1252",
+        "basis": "parser_default_cp1252_not_declared"
+      },
+      "sourceCodepage": null,
+      "entitiesIncludingChildren": 4,
+      "supervision": {
+        "memoryLimitBytes": 2147483648,
+        "childDeadlineSeconds": 45,
+        "parserProcesses": 1,
+        "threadEnvironmentLimit": 2,
+        "observedSeconds": 0.329523,
+        "memoryGuard": "geo.native_pdf._install_memory_limit"
+      }
+    },
+    {
+      "inputSha256": "37f57491672a9b330be08888200a8ad893d15af52af91e1c6be54b0c9cda75de",
+      "inputBytes": 82846,
+      "status": "available",
+      "encoding": {
+        "name": "utf-8",
+        "basis": "DXF R2007+ UTF-8"
+      },
+      "sourceCodepage": [
+        {
+          "tagIndex": 7,
+          "code": 3,
+          "rawValue": "ANSI_1252"
+        }
+      ],
+      "entitiesIncludingChildren": 83,
+      "supervision": {
+        "memoryLimitBytes": 2147483648,
+        "childDeadlineSeconds": 45,
+        "parserProcesses": 1,
+        "threadEnvironmentLimit": 2,
+        "observedSeconds": 0.366632,
+        "memoryGuard": "geo.native_pdf._install_memory_limit"
+      }
+    },
+    {
+      "inputSha256": "66ade7093cbbab77e5656300165d04ae5a486037f008b49f10856b19d4c41688",
+      "inputBytes": 82846,
+      "status": "available",
+      "encoding": {
+        "name": "utf-8",
+        "basis": "DXF R2007+ UTF-8"
+      },
+      "sourceCodepage": [
+        {
+          "tagIndex": 7,
+          "code": 3,
+          "rawValue": "ANSI_9999"
+        }
+      ],
+      "entitiesIncludingChildren": 83,
+      "supervision": {
+        "memoryLimitBytes": 2147483648,
+        "childDeadlineSeconds": 45,
+        "parserProcesses": 1,
+        "threadEnvironmentLimit": 2,
+        "observedSeconds": 0.342559,
+        "memoryGuard": "geo.native_pdf._install_memory_limit"
+      }
+    }
+  ],
+  "codePins": [
+    {
+      "path": "services/geo/geo/native_dxf.py",
+      "physicalSha256": "d3f9b7e0dee939b267621887f981ecd4c13b65fb630442ef7d4789c141ee24bd",
+      "gitBlobSha256": "d3f9b7e0dee939b267621887f981ecd4c13b65fb630442ef7d4789c141ee24bd",
+      "equalPhysicalAndGitBytes": true
+    },
+    {
+      "path": "services/geo/tests/test_native_dxf.py",
+      "physicalSha256": "4d181ee510fd0aff84d7413f123d6d4b8e1c1f06f53794b51da492788f3ec734",
+      "gitBlobSha256": "4d181ee510fd0aff84d7413f123d6d4b8e1c1f06f53794b51da492788f3ec734",
+      "equalPhysicalAndGitBytes": true
+    },
+    {
+      "path": "scripts/usp/desktop-dxf-read.py",
+      "physicalSha256": "d72a82d74d161cfc08f43e350cd06ca1050349c7202d2440111dbc6e9eb821df",
+      "gitBlobSha256": "d72a82d74d161cfc08f43e350cd06ca1050349c7202d2440111dbc6e9eb821df",
+      "equalPhysicalAndGitBytes": true
+    },
+    {
+      "path": "services/geo/geo/native_pdf.py",
+      "physicalSha256": "0d21bdd304b0fb12beea694a049078cd4ee0cbddb272102f16a0c706feef966f",
+      "gitBlobSha256": "1c5acdfb441ba43d3b59a5e76ed067dfdf172f1bc795a686cde00daa1dfe4030",
+      "equalPhysicalAndGitBytes": false
+    }
+  ],
+  "reusedPins": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\sources\\ASCII_R12.dxf",
+      "bytes": 6766,
+      "sha256": "b476d3e53fe24c1db3c701d20b2bebd774f7bd7966b12d81891505b9b29e4d21"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\sources\\1_polylines.dxf",
+      "bytes": 82846,
+      "sha256": "37f57491672a9b330be08888200a8ad893d15af52af91e1c6be54b0c9cda75de"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\verification-final.json",
+      "bytes": 8762,
+      "sha256": "2b9ef3298ffb29e26e47c49ddb8102ffd8680134ac33403e4310cbb6990b8d5c"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\absent-final\\drawing.json",
+      "bytes": 29589,
+      "sha256": "64e7d5ed7536b95cade5ded1a88675430c643124da9697c35edb67460c77bdc0"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\declared-final\\drawing.json",
+      "bytes": 249680,
+      "sha256": "d54516d75f6581c1646d51b7ccd198497db662a5e1d40273a701e7babfdfc09b"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\absent-final\\receipt.json",
+      "bytes": 1865,
+      "sha256": "52b5e79556f75935c93059e684029f2fb7cc5a614435b7bdf6e38d8fe588bf17"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\declared-final\\receipt.json",
+      "bytes": 2096,
+      "sha256": "aedb7023e44561ccf8634e2213bea6d2e940d219db18c4ff51094366e4e39a6d"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-review\\verification.json",
+      "bytes": 9727,
+      "sha256": "2f280456465096ce2b4b57bce6e075eab9b18274fcf7867030496a8fb32942f6"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\codepage-correction-01\\focused-test.log",
+      "bytes": 281,
+      "sha256": "9e3332bd9fe0214ef4b92f3e36a0ced87c6e16bad98c502bb7d8beb0e4ec6bbb"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\codepage-correction-01\\verify-codepage-correction.py",
+      "sha256": "0df64c4a670dde780303d7ef075ae1911f0e5cce71aa82bad5d9a99cf01ada63"
+    }
+  ],
+  "environment": {
+    "python": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandbox": "danger-full-access",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedEffort": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedPerTurnModelEffortTier": null,
+    "threadEnvironmentIsNotOSCeiling": true
+  },
+  "qualification": {
+    "newSources": false,
+    "operationalTruth": false,
+    "APIIntegration": false,
+    "learning": false,
+    "releaseGate": false
+  }
+}
