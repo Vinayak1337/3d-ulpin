@@ -100,6 +100,31 @@ class NativeKMLTests(unittest.TestCase):
         self.assertEqual(result['coordinateCount'], 9)
         self.assertEqual(result['references'][0]['resolution'], 'not_resolved')
 
+    def test_opaque_payloads_cannot_promote_features_or_coordinates(self):
+        # Authored safety wrappers/values only; not source qualification facts.
+        payload = '<Placemark id="opaque"><Point><coordinates>1,2</coordinates></Point></Placemark>'
+        wrappers = ('<ExtendedData><audit:payload xmlns:audit="urn:opaque">{}</audit:payload></ExtendedData>',
+                    '<description>{}</description>', '<Style>{}</Style>', '<Model>{}</Model>',
+                    '<audit:payload xmlns:audit="urn:opaque">{}</audit:payload>')
+        for wrapper in wrappers:
+            with self.subTest(wrapper=wrapper):
+                result = _read_kml(xml('<Document>' + wrapper.format(payload) + '</Document>'))
+                self.assertEqual([feature['type'] for feature in result['features']], ['Document'])
+                self.assertEqual(result['coordinateCount'], 0)
+                opaque = next(item for item in result['unsupported'] if item['name'] == 'Placemark')
+                self.assertEqual(opaque['reason'], 'OPAQUE_FEATURE_CONTENT')
+                self.assertEqual(opaque['literal']['text'], '1,2')
+                self.assertIn('Placemark', opaque['literal']['locator']['path'])
+        result = _read_kml(xml('<Document><Placemark><Point><coordinates>'
+                               '<audit:payload xmlns:audit="urn:opaque">' + payload +
+                               '</audit:payload></coordinates></Point></Placemark></Document>'))
+        self.assertEqual([feature['type'] for feature in result['features']], ['Document', 'Placemark'])
+        self.assertEqual(result['coordinateCount'], 0)
+        geometry = result['features'][1]['geometries'][0]
+        self.assertEqual(geometry['status'], 'partial')
+        self.assertEqual(geometry['coordinates']['state'], 'unsupported')
+        self.assertEqual(geometry['coordinates']['sequences'][0]['source']['text'], '1,2')
+
     def test_kmz_selection_and_member_lineage(self):
         raw = kmz([('doc.kml', xml('<Placemark><name>one</name></Placemark>')),
                    ('nested/other.kml', xml('<Document/>')), ('image.bin', b'inert')])
