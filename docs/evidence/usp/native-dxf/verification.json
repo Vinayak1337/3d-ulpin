@@ -1,0 +1,224 @@
+{
+  "schemaVersion": "dxf-local-verification/1",
+  "task": "DXF-01",
+  "codeCommit": "bbdf5cd4e9f8ea8a038d0604e39231001d19831c",
+  "dispatchCommit": "78a9d0c293dccf6e18a9f7c3f5e2a9442efd1b0b",
+  "runAt": "2026-10-01T15:11:06.089634+00:00",
+  "scope": "local_development_reader_only",
+  "checks": [
+    {
+      "name": "compile-final",
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\env\\Scripts\\python.exe",
+        "-m",
+        "py_compile",
+        "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin\\services\\geo\\geo\\native_dxf.py",
+        "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin\\scripts\\usp\\desktop-dxf-read.py",
+        "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin\\services\\geo\\tests\\test_native_dxf.py"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin",
+      "exitCode": 0,
+      "logPath": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\compile-final.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "tests-final",
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\env\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin\\services\\geo\\tests",
+        "-p",
+        "test_native_dxf.py",
+        "-v"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin",
+      "exitCode": 0,
+      "logPath": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\tests-final.log",
+      "logSha256": "b47d0d123b5698fd0a423b4330275219a4b17c78e1e8895ab0c4e9d22a5d3161"
+    },
+    {
+      "name": "declared-final",
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\env\\Scripts\\python.exe",
+        "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin\\scripts\\usp\\desktop-dxf-read.py",
+        "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\sources\\1_polylines.dxf",
+        "--expected-sha256",
+        "37f57491672a9b330be08888200a8ad893d15af52af91e1c6be54b0c9cda75de",
+        "--output-dir",
+        "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\declared-final"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin",
+      "exitCode": 0,
+      "logPath": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\declared-final.log",
+      "logSha256": "3beb749f3f00c2d9d9cf7c49f35f058b5c37856774530ec9b831f93554d90f73"
+    },
+    {
+      "name": "absent-final",
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\env\\Scripts\\python.exe",
+        "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin\\scripts\\usp\\desktop-dxf-read.py",
+        "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\sources\\ASCII_R12.dxf",
+        "--expected-sha256",
+        "b476d3e53fe24c1db3c701d20b2bebd774f7bd7966b12d81891505b9b29e4d21",
+        "--output-dir",
+        "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\absent-final"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-dxf\\3d-ulpin",
+      "exitCode": 0,
+      "logPath": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\absent-final.log",
+      "logSha256": "5302055f786c3255d62e8a0e2824a9b616af88bc92fe92cbb899ceed399823fb"
+    }
+  ],
+  "extractions": [
+    {
+      "name": "declared-final",
+      "receiptPath": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\declared-final\\receipt.json",
+      "receiptSha256": "aedb7023e44561ccf8634e2213bea6d2e940d219db18c4ff51094366e4e39a6d",
+      "sourceSha256": "37f57491672a9b330be08888200a8ad893d15af52af91e1c6be54b0c9cda75de",
+      "artifact": {
+        "name": "drawing.json",
+        "sha256": "d54516d75f6581c1646d51b7ccd198497db662a5e1d40273a701e7babfdfc09b",
+        "bytes": 249680
+      },
+      "units": {
+        "state": "declared",
+        "code": 6,
+        "name": "m",
+        "source": {
+          "state": "supplied",
+          "tags": [
+            {
+              "code": 70,
+              "value": 6,
+              "rawValue": "     6",
+              "locator": {
+                "tagIndex": 455,
+                "codeLine": 911,
+                "valueLine": 912
+              }
+            }
+          ]
+        },
+        "conversion": null
+      },
+      "entitiesIncludingChildren": 83,
+      "pointCount": 202,
+      "supervision": {
+        "memoryLimitBytes": 2147483648,
+        "childDeadlineSeconds": 45,
+        "parserProcesses": 1,
+        "threadEnvironmentLimit": 2,
+        "observedSeconds": 0.346326,
+        "memoryGuard": "geo.native_pdf._install_memory_limit"
+      },
+      "unsupportedFindingCount": 0,
+      "opaqueRecordTypes": 27,
+      "entityTypes": {
+        "ARC": 22,
+        "LINE": 52,
+        "TEXT": 9
+      }
+    },
+    {
+      "name": "absent-final",
+      "receiptPath": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\runs\\absent-final\\receipt.json",
+      "receiptSha256": "52b5e79556f75935c93059e684029f2fb7cc5a614435b7bdf6e38d8fe588bf17",
+      "sourceSha256": "b476d3e53fe24c1db3c701d20b2bebd774f7bd7966b12d81891505b9b29e4d21",
+      "artifact": {
+        "name": "drawing.json",
+        "sha256": "64e7d5ed7536b95cade5ded1a88675430c643124da9697c35edb67460c77bdc0",
+        "bytes": 29589
+      },
+      "units": {
+        "state": "absent",
+        "code": null,
+        "name": null,
+        "source": {
+          "state": "absent",
+          "tags": []
+        },
+        "conversion": null
+      },
+      "entitiesIncludingChildren": 4,
+      "pointCount": 32,
+      "supervision": {
+        "memoryLimitBytes": 2147483648,
+        "childDeadlineSeconds": 45,
+        "parserProcesses": 1,
+        "threadEnvironmentLimit": 2,
+        "observedSeconds": 0.325369,
+        "memoryGuard": "geo.native_pdf._install_memory_limit"
+      },
+      "unsupportedFindingCount": 1,
+      "opaqueRecordTypes": 7,
+      "entityTypes": {
+        "INSERT": 1,
+        "LINE": 2,
+        "TEXT": 1
+      }
+    }
+  ],
+  "codePins": [
+    {
+      "path": "services/geo/geo/native_dxf.py",
+      "physicalSha256": "68b8aebf6579392a4d6ffa3d3b424ba6f92d5467b38926a92cb70532f8d79c59",
+      "gitBlobSha256": "68b8aebf6579392a4d6ffa3d3b424ba6f92d5467b38926a92cb70532f8d79c59",
+      "equalPhysicalAndGitBytes": true
+    },
+    {
+      "path": "scripts/usp/desktop-dxf-read.py",
+      "physicalSha256": "d72a82d74d161cfc08f43e350cd06ca1050349c7202d2440111dbc6e9eb821df",
+      "gitBlobSha256": "d72a82d74d161cfc08f43e350cd06ca1050349c7202d2440111dbc6e9eb821df",
+      "equalPhysicalAndGitBytes": true
+    },
+    {
+      "path": "services/geo/tests/test_native_dxf.py",
+      "physicalSha256": "406378d0cc474c7092a01acdfaf95f8afe4e60c0a74ce6a938c371101b34eb14",
+      "gitBlobSha256": "406378d0cc474c7092a01acdfaf95f8afe4e60c0a74ce6a938c371101b34eb14",
+      "equalPhysicalAndGitBytes": true
+    },
+    {
+      "path": "docs/evidence/usp/native-dxf/manifest.json",
+      "physicalSha256": "bc3d0d2600b132393bd1b89c36058eca6f56acc65d7a7c865e919fcef3cc13ed",
+      "gitBlobSha256": "bc3d0d2600b132393bd1b89c36058eca6f56acc65d7a7c865e919fcef3cc13ed",
+      "equalPhysicalAndGitBytes": true
+    },
+    {
+      "path": "docs/evidence/usp/native-dxf/requirements.lock",
+      "physicalSha256": "da0d3b17d2ea77ae03f9dc5815f5d021bbaa8c8247bfd3759819353ebeb8852d",
+      "gitBlobSha256": "da0d3b17d2ea77ae03f9dc5815f5d021bbaa8c8247bfd3759819353ebeb8852d",
+      "equalPhysicalAndGitBytes": true
+    },
+    {
+      "path": "services/geo/geo/native_pdf.py",
+      "physicalSha256": "0d21bdd304b0fb12beea694a049078cd4ee0cbddb272102f16a0c706feef966f",
+      "gitBlobSha256": "1c5acdfb441ba43d3b59a5e76ed067dfdf172f1bc795a686cde00daa1dfe4030",
+      "equalPhysicalAndGitBytes": false
+    }
+  ],
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "E:\\BhuAayam-data\\task-data\\desktop-dxf-native\\env\\Scripts\\python.exe",
+    "permissionsSupplied": {
+      "approval_policy": "never",
+      "sandbox_mode": "danger-full-access"
+    },
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedPerTurnServiceTier": null
+  },
+  "qualification": {
+    "apiIntegration": false,
+    "officialOperational": false,
+    "geometryAccuracy": false,
+    "globalPlacement": false,
+    "learning": false,
+    "releaseGate": false
+  }
+}
