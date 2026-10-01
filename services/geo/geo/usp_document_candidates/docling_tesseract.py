@@ -23,6 +23,7 @@ from PIL import Image
 MAX_SOURCE_BYTES = 16 * 1024**2
 MAX_SOURCE_PAGES = 8
 MAX_PAGE_SIDE_POINTS = 2_000
+MAX_SELECTED_SOURCE_PAGE_SIDE_POINTS = 14_400
 MAX_PIXELS = 1_600_000
 MAX_IMAGE_SIDE = 1_400
 MAX_PNG_BYTES = 8 * 1024**2
@@ -105,9 +106,15 @@ def _selection(page: fitz.Page, region: list[float] | None) -> tuple[fitz.Rect, 
     rect = page.rect
     if (page.rotation != 0 or not all(math.isfinite(v) for v in rect)
             or abs(rect.x0) > 1e-7 or abs(rect.y0) > 1e-7
-            or rect.width > MAX_PAGE_SIDE_POINTS or rect.height > MAX_PAGE_SIDE_POINTS):
+            or min(rect.width, rect.height) <= 0
+            or rect.width > MAX_SELECTED_SOURCE_PAGE_SIDE_POINTS
+            or rect.height > MAX_SELECTED_SOURCE_PAGE_SIDE_POINTS):
         raise SourceOcrError("unsupported_pdf_page_frame", unsupported=True)
     if region is None:
+        # Whole-page support is unchanged. Large source frames are useful only
+        # through an explicit, bounded selection; never rasterize them whole.
+        if rect.width > MAX_PAGE_SIDE_POINTS or rect.height > MAX_PAGE_SIDE_POINTS:
+            raise SourceOcrError("unsupported_pdf_page_frame", unsupported=True)
         return rect, [rect.x0, rect.y0, rect.x1, rect.y1]
     if (len(region) != 4 or any(isinstance(v, bool) or not isinstance(v, (int, float))
                                 or not math.isfinite(v) for v in region)):
@@ -116,6 +123,8 @@ def _selection(page: fitz.Page, region: list[float] | None) -> tuple[fitz.Rect, 
     if not (0 <= x0 < x1 <= rect.x1 and 0 <= y0 < y1 <= rect.y1
             and x1 - x0 >= 1 and y1 - y0 >= 1):
         raise SourceOcrError("region_outside_supported_page")
+    if x1 - x0 > MAX_PAGE_SIDE_POINTS or y1 - y0 > MAX_PAGE_SIDE_POINTS:
+        raise SourceOcrError("region_side_limit_exceeded", unsupported=True)
     return fitz.Rect(x0, y0, x1, y1), [float(x0), float(y0), float(x1), float(y1)]
 
 

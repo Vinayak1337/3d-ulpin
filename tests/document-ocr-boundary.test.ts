@@ -6,7 +6,29 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test from 'node:test';
 import {privateOcrDirectory,readBoundedOcrArtifact} from '../packages/server/src/modules/usp/ingestion/document-ocr';
-import {DocumentOcrSchema} from '../packages/contracts/src/usp/document-ingestion';
+import {DocumentOcrSchema,DocumentStatusSchema} from '../packages/contracts/src/usp/document-ingestion';
+
+test('large OCR source frames require bounded crops in results and status summaries',()=>{
+  const value={sourceSha256:'a'.repeat(64),sourceRevision:1,sourcePage:1,requestedRegion:[2400,1500,2580,1600],
+    sourcePageFrame:{kind:'pdf_display_page_top_left_points',rotation:0,width:2586,height:1694},
+    method:'ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned',toolStatus:'complete',outputStatus:'partial',
+    textCompleteness:'unverified',issues:[],items:[{text:'technical-control',label:'text',
+      method:'ocr:docling-tesseract-cli-full-page',sourcePageBoxes:[{pageNumber:1,frame:'pdf_display_page_top_left_points',
+        box:[2410,1510,2500,1550],derivedFrom:'docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin'}]}]};
+  const statusOcr=DocumentStatusSchema.shape.ocr.unwrap().unwrap();
+  assert(DocumentOcrSchema.safeParse(value).success);
+  const {items,...summary}=value;assert(statusOcr.safeParse(summary).success);
+  for(const change of [{requestedRegion:null},{requestedRegion:[0,0,2001,100]},
+    {requestedRegion:[2400,1500,2587,1600]},{requestedRegion:[2400,1500,2400.5,1600]},
+    {requestedRegion:[2400,1500,Number.NaN,1600]},
+    {sourcePageFrame:{...value.sourcePageFrame,width:14401}},
+    {sourcePageFrame:{...value.sourcePageFrame,rotation:90}}]){
+    assert.equal(DocumentOcrSchema.safeParse({...value,...change}).success,false);
+    assert.equal(statusOcr.safeParse({...summary,...change}).success,false);
+  }
+  assert(DocumentOcrSchema.safeParse({...value,sourcePageFrame:{...value.sourcePageFrame,width:14400,height:14400},
+    requestedRegion:[12400,12400,14400,14400],items:[]}).success);
+});
 
 test('sparse OCR cites TSV pixel boxes and cannot be relabelled as Docling',()=>{
   const value={sourceSha256:'a'.repeat(64),sourceRevision:1,sourcePage:1,requestedRegion:null,
