@@ -1,0 +1,224 @@
+{
+  "schemaVersion": "cityjson-validation-api-evidence/1",
+  "kind": "lead projection of preserved observations; no new runtime",
+  "observedAt": "2026-10-01T00:54:16.454Z",
+  "servedCodeCommit": "ded2775f3e2ab182bedaaa23538809a570914ab1",
+  "acceptedHandoff": "1d5c46a62fb677b08fc3cc0952218ff37ce34db2",
+  "originalReceipt": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-cityjson-validation-runtime\\verification.json",
+    "bytes": 20225,
+    "sha256": "acd978fa3f86c97ba40f306dd277b9faa034ec205396f2b94c5e58f49a9df66a"
+  },
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "outcome": "passed_at_bounded_scope",
+  "candidate": {
+    "id": "bacc6fee-3156-438b-9720-8e7a531f9a47",
+    "revision": 1,
+    "recordId": "9ed65d91-836b-4760-b8cc-5d2160882fea",
+    "recordRevision": 0,
+    "state": "unrecorded",
+    "qualification": "not_assessed"
+  },
+  "source": {
+    "path": "fixtures/usp/D1/single-roof/original.json",
+    "bytes": 6783,
+    "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2"
+  },
+  "busy": {
+    "jobId": "e51b002c-552c-4f4a-a046-07654325530d",
+    "code": "CITYJSON_VALIDATION_BUSY"
+  },
+  "recovery": {
+    "jobId": "8dfb4724-b4e8-4c11-a910-492303ae6df6",
+    "resultSha256": "82c3b05a37731aed7fb624d98f017817b2f463cad27825e7ed92ff72f9cfe5c4",
+    "summary": {
+      "outcome": "valid",
+      "documentSchema": "valid",
+      "selectedGeometry": "valid",
+      "hasWarnings": false,
+      "codes": [],
+      "sourceLocators": [
+        {
+          "objectId": "NL.IMBAG.Pand.1655100000500568",
+          "geometryIndex": 0,
+          "geometryPointer": "/feature/CityObjects/NL.IMBAG.Pand.1655100000500568/geometry/0"
+        },
+        {
+          "objectId": "NL.IMBAG.Pand.1655100000500568-0",
+          "geometryIndex": 2,
+          "geometryPointer": "/feature/CityObjects/NL.IMBAG.Pand.1655100000500568-0/geometry/2"
+        }
+      ],
+      "validator": {
+        "platform": "windows-x86_64",
+        "pythonSha256": "d932e5e2f324d57f392e8fd063dcf6d0185be8a664c57c6d24e7762ed02c28ca",
+        "adapterSha256": "1597edef52eff75c1a6482080f5a593a9b2aeceae5c4a268ac6f4c10b25a9db6",
+        "supervisorSha256": "1993bb78c891138b3230aacf6139330eccd5fa49e9f6c201cc1bffd506441786",
+        "toolLockSha256": "2c4d22a220ef841d2068141833a9c2fe544ac6096e35e809ec57205b56d4bbe6",
+        "codeSha256": "262ec0e47a56e3130b2a7a552ef2132cecd4e3bb70f19e74abae685104bc858d",
+        "configSha256": "f8867645a2073950829fd7efb27aa0068004d9cfc63809c83c71e70f11f23d8a",
+        "tools": [
+          {
+            "name": "cjval",
+            "version": "0.10.0",
+            "files": [
+              {
+                "sha256": "54f7c4f31261bf4e3974ff30f6ad1d987e75fb909bfbcf7df539f5686189ed85",
+                "executable": true
+              }
+            ]
+          },
+          {
+            "name": "val3dity",
+            "version": "2.7.0",
+            "files": [
+              {
+                "sha256": "6c946b31b5ba1f9feea445f4e5e31cd5557639e3184630f9060606e53da43563",
+                "executable": false
+              },
+              {
+                "sha256": "39ee23ada037f082e6821bb4e38cdfac0096e4badfe45f00afba39cb15ab91ac",
+                "executable": false
+              },
+              {
+                "sha256": "cc4e92e7d65fec7081b35dceb9d4167510267b20460506c0b7c0025fb9c1f980",
+                "executable": false
+              },
+              {
+                "sha256": "8b542bac53a8335446a333fc7cbe8ba6caef547ec1bd3d3d3b5aeb615e2bbc00",
+                "executable": false
+              },
+              {
+                "sha256": "40f9d5ce5714247c24378ca575cc1bff1702cf2a448a7f7cf6e703a2219ade5f",
+                "executable": false
+              },
+              {
+                "sha256": "7bffd5cf94f4e8adac094a4fac576efe8cd7335d86da2eeeaf1e00b3e0a87809",
+                "executable": true
+              }
+            ]
+          }
+        ]
+      },
+      "qualification": "not_assessed",
+      "referenceAccuracy": "not_assessed",
+      "canonicalAdmission": "not_assessed"
+    },
+    "statusBytes": 2175
+  },
+  "observations": {
+    "busy-admission": {
+      "status": 202,
+      "responseFileSha256": "ab6d65b9016fcf7fb42668340bcb080c46ce50a139c5dbb39ac330f7ec8274c1"
+    },
+    "recovery-admission": {
+      "status": 202,
+      "responseFileSha256": "adbdac8aa5ac77796b03959c38768d1b1be88d61ca5edc79096531e1a8895b38"
+    },
+    "replay": {
+      "status": 202,
+      "responseFileSha256": "011d7186669c88cb13fe99d529e08b43d4181c008ca641b4fd278588a2d7f71c"
+    },
+    "stale": {
+      "status": 409,
+      "responseFileSha256": "33aabbc15cfeb439a6d9f446293728c14792fa76c39c1ffa98d09486acff8447"
+    },
+    "denied": {
+      "status": 403,
+      "responseFileSha256": "344871950db1bbb82e9f39bc744084021b2e63418bc258a03f477d800e92525b"
+    }
+  },
+  "privateRead": {
+    "status": 200,
+    "cacheControl": "private, no-store",
+    "bytes": 2175,
+    "resultEnvelopeBytes": 32768,
+    "privateObjectsVerified": 7,
+    "rawPathsAndDiagnosticsExposed": false
+  },
+  "preservation": {
+    "beforeJobs": 0,
+    "afterJobs": 2,
+    "acceptedAttempts": 1,
+    "retainedSha256": "febbba01db49493ab5a0c312076b6e44bca3f48f593c9fb3b4d073562f7e8133",
+    "registrySha256": "6a86a5b84c8ba84b9f7cb9cdda7f32f7bf817bbcfcc917070864395780986335",
+    "unchangedOriginalHistory": true,
+    "historicalChunkJobs": 10
+  },
+  "dbDeadline": {
+    "at": "2026-10-01T00:50:07.728Z",
+    "gate": "registry-import:88ca2024-d901-4ae4-84cb-a05cac578b2a",
+    "pid1": 806,
+    "pid2": 807,
+    "holderFiniteIdleMs": 8000,
+    "deadlineMs": 2200,
+    "activity": [
+      {
+        "pid": 806,
+        "state": "idle in transaction",
+        "wait_event_type": "Client",
+        "wait_event": "ClientRead",
+        "blockers": []
+      },
+      {
+        "pid": 807,
+        "state": "active",
+        "wait_event_type": "Lock",
+        "wait_event": "advisory",
+        "blockers": [
+          806
+        ]
+      }
+    ],
+    "result": {
+      "code": "DB_DEADLINE",
+      "message": "The absolute database deadline expired.",
+      "elapsedMs": 2202
+    },
+    "late": {
+      "code": "DB_DEADLINE"
+    },
+    "cleanup": [],
+    "lockLeft": [],
+    "subsequent": {
+      "id": "88ca2024-d901-4ae4-84cb-a05cac578b2a",
+      "revision": 1
+    },
+    "scope": "Actual retained source-case gate, read-only, no operational writes. One expiry observation; native/300-second/unknown-COMMIT races unobserved."
+  },
+  "processing": {
+    "executedImage": "sha256:f522efd1bf4975575b016cdeb587c1d12f0236697b9e20c45fcf64e9947e6a30",
+    "builtButNotServedImage": "sha256:6cc9e544e017b7f10d6f2e95b503474ba95a7215ba9a58c0cb847fca62155c53",
+    "readerSha256": "377edfe71f3d08e0a1f4fb710441022b9a26fdadd0efa70724d0d1dea0f3d398"
+  },
+  "cleanup": {
+    "state": "stopped_processing_storage_retained",
+    "processes": {
+      "api": {
+        "pid": 34464,
+        "absent": true
+      },
+      "dispatcher": {
+        "pid": 32892,
+        "absent": true
+      }
+    },
+    "ports": [
+      {
+        "port": 3192,
+        "free": true
+      },
+      {
+        "port": 28000,
+        "free": true
+      }
+    ],
+    "ownedPythonChildrenAbsent": true
+  },
+  "limits": [
+    "Structural/schema/selected-source validation only; reference accuracy, canonical admission/qualification, recording, analytical/export and release gates remain unqualified.",
+    "One real 2.2-second read-only authority-gate expiry; full worker/native deadlines, stop/unknown-COMMIT timing and durability races were not exercised.",
+    "Offline tool configuration is not an OS network sandbox; environment provenance is the explicit guarded launch, not an OS environment observation.",
+    "The retained processing image has all 45 Python algorithms identical to accepted Git after EOL comparison; exact reader bytes and all executed image/source pins are recorded separately. The new build tag differed and was not served; no processing job was run."
+  ]
+}

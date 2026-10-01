@@ -9205,8 +9205,28 @@
         "x-batch": "CITYJSON-VALIDITY-02",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "scope": "Retained D1 draft enqueues source-bound validation; finite host busy failure then explicit new-key recovery accepts one fresh native result. Same-key replay, stale revision and cross-site denial preserve history.",
+          "evidencePointers": [
+            "/candidate",
+            "/busy",
+            "/recovery",
+            "/observations",
+            "/preservation"
+          ],
+          "receipt": "docs/evidence/usp/cityjson-validation-runtime.json",
+          "servedCodeCommit": "ded2775f3e2ab182bedaaa23538809a570914ab1",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Private current-draft structural validation, controlled busy failure and explicit retry, accepted result/read/replay and one actual SQL authority-lock deadline observation."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": 16384,
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -9395,8 +9415,27 @@
         "x-batch": "CITYJSON-VALIDITY-02",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "scope": "Private controlled failure and accepted schema/selected-geometry result under current authority; exact report hashes and bounded no-store projection. Structural evidence only.",
+          "evidencePointers": [
+            "/busy",
+            "/recovery",
+            "/privateRead",
+            "/source"
+          ],
+          "receipt": "docs/evidence/usp/cityjson-validation-runtime.json",
+          "servedCodeCommit": "ded2775f3e2ab182bedaaa23538809a570914ab1",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Private current-draft structural validation, controlled busy failure and explicit retry, accepted result/read/replay and one actual SQL authority-lock deadline observation."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": null,
         "x-dataset-catalogue": "/api/docs/datasets.json"
