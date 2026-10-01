@@ -69,3 +69,32 @@ All final temporary ACL grants/profile deletions and owner-label cleanup passed,
 ## Limits and handoff
 
 This qualifies the adapter's no-model Windows controls and refusal/acceptance path. Actual Qwen prepare/fit/reload/comparison execution with the new bootstrap remains unrun. Existing NET-01 descendant/handle/network observations are reused; native/brokered network attempts and historical training silence receive no new qualification. Arbitrary native descendants still depend on Windows AppContainer/Job inheritance. No scientific quality, operational/private-data, Linux, release or deployment gate advances. Return the owned code and these immutable receipts for independent review, then stop; lead owns integration and any later model execution.
+
+## Host-loader P2 correction — 1 October
+
+Correction of review `e692b7ac70dbbf1b201771a8c8c3738379b9811d`, preserving candidate `2f0928e656f4a2768313ad0422f6af17412c02b8` on the same owned branch/worktree. Lead assignment is recorded at `616b53b0d8d72ae3c1df1692b6dd4fe34a410cb1`; live staging was observed read-only at `b9a00abbb28e01e40e7eecc79630cd58ef42cf7c`. Supplied permissions remain `never` / `danger-full-access`; requested Sol6.1/xhigh/default-standard, actual request tier unexposed.
+
+`resources.guarded_run` verifies one read of the profile against its supplied digest, then verifies one read of the helper against that profile's physical source pin and compiles those exact bytes. `audit_module` verifies its read of the harness against the fixed reviewed canonical LF source pin before compiling those same canonical bytes. When a profile is available, it additionally verifies the raw physical source pin. The launch path checks helper/harness profile pins before harness execution. Early direct-role token checks use the fixed pin before reading any profile/private input; a caller-supplied hash cannot replace that pin. Future harness source changes require an explicit reviewed pin update. Neither loader uses, writes or deletes host caches.
+
+The single new regression exercises the actual resources branch and helper's harness loader on copied exact sources with timestamp/size-valid poisoned caches. Cache-aware positive controls execute both harmless sentinels; corrected loaders ignore them. A deliberately unsupported technical profile stops the genuine helper before native launch/ACL operations. The genuine harness is loaded only for declaration checks; its `launch` is never called. Changed helper/harness sources and a mismatched physical harness pin are refused **before compilation**, source markers remain absent, and both caches/profile remain byte-identical. All fixtures are retained under `E:/BhuAayam-data/task-data/desktop-model-egress-enforcement/host-loader-04c5cd7a06c94ec1a4f18e04e636d9d1/`.
+
+Commands from the explicit owned worktree, both exit **0**:
+
+```powershell
+& 'C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe' -B -I -S -c "import sys,runpy;sys.path.insert(0,'C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning');runpy.run_path('C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/test_model_isolation.py',run_name='__main__')" -v
+& 'C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe' -B -I -S 'E:/BhuAayam-data/task-data/desktop-model-egress-enforcement/host-loader-proof-7a42ab5b0ad74c368cc11db59c9af08c/verify.py'
+```
+
+Six focused tests pass in 0.143 s. Source-only compilation of the three changed Python files and unchanged harness passes; 26 exact source/AST/receipt checks pass. E5's remaining `guarded_run` AST, both entire Qwen runner sources, scientific settings and retired branch match the preserved candidate/history. `git diff --check` passes. The three changed physical source hashes equal their canonical LF hashes; unchanged harness physical hash is `5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca`, and CRLF-to-LF normalization exactly matches reviewed Git source/fixed pin `4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f`.
+
+| Correction artifact | SHA-256 |
+| --- | --- |
+| Fixture `cache-regression.json` | `92d19088cfd892ca87d0e18559e97bcdfc26f0ce43cda598d835c2a5c48bbf4c` |
+| Proof `verification.json` | `a0e853b4f166649bf619e07e31facde461e842fa1271802631b04b8276b08bce` |
+| Proof `unit-tests.txt` | `99a1ce05da46e56d932ccc50174254671288b919b59e243a13222c00e2385bb9` |
+| Proof `verify.py` | `0a9f925d6e833436ed36b527595be97b26005f583f4f79cca6038b528bdcaaf2` |
+| `resources.py` executed source | `c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54` |
+| `model_isolation.py` executed source | `d3b39d4552701f3b7a6738719b3133be893a649469f7f685b1019306dfa42675` |
+| `test_model_isolation.py` source | `9678c1c67d56979debd006e11d660b997baa1318a591bface9426d152e043de1` |
+
+Proof files are under `E:/BhuAayam-data/task-data/desktop-model-egress-enforcement/host-loader-proof-7a42ab5b0ad74c368cc11db59c9af08c/`. Exact hashes confirm the original controls/verification/commit-verification receipts, review cache/reconciliation receipts and original reviewer cache are unchanged. Saved token/Job/environment/handles/ACL/peak/cleanup evidence is reused for those unchanged paths; **the full `--control` campaign was not rerun**, and the old profile pins remain historical, not a launch profile for the corrected source. This correction qualifies host source loading and direct-role refusals only. No model/dependency imports, weights/corpus/held-out reads, GPU, inference/training, native child launch, services, external requests, shared cache mutations or new ACL/profile grants occurred. Existing Qwen execution, historical peak/network, Linux, scientific, private-data and release limits remain. Return the correction for narrow independent closure, then stop; lead retains integration ownership.

@@ -8,11 +8,16 @@ from __future__ import annotations
 import argparse
 import builtins
 import copy
+import hashlib
+import importlib.util
 import json
+import marshal
 import os
 from pathlib import Path
 import shutil
+import struct
 import sys
+import types
 import unittest
 from unittest.mock import patch
 import uuid
@@ -25,6 +30,100 @@ from geo.usp_learning.resources import guarded_run
 
 
 class BoundaryTests(unittest.TestCase):
+    def test_host_loaders_ignore_valid_caches_and_refuse_source_drift_before_execution(self):
+        root = isolation.STAGING_PARENT / ("host-loader-" + uuid.uuid4().hex)
+        root.mkdir(parents=True)
+        relatives = (isolation.HELPER, isolation.HARNESS, "services/geo/geo/usp_learning/resources.py")
+        originals = {relative: (REPO / relative).read_bytes() for relative in relatives}
+        paths = {relative: root / "host" / relative for relative in relatives}
+        for relative, path in paths.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(originals[relative])
+
+        def source_module(path, name):
+            module = types.ModuleType(name)
+            module.__file__ = str(path)
+            exec(compile(path.read_bytes(), str(path), "exec"), module.__dict__)
+            return module
+
+        caches = {}
+        positive_controls = {}
+        for relative, function in ((isolation.HELPER, "launch_model"), (isolation.HARNESS, "launch")):
+            path = paths[relative]
+            cache = Path(importlib.util.cache_from_source(str(path)))
+            cache.parent.mkdir()
+            payload = "HOST_CACHE_MARKER = 'UNPINNED_HOST_CACHE'\ndef " + function + "(*args, **kwargs):\n    return HOST_CACHE_MARKER\n"
+            status = path.stat()
+            cache_bytes = (importlib.util.MAGIC_NUMBER
+                           + struct.pack("<III", 0, int(status.st_mtime), status.st_size)
+                           + marshal.dumps(compile(payload, str(path), "exec")))
+            cache.write_bytes(cache_bytes)
+            caches[cache] = cache_bytes
+            # Positive control: these harmless caches really are valid, even
+            # with bytecode writes disabled. Only fixture caches are touched.
+            spec = importlib.util.spec_from_file_location("cache_positive_control", path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            positive_controls[relative] = getattr(module, function)()
+            self.assertEqual(positive_controls[relative], "UNPINNED_HOST_CACHE")
+
+        helper = source_module(paths[isolation.HELPER], "exact_host_helper")
+        resources = source_module(paths[relatives[2]], "exact_host_resources")
+        profile_path = root / "profile.json"
+        # Deliberately unsupported technical profile stops the genuine helper
+        # before any native launch, process, ACL or dependency operation.
+        profile = {"schemaVersion": "host-cache-control-only", "files": {
+            "code/" + isolation.HELPER: hashlib.sha256(originals[isolation.HELPER]).hexdigest()}}
+        isolation.write(profile_path, profile)
+        profile_sha = isolation.sha(profile_path)
+        with self.assertRaisesRegex(RuntimeError, "unsupported profile"):
+            resources.guarded_run([], root / "receipts", {}, containment_profile=profile_path,
+                                  containment_sha256=profile_sha)
+        for physical_pin in (None, isolation.sha(paths[isolation.HARNESS])):
+            with self.subTest(physical_pin=physical_pin):
+                api = helper.audit_module(paths[isolation.HARNESS], physical_pin)
+                self.assertTrue(callable(api.launch))
+                self.assertTrue(callable(api.token_data))
+                self.assertFalse(hasattr(api, "HOST_CACHE_MARKER"))
+        with patch.object(builtins, "compile", side_effect=AssertionError("unverified source compiled")):
+            with self.assertRaisesRegex(RuntimeError, "profile harness source SHA256 drift"):
+                helper.audit_module(paths[isolation.HARNESS], "0" * 64)
+
+        for relative in (isolation.HELPER, isolation.HARNESS):
+            marker = root / (Path(relative).stem + "-source-executed.txt")
+            paths[relative].write_bytes(originals[relative]
+                                       + ("\nPath(" + repr(str(marker)) + ").write_text('unverified source executed')\n").encode())
+            with self.subTest(relative=relative), patch.object(
+                    builtins, "compile", side_effect=AssertionError("unverified source compiled")):
+                if relative == isolation.HELPER:
+                    with self.assertRaisesRegex(RuntimeError, "helper source SHA256 drift"):
+                        resources.guarded_run([], root / "receipts", {}, containment_profile=profile_path,
+                                              containment_sha256=profile_sha)
+                else:
+                    # A matching caller-supplied physical pin cannot override
+                    # the trusted source pin used by early token checks.
+                    for physical_pin in (None, isolation.sha(paths[relative])):
+                        with self.assertRaisesRegex(RuntimeError, "harness source SHA256 drift"):
+                            helper.audit_module(paths[relative], physical_pin)
+            self.assertFalse(marker.exists())
+        for cache, expected in caches.items():
+            self.assertEqual(cache.read_bytes(), expected)
+        self.assertEqual(isolation.sha(profile_path), profile_sha)
+        self.assertFalse(any(name in sys.modules for name in ("torch", "transformers", "peft", "psutil")))
+        isolation.write(root / "cache-regression.json", {
+            "status": "host_source_cache_regression_pass", "root": str(root),
+            "sourceSha256": {relative: hashlib.sha256(value).hexdigest() for relative, value in originals.items()},
+            "harnessCanonicalSha256": helper.HARNESS_SOURCE_SHA256, "profileSha256": profile_sha,
+            "validCachePositiveControls": positive_controls,
+            "cacheSha256": {cache.relative_to(root).as_posix(): hashlib.sha256(value).hexdigest()
+                            for cache, value in caches.items()},
+            "sourceDriftRefusedBeforeCompile": True, "sourceMarkersAbsent": True,
+            "cachesUnchanged": True, "profileUnchanged": True,
+            "flags": {"isolated": sys.flags.isolated, "noSite": sys.flags.no_site,
+                      "dontWriteBytecode": sys.dont_write_bytecode},
+            "limits": "Host loaders only; copied source and harmless caches. Unsupported technical profile; genuine harness launch never called. No model/dependency import, process launch, ACL or external request."})
+        print("Host cache regression receipt: " + str(root / "cache-regression.json"))
+
     def test_direct_qwen_roles_refuse_before_private_reads_or_dependency_imports(self):
         import compare_reranker
         import train_reranker_lora

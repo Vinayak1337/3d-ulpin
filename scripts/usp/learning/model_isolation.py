@@ -9,7 +9,6 @@ from __future__ import annotations
 import contextlib
 import ctypes
 import hashlib
-import importlib.util
 import io
 import json
 import os
@@ -19,6 +18,7 @@ import stat
 import subprocess
 import sys
 import time
+import types
 import uuid
 
 STAGING_PARENT = Path("E:/BhuAayam-data/task-data/desktop-model-egress-enforcement")
@@ -27,6 +27,9 @@ SHELL_SHA = "362a356ce7f0940ec74f73a8fc2c990a2cc24a38a11c90bbd8eca947110ad139"
 MODULE_SHA = "60e8b93ee7a9111d38912c7d45ce83a56dccf772bd974b96bd3cc4c678744560"
 HELPER = "scripts/usp/learning/model_isolation.py"
 HARNESS = "scripts/usp/security/appcontainer_audit.py"
+# Canonical LF source of the reviewed primitive at candidate 2f0928e. Early
+# token checks have no profile yet; reject source drift before executing it.
+HARNESS_SOURCE_SHA256 = "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f"
 ROLES = ("compare_reranker.py", "train_reranker_lora.py", "control.py")
 READONLY = ("runtime", "code", "inputs", "model")
 _BOUNDARY = None
@@ -67,11 +70,18 @@ def safe_path(root, relative):
     return path
 
 
-def audit_module(path):
+def audit_module(path, expected_source_sha256=None):
     require(os.name == "nt", "Windows AppContainer profile required; no fallback")
-    spec = importlib.util.spec_from_file_location("model_appcontainer", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    raw = Path(path).read_bytes()
+    source = raw.replace(b"\r\n", b"\n")
+    require(hashlib.sha256(source).hexdigest() == HARNESS_SOURCE_SHA256, "harness source SHA256 drift before execution")
+    if expected_source_sha256 is not None:
+        require(hashlib.sha256(raw).hexdigest() == expected_source_sha256, "profile harness source SHA256 drift before execution")
+    # The canonical bytes verified above are exactly the compile input. Host
+    # caches are neither read nor deleted; supported checkout EOLs stay pinned.
+    module = types.ModuleType("model_appcontainer")
+    module.__file__ = str(path)
+    exec(compile(source, str(path), "exec"), module.__dict__)
     return module
 
 
@@ -220,9 +230,9 @@ def launch_model(command, output_dir, limits, profile_path, profile_sha):
     require(Path(output_dir).absolute() == root / "receipts", "host guard receipt must use protected receipt scope")
     require(profile["jobMemoryBytes"] <= limits["maxPeakProcessRssBytes"] and profile["timeoutSeconds"] <= limits["maxRunSeconds"],
             "profile exceeds caller resource budget")
-    api = audit_module(Path(__file__).resolve().parents[3] / HARNESS)
     for relative in (HELPER, HARNESS):
         require(sha(Path(__file__).resolve().parents[3] / relative) == profile["files"]["code/" + relative], "launch/bootstrap code drift")
+    api = audit_module(Path(__file__).resolve().parents[3] / HARNESS, profile["files"]["code/" + HARNESS])
     label = script.stem + "-" + args[0]
     write(root / "state" / (label + "-attempt.json"), {"profileSha256": profile_sha, "oneAttemptIncludingFailure": True})
     name = "CodexQwen_" + uuid.uuid4().hex
