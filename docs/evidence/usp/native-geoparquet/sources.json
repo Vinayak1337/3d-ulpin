@@ -1,0 +1,510 @@
+{
+  "format": "usp-native-geoparquet-sources/1",
+  "task": "GEOPARQUET-01",
+  "date": "2026-10-01",
+  "baseCommit": "6f56c274cd923ac2ab677c564371690350daa764",
+  "codeCommit": "eb8ca96ffc6c215e41328dfd29f565ccc180b7b5",
+  "startingStagingObservedReadOnly": "19b9cf751efa7aa2a631321ded6e2d774e77deeb",
+  "worktree": "C:/Users/kvina/.codex/worktrees/desktop-geoparquet/3d-ulpin",
+  "branch": "task/desktop-geoparquet-native-reader",
+  "sourceIndexConsulted": [
+    "docs/api/real-sources.md",
+    "docs/api/datasets.json"
+  ],
+  "sourceIndexUpdate": "Lead owns shared catalogue/index; new test_only assets supplied here for integration",
+  "runtimeLock": "scripts/usp/geoparquet/runtime-lock.json",
+  "model": {
+    "requested": "gpt-6.1-sol",
+    "requestedEffort": "xhigh",
+    "actualModelAndEffort": "not independently exposed in this turn",
+    "requestedTier": "default/standard",
+    "actualTier": "not exposed"
+  },
+  "permissions": {
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "sources": [
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/originals/example.parquet",
+      "bytes": 29834,
+      "sha256": "f3e4bf0b0376904f851057d2047bb69e81dce913f2ff1aabe8a4dc1ec0789bc2",
+      "issuer": "Open Geospatial Consortium / GeoParquet upstream",
+      "originalUrl": "https://raw.githubusercontent.com/opengeospatial/geoparquet/525b8f9150db637a7dfa9d8ba46af5f0ed354094/examples/example.parquet",
+      "upstreamRevision": "525b8f9150db637a7dfa9d8ba46af5f0ed354094",
+      "upstreamOrigin": "https://github.com/opengeospatial/geoparquet/tree/v1.1.0",
+      "acquiredAt": "2026-10-01T16:21:00.585922+00:00",
+      "qualification": "test_only",
+      "stage": "tested_local_reader",
+      "licence": "Apache-2.0 repository terms; educational upstream example; underlying country geometry/attribute accuracy and independent data redistribution chain are not qualified",
+      "attribution": "Open Geospatial Consortium / GeoParquet upstream",
+      "originalPreserved": true,
+      "operationalEligible": false,
+      "trainingEligible": false,
+      "productionEligible": false,
+      "geography": "Foreign country-level upstream examples; checked rows Fiji and Tanzania; never relocated to India",
+      "reference": {
+        "state": "declared",
+        "id": {
+          "authority": "OGC",
+          "code": "CRS84"
+        },
+        "qualification": "unqualified",
+        "axisDeclarations": "longitude, latitude; degree, retained as literal PROJJSON",
+        "verticalReference": "absent"
+      },
+      "profile": {
+        "geoparquet": "1.1.0",
+        "geometryEncoding": "WKB",
+        "geometryTypes": [
+          "Polygon",
+          "MultiPolygon"
+        ],
+        "compression": "SNAPPY",
+        "numRows": 5
+      },
+      "localReceipt": {
+        "bytes": 23850,
+        "execution": {
+          "arrowInput": "BufferReader of pinned bytes; no filesystem dispatch",
+          "baselineOsThreads": 4,
+          "computePoolThreads": 1,
+          "exitCode": 0,
+          "gatedStart": true,
+          "literalTwoOsThreadsEnforced": false,
+          "memoryEnforcement": "Windows Job private-byte ceiling",
+          "observedCpuAffinity": [
+            0,
+            1
+          ],
+          "osEgressDenied": false,
+          "osHelperAllowance": 4,
+          "peakJobPrivateBytes": 61554688,
+          "peakSampledRssBytes": 43171840,
+          "peakSampledThreads": 4,
+          "platform": "win32",
+          "processLimit": 1,
+          "processingCpuLimit": 2,
+          "seconds": 0.198,
+          "totalOsThreadCeiling": 6
+        },
+        "output": "E:\\BhuAayam-data\\task-data\\desktop-geoparquet-native\\evidence\\final-example\\projection.json",
+        "profile": {
+          "reasons": [],
+          "status": "supported"
+        },
+        "sha256": "b69aaeeb3202a94f0bb6ce9ce3ed8971fba43afbfc56556785d5b98209f4a431",
+        "sourceSha256": "f3e4bf0b0376904f851057d2047bb69e81dce913f2ff1aabe8a4dc1ec0789bc2",
+        "status": "available",
+        "window": {
+          "coordinateValues": 148,
+          "nextRowIndex": 2,
+          "prefixRowsOmitted": 0,
+          "prefixRowsScannedInSelectedGroups": 0,
+          "requestedRows": 2,
+          "requestedStartRowIndex": 0,
+          "returnedRows": 2,
+          "scannedBatchRows": 2,
+          "status": "available",
+          "stopReason": "row_window",
+          "totalRows": 5,
+          "truncated": true
+        }
+      }
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/originals/alltypes_plain.parquet",
+      "bytes": 1851,
+      "sha256": "12a618d20a59ee0967fef45e7ec1ff6d451e724838edc1bbeac780ca15e8fcc4",
+      "issuer": "Apache Parquet testing upstream",
+      "originalUrl": "https://raw.githubusercontent.com/apache/parquet-testing/56653c437c8092f704a092d0d1d4e600124cd49f/data/alltypes_plain.parquet",
+      "upstreamRevision": "56653c437c8092f704a092d0d1d4e600124cd49f",
+      "upstreamOrigin": "https://github.com/apache/parquet-testing",
+      "acquiredAt": "2026-10-01T16:50:58.557663+00:00",
+      "qualification": "test_only",
+      "stage": "tested_local_reader",
+      "licence": "Apache-2.0 repository terms; software test corpus, not operational evidence",
+      "attribution": "Apache Parquet testing upstream",
+      "originalPreserved": true,
+      "operationalEligible": false,
+      "trainingEligible": false,
+      "productionEligible": false,
+      "geography": "Not applicable: upstream scalar-type test corpus",
+      "reference": {
+        "state": "absent",
+        "specificationDefault": null
+      },
+      "profile": {
+        "geoMetadata": "absent",
+        "numRows": 8,
+        "rowDecoding": "unsupported"
+      },
+      "localReceipt": {
+        "bytes": 7453,
+        "execution": {
+          "arrowInput": "BufferReader of pinned bytes; no filesystem dispatch",
+          "baselineOsThreads": 1,
+          "computePoolThreads": 1,
+          "exitCode": 0,
+          "gatedStart": true,
+          "literalTwoOsThreadsEnforced": false,
+          "memoryEnforcement": "Windows Job private-byte ceiling",
+          "observedCpuAffinity": [
+            0,
+            1
+          ],
+          "osEgressDenied": false,
+          "osHelperAllowance": 4,
+          "peakJobPrivateBytes": 48676864,
+          "peakSampledRssBytes": 43130880,
+          "peakSampledThreads": 4,
+          "platform": "win32",
+          "processLimit": 1,
+          "processingCpuLimit": 2,
+          "seconds": 0.212,
+          "totalOsThreadCeiling": 6
+        },
+        "output": "E:\\BhuAayam-data\\task-data\\desktop-geoparquet-native\\evidence\\final-absent-geo\\projection.json",
+        "profile": {
+          "reasons": [
+            "geo_absent"
+          ],
+          "status": "unsupported"
+        },
+        "sha256": "81ad130e4632c9daf5d908daf3f3c44dbb98d16fbb2ab934c68d1c039cb03722",
+        "sourceSha256": "12a618d20a59ee0967fef45e7ec1ff6d451e724838edc1bbeac780ca15e8fcc4",
+        "status": "unsupported",
+        "window": {
+          "coordinateValues": 0,
+          "nextRowIndex": null,
+          "prefixRowsOmitted": 0,
+          "requestedRows": 2,
+          "requestedStartRowIndex": 0,
+          "returnedRows": 0,
+          "status": "unsupported",
+          "totalRows": 8,
+          "truncated": false
+        }
+      }
+    }
+  ],
+  "codePins": [
+    {
+      "path": "C:/Users/kvina/.codex/worktrees/desktop-geoparquet/3d-ulpin/services/geo/geo/native_geoparquet.py",
+      "bytes": 30713,
+      "sha256": "caaa1a9275ce8737a0be1d667c946ada7ad7132ffae9b186381b95f3cfa3515b",
+      "repositoryPath": "services/geo/geo/native_geoparquet.py",
+      "gitBlobSha256": "caaa1a9275ce8737a0be1d667c946ada7ad7132ffae9b186381b95f3cfa3515b"
+    },
+    {
+      "path": "C:/Users/kvina/.codex/worktrees/desktop-geoparquet/3d-ulpin/services/geo/tests/test_native_geoparquet.py",
+      "bytes": 11432,
+      "sha256": "28be007921aee2c0c16c12150411f93024a429e034bce96b5718da23ae2e886c",
+      "repositoryPath": "services/geo/tests/test_native_geoparquet.py",
+      "gitBlobSha256": "28be007921aee2c0c16c12150411f93024a429e034bce96b5718da23ae2e886c"
+    },
+    {
+      "path": "C:/Users/kvina/.codex/worktrees/desktop-geoparquet/3d-ulpin/scripts/usp/desktop-geoparquet-read.py",
+      "bytes": 16127,
+      "sha256": "a77c1905ed2955298536e801d8c9b73f33e143bd2f692e4e11f5388535cda90e",
+      "repositoryPath": "scripts/usp/desktop-geoparquet-read.py",
+      "gitBlobSha256": "a77c1905ed2955298536e801d8c9b73f33e143bd2f692e4e11f5388535cda90e"
+    },
+    {
+      "path": "C:/Users/kvina/.codex/worktrees/desktop-geoparquet/3d-ulpin/scripts/usp/geoparquet/runtime-lock.json",
+      "bytes": 2693,
+      "sha256": "b4fca9574bee42aae615b6b8d70c5b41378fb646bf42567779e0d34e91dabdde",
+      "repositoryPath": "scripts/usp/geoparquet/runtime-lock.json",
+      "gitBlobSha256": "b4fca9574bee42aae615b6b8d70c5b41378fb646bf42567779e0d34e91dabdde"
+    }
+  ],
+  "references": [
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/example-2.R",
+      "bytes": 233,
+      "sha256": "e192f48976b295f33279e78c4780bf49d19acd3cbf64c9a18006a9d419ae2dc8"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/example_metadata.json",
+      "bytes": 3623,
+      "sha256": "e068b95308c802d688489bbb165f74ed8460a5521d0e51b51d17250d31343955"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/geoparquet-LICENSE",
+      "bytes": 11356,
+      "sha256": "cc771485216b90342591f565e62ad0d406ef036d40891cf27917b919956c4fb1"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/geoparquet-spec.md",
+      "bytes": 24169,
+      "sha256": "c80590c262b4d7e96e1bf86d4a6d7b59dd38b11e2c0372e500da6e9b68e8a087"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/parquet-testing-LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-numpy-2.2.6-cp313-cp313-win_amd64.whl.metadata",
+      "bytes": 60844,
+      "sha256": "229f3544b02805e0f6a12030e155d8a45fd3a4100b3291574175e6a76f20e1e1"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-numpy-LICENSE.txt",
+      "bytes": 47709,
+      "sha256": "14256cc3a2c9d32ac284da96b937feb44f72dd90bee2317ac3020166846ad99d"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-psutil-7.0.0-cp37-abi3-win_amd64.whl.metadata",
+      "bytes": 23136,
+      "sha256": "8c4198dfca297dfee074ee46394207f317965c25dc1af8ad38862b954795a7c1"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-psutil-LICENSE",
+      "bytes": 1577,
+      "sha256": "c7adc4d5d1337a548b967421f1fbe258b93033a0417708fd6f4e38f8ecbceb80"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-pyarrow-21.0.0-cp313-cp313-win_amd64.whl.metadata",
+      "bytes": 3373,
+      "sha256": "05a1d9f877d0ec381c168addd6491d7679e1bb76e6e7b4e9993fe7e3b0efabff"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-pyarrow-LICENSE.txt",
+      "bytes": 115734,
+      "sha256": "320b8dc52e80ae89e76a5b5b246cb5c27423483363d82479b9c59c784ad1b6fe"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-pyarrow-NOTICE.txt",
+      "bytes": 2997,
+      "sha256": "7e0ade1097757e73899270990230098ca2668701bb7b62831956b5cbbc612033"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-shapely-2.0.7-cp313-cp313-win_amd64.whl.metadata",
+      "bytes": 7084,
+      "sha256": "b84ef70a23ae1cce183978e042b1a7d8b7f185c4233cee2f9c62829772fb2731"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-shapely-LICENSE.txt",
+      "bytes": 1612,
+      "sha256": "e8cd7d34604d2758ff589f0f34d6ed79c3f7fb14aaf5e12fb09221421391a3bf"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-shapely-LICENSE_GEOS",
+      "bytes": 27304,
+      "sha256": "fb9421f239b6d06aaf9e902500e67af463690aa7ce4a91d1c63f8a37df8f818c"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/references/wheel-shapely-LICENSE_win32",
+      "bytes": 1179,
+      "sha256": "9b30cd1a09789884dd54e5828e31d2bf8e6879034e7cf7b6e0321444cf6dd11d"
+    }
+  ],
+  "independentOracle": {
+    "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/independent-original-check.py",
+    "bytes": 4267,
+    "sha256": "4ce3319e1a097c712a4edfd9e42a5ef65ea179e2f2332cb2bcc4a42318d65b05",
+    "result": {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/independent-original-check.json",
+      "bytes": 2242,
+      "sha256": "8baf602a9f68550d5b643934732cb76d530df3eaa0d79b1f55e9a2327cf696a4"
+    },
+    "expected": {
+      "sourceSha256": "f3e4bf0b0376904f851057d2047bb69e81dce913f2ff1aabe8a4dc1ec0789bc2",
+      "method": "Independent stdlib Compact Thrift page headers, bounded Snappy dictionary expansion and RLE/bitpacked row indices; no Arrow/GEOS/reader output",
+      "attributeLocator": {
+        "dictionaryPageByteStart": 411,
+        "dictionaryPayloadByteStart": 427,
+        "dictionaryPayloadByteEnd": 501,
+        "dictionaryValues": 5,
+        "decompressedDictionarySha256": "d1ceacbf18c17eb8bb46ed60ff1353758ad4abbeaf428a536abaf38d79bdaac5",
+        "rowDataPageByteStart": 501,
+        "rowDictionaryIndices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "integerLocator": {
+        "dictionaryPageByteStart": 790,
+        "dictionaryPayloadByteStart": 804,
+        "dictionaryPayloadByteEnd": 839,
+        "dictionaryValues": 5,
+        "decompressedDictionarySha256": "e2afcf4e86992f07674bc104bd215401d69e96d06308706b8d4b651a4940b10b",
+        "rowDataPageByteStart": 839,
+        "rowDictionaryIndices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "wkbLocator": {
+        "dictionaryPageByteStart": 1015,
+        "dictionaryPayloadByteStart": 1033,
+        "dictionaryPayloadByteEnd": 21186,
+        "dictionaryValues": 5,
+        "decompressedDictionarySha256": "9192db15dcdc9761194833a50124beab92f073f63ae7887d2317fba7dc07a476",
+        "rowDataPageByteStart": 21186,
+        "rowDictionaryIndices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "rows": [
+        {
+          "rowIndex": 0,
+          "name": "Fiji",
+          "gdp_md_est": "5496",
+          "wkbBytes": 400,
+          "wkbSha256": "77d90b94153764abd866a6b527f0151d556cea5a69f007b3f034b08802a91df4"
+        },
+        {
+          "rowIndex": 1,
+          "name": "Tanzania",
+          "gdp_md_est": "63177",
+          "wkbBytes": 845,
+          "wkbSha256": "711b86b0af547cbdc9f415ef97bec9add917bf4146e16fd6e3a7d2e8fb426a4b"
+        }
+      ],
+      "row0FirstXY": [
+        180.0,
+        -16.067132663642447
+      ],
+      "row0CoordinateLocator": {
+        "decodedWkbByteStart": 22,
+        "decodedWkbByteEnd": 38
+      },
+      "literalOriginalNameSpans": [
+        {
+          "byteStart": 434,
+          "byteEnd": 438,
+          "utf8": "Fiji"
+        },
+        {
+          "byteStart": 442,
+          "byteEnd": 450,
+          "utf8": "Tanzania"
+        }
+      ]
+    }
+  },
+  "artifacts": [
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/final-example/projection.json",
+      "bytes": 23850,
+      "sha256": "b69aaeeb3202a94f0bb6ce9ce3ed8971fba43afbfc56556785d5b98209f4a431"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/final-absent-geo/projection.json",
+      "bytes": 7453,
+      "sha256": "81ad130e4632c9daf5d908daf3f3c44dbb98d16fbb2ab934c68d1c039cb03722"
+    }
+  ],
+  "receipts": [
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/acquisition.json",
+      "bytes": 2822,
+      "sha256": "7df3e84c8441ce2c160e03d70eef11aeb57494d931ae51ac11d9e4c0fbfe619a"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/pre-check-headroom.json",
+      "bytes": 172,
+      "sha256": "1ca27a67d7311cdc7fd641fcd31aadf18d03c5f0fd160c6ee9f7b98fb71cfdd1"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/requirements.lock.txt",
+      "bytes": 378,
+      "sha256": "1c2fd68cc557a38ff85403fcae27254f777614c6ad96c1e08ea20d6422c78bf9"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/final-tests.txt",
+      "bytes": 1481,
+      "sha256": "89733f1a99bc82d50516f6a1ee7e7daeabbbe27703f2785b4d8261119796dfa2"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/final-example-receipt.json",
+      "bytes": 1207,
+      "sha256": "8ddba47ee6de36b57a31bdcc1debb49867bdb649759375ee42c78af39d731870"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/final-absent-geo-receipt.json",
+      "bytes": 1138,
+      "sha256": "e44f08dbe040b812b16d523426cd5be7e0d1e408cafc83e83217d81e8c3bb7fd"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/evidence/final-local-denial-receipt.json",
+      "bytes": 125,
+      "sha256": "b5fd99990c575e92fd2082d70b5d117ceeffc112835969399615680b10143c24"
+    }
+  ],
+  "checks": [
+    {
+      "command": "python -m py_compile services/geo/geo/native_geoparquet.py scripts/usp/desktop-geoparquet-read.py services/geo/tests/test_native_geoparquet.py",
+      "exit": 0
+    },
+    {
+      "command": "NATIVE_GEOPARQUET_TEST_SOURCES=<private originals>; python -m unittest discover -s services/geo/tests -p test_native_geoparquet.py -v",
+      "exit": 0,
+      "tests": 9,
+      "seconds": 2.255
+    },
+    {
+      "command": "python scripts/usp/desktop-geoparquet-read.py <private originals>/example.parquet --output-dir <private evidence>/final-example --rows 2",
+      "exit": 0
+    },
+    {
+      "command": "python scripts/usp/desktop-geoparquet-read.py <private originals>/alltypes_plain.parquet --output-dir <private evidence>/final-absent-geo --rows 2",
+      "exit": 0,
+      "status": "unsupported metadata inventory"
+    },
+    {
+      "command": "python scripts/usp/desktop-geoparquet-read.py https://example.invalid/data.parquet --output-dir <private evidence>/final-local-denial --rows 2",
+      "exit": 2,
+      "code": "LOCAL_ONLY",
+      "outputDirectoryCreated": false
+    }
+  ],
+  "bounds": {
+    "originalBytes": 33554432,
+    "outputBytes": 16777216,
+    "footerBytes": 1048576,
+    "memoryBytes": 2147483648,
+    "deadlineSeconds": 60,
+    "nativeWorkerProcesses": 1,
+    "cpuAffinity": [
+      0,
+      1
+    ],
+    "computePools": 1,
+    "threadEnforcement": "Windows Job and sampled ceiling 6; four observed threads; no two-total-thread or OS egress claim",
+    "selectedRows": 1000,
+    "coordinateValues": 100000,
+    "selectedRowGroupDeclaredBytes": 134217728,
+    "selectedRowGroupRows": 100000,
+    "batchRows": 64
+  },
+  "limitations": [
+    "Windows local inspection only tested; Linux enforcement/runtime unrun",
+    "GeoParquet 1.1.0 only; standard XY WKB 1..7, UNCOMPRESSED/SNAPPY only; XYZ/M/EWKB/SRID/other encoding or codecs explicitly unsupported",
+    "CRS/projjson/edge/epoch/bounds are declarations, not placement/accuracy/measurement/identity qualification",
+    "Unsupported geo profile publishes useful schema/row-group inventory with no rows; individual unsupported WKB retains exact cell bytes/hash",
+    "All integers use decimalInteger strings to avoid JSON/JavaScript rounding; temporal and nonfinite scalar categories remain tagged",
+    "Row-group offsets require bounded native prefix scanning and final batch slack; scannedBatchRows and prefixRowsScannedInSelectedGroups are reported; returned Python row values stay in selected window",
+    "No arbitrary URL/cloud filesystem/external chunk/extension/plugin dispatch; no OS network-denial claim",
+    "Canonical job/API/SQL/admission/tiling/Indian operational/learning/release gates remain unrun"
+  ],
+  "resources": {
+    "ownedProcessesStopped": true,
+    "servicesStarted": false,
+    "privateInputsAndResultsRetained": "E:/BhuAayam-data/task-data/desktop-geoparquet-native",
+    "preparationArtifacts": "Unchanged originals, pinned wheelhouse/venv, references, prior first-run outputs and final evidence retained",
+    "cleanup": "Only owned temporary snapshots/worker processes removed; no shared or populated-state cleanup"
+  }
+}
