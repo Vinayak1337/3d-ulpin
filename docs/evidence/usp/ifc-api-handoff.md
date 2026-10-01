@@ -126,3 +126,37 @@ Constituent paths follow; the private JSON carries every exact per-file old/new 
 | `nest-routes.txt` | `bee7f354669a2a5501888d79582ee1e9bf8b1f9ffc63ae5a1b333601a6e0e574` |
 | `backend-typecheck.txt` | `62a6c61cda9b483b29da1f659b0be2f68f901d5953a04698c91b1dbcf62685c2` |
 | `summary-final.txt` | `55fa6f12deb19a2f4eca6f8e82b1a872cbeccfe2b4748612cf76c269ac9e49ed` |
+
+## IFC-02 review corrections, 1 October
+
+Code `9906d615dbe5b7a53c1d3a364ea92316876ae00c`, tree `58b093fa7ea231b5df3ec6ac3ba04862b52960d3`, on the same branch/worktree from candidate `24879bdeb41e2820a36ce1061c2b321844e3e66f`. Assignment `a1c3460:docs/orchestration/PARALLEL_20261001E.md`; returned review `8396490:docs/evidence/usp/desktop-backend-review/ifc-api-review.md`. Read-only staging observed at `e050cec3c8df10f8ff1a2c5c3539c5520d14de6c`; integration remains lead-owned. Supplied permissions remain never/danger-full-access; requested Sol6.1/xhigh/default-standard, actual per-turn settings unexposed.
+
+Both findings are corrected:
+
+- **P1:** generic `retryJob` refuses `ifc-native` with HTTP 422 / `IFC_CANONICAL_RETRY_REQUIRED` immediately after lookup, before case locks or mutations. Recovery directs callers to source-bound IFC retry. Two failed-job caller controls produce no copies, source updates, events or queued capacity. Worker metadata/attempt authority remains strict.
+- **P2:** `ifc-python-profile/2` uses `verified_bytecode_read_no_write`, including runtime/environment caches and reachable repository Python sources/caches. Node verifies the complete inventory immediately before wrapper or reaper launch, covering imports before Python-side verification. The wrapper verifies again before/after native processing and narrowly adapts the unchanged CLI child command to add `-B`, preventing new cache writes. Cache reads remain permitted only with verified bytes; `-B` is not claimed to prevent reads. Drift refuses launch, and an unavailable reaper preserves scratch.
+
+**This supersedes the earlier cache-excluding runtime qualification.** Historical `/1` profiles now return controlled unavailable under current checks; generate a fresh `/2` profile for the actual checkout/runtime. No old profile, pin or receipt was rewritten. Accepted native reader/CLI physical and Git bytes, retained environment and shared caches remain unchanged.
+
+Fresh private scope: `E:/BhuAayam-data/task-data/desktop-ifc-native/api-checks/ifc-02-corrections/`. Profile inventory: **4,838 files / 215,910,429 bytes, including 1,811 `.pyc` files**. Existing interpreter/environment remain the historical paths above; correction scratch is empty. Profile and tool verification were repeated during receipt reconciliation without another native parser run.
+
+| Changed runtime pin | Previous SHA256 | Correction SHA256 |
+| --- | --- | --- |
+| profile | `8c72df1e49d9ff6682a71aabb6b9e2dd539d37c9a14f86c75b89abb98b33e099` | `4be36984cd8bf3cbe0b661c23a2a562fe1d2a0a43d5b58585af38a6b78803606` |
+| wrapper/helper | `adb56f0584f5eaa3fb62ed6836bd031b38e98da7e812d45e484f237a832d3955` | `092230a99ad01841dace32cff6826dc330333245c1fa00c72ae925bc9a6cf18b` |
+| IFC code, physical | `b654f6638ae9eee947bf5deae447d752c2ef4e35979dc3da98ea4b6625f1df7c` | `7900454406c7ebebb4b30872bf059c8eda5dfecffdc5b15cf2ae707e08faf5fd` |
+| IFC code, Git/LF | `f30df1bffa6512c6cf9c145f3d933d5584ffb9d006e594cbcba90d958415cd76` | `c7d6d9b23fd9334079868b046907cd9bc3d0c3efb2f298552b409e113279aa1a` |
+
+Python, reader and dependency-lock pins remain the historical values above. All 19 MVT, 9 semantic and 9 validator constituents and aggregate physical/Git hashes match the previous candidate exactly: `domain.ts` is outside those lists, and the remaining production edits are IFC leaves. No new immutable-read exception, stored-pin rewrite or validator rerun was introduced.
+
+Narrow correction checks, all exit 0:
+
+- `pnpm exec tsx --test --test-name-pattern "generic retry caller" tests/ifc-authority.test.ts`: 1 pass; `generic-retry.txt`.
+- `pnpm exec tsx --test tests/ifc-bytecode-profile.test.ts`: 2 pass; `bytecode-profile.txt`. Actual Node config and Python verifier reject a timestamp/size-valid forged cache with unchanged source; repository caches include Windows case variants; frozen `/1` profile is refused unchanged; child adapter confirms cache writes disabled. Isolated protocol scopes are preserved.
+- One configured `one configured host invocation` test with the fresh profile and `ULPIN_IFC_LOCAL_PROCESS=1`: 1 pass / 28.479 s; `worker-smoke.txt`. Real wrapper/native parser, SQL/storage doubles. IFC2X3 source and artifact match the historical SHA256/size exactly, and inventory remains stable.
+- `pnpm typecheck:backend`, in-memory wrapper/helper Python compile and `git diff --check`: pass; `backend-typecheck.txt`, `python-compile.txt`, `diff-check.txt`.
+- Pinned Python `-I -S -B <correction-scope>/reconcile-corrections.py`: exit 0; unchanged originals, historical evidence, accepted reader/CLI, shared digests and empty scratch verified. Script SHA256 `2ebdbee5f0defe4a16b1df24c7f1aea0e79203ff2466e3b175ab3d8a51a66a54`.
+
+New `correction-pins.json`: **35,459 bytes**, SHA256 `1cd656b9df723ea228c5c4ba1c899a5e9db7574529531b77c40d7af14c43cbac`. It records changed-file physical/Git hashes, old/new tool and group pins, exact command/log hashes, preserved reviewer controls and historical evidence. Original `final-pins.json` remains unchanged at `6c3d41254e3017007ff83423f8573121c430bd56fd590ceb0d878e50619877ef`.
+
+HTTP/PostgreSQL/private-object persistence remains unrun while Docker is unavailable; no HTTP status execution is claimed by the caller control. Inputs remain `test_only`; geometry, global placement, rights, learning, scale, Linux and release gates remain unqualified. No services, source acquisition, providers/models/GPU, frontend, workers, polls/schedules, push or deployment occurred during corrections. Return exact commits and this evidence through the authorized lead callback, then stop.
