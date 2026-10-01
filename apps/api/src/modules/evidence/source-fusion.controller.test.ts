@@ -2,21 +2,18 @@ import 'reflect-metadata';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {Readable} from 'node:stream';
-import {Module} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import {SwaggerModule,DocumentBuilder} from '@nestjs/swagger';
 import {SourceFusionController} from './source-fusion.controller';
 import {SourceFusionService} from '@ulpin/server/modules/usp/ingestion/source-fusion';
 import {PrivateSpatialGuard} from '../spatial/private-spatial.guard';
 import {EvidenceExceptionFilter} from './evidence.http';
+import {EvidenceModule} from './evidence.module';
 
-// Lead owns EvidenceModule registration. This module verifies the exact proposed
-// controller/provider pair without registering the endpoint or opening a port.
-@Module({controllers:[SourceFusionController],providers:[SourceFusionService]})
-class SourceFusionTestModule{}
-
-test('proposed private fusion route/provider has bounded strict metadata and enforces received bytes/no-store without a listener',async()=>{
-  const app=await NestFactory.create(SourceFusionTestModule,{logger:false,abortOnError:false});
+// Verify the production module registration without opening a port or invoking
+// domain methods, so an omitted controller/provider cannot pass this check.
+test('registered private fusion route/provider has bounded strict metadata and enforces received bytes/no-store without a listener',async()=>{
+  const app=await NestFactory.create(EvidenceModule,{logger:false,abortOnError:false});
   try{
     const controller=app.get(SourceFusionController),service=app.get(SourceFusionService);
     assert.equal((controller as any).service,service);

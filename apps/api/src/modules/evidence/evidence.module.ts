@@ -5,6 +5,8 @@ import {DocumentPagesService} from '@ulpin/server/modules/usp/ingestion/document
 import {DocumentPagesController} from './document-pages.controller';
 import {DocumentImagesService} from '@ulpin/server/modules/usp/ingestion/document-images';
 import {DocumentImagesController} from './document-images.controller';
+import {SourceFusionService} from '@ulpin/server/modules/usp/ingestion/source-fusion';
+import {SourceFusionController} from './source-fusion.controller';
 import { CityJsonEvidenceController, DecisionEvidenceController, OriginalEvidenceController,
   PacketEvidenceController, SnapshotEvidenceController } from './evidence.controllers';
 import { CityJsonEvidenceService, DecisionEvidenceService, OriginalEvidenceService,
@@ -12,8 +14,8 @@ import { CityJsonEvidenceService, DecisionEvidenceService, OriginalEvidenceServi
 
 @Module({
   controllers: [SnapshotEvidenceController, OriginalEvidenceController, DecisionEvidenceController,
-    CityJsonEvidenceController, PacketEvidenceController, DocumentAssociationController, DocumentPagesController, DocumentImagesController],
+    CityJsonEvidenceController, PacketEvidenceController, DocumentAssociationController, DocumentPagesController, DocumentImagesController, SourceFusionController],
   providers: [SnapshotEvidenceService, OriginalEvidenceService, DecisionEvidenceService,
-    CityJsonEvidenceService, PacketEvidenceService, DocumentAssociationService, DocumentPagesService, DocumentImagesService],
+    CityJsonEvidenceService, PacketEvidenceService, DocumentAssociationService, DocumentPagesService, DocumentImagesService, SourceFusionService],
 })
 export class EvidenceModule {}

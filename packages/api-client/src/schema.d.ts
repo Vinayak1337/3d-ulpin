@@ -1983,6 +1983,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/evidence/source-fusion/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assemble private explicitly selected accepted document/CityJSON fragments without establishing an association */
+        post: operations["POST_api_v1_usp_evidence_source_fusion_context"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/spatial-datasets/search": {
         parameters: {
             query?: never;
@@ -27826,6 +27843,300 @@ export interface components {
                 frame: 0;
             };
         };
+        POST_usp_evidence_source_fusion_context_Request_application_json: {
+            sources: ({
+                /** @enum {string} */
+                kind: "document";
+                pin: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    readerSha256: string;
+                    inputSha256: string;
+                    acceptedFence: number;
+                    resultBytes: number;
+                };
+                partIds: string[];
+            } | {
+                /** @enum {string} */
+                kind: "cityjson";
+                pin: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    readerSha256: string;
+                    inputSha256: string;
+                    acceptedFence: number;
+                    resultBytes: number;
+                };
+                objectIds: string[];
+            })[];
+        };
+        POST_usp_evidence_source_fusion_context_Response_200_application_json: {
+            data: {
+                /** @enum {string} */
+                version: "source-fusion-context/1";
+                contextSha256: string;
+                sources: ({
+                    pin: {
+                        caseId: unknown;
+                        caseRevision: number;
+                        sourceId: unknown;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        jobId: unknown;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    kind: "document";
+                    /** @enum {string} */
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                    /** @enum {string} */
+                    nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
+                    code: string | null;
+                    warnings: string[];
+                    /** @enum {string} */
+                    capability: "selected_native_text" | "selection_required" | "native_incomplete";
+                    coverage: {
+                        selectedParts: number;
+                        availableNativeParts: number;
+                        /** @enum {string} */
+                        scope: "explicit_selection_only";
+                        /** @enum {string} */
+                        assistedExtraction: "outside_profile";
+                    };
+                    parts: {
+                        key: string;
+                        part: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            text: string;
+                            sha256: string;
+                            locator: {
+                                label: string;
+                                page?: number;
+                                row?: number;
+                                line?: number;
+                                lineEnd?: number;
+                                paragraph?: number;
+                                table?: number;
+                                column?: number;
+                                headerRow?: number;
+                                sheet?: string;
+                                sheetIndex?: number;
+                                sheetId?: number;
+                                cell?: string;
+                                /** @enum {string} */
+                                cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                                cellType?: string;
+                                /** Format: uuid */
+                                unitId?: string;
+                                unitSha256?: string;
+                                segmentIndex?: number;
+                                segmentCount?: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                            /** @enum {string} */
+                            method: "native_text";
+                        };
+                        /** @enum {string} */
+                        textState: "native_derivative" | "redacted_native_derivative";
+                    }[];
+                } | {
+                    pin: {
+                        caseId: unknown;
+                        caseRevision: number;
+                        sourceId: unknown;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        jobId: unknown;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    kind: "cityjson";
+                    /** @enum {string} */
+                    nativeStatus: "supported" | "partial_unsupported";
+                    artifactSha256: string;
+                    reference: {
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        frame: {
+                            [key: string]: unknown;
+                        };
+                        metadata: {
+                            /** @enum {string} */
+                            state: "absent";
+                        } | {
+                            /** @enum {string} */
+                            state: "declared";
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            value: string | number | boolean | (null) | unknown[] | {
+                                [key: string]: unknown;
+                            };
+                        };
+                        transform: {
+                            /** @enum {string} */
+                            state: "absent";
+                        } | {
+                            /** @enum {string} */
+                            state: "declared";
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            value: string | number | boolean | (null) | unknown[] | {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                    objects: {
+                        key: string;
+                        id: string;
+                        pointer: string;
+                        type: string;
+                        /** @enum {string} */
+                        geometryState: "present" | "absent";
+                        attributes: {
+                            /** @enum {string} */
+                            state: "absent";
+                        } | {
+                            /** @enum {string} */
+                            state: "declared";
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            value: string | number | boolean | (null) | unknown[] | {
+                                [key: string]: unknown;
+                            };
+                        };
+                        parents: {
+                            /** @enum {string} */
+                            state: "absent";
+                        } | {
+                            /** @enum {string} */
+                            state: "declared";
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            value: string | number | boolean | (null) | unknown[] | {
+                                [key: string]: unknown;
+                            };
+                        };
+                        children: {
+                            /** @enum {string} */
+                            state: "absent";
+                        } | {
+                            /** @enum {string} */
+                            state: "declared";
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            value: string | number | boolean | (null) | unknown[] | {
+                                [key: string]: unknown;
+                            };
+                        };
+                        geometries: {
+                            pointer: string;
+                            type: string;
+                            status: string;
+                            lod: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "declared";
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                value: string | number | boolean | (null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
+                            };
+                        }[];
+                    }[];
+                    coverage: {
+                        selectedObjects: number;
+                        availableNativeObjects: number;
+                        /** @enum {string} */
+                        scope: "explicit_selection_only";
+                        /** @enum {string} */
+                        geometryArrays: "omitted; exact artifact references retained";
+                    };
+                    hierarchyIssues: (string | number | boolean | (null) | unknown[] | {
+                        [key: string]: unknown;
+                    })[];
+                })[];
+                association: {
+                    /** @enum {string} */
+                    state: "not_assessed";
+                    /** @enum {string} */
+                    membership: "operator_selection";
+                    /** @enum {string} */
+                    reason: "source_set_membership_does_not_establish_relationships";
+                    canonicalTargets: unknown[];
+                    /** @enum {string} */
+                    crossSourceFrameAlignment: "not_assessed";
+                    /** @enum {string} */
+                    conflicts: "literal_values_retained_per_source; not_reconciled";
+                };
+                capabilities: {
+                    /** @enum {string} */
+                    contextAssembly: "available";
+                    /** @enum {string} */
+                    matching: "not_assessed";
+                    /** @enum {boolean} */
+                    recordedBuildingRequired: false;
+                    /** @enum {string} */
+                    geometryQualification: "not_assessed";
+                    /** @enum {string} */
+                    rights: "not_assessed";
+                };
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
         GET_spatial_datasets_search_Response_200_application_json: {
             matches: {
                 objectId: string;
@@ -47671,6 +47982,122 @@ export interface operations {
                 };
                 content: {
                     "image/png": string;
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_evidence_source_fusion_context: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON; maximum 64 KiB of received bytes; 2–8 exact sources and 25 selections total */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_evidence_source_fusion_context_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private bounded context; association remains not_assessed */
+            200: {
+                headers: {
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_source_fusion_context_Response_200_application_json"];
+                };
+            };
+            /** @description Invalid strict source selection */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Common private Host/Origin or current-access denial */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                };
+            };
+            /** @description Requested accepted context unavailable; no partial source details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Bounded request body deadline expired */
+            408: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Accepted source/job/reader/attempt pins changed */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Request, artifact or response exceeds the profile */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Exact selected evidence or integrity unavailable */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Bounded service unavailable or deadline expired */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
                 };
             };
         };
