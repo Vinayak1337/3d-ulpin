@@ -471,6 +471,26 @@
               "Removal runtime, successful recording and exchange round trip",
               "Learning, scale, deployment and release gates"
             ]
+          },
+          {
+            "receipt": "docs/evidence/usp/cityjson-validation-runtime.json",
+            "servedCodeCommit": "ded2775f3e2ab182bedaaa23538809a570914ab1",
+            "operations": {
+              "POST /api/v1/registry-drafts/{draftId}/native-exterior/validations": "Retained D1 draft enqueues source-bound validation; finite host busy failure then explicit new-key recovery accepts one fresh native result. Same-key replay, stale revision and cross-site denial preserve history.",
+              "GET /api/v1/registry-drafts/{draftId}/native-exterior/validations/{jobId}": "Private controlled failure and accepted schema/selected-geometry result under current authority; exact report hashes and bounded no-store projection. Structural evidence only."
+            },
+            "environment": {
+              "kind": "stopped-isolated",
+              "project": "ulpin-usptest-b050544f3d2cb99e",
+              "url": "http://127.0.0.1:3192/api/v1"
+            },
+            "qualification": "Private current-draft structural validation, controlled busy failure and explicit retry, accepted result/read/replay and one actual SQL authority-lock deadline observation.",
+            "unqualified": [
+              "Structural/schema/selected-source validation only; reference accuracy, canonical admission/qualification, recording, analytical/export and release gates remain unqualified.",
+              "One real 2.2-second read-only authority-gate expiry; full worker/native deadlines, stop/unknown-COMMIT timing and durability races were not exercised.",
+              "Offline tool configuration is not an OS network sandbox; environment provenance is the explicit guarded launch, not an OS environment observation.",
+              "The retained processing image has all 45 Python algorithms identical to accepted Git after EOL comparison; exact reader bytes and all executed image/source pins are recorded separately. The new build tag differed and was not served; no processing job was run."
+            ]
           }
         ]
       },
