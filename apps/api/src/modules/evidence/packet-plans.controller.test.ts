@@ -2,18 +2,16 @@ import 'reflect-metadata';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Readable } from 'node:stream';
-import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { PacketPlansController } from './packet-plans.controller';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 import { EvidenceExceptionFilter } from './evidence.http';
+import { EvidenceModule } from './evidence.module';
 
-// Leaf registration control only; the lead owns production EvidenceModule registration.
-@Module({ controllers: [PacketPlansController] })
-class PacketPlanControlModule {}
-test('private plan leaf exposes bounded strict contracts and denies invalid bodies before domain I/O', async () => {
-  const app = await NestFactory.create(PacketPlanControlModule, { logger: false, abortOnError: false });
+// Verify production registration without a listener or domain I/O.
+test('registered private plans expose bounded strict contracts and deny invalid bodies before domain I/O', async () => {
+  const app = await NestFactory.create(EvidenceModule, { logger: false, abortOnError: false });
   try {
     const controller = app.get(PacketPlansController);
     assert(Reflect.getMetadata('__guards__', PacketPlansController).includes(PrivateSpatialGuard));
