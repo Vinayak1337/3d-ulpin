@@ -25,11 +25,23 @@ def guarded_run(command: list[str], output_dir: Path, limits: dict[str, Any], *,
     CUDA allocator limits are set in the worker.
     """
     if containment_profile is not None or containment_sha256 is not None:
-        import importlib.util
+        import hashlib
+        import types
+        if containment_profile is None or not isinstance(containment_sha256, str):
+            raise RuntimeError("Qwen containment: explicit profile and SHA256 required")
+        profile_source = Path(containment_profile).read_bytes()
+        if hashlib.sha256(profile_source).hexdigest() != containment_sha256:
+            raise RuntimeError("Qwen containment: profile SHA256 drift")
+        profile = json.loads(profile_source)
         helper = Path(__file__).resolve().parents[4] / "scripts/usp/learning/model_isolation.py"
-        spec = importlib.util.spec_from_file_location("qwen_model_isolation", helper)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        source = helper.read_bytes()
+        expected = profile["files"]["code/scripts/usp/learning/model_isolation.py"]
+        if hashlib.sha256(source).hexdigest() != expected:
+            raise RuntimeError("Qwen containment: helper source SHA256 drift before execution")
+        # Compile the same verified bytes; no cache-aware loader or second read.
+        module = types.ModuleType("qwen_model_isolation")
+        module.__file__ = str(helper)
+        exec(compile(source, str(helper), "exec"), module.__dict__)
         return module.launch_model(command, output_dir, limits, containment_profile, containment_sha256)
     # The separate E5 caller keeps its existing explicit, uncontained behavior.
     import psutil
