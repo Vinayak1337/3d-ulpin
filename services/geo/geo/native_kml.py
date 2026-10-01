@@ -241,6 +241,13 @@ def _coordinates(node, budget):
     for field in fields:
         tuples = []
         text = field.text()
+        if field.children:
+            # Character data nested in literal/extension markup is inspectable,
+            # but cannot supply native tuples through recursive text flattening.
+            result["state"] = "unsupported"
+            result["sequences"].append({"source": _field(field), "tuples": [],
+                                        "status": "unsupported", "reason": "NONLITERAL_COORDINATES"})
+            continue
         # Token iterator avoids allocating a large split list before count checks.
         for token in re.finditer(r"\S+", text):
             budget.check()
@@ -357,18 +364,15 @@ def _read_kml(raw, *, member=None):
                    "horizontalReference": {"basis": "KML specification" if conformant else None,
                                              "axisOrder": ["longitude", "latitude"] if conformant else None,
                                              "accuracy": "not_assessed"}}})
-    # A bounded inventory makes every unimplemented subtree visible. Known fields
-    # are literal inspection only; style content and embedded HTML are never run.
-    handled = FEATURES | GEOMETRIES | frozenset(("kml", "coordinates", "outerBoundaryIs", "innerBoundaryIs",
-                     "name", "description", "address", "phoneNumber", "visibility", "open", "Snippet",
-                     "styleUrl", "altitudeMode", "extrude", "tessellate", "ExtendedData", "Data", "value",
-                     "displayName", "SchemaData", "SimpleData"))
-    stack, projected = [(root, None)], set()
+    # Semantic traversal follows only supported structural ancestry. Literal
+    # fields, extensions, styles and models never open a feature traversal path.
+    stack, projected, semantic_features = [(root, None)], set(), set()
     while stack:
         budget.check()
         node, parent_feature = stack.pop()
         is_native = node.tag[0] == namespace
         if is_native and node.tag[1] in FEATURES:
+            semantic_features.add(node)
             if len(result["features"]) >= MAX_FEATURES:
                 _fail("FEATURE_LIMIT", "KML exceeds 10,000 features.", "limit", node.locator)
             feature_index = len(result["features"])
@@ -383,7 +387,7 @@ def _read_kml(raw, *, member=None):
                     fields.append(_field(field))
                 pending.extend(reversed(field.children))
             geometries = [_geometry(child, budget, conformant, projected) for child in node.children
-                          if child.tag[0] == namespace and child.tag[1] in GEOMETRIES]
+                          if node.tag[1] == "Placemark" and child.tag[0] == namespace and child.tag[1] in GEOMETRIES]
             result["features"].append({"ordinal": feature_index, "type": node.tag[1], "parentFeature": parent_feature,
                   "attributes": node.attrs,
                   "sourceId": _attribute(node, "id"), "name": _declaration(node, "name"),
@@ -392,14 +396,33 @@ def _read_kml(raw, *, member=None):
                   "status": "partial" if (node.tag[1] == "Placemark" and not geometries) or
                                           any(g["status"] != "inspected" for g in geometries) else "inspected"})
             parent_feature = feature_index
+        if is_native and (node is root and conformant or node.tag[1] in ("Document", "Folder")):
+            stack.extend((child, parent_feature) for child in reversed(node.children)
+                         if child.tag[0] == namespace and child.tag[1] in FEATURES)
+
+    # Full bounded inventory is independent of semantic traversal, including
+    # KML-shaped payloads beneath opaque wrappers. Preserve their literal values
+    # and locators without accepting features or parsing coordinates from them.
+    handled = FEATURES | GEOMETRIES | frozenset(("kml", "coordinates", "outerBoundaryIs", "innerBoundaryIs",
+                     "name", "description", "address", "phoneNumber", "visibility", "open", "Snippet",
+                     "styleUrl", "altitudeMode", "extrude", "tessellate", "ExtendedData", "Data", "value",
+                     "displayName", "SchemaData", "SimpleData"))
+    stack = [root]
+    while stack:
+        budget.check()
+        node = stack.pop()
+        is_native = node.tag[0] == namespace
+        opaque_feature = is_native and node.tag[1] in FEATURES and node not in semantic_features
         unprojected = is_native and node.tag[1] in GEOMETRIES | frozenset(("coordinates", "outerBoundaryIs", "innerBoundaryIs")) and node not in projected
-        if not is_native or node.tag[1] not in handled or unprojected:
+        if not is_native or node.tag[1] not in handled or unprojected or opaque_feature:
             result["unsupported"].append({"namespace": node.tag[0], "name": node.tag[1],
                        "sourceId": _attribute(node, "id"), "locator": node.locator,
-                       "status": "unsupported", "reason": "UNPROJECTED_GEOMETRY_CONTENT" if unprojected else "NOT_INTERPRETED"})
+                       "status": "unsupported", "reason": "OPAQUE_FEATURE_CONTENT" if opaque_feature else
+                       "UNPROJECTED_GEOMETRY_CONTENT" if unprojected else "NOT_INTERPRETED",
+                       **({"literal": _field(node)} if opaque_feature or unprojected else {})})
         if node.tag[1] in ("href", "styleUrl", "sourceHref", "targetHref"):
             result["references"].append({**_field(node), "resolution": "not_resolved"})
-        stack.extend((child, parent_feature) for child in reversed(node.children))
+        stack.extend(reversed(node.children))
     result["coordinateCount"] = budget.coordinates
     result["status"] = "partial" if (not conformant or result["unsupported"] or
                          any(f["status"] != "inspected" for f in result["features"])) else "inspected"
