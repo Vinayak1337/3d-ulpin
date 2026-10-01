@@ -230,6 +230,33 @@ test('explicit OCR selections join native/CityJSON fragments with exact observat
   assert(!SourceFusionRequestSchema.safeParse({sources:[native.selection,geometry.selection,{...ocr.selection,itemOrdinals:Array.from({length:24},(_,i)=>i)}]}).success);
 }));
 
+test('large OCR crop bounds survive the document result, fusion projection and imported status-summary schema',()=>{
+  // Reuse the in-memory technical fixture; no real local caption is promoted to
+  // an accepted source/job. This catches lost refinements across schema imports.
+  const native=document(1),ocr=ocrDocument(2),region:[number,number,number,number]=[4800.25,6500.125,5100.75,6600.875];
+  const frame={kind:'pdf_display_page_top_left_points' as const,rotation:0 as const,width:6000,height:8000};
+  const result=DocumentResultSchema.parse({...ocr.loaded.result,
+    input:{...ocr.authority.input,ocrSelection:{page:1,region}},
+    ocr:{...ocr.loaded.result.ocr!,requestedRegion:region,sourcePageFrame:frame,
+      items:ocr.loaded.result.ocr!.items.map(item=>({...item,sourcePageBoxes:[{
+        ...item.sourcePageBoxes[0],box:[4810,6510,4840,6530]}]}))}});
+  const selection={...ocr.selection,pin:{...ocr.selection.pin,inputSha256:fingerprint(result.input),
+    resultSha256:sha256(JSON.stringify(result)),resultBytes:Buffer.byteLength(JSON.stringify(result))}};
+  const projected=fusionOcrSourceProjection(selection,result);
+  const context=fusionContextProjection([fusionSourceProjection(native.selection,native.loaded),projected]);
+  const source=context.sources[1];assert(source.kind==='document_ocr');
+  assert.deepEqual(source.ocr!.sourcePageFrame,frame);assert.deepEqual(source.ocr!.requestedRegion,region);
+  assert.equal(source.nativeStatus,'needs_ocr');assert.equal(source.ocr!.textCompleteness,'unverified');
+  assert.deepEqual(source.observations.map(o=>o.ordinal),[0,1]);
+  const {contextSha256,...body}=context;assert.equal(contextSha256,fingerprint(body));
+  for(const change of [{requestedRegion:null},{requestedRegion:[0,0,2001,100]},
+    {requestedRegion:[5990,0,6010,100]},{sourcePageFrame:{...frame,width:14401}}]){
+    assert.equal(DocumentResultSchema.safeParse({...result,ocr:{...result.ocr,...change}}).success,false);
+    assert.equal(SourceFusionContextSchema.safeParse({...context,
+      sources:[context.sources[0],{...source,ocr:{...source.ocr,...change}}]}).success,false);
+  }
+});
+
 test('empty, missing, failed and unavailable OCR retain explicit gaps; unknown items and inconsistent source citations fail generically',async()=>local(async ctx=>{
   const a=document(1),b=ocrDocument(2),empty={...b.selection,itemOrdinals:[]};
   assert.equal(fusionOcrSourceProjection(empty,b.loaded.result).capability,'selection_required');

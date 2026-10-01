@@ -4482,6 +4482,15 @@
         "canonicalMatchState": "not_assessed",
         "trainingLabelsCreated": false,
         "recordsCreated": false
+      },
+      "localExtractionEvidence": {
+        "nativeReport": "docs/evidence/usp/plan-extraction-handoff.md",
+        "selectedRegionOcrReport": "docs/evidence/usp/large-plan-ocr-handoff.md",
+        "selectedRegionOcrReview": "docs/evidence/usp/desktop-backend-review/large-plan-ocr-review.md",
+        "scope": "One local T3-2 Floor-02 caption with original-page citations; three retained native extractions have zero text. Not an accepted API job or canonical relationship.",
+        "textCompleteness": "unverified",
+        "trainingLabelsCreated": false,
+        "recordsCreated": false
       }
     },
     {
