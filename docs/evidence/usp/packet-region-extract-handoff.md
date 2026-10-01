@@ -50,3 +50,48 @@ Private root `E:/BhuAayam-data/task-data/desktop-packet-region-extract-20261002/
 | `projection-check.json` | `920bcf71b45cbe87c88bd93913b80918c62830d9177d2548a2522befb6f1680a` |
 
 Executed recipe SHA `e644a74b6c814a49b4a5278081f07bc65db6802f8b18034e13ff4a356b0f6155` hashes the new Python leaf/CLI, unchanged supervisor and contract bytes in fixed order; the current Node projection matched it. Historical execution pins are not rewritten during integration. Supplied permissions `never/danger-full-access`; Sol6.1/xhigh/default-standard requested, actual model/effort/tier unexposed. No Docker/services, model/GPU/provider, held-out inputs, frontend/shared registration/generated files, push/deploy or full PACK1/GF4 qualification. Return by authorized lead callback, then stop.
+
+## R1/R2 correction — 2 October 2026
+
+Code **`e78115f2facd5a21972f2bab57181c2a0c9f1938`**, continuing candidate `f668c6f60a3bc9ca1b56722603fb682839e578dc` in the same exclusive branch/worktree. Read-only staging was observed at `e218ff37d1536482fe195153b246dc12ebf8dd74`; no staging integration occurred. This section supersedes the historical four-file recipe/configuration and exceptional-cleanup behavior above. Original source/render/recipe receipts remain unchanged. The two reproduced defects are host executable/cache drift and cleanup propagation, not PDF upload exploits.
+
+### Frozen executable profile
+
+New leaf-local `packet_region_loader.py` creates an explicit, immutable `packet-region-runtime/1` profile. Its expected SHA comes from trusted host configuration and becomes the new `recipeSha256`. It pins the full repository Python closure: renderer, CLI, loader, unchanged admission helper/supervisor/Granite utility, package initializers and packet contract. It also pins resolved CPython executable/base DLL/stdlib/bootstrap caches, virtual-environment configuration, installed renderer packages/native assets/configuration data and consulted distribution metadata. Packages include `pypdfium2_cfg`, alongside pypdfium2/raw, PyMuPDF/fitz, Pillow and psutil. No model packages or weights are loaded.
+
+Node verifies the frozen profile and all resolved asset bytes before starting Python. A small `-I -S -B` bootstrap checks and compiles the loader's source bytes. The loader holds Windows read handles denying write/delete sharing, hashes the same source snapshots it retains, rejects unlisted resolved imports, and compiles repository/package Python directly from those snapshots. Existing `.pyc` files are neither executed for these imports nor rewritten. Bootstrap runtime caches are separately inventoried/checked before startup. Verification failures close opened handles; parent and child close their handles on exit.
+
+The shared supervisor's **on-disk source and process-tree/Job/deadline/log cleanup algorithm are unchanged**. The verified local module receives a gate that loads this verified entry without `site.main()`/`.pth` execution, plus a private subprocess binding that inserts `-B` before child interpreter initialization. It does not modify the shared Python subprocess module. The original 512 MiB Job, 25 child seconds, byte/page/pixel bounds and source/authority/PNG checks remain. Node hashes assets with buffers sized to their pinned bytes, in batches of eight.
+
+Final owner profile: **1,346 files / 119,705,136 asset bytes**, largest asset 21,586,944 bytes; profile 297,737 bytes, SHA `036e6af61762ebb0de2004cdee271ec97bf4ab1ced184490b03e60e9aafab987`. Profile admission limits: 5,000 files, 512 MiB total, 32 MiB per asset and 1 MiB profile JSON. This is a host-integrity/configuration boundary around the resolved leaf runtime; it is not an adversarial administrator sandbox or OS network-containment qualification.
+
+### Positive cleanup outcome
+
+CLI emits `packet-region-execution/2`, binding limits and profile SHA to a distinct `cleanup` outcome. `confirmed` is emitted only after the accepted supervisor returns from its process-tree/log cleanup checks. A supervisor exception emits `unresolved` and the fixed `PACKET_REGION_CLEANUP_UNRESOLVED` code, without raw exception text or paths. Failure to emit a trustworthy receipt remains unresolved.
+
+Node validates that receipt **before reading result/PNG files, including nonzero exits**. Missing/malformed/mismatched/unresolved cleanup retains the attempt and blocks further launches in the API process. Ordinary completed input refusals verify their result hash, remove their owned scratch and release admission; confirmed timeout/resource failures likewise clean the owned attempt. Recovery still requires the lead/operator to resolve the retained attempt before restoring the runtime; there is no automatic reset or cross-instance cleanup claim.
+
+### Focused verification
+
+Final commands exited **0**:
+
+- Configured `pnpm exec tsx --test tests/packet-region-runtime.test.ts`: actual CLI and actual runtime/service source, technical authority/scratch adapters, and the actual shared bounded artifact reader. Five recorded controls: valid timestamp/size-poisoned renderer cache ignored with **zero blue annotation pixels**; omitted admission-helper drift denied before launch; resolved private runtime dependency drift denied before launch; injected supervisor exception retained/blocked (one attempt/one launch across two calls); missing cleanup receipt retained/blocked. The normal active-input refusal is reusable and its next valid crop succeeds. No orphan was deliberately created.
+- `pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/packet-region-extract.test.ts apps/api/src/modules/evidence/packet-region.controller.test.ts`: six existing service/controller controls pass without a listener.
+- Configured Python `-B -m unittest services.geo.tests.test_packet_regions -v`, with `PYTHONPATH=services/geo`: three existing functional controls pass using an explicitly inventoried test context.
+- `pnpm --filter @ulpin/api typecheck` and staged whitespace check pass.
+
+Initial harness failures are retained: the cache fixture initially named a render flag this leaf does not use; the draft package closure omitted `pypdfium2_cfg` and safely refused rendering; the direct test context omitted its harness package initializers; the first controller invocation omitted the API tsconfig. The corrected final logs and technical fixture copies are retained. Final process observation found no owned correction process.
+
+Private evidence: `E:/BhuAayam-data/task-data/desktop-packet-region-correction-20261002/`. `verification.json` is **16,333 bytes**, SHA **`2dcc2a1eacdbdd2dc816e24bf3df630a63c3bed8506c341ee0d913e645059e76`**; it pins six physical/Git code files, the frozen runtime profile and final control/log/output artifacts. All inventoried runtime assets and five shared dependencies match. The original T3-1 source, successful crop, owner receipt and three primary review receipts retain their exact hashes. Earlier 47-file historical reconciliation and actual normal-timeout/PID cleanup proof are reused, without another official render/OCR or timeout campaign.
+
+### Lead integration/configuration
+
+Production controller registration/publication remains lead-owned. For the final integrated physical checkout, create a **fresh** profile outside Git with its selected installed Python:
+
+```powershell
+& '<configured Python>' -B '<integrated checkout>/scripts/usp/document-models/packet_region_loader.py' --repo '<integrated checkout>' --create-profile '<new private profile path>'
+```
+
+Configure `ULPIN_PACKET_REGIONS_PROFILE` to that absolute file and `ULPIN_PACKET_REGIONS_PROFILE_SHA256` to the printed SHA, alongside existing `ULPIN_PACKET_REGIONS_PYTHON` and `ULPIN_PACKET_REGIONS_SCRATCH`. Profile creation refuses an existing output; extraction never refreshes pins automatically. The optional `--purelib` selects an explicit package directory for isolated/configured runtimes; normal creation uses the chosen Python's purelib. The owner profile binds this worker checkout, so it cannot serve as a staging profile after cherry-pick/path/line-ending changes. Review and regenerate pins deliberately when integrated code or runtime assets change.
+
+Same requested Sol6.1/xhigh/default-standard and supplied never/danger-full-access; actual model/effort/tier unexposed. No shared reader/supervisor/authority, originals, global/package cache, frontend, registry, generated registration, DB/service/model/provider, push or deployment change. Current HTTP/SQL, natural official rotated/nonzero-origin coverage, property applicability, immutable packets/cards and GF4 remain unqualified. Return corrections for the existing reviewer's R1/R2 closure, then stop.
