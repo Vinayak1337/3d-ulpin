@@ -6,8 +6,7 @@ import {ingestionBinding, assertIngestionBinding} from '../usp/ingestion/events'
 import {permitsReferenceRecordSource, permitsReferenceRightSource} from './registry-reference-policy';
 
 const denied=()=>{throw new AppError(403,'REGISTRY_SOURCE_DENIED','This registry source context is unavailable.');};
-/** The existing private source authority, including copied document lineage. No locks or writes. */
-export async function registrySourceTx(client:PoolClient,siteId:string,sourceId:string) {
+async function registrySourceContextTx(client:PoolClient,siteId:string,sourceId:string) {
   const source=(await client.query(`SELECT s.*,c.site_id source_site_id,c.archived source_archived,
     c.revision case_revision,c.context case_context,c.frame case_frame
     FROM sources s JOIN cases c ON c.id=s.case_id WHERE s.id=$1`,[sourceId])).rows[0];
@@ -15,14 +14,27 @@ export async function registrySourceTx(client:PoolClient,siteId:string,sourceId:
   const binding=ingestionBinding(source.case_id);
   const owners=[source.inspection?.actor,source.inspection?.largeOriginal?.operatorSubject,source.inspection?.documentOriginal?.subject];
   if(owners.some(owner=>owner&&owner!==binding.subject))denied();
+  return {source,binding};
+}
+async function registrySourceAuthorityTx(client:PoolClient,{source,binding}:Awaited<ReturnType<typeof registrySourceContextTx>>) {
+  await documentAuthorityTx(client,source);
+  assertIngestionBinding(binding);
+  return {...source,accessSha256:binding.access};
+}
+/** Citation access only: callers must also check the exact accepted document result.
+ * Canonical extraction remains needs_input until ordinary recording evidence is approved. */
+export async function registryDocumentSourceAccessTx(client:PoolClient,siteId:string,sourceId:string) {
+  return registrySourceAuthorityTx(client,await registrySourceContextTx(client,siteId,sourceId));
+}
+/** The existing private source authority, including copied document lineage. No locks or writes. */
+export async function registrySourceTx(client:PoolClient,siteId:string,sourceId:string) {
+  const context=await registrySourceContextTx(client,siteId,sourceId),{source}=context;
   const nativeArea=source.status==='inspected'&&source.inspection?.status==='interpreted'&&
     ['geojson-area-v2','gpkg-area-v2','shapefile_zip-area-v2','csv-area-v2'].includes(source.profile);
   if(!['ready','partial'].includes(source.status)&&!nativeArea&&
     !permitsReferenceRecordSource(source,'record')&&!permitsReferenceRightSource(source,'right'))
     throw new AppError(409,'REGISTRY_SOURCE_UNAVAILABLE','A cited source is not currently available.');
-  await documentAuthorityTx(client,source);
-  assertIngestionBinding(binding);
-  return {...source,accessSha256:binding.access};
+  return registrySourceAuthorityTx(client,context);
 }
 export function registryMetadataEvidence(metadata:RegistryMetadata):RegistryFactEvidence[] {
   return [...Object.values(metadata.address??{}).flatMap(fact=>fact?.evidence??[]),

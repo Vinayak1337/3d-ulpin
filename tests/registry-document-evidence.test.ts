@@ -22,6 +22,7 @@ import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/eve
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';
 import {fusionSourceProjection,fusionContextProjection} from '../packages/server/src/modules/usp/ingestion/source-fusion';
 import {readFusionResult,readFusionObject} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
+import {registrySourceTx,registryDocumentSourceAccessTx} from '../packages/server/src/modules/registry/registry-metadata';
 
 // Memory-only technical protocol controls. These are neither persisted property
 // records nor a positive operational source/target example, accuracy label or geometry qualification.
@@ -379,6 +380,104 @@ function fusionFixture(){
     }};
   return {...f,client,dependencies,request,context,ocr:rows[1],selections,fusionState:state};
 }
+
+function sourcePolicyFusionFixture(){
+  const f=fusionFixture(),rows=[{input:f.input,result:f.result},f.ocr];
+  const cases=new Map<string,any>(),sources=new Map<string,any>();
+  for(const [index,row] of rows.entries()){
+    const current={id:row.input.caseId,revision:1,archived:false,frame:null,context:null,site_id:f.siteId};
+    const source={id:row.input.sourceId,case_id:current.id,family_id:row.input.familyId,revision:1,
+      sha256:row.input.sourceSha256,bytes:1,object_key:row.input.objectKey,profile:index?'pdf-reference-v2':'docx-reference-v2',
+      status:'needs_input',inspection:{status:'needs_input',documentOriginal:{version:'source-document/1',subject,
+        format:index?'pdf':'docx',sha256:row.input.sourceSha256,bytes:1,receivedAt:'2026-09-30T00:00:00Z'},documentAccepted:{}}};
+    cases.set(current.id,current);sources.set(source.id,source);
+    const input=documentInput({current,source,binding:ingestionBinding(current.id),
+      context:fingerprint({frame:null,context:null,siteId:f.siteId}),latest:true},row.input.jobId,'native_only',row.input.ocrSelection);
+    Object.assign(row.input,input);row.result.input=structuredClone(input);row.result.native.readerSha256=input.readerSha256;
+    const resultBytes=JSON.stringify(row.result),pin=f.selections[index].pin;
+    Object.assign(pin,{inputSha256:fingerprint(input),readerSha256:input.readerSha256,
+      resultSha256:sha256(resultBytes),resultBytes:Buffer.byteLength(resultBytes)});
+    source.inspection.documentAccepted={jobId:input.jobId,sha256:pin.resultSha256};
+  }
+  f.request.addFusion.contextSha256=fusionContextProjection(f.selections.map((selection,index)=>
+    fusionSourceProjection(selection,{kind:'document',result:rows[index].result})).sort((a,b)=>
+      a.pin.caseId.localeCompare(b.pin.caseId)||a.pin.sourceId.localeCompare(b.pin.sourceId))).contextSha256;
+  // Recording readiness is independent from document citation eligibility.
+  const recordingSource={id:randomUUID(),case_id:rows[0].input.caseId,family_id:randomUUID(),revision:1,
+    sha256:digest,bytes:1,object_key:'technical-recording-control',status:'ready',inspection:{}};
+  sources.set(recordingSource.id,recordingSource);
+  for(const body of [f.body,f.record,f.state.row.body,f.state.draft.records[0]])
+    body.evidence=[{sourceId:recordingSource.id,locator:'technical existing-record evidence'}] as any;
+  f.state.history.set(1,structuredClone(f.body));
+  const authority={missingAttempt:false,staleCompletion:false,queries:[] as string[]};
+  const originalQuery=f.client.query.bind(f.client) as any;
+  const client={query:async(sql:string,args:any[]=[])=>{
+    authority.queries.push(sql);
+    let data:any[];
+    if(sql.includes('max(revision)'))data=[{revision:1}];
+    else if(sql.includes('FROM sources')){
+      const source=sources.get(sql.includes('case_id=$1 AND id=$2')?args[1]:args[0]);
+      const current=source&&cases.get(source.case_id);
+      data=source?[sql.includes('JOIN cases')?{...source,source_site_id:current.site_id,source_archived:current.archived,
+        case_revision:current.revision,case_context:current.context,case_frame:current.frame}:source]:[];
+    }else if(sql.includes('FROM cases'))data=cases.has(args[0])?[cases.get(args[0])]:[];
+    else if(sql.includes('FROM jobs')){
+      const index=rows.findIndex(row=>row.input.jobId===args[0]),row=rows[index];
+      data=!row||sql.includes('JOIN usp_job_attempts')&&authority.missingAttempt?[]:[{payload:row.input,
+        input_fingerprint:fingerprint(row.input),input_sha256:fingerprint(row.input),status:'succeeded',logical_state:'succeeded',
+        result_ref:{sha256:f.selections[index].pin.resultSha256},
+        completion_sha256:authority.staleCompletion?'b'.repeat(64):f.selections[index].pin.resultSha256}];
+    }else if(sql.includes('SELECT job_id FROM usp_job_'))data=[{job_id:args[0]}];
+    else return originalQuery(sql,args);
+    return {rows:structuredClone(data),rowCount:data.length};
+  }} as PoolClient;
+  const dependencies={...f.dependencies,source:associationDocumentInputTx,registrySource:registrySourceTx,
+    citationSource:registryDocumentSourceAccessTx};
+  return {...f,client,dependencies,cases,sources,recordingSource,authority};
+}
+
+test('actual source policy admits accepted needs_input native/OCR citations and retains site, accepted-result and ordinary readiness denial',()=>attributed(async()=>{
+  const f=sourcePolicyFusionFixture(),docs=[f.sources.get(f.input.sourceId),f.sources.get(f.ocr.input.sourceId)];
+  const originals=structuredClone(docs);
+  for(const source of docs)await assert.rejects(()=>registrySourceTx(f.client,f.siteId,source.id),
+    (error:any)=>error.status===409&&error.code==='REGISTRY_SOURCE_UNAVAILABLE');
+  const ocrCase=f.cases.get(f.ocr.input.caseId);
+  ocrCase.site_id=randomUUID();
+  await assert.rejects(()=>amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies),status(403));
+  assert.equal(f.state.reads,0);assert.equal(f.state.writes,0);ocrCase.site_id=f.siteId;
+  const accepted=docs[1].inspection.documentAccepted;
+  delete docs[1].inspection.documentAccepted;
+  await assert.rejects(()=>amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies),status(409));
+  assert.equal(f.state.reads,0);docs[1].inspection.documentAccepted=accepted;
+  f.authority.missingAttempt=true;
+  await assert.rejects(()=>amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies),status(409));
+  assert.equal(f.state.writes,0);assert.equal(f.state.operations.size,0);f.authority.missingAttempt=false;
+  const receipt=await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies);
+  assert.equal(receipt.draftRevision,2);assert.equal(f.state.writes,1);
+  const record=f.state.draft.records[0];assert.equal(record.documentCitations!.length,2);
+  assert.deepEqual(await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies),receipt);
+  assert.equal((await readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies)).citations.length,2);
+  f.authority.queries.length=0;
+  await assertRegistryDocumentCitationsTx(f.client,f.siteId,record,false,f.dependencies);
+  assert(!f.authority.queries.some(sql=>/FOR (SHARE|UPDATE)/.test(sql)),'review snapshot remains read-only');
+  await assertRegistryDocumentCitationsTx(f.client,f.siteId,record,true,f.dependencies);
+  assert(f.authority.queries.some(sql=>sql.includes('usp_job_attempts')&&sql.includes('FOR SHARE')));
+  const native=record.documentCitations!.find(pin=>pin.version==='registry-document-citation/1')!;
+  const duplicate=await amendRegistryDocumentCitationsTx(f.client,f.draftId,{requestKey:randomUUID(),expectedDraftRevision:2,
+    recordId:f.record.id,expectedRecordRevision:1,add:{document:native.document,partIds:[f.part.id]}},f.dependencies);
+  assert.equal(duplicate.changed,false);assert.equal(f.state.writes,1);
+  f.authority.staleCompletion=true;
+  await assert.rejects(()=>readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies),status(409));
+  await assert.rejects(()=>assertRegistryDocumentCitationsTx(f.client,f.siteId,record,true,f.dependencies),status(409));
+  await assert.rejects(()=>amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies),status(409));
+  f.authority.staleCompletion=false;ocrCase.site_id=randomUUID();
+  await assert.rejects(()=>readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies),status(403));
+  await assert.rejects(()=>amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies),status(403));
+  ocrCase.site_id=f.siteId;f.recordingSource.status='needs_input';
+  await assert.rejects(()=>readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies),
+    (error:any)=>error.code==='REGISTRY_SOURCE_UNAVAILABLE');
+  assert.equal(f.state.writes,1);assert.deepEqual(docs,originals);
+}));
 
 test('fusion OCR/native amendment privately resolves exact observations and participates in canonical review/commit without broad disclosure',()=>attributed(async()=>{
   const f=fusionFixture();

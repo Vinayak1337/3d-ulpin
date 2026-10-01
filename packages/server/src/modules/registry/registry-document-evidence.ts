@@ -14,7 +14,7 @@ import {localRequestContext} from '../usp/principal';
 import {associationDocumentInputTx} from '../usp/ingestion/document-association-authority';
 import {readDocumentResult} from '../usp/ingestion/documents';
 import {documentPartEligibleForProposal} from '../usp/ingestion/document-model';
-import {registrySourceTx,registryMetadataEvidence} from './registry-metadata';
+import {registrySourceTx,registryDocumentSourceAccessTx,registryMetadataEvidence} from './registry-metadata';
 import {RegistryMetadataSchema} from '@ulpin/contracts';
 import {registryDocumentCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
 import {resolveFusionCitationsTx,ocrCitationFusionSelection,fusionOcrCitationFields,fusionCitationDocumentPin,citationReadBudget,
@@ -22,9 +22,12 @@ import {resolveFusionCitationsTx,ocrCitationFusionSelection,fusionOcrCitationFie
 import {fusionSourceProjection} from '../usp/ingestion/source-fusion';
 import {readFusionResult,fusionLive} from '../usp/ingestion/source-fusion-authority';
 
-export type RegistryDocumentDependencies=FusionCitationDependencies&{result:typeof readDocumentResult;registrySource:typeof registrySourceTx};
+export type RegistryDocumentDependencies=FusionCitationDependencies&{result:typeof readDocumentResult;registrySource:typeof registrySourceTx;
+  citationSource?:typeof registryDocumentSourceAccessTx};
 type Dependencies=RegistryDocumentDependencies;
-const defaults:Dependencies={source:associationDocumentInputTx,result:readDocumentResult,registrySource:registrySourceTx};
+const defaults:Dependencies={source:associationDocumentInputTx,result:readDocumentResult,registrySource:registrySourceTx,
+  citationSource:registryDocumentSourceAccessTx};
+const citationSource=(dependencies:Dependencies)=>dependencies.citationSource??dependencies.registrySource;
 const context=()=>localRequestContext(randomUUID());
 export function documentReviewContext():RegistryDocumentReviewContext{
   const ctx=context();return RegistryDocumentReviewContextSchema.parse({subject:ctx.principal.subject,
@@ -127,7 +130,7 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
     const key=`${pin.version}:${fingerprint(pin.document)}`;groups.set(key,[...(groups.get(key)??[]),pin]);
   }
   for(const group of groups.values()){
-    const first=group[0],source=await dependencies.registrySource(client,siteId,first.document.sourceId);
+    const first=group[0],source=await citationSource(dependencies)(client,siteId,first.document.sourceId);
     const input=await dependencies.source(client,ctx,first.document,undefined,lock),fence=await acceptedFenceTx(client,input.jobId);
     if(source.revision!==input.sourceRevision||source.sha256!==input.sourceSha256)conflict('The site document source pins changed.');
     if(first.version==='registry-document-citation/1'){
@@ -159,7 +162,7 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
       }
     }
     await dependencies.source(client,ctx,first.document,input,lock);
-    const current=await dependencies.registrySource(client,siteId,first.document.sourceId);
+    const current=await citationSource(dependencies)(client,siteId,first.document.sourceId);
     if(fingerprint(current)!==fingerprint(source)||await acceptedFenceTx(client,input.jobId)!==fence)
       conflict('The document source or accepted attempt changed during its read.');
     checked.push({pin:first,input,source,fence});
@@ -176,7 +179,7 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   // a source can change during lock acquisition or later groups' result I/O.
   for(const item of checked){
     await dependencies.source(client,ctx,item.pin.document,item.input);
-    const current=await dependencies.registrySource(client,siteId,item.pin.document.sourceId);
+    const current=await citationSource(dependencies)(client,siteId,item.pin.document.sourceId);
     if(fingerprint(current)!==fingerprint(item.source)||await acceptedFenceTx(client,item.input.jobId)!==item.fence)
       conflict('The aggregate document source or accepted attempt changed during its read.');
   }
@@ -241,7 +244,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     if(prior.payload_hash!==digest||draft.revision!==receipt.draftRevision)conflict('This amendment request or its draft changed.');
     if(request.addFusion){
       for(const selected of request.addFusion.selection.sources)if(selected.kind!=='cityjson')
-        await dependencies.registrySource(client,draft.site_id,selected.pin.sourceId);
+        await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
       const fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies);
       await assertRegistryDocumentCitationsTx(client,draft.site_id,record,true,fusionValidationDependencies(fusion,dependencies));
       await currentTargetTx(client,draft.site_id,record,true,dependencies);await fusion.revalidate();
@@ -254,7 +257,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   if(request.addFusion){
     // Deny site-ineligible citation sources before reading their private results.
     for(const selected of request.addFusion.selection.sources)if(selected.kind!=='cityjson')
-      await dependencies.registrySource(client,draft.site_id,selected.pin.sourceId);
+      await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
     fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies);
     const targetPin={recordId:record.id,revision:record.revision,bodySha256:fingerprint(target.body)};
     const attribution=(input:DocumentInput)=>({subject:ctx.principal.subject,accessSha256:input.accessSha256,selectedAt:new Date().toISOString()});
@@ -278,7 +281,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     }
   }
   if(request.add){
-    const source=await dependencies.registrySource(client,draft.site_id,request.add.document.sourceId);
+    const source=await citationSource(dependencies)(client,draft.site_id,request.add.document.sourceId);
     const input=await dependencies.source(client,ctx,request.add.document,undefined,true),fence=await acceptedFenceTx(client,input.jobId);
     if(source.revision!==input.sourceRevision||source.sha256!==input.sourceSha256)conflict('The source-site pins changed.');
     const result=await dependencies.result(input,request.add.document.resultSha256);
@@ -291,7 +294,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
         associationState:'operator_selected',qualification:'not_assessed'}));
     }
     await dependencies.source(client,ctx,request.add.document,input,true);
-    await dependencies.registrySource(client,draft.site_id,request.add.document.sourceId);
+    await citationSource(dependencies)(client,draft.site_id,request.add.document.sourceId);
   }
   // Removal remains useful when the removed source is unavailable; retained/additional citations still require current authority.
   const remove=request.clearAll?(record.documentCitations??[]).map(pin=>pin.id):request.remove;
