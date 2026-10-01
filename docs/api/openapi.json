@@ -9020,6 +9020,388 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/registry-drafts/{draftId}/native-exterior/validations": {
+      "post": {
+        "operationId": "POST_api_v1_registry_drafts_draftId_native_exterior_validations",
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_202_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Enqueue bounded local validation of the exact current private native draft",
+        "tags": [
+          "registry"
+        ],
+        "x-source-file": "apps/api/src/modules/register/register.controller.ts",
+        "x-batch": "CITYJSON-VALIDITY-02",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
+        "x-max-body-bytes": 16384,
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/registry-drafts/{draftId}/native-exterior/validations/{jobId}": {
+      "get": {
+        "operationId": "GET_api_v1_registry_drafts_draftId_native_exterior_validations_jobId",
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_registry_drafts_draftId_native_exterior_validations_jobId_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read validation state and bounded result through current private candidate and accepted-attempt authority",
+        "tags": [
+          "registry"
+        ],
+        "x-source-file": "apps/api/src/modules/register/register.controller.ts",
+        "x-batch": "CITYJSON-VALIDITY-02",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
+        "x-max-body-bytes": null,
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/registry-cityjson-drafts": {
       "post": {
         "operationId": "POST_api_v1_registry_cityjson_drafts",
@@ -9059,7 +9441,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9078,7 +9460,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9097,7 +9479,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9116,7 +9498,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9135,7 +9517,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9154,7 +9536,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9173,7 +9555,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9259,7 +9641,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9278,7 +9660,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9297,7 +9679,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9316,7 +9698,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9335,7 +9717,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9354,7 +9736,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9373,7 +9755,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9469,7 +9851,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9488,7 +9870,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9507,7 +9889,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9526,7 +9908,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9545,7 +9927,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9564,7 +9946,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9583,7 +9965,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9652,7 +10034,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9671,7 +10053,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9690,7 +10072,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9709,7 +10091,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9728,7 +10110,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9747,7 +10129,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9766,7 +10148,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9825,7 +10207,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9844,7 +10226,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9863,7 +10245,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9882,7 +10264,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9901,7 +10283,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9920,7 +10302,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -9939,7 +10321,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10006,7 +10388,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10025,7 +10407,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10044,7 +10426,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10063,7 +10445,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10082,7 +10464,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10101,7 +10483,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10120,7 +10502,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10188,7 +10570,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10207,7 +10589,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10226,7 +10608,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10245,7 +10627,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10264,7 +10646,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10283,7 +10665,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10302,7 +10684,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10370,7 +10752,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10389,7 +10771,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10408,7 +10790,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10427,7 +10809,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10446,7 +10828,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10465,7 +10847,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10484,7 +10866,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10552,7 +10934,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10571,7 +10953,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10590,7 +10972,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10609,7 +10991,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10628,7 +11010,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10647,7 +11029,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10666,7 +11048,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10744,7 +11126,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10763,7 +11145,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10782,7 +11164,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10801,7 +11183,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10820,7 +11202,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10839,7 +11221,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10858,7 +11240,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10936,7 +11318,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10955,7 +11337,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10974,7 +11356,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -10993,7 +11375,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11012,7 +11394,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11031,7 +11413,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11050,7 +11432,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11128,7 +11510,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11147,7 +11529,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11166,7 +11548,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11185,7 +11567,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11204,7 +11586,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11223,7 +11605,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11242,7 +11624,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11310,7 +11692,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11329,7 +11711,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11348,7 +11730,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11367,7 +11749,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11386,7 +11768,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11405,7 +11787,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11424,7 +11806,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11502,7 +11884,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11521,7 +11903,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11540,7 +11922,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11559,7 +11941,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11578,7 +11960,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11597,7 +11979,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11616,7 +11998,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11684,7 +12066,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11703,7 +12085,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11722,7 +12104,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11741,7 +12123,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11760,7 +12142,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11779,7 +12161,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11798,7 +12180,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11866,7 +12248,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11885,7 +12267,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11904,7 +12286,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11923,7 +12305,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11942,7 +12324,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11961,7 +12343,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -11980,7 +12362,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12048,7 +12430,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12067,7 +12449,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12086,7 +12468,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12105,7 +12487,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12124,7 +12506,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12143,7 +12525,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12162,7 +12544,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12238,7 +12620,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12257,7 +12639,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12276,7 +12658,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12295,7 +12677,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12314,7 +12696,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12333,7 +12715,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12352,7 +12734,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12430,7 +12812,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12449,7 +12831,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12468,7 +12850,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12487,7 +12869,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12506,7 +12888,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12525,7 +12907,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12544,7 +12926,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12626,7 +13008,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12645,7 +13027,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12664,7 +13046,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12683,7 +13065,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12702,7 +13084,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12721,7 +13103,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12740,7 +13122,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12834,7 +13216,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12853,7 +13235,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12872,7 +13254,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12891,7 +13273,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12910,7 +13292,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12929,7 +13311,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -12948,7 +13330,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13043,7 +13425,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13062,7 +13444,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13081,7 +13463,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13100,7 +13482,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13119,7 +13501,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13138,7 +13520,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13157,7 +13539,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13249,7 +13631,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13268,7 +13650,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13287,7 +13669,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13306,7 +13688,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13325,7 +13707,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13344,7 +13726,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13363,7 +13745,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13440,7 +13822,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13459,7 +13841,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13478,7 +13860,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13497,7 +13879,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13516,7 +13898,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13535,7 +13917,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13554,7 +13936,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13647,7 +14029,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13666,7 +14048,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13685,7 +14067,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13704,7 +14086,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13723,7 +14105,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13742,7 +14124,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13761,7 +14143,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13830,7 +14212,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13849,7 +14231,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13868,7 +14250,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13887,7 +14269,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13906,7 +14288,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13925,7 +14307,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -13944,7 +14326,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14003,7 +14385,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14022,7 +14404,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14041,7 +14423,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14060,7 +14442,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14079,7 +14461,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14098,7 +14480,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14117,7 +14499,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14185,7 +14567,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14204,7 +14586,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14223,7 +14605,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14242,7 +14624,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14261,7 +14643,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14280,7 +14662,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14299,7 +14681,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14435,7 +14817,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14454,7 +14836,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14473,7 +14855,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14492,7 +14874,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14511,7 +14893,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14530,7 +14912,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14549,7 +14931,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14627,7 +15009,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14646,7 +15028,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14665,7 +15047,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14684,7 +15066,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14703,7 +15085,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14722,7 +15104,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14741,7 +15123,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14838,7 +15220,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14857,7 +15239,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14876,7 +15258,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14895,7 +15277,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14914,7 +15296,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14933,7 +15315,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -14952,7 +15334,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15021,7 +15403,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15040,7 +15422,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15059,7 +15441,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15078,7 +15460,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15097,7 +15479,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15116,7 +15498,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15135,7 +15517,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15204,7 +15586,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15223,7 +15605,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15242,7 +15624,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15261,7 +15643,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15280,7 +15662,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15299,7 +15681,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15318,7 +15700,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15386,7 +15768,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15405,7 +15787,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15424,7 +15806,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15443,7 +15825,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15462,7 +15844,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15481,7 +15863,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15500,7 +15882,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15568,7 +15950,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15587,7 +15969,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15606,7 +15988,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15625,7 +16007,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15644,7 +16026,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15663,7 +16045,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15682,7 +16064,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15760,7 +16142,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15779,7 +16161,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15798,7 +16180,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15817,7 +16199,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15836,7 +16218,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15855,7 +16237,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15874,7 +16256,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15952,7 +16334,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15971,7 +16353,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -15990,7 +16372,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16009,7 +16391,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16028,7 +16410,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16047,7 +16429,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16066,7 +16448,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16144,7 +16526,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16163,7 +16545,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16182,7 +16564,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16201,7 +16583,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16220,7 +16602,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16239,7 +16621,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16258,7 +16640,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16336,7 +16718,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16355,7 +16737,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16374,7 +16756,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16393,7 +16775,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16412,7 +16794,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16431,7 +16813,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16450,7 +16832,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16519,7 +16901,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16538,7 +16920,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16557,7 +16939,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16576,7 +16958,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16595,7 +16977,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16614,7 +16996,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16633,7 +17015,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16701,7 +17083,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16720,7 +17102,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16739,7 +17121,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16758,7 +17140,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16777,7 +17159,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16796,7 +17178,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16815,7 +17197,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16891,7 +17273,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16910,7 +17292,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16929,7 +17311,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16948,7 +17330,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16967,7 +17349,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -16986,7 +17368,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17005,7 +17387,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17083,7 +17465,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17102,7 +17484,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17121,7 +17503,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17140,7 +17522,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17159,7 +17541,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17178,7 +17560,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17197,7 +17579,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17283,7 +17665,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17302,7 +17684,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17321,7 +17703,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17340,7 +17722,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17359,7 +17741,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17378,7 +17760,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17397,7 +17779,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17495,7 +17877,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17514,7 +17896,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17533,7 +17915,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17552,7 +17934,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17571,7 +17953,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17590,7 +17972,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -17609,7 +17991,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_registry_cityjson_drafts_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"
                 }
               }
             },
@@ -59384,6 +59766,381 @@
         ],
         "additionalProperties": false
       },
+      "POST_registry_drafts_draftId_native_exterior_validations_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "expectedDraftRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "requestKey",
+          "expectedDraftRevision"
+        ],
+        "additionalProperties": false
+      },
+      "POST_registry_drafts_draftId_native_exterior_validations_Response_202_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "registry-cityjson-validation/1"
+            ]
+          },
+          "draftId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "draftRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "jobId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "version",
+          "draftId",
+          "draftRevision",
+          "jobId"
+        ],
+        "additionalProperties": false
+      },
+      "POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "requestId": {
+                "type": "string"
+              },
+              "details": {
+                "description": "Source-shaped JSON value retained without interpretation"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "requestId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "GET_registry_drafts_draftId_native_exterior_validations_jobId_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "registry-cityjson-validation/1"
+            ]
+          },
+          "draftId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "draftRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "jobId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "failed",
+              "stale"
+            ]
+          },
+          "code": {
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "CITYJSON_VALIDATION_CANCELLED",
+              "CITYJSON_VALIDATION_TIMEOUT",
+              "CITYJSON_VALIDATION_COMMIT_UNKNOWN",
+              "CITYJSON_VALIDATION_STALE",
+              "CITYJSON_VALIDATION_INTERRUPTED",
+              "CITYJSON_VALIDATION_ACCESS_REVOKED",
+              "CITYJSON_VALIDATION_STORAGE_UNAVAILABLE",
+              "CITYJSON_VALIDATION_UNAVAILABLE",
+              "CITYJSON_VALIDATION_UNSUPPORTED_PLATFORM",
+              "CITYJSON_VALIDATION_TOOL_CHANGED",
+              "CITYJSON_VALIDATION_TOOL_FAILURE",
+              "CITYJSON_VALIDATION_BUSY",
+              "CITYJSON_VALIDATION_INTEGRITY",
+              "CITYJSON_VALIDATION_REPORT_LIMIT",
+              "CITYJSON_VALIDATION_RESULT_LIMIT",
+              "CITYJSON_VALIDATION_HISTORY_LIMIT",
+              "CITYJSON_VALIDATION_SELECTION",
+              "CITYJSON_VALIDATION_INPUT_SCOPE"
+            ]
+          },
+          "result": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "summary": {
+                "type": "object",
+                "properties": {
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "valid",
+                      "invalid",
+                      "unsupported"
+                    ]
+                  },
+                  "documentSchema": {
+                    "type": "string",
+                    "enum": [
+                      "valid",
+                      "invalid",
+                      "unsupported"
+                    ]
+                  },
+                  "selectedGeometry": {
+                    "type": "string",
+                    "enum": [
+                      "valid",
+                      "invalid",
+                      "unsupported"
+                    ]
+                  },
+                  "hasWarnings": {
+                    "type": "boolean"
+                  },
+                  "codes": {
+                    "maxItems": 64,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[A-Z0-9_]{1,80}$"
+                    }
+                  },
+                  "sourceLocators": {
+                    "minItems": 1,
+                    "maxItems": 2,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "objectId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        },
+                        "geometryIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "geometryPointer": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2048,
+                          "format": "starts_with",
+                          "pattern": "^\\/.*"
+                        }
+                      },
+                      "required": [
+                        "objectId",
+                        "geometryIndex",
+                        "geometryPointer"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "validator": {
+                    "type": "object",
+                    "properties": {
+                      "platform": {
+                        "type": "string",
+                        "enum": [
+                          "windows-x86_64"
+                        ]
+                      },
+                      "pythonSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "adapterSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "supervisorSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "toolLockSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "codeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "configSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "tools": {
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "enum": [
+                                "cjval",
+                                "val3dity"
+                              ]
+                            },
+                            "version": {
+                              "type": "string",
+                              "maxLength": 30
+                            },
+                            "files": {
+                              "minItems": 1,
+                              "maxItems": 8,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "sha256": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{64}$"
+                                  },
+                                  "executable": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "sha256",
+                                  "executable"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "version",
+                            "files"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "platform",
+                      "pythonSha256",
+                      "adapterSha256",
+                      "supervisorSha256",
+                      "toolLockSha256",
+                      "codeSha256",
+                      "configSha256",
+                      "tools"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "qualification": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "referenceAccuracy": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "canonicalAdmission": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  }
+                },
+                "required": [
+                  "outcome",
+                  "documentSchema",
+                  "selectedGeometry",
+                  "hasWarnings",
+                  "codes",
+                  "sourceLocators",
+                  "validator",
+                  "qualification",
+                  "referenceAccuracy",
+                  "canonicalAdmission"
+                ],
+                "additionalProperties": false
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "resultSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "summary",
+              "createdAt",
+              "resultSha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "version",
+          "draftId",
+          "draftRevision",
+          "jobId",
+          "status",
+          "code",
+          "result"
+        ],
+        "additionalProperties": false
+      },
       "POST_registry_cityjson_drafts_Request_application_json": {
         "type": "object",
         "properties": {
@@ -59565,38 +60322,6 @@
           "siteId",
           "state",
           "qualification"
-        ],
-        "additionalProperties": false
-      },
-      "POST_registry_cityjson_drafts_Response_400_application_json": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string"
-              },
-              "message": {
-                "type": "string"
-              },
-              "requestId": {
-                "type": "string"
-              },
-              "details": {
-                "description": "Source-shaped JSON value retained without interpretation"
-              }
-            },
-            "required": [
-              "code",
-              "message",
-              "requestId"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "required": [
-          "error"
         ],
         "additionalProperties": false
       },
