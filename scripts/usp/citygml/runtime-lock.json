@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "ulpin-citygml-runtime-lock/1",
+  "runtime": {
+    "python": "3.13.7",
+    "platform": "Windows amd64",
+    "xmlParser": "CPython bundled Expat 2.7.1",
+    "parserMinimum": "2.6.0",
+    "license": "Python Software Foundation License; Expat MIT"
+  },
+  "dependencies": [
+    {
+      "name": "psutil",
+      "version": "7.2.2",
+      "wheel": "psutil-7.2.2-cp37-abi3-win_amd64.whl",
+      "sha256": "eb7e81434c8d223ec4a219b5fc1c47d0417b12be7ea866e24fb5ad6e84b3d988",
+      "bytes": 137737,
+      "origin": "https://pypi.org/project/psutil/7.2.2/",
+      "license": "BSD-3-Clause",
+      "role": "parent supervisor observations and CPU affinity; not an XML dependency"
+    }
+  ],
+  "installation": "Isolated venv only; install the pinned wheel with --no-index --no-deps. No root dependency changes.",
+  "scope": "Windows local inspection. POSIX enforcement code is unqualified. No OS outbound denial claim."
+}
