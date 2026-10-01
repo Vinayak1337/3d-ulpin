@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "dxf-development-source-manifest/1",
+  "task": "DXF-01",
+  "dispatchCommit": "78a9d0c293dccf6e18a9f7c3f5e2a9442efd1b0b",
+  "classification": "test_only",
+  "originKind": "public_upstream_development_sample",
+  "operationalQualification": false,
+  "trainingLabels": false,
+  "issuer": "Manfred Moitzi / mozman/ezdxf upstream project",
+  "upstreamVersion": "v1.4.3",
+  "upstreamRevision": "df5ef277fcc674d77580143212ec63dd981cc2b3",
+  "privateRoot": "E:/BhuAayam-data/task-data/desktop-dxf-native",
+  "licence": {
+    "identifier": "MIT",
+    "url": "https://raw.githubusercontent.com/mozman/ezdxf/df5ef277fcc674d77580143212ec63dd981cc2b3/LICENSE",
+    "retainedPath": "E:/BhuAayam-data/task-data/desktop-dxf-native/acquisition/LICENSE",
+    "sha256": "db97ca426fc0d2b8124145de0f36181db73e6e713ce642d42fed2efc442edf19",
+    "attribution": "Copyright (c) 2020 Manfred Moitzi. MIT notice must accompany redistributed substantial portions.",
+    "scope": "Upstream repository licence retained; these examples are development input, never official Indian property evidence. No separate property-rights authority is supplied."
+  },
+  "acquisitionReceipt": "E:/BhuAayam-data/task-data/desktop-dxf-native/acquisition/downloads.json",
+  "discovery": {
+    "index": "docs/api/real-sources.md",
+    "catalogue": "docs/api/datasets.json",
+    "result": "No retained DXF entry or .dxf holding found in the assigned checkout or E:/BhuAayam-data. No repeated official Indian drawing acquisition."
+  },
+  "sources": [
+    {
+      "name": "1_polylines.dxf",
+      "upstreamPath": "examples/edgeminer/1_polylines.dxf",
+      "url": "https://raw.githubusercontent.com/mozman/ezdxf/df5ef277fcc674d77580143212ec63dd981cc2b3/examples/edgeminer/1_polylines.dxf",
+      "retainedPath": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/1_polylines.dxf",
+      "bytes": 82846,
+      "sha256": "37f57491672a9b330be08888200a8ad893d15af52af91e1c6be54b0c9cda75de",
+      "geography": null,
+      "horizontalCRS": null,
+      "verticalReference": null,
+      "units": {"state": "declared", "header": "$INSUNITS", "code": 6, "name": "m"},
+      "stage": "tested",
+      "scope": "Local ASCII R2018 tag-linked inspection: 52 LINE, 22 ARC, 9 TEXT entities. The filename does not establish POLYLINE coverage.",
+      "limitations": ["Upstream development drawing, no operational records or property identifiers.", "No georeference or geometry/measurement qualification."]
+    },
+    {
+      "name": "ASCII_R12.dxf",
+      "upstreamPath": "integration_tests/data/ASCII_R12.dxf",
+      "url": "https://raw.githubusercontent.com/mozman/ezdxf/df5ef277fcc674d77580143212ec63dd981cc2b3/integration_tests/data/ASCII_R12.dxf",
+      "retainedPath": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/ASCII_R12.dxf",
+      "bytes": 6766,
+      "sha256": "b476d3e53fe24c1db3c701d20b2bebd774f7bd7966b12d81891505b9b29e4d21",
+      "geography": null,
+      "horizontalCRS": null,
+      "verticalReference": null,
+      "units": {"state": "absent", "header": "$INSUNITS", "code": null, "name": null},
+      "stage": "tested",
+      "scope": "Incomplete source-local R12 inspection: 2 LINE and 1 INSERT model-space entities plus 1 block-definition TEXT. Missing units and INSERT scale/rotation remain absent.",
+      "limitations": ["No declared $DWGCODEPAGE; decoding uses explicit parser-default cp1252, not a source declaration.", "Escaped text/layer names and original lexemes remain unmodified.", "No block explosion, scale inference or qualification."]
+    }
+  ],
+  "launchClearanceGaps": ["No Indian official-source CAD profile or operational-record qualification.", "Native inspection is not source/job/API admission or legal/geometric validation."]
+}
