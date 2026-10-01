@@ -4565,6 +4565,94 @@
         "trainingLabelsCreated": false,
         "recordsCreated": false
       }
+    },
+    {
+      "id": "buildingsmart-certification-ifc2x3-20261001",
+      "manifest": "docs/evidence/usp/native-ifc/manifest.json",
+      "manifestSha256": "6c0deada3556b2c7103669e5fd738e02bcb84e378c99b40d80e9ac0988c2b678",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "published_upstream_certification_sample",
+      "classification": "test_only",
+      "issuer": "buildingSMART International Ltd.",
+      "originalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%202.3.0.1%20%28IFC%202x3%20TC1%29/Simple-Scene/Building-Architecture.ifc",
+      "acquiredAt": "2026-10-01T14:48:53.936797+00:00",
+      "geography": "Physical geography unknown; certification/educational model.",
+      "terms": {
+        "state": "documented",
+        "license": "CC-BY-4.0",
+        "attribution": "Copyright buildingSMART International Ltd.; Certification-datasets, pinned revision 80d976a9b193a26a8e928c3e79bff67af1de68a8, Building-Architecture sample",
+        "reference": "https://github.com/buildingSMART/Certification-datasets/tree/80d976a9b193a26a8e928c3e79bff67af1de68a8"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/desktop-ifc-native/originals/ifc2x3-building-architecture.ifc",
+        "bytes": 92542,
+        "sha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885",
+        "format": "ifc",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "scope": "Windows local metadata reader only",
+        "guide": "docs/evidence/usp/native-ifc/README.md",
+        "review": "docs/evidence/usp/desktop-backend-review/native-ifc-review.md",
+        "codeCommit": "4c686c2b9621a4e2c46656fa760d2eedc9ab90a6",
+        "acceptedCommit": "84e56b1",
+        "receiptSha256": "f3387a768bdcccde3823e44c20f69727ecc00aa4ad3de5d0964ac02e23f8144f",
+        "outputSha256": "66dcfb321cac47b605ffed87beaf060b50b1203a151b738fe446b6251d003d3a",
+        "projectedRecords": 45
+      },
+      "limitations": [
+        "Source-local building/storey/space metadata, original byte locators and literal units only.",
+        "No tessellation, inferred floors/heights, geometry accuracy, global transform, canonical admission, association labels or operational facts.",
+        "Windows two-core/single-compute-pool profile with monitored helper-thread allowance; Linux and API/job runtime unqualified.",
+        "Published examples are not official Indian property records, learning labels or release qualification."
+      ]
+    },
+    {
+      "id": "buildingsmart-certification-ifc4-20261001",
+      "manifest": "docs/evidence/usp/native-ifc/manifest.json",
+      "manifestSha256": "6c0deada3556b2c7103669e5fd738e02bcb84e378c99b40d80e9ac0988c2b678",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "published_upstream_certification_sample",
+      "classification": "test_only",
+      "issuer": "buildingSMART International Ltd.",
+      "originalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%204.0.2.1%20%28IFC%204%20ADD2%20TC1%29/Simple-Scene/Building-Architecture.ifc",
+      "acquiredAt": "2026-10-01T14:48:54.447521+00:00",
+      "geography": "Physical geography unknown; certification/educational model.",
+      "terms": {
+        "state": "documented",
+        "license": "CC-BY-4.0",
+        "attribution": "Copyright buildingSMART International Ltd.; Certification-datasets, pinned revision 80d976a9b193a26a8e928c3e79bff67af1de68a8, Building-Architecture sample",
+        "reference": "https://github.com/buildingSMART/Certification-datasets/tree/80d976a9b193a26a8e928c3e79bff67af1de68a8"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/desktop-ifc-native/originals/ifc4-building-architecture.ifc",
+        "bytes": 142325,
+        "sha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80",
+        "format": "ifc",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "scope": "Windows local metadata reader only",
+        "guide": "docs/evidence/usp/native-ifc/README.md",
+        "review": "docs/evidence/usp/desktop-backend-review/native-ifc-review.md",
+        "codeCommit": "4c686c2b9621a4e2c46656fa760d2eedc9ab90a6",
+        "acceptedCommit": "84e56b1",
+        "receiptSha256": "f3387a768bdcccde3823e44c20f69727ecc00aa4ad3de5d0964ac02e23f8144f",
+        "outputSha256": "b0d08570e368ccd6f1b32adc113b1363afa523cc8fa359fe65e087009bd6b0b6",
+        "projectedRecords": 56
+      },
+      "limitations": [
+        "Source-local building/storey/space metadata, original byte locators and literal units only.",
+        "No tessellation, inferred floors/heights, geometry accuracy, global transform, canonical admission, association labels or operational facts.",
+        "Windows two-core/single-compute-pool profile with monitored helper-thread allowance; Linux and API/job runtime unqualified.",
+        "Published examples are not official Indian property records, learning labels or release qualification."
+      ]
     }
   ],
   "offlineLearningCorpus": {

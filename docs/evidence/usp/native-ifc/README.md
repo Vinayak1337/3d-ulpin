@@ -1,5 +1,7 @@
 # IFC-01 local metadata handoff — 1 October 2026
 
+**Lead acceptance, 1 October:** implementation `84e56b1`, evidence `236e7b6` and independent review `cbb4a25` are integrated. Lead matched all three reviewer receipts and 30 source/artifact/wheel/physical+Git pins, then observed all eight integrated tests pass (`python -B -m unittest discover -s services/geo/tests -p test_native_ifc.py -v`, pinned lane Python, retained-source environment variable; exit 0, 3.791 seconds). The resource interpretation is explicitly two CPU affinity cores/single-thread compute pools with monitored six-total-OS-thread helper allowance, not a literal two-thread guarantee. This resolves the interpretation question below without rewriting historical receipts. Windows local metadata inspection only is accepted; canonical API/job execution remains pending.
+
 Code: `4c686c2b9621a4e2c46656fa760d2eedc9ab90a6`, based on exact dispatch
 `78a9d0c293dccf6e18a9f7c3f5e2a9442efd1b0b`. Branch
 `task/desktop-ifc-native-reader`, assigned association-sources worktree. Prior
