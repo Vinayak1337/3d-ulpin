@@ -1720,7 +1720,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Prepare a guarded registry proposal */
+        /** Prepare a guarded registry or declaration proposal */
         post: operations["POST_api_v1_usp_proposals_prepare"];
         delete?: never;
         options?: never;
@@ -1994,6 +1994,91 @@ export interface paths {
         put?: never;
         /** Assemble private explicitly selected accepted native document/OCR/CityJSON fragments without establishing an association */
         post: operations["POST_api_v1_usp_evidence_source_fusion_context"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usp/rights/declarations/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Draft one source-defined declaration revision */
+        post: operations["POST_api_v1_usp_rights_declarations_prepare"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usp/rights/declarations/proposal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Inspect a draft with explicit population selection */
+        post: operations["POST_api_v1_usp_rights_declarations_proposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usp/rights/declarations/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Review exact shares, population, consent and target applicability */
+        post: operations["POST_api_v1_usp_rights_declarations_review"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usp/rights/declarations/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Technically accept an immutable reviewed declaration; legal approval remains not assessed */
+        post: operations["POST_api_v1_usp_rights_declarations_accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usp/rights/declarations/selected-target": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read only the selected exact entry, reviewed applicability and safe aggregate coverage */
+        post: operations["POST_api_v1_usp_rights_declarations_selected_target"];
         delete?: never;
         options?: never;
         head?: never;
@@ -26435,6 +26520,469 @@ export interface components {
                     };
                     revision: number;
                 } | null;
+                payload?: {
+                    jurisdiction: string;
+                    statute: string | null;
+                    /** @enum {string} */
+                    allocationSubject: "land_interest" | "general_common_property" | "limited_common_property" | "stated_other";
+                    subjectDefinition: string;
+                    /** @enum {string} */
+                    basis: "declared_value" | "declared_area" | "source_defined_other";
+                    basisDefinition: string;
+                    instrument: {
+                        pointer: {
+                            sourceRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_revision";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            assetRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            partRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_part";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "whole_asset";
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                                layer?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "image_region";
+                                region: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "rows";
+                                range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "lines";
+                                range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "json_pointer";
+                                pointer: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "model_element";
+                                elementId: string;
+                                elementType: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "verbatim";
+                                locator: string;
+                            };
+                            /** @enum {string} */
+                            purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                            /** @enum {string} */
+                            origin: "direct" | "inherited";
+                            target: {
+                                namespace: string;
+                                id: string;
+                            };
+                            legacyLocator?: string;
+                        };
+                        sha256: string;
+                        bytes: number;
+                    };
+                    population: {
+                        /** @enum {string} */
+                        status: "complete" | "partial" | "unknown" | "conflicting";
+                        declaredCount: number | null;
+                        targets: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        }[];
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    denominator: {
+                        /** @enum {string} */
+                        state: "known" | "unknown" | "withheld" | "conflicting";
+                        literal: string | null;
+                        quantity: {
+                            numerator: string;
+                            denominator: string;
+                        } | null;
+                        unit: string | null;
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    rounding: string | null;
+                    validity: {
+                        /** Format: date */
+                        from: string | null;
+                        /** Format: date */
+                        to: string | null;
+                        /** @enum {string} */
+                        endState: "stated" | "open_ended" | "unknown";
+                    };
+                    entries: {
+                        pin: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        target: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        literalLabel: string;
+                        literalShare: string;
+                        fraction: {
+                            numerator: string;
+                            denominator: string;
+                        };
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                        validity: {
+                            /** Format: date */
+                            from: string | null;
+                            /** Format: date */
+                            to: string | null;
+                            /** @enum {string} */
+                            endState: "stated" | "open_ended" | "unknown";
+                        };
+                    }[];
+                };
             })[];
             evidence: {
                 sourceRevision: {
@@ -26628,6 +27176,469 @@ export interface components {
                     };
                     revision: number;
                 } | null;
+                payload?: {
+                    jurisdiction: string;
+                    statute: string | null;
+                    /** @enum {string} */
+                    allocationSubject: "land_interest" | "general_common_property" | "limited_common_property" | "stated_other";
+                    subjectDefinition: string;
+                    /** @enum {string} */
+                    basis: "declared_value" | "declared_area" | "source_defined_other";
+                    basisDefinition: string;
+                    instrument: {
+                        pointer: {
+                            sourceRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_revision";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            assetRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            partRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_part";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "whole_asset";
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                                layer?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "image_region";
+                                region: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "rows";
+                                range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "lines";
+                                range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "json_pointer";
+                                pointer: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "model_element";
+                                elementId: string;
+                                elementType: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "verbatim";
+                                locator: string;
+                            };
+                            /** @enum {string} */
+                            purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                            /** @enum {string} */
+                            origin: "direct" | "inherited";
+                            target: {
+                                namespace: string;
+                                id: string;
+                            };
+                            legacyLocator?: string;
+                        };
+                        sha256: string;
+                        bytes: number;
+                    };
+                    population: {
+                        /** @enum {string} */
+                        status: "complete" | "partial" | "unknown" | "conflicting";
+                        declaredCount: number | null;
+                        targets: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        }[];
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    denominator: {
+                        /** @enum {string} */
+                        state: "known" | "unknown" | "withheld" | "conflicting";
+                        literal: string | null;
+                        quantity: {
+                            numerator: string;
+                            denominator: string;
+                        } | null;
+                        unit: string | null;
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    rounding: string | null;
+                    validity: {
+                        /** Format: date */
+                        from: string | null;
+                        /** Format: date */
+                        to: string | null;
+                        /** @enum {string} */
+                        endState: "stated" | "open_ended" | "unknown";
+                    };
+                    entries: {
+                        pin: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        target: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        literalLabel: string;
+                        literalShare: string;
+                        fraction: {
+                            numerator: string;
+                            denominator: string;
+                        };
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                        validity: {
+                            /** Format: date */
+                            from: string | null;
+                            /** Format: date */
+                            to: string | null;
+                            /** @enum {string} */
+                            endState: "stated" | "open_ended" | "unknown";
+                        };
+                    }[];
+                };
             })[];
             evidence: {
                 sourceRevision: {
@@ -28604,6 +29615,2736 @@ export interface components {
                     /** @enum {string} */
                     rights: "not_assessed";
                 };
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
+        POST_usp_rights_declarations_prepare_Request_application_json: {
+            /** @enum {string} */
+            kind: "declaration";
+            scope: {
+                /** @enum {string} */
+                kind: "snapshot";
+                scopeId: string;
+                world: {
+                    namespace: string;
+                    id: string;
+                };
+                manifestId: string;
+                snapshotDigest: string;
+                /** @enum {string} */
+                stage: "draft" | "recorded" | "retained";
+            };
+            changes: {
+                /** @enum {string} */
+                kind: "declaration";
+                /** @enum {string} */
+                action: "create" | "amend";
+                declaration: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                entries: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                }[];
+                applicability: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                }[];
+                instrument: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                supersedes: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                } | null;
+                payload: {
+                    jurisdiction: string;
+                    statute: string | null;
+                    /** @enum {string} */
+                    allocationSubject: "land_interest" | "general_common_property" | "limited_common_property" | "stated_other";
+                    subjectDefinition: string;
+                    /** @enum {string} */
+                    basis: "declared_value" | "declared_area" | "source_defined_other";
+                    basisDefinition: string;
+                    instrument: {
+                        pointer: {
+                            sourceRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_revision";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            assetRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            partRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_part";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "whole_asset";
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                                layer?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "image_region";
+                                region: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "rows";
+                                range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "lines";
+                                range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "json_pointer";
+                                pointer: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "model_element";
+                                elementId: string;
+                                elementType: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "verbatim";
+                                locator: string;
+                            };
+                            /** @enum {string} */
+                            purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                            /** @enum {string} */
+                            origin: "direct" | "inherited";
+                            target: {
+                                namespace: string;
+                                id: string;
+                            };
+                            legacyLocator?: string;
+                        };
+                        sha256: string;
+                        bytes: number;
+                    };
+                    population: {
+                        /** @enum {string} */
+                        status: "complete" | "partial" | "unknown" | "conflicting";
+                        declaredCount: number | null;
+                        targets: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        }[];
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    denominator: {
+                        /** @enum {string} */
+                        state: "known" | "unknown" | "withheld" | "conflicting";
+                        literal: string | null;
+                        quantity: {
+                            numerator: string;
+                            denominator: string;
+                        } | null;
+                        unit: string | null;
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    rounding: string | null;
+                    validity: {
+                        /** Format: date */
+                        from: string | null;
+                        /** Format: date */
+                        to: string | null;
+                        /** @enum {string} */
+                        endState: "stated" | "open_ended" | "unknown";
+                    };
+                    entries: {
+                        pin: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        target: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        literalLabel: string;
+                        literalShare: string;
+                        fraction: {
+                            numerator: string;
+                            denominator: string;
+                        };
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                        validity: {
+                            /** Format: date */
+                            from: string | null;
+                            /** Format: date */
+                            to: string | null;
+                            /** @enum {string} */
+                            endState: "stated" | "open_ended" | "unknown";
+                        };
+                    }[];
+                };
+            }[];
+            evidence: {
+                sourceRevision: {
+                    ref: {
+                        /** @enum {string} */
+                        namespace: "source_revision";
+                        id: string;
+                    };
+                    revision: number;
+                };
+                assetRevision: {
+                    ref: {
+                        /** @enum {string} */
+                        namespace: "asset";
+                        id: string;
+                    };
+                    revision: number;
+                } | null;
+                partRevision: {
+                    ref: {
+                        /** @enum {string} */
+                        namespace: "source_part";
+                        id: string;
+                    };
+                    revision: number;
+                } | null;
+                locator: {
+                    /** @enum {string} */
+                    kind: "whole_asset";
+                } | {
+                    /** @enum {string} */
+                    kind: "feature";
+                    featureId: string;
+                    layer?: string;
+                } | {
+                    /** @enum {string} */
+                    kind: "page";
+                    page: number;
+                    region?: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized";
+                    };
+                } | {
+                    /** @enum {string} */
+                    kind: "image_region";
+                    region: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized";
+                    };
+                } | {
+                    /** @enum {string} */
+                    kind: "rows";
+                    range: {
+                        start: number;
+                        end: number;
+                    };
+                } | {
+                    /** @enum {string} */
+                    kind: "lines";
+                    range: {
+                        start: number;
+                        end: number;
+                    };
+                } | {
+                    /** @enum {string} */
+                    kind: "json_pointer";
+                    pointer: string;
+                } | {
+                    /** @enum {string} */
+                    kind: "model_element";
+                    elementId: string;
+                    elementType: string;
+                } | {
+                    /** @enum {string} */
+                    kind: "verbatim";
+                    locator: string;
+                };
+                /** @enum {string} */
+                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                /** @enum {string} */
+                origin: "direct" | "inherited";
+                target: {
+                    namespace: string;
+                    id: string;
+                };
+                legacyLocator?: string;
+            }[];
+            guard: {
+                /** @enum {string} */
+                mode: "create";
+                requestKey: string;
+            };
+            target: {
+                ref: {
+                    namespace: string;
+                    id: string;
+                };
+                revision: number;
+            };
+        } | {
+            /** @enum {string} */
+            kind: "declaration";
+            scope: {
+                /** @enum {string} */
+                kind: "snapshot";
+                scopeId: string;
+                world: {
+                    namespace: string;
+                    id: string;
+                };
+                manifestId: string;
+                snapshotDigest: string;
+                /** @enum {string} */
+                stage: "draft" | "recorded" | "retained";
+            };
+            changes: {
+                /** @enum {string} */
+                kind: "declaration";
+                /** @enum {string} */
+                action: "create" | "amend";
+                declaration: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                entries: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                }[];
+                applicability: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                }[];
+                instrument: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                supersedes: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                } | null;
+                payload: {
+                    jurisdiction: string;
+                    statute: string | null;
+                    /** @enum {string} */
+                    allocationSubject: "land_interest" | "general_common_property" | "limited_common_property" | "stated_other";
+                    subjectDefinition: string;
+                    /** @enum {string} */
+                    basis: "declared_value" | "declared_area" | "source_defined_other";
+                    basisDefinition: string;
+                    instrument: {
+                        pointer: {
+                            sourceRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_revision";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            assetRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            partRevision: {
+                                ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_part";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "whole_asset";
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                                layer?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "image_region";
+                                region: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "rows";
+                                range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "lines";
+                                range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "json_pointer";
+                                pointer: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "model_element";
+                                elementId: string;
+                                elementType: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "verbatim";
+                                locator: string;
+                            };
+                            /** @enum {string} */
+                            purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                            /** @enum {string} */
+                            origin: "direct" | "inherited";
+                            target: {
+                                namespace: string;
+                                id: string;
+                            };
+                            legacyLocator?: string;
+                        };
+                        sha256: string;
+                        bytes: number;
+                    };
+                    population: {
+                        /** @enum {string} */
+                        status: "complete" | "partial" | "unknown" | "conflicting";
+                        declaredCount: number | null;
+                        targets: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        }[];
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    denominator: {
+                        /** @enum {string} */
+                        state: "known" | "unknown" | "withheld" | "conflicting";
+                        literal: string | null;
+                        quantity: {
+                            numerator: string;
+                            denominator: string;
+                        } | null;
+                        unit: string | null;
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    rounding: string | null;
+                    validity: {
+                        /** Format: date */
+                        from: string | null;
+                        /** Format: date */
+                        to: string | null;
+                        /** @enum {string} */
+                        endState: "stated" | "open_ended" | "unknown";
+                    };
+                    entries: {
+                        pin: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        target: {
+                            ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        literalLabel: string;
+                        literalShare: string;
+                        fraction: {
+                            numerator: string;
+                            denominator: string;
+                        };
+                        evidence: {
+                            pointer: {
+                                sourceRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                assetRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                partRevision: {
+                                    ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                        validity: {
+                            /** Format: date */
+                            from: string | null;
+                            /** Format: date */
+                            to: string | null;
+                            /** @enum {string} */
+                            endState: "stated" | "open_ended" | "unknown";
+                        };
+                    }[];
+                };
+            }[];
+            evidence: {
+                sourceRevision: {
+                    ref: {
+                        /** @enum {string} */
+                        namespace: "source_revision";
+                        id: string;
+                    };
+                    revision: number;
+                };
+                assetRevision: {
+                    ref: {
+                        /** @enum {string} */
+                        namespace: "asset";
+                        id: string;
+                    };
+                    revision: number;
+                } | null;
+                partRevision: {
+                    ref: {
+                        /** @enum {string} */
+                        namespace: "source_part";
+                        id: string;
+                    };
+                    revision: number;
+                } | null;
+                locator: {
+                    /** @enum {string} */
+                    kind: "whole_asset";
+                } | {
+                    /** @enum {string} */
+                    kind: "feature";
+                    featureId: string;
+                    layer?: string;
+                } | {
+                    /** @enum {string} */
+                    kind: "page";
+                    page: number;
+                    region?: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized";
+                    };
+                } | {
+                    /** @enum {string} */
+                    kind: "image_region";
+                    region: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized";
+                    };
+                } | {
+                    /** @enum {string} */
+                    kind: "rows";
+                    range: {
+                        start: number;
+                        end: number;
+                    };
+                } | {
+                    /** @enum {string} */
+                    kind: "lines";
+                    range: {
+                        start: number;
+                        end: number;
+                    };
+                } | {
+                    /** @enum {string} */
+                    kind: "json_pointer";
+                    pointer: string;
+                } | {
+                    /** @enum {string} */
+                    kind: "model_element";
+                    elementId: string;
+                    elementType: string;
+                } | {
+                    /** @enum {string} */
+                    kind: "verbatim";
+                    locator: string;
+                };
+                /** @enum {string} */
+                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                /** @enum {string} */
+                origin: "direct" | "inherited";
+                target: {
+                    namespace: string;
+                    id: string;
+                };
+                legacyLocator?: string;
+            }[];
+            guard: {
+                /** @enum {string} */
+                mode: "create";
+                requestKey: string;
+            };
+            targets: {
+                ref: {
+                    namespace: string;
+                    id: string;
+                };
+                revision: number;
+            }[];
+        };
+        POST_usp_rights_declarations_prepare_Response_200_application_json: {
+            readonly data: {
+                /** Format: uuid */
+                proposalId: string;
+                /** @enum {number} */
+                version: 1;
+                /** @enum {string} */
+                state: "draft";
+                readonly assessment: {
+                    /** @enum {string} */
+                    state: "reconciled" | "arithmetic_mismatch" | "not_assessed_incomplete_population" | "not_assessed_denominator" | "conflicting_population";
+                    /** @enum {string} */
+                    populationStatus: "complete" | "partial" | "unknown" | "conflicting";
+                    readonly knownSubtotal: {
+                        numerator: string;
+                        denominator: string;
+                    };
+                    declaredCount: number | null;
+                    suppliedCount: number;
+                    missingCount: number;
+                    ambiguousCount: number;
+                    readonly reasonCodes: string[];
+                };
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
+        POST_usp_rights_declarations_proposal_Request_application_json: {
+            /** Format: uuid */
+            proposalId: string;
+            scope: {
+                /** @enum {string} */
+                kind: "snapshot";
+                scopeId: string;
+                world: {
+                    namespace: string;
+                    id: string;
+                };
+                manifestId: string;
+                snapshotDigest: string;
+                /** @enum {string} */
+                stage: "draft" | "recorded" | "retained";
+            };
+        };
+        POST_usp_rights_declarations_proposal_Response_200_application_json: {
+            readonly data: {
+                /** Format: uuid */
+                proposalId: string;
+                /** @enum {number} */
+                version: 1;
+                /** @enum {string} */
+                state: "draft" | "reviewed" | "technically_accepted";
+                /** Format: uuid */
+                reviewId: string | null;
+                readonly declaration: {
+                    readonly ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                readonly supersedes: {
+                    readonly ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                } | null;
+                readonly input: {
+                    jurisdiction: string;
+                    statute: string | null;
+                    /** @enum {string} */
+                    allocationSubject: "land_interest" | "general_common_property" | "limited_common_property" | "stated_other";
+                    subjectDefinition: string;
+                    /** @enum {string} */
+                    basis: "declared_value" | "declared_area" | "source_defined_other";
+                    basisDefinition: string;
+                    readonly instrument: {
+                        readonly pointer: {
+                            readonly sourceRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_revision";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            readonly assetRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            readonly partRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_part";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "whole_asset";
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                                layer?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                readonly region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "image_region";
+                                readonly region: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "rows";
+                                readonly range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "lines";
+                                readonly range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "json_pointer";
+                                pointer: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "model_element";
+                                elementId: string;
+                                elementType: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "verbatim";
+                                locator: string;
+                            };
+                            /** @enum {string} */
+                            purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                            /** @enum {string} */
+                            origin: "direct" | "inherited";
+                            readonly target: {
+                                namespace: string;
+                                id: string;
+                            };
+                            legacyLocator?: string;
+                        };
+                        sha256: string;
+                        bytes: number;
+                    };
+                    readonly population: {
+                        /** @enum {string} */
+                        status: "complete" | "partial" | "unknown" | "conflicting";
+                        declaredCount: number | null;
+                        readonly targets: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        }[];
+                        readonly evidence: {
+                            readonly pointer: {
+                                readonly sourceRevision: {
+                                    readonly ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                readonly assetRevision: {
+                                    readonly ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                readonly partRevision: {
+                                    readonly ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    readonly region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    readonly region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    readonly range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    readonly range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                readonly target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    readonly denominator: {
+                        /** @enum {string} */
+                        state: "known" | "unknown" | "withheld" | "conflicting";
+                        literal: string | null;
+                        readonly quantity: {
+                            numerator: string;
+                            denominator: string;
+                        } | null;
+                        unit: string | null;
+                        readonly evidence: {
+                            readonly pointer: {
+                                readonly sourceRevision: {
+                                    readonly ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                readonly assetRevision: {
+                                    readonly ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                readonly partRevision: {
+                                    readonly ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    readonly region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    readonly region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    readonly range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    readonly range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                readonly target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                    };
+                    rounding: string | null;
+                    readonly validity: {
+                        /** Format: date */
+                        from: string | null;
+                        /** Format: date */
+                        to: string | null;
+                        /** @enum {string} */
+                        endState: "stated" | "open_ended" | "unknown";
+                    };
+                    readonly entries: {
+                        readonly pin: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        readonly target: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        literalLabel: string;
+                        literalShare: string;
+                        readonly fraction: {
+                            numerator: string;
+                            denominator: string;
+                        };
+                        readonly evidence: {
+                            readonly pointer: {
+                                readonly sourceRevision: {
+                                    readonly ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_revision";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                };
+                                readonly assetRevision: {
+                                    readonly ref: {
+                                        /** @enum {string} */
+                                        namespace: "asset";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                readonly partRevision: {
+                                    readonly ref: {
+                                        /** @enum {string} */
+                                        namespace: "source_part";
+                                        id: string;
+                                    };
+                                    revision: number;
+                                } | null;
+                                locator: {
+                                    /** @enum {string} */
+                                    kind: "whole_asset";
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "feature";
+                                    featureId: string;
+                                    layer?: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "page";
+                                    page: number;
+                                    readonly region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "image_region";
+                                    readonly region: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        /** @enum {string} */
+                                        unit: "normalized";
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "rows";
+                                    readonly range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "lines";
+                                    readonly range: {
+                                        start: number;
+                                        end: number;
+                                    };
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "json_pointer";
+                                    pointer: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "model_element";
+                                    elementId: string;
+                                    elementType: string;
+                                } | {
+                                    /** @enum {string} */
+                                    kind: "verbatim";
+                                    locator: string;
+                                };
+                                /** @enum {string} */
+                                purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                                /** @enum {string} */
+                                origin: "direct" | "inherited";
+                                readonly target: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                legacyLocator?: string;
+                            };
+                            sha256: string;
+                            bytes: number;
+                        };
+                        readonly validity: {
+                            /** Format: date */
+                            from: string | null;
+                            /** Format: date */
+                            to: string | null;
+                            /** @enum {string} */
+                            endState: "stated" | "open_ended" | "unknown";
+                        };
+                    }[];
+                };
+                readonly assessment: {
+                    /** @enum {string} */
+                    state: "reconciled" | "arithmetic_mismatch" | "not_assessed_incomplete_population" | "not_assessed_denominator" | "conflicting_population";
+                    /** @enum {string} */
+                    populationStatus: "complete" | "partial" | "unknown" | "conflicting";
+                    readonly knownSubtotal: {
+                        numerator: string;
+                        denominator: string;
+                    };
+                    declaredCount: number | null;
+                    suppliedCount: number;
+                    missingCount: number;
+                    ambiguousCount: number;
+                    readonly reasonCodes: string[];
+                };
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
+        POST_usp_rights_declarations_review_Request_application_json: {
+            /** Format: uuid */
+            proposalId: string;
+            scope: {
+                /** @enum {string} */
+                kind: "snapshot";
+                scopeId: string;
+                world: {
+                    namespace: string;
+                    id: string;
+                };
+                manifestId: string;
+                snapshotDigest: string;
+                /** @enum {string} */
+                stage: "draft" | "recorded" | "retained";
+            };
+            guard: {
+                /** @enum {string} */
+                mode: "update";
+                requestKey: string;
+                expectedVersion: number;
+                expectedManifestId: string;
+            };
+            /** @enum {string} */
+            acknowledgement: "Technical acceptance only; not legal approval or source truth.";
+            /** @enum {boolean} */
+            sourceAcknowledged: true;
+            /** @enum {boolean} */
+            populationAcknowledged: true;
+            /** @enum {string} */
+            assessmentState: "reconciled" | "arithmetic_mismatch" | "not_assessed_incomplete_population" | "not_assessed_denominator" | "conflicting_population";
+            reason: string;
+            consentEvidence: {
+                pointer: {
+                    sourceRevision: {
+                        ref: {
+                            /** @enum {string} */
+                            namespace: "source_revision";
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    assetRevision: {
+                        ref: {
+                            /** @enum {string} */
+                            namespace: "asset";
+                            id: string;
+                        };
+                        revision: number;
+                    } | null;
+                    partRevision: {
+                        ref: {
+                            /** @enum {string} */
+                            namespace: "source_part";
+                            id: string;
+                        };
+                        revision: number;
+                    } | null;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "whole_asset";
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                        layer?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized";
+                        };
+                    } | {
+                        /** @enum {string} */
+                        kind: "image_region";
+                        region: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized";
+                        };
+                    } | {
+                        /** @enum {string} */
+                        kind: "rows";
+                        range: {
+                            start: number;
+                            end: number;
+                        };
+                    } | {
+                        /** @enum {string} */
+                        kind: "lines";
+                        range: {
+                            start: number;
+                            end: number;
+                        };
+                    } | {
+                        /** @enum {string} */
+                        kind: "json_pointer";
+                        pointer: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "model_element";
+                        elementId: string;
+                        elementType: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "verbatim";
+                        locator: string;
+                    };
+                    /** @enum {string} */
+                    purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                    /** @enum {string} */
+                    origin: "direct" | "inherited";
+                    target: {
+                        namespace: string;
+                        id: string;
+                    };
+                    legacyLocator?: string;
+                };
+                sha256: string;
+                bytes: number;
+            }[];
+            applicability: {
+                target: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                /** @enum {string} */
+                state: "applicable" | "not_assessed" | "conflicting";
+                evidence: {
+                    pointer: {
+                        sourceRevision: {
+                            ref: {
+                                /** @enum {string} */
+                                namespace: "source_revision";
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        assetRevision: {
+                            ref: {
+                                /** @enum {string} */
+                                namespace: "asset";
+                                id: string;
+                            };
+                            revision: number;
+                        } | null;
+                        partRevision: {
+                            ref: {
+                                /** @enum {string} */
+                                namespace: "source_part";
+                                id: string;
+                            };
+                            revision: number;
+                        } | null;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "whole_asset";
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                            layer?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            region?: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized";
+                            };
+                        } | {
+                            /** @enum {string} */
+                            kind: "image_region";
+                            region: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized";
+                            };
+                        } | {
+                            /** @enum {string} */
+                            kind: "rows";
+                            range: {
+                                start: number;
+                                end: number;
+                            };
+                        } | {
+                            /** @enum {string} */
+                            kind: "lines";
+                            range: {
+                                start: number;
+                                end: number;
+                            };
+                        } | {
+                            /** @enum {string} */
+                            kind: "json_pointer";
+                            pointer: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "model_element";
+                            elementId: string;
+                            elementType: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "verbatim";
+                            locator: string;
+                        };
+                        /** @enum {string} */
+                        purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                        /** @enum {string} */
+                        origin: "direct" | "inherited";
+                        target: {
+                            namespace: string;
+                            id: string;
+                        };
+                        legacyLocator?: string;
+                    };
+                    sha256: string;
+                    bytes: number;
+                };
+                reason: string;
+                /** @enum {string} */
+                purpose: "declared_share";
+                relationPath: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                }[];
+                validity: {
+                    /** Format: date */
+                    from: string | null;
+                    /** Format: date */
+                    to: string | null;
+                    /** @enum {string} */
+                    endState: "stated" | "open_ended" | "unknown";
+                };
+            }[];
+        };
+        POST_usp_rights_declarations_review_Response_200_application_json: {
+            readonly data: {
+                /** Format: uuid */
+                reviewId: string;
+                /** Format: uuid */
+                proposalId: string;
+                /** @enum {number} */
+                version: 1;
+                /** @enum {string} */
+                state: "reviewed";
+                readonly assessment: {
+                    /** @enum {string} */
+                    state: "reconciled" | "arithmetic_mismatch" | "not_assessed_incomplete_population" | "not_assessed_denominator" | "conflicting_population";
+                    /** @enum {string} */
+                    populationStatus: "complete" | "partial" | "unknown" | "conflicting";
+                    readonly knownSubtotal: {
+                        numerator: string;
+                        denominator: string;
+                    };
+                    declaredCount: number | null;
+                    suppliedCount: number;
+                    missingCount: number;
+                    ambiguousCount: number;
+                    readonly reasonCodes: string[];
+                };
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
+        POST_usp_rights_declarations_accept_Request_application_json: {
+            /** @enum {string} */
+            kind: "declaration";
+            /** Format: uuid */
+            proposalId: string;
+            /** Format: uuid */
+            reviewId: string;
+            scope: {
+                /** @enum {string} */
+                kind: "snapshot";
+                scopeId: string;
+                world: {
+                    namespace: string;
+                    id: string;
+                };
+                manifestId: string;
+                snapshotDigest: string;
+                /** @enum {string} */
+                stage: "draft" | "recorded" | "retained";
+            };
+            guard: {
+                /** @enum {string} */
+                mode: "update";
+                requestKey: string;
+                expectedVersion: number;
+                expectedManifestId: string;
+            };
+            /** @enum {string} */
+            acknowledgement: "Technical acceptance only; not legal approval or source truth.";
+        };
+        POST_usp_rights_declarations_accept_Response_200_application_json: {
+            readonly data: {
+                receiptId: string;
+                operation: string;
+                requestKey: string;
+                commandSha256: string;
+                reviewId: string;
+                readonly before: {
+                    readonly ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                }[];
+                readonly after: {
+                    readonly ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                }[];
+                readonly snapshot: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+                readonly event: {
+                    streamId: string;
+                    sequence: string;
+                };
+                /** Format: date-time */
+                committedAt: string;
+                /** @enum {string} */
+                kind: "declaration";
+                proposalId: string;
+                /** @enum {string} */
+                technicalStatus: "technically_accepted";
+                /** @enum {string} */
+                legalStatus: "not_assessed";
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
+        POST_usp_rights_declarations_selected_target_Request_application_json: {
+            scope: {
+                /** @enum {string} */
+                kind: "snapshot";
+                scopeId: string;
+                world: {
+                    namespace: string;
+                    id: string;
+                };
+                manifestId: string;
+                snapshotDigest: string;
+                /** @enum {string} */
+                stage: "draft" | "recorded" | "retained";
+            };
+            target: {
+                ref: {
+                    namespace: string;
+                    id: string;
+                };
+                revision: number;
+            };
+            declaration: {
+                ref: {
+                    namespace: string;
+                    id: string;
+                };
+                revision: number;
+            };
+            /** Format: date */
+            validAt: string | null;
+        };
+        POST_usp_rights_declarations_selected_target_Response_200_application_json: {
+            readonly data: {
+                readonly declaration: {
+                    readonly ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                readonly target: {
+                    readonly ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                /** @enum {string} */
+                technicalStatus: "technically_accepted";
+                /** @enum {string} */
+                legalStatus: "not_assessed";
+                /** @enum {string} */
+                allocationSubject: "land_interest" | "general_common_property" | "limited_common_property" | "stated_other";
+                subjectDefinition: string;
+                /** @enum {string} */
+                basis: "declared_value" | "declared_area" | "source_defined_other";
+                basisDefinition: string;
+                jurisdiction: string;
+                statute: string | null;
+                readonly denominator: {
+                    /** @enum {string} */
+                    state: "known" | "unknown" | "withheld" | "conflicting";
+                    literal: string | null;
+                    readonly quantity: {
+                        numerator: string;
+                        denominator: string;
+                    } | null;
+                    unit: string | null;
+                    readonly evidence: {
+                        readonly pointer: {
+                            readonly sourceRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_revision";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            readonly assetRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            readonly partRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_part";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "whole_asset";
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                                layer?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                readonly region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "image_region";
+                                readonly region: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "rows";
+                                readonly range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "lines";
+                                readonly range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "json_pointer";
+                                pointer: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "model_element";
+                                elementId: string;
+                                elementType: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "verbatim";
+                                locator: string;
+                            };
+                            /** @enum {string} */
+                            purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                            /** @enum {string} */
+                            origin: "direct" | "inherited";
+                            readonly target: {
+                                namespace: string;
+                                id: string;
+                            };
+                            legacyLocator?: string;
+                        };
+                        sha256: string;
+                        bytes: number;
+                    };
+                };
+                rounding: string | null;
+                readonly validity: {
+                    /** Format: date */
+                    from: string | null;
+                    /** Format: date */
+                    to: string | null;
+                    /** @enum {string} */
+                    endState: "stated" | "open_ended" | "unknown";
+                };
+                readonly supersedes: {
+                    readonly ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                } | null;
+                readonly assessment: {
+                    /** @enum {string} */
+                    state: "reconciled" | "arithmetic_mismatch" | "not_assessed_incomplete_population" | "not_assessed_denominator" | "conflicting_population";
+                    /** @enum {string} */
+                    populationStatus: "complete" | "partial" | "unknown" | "conflicting";
+                    readonly knownSubtotal: {
+                        numerator: string;
+                        denominator: string;
+                    };
+                    declaredCount: number | null;
+                    suppliedCount: number;
+                    missingCount: number;
+                    ambiguousCount: number;
+                    readonly reasonCodes: string[];
+                };
+                readonly entry: {
+                    readonly pin: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    readonly target: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    literalLabel: string;
+                    literalShare: string;
+                    readonly fraction: {
+                        numerator: string;
+                        denominator: string;
+                    };
+                    readonly evidence: {
+                        readonly pointer: {
+                            readonly sourceRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_revision";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            readonly assetRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            readonly partRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_part";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "whole_asset";
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                                layer?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                readonly region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "image_region";
+                                readonly region: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "rows";
+                                readonly range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "lines";
+                                readonly range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "json_pointer";
+                                pointer: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "model_element";
+                                elementId: string;
+                                elementType: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "verbatim";
+                                locator: string;
+                            };
+                            /** @enum {string} */
+                            purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                            /** @enum {string} */
+                            origin: "direct" | "inherited";
+                            readonly target: {
+                                namespace: string;
+                                id: string;
+                            };
+                            legacyLocator?: string;
+                        };
+                        sha256: string;
+                        bytes: number;
+                    };
+                    readonly validity: {
+                        /** Format: date */
+                        from: string | null;
+                        /** Format: date */
+                        to: string | null;
+                        /** @enum {string} */
+                        endState: "stated" | "open_ended" | "unknown";
+                    };
+                } | null;
+                readonly applicability: {
+                    readonly pin: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    /** @enum {string} */
+                    state: "applicable" | "not_assessed" | "conflicting";
+                    reason: string;
+                    readonly evidence: {
+                        readonly pointer: {
+                            readonly sourceRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_revision";
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                            readonly assetRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "asset";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            readonly partRevision: {
+                                readonly ref: {
+                                    /** @enum {string} */
+                                    namespace: "source_part";
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "whole_asset";
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                                layer?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                readonly region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "image_region";
+                                readonly region: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    /** @enum {string} */
+                                    unit: "normalized";
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "rows";
+                                readonly range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "lines";
+                                readonly range: {
+                                    start: number;
+                                    end: number;
+                                };
+                            } | {
+                                /** @enum {string} */
+                                kind: "json_pointer";
+                                pointer: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "model_element";
+                                elementId: string;
+                                elementType: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "verbatim";
+                                locator: string;
+                            };
+                            /** @enum {string} */
+                            purpose: "context" | "geometry" | "levels" | "record" | "appearance";
+                            /** @enum {string} */
+                            origin: "direct" | "inherited";
+                            readonly target: {
+                                namespace: string;
+                                id: string;
+                            };
+                            legacyLocator?: string;
+                        };
+                        sha256: string;
+                        bytes: number;
+                    };
+                    /** @enum {string} */
+                    purpose: "declared_share";
+                    readonly validity: {
+                        /** Format: date */
+                        from: string | null;
+                        /** Format: date */
+                        to: string | null;
+                        /** @enum {string} */
+                        endState: "stated" | "open_ended" | "unknown";
+                    };
+                    /** @enum {string} */
+                    consentStatus: "reviewed_evidence" | "not_assessed" | "not_required";
+                } | null;
+                /** @enum {string} */
+                packetState: "available" | "not_assessed";
             };
             readonly meta: {
                 /** @enum {string} */
@@ -48582,6 +52323,526 @@ export interface operations {
                 };
             };
             /** @description Bounded service unavailable or deadline expired */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_rights_declarations_prepare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_rights_declarations_prepare_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_rights_declarations_prepare_Response_200_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_rights_declarations_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_rights_declarations_proposal_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_rights_declarations_proposal_Response_200_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_rights_declarations_review: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_rights_declarations_review_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_rights_declarations_review_Response_200_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_rights_declarations_accept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_rights_declarations_accept_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_rights_declarations_accept_Response_200_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_rights_declarations_selected_target: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_rights_declarations_selected_target_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_rights_declarations_selected_target_Response_200_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
             503: {
                 headers: {
                     /** @description Server request identifier. */

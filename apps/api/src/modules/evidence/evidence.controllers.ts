@@ -102,7 +102,7 @@ export class DecisionEvidenceController {
 
   @Post('proposals/prepare')
   @HttpCode(200)
-  @UspJsonPost('POST_api_v1_usp_proposals_prepare', 'Prepare a guarded registry proposal',
+  @UspJsonPost('POST_api_v1_usp_proposals_prepare', 'Prepare a guarded registry or declaration proposal',
     evidenceSchemas.prepare.request, evidenceSchemas.prepare.response)
   async prepare(@Req() request: Request) {
     const input = await readUspBody(request, evidenceSchemas.prepare.request);
