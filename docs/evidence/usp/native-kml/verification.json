@@ -1,0 +1,291 @@
+{
+  "schemaVersion": "kml-local-verification/1",
+  "codeCommit": "8ad86d671b78cf8502d8d6781eac946a2199862c",
+  "baseCommit": "f687cd29d17925f5893d7d1cddcfe31d30300177",
+  "completedAt": "2026-10-01T16:20:55.457467+00:00",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\desktop-kml-native",
+  "code": [
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-kml\\3d-ulpin\\services\\geo\\geo\\native_kml.py",
+      "bytes": 24595,
+      "sha256": "93596bd00e3688ecde7e6e533d1d10d69c5768a49968d714e6dae3494fc47d1a",
+      "repositoryPath": "services/geo/geo/native_kml.py",
+      "gitBlobSha256": "93596bd00e3688ecde7e6e533d1d10d69c5768a49968d714e6dae3494fc47d1a",
+      "physicalEqualsGit": true
+    },
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-kml\\3d-ulpin\\scripts\\usp\\desktop-kml-read.py",
+      "bytes": 14350,
+      "sha256": "bce2862c810890fed6dcd7c98bf378d95994b8b37d0fb3bae5f1c9a1d9ba94a9",
+      "repositoryPath": "scripts/usp/desktop-kml-read.py",
+      "gitBlobSha256": "bce2862c810890fed6dcd7c98bf378d95994b8b37d0fb3bae5f1c9a1d9ba94a9",
+      "physicalEqualsGit": true
+    },
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-kml\\3d-ulpin\\services\\geo\\tests\\test_native_kml.py",
+      "bytes": 10462,
+      "sha256": "a626db349410ee8577f7d3282fe8fcba9a57aa4d89c72a936548bb5770f1b487",
+      "repositoryPath": "services/geo/tests/test_native_kml.py",
+      "gitBlobSha256": "a626db349410ee8577f7d3282fe8fcba9a57aa4d89c72a936548bb5770f1b487",
+      "physicalEqualsGit": true
+    },
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-kml\\3d-ulpin\\docs\\evidence\\usp\\native-kml\\requirements.lock",
+      "bytes": 153,
+      "sha256": "292cf7b02d6932fc1f1f2f943e676eb333d9504c94c967c44e8c73cbbbcaab61",
+      "repositoryPath": "docs/evidence/usp/native-kml/requirements.lock",
+      "gitBlobSha256": "292cf7b02d6932fc1f1f2f943e676eb333d9504c94c967c44e8c73cbbbcaab61",
+      "physicalEqualsGit": true
+    }
+  ],
+  "adaptedPatterns": [
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-kml\\3d-ulpin\\scripts\\usp\\document-models\\run_trial.py",
+      "bytes": 23948,
+      "sha256": "7b222f53865f49289fd67c81c0a2514bf5493c4469c9f45eabcfff0efa684c2f",
+      "repositoryPath": "scripts/usp/document-models/run_trial.py",
+      "gitBlobSha256": "458ebe7507dcde7e1c22cb3d05ab0bdcc1c3261896bcc656d17f05f5bc2953c8",
+      "reuse": "Adapted supervision concept only; not imported or edited"
+    },
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-kml\\3d-ulpin\\services\\geo\\geo\\native_pdf.py",
+      "bytes": 8511,
+      "sha256": "0d21bdd304b0fb12beea694a049078cd4ee0cbddb272102f16a0c706feef966f",
+      "repositoryPath": "services/geo/geo/native_pdf.py",
+      "gitBlobSha256": "1c5acdfb441ba43d3b59a5e76ed067dfdf172f1bc795a686cde00daa1dfe4030",
+      "reuse": "Adapted supervision concept only; not imported or edited"
+    }
+  ],
+  "wheel": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\wheels\\defusedxml-0.7.1-py2.py3-none-any.whl",
+    "bytes": 25604,
+    "sha256": "a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"
+  },
+  "runs": [
+    {
+      "name": "kml-final",
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\kml-final\\receipt.json",
+        "bytes": 2691,
+        "sha256": "516d4eebdd17652b1163eb8dbb4ae8d2557c9d9a52e32159d34e7bf7067286ff"
+      },
+      "result": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\kml-final\\kml.json",
+        "bytes": 382212,
+        "sha256": "fca01491e2b805f48d9c9e283ed1510f18c4c439c915aeafa198c933734d803c"
+      },
+      "status": "partial",
+      "featureCount": 39,
+      "coordinateCount": 182,
+      "supervision": {
+        "gatedStart": true,
+        "memoryBytes": 2147483648,
+        "activeProcessLimit": 1,
+        "deadlineSeconds": 45,
+        "affinityMask": 3,
+        "computePoolThreads": 1,
+        "osThreadCeiling": null,
+        "peakJobPrivateBytes": 32079872,
+        "exitCode": 0,
+        "elapsedSeconds": 0.147181
+      },
+      "sourceHashUnchanged": true,
+      "member": null,
+      "selection": null,
+      "commandEvidence": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\checks\\kml-final.json",
+        "bytes": 852,
+        "sha256": "7a5670cdcb5586cd70ca9b1ad97889fe5c0bf77abc61036ea828f31550b8e81a"
+      }
+    },
+    {
+      "name": "kmz-selection",
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\kmz-selection\\receipt.json",
+        "bytes": 2686,
+        "sha256": "e73496768349f488c4cc7df0f1b2286d5d85b5e7687081e4b64ebee047ffd2f2"
+      },
+      "result": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\kmz-selection\\kml.json",
+        "bytes": 1415,
+        "sha256": "56da5e3ef3b190280e32eba8b6c1e167de2c77d8ced0470b46e9e99a5d94a9e5"
+      },
+      "status": "needs_input",
+      "featureCount": 0,
+      "coordinateCount": 0,
+      "supervision": {
+        "gatedStart": true,
+        "memoryBytes": 2147483648,
+        "activeProcessLimit": 1,
+        "deadlineSeconds": 45,
+        "affinityMask": 3,
+        "computePoolThreads": 1,
+        "osThreadCeiling": null,
+        "peakJobPrivateBytes": 31854592,
+        "exitCode": 0,
+        "elapsedSeconds": 0.08644
+      },
+      "sourceHashUnchanged": true,
+      "member": null,
+      "selection": {
+        "code": "KML_MEMBER_SELECTION_REQUIRED",
+        "candidates": [
+          "z/c.kml",
+          "b.kml",
+          "a/a.kml",
+          "doc/doc.kml"
+        ],
+        "status": "needs_input"
+      },
+      "commandEvidence": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\checks\\kmz-selection.json",
+        "bytes": 863,
+        "sha256": "1283efbc573f1c529c73868113b2ea0d3a620e3d1385b856765c67572bdfb3ca"
+      }
+    },
+    {
+      "name": "kmz-selected",
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\kmz-selected\\receipt.json",
+        "bytes": 2940,
+        "sha256": "0ce73ea1887344cb6505b9dc46ba5d66388d88c9058e6e4763f104f81fddd7d8"
+      },
+      "result": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\kmz-selected\\kml.json",
+        "bytes": 2600,
+        "sha256": "c0c85da46e05082e2938b2ca930ad834e14ce13d55ff64787aabe49c82c5ff4b"
+      },
+      "status": "partial",
+      "featureCount": 1,
+      "coordinateCount": 0,
+      "supervision": {
+        "gatedStart": true,
+        "memoryBytes": 2147483648,
+        "activeProcessLimit": 1,
+        "deadlineSeconds": 45,
+        "affinityMask": 3,
+        "computePoolThreads": 1,
+        "osThreadCeiling": null,
+        "peakJobPrivateBytes": 32002048,
+        "exitCode": 0,
+        "elapsedSeconds": 0.127779
+      },
+      "sourceHashUnchanged": true,
+      "member": {
+        "ordinal": 3,
+        "path": "doc/doc.kml",
+        "bytes": 44,
+        "compressedBytes": 34,
+        "sha256": "727198e00328bbeaa4e7b8af4260084eb28315b26eff817297dc1bcacd2c4455",
+        "crc32": "62b75c91",
+        "crc": "match",
+        "kind": "kml",
+        "selected": true
+      },
+      "selection": null,
+      "commandEvidence": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\checks\\kmz-selected.json",
+        "bytes": 894,
+        "sha256": "62dc289b177a5b4d7272a03338cb995f699640ad23c3147520db468b97645469"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "evidence": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\checks\\focused-tests.json",
+        "bytes": 1630,
+        "sha256": "54f05caf9695ff7397ff15e6acb3a5509187d780ce00e87a44345a12ee59fd2f"
+      },
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "services/geo/tests",
+        "-p",
+        "test_native_kml.py",
+        "-v"
+      ],
+      "exit": 0
+    },
+    {
+      "evidence": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\checks\\compile.json",
+        "bytes": 311,
+        "sha256": "ac96202c8ddd8dc5dd7613f84fe68b8d4818ff23fce4dc45214863625c001409"
+      },
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\venv\\Scripts\\python.exe",
+        "-m",
+        "py_compile",
+        "services/geo/geo/native_kml.py",
+        "scripts/usp/desktop-kml-read.py",
+        "services/geo/tests/test_native_kml.py"
+      ],
+      "exit": 0
+    },
+    {
+      "evidence": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\checks\\diff-check.json",
+        "bytes": 113,
+        "sha256": "f067c4b96a5d15275819777bf17198b91e877bfe64076a2415a6f5409d2dc2de"
+      },
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ],
+  "sourceReconciliation": {
+    "command": [
+      "E:/BhuAayam-data/task-data/desktop-kml-native/venv/Scripts/python.exe",
+      "-"
+    ],
+    "execution": "Read-only stdin script recorded in this chat tool transcript; exit 0",
+    "result": "Every extracted feature ID/name/field, projected coordinate lexeme/declaration and geometry line/column reconciles with independent ElementTree element paths; all KMZ member hashes reconcile with ZipFile; selected fragment has absent geometry/unknown horizontal reference",
+    "accuracyOracle": false
+  },
+  "cliGuards": [
+    {
+      "case": "existing output",
+      "commandSuffix": "--expected-sha256 5a97b905a05c97ca0c43e59d423fe1db66299efd9ed75d1738c422da11605dfd --output-dir E:/BhuAayam-data/task-data/desktop-kml-native/kml-final",
+      "observedToolExit": 1,
+      "message": "Output directory must be fresh with an existing parent."
+    },
+    {
+      "case": "wrong expected hash",
+      "commandSuffix": "--expected-sha256 0000000000000000000000000000000000000000000000000000000000000000 --output-dir E:/BhuAayam-data/task-data/desktop-kml-native/wrong-source-output",
+      "observedToolExit": 1,
+      "message": "Original SHA-256 differs from the expected input."
+    }
+  ],
+  "automaticReview": {
+    "rejected": "Combined reconciliation/guard/evidence command",
+    "reason": "blocked by policy",
+    "executed": false,
+    "subsequentScope": "Narrow read-only reconciliation and separately authorized CLI refusal checks"
+  },
+  "settings": {
+    "requestedModel": "gpt-6.1-sol",
+    "requestedEffort": "xhigh",
+    "requestedTier": "default/standard",
+    "actualTurnTier": "unexposed",
+    "actualModelEffort": "not independently observed",
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "limitations": [
+    "Windows only; no OS thread ceiling",
+    "No shared wiring/API/services/frontend/models",
+    "No official-source accuracy, operational records, learning labels, scale or release qualification"
+  ],
+  "primaryPrivateReceipt": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\qualification.json",
+    "bytes": 10901,
+    "sha256": "2c174a8be921514fc68f9f332e8f82cb31bd836216cab3ee45debdfaea0d0bcc"
+  }
+}

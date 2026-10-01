@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "kml-development-sources/1",
+  "qualification": "test_only",
+  "operationalFacts": false,
+  "learningLabels": false,
+  "sourceDiscovery": "No KML/KMZ in retained catalogue or task-data extension search before acquisition",
+  "revision": "8609edf7c8d13ae2ddb6eac2bca7c8e49c67a5f8",
+  "attribution": "Google Inc., libkml published examples; source comments and unchanged originals retained",
+  "licenceEvidence": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\originals\\libkml-COPYING.txt",
+    "bytes": 1437,
+    "sha256": "e7952c5e1745f629c235c7aacd066fc36034d37571a964b9142d7fb95b5523eb"
+  },
+  "acquisition": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\acquisition.json",
+    "bytes": 3026,
+    "sha256": "4c7d7a2e46dfb5bc1d62ada0bd91e305c9a580b06641baf326d5ec403df70c74"
+  },
+  "sources": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\originals\\kmlsamples.kml",
+      "upstreamPath": "examples/kml/kmlsamples.kml",
+      "url": "https://raw.githubusercontent.com/google/libkml/8609edf7c8d13ae2ddb6eac2bca7c8e49c67a5f8/examples/kml/kmlsamples.kml",
+      "finalUrl": "https://raw.githubusercontent.com/google/libkml/8609edf7c8d13ae2ddb6eac2bca7c8e49c67a5f8/examples/kml/kmlsamples.kml",
+      "acquiredAt": "2026-10-01T15:28:21.047474+00:00",
+      "bytes": 36196,
+      "sha256": "5a97b905a05c97ca0c43e59d423fe1db66299efd9ed75d1738c422da11605dfd",
+      "geography": "Published example coordinates around California, United States; no operational property qualification",
+      "horizontalReference": "KML specification longitude/latitude; source accuracy unqualified",
+      "verticalReference": "unqualified",
+      "licence": "BSD-3-Clause root COPYING; source-specific copyright retained; launch clearance unreviewed"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\originals\\multikml-doc.kmz",
+      "upstreamPath": "testdata/kmz/multikml-doc.kmz",
+      "url": "https://raw.githubusercontent.com/google/libkml/8609edf7c8d13ae2ddb6eac2bca7c8e49c67a5f8/testdata/kmz/multikml-doc.kmz",
+      "finalUrl": "https://raw.githubusercontent.com/google/libkml/8609edf7c8d13ae2ddb6eac2bca7c8e49c67a5f8/testdata/kmz/multikml-doc.kmz",
+      "acquiredAt": "2026-10-01T15:28:21.434210+00:00",
+      "bytes": 652,
+      "sha256": "8b3faf50d7550fcad29d635a9c951e6f179885af7117288dbca199d4e770c8ac",
+      "geography": "Not stated; selected fragment has no coordinates",
+      "horizontalReference": "Unknown; selected entry is an unnamespaced feature fragment",
+      "verticalReference": "Absent geometry; unknown",
+      "licence": "BSD-3-Clause root COPYING; source-specific copyright retained; launch clearance unreviewed"
+    }
+  ]
+}
