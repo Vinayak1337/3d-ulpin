@@ -9239,8 +9239,27 @@
         "x-batch": "CITYJSON-REFERENCE-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json",
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Exact accepted XML/HTML part selections advance draft revision; duplicate-key replay preserves receipt and stale/redacted input fails without writes.",
+          "evidencePointers": [
+            "/journey",
+            "/preservation",
+            "/validatorFreshness"
+          ],
+          "receipt": "docs/evidence/usp/cityjson-reference-runtime.json",
+          "servedCodeCommit": "d00f205dd8d371131ab44c994fe6990218c8d34c",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Private retained-source native-draft reference attach/read/remove/restore and safe denials, with exact histories/objects preserved and one bounded rollback-only common-gate observation."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": 16384,
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -9419,8 +9438,27 @@
         "x-batch": "CITYJSON-REFERENCE-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json",
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Private bounded exact five-part reference read and XML-only read; selection remains unreviewed, accuracy not assessed, general draft omits private pins.",
+          "evidencePointers": [
+            "/journey",
+            "/preservation",
+            "/validatorFreshness"
+          ],
+          "receipt": "docs/evidence/usp/cityjson-reference-runtime.json",
+          "servedCodeCommit": "d00f205dd8d371131ab44c994fe6990218c8d34c",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Private retained-source native-draft reference attach/read/remove/restore and safe denials, with exact histories/objects preserved and one bounded rollback-only common-gate observation."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": null,
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -9611,8 +9649,27 @@
         "x-batch": "CITYJSON-REFERENCE-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json",
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Explicit HTML selection removal preserves XML and native geometry; later legitimate restore retains all five references without a validation prerequisite.",
+          "evidencePointers": [
+            "/journey",
+            "/preservation",
+            "/validatorFreshness"
+          ],
+          "receipt": "docs/evidence/usp/cityjson-reference-runtime.json",
+          "servedCodeCommit": "d00f205dd8d371131ab44c994fe6990218c8d34c",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Private retained-source native-draft reference attach/read/remove/restore and safe denials, with exact histories/objects preserved and one bounded rollback-only common-gate observation."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": 16384,
         "x-dataset-catalogue": "/api/docs/datasets.json"

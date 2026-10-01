@@ -815,6 +815,61 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/cityjson-reference-runtime.json",
+      "receiptSha256": "2de63f30c0e52ca3671f68ea57e701eb20dd1d9969f3c6d54ad67c509e830aab",
+      "servedCodeCommit": "d00f205dd8d371131ab44c994fe6990218c8d34c",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-b050544f3d2cb99e",
+        "url": "http://127.0.0.1:3192/api/v1"
+      },
+      "qualification": "Private retained-source native-draft reference attach/read/remove/restore and safe denials, with exact histories/objects preserved and one bounded rollback-only common-gate observation.",
+      "unqualified": [
+        "Operator-selected references do not establish applicability, reviewed reference, surveyed accuracy, rights, recording/qualification or learning labels.",
+        "Historic validation has a producer-code conflict already at draft revision 1; subsequent revision 5 also exceeds saved draft pin. No saved-pin rewrite or replacement validator run.",
+        "Actual rollback-only common-gate observation uses existing reference/workspace/site/case rows; no competing recorded-citation commit or universal deadlock-freedom claim.",
+        "No new ingestion/OCR/native processing/model/provider/GPU, frontend/generated changes, public deployment, repeated completed code tests or release-gate advancement."
+      ],
+      "operations": {
+        "POST /api/v1/registry-drafts/{draftId}/native-exterior/references": {
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json",
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Exact accepted XML/HTML part selections advance draft revision; duplicate-key replay preserves receipt and stale/redacted input fails without writes.",
+          "evidencePointers": [
+            "/journey",
+            "/preservation",
+            "/validatorFreshness"
+          ]
+        },
+        "GET /api/v1/registry-drafts/{draftId}/native-exterior/references": {
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json",
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Private bounded exact five-part reference read and XML-only read; selection remains unreviewed, accuracy not assessed, general draft omits private pins.",
+          "evidencePointers": [
+            "/journey",
+            "/preservation",
+            "/validatorFreshness"
+          ]
+        },
+        "POST /api/v1/registry-drafts/{draftId}/native-exterior/references/remove": {
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json",
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Explicit HTML selection removal preserves XML and native geometry; later legitimate restore retains all five references without a validation prerequisite.",
+          "evidencePointers": [
+            "/journey",
+            "/preservation",
+            "/validatorFreshness"
+          ]
+        }
+      }
     }
   ]
 }
