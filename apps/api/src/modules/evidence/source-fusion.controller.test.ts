@@ -25,6 +25,8 @@ test('registered private fusion route/provider has bounded strict metadata and e
     const body=operation.requestBody as any,schema=body.content['application/json'].schema;
     assert.match(body.description,/64 KiB/);assert.equal(schema.additionalProperties,false);
     assert.equal(schema.properties.sources.minItems,2);assert.equal(schema.properties.sources.maxItems,8);
+    const ocrSelection=schema.properties.sources.items.oneOf.find((s:any)=>s.properties.kind.enum?.includes('document_ocr'));
+    assert.equal(ocrSelection.properties.itemOrdinals.maxItems,25);assert.equal(ocrSelection.properties.itemOrdinals.items.maximum,63);
     assert.equal((operation.responses['200'] as any).headers['Cache-Control'].schema.enum[0],'private, no-store');
     assert.equal((operation.responses['409'] as any).content['application/json'].schema.properties.error.properties.retryable.type,'boolean');
     let calls=0;service.assemble=async()=>{calls++;assert.fail('Rejected body must not invoke the authority service');};
