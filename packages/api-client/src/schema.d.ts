@@ -2000,6 +2000,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/evidence/source-fusion/association-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Propose private exact-identifier building/floor associations for explicit review; no automatic recording */
+        post: operations["POST_api_v1_usp_evidence_source_fusion_association_proposals"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/rights/declarations/prepare": {
         parameters: {
             query?: never;
@@ -29640,6 +29657,777 @@ export interface components {
                 };
             };
         };
+        POST_usp_evidence_source_fusion_association_proposals_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            context: {
+                contextSha256: string;
+                selection: {
+                    sources: ({
+                        /** @enum {string} */
+                        kind: "document";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        partIds: string[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "cityjson";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        objectIds: string[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "document_ocr";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        itemOrdinals: number[];
+                    })[];
+                };
+            };
+            scope: {
+                /** @enum {string} */
+                kind: "snapshot";
+                scopeId: string;
+                world: {
+                    namespace: string;
+                    id: string;
+                };
+                manifestId: string;
+                snapshotDigest: string;
+                /** @enum {string} */
+                stage: "draft" | "recorded" | "retained";
+            } | null;
+            targets: {
+                ref: {
+                    namespace: string;
+                    id: string;
+                };
+                revision: number;
+            }[];
+        };
+        POST_usp_evidence_source_fusion_association_proposals_Response_200_application_json: {
+            data: {
+                /** @enum {string} */
+                version: "source-fusion-associations/1";
+                /** @enum {string} */
+                state: "proposed" | "needs_input" | "unavailable";
+                context: {
+                    /** @enum {string} */
+                    version: "source-fusion-context/1";
+                    contextSha256: string;
+                    sources: ({
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        namespace: string;
+                        /** @enum {string} */
+                        sourceSetRole: "operator_selected_fragment";
+                        /** @enum {string} */
+                        kind: "document";
+                        /** @enum {string} */
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                        /** @enum {string} */
+                        nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
+                        code: string | null;
+                        warnings: string[];
+                        /** @enum {string} */
+                        capability: "selected_native_text" | "selection_required" | "native_incomplete";
+                        coverage: {
+                            selectedParts: number;
+                            availableNativeParts: number;
+                            /** @enum {string} */
+                            scope: "explicit_selection_only";
+                            /** @enum {string} */
+                            assistedExtraction: "outside_profile";
+                        };
+                        parts: {
+                            key: string;
+                            part: {
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                text: string;
+                                sha256: string;
+                                locator: {
+                                    label: string;
+                                    page?: number;
+                                    row?: number;
+                                    line?: number;
+                                    lineEnd?: number;
+                                    paragraph?: number;
+                                    table?: number;
+                                    column?: number;
+                                    headerRow?: number;
+                                    sheet?: string;
+                                    sheetIndex?: number;
+                                    sheetId?: number;
+                                    cell?: string;
+                                    /** @enum {string} */
+                                    cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                                    cellType?: string;
+                                    /** Format: uuid */
+                                    unitId?: string;
+                                    unitSha256?: string;
+                                    segmentIndex?: number;
+                                    segmentCount?: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                                /** @enum {string} */
+                                method: "native_text";
+                            };
+                            /** @enum {string} */
+                            textState: "native_derivative" | "redacted_native_derivative";
+                        }[];
+                    } | {
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        namespace: string;
+                        /** @enum {string} */
+                        sourceSetRole: "operator_selected_fragment";
+                        /** @enum {string} */
+                        kind: "cityjson";
+                        /** @enum {string} */
+                        nativeStatus: "supported" | "partial_unsupported";
+                        artifactSha256: string;
+                        reference: {
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            frame: {
+                                [key: string]: unknown;
+                            };
+                            metadata: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "declared";
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                value: string | number | boolean | (null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
+                            };
+                            transform: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "declared";
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                value: string | number | boolean | (null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
+                            };
+                        };
+                        objects: {
+                            key: string;
+                            id: string;
+                            pointer: string;
+                            type: string;
+                            /** @enum {string} */
+                            geometryState: "present" | "absent";
+                            attributes: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "declared";
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                value: string | number | boolean | (null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
+                            };
+                            parents: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "declared";
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                value: string | number | boolean | (null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
+                            };
+                            children: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "declared";
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                value: string | number | boolean | (null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
+                            };
+                            geometries: {
+                                pointer: string;
+                                type: string;
+                                status: string;
+                                lod: {
+                                    /** @enum {string} */
+                                    state: "absent";
+                                } | {
+                                    /** @enum {string} */
+                                    state: "declared";
+                                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                    value: string | number | boolean | (null) | unknown[] | {
+                                        [key: string]: unknown;
+                                    };
+                                };
+                            }[];
+                        }[];
+                        coverage: {
+                            selectedObjects: number;
+                            availableNativeObjects: number;
+                            /** @enum {string} */
+                            scope: "explicit_selection_only";
+                            /** @enum {string} */
+                            geometryArrays: "omitted; exact artifact references retained";
+                        };
+                        hierarchyIssues: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                    } | {
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        namespace: string;
+                        /** @enum {string} */
+                        sourceSetRole: "operator_selected_fragment";
+                        /** @enum {string} */
+                        kind: "document_ocr";
+                        /** @enum {string} */
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                        /** @enum {string} */
+                        nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
+                        nativeCode: string | null;
+                        nativeWarnings: string[];
+                        ocrInput: {
+                            selection: {
+                                page: number;
+                                region?: (number)[];
+                            } | null;
+                            configSha256: string | null;
+                        };
+                        ocr: {
+                            sourceSha256: string;
+                            sourceRevision: number;
+                            sourcePage: number;
+                            requestedRegion: (number)[] | null;
+                            sourcePageFrame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                /** @enum {number} */
+                                rotation: 0;
+                                width: number;
+                                height: number;
+                            } | null;
+                            /** @enum {string} */
+                            method: "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned" | "ocr:tesseract-cli-5.5.1:sparse-tsv-v1";
+                            /** @enum {string} */
+                            toolStatus: "complete" | "partial" | "failed" | "unavailable";
+                            /** @enum {string} */
+                            outputStatus: "complete" | "partial" | "failed";
+                            /** @enum {string} */
+                            textCompleteness: "unverified";
+                            issues: string[];
+                            execution?: {
+                                maxSeconds: number;
+                                exitCode: number | null;
+                                receiptSha256: string | null;
+                                candidateSha256: string | null;
+                                worker: {
+                                    exitCode: number;
+                                    stopReason: string | null;
+                                    elapsedSeconds: number;
+                                    peakObservedRssBytes: number;
+                                    peakJobPrivateBytes: number | null;
+                                    /** @enum {boolean} */
+                                    gatedStart: true;
+                                    logSha256: string;
+                                } | null;
+                            };
+                        } | null;
+                        /** @enum {string} */
+                        capability: "selected_ocr_observations" | "selection_required" | "ocr_unavailable";
+                        /** @enum {string} */
+                        gap: "none" | "selection_required" | "ocr_missing" | "ocr_failed" | "ocr_unavailable" | "ocr_empty";
+                        coverage: {
+                            selectedItems: number;
+                            availableItems: number;
+                            storedItems: number;
+                            /** @enum {string} */
+                            scope: "explicit_selection_only";
+                            /** @enum {string} */
+                            nativeExtraction: "separate";
+                        };
+                        /** @enum {string} */
+                        itemHashBasis: "accepted_result_pin_item_ordinal_and_literal_observation";
+                        observations: {
+                            key: string;
+                            ordinal: number;
+                            itemSha256: string;
+                            item: {
+                                text: string;
+                                label: string;
+                                /** @enum {string} */
+                                method: "ocr:docling-tesseract-cli-full-page" | "ocr:tesseract-cli-sparse-tsv";
+                                sourcePageBoxes: {
+                                    pageNumber: number;
+                                    /** @enum {string} */
+                                    frame: "pdf_display_page_top_left_points";
+                                    box: (number)[];
+                                    /** @enum {string} */
+                                    derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
+                                }[];
+                            };
+                        }[];
+                    })[];
+                    association: {
+                        /** @enum {string} */
+                        state: "not_assessed";
+                        /** @enum {string} */
+                        membership: "operator_selection";
+                        /** @enum {string} */
+                        reason: "source_set_membership_does_not_establish_relationships";
+                        canonicalTargets: unknown[];
+                        /** @enum {string} */
+                        crossSourceFrameAlignment: "not_assessed";
+                        /** @enum {string} */
+                        conflicts: "literal_values_retained_per_source; not_reconciled";
+                    };
+                    capabilities: {
+                        /** @enum {string} */
+                        contextAssembly: "available";
+                        /** @enum {string} */
+                        matching: "not_assessed";
+                        /** @enum {boolean} */
+                        recordedBuildingRequired: false;
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                };
+                readonly scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                } | null;
+                targets: {
+                    readonly pin: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    /** @enum {string} */
+                    kind: "building" | "floor";
+                    label: string;
+                    readonly identifiers: {
+                        scheme: string;
+                        value: string;
+                        issuer: string | null;
+                        readonly source: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        } | null;
+                        /** @enum {string} */
+                        state: "supplied" | "reviewed" | "disputed" | "retired";
+                    }[];
+                    /** @enum {string} */
+                    recordState: "draft" | "recorded" | "retained";
+                    readonly relationsWithinSelection: {
+                        /** @enum {string} */
+                        kind: "within" | "floor" | "serves" | "crosses";
+                        readonly target: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                    }[];
+                    /** @enum {string} */
+                    relationshipCoverage: "complete" | "partial";
+                    /** @enum {string} */
+                    sourceEvidence: "available" | "unavailable";
+                    synthetic: boolean | null;
+                }[];
+                proposals: {
+                    id: string;
+                    /** @enum {string} */
+                    state: "proposed";
+                    target: {
+                        readonly pin: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        /** @enum {string} */
+                        kind: "building" | "floor";
+                        label: string;
+                        readonly identifiers: {
+                            scheme: string;
+                            value: string;
+                            issuer: string | null;
+                            readonly source: {
+                                readonly ref: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                revision: number;
+                            } | null;
+                            /** @enum {string} */
+                            state: "supplied" | "reviewed" | "disputed" | "retired";
+                        }[];
+                        /** @enum {string} */
+                        recordState: "draft" | "recorded" | "retained";
+                        readonly relationsWithinSelection: {
+                            /** @enum {string} */
+                            kind: "within" | "floor" | "serves" | "crosses";
+                            readonly target: {
+                                readonly ref: {
+                                    namespace: string;
+                                    id: string;
+                                };
+                                revision: number;
+                            };
+                        }[];
+                        /** @enum {string} */
+                        relationshipCoverage: "complete" | "partial";
+                        /** @enum {string} */
+                        sourceEvidence: "available" | "unavailable";
+                        synthetic: boolean | null;
+                    };
+                    identifier: {
+                        scheme: string;
+                        value: string;
+                    };
+                    citations: ({
+                        /** @enum {string} */
+                        kind: "document";
+                        key: string;
+                        quote: string;
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        /** Format: uuid */
+                        partId: string;
+                        partSha256: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "document_ocr";
+                        key: string;
+                        quote: string;
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        itemOrdinal: number;
+                        itemSha256: string;
+                    })[];
+                    rationale: string;
+                    /** @enum {string} */
+                    method: "ai_exact_identifier_association";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    manualSelection: {
+                        contextSha256: string;
+                        selection: {
+                            sources: ({
+                                /** @enum {string} */
+                                kind: "document";
+                                pin: {
+                                    caseId: unknown;
+                                    caseRevision: number;
+                                    sourceId: unknown;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    jobId: unknown;
+                                    resultSha256: string;
+                                    readerSha256: string;
+                                    inputSha256: string;
+                                    acceptedFence: number;
+                                    resultBytes: number;
+                                };
+                                partIds: unknown[];
+                            } | {
+                                /** @enum {string} */
+                                kind: "cityjson";
+                                pin: {
+                                    caseId: unknown;
+                                    caseRevision: number;
+                                    sourceId: unknown;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    jobId: unknown;
+                                    resultSha256: string;
+                                    readerSha256: string;
+                                    inputSha256: string;
+                                    acceptedFence: number;
+                                    resultBytes: number;
+                                };
+                                objectIds: string[];
+                            } | {
+                                /** @enum {string} */
+                                kind: "document_ocr";
+                                pin: {
+                                    caseId: unknown;
+                                    caseRevision: number;
+                                    sourceId: unknown;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    jobId: unknown;
+                                    resultSha256: string;
+                                    readerSha256: string;
+                                    inputSha256: string;
+                                    acceptedFence: number;
+                                    resultBytes: number;
+                                };
+                                itemOrdinals: number[];
+                            })[];
+                        };
+                    };
+                }[];
+                abstentions: {
+                    reasonCode: string;
+                    readonly target: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    } | null;
+                    citationKeys: string[];
+                }[];
+                manualSelection: {
+                    contextSha256: string;
+                    selection: {
+                        sources: ({
+                            /** @enum {string} */
+                            kind: "document";
+                            pin: {
+                                caseId: unknown;
+                                caseRevision: number;
+                                sourceId: unknown;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                jobId: unknown;
+                                resultSha256: string;
+                                readerSha256: string;
+                                inputSha256: string;
+                                acceptedFence: number;
+                                resultBytes: number;
+                            };
+                            partIds: unknown[];
+                        } | {
+                            /** @enum {string} */
+                            kind: "cityjson";
+                            pin: {
+                                caseId: unknown;
+                                caseRevision: number;
+                                sourceId: unknown;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                jobId: unknown;
+                                resultSha256: string;
+                                readerSha256: string;
+                                inputSha256: string;
+                                acceptedFence: number;
+                                resultBytes: number;
+                            };
+                            objectIds: string[];
+                        } | {
+                            /** @enum {string} */
+                            kind: "document_ocr";
+                            pin: {
+                                caseId: unknown;
+                                caseRevision: number;
+                                sourceId: unknown;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                jobId: unknown;
+                                resultSha256: string;
+                                readerSha256: string;
+                                inputSha256: string;
+                                acceptedFence: number;
+                                resultBytes: number;
+                            };
+                            itemOrdinals: number[];
+                        })[];
+                    };
+                };
+                provenance: {
+                    /** @enum {string} */
+                    method: "not_run" | "governed_model_gateway";
+                    /** @enum {string} */
+                    promptVersion: "source-fusion-exact-associations/1";
+                    promptSha256: string;
+                    inputSha256: string;
+                    gatewayPolicySha256: string | null;
+                    modelId: string | null;
+                    outputSha256: string | null;
+                    readonly receipt: {
+                        callId: string;
+                        responseHash: string;
+                        actualMicroInr: string;
+                        priceVersion: string;
+                        httpStatus: number;
+                        inputTokens?: number;
+                        outputTokens?: number;
+                        /** @enum {string} */
+                        semanticError?: "invalid_output" | "truncated_output";
+                    } | null;
+                    replayed: boolean;
+                    /** @enum {string} */
+                    learningQualification: "not_assessed";
+                };
+                association: {
+                    /** @enum {string} */
+                    state: "not_assessed";
+                    /** @enum {string} */
+                    population: "explicit_selection_only";
+                    /** @enum {string} */
+                    acceptance: "operator_selection_then_existing_registry_review";
+                    /** @enum {string} */
+                    geometry: "not_assessed";
+                    /** @enum {string} */
+                    rights: "not_assessed";
+                };
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
         POST_usp_rights_declarations_prepare_Request_application_json: {
             /** @enum {string} */
             kind: "declaration";
@@ -52323,6 +53111,122 @@ export interface operations {
                 };
             };
             /** @description Bounded service unavailable or deadline expired */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_evidence_source_fusion_association_proposals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Strict JSON, maximum 64 KiB; 2–8 accepted sources, 25 fragments and at most 8 exact recorded targets */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_evidence_source_fusion_association_proposals_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Proposals or explicit abstentions; manual selection remains available */
+            200: {
+                headers: {
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_source_fusion_association_proposals_Response_200_application_json"];
+                };
+            };
+            /** @description Invalid strict source/target selection */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Private Host/Origin, site, source, target, access or model-policy denial */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                };
+            };
+            /** @description Exact selected context unavailable */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Received-body deadline expired */
+            408: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Source, target, snapshot or accepted-result pins changed */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Request or response exceeds the bounded profile */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Exact selected evidence or integrity unavailable */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description Proposal request deadline expired or authority unavailable */
             503: {
                 headers: {
                     /** @description Server request identifier. */

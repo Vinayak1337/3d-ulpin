@@ -1,5 +1,13 @@
 # FUSION-04 aggregate-authority closure
 
+## Lead closure of lock compatibility — 2 October
+
+The subsequent correction `82cff2b9` / `5081c9d0` closes the remaining lock finding. Lead inspected the narrow `FOR UPDATE` to `FOR SHARE` delta and actual archive, generic case and canonical document-case writers. Shared case protection is compatible with snapshot readers and conflicts with the archive's non-key update and source-family exclusive case protection. Sorted gates, source drift checks and transaction release before provider I/O remain unchanged. The report below retains the original review state.
+
+Matched the 10,138-byte correction receipt SHA `906ac6a1078b355397b80ac4830a53974b41f1debec0b490d01b327a37d109d9` and all 14 absolute physical evidence pins. The fresh modeled schedule completes both readers, defers both mutations until their read locks release, and leaves zero persisted writes/transactions; its former-lock substitution reproduces the cycle. This establishes the scoped lock compatibility, not measured PostgreSQL scheduling. Lead accepts the code using this proof and the original independent review, without another broad review cycle.
+
+Integrated original/corrections/handoffs through `b5a5db15`; production EvidenceModule registration, contract export and API/client publication follow. Integrated focused producer/preview/controller checks: 11 passed, no skips. Server/API and client typechecks pass. Generated API/checker: 223 operations (132 baseline + 91 added), 261 schemas; exactly one added route/two schemas, all previous paths/schemas unchanged. No listener, SQL/provider call, actual model inference or source qualification was run. Both review findings are closed at this code/protocol scope; runtime, authentic matching, learning and release remain open.
+
 2 October 2026. **The original revocation P2 is closed. Return one consequential P2 before integration:** the new exclusive case locks can deadlock with canonical snapshot capture's differently ordered shared case locks. No broader review or source/model campaign was reopened.
 
 Correction `9a5117e5a0f26c268f0c7ade5ba931ae7843c2d4`, handoff `f7dec9ccfc36ff2e1b161e93cf85f34371965b09`, base `dd8f761586449f810cd2ff2adf93e877e2f0785b`. Reviewer branch `task/desktop-fusion-association-closure` in `C:/Users/kvina/.codex/worktrees/desktop-ifc-api-review/3d-ulpin`; original review branch remains at `81923531ebacbf4bec7603da7a104288fbe55f6a`.
