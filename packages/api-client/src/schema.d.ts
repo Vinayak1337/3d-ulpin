@@ -1155,10 +1155,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read exact native citations through current private source and draft authority */
+        /** Read exact native/OCR citations through current private source and draft authority */
         get: operations["GET_api_v1_registry_drafts_draftId_document_citations"];
         put?: never;
-        /** Amend exact native citations on one current building or floor correction */
+        /** Amend exact operator-selected native/OCR fusion citations on one current building or floor correction */
         post: operations["POST_api_v1_registry_drafts_draftId_document_citations"];
         delete?: never;
         options?: never;
@@ -9120,9 +9120,7 @@ export interface components {
                         }[];
                     };
                 };
-                documentCitations?: {
-                    /** @enum {string} */
-                    version: "registry-document-citation/1";
+                documentCitations?: ({
                     id: string;
                     document: {
                         /** Format: uuid */
@@ -9139,6 +9137,24 @@ export interface components {
                     inputSha256: string;
                     readerSha256: string;
                     acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-document-citation/1";
                     /** Format: uuid */
                     partId: string;
                     partSha256: string;
@@ -9167,6 +9183,23 @@ export interface components {
                         characterStart: number;
                         characterEnd: number;
                     };
+                } | {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
                     target: {
                         /** Format: uuid */
                         recordId: string;
@@ -9183,7 +9216,69 @@ export interface components {
                     associationState: "operator_selected";
                     /** @enum {string} */
                     qualification: "not_assessed";
-                }[];
+                    /** @enum {string} */
+                    version: "registry-document-ocr-citation/1";
+                    resultBytes: number;
+                    ocrSelection: {
+                        page: number;
+                        region?: (number)[];
+                    };
+                    ocrConfigSha256: string;
+                    itemOrdinal: number;
+                    itemSha256: string;
+                    itemLocator: {
+                        label: string;
+                        /** @enum {string} */
+                        method: "ocr:docling-tesseract-cli-full-page" | "ocr:tesseract-cli-sparse-tsv";
+                        sourcePageBoxes: {
+                            pageNumber: number;
+                            /** @enum {string} */
+                            frame: "pdf_display_page_top_left_points";
+                            box: (number)[];
+                            /** @enum {string} */
+                            derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
+                        }[];
+                    };
+                    ocr: {
+                        sourceSha256: string;
+                        sourceRevision: number;
+                        sourcePage: number;
+                        requestedRegion: (number)[] | null;
+                        sourcePageFrame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            /** @enum {number} */
+                            rotation: 0;
+                            width: number;
+                            height: number;
+                        } | null;
+                        /** @enum {string} */
+                        method: "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned" | "ocr:tesseract-cli-5.5.1:sparse-tsv-v1";
+                        /** @enum {string} */
+                        toolStatus: "complete" | "partial" | "failed" | "unavailable";
+                        /** @enum {string} */
+                        outputStatus: "complete" | "partial" | "failed";
+                        /** @enum {string} */
+                        textCompleteness: "unverified";
+                        issues: string[];
+                        execution?: {
+                            maxSeconds: number;
+                            exitCode: number | null;
+                            receiptSha256: string | null;
+                            candidateSha256: string | null;
+                            worker: {
+                                exitCode: number;
+                                stopReason: string | null;
+                                elapsedSeconds: number;
+                                peakObservedRssBytes: number;
+                                peakJobPrivateBytes: number | null;
+                                /** @enum {boolean} */
+                                gatedStart: true;
+                                logSha256: string;
+                            } | null;
+                        };
+                    };
+                })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
                     version: "registry-cityjson-draft/1";
@@ -10962,9 +11057,7 @@ export interface components {
                         }[];
                     };
                 };
-                documentCitations?: {
-                    /** @enum {string} */
-                    version: "registry-document-citation/1";
+                documentCitations?: ({
                     id: string;
                     document: {
                         /** Format: uuid */
@@ -10981,6 +11074,24 @@ export interface components {
                     inputSha256: string;
                     readerSha256: string;
                     acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-document-citation/1";
                     /** Format: uuid */
                     partId: string;
                     partSha256: string;
@@ -11009,6 +11120,23 @@ export interface components {
                         characterStart: number;
                         characterEnd: number;
                     };
+                } | {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
                     target: {
                         /** Format: uuid */
                         recordId: string;
@@ -11025,7 +11153,69 @@ export interface components {
                     associationState: "operator_selected";
                     /** @enum {string} */
                     qualification: "not_assessed";
-                }[];
+                    /** @enum {string} */
+                    version: "registry-document-ocr-citation/1";
+                    resultBytes: number;
+                    ocrSelection: {
+                        page: number;
+                        region?: (number)[];
+                    };
+                    ocrConfigSha256: string;
+                    itemOrdinal: number;
+                    itemSha256: string;
+                    itemLocator: {
+                        label: string;
+                        /** @enum {string} */
+                        method: "ocr:docling-tesseract-cli-full-page" | "ocr:tesseract-cli-sparse-tsv";
+                        sourcePageBoxes: {
+                            pageNumber: number;
+                            /** @enum {string} */
+                            frame: "pdf_display_page_top_left_points";
+                            box: (number)[];
+                            /** @enum {string} */
+                            derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
+                        }[];
+                    };
+                    ocr: {
+                        sourceSha256: string;
+                        sourceRevision: number;
+                        sourcePage: number;
+                        requestedRegion: (number)[] | null;
+                        sourcePageFrame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            /** @enum {number} */
+                            rotation: 0;
+                            width: number;
+                            height: number;
+                        } | null;
+                        /** @enum {string} */
+                        method: "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned" | "ocr:tesseract-cli-5.5.1:sparse-tsv-v1";
+                        /** @enum {string} */
+                        toolStatus: "complete" | "partial" | "failed" | "unavailable";
+                        /** @enum {string} */
+                        outputStatus: "complete" | "partial" | "failed";
+                        /** @enum {string} */
+                        textCompleteness: "unverified";
+                        issues: string[];
+                        execution?: {
+                            maxSeconds: number;
+                            exitCode: number | null;
+                            receiptSha256: string | null;
+                            candidateSha256: string | null;
+                            worker: {
+                                exitCode: number;
+                                stopReason: string | null;
+                                elapsedSeconds: number;
+                                peakObservedRssBytes: number;
+                                peakJobPrivateBytes: number | null;
+                                /** @enum {boolean} */
+                                gatedStart: true;
+                                logSha256: string;
+                            } | null;
+                        };
+                    };
+                })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
                     version: "registry-cityjson-draft/1";
@@ -11288,6 +11478,72 @@ export interface components {
                 };
                 partIds: string[];
             };
+            addFusion?: {
+                contextSha256: string;
+                selection: {
+                    sources: ({
+                        /** @enum {string} */
+                        kind: "document";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        partIds: string[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "cityjson";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        objectIds: string[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "document_ocr";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        itemOrdinals: number[];
+                    })[];
+                };
+            };
             /** @default [] */
             remove: string[];
             /** @enum {boolean} */
@@ -11309,10 +11565,8 @@ export interface components {
             /** Format: uuid */
             recordId: string;
             recordRevision: number;
-            citations: {
+            citations: ({
                 pin: {
-                    /** @enum {string} */
-                    version: "registry-document-citation/1";
                     id: string;
                     document: {
                         /** Format: uuid */
@@ -11329,6 +11583,24 @@ export interface components {
                     inputSha256: string;
                     readerSha256: string;
                     acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-document-citation/1";
                     /** Format: uuid */
                     partId: string;
                     partSha256: string;
@@ -11357,22 +11629,6 @@ export interface components {
                         characterStart: number;
                         characterEnd: number;
                     };
-                    target: {
-                        /** Format: uuid */
-                        recordId: string;
-                        revision: number;
-                        bodySha256: string;
-                    };
-                    selection: {
-                        subject: string;
-                        accessSha256: string;
-                        /** Format: date-time */
-                        selectedAt: string;
-                    };
-                    /** @enum {string} */
-                    associationState: "operator_selected";
-                    /** @enum {string} */
-                    qualification: "not_assessed";
                 };
                 part: {
                     /** Format: uuid */
@@ -11411,7 +11667,118 @@ export interface components {
                     /** @enum {string} */
                     method: "native_text";
                 };
-            }[];
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-document-ocr-citation/1";
+                    resultBytes: number;
+                    ocrSelection: {
+                        page: number;
+                        region?: (number)[];
+                    };
+                    ocrConfigSha256: string;
+                    itemOrdinal: number;
+                    itemSha256: string;
+                    itemLocator: {
+                        label: string;
+                        /** @enum {string} */
+                        method: "ocr:docling-tesseract-cli-full-page" | "ocr:tesseract-cli-sparse-tsv";
+                        sourcePageBoxes: {
+                            pageNumber: number;
+                            /** @enum {string} */
+                            frame: "pdf_display_page_top_left_points";
+                            box: (number)[];
+                            /** @enum {string} */
+                            derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
+                        }[];
+                    };
+                    ocr: {
+                        sourceSha256: string;
+                        sourceRevision: number;
+                        sourcePage: number;
+                        requestedRegion: (number)[] | null;
+                        sourcePageFrame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            /** @enum {number} */
+                            rotation: 0;
+                            width: number;
+                            height: number;
+                        } | null;
+                        /** @enum {string} */
+                        method: "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned" | "ocr:tesseract-cli-5.5.1:sparse-tsv-v1";
+                        /** @enum {string} */
+                        toolStatus: "complete" | "partial" | "failed" | "unavailable";
+                        /** @enum {string} */
+                        outputStatus: "complete" | "partial" | "failed";
+                        /** @enum {string} */
+                        textCompleteness: "unverified";
+                        issues: string[];
+                        execution?: {
+                            maxSeconds: number;
+                            exitCode: number | null;
+                            receiptSha256: string | null;
+                            candidateSha256: string | null;
+                            worker: {
+                                exitCode: number;
+                                stopReason: string | null;
+                                elapsedSeconds: number;
+                                peakObservedRssBytes: number;
+                                peakJobPrivateBytes: number | null;
+                                /** @enum {boolean} */
+                                gatedStart: true;
+                                logSha256: string;
+                            } | null;
+                        };
+                    };
+                };
+                item: {
+                    text: string;
+                    label: string;
+                    /** @enum {string} */
+                    method: "ocr:docling-tesseract-cli-full-page" | "ocr:tesseract-cli-sparse-tsv";
+                    sourcePageBoxes: {
+                        pageNumber: number;
+                        /** @enum {string} */
+                        frame: "pdf_display_page_top_left_points";
+                        box: (number)[];
+                        /** @enum {string} */
+                        derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
+                    }[];
+                };
+            })[];
             /** @enum {string} */
             associationState: "operator_selected";
             /** @enum {string} */
