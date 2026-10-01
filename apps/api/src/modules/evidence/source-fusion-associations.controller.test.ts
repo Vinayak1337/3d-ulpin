@@ -2,19 +2,17 @@ import 'reflect-metadata';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {Readable} from 'node:stream';
-import {Module} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import {SwaggerModule,DocumentBuilder} from '@nestjs/swagger';
 import {SourceFusionAssociationsController} from './source-fusion-associations.controller';
 import {SourceFusionAssociationService} from '@ulpin/server/modules/usp/ingestion/source-fusion-associations';
 import {PrivateSpatialGuard} from '../spatial/private-spatial.guard';
 import {EvidenceExceptionFilter} from './evidence.http';
+import {EvidenceModule} from './evidence.module';
 
-// Candidate composition only. Production registration/publication belongs to lead.
-@Module({controllers:[SourceFusionAssociationsController],providers:[SourceFusionAssociationService]})
-class ProposalControlModule{}
-test('candidate private proposal controller has strict bounded metadata and rejects excess bytes without a listener',async()=>{
-  const app=await NestFactory.create(ProposalControlModule,{logger:false,abortOnError:false});
+// Exercise actual production registration without a listener or domain calls.
+test('registered private proposal controller has strict bounded metadata and rejects excess bytes without a listener',async()=>{
+  const app=await NestFactory.create(EvidenceModule,{logger:false,abortOnError:false});
   try{
     const controller=app.get(SourceFusionAssociationsController),service=app.get(SourceFusionAssociationService);
     assert.equal((controller as any).service,service);
