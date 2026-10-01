@@ -128,6 +128,36 @@ def descendant_negatives(observation, expected_sid):
     return rejected
 
 
+def job_limit_rejection(exe, sid):
+    """Alter actual limit readback; a suspended technical child must never resume."""
+    real_query = audit.k32.QueryInformationJobObject
+    real_resume = audit.k32.ResumeThread
+    resumes, observed = [], []
+
+    def query(job, kind, buffer, size, returned):
+        result = real_query(job, kind, buffer, size, returned)
+        if result and kind == 9:
+            limits = ctypes.cast(buffer, ctypes.POINTER(audit.EXTENDED_JOB_LIMITS)).contents
+            observed.append({"actualFlags": limits.BasicLimitInformation.LimitFlags,
+                             "actualMemoryBytes": limits.JobMemoryLimit})
+            limits.JobMemoryLimit += 1
+        return result
+
+    def resume(thread):
+        resumes.append(True)
+        return real_resume(thread)
+
+    with patch.object(audit.k32, "QueryInformationJobObject", query), patch.object(audit.k32, "ResumeThread", resume):
+        try:
+            audit.launch(exe, [], sid, 5000, job_memory_bytes=128 * 1024**2)
+        except RuntimeError as error:
+            assert "effective Job limits rejected" in str(error), str(error)
+        else:
+            raise AssertionError("mismatched effective Job cap accepted")
+    assert len(observed) == 1 and not resumes
+    return {"effectiveCapMismatchRejected": True, "resumeCalls": len(resumes), "actualReadback": observed}
+
+
 def cleanup_failure(root, mode):
     """Perform the real cleanup first, then inject a reporting failure."""
     paths = [root / (mode + "-first"), root / (mode + "-second")]

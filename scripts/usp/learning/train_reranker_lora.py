@@ -20,6 +20,7 @@ from compare_reranker import (INSTRUCTION, PREFIX, SUFFIX, PRIOR_FILES, REVISION
                               prompts_for, read_json, require, selected_inputs)
 from geo.usp_learning.corpus import input_proof, load_examples, sha256_file
 from geo.usp_learning.resources import guarded_run, write_json_once
+from model_isolation import require_model_boundary, local_model_path
 
 CORPUS_SHA = "ff9c80d3e1c31dec126d7f534a88c45b37ed0d589b35792ad67d4b2ed850efee"
 PROOF_SHA = "d2ff07556ded56d8eaf7b0744f6cf2a8dd8c15f076f8df81f3136254a425fa9a"
@@ -42,6 +43,7 @@ SETTINGS = {
     "maxRunSeconds": 600, "maxFitSeconds": 600,
 }
 CODE_PATHS = (
+    "scripts/usp/learning/model_isolation.py", "scripts/usp/security/appcontainer_audit.py",
     "scripts/usp/learning/train_reranker_lora.py", "scripts/usp/learning/compare_reranker.py",
     "services/geo/geo/usp_learning/lora.py", "services/geo/geo/usp_learning/corpus.py",
     "services/geo/geo/usp_learning/model.py", "services/geo/geo/usp_learning/resources.py",
@@ -51,6 +53,7 @@ CODE_PATHS = (
 
 
 def checked_context(args: argparse.Namespace) -> tuple[dict, list[dict], dict, dict]:
+    require_model_boundary(args)
     from packaging.requirements import Requirement
     require(sha256_file(args.corpus) == CORPUS_SHA and sha256_file(args.input_proof) == PROOF_SHA,
             "requires the accepted unchanged V8 corpus/proof")
@@ -66,7 +69,7 @@ def checked_context(args: argparse.Namespace) -> tuple[dict, list[dict], dict, d
     require(receipt["revision"] == REVISION and receipt["license"] == "apache-2.0"
             and not receipt["remoteCodeDownloaded"], "unexpected retained model")
     for row in receipt["files"]:
-        path = Path(receipt["path"]) / row["file"]
+        path = local_model_path() / row["file"]
         require(path.stat().st_size == row["bytes"] and sha256_file(path) == row["sha256"], "model bytes changed")
     old = read_json(args.baseline_dir / "freeze.json")
     require(sha256_file(args.baseline_dir / "freeze.json") == BASE_FREEZE_SHA
@@ -130,10 +133,11 @@ def frozen_config(args: argparse.Namespace, corpus: dict, fields: list[dict], re
 
 
 def prepare(args: argparse.Namespace) -> None:
+    require_model_boundary(args)
     import torch
     from transformers import AutoTokenizer
     corpus, fields, receipt, dependencies = checked_context(args)
-    tokenizer = AutoTokenizer.from_pretrained(receipt["path"], local_files_only=True, trust_remote_code=False, padding_side="left")
+    tokenizer = AutoTokenizer.from_pretrained(str(local_model_path()), local_files_only=True, trust_remote_code=False, padding_side="left")
     inputs = selected_inputs(fields, corpus["targets"])
     lengths = [len(tokenizer.encode(p, add_special_tokens=False)) for p in inputs["prompts"]]
     require(max(lengths) <= SETTINGS["maxTokens"], "no truncation permitted")
@@ -152,7 +156,7 @@ def prepare(args: argparse.Namespace) -> None:
             stream.write((repo / name).read_bytes())
     write_json_once(args.output_dir / "prepare.json", {"freezeSha256": sha256_file(args.output_dir / "freeze.json"),
                     "gpuFreeBytes": free, "gpuTotalBytes": total, "maxInputTokens": max(lengths),
-                    "gitHead": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip(),
+                    "gitHead": require_model_boundary(args)[2]["sourceCommit"],
                     "inferenceOrGradientsRun": False})
     print(json.dumps({"prepared": str(args.output_dir), "maxTokens": max(lengths)}), flush=True)
 
@@ -166,6 +170,7 @@ def validate(args: argparse.Namespace) -> tuple[dict, list[dict], dict]:
 
 
 def worker(args: argparse.Namespace) -> None:
+    require_model_boundary(args)
     import psutil
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -173,8 +178,6 @@ def worker(args: argparse.Namespace) -> None:
     from geo.usp_learning.lora import margin_loss, check_gradients, validate_adapter
     from geo.usp_learning.model import choose_calibration_threshold, metrics, predict
 
-    require(int(os.environ.get("USP_LEARNING_SUPERVISOR_PID", "0")) in {p.pid for p in psutil.Process().parents()},
-            "worker requires live supervisor")
     require(read_json(args.output_dir / "attempt.json")["freezeSha256"] == sha256_file(args.output_dir / "freeze.json"), "attempt mismatch")
     corpus, fields, frozen = validate(args)
     run = args.output_dir / "run"
@@ -199,7 +202,7 @@ def worker(args: argparse.Namespace) -> None:
                 and torch.cuda.max_memory_reserved() <= SETTINGS["maxCudaReservedBytes"], "GPU peak budget exceeded")
         require(free_now >= SETTINGS["minimumFreeCudaBytes"], "GPU free headroom breached")
 
-    tokenizer = AutoTokenizer.from_pretrained(frozen["model"]["path"], padding_side="left", local_files_only=True, trust_remote_code=False)
+    tokenizer = AutoTokenizer.from_pretrained(str(local_model_path()), padding_side="left", local_files_only=True, trust_remote_code=False)
     texts = prompts_for(fields, corpus["targets"])
     tokens = [tokenizer(p, add_special_tokens=False, truncation=False, return_tensors="pt") for p in texts]
     require([batch["input_ids"].shape[1] for batch in tokens] == frozen["tokenLengths"], "tokens changed")
@@ -208,7 +211,7 @@ def worker(args: argparse.Namespace) -> None:
 
     def load_base():
         return AutoModelForCausalLM.from_pretrained(
-            frozen["model"]["path"], torch_dtype=torch.float16, attn_implementation="sdpa",
+            str(local_model_path()), torch_dtype=torch.float16, attn_implementation="sdpa",
             local_files_only=True, trust_remote_code=False, use_safetensors=True).to("cuda")
 
     model = get_peft_model(load_base(), LoraConfig(r=8, lora_alpha=32, lora_dropout=0.0,
@@ -321,6 +324,9 @@ def worker(args: argparse.Namespace) -> None:
     gc.collect()
     torch.cuda.empty_cache()
     require(all(sha256_file(adapter_dir / name) == digest for name, digest in adapter_hashes.items()), "adapter bytes changed")
+    require((adapter_dir / "adapter_model.safetensors").is_file()
+            and (adapter_dir / "adapter_config.json").is_file()
+            and not any(p.suffix in (".bin", ".pt", ".pth") for p in adapter_dir.iterdir()), "safe local adapter files required")
     model = PeftModel.from_pretrained(load_base(), adapter_dir, is_trainable=False, local_files_only=True).eval()
     sample_indices = [train_indices[0] * 3 + i for i in range(3)]
     reloaded_margins, reloaded_scores = score(sample_indices)
@@ -372,11 +378,24 @@ def main() -> None:
     for name in ("corpus", "input-proof", "originals-dir", "retained-dir", "baseline-dir", "output-dir"):
         parser.add_argument("--" + name, required=True, type=Path)
     parser.add_argument("--_worker", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--containment-profile", required=True, type=Path)
+    parser.add_argument("--containment-sha256", required=True)
     args = parser.parse_args()
+    if not args._worker:
+        guard = guarded_run([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]],
+                            args.containment_profile.parent / "receipts", SETTINGS,
+                            containment_profile=args.containment_profile, containment_sha256=args.containment_sha256)
+        print(json.dumps({"exitCode": guard["exitCode"], "outputsAccepted": guard["outputsAccepted"]}), flush=True)
+        raise SystemExit(guard["exitCode"])
+    require_model_boundary(args)
     os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", HF_HUB_DISABLE_TELEMETRY="1",
                       TOKENIZERS_PARALLELISM="false", OMP_NUM_THREADS="2", MKL_NUM_THREADS="2",
                       CUBLAS_WORKSPACE_CONFIG=":4096:8")
-    if args._worker:
+    if args.action == "run":
+        validate(args)
+        write_json_once(args.output_dir / "attempt.json", {"freezeSha256": sha256_file(args.output_dir / "freeze.json"),
+                        "rule": "One attempt including preflight/failure. No retry, sweep or evaluation."})
+        (args.output_dir / "run").mkdir(exist_ok=False)
         try:
             worker(args)
         except BaseException as error:
@@ -388,20 +407,8 @@ def main() -> None:
             write_json_once(args.output_dir / "run/failure.json", {"type": type(error).__name__, "message": str(error),
                             "traceback": traceback.format_exc(), "resources": resource, "rerunAllowed": False})
             raise
-    elif args.action == "prepare":
-        prepare(args)
     else:
-        validate(args)
-        write_json_once(args.output_dir / "attempt.json", {"freezeSha256": sha256_file(args.output_dir / "freeze.json"),
-                        "rule": "One attempt including preflight/failure. No retry, sweep or evaluation."})
-        (args.output_dir / "run").mkdir(exist_ok=False)
-        guard = guarded_run([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:], "--_worker"], args.output_dir / "run", SETTINGS)
-        write_json_once(args.output_dir / "completion.json", {"supervisor": guard, "freezeSha256": sha256_file(args.output_dir / "freeze.json"),
-                        "artifacts": {str(p.relative_to(args.output_dir)).replace("\\", "/"): sha256_file(p)
-                                      for p in sorted(args.output_dir.rglob("*")) if p.is_file()},
-                        "evaluationOpened": False, "diagnosticSplitOpened": False, "promoted": False})
-        print(json.dumps({"exitCode": guard["exitCode"], "receipt": str(args.output_dir / "completion.json")}), flush=True)
-        raise SystemExit(guard["exitCode"])
+        prepare(args)
 
 
 if __name__ == "__main__":

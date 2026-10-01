@@ -111,6 +111,7 @@ k32.CreateJobObjectW.restype = w.HANDLE
 k32.SetInformationJobObject.argtypes = [w.HANDLE, w.INT, w.LPVOID, w.DWORD]
 k32.QueryInformationJobObject.argtypes = [w.HANDLE, w.INT, w.LPVOID, w.DWORD, ctypes.POINTER(w.DWORD)]
 k32.AssignProcessToJobObject.argtypes = [w.HANDLE, w.HANDLE]
+k32.IsProcessInJob.argtypes = [w.HANDLE, w.HANDLE, ctypes.POINTER(w.BOOL)]
 k32.ResumeThread.argtypes = [w.HANDLE]
 adv.OpenProcessToken.argtypes = [w.HANDLE, w.DWORD, ctypes.POINTER(w.HANDLE)]
 adv.GetTokenInformation.argtypes = [w.HANDLE, w.DWORD, w.LPVOID, w.DWORD, ctypes.POINTER(w.DWORD)]
@@ -217,8 +218,70 @@ def cleanup_scope(granted: list[Path], expected_sid: str | None, name: str, sid:
         raise CleanupError(outcomes)
 
 
+def job_limits(job=None, process=None, expected_bytes=None) -> dict:
+    """Read effective limits, and verify membership when inspecting a child."""
+    if process is not None:
+        member = w.BOOL()
+        if not k32.IsProcessInJob(process, job, ctypes.byref(member)) or not member.value:
+            raise RuntimeError("process is not in the expected Job")
+    measured = EXTENDED_JOB_LIMITS()
+    returned = w.DWORD()
+    if not k32.QueryInformationJobObject(job, 9, ctypes.byref(measured), ctypes.sizeof(measured), ctypes.byref(returned)):
+        raise win_error("QueryInformationJobObject limits")
+    if returned.value != ctypes.sizeof(measured):
+        raise RuntimeError("unreadable effective Job limits")
+    result = {"limitFlags": measured.BasicLimitInformation.LimitFlags,
+              "jobMemoryLimitBytes": measured.JobMemoryLimit,
+              "peakJobMemoryBytes": measured.PeakJobMemoryUsed}
+    if expected_bytes is not None and (result["limitFlags"] != 0x200 | 0x2000
+                                       or result["jobMemoryLimitBytes"] != expected_bytes):
+        raise RuntimeError("effective Job limits rejected before execution")
+    return result
+
+
+def job_rss(job) -> int:
+    """Sample working sets for the actual Job members, without Python packages."""
+    buffer = ctypes.create_string_buffer(8 + 4096 * ctypes.sizeof(ctypes.c_size_t))
+    returned = w.DWORD()
+    if not k32.QueryInformationJobObject(job, 3, buffer, len(buffer), ctypes.byref(returned)):
+        raise win_error("QueryInformationJobObject process IDs")
+    count = w.DWORD.from_buffer(buffer, 4).value
+    if count > 4096:
+        raise RuntimeError("Job process list exceeds monitor bound")
+    class COUNTERS(ctypes.Structure):
+        _fields_ = [("cb", w.DWORD), ("PageFaultCount", w.DWORD),
+                    *[(name, ctypes.c_size_t) for name in ("PeakWorkingSetSize", "WorkingSetSize",
+                      "QuotaPeakPagedPoolUsage", "QuotaPagedPoolUsage", "QuotaPeakNonPagedPoolUsage",
+                      "QuotaNonPagedPoolUsage", "PagefileUsage", "PeakPagefileUsage")]]
+    psapi = ctypes.WinDLL("psapi", use_last_error=True)
+    psapi.GetProcessMemoryInfo.argtypes = [w.HANDLE, ctypes.POINTER(COUNTERS), w.DWORD]
+    k32.OpenProcess.argtypes = [w.DWORD, w.BOOL, w.DWORD]
+    k32.OpenProcess.restype = w.HANDLE
+    total = 0
+    for index in range(count):
+        pid = ctypes.c_size_t.from_buffer(buffer, 8 + index * ctypes.sizeof(ctypes.c_size_t)).value
+        process = k32.OpenProcess(0x0400 | 0x0010, False, pid)
+        if not process:
+            if ctypes.get_last_error() == 87:  # Member exited between the two observations.
+                continue
+            raise win_error("OpenProcess Job RSS")
+        try:
+            member = w.BOOL()
+            if not k32.IsProcessInJob(process, job, ctypes.byref(member)) or not member.value:
+                raise RuntimeError("Job RSS process identity changed")
+            counters = COUNTERS()
+            counters.cb = ctypes.sizeof(counters)
+            if not psapi.GetProcessMemoryInfo(process, ctypes.byref(counters), counters.cb):
+                raise win_error("GetProcessMemoryInfo Job RSS")
+            total += max(counters.WorkingSetSize, counters.PeakWorkingSetSize)
+        finally:
+            k32.CloseHandle(process)
+    return total
+
+
 def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
-           job_memory_bytes: int | None = None) -> dict:
+           job_memory_bytes: int | None = None, *, explicit_environment: dict | None = None,
+           rss_limit_bytes: int | None = None) -> dict:
     size = ctypes.c_size_t()
     k32.InitializeProcThreadAttributeList(None, 2, 0, ctypes.byref(size))
     if ctypes.get_last_error() != 122 or not size.value:
@@ -271,6 +334,11 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
             "OMP_NUM_THREADS": "2", "MKL_NUM_THREADS": "2",
             "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
         }
+        if explicit_environment is not None:
+            safe_env = dict(explicit_environment)
+        if any(not isinstance(key, str) or not isinstance(value, str) or not key or "=" in key
+               or "\0" in key + value for key, value in safe_env.items()):
+            raise ValueError("invalid explicit child environment")
         environment = ctypes.create_unicode_buffer("\0".join(f"{key}={value}" for key, value in sorted(safe_env.items())) + "\0\0")
         flags = 0x00080000 | 0x00000400 | 0x4
         if not k32.CreateProcessW(str(exe), command, None, None, True, flags,
@@ -278,11 +346,15 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
                                   ctypes.byref(si), ctypes.byref(pi)):
             raise win_error("CreateProcessW AppContainer")
         job = w.HANDLE()
+        job_closed = False
         completed = False
         try:
             observed_token = token_data(pi.hProcess)
             require_container_token(observed_token, sid_string(sid))
-            if job_memory_bytes:
+            effective_job = None
+            if job_memory_bytes is not None:
+                if type(job_memory_bytes) is not int or job_memory_bytes <= 0:
+                    raise ValueError("invalid Job memory limit")
                 job = k32.CreateJobObjectW(None, None)
                 if not job:
                     raise win_error("CreateJobObjectW")
@@ -293,6 +365,7 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
                     raise win_error("SetInformationJobObject")
                 if not k32.AssignProcessToJobObject(job, pi.hProcess):
                     raise win_error("AssignProcessToJobObject")
+                effective_job = job_limits(job, pi.hProcess, job_memory_bytes)
             if k32.ResumeThread(pi.hThread) != 1:
                 raise win_error("ResumeThread")
             k32.CloseHandle(write)
@@ -319,10 +392,27 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
 
             reader = threading.Thread(target=drain, daemon=True)
             reader.start()
-            wait = k32.WaitForSingleObject(pi.hProcess, timeout_ms)
+            peak_rss = 0
+            if rss_limit_bytes is not None:
+                import time
+                if not job or type(rss_limit_bytes) is not int or rss_limit_bytes <= 0:
+                    raise ValueError("RSS supervision requires a bounded Job")
+                deadline = time.monotonic() + timeout_ms / 1000
+                while True:
+                    peak_rss = max(peak_rss, job_rss(job))
+                    if peak_rss > rss_limit_bytes:
+                        raise RuntimeError("owned Job RSS limit exceeded")
+                    remaining = int((deadline - time.monotonic()) * 1000)
+                    wait = k32.WaitForSingleObject(pi.hProcess, max(0, min(50, remaining)))
+                    if wait != 0x102 or remaining <= 0:
+                        break
+            else:
+                wait = k32.WaitForSingleObject(pi.hProcess, timeout_ms)
             if wait == 0x102:
                 if job:
-                    k32.CloseHandle(job)
+                    if not k32.CloseHandle(job):
+                        raise win_error("CloseHandle owned Job after timeout")
+                    job_closed = True
                     job = w.HANDLE()
                 else:
                     k32.TerminateProcess(pi.hProcess, 1)
@@ -334,12 +424,8 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
                 raise win_error("GetExitCodeProcess")
             peak_job_memory = None
             if job:
-                measured = EXTENDED_JOB_LIMITS()
-                returned = w.DWORD()
-                if not k32.QueryInformationJobObject(job, 9, ctypes.byref(measured),
-                                                     ctypes.sizeof(measured), ctypes.byref(returned)):
-                    raise win_error("QueryInformationJobObject")
-                peak_job_memory = measured.PeakJobMemoryUsed
+                terminal_job = job_limits(job, expected_bytes=job_memory_bytes)
+                peak_job_memory = terminal_job["peakJobMemoryBytes"]
             reader.join(5)
             if reader.is_alive() or state["error"]:
                 raise RuntimeError(f"output reader did not complete: {state}")
@@ -347,11 +433,17 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
         finally:
             try:
                 if job:
-                    k32.CloseHandle(job)
+                    if not k32.CloseHandle(job):
+                        raise win_error("CloseHandle owned Job")
+                    job_closed = True
                 if not completed:
-                    if k32.WaitForSingleObject(pi.hProcess, 0) == 0x102 and not k32.TerminateProcess(pi.hProcess, 1):
-                        raise win_error("TerminateProcess rejected/failed child")
-                    if k32.WaitForSingleObject(pi.hProcess, 5000) != 0:
+                    # Job close already requests termination. Wait for its asynchronous
+                    # completion before trying to terminate an already-exiting process.
+                    stopped = k32.WaitForSingleObject(pi.hProcess, 5000 if job_closed else 0)
+                    if stopped == 0x102:
+                        k32.TerminateProcess(pi.hProcess, 1)
+                        stopped = k32.WaitForSingleObject(pi.hProcess, 5000)
+                    if stopped != 0:
                         raise RuntimeError("owned child did not exit during cleanup")
             finally:
                 k32.CloseHandle(pi.hThread)
@@ -359,7 +451,13 @@ def launch(exe: Path, args: list[str], sid: w.LPVOID, timeout_ms: int,
         return {"token": observed_token, "pid": pi.dwProcessId, "exitCode": exit_code.value,
                 "output": b"".join(chunks).decode(errors="replace"),
                 "outputTruncated": state["truncated"], "peakJobMemoryBytes": peak_job_memory,
-                "inheritedHandleCount": 2, "stdinSource": "NUL", "tokenValidatedBeforeResume": True}
+                "inheritedHandleCount": 2, "stdinSource": "NUL", "tokenValidatedBeforeResume": True,
+                "effectiveJobBeforeResume": effective_job,
+                "jobValidatedBeforeResume": effective_job is not None,
+                "jobClosed": job_closed,
+                "peakProcessRssBytes": peak_rss if rss_limit_bytes is not None else None,
+                "rssMethod": "50ms actual Job-member RSS/peak working sets" if rss_limit_bytes is not None else None,
+                "environmentKeys": sorted(safe_env)}
     finally:
         if read.value:
             k32.CloseHandle(read)

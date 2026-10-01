@@ -10,8 +10,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-import psutil
-
 
 def write_json_once(path: Path, value: Any) -> None:
     with path.open("x", encoding="utf-8", newline="\n") as stream:
@@ -19,12 +17,22 @@ def write_json_once(path: Path, value: Any) -> None:
         stream.write("\n")
 
 
-def guarded_run(command: list[str], output_dir: Path, limits: dict[str, Any]) -> dict[str, Any]:
+def guarded_run(command: list[str], output_dir: Path, limits: dict[str, Any], *,
+                containment_profile: Path | None = None, containment_sha256: str | None = None) -> dict[str, Any]:
     """A separate parent enforces elapsed time/RSS even if the model's GIL is blocked.
 
     RSS is checked every 50 ms, including Windows Python redirector children.
     CUDA allocator limits are set in the worker.
     """
+    if containment_profile is not None or containment_sha256 is not None:
+        import importlib.util
+        helper = Path(__file__).resolve().parents[4] / "scripts/usp/learning/model_isolation.py"
+        spec = importlib.util.spec_from_file_location("qwen_model_isolation", helper)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.launch_model(command, output_dir, limits, containment_profile, containment_sha256)
+    # The separate E5 caller keeps its existing explicit, uncontained behavior.
+    import psutil
     started = time.monotonic()
     peak_rss = 0
     fit_started = None
