@@ -1163,5 +1163,115 @@
     "limitations": [
       "External references unresolved; no geometry/CRS transformation, API/job, operational, association, learning or release qualification."
     ]
+  },
+  {
+    "id": "ogc-citygml-2-building-garage-lod2",
+    "manifest": "docs/evidence/usp/native-citygml/sources.json",
+    "manifestSha256": "8ef65d5fb48eaaba71a97634b78fb8dbaef9c269026fd5071f036a964571f563",
+    "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+    "classification": "test_only",
+    "originKind": "published_standards_example",
+    "issuer": "Open Geospatial Consortium official schema repository; CityGML example contributors SIG 3D/GDI-DE acknowledged in original XML",
+    "originalUrl": "https://schemas.opengis.net/citygml/examples/2.0/building/Building_and_garage_LOD2-EPSG25832.gml",
+    "acquiredAt": "2026-10-01T16:21:11.913896+00:00",
+    "sourceVersion": "CityGML 2.0, February 2012 (literal source comment); repository Last-Modified 2025-04-09",
+    "geography": "Source example refers to Germany; unchanged original coordinates retained; no Indian relocation or global qualification",
+    "terms": {
+      "status": "specific_example_licence_not_verified",
+      "notice": "Directory footer identifies OGC copyright and Terms and Conditions; original XML attributes contributors but contains no explicit example redistribution grant. Development research use is user-authorized; no release/legal clearance asserted.",
+      "termsUrl": "https://www.ogc.org/about-ogc/legal-notices-term-and-conditions/",
+      "attribution": "Open Geospatial Consortium CityGML 2.0 examples; SIG 3D/GDI-DE acknowledgement retained",
+      "launchGaps": [
+        "Specific example redistribution/licence clearance",
+        "No permission or qualified labels for model training is asserted"
+      ]
+    },
+    "referenceDeclarations": {
+      "envelopeSrsName": "urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783",
+      "envelopeDimension": "3",
+      "axisAndUnits": "No CRS resolution. All raw uom/axis/reference fields remain original literals; local engineering axis definitions are inventory only.",
+      "coordinateDimension": "Many posList declarations omit dimension; retained flat, no dimension/CRS/default inference",
+      "qualification": "not_assessed",
+      "transformApplied": false
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "content": {
+      "externalPath": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\originals\\Building_and_garage_LOD2-EPSG25832.gml",
+      "bytes": 19499,
+      "sha256": "2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a",
+      "format": "citygml",
+      "repositoryBytesVerified": false
+    },
+    "nativeInspectionEvidence": {
+      "guide": "docs/evidence/usp/native-citygml-handoff.md",
+      "review": "docs/evidence/usp/desktop-backend-review/native-citygml-review.md",
+      "codeCommit": "982f064e1a104c37b494f38de60c7638328c2032",
+      "correctionReceipt": "E:/BhuAayam-data/task-data/desktop-citygml-native/correction-01/verification.json",
+      "correctionReceiptSha256": "12f261abd6ce1be6ba4e67f590f0d43e6d4fd5e129035fd6a0c6a8857fec0a53",
+      "scope": "Windows bounded native literal inventory; opaque payloads cannot populate typed building/property/LoD associations"
+    },
+    "limitations": [
+      "CityGML 2.0 UTF-8 XML literal profile only; no schema or solid validity claim",
+      "Relief/TIN, OrientableSurface, MultiPoint, non-building modules/ADE content are unsupported literal inventory",
+      "Engineering CRS, anchors, axis order and units not applied or independently qualified",
+      "Not API/job/registry admission, official Indian data, learning, performance or release qualification"
+    ]
+  },
+  {
+    "id": "ogc-citygml-2-building-local-engineering-lod1",
+    "manifest": "docs/evidence/usp/native-citygml/sources.json",
+    "manifestSha256": "8ef65d5fb48eaaba71a97634b78fb8dbaef9c269026fd5071f036a964571f563",
+    "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+    "classification": "test_only",
+    "originKind": "published_standards_example",
+    "issuer": "Open Geospatial Consortium official schema repository; CityGML example contributors SIG 3D/GDI-DE acknowledged in original XML",
+    "originalUrl": "https://schemas.opengis.net/citygml/examples/2.0/building/Building_LOD1-LocalEngineeringCRS.gml",
+    "acquiredAt": "2026-10-01T16:21:12.545538+00:00",
+    "sourceVersion": "CityGML 2.0, February 2012 (literal source comment); repository Last-Modified 2025-04-09",
+    "geography": "Source example refers to Germany; unchanged original coordinates retained; no Indian relocation or global qualification",
+    "terms": {
+      "status": "specific_example_licence_not_verified",
+      "notice": "Directory footer identifies OGC copyright and Terms and Conditions; original XML attributes contributors but contains no explicit example redistribution grant. Development research use is user-authorized; no release/legal clearance asserted.",
+      "termsUrl": "https://www.ogc.org/about-ogc/legal-notices-term-and-conditions/",
+      "attribution": "Open Geospatial Consortium CityGML 2.0 examples; SIG 3D/GDI-DE acknowledgement retained",
+      "launchGaps": [
+        "Specific example redistribution/licence clearance",
+        "No permission or qualified labels for model training is asserted"
+      ]
+    },
+    "referenceDeclarations": {
+      "envelopeSrsName": "#local-CRS-1",
+      "envelopeDimension": "absent on Envelope; its two pos elements declare 3",
+      "axisAndUnits": "No CRS resolution. All raw uom/axis/reference fields remain original literals; local engineering axis definitions are inventory only.",
+      "coordinateDimension": "Many posList declarations omit dimension; retained flat, no dimension/CRS/default inference",
+      "qualification": "not_assessed",
+      "transformApplied": false
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "content": {
+      "externalPath": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\originals\\Building_LOD1-LocalEngineeringCRS.gml",
+      "bytes": 11158,
+      "sha256": "7dd55005787996074333a90a6e6a49a66fb43332a988a93be8bfc9804c35813e",
+      "format": "citygml",
+      "repositoryBytesVerified": false
+    },
+    "nativeInspectionEvidence": {
+      "guide": "docs/evidence/usp/native-citygml-handoff.md",
+      "review": "docs/evidence/usp/desktop-backend-review/native-citygml-review.md",
+      "codeCommit": "982f064e1a104c37b494f38de60c7638328c2032",
+      "correctionReceipt": "E:/BhuAayam-data/task-data/desktop-citygml-native/correction-01/verification.json",
+      "correctionReceiptSha256": "12f261abd6ce1be6ba4e67f590f0d43e6d4fd5e129035fd6a0c6a8857fec0a53",
+      "scope": "Windows bounded native literal inventory; opaque payloads cannot populate typed building/property/LoD associations"
+    },
+    "limitations": [
+      "CityGML 2.0 UTF-8 XML literal profile only; no schema or solid validity claim",
+      "Relief/TIN, OrientableSurface, MultiPoint, non-building modules/ADE content are unsupported literal inventory",
+      "Engineering CRS, anchors, axis order and units not applied or independently qualified",
+      "Not API/job/registry admission, official Indian data, learning, performance or release qualification"
+    ]
   }
 ]
