@@ -1833,6 +1833,172 @@
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateStreamedProfileTx"
       }
+    },
+    {
+      "id": "usp.declarations.check",
+      "source": {
+        "path": "database/sql/60-usp/11-declarations-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "RIGHTS-DECL-01",
+        "acceptedBase": "142a7c3f65c36d92359d8c65a923a88737f67fa6"
+      },
+      "file": "sql/60-usp/11-declarations-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "declarationsName",
+          "value": "usp_declarations_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 38,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.declarations.schema",
+      "source": {
+        "path": "database/sql/60-usp/12-declarations-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "RIGHTS-DECL-01",
+        "acceptedBase": "142a7c3f65c36d92359d8c65a923a88737f67fa6"
+      },
+      "file": "sql/60-usp/12-declarations-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.declarations.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.declarations.check",
+      "callMode": "one-query-call",
+      "order": 39,
+      "sha256": "c5693dcc9d2ce2d16b253d6a4a4dc426543e418c90bb5f36b27d3fe3370543fd",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "0f427b3b92c4cd9dc619bd24567b8e1e70026547ccddd21c1bb90c4ea5ffa1ca"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "c8708b9129c828fe13ab37b61a9b817eafdfc093b2f74f92b2f1fb6e3c70514e"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "1e53cd309c44b14c1e03b07f204740c778abc35a50175e9c484c498ada7d62c3"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "8151e1d3b37a6eed66db73d194714f686788d597575f80b556b1066a9deda5f0"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "7c48ee4a2e890c0e1f1171a897b79e6a3febe8dbe964a6717142d39df4b99465"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "f3c35fe95443a25de548ebb050d036b0944b5f48662f04b729b67676fb0b56c2"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "1cdcdad260645dc06eaefdd3c0bd85f852ca3a7019ea128daead52d8ab679d94"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "3dec593e97e5968bebf354aa2279ab439b363b2a145d1bfcd34bc7a60e69b9d8"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "ff4dedfd811e3f1891b214e948f1b6e6f47eafd1c1b462994feb25e78e9efc7a"
+        },
+        {
+          "ordinal": 10,
+          "sha256": "ebe55c9ab2d1868791065e89ad94434439bd9dcbe3fc68c85239cb2c3cf9e10a"
+        },
+        {
+          "ordinal": 11,
+          "sha256": "ea6eba9292a33107909853b1f24e07f69399de7f249f11a44098d2f0ca0736d6"
+        },
+        {
+          "ordinal": 12,
+          "sha256": "fddcdb0dbe1c0dd570a070c339eb2a94250cc5839b9aaa2b0c92beded30d7cc6"
+        },
+        {
+          "ordinal": 13,
+          "sha256": "89ce4b6a31f6e4a9d98123d1a0f04eafe036e13310c5d2a2c58521b789da0020"
+        },
+        {
+          "ordinal": 14,
+          "sha256": "acf0bb336cb544217285abe58a027661a0be49612a443f07c4f6f35254f63310"
+        },
+        {
+          "ordinal": 15,
+          "sha256": "f6fd2c8d06b640f4e9a0e379bd799d4f6be145f6353a1d80dd64633785415d99"
+        },
+        {
+          "ordinal": 16,
+          "sha256": "f2a3886ce27fcd5b4fb03a25f3e72e369fd82628dee8359bf8034e5acbf70420"
+        },
+        {
+          "ordinal": 17,
+          "sha256": "5ab7425e4b818b5e6d524393171e3df075476b06e925f7b1da3a2dbbb04fc06f"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.declarations.mark",
+      "source": {
+        "path": "database/sql/60-usp/13-declarations-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "RIGHTS-DECL-01",
+        "acceptedBase": "142a7c3f65c36d92359d8c65a923a88737f67fa6"
+      },
+      "file": "sql/60-usp/13-declarations-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.declarations.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "declarationsName",
+          "value": "usp_declarations_001"
+        }
+      ],
+      "guardedBy": "usp.declarations.check",
+      "callMode": "one-query-call",
+      "order": 40,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     }
   ],
   "plannedButAbsent": []

@@ -19,6 +19,11 @@ export async function migrateUsp() {
       await client.query(sql('usp.identity.mark'), [identityName]);
     }
     await migrateUspGeometryTx(client);
+    const declarationsName = 'usp_declarations_001';
+    if (!(await client.query(sql('usp.declarations.check'), [declarationsName])).rowCount) {
+      await client.query(sql('usp.declarations.schema'));
+      await client.query(sql('usp.declarations.mark'), [declarationsName]);
+    }
     await migrateManualIngestionTx(client);
     await migrateLargeOriginalTx(client);
     await migrateIngestionEventsTx(client);
