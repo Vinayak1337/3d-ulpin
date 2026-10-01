@@ -1,0 +1,7 @@
+# Isolated DXF-01 CPython 3.13 / Windows amd64 wheels; no optional draw extras.
+# Install with --require-hashes --only-binary=:all: in the lane-specific venv.
+ezdxf==1.4.3 --hash=sha256:d95cd8dcc6e6051ff9adf6eaed0d055ac464abea23c2a71aaba701dcfe7f49de
+numpy==2.3.2 --hash=sha256:c63d95dc9d67b676e9108fe0d2182987ccb0f11933c1e8959f42fa0da8d4fa56
+fonttools==4.59.0 --hash=sha256:26731739daa23b872643f0e4072d5939960237d540c35c14e6a06d47d71ca8fe
+pyparsing==3.2.3 --hash=sha256:a749938e02d6fd0b59b356ca504a24982314bb090c383e3cf201c95ef7e2bfcf
+typing_extensions==4.14.1 --hash=sha256:d1e1e3b58374dc93031d6eda2420a48ea44a36c2b4766a4fdeb3710755731d76
