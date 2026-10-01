@@ -4042,6 +4042,17 @@
         "parts": 53,
         "pages": 4,
         "modelRequested": false
+      },
+      "pageInspectionEvidence": {
+        "guide": "docs/evidence/usp/document-pages-handoff.md",
+        "review": "docs/evidence/usp/desktop-backend-review/document-pages-review.md",
+        "codeCommit": "8bd7419db6cd8effec1efb8ba772d72f06df8214",
+        "acceptedCommit": "d8ba409",
+        "receiptSha256": "61658a9c8ba6ddb43db55ea960c8325f5a7bafe8b1349401814dabc589591811",
+        "scope": "Source-original Windows local metadata/page-1 raster only; authority checks use doubles. Real source-bound HTTP/current access remains unrun.",
+        "pageCount": 4,
+        "calibration": null,
+        "runtimeVerified": false
       }
     },
     {
@@ -4533,6 +4544,17 @@
         "textCompleteness": "unverified",
         "originalDownloadUnchanged": true,
         "privateAccessAndAttemptChecks": "passed"
+      },
+      "pageInspectionEvidence": {
+        "guide": "docs/evidence/usp/document-pages-handoff.md",
+        "review": "docs/evidence/usp/desktop-backend-review/document-pages-review.md",
+        "codeCommit": "8bd7419db6cd8effec1efb8ba772d72f06df8214",
+        "acceptedCommit": "d8ba409",
+        "receiptSha256": "61658a9c8ba6ddb43db55ea960c8325f5a7bafe8b1349401814dabc589591811",
+        "scope": "Source-original Windows local metadata/page-1 raster only; authority checks use doubles. Real source-bound HTTP/current access remains unrun.",
+        "pageCount": 1,
+        "calibration": null,
+        "runtimeVerified": false
       }
     },
     {

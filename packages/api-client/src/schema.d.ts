@@ -1915,6 +1915,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sources/{sourceId}/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inspect exact retained PDF page frames; calibration remains unavailable */
+        get: operations["GET_api_v1_sources_sourceId_pages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources/{sourceId}/pages/{page}/raster": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Render one explicitly selected private PDF page from its unchanged original */
+        get: operations["GET_api_v1_sources_sourceId_pages_page_raster"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/spatial-datasets/search": {
         parameters: {
             query?: never;
@@ -27546,6 +27580,56 @@ export interface components {
                 };
             };
         };
+        GET_sources_sourceId_pages_Response_200_application_json: {
+            /** @enum {string} */
+            version: "document-pages/1";
+            /** Format: uuid */
+            sourceId: string;
+            /** Format: uuid */
+            caseId: string;
+            caseRevision: number;
+            sourceRevision: number;
+            sourceSha256: string;
+            sourceBytes: number;
+            name: string;
+            revision: string;
+            pageCount: number;
+            offset: number;
+            limit: number;
+            hasMore: boolean;
+            pages: {
+                page: number;
+                label: string;
+                sourceLabel: string | null;
+                frame: {
+                    /** @enum {string} */
+                    kind: "pdf_display_page_top_left_points";
+                    rotation: number;
+                    width: number;
+                    height: number;
+                };
+                mediaBox: (number)[];
+                cropBox: (number)[];
+                /** @enum {string} */
+                boxConvention: "pymupdf_page_rectangles/1";
+                /** @enum {string} */
+                renderSupport: "supported" | "unsupported";
+                url: string | null;
+                locator: {
+                    /** @enum {string} */
+                    kind: "pdf_page";
+                    page: number;
+                };
+                /** @enum {string|null} */
+                calibration: null;
+            }[];
+            anchors: {
+                locator: string;
+                page: number;
+                /** @enum {string|null} */
+                region: null;
+            }[];
+        };
         GET_spatial_datasets_search_Response_200_application_json: {
             matches: {
                 objectId: string;
@@ -47198,6 +47282,63 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_sources_sourceId_pages: {
+        parameters: {
+            query: {
+                limit?: number;
+                offset?: number;
+                sha256: string;
+                revision: number;
+            };
+            header?: never;
+            path: {
+                sourceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_sources_sourceId_pages_Response_200_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_sources_sourceId_pages_page_raster: {
+        parameters: {
+            query: {
+                sha256: string;
+                revision: number;
+            };
+            header?: never;
+            path: {
+                page: number;
+                sourceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
                 };
             };
         };
