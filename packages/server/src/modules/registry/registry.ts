@@ -3,6 +3,7 @@ import { RegistryMetadataSchema,RegistryDocumentCitationsSchema,RegistryCityJSON
 import {assertRegistryDocumentCitationsTx,assertCitationEdit,publicRegistryBody,publicRegistryDraft,publicRegistryReview,
   documentReviewContext,assertDocumentReviewContext} from './registry-document-evidence';
 import { assertRegistryMetadataTx } from './registry-metadata';
+import {registryDocumentCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
 import { readPreparationBuild } from "../cases/preparation-continuation";
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
@@ -405,7 +406,9 @@ export async function editRegistryDraft(
   input: z.infer<typeof editDraftSchema>,
 ) {
   return transaction(async (client) => {
-    const initial=(await client.query('SELECT site_id FROM registry_drafts WHERE id=$1',[id])).rows[0]??notFound();
+    const initial=(await client.query('SELECT site_id,case_id,records FROM registry_drafts WHERE id=$1',[id])).rows[0]??notFound();
+    const cases=registryDocumentCases(initial.case_id,initial.records);
+    await lockRegistryDocumentCasesTx(client,cases);
     await siteRow(client,initial.site_id,true);
     const d =
       (
@@ -414,6 +417,8 @@ export async function editRegistryDraft(
           [id],
         )
       ).rows[0] ?? notFound();
+    if(d.site_id!==initial.site_id||d.case_id!==initial.case_id)conflict('The draft site or workspace changed.');
+    assertRegistryDocumentCases(cases,registryDocumentCases(d.case_id,d.records));
     if (d.status !== "draft" || d.revision !== input.expectedRevision)
       conflict();
     const old =
@@ -707,10 +712,14 @@ export async function prepareRegistryReview(
     ...(snapshot.combined.some(record=>record.documentCitations?.length)?{documentReviewContext:documentReviewContext()}:{}),
   };
   await transaction(async client=>{
+    const cases=registryDocumentCases(snapshot.d.caseId,snapshot.combined);
+    await lockRegistryDocumentCasesTx(client,cases);
     const site=siteFrom(await siteRow(client,snapshot.site.id,true));
     const draft=draftFrom((await client.query('SELECT * FROM registry_drafts WHERE id=$1 FOR UPDATE',[draftId])).rows[0]??notFound());
     const current=await currentRecords(client,site.id),ids=new Set(draft.records.map(record=>record.id));
     const combined=[...current.filter(record=>!ids.has(record.id)),...draft.records];
+    if(draft.siteId!==site.id||draft.caseId!==snapshot.d.caseId)conflict('The draft site or workspace changed.');
+    assertRegistryDocumentCases(cases,registryDocumentCases(draft.caseId,combined));
     if(draft.status!=='draft'||fingerprint(draft)!==fingerprint(snapshot.d)||fingerprint(site)!==fingerprint(snapshot.site)||
       fingerprint(combined)!==fingerprint(snapshot.combined))conflict('Registry inputs changed while preparing the review.');
     assertDocumentReviewContext(review);
@@ -727,12 +736,31 @@ export async function commitRegistryReview(
 ): Promise<RegistryReview> {
   return transaction(client => commitRegistryReviewTx(client, id, acknowledgement));
 }
+type RegistryReviewCaseLocks={reviewId:string;draftId:string;siteId:string;caseId:string;replayOnly:boolean;cases:string[]};
+function reviewCaseRecords(current:RegistryRecord[],draft:{records:RegistryRecord[]},row:{committed:boolean;body:RegistryReview}){
+  if(row.committed)return row.body.records;
+  const ids=new Set(draft.records.map(record=>record.id));
+  return [...current.filter(record=>!ids.has(record.id)),...draft.records,...row.body.records];
+}
+/** Lookup and acquire the complete gate set before any caller's recording/receipt locks.
+ * A committed review is valid lookup input; cached USP replay does not need an active draft. */
+export async function lockRegistryReviewCasesTx(client:PoolClient,id:string):Promise<RegistryReviewCaseLocks>{
+  const row=(await client.query('SELECT * FROM registry_reviews WHERE id=$1',[id])).rows[0]??notFound();
+  const draft=(await client.query('SELECT * FROM registry_drafts WHERE id=$1',[row.draft_id])).rows[0]??notFound();
+  const current=row.committed?[]:await currentRecords(client,draft.site_id);
+  const cases=registryDocumentCases(draft.case_id,reviewCaseRecords(current,draft,row));
+  await lockRegistryDocumentCasesTx(client,cases);
+  return {reviewId:id,draftId:draft.id,siteId:draft.site_id,caseId:draft.case_id,replayOnly:Boolean(row.committed),cases};
+}
 /** Caller-owned transaction variant for a coordinated receipt and outbox write. */
 export async function commitRegistryReviewTx(
   client: PoolClient,
   id: string,
   acknowledgement: string,
+  heldCases?:RegistryReviewCaseLocks,
 ): Promise<RegistryReview> {
+    const gates=heldCases??await lockRegistryReviewCasesTx(client,id);
+    if(gates.reviewId!==id)conflict('The reviewed gate context changed.');
     await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
     const initial =
       (await client.query("SELECT * FROM registry_reviews WHERE id=$1", [id]))
@@ -741,21 +769,31 @@ export async function commitRegistryReviewTx(
       await client.query("SELECT * FROM registry_drafts WHERE id=$1", [
         initial.draft_id,
       ])
-    ).rows[0];
+    ).rows[0]??notFound();
+    if(initial.draft_id!==gates.draftId||draft.id!==gates.draftId||draft.site_id!==gates.siteId||draft.case_id!==gates.caseId)
+      conflict('The reviewed draft site or workspace changed while acquiring locks.');
     const site = siteFrom(await siteRow(client, draft.site_id, true));
     const d = (
       await client.query(
         "SELECT * FROM registry_drafts WHERE id=$1 FOR UPDATE",
         [draft.id],
       )
-    ).rows[0];
+    ).rows[0]??notFound();
     const row = (
       await client.query(
         "SELECT * FROM registry_reviews WHERE id=$1 FOR UPDATE",
         [id],
       )
-    ).rows[0];
+    ).rows[0]??notFound();
     const review = row.body as RegistryReview;
+    if(row.draft_id!==gates.draftId||d.site_id!==gates.siteId||d.case_id!==gates.caseId)
+      conflict('The reviewed draft site or workspace changed while acquiring locks.');
+    if(gates.replayOnly&&!row.committed)conflict('The committed review changed while acquiring locks.');
+    // A concurrent successful commit may turn this into replay while waiting.
+    // Revalidate the original complete lookup mode; retain its harmless extra gates.
+    const current=gates.replayOnly?[]:await currentRecords(client,site.id);
+    assertRegistryDocumentCases(gates.cases,registryDocumentCases(d.case_id,
+      reviewCaseRecords(current,d,{...row,committed:gates.replayOnly})));
     assertNoNativeCandidates([...d.records,...review.records,...review.before]);
     assertDocumentReviewContext(review);
     if (row.committed) {
@@ -792,8 +830,7 @@ export async function commitRegistryReviewTx(
         "ACKNOWLEDGEMENT_REQUIRED",
         "Explain why the remaining warnings are acknowledged.",
       );
-    const current = await currentRecords(client, site.id),
-      ids = new Set((d.records as RegistryRecord[]).map((r) => r.id));
+    const ids = new Set((d.records as RegistryRecord[]).map((r) => r.id));
     if ((d.records as RegistryRecord[]).some(record => record.revision !== (current.find(r => r.id === record.id)?.revision ?? 0)))
       conflict("A proposed record changed since this draft was created. Review a correction from the current record.");
     const combined = [...current.filter((r) => !ids.has(r.id)), ...d.records];

@@ -14,6 +14,7 @@ import {readDocumentResult} from '../usp/ingestion/documents';
 import {documentPartEligibleForProposal} from '../usp/ingestion/document-model';
 import {registrySourceTx,registryMetadataEvidence} from './registry-metadata';
 import {RegistryMetadataSchema} from '@ulpin/contracts';
+import {registryDocumentCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
 
 type Dependencies={source:typeof associationDocumentInputTx;result:typeof readDocumentResult;registrySource:typeof registrySourceTx};
 const defaults:Dependencies={source:associationDocumentInputTx,result:readDocumentResult,registrySource:registrySourceTx};
@@ -166,11 +167,14 @@ export function applyCitationAmendment(record:RegistryRecord,added:RegistryDocum
   const documentCitations=RegistryDocumentCitationsSchema.parse([...byId.values()]);
   return {...record,documentCitations};
 }
-async function lockedDraftTx(client:PoolClient,draftId:string,recordId?:string,lock=false){
-  const initial=(await client.query('SELECT site_id FROM registry_drafts WHERE id=$1',[draftId])).rows[0]??notFound();
+async function lockedDraftTx(client:PoolClient,draftId:string,recordId?:string,lock=false,extra:readonly string[]=[],acquireGates=true){
+  const initial=(await client.query('SELECT site_id,case_id,records FROM registry_drafts WHERE id=$1',[draftId])).rows[0]??notFound();
+  const cases=registryDocumentCases(initial.case_id,initial.records,extra);
+  if(acquireGates)await lockRegistryDocumentCasesTx(client,cases);
   if(lock)await client.query('SELECT id FROM registry_sites WHERE id=$1 FOR UPDATE',[initial.site_id]);
   const draft=(await client.query(`SELECT * FROM registry_drafts WHERE id=$1${lock?' FOR UPDATE':''}`,[draftId])).rows[0]??notFound();
-  if(draft.site_id!==initial.site_id)conflict('The draft site changed.');
+  if(draft.site_id!==initial.site_id||draft.case_id!==initial.case_id)conflict('The draft site or workspace changed.');
+  assertRegistryDocumentCases(cases,registryDocumentCases(draft.case_id,draft.records,extra));
   const records=draft.records as RegistryRecord[];
   if(records.length!==1 || (recordId&&records[0].id!==recordId))
     throw new AppError(422,'REGISTRY_DOCUMENT_DRAFT_SCOPE','Amend one existing building or floor correction per draft.');
@@ -178,7 +182,8 @@ async function lockedDraftTx(client:PoolClient,draftId:string,recordId?:string,l
 }
 /** Existing operations holds only the idempotency receipt; citations live solely in registry_drafts/records/history. */
 export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId:string,raw:unknown,dependencies:Dependencies=defaults){
-  const request=RegistryDocumentAmendmentSchema.parse(raw),{draft,record}=await lockedDraftTx(client,draftId,request.recordId,true);
+  const request=RegistryDocumentAmendmentSchema.parse(raw),{draft,record}=await lockedDraftTx(client,draftId,request.recordId,true,
+    request.add?[request.add.document.caseId]:[]);
   if(draft.status!=='draft'||record.revision!==request.expectedRecordRevision)conflict('Use the exact active correction and recorded target revision.');
   const target=await currentTargetTx(client,draft.site_id,record,true,dependencies),ctx=context();
   const operationKey=`registry-document-citations:${draftId}:${request.requestKey}`;
@@ -228,7 +233,7 @@ export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:
   await currentTargetTx(client,draft.site_id,expected,false,dependencies);
   const citations=await assertRegistryDocumentCitationsTx(client,draft.site_id,record,false,dependencies,true);
   await currentTargetTx(client,draft.site_id,expected,false,dependencies);
-  const current=await lockedDraftTx(client,draftId);
+  const current=await lockedDraftTx(client,draftId,undefined,false,[],false);
   if(fingerprint(current)!==fingerprint({draft,record}))conflict('The draft changed during its private evidence read.');
   return RegistryDocumentEvidenceSchema.parse({draftId,draftRevision:draft.revision,recordId:record.id,
     recordRevision:record.revision,citations,associationState:'operator_selected',qualification:'not_assessed'});

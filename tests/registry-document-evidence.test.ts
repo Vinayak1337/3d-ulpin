@@ -48,7 +48,8 @@ function fixture(){
     operations:new Map<string,any>(),history:new Map<number,any>([[1,structuredClone(body)]]),writes:0,reads:0,sourceChecks:0};
   const client={query:async(sql:string,args:any[]=[])=>{
     let rows:any[]=[];
-    if(sql.includes('SELECT site_id FROM registry_drafts'))rows=[{site_id:siteId}];
+    if(sql.includes('pg_advisory_xact_lock'))rows=[];
+    else if(sql.includes('SELECT site_id,case_id,records FROM registry_drafts'))rows=[structuredClone(state.draft)];
     else if(sql.includes('SELECT * FROM registry_drafts'))rows=[structuredClone(state.draft)];
     else if(sql.includes('FROM registry_sites'))rows=[{id:siteId}];
     else if(sql.includes('CASE WHEN r.revision'))rows=[{site_id:siteId,kind:record.kind,

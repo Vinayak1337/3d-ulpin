@@ -8,7 +8,7 @@ import {
 import { transaction } from '../../infrastructure/db';
 import { canonical, fingerprint } from '../cases/domain';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
-import { commitRegistryReviewTx } from '../registry/registry';
+import { commitRegistryReviewTx, lockRegistryReviewCasesTx } from '../registry/registry';
 import { assertLocalUsp, captureRegistrySnapshotTx } from './snapshots';
 import { appendUspOutboxTx } from './outbox';
 export { appendUspOutboxTx } from './outbox';
@@ -95,9 +95,19 @@ export async function commitProposalTx(client: PoolClient, ctx: RequestContext, 
   const hash = fingerprint(command), scopeKey = command.scope.scopeId, operation = 'commit_registry';
   z.uuid().parse(command.proposalId);
   z.uuid().parse(command.reviewId);
+  // A cached successful receipt is independent of today's draft/review state.
+  // This unlocked lookup chooses the lock plan only; requestReceiptTx remains
+  // the authority for replay/conflict under the recording and receipt locks.
+  const cached=(await client.query(
+    `SELECT command_sha256,body FROM usp_command_receipts
+     WHERE subject=$1 AND scope_key=$2 AND operation=$3 AND request_key=$4`,
+    [ctx.principal.subject,scopeKey,operation,command.guard.requestKey],
+  )).rows[0];
+  const caseLocks=cached?undefined:await lockRegistryReviewCasesTx(client,command.reviewId);
   await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
   const previous = await requestReceiptTx(client, ctx, scopeKey, operation, command.guard.requestKey, hash);
   if (previous) return UspCommitReceiptSchema.parse(previous);
+  if(!caseLocks)conflict('The cached commit receipt changed. Refresh the reviewed proposal.');
   const manifest = await scopedManifestTx(client, ctx, command.scope);
   const current = await captureRegistrySnapshotTx(client, ctx, scopeKey, manifest.selection);
   if (current.digest !== manifest.digest) conflict('Source or property revisions changed. Review a fresh snapshot.');
@@ -111,7 +121,7 @@ export async function commitProposalTx(client: PoolClient, ctx: RequestContext, 
     ref: { namespace: 'registry_record', id: record.id }, revision: record.revision,
   }));
   // This helper retains the baseline recording lock, review checks and revision writes.
-  await commitRegistryReviewTx(client, command.reviewId, command.acknowledgement);
+  await commitRegistryReviewTx(client, command.reviewId, command.acknowledgement,caseLocks);
   const afterRows = (await client.query('SELECT id,revision FROM registry_records WHERE id=ANY($1::uuid[]) ORDER BY id',
     [before.map((pin: { ref: { id: string } }) => pin.ref.id)])).rows;
   if (afterRows.length !== before.length) throw new AppError(409, 'USP_POSTWRITE_MISSING', 'A recorded target is unavailable.');
