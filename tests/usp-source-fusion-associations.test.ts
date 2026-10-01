@@ -189,6 +189,7 @@ test('complete target authority rejects earlier evidence revocation before final
         else if(sql.startsWith('SET TRANSACTION')){}
         else if(sql.includes('pg_advisory_xact_lock'))gates.add(String(args[0]).replace('registry-import:',''));
         else if(sql.includes('FROM cases WHERE id=ANY')){
+          assert(sql.endsWith('ORDER BY id FOR SHARE'),'case read protection must coexist with canonical snapshot SHARE');
           assert.deepEqual(args[0],[...args[0]].sort());assert.deepEqual([...gates].sort(),args[0]);
           args[0].forEach((id:string)=>protectedCases.add(id));rows=cases.filter(row=>args[0].includes(row.id));
         }else if(sql.includes('FOR SHARE')){

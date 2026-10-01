@@ -126,7 +126,9 @@ export async function associationTargetAuthority(ctx:RequestContext,scope:Snapsh
     }
     const cases=[...new Set([...sources.values()].map(row=>z.uuid().parse(row.case_id).toLowerCase()))].sort();
     for(const caseId of cases)await lockSourceCaseDestinationTx(client,caseId);
-    await client.query('SELECT id FROM cases WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE',[cases]);
+    // SHARE blocks archive/context updates and source-family writers' UPDATE
+    // locks, but remains compatible with snapshot capture's source-order SHARE.
+    await client.query('SELECT id FROM cases WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE',[cases]);
     // Protect the destination before records, matching canonical recording.
     await client.query('SELECT id FROM registry_sites WHERE id=$1 FOR SHARE',[scope.scopeId]);
     const recordIds=pins.map(pin=>pin.ref.id).sort();
