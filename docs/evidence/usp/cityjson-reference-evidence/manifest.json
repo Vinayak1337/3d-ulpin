@@ -1,0 +1,699 @@
+{
+  "schemaVersion": "cityjson-reference-evidence/1",
+  "task": "DATA-REF-01",
+  "baseCommit": "a9e03c92ffefe3efc3a2548db4219a4c90b5b60f",
+  "preparedAtUtc": "2026-10-01T01:12:24.783280+00:00",
+  "status": "bounded_reference_observations_pending_lead_acceptance",
+  "sourceObject": "NL.IMBAG.Pand.1655100000500568",
+  "sourceGeography": "Netherlands; foreign test source, not Indian operational geography",
+  "privateRoot": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence",
+  "retainedEvidence": [
+    {
+      "id": "D1/original.json",
+      "path": "fixtures/usp/D1/single-roof/original.json",
+      "bytes": 6783,
+      "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+      "origin": "retained unchanged issuer API bytes"
+    },
+    {
+      "id": "D1/response.headers",
+      "path": "fixtures/usp/D1/single-roof/response.headers",
+      "bytes": 245,
+      "sha256": "22919e818eaef9c0ef5b0573f64fdc7fc57c536b057066f56aa07abf486fb5f1",
+      "origin": "retained unchanged issuer API bytes"
+    },
+    {
+      "id": "D1/manifest.json",
+      "path": "fixtures/usp/D1/single-roof/manifest.json",
+      "bytes": 6958,
+      "sha256": "1cf9ebb88700669c3eb64e6b7a55c5edd7a176c44d7ecce63b188a0767250b71",
+      "origin": "retained project provenance/oracle; not independent surveyed controls"
+    },
+    {
+      "id": "D1/acquisition.md",
+      "path": "fixtures/usp/D1/single-roof/acquisition.md",
+      "bytes": 3425,
+      "sha256": "1b7d3f98e00b35e360a4785494d356b37fc8cdc7816abef36ccca065e591caa7",
+      "origin": "retained project provenance/oracle; not independent surveyed controls"
+    },
+    {
+      "id": "D1/expected.json",
+      "path": "fixtures/usp/D1/single-roof/expected.json",
+      "bytes": 1909,
+      "sha256": "12adc100852331d2f96d9feebee3e60b5c71bf5e7bbb109437a7ff207a178554",
+      "origin": "retained project provenance/oracle; not independent surveyed controls"
+    },
+    {
+      "id": "accepted-native.json",
+      "path": "E:/BhuAayam-data/task-data/desktop-cityjson-api/native.json",
+      "bytes": 33168,
+      "sha256": "634685e1901b7e247878212262e45bf860942b1863490d7b8b67bda0b210022e",
+      "origin": "accepted source-native reader artifact; reused without running reader or validator"
+    },
+    {
+      "id": "accepted-native-receipt",
+      "path": "docs/evidence/usp/cityjson-api-runtime.json",
+      "bytes": 3730,
+      "sha256": "041867503a94fa9135079c80cfb5bfc3b0e474ccb468c26ff081f1285d3f99e8",
+      "origin": "accepted final-read projection binding native artifact"
+    }
+  ],
+  "newOriginalCount": 10,
+  "newOriginalBytes": 303502,
+  "sources": [
+    {
+      "id": "3dbag-attributes.html",
+      "url": "https://docs.3dbag.nl/en/schema/attributes/",
+      "status": 200,
+      "finalUrl": "https://docs.3dbag.nl/en/schema/attributes/",
+      "contentType": "text/html; charset=utf-8",
+      "acquiredAtUtc": "2026-10-01T01:06:50.827900+00:00",
+      "bytes": 128772,
+      "sha256": "27d583cc3288d9a5cb1d9efecd8407607cdc9221f34ff16b321249a2674ddcdc",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-attributes.html",
+      "issuer": "3DBAG by TU Delft 3D geoinformation research group and 3DGI",
+      "documentVersion": {
+        "pageVersion": null,
+        "snapshotAtUtc": "2026-10-01T01:06:50.827900+00:00",
+        "versionBinding": "Current documentation snapshot, not bound to retained D1 API release."
+      },
+      "licence": {
+        "state": "documented",
+        "licence": "CC BY 4.0",
+        "evidenceId": "3dbag-copyright.html",
+        "licenceUrl": "http://creativecommons.org/licenses/by/4.0/",
+        "attribution": "© 3DBAG by tudelft3d and 3DGI",
+        "conditions": "Credit, licence link and indication of changes. Digital maps link copyright page at bottom right. Separately marked third-party content retains its own terms."
+      },
+      "applicability": "Issuer explanations of delivery, attributes, releases and general methodology; not independent object controls."
+    },
+    {
+      "id": "3dbag-webservices.html",
+      "url": "https://docs.3dbag.nl/en/delivery/webservices/",
+      "status": 200,
+      "finalUrl": "https://docs.3dbag.nl/en/delivery/webservices/",
+      "contentType": "text/html; charset=utf-8",
+      "acquiredAtUtc": "2026-10-01T01:06:49.474179+00:00",
+      "bytes": 37989,
+      "sha256": "79f8def3e9b60f24279e0afb7bd03852d3c25afe16a411c5873f4aabb7064aee",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-webservices.html",
+      "issuer": "3DBAG by TU Delft 3D geoinformation research group and 3DGI",
+      "documentVersion": {
+        "pageVersion": null,
+        "snapshotAtUtc": "2026-10-01T01:06:49.474179+00:00",
+        "versionBinding": "Current documentation snapshot, not bound to retained D1 API release."
+      },
+      "licence": {
+        "state": "documented",
+        "licence": "CC BY 4.0",
+        "evidenceId": "3dbag-copyright.html",
+        "licenceUrl": "http://creativecommons.org/licenses/by/4.0/",
+        "attribution": "© 3DBAG by tudelft3d and 3DGI",
+        "conditions": "Credit, licence link and indication of changes. Digital maps link copyright page at bottom right. Separately marked third-party content retains its own terms."
+      },
+      "applicability": "Issuer explanations of delivery, attributes, releases and general methodology; not independent object controls."
+    },
+    {
+      "id": "3dbag-copyright.html",
+      "url": "https://docs.3dbag.nl/en/copyright/",
+      "status": 200,
+      "finalUrl": "https://docs.3dbag.nl/en/copyright/",
+      "contentType": "text/html; charset=utf-8",
+      "acquiredAtUtc": "2026-10-01T01:06:50.420940+00:00",
+      "bytes": 31139,
+      "sha256": "aafbc667bf4f40f8f54f652baebd2e5e6431233ac570e9955c5437bffabcaa62",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-copyright.html",
+      "issuer": "3DBAG by TU Delft 3D geoinformation research group and 3DGI",
+      "documentVersion": {
+        "pageVersion": null,
+        "snapshotAtUtc": "2026-10-01T01:06:50.420940+00:00",
+        "versionBinding": "Current documentation snapshot, not bound to retained D1 API release."
+      },
+      "licence": {
+        "state": "documented",
+        "licence": "CC BY 4.0",
+        "evidenceId": "3dbag-copyright.html",
+        "licenceUrl": "http://creativecommons.org/licenses/by/4.0/",
+        "attribution": "© 3DBAG by tudelft3d and 3DGI",
+        "conditions": "Credit, licence link and indication of changes. Digital maps link copyright page at bottom right. Separately marked third-party content retains its own terms."
+      },
+      "applicability": "Issuer explanations of delivery, attributes, releases and general methodology; not independent object controls."
+    },
+    {
+      "id": "epsg-7415.xml",
+      "url": "https://www.opengis.net/def/crs/EPSG/0/7415",
+      "status": 200,
+      "finalUrl": "https://www.opengis.net/def/crs/EPSG/0/7415",
+      "contentType": null,
+      "acquiredAtUtc": "2026-10-01T01:06:49.401302+00:00",
+      "bytes": 2037,
+      "sha256": "0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/epsg-7415.xml",
+      "issuer": "EPSG Geodetic Parameter Dataset / IOGP, distributed by the official OGC definition resolver",
+      "informationSource": "NSGI: Netherlands Partnership of Kadaster, Rijkswaterstaat and Hydrographic Service, https://www.nsgi.nl/.",
+      "documentVersion": {
+        "authorityCode": "7415",
+        "recordRevisionDate": "2026-03-18",
+        "resolverVersionSegment": "0 (latest), pinned by acquired original hash; EPSG dataset-wide release not supplied"
+      },
+      "licence": {
+        "state": "not_verified",
+        "limitation": "No EPSG redistribution licence was established in these definition originals; do not apply 3DBAG CC BY to EPSG records."
+      },
+      "applicability": "Definition of source-declared CRS/components/axes; does not measure D1 positioning accuracy or qualify a coordinate operation."
+    },
+    {
+      "id": "epsg-28992.xml",
+      "url": "https://www.opengis.net/def/crs/EPSG/0/28992",
+      "status": 200,
+      "finalUrl": "https://www.opengis.net/def/crs/EPSG/0/28992",
+      "contentType": null,
+      "acquiredAtUtc": "2026-10-01T01:08:40.546604+00:00",
+      "bytes": 2745,
+      "sha256": "33f63f22af61ffe5a0d496dd2a35db6d9d2d81465c86d2d5e083de15ed281818",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/epsg-28992.xml",
+      "issuer": "EPSG Geodetic Parameter Dataset / IOGP, distributed by the official OGC definition resolver",
+      "informationSource": "NSGI: Netherlands Partnership of Kadaster, Rijkswaterstaat and Hydrographic Service, https://www.nsgi.nl/.",
+      "documentVersion": {
+        "authorityCode": "28992",
+        "recordRevisionDate": "2026-03-18",
+        "resolverVersionSegment": "0 (latest), pinned by acquired original hash; EPSG dataset-wide release not supplied"
+      },
+      "licence": {
+        "state": "not_verified",
+        "limitation": "No EPSG redistribution licence was established in these definition originals; do not apply 3DBAG CC BY to EPSG records."
+      },
+      "applicability": "Definition of source-declared CRS/components/axes; does not measure D1 positioning accuracy or qualify a coordinate operation."
+    },
+    {
+      "id": "epsg-5709.xml",
+      "url": "https://www.opengis.net/def/crs/EPSG/0/5709",
+      "status": 200,
+      "finalUrl": "https://www.opengis.net/def/crs/EPSG/0/5709",
+      "contentType": null,
+      "acquiredAtUtc": "2026-10-01T01:08:39.526278+00:00",
+      "bytes": 2062,
+      "sha256": "f2dcb2aa46605aadd13c98324fea5aa3f2aa3f09c8eacfd9ad76602848eea435",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/epsg-5709.xml",
+      "issuer": "EPSG Geodetic Parameter Dataset / IOGP, distributed by the official OGC definition resolver",
+      "informationSource": "NSGI: Netherlands Partnership of Kadaster, Rijkswaterstaat and Hydrographic Servicehttp://www.nsgi.nl/.",
+      "documentVersion": {
+        "authorityCode": "5709",
+        "recordRevisionDate": "2026-01-06",
+        "resolverVersionSegment": "0 (latest), pinned by acquired original hash; EPSG dataset-wide release not supplied"
+      },
+      "licence": {
+        "state": "not_verified",
+        "limitation": "No EPSG redistribution licence was established in these definition originals; do not apply 3DBAG CC BY to EPSG records."
+      },
+      "applicability": "Definition of source-declared CRS/components/axes; does not measure D1 positioning accuracy or qualify a coordinate operation."
+    },
+    {
+      "id": "3dbag-sources.html",
+      "url": "https://docs.3dbag.nl/en/overview/sources/",
+      "status": 200,
+      "finalUrl": "https://docs.3dbag.nl/en/overview/sources/",
+      "contentType": "text/html; charset=utf-8",
+      "acquiredAtUtc": "2026-10-01T01:08:39.152100+00:00",
+      "bytes": 30918,
+      "sha256": "e82612a29c560bca49205d0dcb948b6c11533de1dc425fa03aa6d77185b828eb",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-sources.html",
+      "issuer": "3DBAG by TU Delft 3D geoinformation research group and 3DGI",
+      "documentVersion": {
+        "pageVersion": null,
+        "snapshotAtUtc": "2026-10-01T01:08:39.152100+00:00",
+        "versionBinding": "Current documentation snapshot, not bound to retained D1 API release."
+      },
+      "licence": {
+        "state": "documented",
+        "licence": "CC BY 4.0",
+        "evidenceId": "3dbag-copyright.html",
+        "licenceUrl": "http://creativecommons.org/licenses/by/4.0/",
+        "attribution": "© 3DBAG by tudelft3d and 3DGI",
+        "conditions": "Credit, licence link and indication of changes. Digital maps link copyright page at bottom right. Separately marked third-party content retains its own terms."
+      },
+      "applicability": "Issuer explanations of delivery, attributes, releases and general methodology; not independent object controls."
+    },
+    {
+      "id": "3dbag-release-notes.html",
+      "url": "https://docs.3dbag.nl/en/overview/release_notes/",
+      "status": 200,
+      "finalUrl": "https://docs.3dbag.nl/en/overview/release_notes/",
+      "contentType": "text/html; charset=utf-8",
+      "acquiredAtUtc": "2026-10-01T01:08:38.330384+00:00",
+      "bytes": 64890,
+      "sha256": "f7af6595ee4d95d84c5208ac8422f16ee555178b5c8ce7bf4ffe089a9dae959d",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-release-notes.html",
+      "issuer": "3DBAG by TU Delft 3D geoinformation research group and 3DGI",
+      "documentVersion": {
+        "pageVersion": null,
+        "snapshotAtUtc": "2026-10-01T01:08:38.330384+00:00",
+        "versionBinding": "Current documentation snapshot, not bound to retained D1 API release."
+      },
+      "licence": {
+        "state": "documented",
+        "licence": "CC BY 4.0",
+        "evidenceId": "3dbag-copyright.html",
+        "licenceUrl": "http://creativecommons.org/licenses/by/4.0/",
+        "attribution": "© 3DBAG by tudelft3d and 3DGI",
+        "conditions": "Credit, licence link and indication of changes. Digital maps link copyright page at bottom right. Separately marked third-party content retains its own terms."
+      },
+      "applicability": "Issuer explanations of delivery, attributes, releases and general methodology; not independent object controls."
+    },
+    {
+      "id": "epsg-cs-1054.xml",
+      "url": "https://www.opengis.net/def/cs/EPSG/0/1054",
+      "status": 200,
+      "finalUrl": "https://www.opengis.net/def/cs/EPSG/0/1054",
+      "contentType": null,
+      "acquiredAtUtc": "2026-10-01T01:09:24.231046+00:00",
+      "bytes": 1766,
+      "sha256": "f8ba1344e288e655d51a290ac14a461805704e67a433a97193cd469f50402211",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/epsg-cs-1054.xml",
+      "issuer": "EPSG Geodetic Parameter Dataset / IOGP, distributed by the official OGC definition resolver",
+      "informationSource": "IOGP",
+      "documentVersion": {
+        "authorityCode": "1054",
+        "recordRevisionDate": "2025-01-21",
+        "resolverVersionSegment": "0 (latest), pinned by acquired original hash; EPSG dataset-wide release not supplied"
+      },
+      "licence": {
+        "state": "not_verified",
+        "limitation": "No EPSG redistribution licence was established in these definition originals; do not apply 3DBAG CC BY to EPSG records."
+      },
+      "applicability": "Definition of source-declared CRS/components/axes; does not measure D1 positioning accuracy or qualify a coordinate operation."
+    },
+    {
+      "id": "epsg-cs-6499.xml",
+      "url": "https://www.opengis.net/def/cs/EPSG/0/6499",
+      "status": 200,
+      "finalUrl": "https://www.opengis.net/def/cs/EPSG/0/6499",
+      "contentType": null,
+      "acquiredAtUtc": "2026-10-01T01:09:23.256537+00:00",
+      "bytes": 1184,
+      "sha256": "f5a48f20c4874de960ec2c5a7a720288a10319e9a4a06a8302e5e0c53452b519",
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/epsg-cs-6499.xml",
+      "issuer": "EPSG Geodetic Parameter Dataset / IOGP, distributed by the official OGC definition resolver",
+      "informationSource": "OGP",
+      "documentVersion": {
+        "authorityCode": "6499",
+        "recordRevisionDate": "2006-11-28",
+        "resolverVersionSegment": "0 (latest), pinned by acquired original hash; EPSG dataset-wide release not supplied"
+      },
+      "licence": {
+        "state": "not_verified",
+        "limitation": "No EPSG redistribution licence was established in these definition originals; do not apply 3DBAG CC BY to EPSG records."
+      },
+      "applicability": "Definition of source-declared CRS/components/axes; does not measure D1 positioning accuracy or qualify a coordinate operation."
+    }
+  ],
+  "failedRequests": [
+    {
+      "id": "epsg-28992.xml",
+      "url": "https://www.opengis.net/def/crs/EPSG/0/28992?expand=full",
+      "requestedAtUtc": "2026-10-01T01:08:00.175015+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "id": "epsg-5709.xml",
+      "url": "https://www.opengis.net/def/crs/EPSG/0/5709?expand=full",
+      "requestedAtUtc": "2026-10-01T01:08:00.175015+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    }
+  ],
+  "observations": [
+    {
+      "id": "d1-source-declaration",
+      "state": "supported_declared_reference",
+      "evidence": [
+        {
+          "sourceId": "D1/original.json",
+          "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+          "locator": "/metadata/metadata/referenceSystem; /metadata/version; /metadata/transform"
+        },
+        {
+          "sourceId": "D1/response.headers",
+          "sha256": "22919e818eaef9c0ef5b0573f64fdc7fc57c536b057066f56aa07abf486fb5f1",
+          "locator": "content-crs and date headers"
+        },
+        {
+          "sourceId": "accepted-native.json",
+          "sha256": "634685e1901b7e247878212262e45bf860942b1863490d7b8b67bda0b210022e",
+          "locator": "/frame; /sourceSha256"
+        },
+        {
+          "sourceId": "3dbag-webservices.html",
+          "sha256": "79f8def3e9b60f24279e0afb7bd03852d3c25afe16a411c5873f4aabb7064aee",
+          "locator": "article #3dbag-api",
+          "quote": "At the moment the only supported CRS is Amersfoort / RD New + NAP height (EPSG:7415)."
+        }
+      ],
+      "facts": {
+        "crs": "EPSG:7415",
+        "cityJsonFormatVersion": "2.0",
+        "apiResponseDate": "2026-09-23T15:21:30Z",
+        "transformScale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      },
+      "limitation": "Format 2.0 is not dataset release; 0.001 m encoded scale is quantization, not a survey error bound. Native artifact still says verticalReferenceState not_interpreted and globalPlacement not_qualified; no artifact is rewritten.",
+      "canonicalMatchState": "not_assessed"
+    },
+    {
+      "id": "compound-crs-and-name",
+      "state": "supported_authority_definition",
+      "evidence": [
+        {
+          "sourceId": "epsg-7415.xml",
+          "sha256": "0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9",
+          "locator": "/gml:CompoundCRS/gml:name; gml:componentReferenceSystem; epsg:CommonMetaData/epsg:alias and epsg:revisionDate"
+        },
+        {
+          "sourceId": "epsg-28992.xml",
+          "sha256": "33f63f22af61ffe5a0d496dd2a35db6d9d2d81465c86d2d5e083de15ed281818",
+          "locator": "/gml:ProjectedCRS/gml:name and epsg:alias"
+        }
+      ],
+      "facts": {
+        "current7415Name": "RD + NAP height",
+        "older7415Alias": "Amersfoort / RD New + NAP height",
+        "components": [
+          "EPSG:28992",
+          "EPSG:5709"
+        ],
+        "revisionDate": "2026-03-18"
+      },
+      "limitation": "Authority says the name changed on request of Dutch authority, prior name used before February 2026. Same code/components support interpretation of the older issuer label; no new transform or accuracy follows.",
+      "canonicalMatchState": "not_assessed"
+    },
+    {
+      "id": "axes-and-units",
+      "state": "supported_authority_definition",
+      "evidence": [
+        {
+          "sourceId": "epsg-28992.xml",
+          "sha256": "33f63f22af61ffe5a0d496dd2a35db6d9d2d81465c86d2d5e083de15ed281818",
+          "locator": "gml:cartesianCS/@xlink:href -> CoordSystem/1054"
+        },
+        {
+          "sourceId": "epsg-cs-1054.xml",
+          "sha256": "f8ba1344e288e655d51a290ac14a461805704e67a433a97193cd469f50402211",
+          "locator": "/gml:CartesianCS/gml:name and ordered gml:axis",
+          "quote": "Cartesian 2D CS. Axes: easting, northing (x,y). Orientations: east, north. UoM: m."
+        },
+        {
+          "sourceId": "epsg-5709.xml",
+          "sha256": "f2dcb2aa46605aadd13c98324fea5aa3f2aa3f09c8eacfd9ad76602848eea435",
+          "locator": "gml:verticalCS/@xlink:href -> CoordSystem/6499"
+        },
+        {
+          "sourceId": "epsg-cs-6499.xml",
+          "sha256": "f5a48f20c4874de960ec2c5a7a720288a10319e9a4a06a8302e5e0c53452b519",
+          "locator": "/gml:VerticalCS/gml:name and gml:axis",
+          "quote": "Vertical CS. Axis: height (H). Orientation: up. UoM: m."
+        }
+      ],
+      "facts": {
+        "coordinateOrder": [
+          "easting (x), east",
+          "northing (y), north",
+          "NAP height (H), up"
+        ],
+        "units": [
+          "metre",
+          "metre",
+          "metre"
+        ],
+        "coordinateSystemRevisions": {
+          "1054": "2025-01-21",
+          "6499": "2006-11-28"
+        }
+      },
+      "limitation": "Definition supports named-frame interpretation and metre units, not the source realization, coordinate epoch or an independent positional error measurement.",
+      "canonicalMatchState": "not_assessed"
+    },
+    {
+      "id": "nap-reference",
+      "state": "supported_named_vertical_reference",
+      "evidence": [
+        {
+          "sourceId": "epsg-5709.xml",
+          "sha256": "f2dcb2aa46605aadd13c98324fea5aa3f2aa3f09c8eacfd9ad76602848eea435",
+          "locator": "gml:name; epsg:alias; gml:verticalDatum/@xlink:href; epsg:revisionDate"
+        },
+        {
+          "sourceId": "3dbag-attributes.html",
+          "sha256": "27d583cc3288d9a5cb1d9efecd8407607cdc9221f34ff16b321249a2674ddcdc",
+          "locator": "article #b3_h_max, generic roof-maximum elevation definition",
+          "quote": "Maximum elevation on roof surface based on reconstructed 3D model in LoD2.2. Given as elevation above sea level (NAP)."
+        }
+      ],
+      "facts": {
+        "verticalCrs": "EPSG:5709 NAP height",
+        "alias": "Normaal Amsterdams Peil height",
+        "verticalDatumReference": "EPSG:5109",
+        "verticalCrsRevision": "2026-01-06"
+      },
+      "limitation": "NAP height is the named vertical coordinate, not an ellipsoidal height. No RDNAPTRANS/grid/geoid version, independent benchmark, epoch or transform residual was supplied or evaluated. Current schema names the generic roof-height field b3_h_max, while retained CityJSON uses b3_h_dak_max; this is named-reference context, not a verified release-specific attribute map.",
+      "canonicalMatchState": "not_assessed"
+    },
+    {
+      "id": "dates-and-release-binding",
+      "state": "partial_dates_release_unknown",
+      "evidence": [
+        {
+          "sourceId": "D1/original.json",
+          "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+          "locator": "/feature/CityObjects/NL.IMBAG.Pand.1655100000500568/attributes/b3_pw_bron; b3_pw_datum; documentdatum; oorspronkelijkbouwjaar"
+        },
+        {
+          "sourceId": "D1/response.headers",
+          "sha256": "22919e818eaef9c0ef5b0573f64fdc7fc57c536b057066f56aa07abf486fb5f1",
+          "locator": "date; absence of ETag and Last-Modified headers"
+        },
+        {
+          "sourceId": "D1/manifest.json",
+          "sha256": "1cf9ebb88700669c3eb64e6b7a55c5edd7a176c44d7ecce63b188a0767250b71",
+          "locator": "/assets/0/sourceVersion and reference/sourceDate"
+        },
+        {
+          "sourceId": "3dbag-attributes.html",
+          "sha256": "27d583cc3288d9a5cb1d9efecd8407607cdc9221f34ff16b321249a2674ddcdc",
+          "locator": "article #b3_pw_datum",
+          "quote": "Acquisition year of the point cloud. This is determined by looking at the GPS timestamps on the AHN points for the building. In case good GPS timestamps are not available the file creation date of the point cloud file is used."
+        },
+        {
+          "sourceId": "3dbag-release-notes.html",
+          "sha256": "f7af6595ee4d95d84c5208ac8422f16ee555178b5c8ce7bf4ffe089a9dae959d",
+          "locator": "article #20250903; #20241216; #20240228-beta"
+        }
+      ],
+      "facts": {
+        "pointCloudSource": "ahn5",
+        "pointCloudAcquisitionYear": 2024,
+        "bagDocumentDate": "1978-07-11",
+        "originalConstructionYear": 1970,
+        "datasetRelease": null,
+        "documentedReleaseExamples": {
+          "2025.09.03": "Release date 09 September 2025",
+          "2024.12.16": "Release date 20 December 2024; introduced AHN5 input"
+        }
+      },
+      "limitation": "2024 is a point-cloud acquisition-year attribute with documented fallback, not dataset release, exact survey date or coordinate epoch. BAG administrative dates and HTTP retrieval date have different roles. Current docs/release features cannot bind this unversioned API response to one release or source/software lineage.",
+      "canonicalMatchState": "not_assessed"
+    },
+    {
+      "id": "per-object-reconstruction-fit",
+      "state": "supported_issuer_metric_not_independent_accuracy",
+      "evidence": [
+        {
+          "sourceId": "D1/original.json",
+          "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+          "locator": "/feature/CityObjects/NL.IMBAG.Pand.1655100000500568/attributes/b3_rmse_lod12; b3_rmse_lod13; b3_rmse_lod22"
+        },
+        {
+          "sourceId": "3dbag-attributes.html",
+          "sha256": "27d583cc3288d9a5cb1d9efecd8407607cdc9221f34ff16b321249a2674ddcdc",
+          "locator": "article #b3_rmse_lod22",
+          "quote": "Root Mean Square Error of the 3D distances between the point cloud and the LoD2.2 model. Unit: metre."
+        },
+        {
+          "sourceId": "3dbag-release-notes.html",
+          "sha256": "f7af6595ee4d95d84c5208ac8422f16ee555178b5c8ce7bf4ffe089a9dae959d",
+          "locator": "article #20241216 / Changed-Fixed",
+          "quote": "attributes are now calculated using all the AHN building points, instead of only roofplane points."
+        }
+      ],
+      "facts": {
+        "b3_rmse_lod12": 1.3502659797668457,
+        "b3_rmse_lod13": 0.799394965171814,
+        "b3_rmse_lod22": 0.08128024637699127,
+        "unit": "metre"
+      },
+      "limitation": "Source-reported reconstruction-to-input-cloud fit. No independent surveyed checkpoints, signed error/residual vectors, confidence interval, absolute horizontal/vertical error or calibration of systematic bias is supplied. Release-specific all-building-points change is methodology context, not a verified software/version binding for D1.",
+      "canonicalMatchState": "not_assessed"
+    },
+    {
+      "id": "coverage-and-quality",
+      "state": "supported_source_indicators_with_unresolved_doc_mapping",
+      "evidence": [
+        {
+          "sourceId": "D1/original.json",
+          "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+          "locator": "/feature/CityObjects/NL.IMBAG.Pand.1655100000500568/attributes"
+        },
+        {
+          "sourceId": "3dbag-attributes.html",
+          "sha256": "27d583cc3288d9a5cb1d9efecd8407607cdc9221f34ff16b321249a2674ddcdc",
+          "locator": "article #b3_kwaliteitsindicator; #b3_pw_selectie_reden; #b3_pw_onvoldoende; #b3_puntdichtheid_ahn5; #b3_nodata_fractie_ahn5; #b3_val3dity_lod22"
+        }
+      ],
+      "facts": {
+        "b3_kwaliteitsindicator": true,
+        "b3_bag_bag_overlap": null,
+        "b3_pw_onvoldoende": false,
+        "b3_pw_selectie_reden": "PREFERRED_AND_LATEST",
+        "b3_puntdichtheid_ahn5": 17.53691291809082,
+        "b3_nodata_fractie_ahn5": 0.0016750418581068516,
+        "b3_nodata_radius_ahn5": 0.0,
+        "b3_val3dity_lod22": "[]",
+        "b3_bouwlagen": null
+      },
+      "limitation": "PREFERRED_AND_LATEST means good coverage and no newer cloud with good coverage in the issuer selection context, not current-as-of-2026 building state. Quality flag true is source-supplied: documentation formula requires overlap == 0 while this field is null, with no null-handling rule shown. Do not recalculate/coerce null to zero. The AHN5 no-data description mistakenly names AHN4; preserve key/value and flag documentation ambiguity. Empty val3dity error-string is source structural indicator, not accuracy; null floors remains null.",
+      "canonicalMatchState": "not_assessed"
+    },
+    {
+      "id": "general-input-and-aggregate-quality",
+      "state": "dataset_context_only",
+      "evidence": [
+        {
+          "sourceId": "3dbag-sources.html",
+          "sha256": "e82612a29c560bca49205d0dcb948b6c11533de1dc425fa03aa6d77185b828eb",
+          "locator": "article #bag",
+          "quote": "the data positional data accuracy is 30 cm."
+        },
+        {
+          "sourceId": "3dbag-sources.html",
+          "sha256": "e82612a29c560bca49205d0dcb948b6c11533de1dc425fa03aa6d77185b828eb",
+          "locator": "article #ahn",
+          "quote": "The quality attributes that we calculate for and assign to each model provide an indication of this quality."
+        },
+        {
+          "sourceId": "3dbag-release-notes.html",
+          "sha256": "f7af6595ee4d95d84c5208ac8422f16ee555178b5c8ce7bf4ffe089a9dae959d",
+          "locator": "article #20230622-beta / Changed-Fixed",
+          "quote": "Improved geometric validity. Now 99.15% of buildings are geometrically valid."
+        }
+      ],
+      "facts": {
+        "issuerGeneralBagPositionClaim": "30 cm",
+        "historicalDatasetGeometricValidityClaim": "99.15% for 2023.06.22 release"
+      },
+      "limitation": "Neither is an independently measured D1-building positional accuracy. General sources page still describes AHN3/AHN4 and has duplicated AHN4 date wording; retained D1 and newer release notes explicitly use AHN5. Treat it as partially stale methodology, not exact D1 lineage or survey specification.",
+      "canonicalMatchState": "not_assessed"
+    },
+    {
+      "id": "remaining-reference-qualification",
+      "state": "independent_accuracy_and_transform_not_established",
+      "evidence": [
+        {
+          "sourceId": "D1/original.json",
+          "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+          "locator": "whole retained response; metadata plus object attributes"
+        },
+        {
+          "sourceId": "3dbag-sources.html",
+          "sha256": "e82612a29c560bca49205d0dcb948b6c11533de1dc425fa03aa6d77185b828eb",
+          "locator": "article #data-sources, #bag, #ahn"
+        },
+        {
+          "sourceId": "3dbag-release-notes.html",
+          "sha256": "f7af6595ee4d95d84c5208ac8422f16ee555178b5c8ce7bf4ffe089a9dae959d",
+          "locator": "article release history; separate quality dashboard/metadata links"
+        }
+      ],
+      "facts": {
+        "namedFrameInspection": "supported by declaration plus authority interpretation",
+        "sameFrameStructuralChecks": "supported at accepted validators stated scope; no rerun",
+        "independentObjectControls": "not_supplied_in_examined_evidence",
+        "surveyedMeasurementAccuracy": "not_qualified",
+        "globalPlacementOrEcef": "not_qualified",
+        "indianPlacement": "not_qualified"
+      },
+      "limitation": "Missing exact API-to-release/source lineage binding; independent known-coordinate/height controls for this object with provenance, reference/epoch and measured residuals; and separately qualified coordinate-operation/grid/geoid/version/control evidence for any global transform. Generic dashboard and release metadata cannot by themselves bind D1 or create controls. No control points, replacement building or expected accuracy generated.",
+      "canonicalMatchState": "not_assessed"
+    }
+  ],
+  "privateChecks": [
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/acquisition.json",
+      "bytes": 5905,
+      "sha256": "bffa3591fa6344c931196550772e558c909b2ebecaaa3dd8a37ac939e1ee2964",
+      "kind": "acquisition receipt"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-attributes.html.txt",
+      "bytes": 32557,
+      "sha256": "e049e0f5bb49680636318f133fc394745a06b9b9ffa6d8bd745724615170c600",
+      "kind": "separate normalized main-article derivative, not replacement original"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-copyright.html.txt",
+      "bytes": 2137,
+      "sha256": "2b4913284f49791ff1efe2601f72727869dede8d5673372133968f2c1085baef",
+      "kind": "separate normalized main-article derivative, not replacement original"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-release-notes.html.txt",
+      "bytes": 25021,
+      "sha256": "05cdb1b3d56c9b39eaacd667b13589132eb6a3cb7441699cd97788b7edd5ed9c",
+      "kind": "separate normalized main-article derivative, not replacement original"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-sources.html.txt",
+      "bytes": 3668,
+      "sha256": "afbfd9935cd7607bc8e9987ec6e0e038b1454e4b3dddb54d3bb85e6579a808a1",
+      "kind": "separate normalized main-article derivative, not replacement original"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-webservices.html.txt",
+      "bytes": 5884,
+      "sha256": "55ebd00708fd8729d8a4c2fef2026c53e30e1e2e5240f68e5fb5dffa2d050cd5",
+      "kind": "separate normalized main-article derivative, not replacement original"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/validate_reference.py",
+      "bytes": 6473,
+      "sha256": "aa4f508588921a1f1db98e4a7c5aa293ea3330cbf6d4f05702b5721a0059f0e8",
+      "kind": "validation script"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/validation.json",
+      "bytes": 3055,
+      "sha256": "c12d3c222966ee6cbd9ed8d436ef235b471cf7a82e7705ca94302c183df82d9a",
+      "kind": "final passing validation receipt"
+    }
+  ],
+  "execution": {
+    "suppliedPermissions": {
+      "approval_policy": "never",
+      "sandbox_mode": "danger-full-access"
+    },
+    "requestedModel": "gpt-6.1-sol",
+    "requestedEffort": "high",
+    "requestedServiceTier": "default/standard",
+    "actualModel": null,
+    "actualEffort": null,
+    "actualServiceTier": null,
+    "actualSettingsObservation": "Actual turn model, effort and service tier unexposed.",
+    "servicesOrNativeValidatorsRun": false,
+    "sourceReplaced": false,
+    "generatedControls": false,
+    "registryChanges": false,
+    "trainingLabels": false,
+    "sourceIndexCatalogueOwnership": "lead after acceptance",
+    "ownedProcessesRemaining": false
+  }
+}
