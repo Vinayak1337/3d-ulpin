@@ -22923,6 +22923,173 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/sources/{sourceId}/pages": {
+      "get": {
+        "operationId": "GET_api_v1_sources_sourceId_pages",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 25
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 399,
+              "default": 0
+            }
+          },
+          {
+            "name": "sha256",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "revision",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_sources_sourceId_pages_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Inspect exact retained PDF page frames; calibration remains unavailable",
+        "tags": [
+          "Private document pages"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/document-pages.controller.ts",
+        "x-batch": "DOC-PAGES-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/sources/{sourceId}/pages/{page}/raster": {
+      "get": {
+        "operationId": "GET_api_v1_sources_sourceId_pages_page_raster",
+        "parameters": [
+          {
+            "name": "sha256",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "revision",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 400
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "description": "Canonical result",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Render one explicitly selected private PDF page from its unchanged original",
+        "tags": [
+          "Private document pages"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/document-pages.controller.ts",
+        "x-batch": "DOC-PAGES-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/spatial-datasets/search": {
       "get": {
         "operationId": "GET_api_v1_spatial_datasets_search",
@@ -166286,6 +166453,300 @@
         "required": [
           "data",
           "meta"
+        ],
+        "additionalProperties": false
+      },
+      "GET_sources_sourceId_pages_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "document-pages/1"
+            ]
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "caseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sourceRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "sourceSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "sourceBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 16777216
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "revision": {
+            "type": "string",
+            "pattern": "^[1-9]\\d*$"
+          },
+          "pageCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 400
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 399
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "pages": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 400
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "sourceLabel": {
+                  "nullable": true,
+                  "type": "string",
+                  "maxLength": 200
+                },
+                "frame": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "pdf_display_page_top_left_points"
+                      ]
+                    },
+                    "rotation": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 359
+                    },
+                    "width": {
+                      "type": "number",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 10000000
+                    },
+                    "height": {
+                      "type": "number",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 10000000
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "rotation",
+                    "width",
+                    "height"
+                  ],
+                  "additionalProperties": false
+                },
+                "mediaBox": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": -10000000,
+                        "maximum": 10000000
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -10000000,
+                        "maximum": 10000000
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -10000000,
+                        "maximum": 10000000
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -10000000,
+                        "maximum": 10000000
+                      }
+                    ]
+                  },
+                  "minItems": 4,
+                  "maxItems": 4
+                },
+                "cropBox": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": -10000000,
+                        "maximum": 10000000
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -10000000,
+                        "maximum": 10000000
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -10000000,
+                        "maximum": 10000000
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -10000000,
+                        "maximum": 10000000
+                      }
+                    ]
+                  },
+                  "minItems": 4,
+                  "maxItems": 4
+                },
+                "boxConvention": {
+                  "type": "string",
+                  "enum": [
+                    "pymupdf_page_rectangles/1"
+                  ]
+                },
+                "renderSupport": {
+                  "type": "string",
+                  "enum": [
+                    "supported",
+                    "unsupported"
+                  ]
+                },
+                "url": {
+                  "nullable": true,
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "locator": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "pdf_page"
+                      ]
+                    },
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 400
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "page"
+                  ],
+                  "additionalProperties": false
+                },
+                "calibration": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    null
+                  ]
+                }
+              },
+              "required": [
+                "page",
+                "label",
+                "sourceLabel",
+                "frame",
+                "mediaBox",
+                "cropBox",
+                "boxConvention",
+                "renderSupport",
+                "url",
+                "locator",
+                "calibration"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "anchors": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "locator": {
+                  "type": "string",
+                  "pattern": "^page:[1-9]\\d*$"
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 400
+                },
+                "region": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    null
+                  ]
+                }
+              },
+              "required": [
+                "locator",
+                "page",
+                "region"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "version",
+          "sourceId",
+          "caseId",
+          "caseRevision",
+          "sourceRevision",
+          "sourceSha256",
+          "sourceBytes",
+          "name",
+          "revision",
+          "pageCount",
+          "offset",
+          "limit",
+          "hasMore",
+          "pages",
+          "anchors"
         ],
         "additionalProperties": false
       },

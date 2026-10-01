@@ -224,6 +224,7 @@ export * from './gis-quarantine';
 export * from './registry-metadata';
 export * from './building-registry-report';
 export * from './document-association';
+export * from './document-pages';
 export * from './registry-document-evidence';
 export * from './registry-cityjson-draft';
 export * from './registry-cityjson-validation';

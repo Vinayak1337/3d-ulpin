@@ -1,5 +1,7 @@
 # Project status — 1 October 2026
 
+Latest: PDF pages are integrated/reviewed with nine focused checks and backend/client typechecks passing; published API 209 operations/243 schemas. Real HTTP remains unrun. The image owner now receives private PNG/JPEG original inspection; glTF's returned local reader receives focused Astra review. IFC API wiring, KML/KMZ and DXF correction continue independently. These five assignments advance code/accepted local evidence without starting Docker or reviving completed models/reviews.
+
 Current lanes: IFC API/job implementation; PDF source-access/process review; KML/KMZ reader; glTF/GLB reader; DXF's one codepage-provenance correction. DXF review is complete with one P2 and its original implementation owner receives that fix; no duplicate review campaign. Unknown declared encodings must not be labelled source-selected cp1252. Docker runtime remains unavailable; no API persistence or release completion is claimed.
 
 Latest callback: PDF page code `8bd7419` / handoff `4f81f09` is ready for [focused Astra review](DOC_PAGES_01_REVIEW.md), with primary/delivery/code/artifact pins matched by lead. Local USGS page metadata/rendering and focused controls are reported passing; no real HTTP/DB journey occurred. PDF owner retains correction ownership and stops; IFC canonical API wiring, KML/glTF readers and DXF review continue independently. Five lanes remain allocated; completed IFC review is not repeated.
