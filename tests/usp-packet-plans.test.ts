@@ -28,6 +28,14 @@ class ControlDb {
   state: State = { plans: [], confirmations: [], executions: [], receipts: [], packets: [], events: [], streams: [] };
   queries: string[] = []; connects = 0; releases = 0; writes = 0; activeConnections = 0; maxConnections = 8;
   archived = false; expired = false; failEvent = false; wrongSite = false;
+  extraSources: any[] = []; capturedExtraSources: any[] = [];
+  caseLocks = new Set<string>(); archivedCases = new Set<string>(); pendingArchives = new Set<string>();
+  afterCaseLock?: () => void;
+  attemptArchive(id: string) {
+    if (this.caseLocks.has(id)) { this.pendingArchives.add(id); return false; }
+    this.commitArchive(id); return true;
+  }
+  commitArchive(id: string) { if (id === caseId) this.archived = true; else this.archivedCases.add(id); }
   source: any = { id: sourceId, revision: 1, case_id: caseId, sha256: sha256(original), bytes: original.length,
     object_key: 'technical-control-original', profile: 'csv-reference-v2', inspection: { referenceParts: [
       { locator: 'CSV row 2', text: literal }, { locator: 'CSV row 3', text: 'CONTROL_B,NEVER_B' },
@@ -66,6 +74,7 @@ class ControlDb {
   manifest(ctx: RequestContext) { return UspSnapshotManifestSchema.parse({ schemaVersion: 'usp/1', id: manifestId,
     digest: this.scope.snapshotDigest, scope: this.scope, capturedAt: '2026-10-02T00:00:00.000Z',
     selection: { kind: 'targets', pins: [target] }, members: [
+      ...this.capturedExtraSources.map(s => ({ pin: pin('source_revision', s.id), bodySha256: fingerprint(s), bodyRef: `control-source-${s.id}`, authority: 'source' })),
       ...this.sharedBodies.map(b => ({ pin: b.body.pin, bodySha256: fingerprint(b.body), bodyRef: `control-${b.namespace}`, authority: b.namespace })),
       { pin: target, bodySha256: fingerprint(this.capturedRecord), bodyRef: 'control-record', authority: 'registry' },
       { pin: pin('source_revision', sourceId), bodySha256: fingerprint(this.capturedSource), bodyRef: 'control-source', authority: 'source' },
@@ -81,7 +90,13 @@ class ControlDb {
     return { release: () => { this.releases++; this.activeConnections--; }, query: async (q: string, v: any[] = []) => {
       if (q === 'BEGIN') baseline = structuredClone(this.state);
       if (q === 'ROLLBACK') this.state = baseline!;
-      return this.query(q, v);
+      const result = await this.query(q, v);
+      if (q === 'COMMIT' || q === 'ROLLBACK') {
+        this.caseLocks.clear();
+        for (const id of this.pendingArchives) this.commitArchive(id);
+        this.pendingArchives.clear();
+      }
+      return result;
     } } as unknown as PoolClient;
   } } as unknown as Pool;
   async query(sql: string, v: any[] = []) {
@@ -89,7 +104,18 @@ class ControlDb {
     const result = (rows: any[] = []) => ({ rows, rowCount: rows.length });
     if (q === 'BEGIN' || q === 'ROLLBACK') return result();
     if (q === 'COMMIT' || q.includes('pg_advisory_xact_lock')) return result();
-    if (q.startsWith('WITH RECURSIVE evidence_sources')) return result([{ id: caseId }]);
+    if (q.startsWith('WITH RECURSIVE evidence_sources')) {
+      const ids = [...new Set([caseId, ...this.extraSources.map(s => s.case_id)])].sort();
+      for (const id of ids) this.caseLocks.add(id);
+      return result(ids.map(id => ({ id })));
+    }
+    if (q.startsWith('SELECT id FROM cases WHERE id=ANY')) {
+      for (const id of v[0]) this.caseLocks.add(id);
+      this.afterCaseLock?.();
+      return result(v[0].map((id: string) => ({ id })));
+    }
+    if (q.startsWith('SELECT id FROM sources WHERE id=ANY')) return result([this.source, ...this.extraSources]
+      .filter(s => v[0].includes(s.id)).map(s => ({ id: s.id })));
     if (q.startsWith('SELECT id FROM registry_sites')) return result([{ id: siteId }]);
     if (q.startsWith('SELECT body FROM usp_snapshots')) return result(v[0] === manifestId && (v[1] === this.scope.snapshotDigest || v[1] === siteId && v[2] === this.scope.snapshotDigest)
       ? [{ body: this.manifest(this.ctx) }] : []);
@@ -99,15 +125,15 @@ class ControlDb {
       if (quoted && !q.includes('object_id=')) return result((ns === 'source_revision' ? [this.capturedSource]
         : this.sharedBodies.filter(b => b.namespace === ns).map(b => b.body)).map(body => ({ body, body_sha256: fingerprint(body) })));
       const shared = this.sharedBodies.find(b => b.namespace === ns && b.body.pin.ref.id === id && b.body.pin.revision === revision)?.body;
-      const body = ns === 'source_revision' && id === sourceId && revision === 1 ? this.capturedSource
+      const body = ns === 'source_revision' && revision === 1 ? id === sourceId ? this.capturedSource : this.capturedExtraSources.find(s => s.id === id)
         : ns === 'registry_record' && id === targetId && revision === 1 ? this.capturedRecord : shared;
       return result(body ? [{ body, body_sha256: fingerprint(body) }] : []);
     }
-    if (q.startsWith('SELECT * FROM sources')) return result(v[0] === sourceId ? [this.source] : []);
+    if (q.startsWith('SELECT * FROM sources')) return result([this.source, ...this.extraSources].filter(s => s.id === v[0]));
     if (q.startsWith('SELECT revision FROM usp_declaration_revisions')) return result([{ revision: this.declarationRevision }]);
     if (q.startsWith('SELECT body FROM usp_declaration_revisions')) return result();
-    if (q.startsWith('SELECT site_id,archived FROM cases')) return result(v[0] === caseId
-      ? [{ site_id: this.wrongSite ? uuid(99) : siteId, archived: this.archived }] : []);
+    if (q.startsWith('SELECT site_id,archived FROM cases')) return result([this.source, ...this.extraSources].some(s => s.case_id === v[0])
+      ? [{ site_id: this.wrongSite ? uuid(99) : siteId, archived: v[0] === caseId ? this.archived : this.archivedCases.has(v[0]) }] : []);
     if (q.startsWith("SELECT body->'parts'")) return result();
     if (q.startsWith('SELECT r.id,r.revision')) return result(v[1].includes(targetId) ? [this.record] : []);
     if (q.startsWith('SELECT alias FROM registry_aliases') || q.startsWith('SELECT successor_id FROM usp_project_lineage')) return result();
@@ -320,3 +346,102 @@ test('unchanged retained LGD reference provides exact literal parts without any 
   assert.equal(selectExactPart(parts, { kind: 'verbatim', locator: 'CSV row 6' }), null);
   assert.equal(sha256(await readFile(new URL('../fixtures/usp/D4/gf0-structured-codes-v1/lgd-districts.csv', import.meta.url))), sha256(bytes));
 });
+
+// Reuse the reviewer's two query-boundary schedules, with the archive writer now
+// respecting case FOR SHARE locks. Original probe is preserved byte-for-byte at
+// E:/BhuAayam-data/task-data/desktop-packet-plans-review/historical-read-archive.probe.test.ts
+// SHA256 9c3e8cceafe1b448b81eae97d6f3397123defe8292adad1d6f48e72fd969cff4.
+function archiveDuringFinalPass(db: ControlDb, finalPass: number) {
+  const originalQuery = db.query.bind(db);
+  let caseReads = 0, armed = false, attempted = false, committedInside = false;
+  const trace: string[] = [];
+  db.query = async (sql: string, values: any[] = []) => {
+    const q = sql.replace(/\s+/g, ' ').trim(); trace.push(q);
+    if (armed && !attempted && q.startsWith('SELECT * FROM sources')) {
+      attempted = true; committedInside = db.attemptArchive(caseId);
+    }
+    const result = await originalQuery(sql, values);
+    if (q.startsWith('SELECT site_id,archived FROM cases') && ++caseReads === finalPass) armed = true;
+    return result;
+  };
+  return { trace, attempted: () => attempted, committedInside: () => committedInside, caseReads: () => caseReads };
+}
+function assertDisclosureLockOrder(trace: string[]) {
+  const cases = trace.findIndex(q => q.startsWith('SELECT id FROM cases WHERE id=ANY') && q.endsWith('FOR SHARE'));
+  const recording = trace.findIndex(q => q.includes("hashtextextended('physical-area-recording'"));
+  const sources = trace.findIndex(q => q.startsWith('SELECT id FROM sources WHERE id=ANY') && q.endsWith('FOR SHARE'));
+  const target = trace.findIndex(q => q.includes('FROM registry_records') && q.endsWith('FOR SHARE OF r'));
+  assert(cases >= 0 && recording > cases && sources > recording && target > sources);
+}
+test('P2 reviewer plan schedule: archive waits for protected disclosure, then a subsequent historical read denies with zero writes', async () => withDb(async (db, ctx) => {
+  const { plan } = await confirmed(db, ctx), writes = db.writes;
+  db.source.revision = 2; db.record.revision = 2; db.expired = true;
+  const probe = archiveDuringFinalPass(db, 2);
+  const view = await readPacketPlan(ctx, { planId: plan.planId, version: 1 });
+  assert.equal(view.plan.planSha256, plan.planSha256); assert(probe.attempted()); assert(!probe.committedInside());
+  assert.equal(probe.caseReads(), 2); assertDisclosureLockOrder(probe.trace);
+  assert(db.archived); // The queued archive commits only after the protected read transaction commits.
+  await assert.rejects(() => readPacketPlan(ctx, { planId: plan.planId, version: 1 }),
+    (e: any) => e.status === 403 && e.code === 'DECLARATION_SOURCE_DENIED');
+  assert.equal(db.writes, writes); assert.equal(db.puts, 0);
+}));
+test('P2 reviewer post-object schedule: packet authorization protects the final boundary and prior object-gap revocation denies bytes', async () => withDb(async (db, ctx) => {
+  const { execute, plan } = await confirmed(db, ctx), result = await executePacketPlan(ctx, execute, db.io);
+  const writes = db.writes, puts = db.puts, probe = archiveDuringFinalPass(db, 4);
+  const read: PacketPlanIo['read'] = async key => {
+    assert.equal(db.activeConnections, 0); assert.equal(db.caseLocks.size, 0);
+    return db.io.read(key);
+  };
+  const download = await readPacket0(ctx, result.packet.packetId, read);
+  assert.equal(sha256(download.bytes), result.packet.artifact.sha256);
+  assert(probe.attempted()); assert(!probe.committedInside()); assert.equal(probe.caseReads(), 4);
+  assertDisclosureLockOrder(probe.trace); assert(db.archived);
+  await assert.rejects(() => readPacket0(ctx, result.packet.packetId, read), (e: any) => e.status === 403);
+  db.archived = false;
+  await assert.rejects(() => readPacket0(ctx, result.packet.packetId, async key => {
+    assert.equal(db.activeConnections, 0); const bytes = await db.io.read(key); db.archived = true; return bytes;
+  }), (e: any) => e.status === 403 && e.code === 'DECLARATION_SOURCE_DENIED');
+  assert.equal(db.writes, writes); assert.equal(db.puts, puts);
+  assert.equal(db.state.plans[0].body.planSha256, plan.planSha256);
+}));
+test('protected historical closure covers retained and current copied-source cases and rechecks changed discovery', async () => withDb(async (db, ctx) => {
+  const oldParent = { ...structuredClone(db.source), id: uuid(70), case_id: uuid(80), object_key: 'retained-parent', inspection: {} };
+  const newParent = { ...structuredClone(oldParent), id: uuid(71), case_id: uuid(81), object_key: 'current-parent' };
+  db.extraSources = [oldParent, newParent]; db.capturedExtraSources = structuredClone(db.extraSources);
+  const copied = (p: typeof oldParent) => ({ caseId: p.case_id, sourceRevisionId: p.id, sourceHash: p.sha256, sourceRevision: p.revision });
+  db.source.inspection.copiedFrom = copied(oldParent); db.capturedSource = structuredClone(db.source);
+  const { plan } = await confirmed(db, ctx), writes = db.writes;
+  db.source.revision = 2; db.source.inspection.copiedFrom = copied(newParent);
+  const query = db.query.bind(db), locked: string[][] = [];
+  db.query = async (sql, values = []) => {
+    if (sql.startsWith('SELECT id FROM cases WHERE id=ANY')) locked.push(values[0]);
+    return query(sql, values);
+  };
+  assert.equal((await readPacketPlan(ctx, { planId: plan.planId, version: 1 })).plan.planSha256, plan.planSha256);
+  assert.deepEqual(locked[0], [caseId, oldParent.case_id, newParent.case_id].sort());
+  db.archivedCases.add(oldParent.case_id);
+  await assert.rejects(() => readPacketPlan(ctx, { planId: plan.planId, version: 1 }), /lineage is unavailable in this site/);
+  db.archivedCases.clear(); db.archivedCases.add(newParent.case_id);
+  await assert.rejects(() => readPacketPlan(ctx, { planId: plan.planId, version: 1 }), /lineage is unavailable in this site/);
+  db.archivedCases.clear(); db.source.inspection.copiedFrom = copied(oldParent);
+  db.afterCaseLock = () => { db.source.inspection.copiedFrom = copied(newParent); };
+  await assert.rejects(() => readPacketPlan(ctx, { planId: plan.planId, version: 1 }), /authorization dependencies changed/);
+  assert.equal(db.writes, writes);
+}));
+test('accepted shared consent case is protected during historical disclosure and current revocation denies the saved plan', async () => withDb(async (db, ctx) => {
+  const declaration = db.enableShared(), consent = { ...structuredClone(db.source), id: uuid(72), case_id: uuid(82), object_key: 'shared-consent-original' };
+  db.extraSources = [consent]; db.capturedExtraSources = [structuredClone(consent)];
+  const body = db.sharedBodies.find(b => b.namespace === 'declaration')!.body;
+  body.review = { ...body.review, consentEvidence: [...body.review.consentEvidence, {
+    pointer: { ...pointer('CSV row 2'), sourceRevision: pin('source_revision', consent.id) }, sha256: consent.sha256, bytes: consent.bytes,
+  }] };
+  const i = input(db), plan = await createPacketPlan(ctx, { input: { ...i, purpose: 'declared_share', entries: [{ ...i.entries[0],
+    pointer: { ...i.entries[0].pointer, origin: 'inherited' }, review: { kind: 'shared', declaration, validAt: '2026-10-02' } }] },
+    guard: { mode: 'create', requestKey: 'shared-private-case' } }, db.io);
+  const writes = db.writes;
+  db.afterCaseLock = () => assert(db.caseLocks.has(caseId) && db.caseLocks.has(consent.case_id));
+  assert.equal((await readPacketPlan(ctx, { planId: plan.planId, version: 1 })).plan.planSha256, plan.planSha256);
+  db.archivedCases.add(consent.case_id);
+  await assert.rejects(() => readPacketPlan(ctx, { planId: plan.planId, version: 1 }), (e: any) => e.status === 403);
+  assert.equal(db.writes, writes);
+}));
