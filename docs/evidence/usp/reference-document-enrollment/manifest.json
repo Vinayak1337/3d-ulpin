@@ -1,0 +1,889 @@
+{
+  "schemaVersion": "reference-document-enrollment-report/1",
+  "task": "DATA-REF-02",
+  "status": "runtime_evidence_pending_lead_acceptance",
+  "baseAndServedCommit": "64dc4e7fc7f553625361f15ffd46e2cabd16b90c",
+  "preparedAtUtc": "2026-10-01T11:45:08.336324+00:00",
+  "privateRoot": "E:/BhuAayam-data/task-data/desktop-reference-document-enrollment",
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "verificationReceipt": {
+    "path": "E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/verification.json",
+    "sha256": "dcc059a1bf2aebb528dd3a600d2e8984cad98a03a6151d3f93b1dbcefb975ce5"
+  },
+  "retainedAdmissionReceipt": {
+    "path": "E:/BhuAayam-data/task-data/desktop-cityjson-admission-runtime/verification.json",
+    "sha256": "e1038efa420e9606d8736cc40e46b4083829d90aa489a5ef37ad55f7516bd9ef"
+  },
+  "enrollments": [
+    {
+      "id": "epsg7415",
+      "caseId": "18d2aba5-35aa-4db1-9432-d6552d3bdcfb",
+      "sourceId": "0bb1289a-a087-4b33-9590-4e693ddaa23b",
+      "jobId": "b15e790a-65c8-4920-ba59-608a7cd25204",
+      "sourceSha256": "0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9",
+      "resultSha256": "76aeb8d859c59e4af3d80eadaec3517c0bdee06b89a4a9fe8529a53a0021930c",
+      "parts": 31,
+      "pages": 2,
+      "selectedParts": [
+        {
+          "id": "4d6affbc-df75-4c40-a35c-4171941a70b3",
+          "sourceId": "0bb1289a-a087-4b33-9590-4e693ddaa23b",
+          "sourceRevision": 1,
+          "sourceSha256": "0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9",
+          "text": "  <gml:name>RD + NAP height</gml:name>",
+          "sha256": "e04614fa28f72b85922d58a35a733218a6bd83365a09ec5142eab9d4d5512df7",
+          "locator": {
+            "label": "line 26",
+            "line": 26,
+            "unitId": "68e8e3ff-6cfa-46fa-8a9d-c52bcaf13e0c",
+            "unitSha256": "e04614fa28f72b85922d58a35a733218a6bd83365a09ec5142eab9d4d5512df7",
+            "segmentIndex": 0,
+            "segmentCount": 1,
+            "characterStart": 0,
+            "characterEnd": 38
+          },
+          "method": "native_text",
+          "apiPage": 1,
+          "pageIndex": 0
+        },
+        {
+          "id": "8f987d25-35f4-440e-a049-d813b11d7799",
+          "sourceId": "0bb1289a-a087-4b33-9590-4e693ddaa23b",
+          "sourceRevision": 1,
+          "sourceSha256": "0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9",
+          "text": "  <gml:componentReferenceSystem xlink:href=\"https://epsg.org/api/v1/CoordRefSystem/28992/export?format=gml\" />",
+          "sha256": "e0116cae51c1bea9d334595762b4fedef90ab02dfa6e6686318e6a35acda7d23",
+          "locator": {
+            "label": "line 29",
+            "line": 29,
+            "unitId": "68e5dcd2-e351-403c-9577-74d5068ee257",
+            "unitSha256": "e0116cae51c1bea9d334595762b4fedef90ab02dfa6e6686318e6a35acda7d23",
+            "segmentIndex": 0,
+            "segmentCount": 1,
+            "characterStart": 0,
+            "characterEnd": 110
+          },
+          "method": "native_text",
+          "apiPage": 1,
+          "pageIndex": 3
+        },
+        {
+          "id": "37beeb6b-9192-4cec-ba10-619d2480bbd8",
+          "sourceId": "0bb1289a-a087-4b33-9590-4e693ddaa23b",
+          "sourceRevision": 1,
+          "sourceSha256": "0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9",
+          "text": "  <gml:componentReferenceSystem xlink:href=\"https://epsg.org/api/v1/CoordRefSystem/5709/export?format=gml\" />",
+          "sha256": "f93ddb46d92b8f53ebac2c998857b6327d022fa913ff70567e2b9887fc2b0559",
+          "locator": {
+            "label": "line 30",
+            "line": 30,
+            "unitId": "01f38068-511f-4cb7-a3b2-35af89104c7b",
+            "unitSha256": "f93ddb46d92b8f53ebac2c998857b6327d022fa913ff70567e2b9887fc2b0559",
+            "segmentIndex": 0,
+            "segmentCount": 1,
+            "characterStart": 0,
+            "characterEnd": 109
+          },
+          "method": "native_text",
+          "apiPage": 1,
+          "pageIndex": 4
+        }
+      ],
+      "sourceBytes": 2037,
+      "caseRevision": 1,
+      "sourceRevision": 1,
+      "inputSha256": "ba0ddf7f86c0e190dfcfc0e88d3f1880519fd235c1967bc425381169e2963938",
+      "caseContextSha256": "fd8eee19778c27d7bc0d75baa7ab1806fd97262bd0046953760ce24818d5d47a",
+      "accessSha256": "af17fae2cd559faeaa163e0bee8a5e5354f8511162e0551e304ea5febd2ba407",
+      "policyVersion": "source-document-native/1",
+      "readerSha256": "e745ab9bf180da35d3fd59be8021da0f0944b203b34debb83549a590921d6166",
+      "resultBytes": 20352,
+      "resultKey": "document-results/b15e790a-65c8-4920-ba59-608a7cd25204/76aeb8d859c59e4af3d80eadaec3517c0bdee06b89a4a9fe8529a53a0021930c.json",
+      "acceptedFence": 1,
+      "originalRead": {
+        "status": 200,
+        "cacheControl": "private, max-age=60",
+        "bytes": 2037,
+        "sha256": "0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9"
+      },
+      "redactedLines": [],
+      "partsCacheControl": "no-store",
+      "modelStatus": "not_requested",
+      "modelCalls": 0,
+      "sourceOriginal": {
+        "id": "epsg-7415.xml",
+        "url": "https://www.opengis.net/def/crs/EPSG/0/7415",
+        "finalUrl": "https://www.opengis.net/def/crs/EPSG/0/7415",
+        "issuer": "EPSG Geodetic Parameter Dataset / IOGP, distributed by the official OGC definition resolver",
+        "acquiredAtUtc": "2026-10-01T01:06:49.401302+00:00",
+        "sha256": "0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9",
+        "bytes": 2037,
+        "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/epsg-7415.xml",
+        "documentVersion": {
+          "authorityCode": "7415",
+          "recordRevisionDate": "2026-03-18",
+          "resolverVersionSegment": "0 (latest), pinned by acquired original hash; EPSG dataset-wide release not supplied"
+        },
+        "licence": {
+          "state": "not_verified",
+          "limitation": "No EPSG redistribution licence was established in these definition originals; do not apply 3DBAG CC BY to EPSG records."
+        },
+        "applicability": "Definition of source-declared CRS/components/axes; does not measure D1 positioning accuracy or qualify a coordinate operation."
+      },
+      "sourceName": "EPSG 7415 RD NAP compound reference definition",
+      "originalObjectKey": "sources/0bb1289a-a087-4b33-9590-4e693ddaa23b/0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9",
+      "inputReceipt": {
+        "privatePath": "E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/epsg7415-lineage.json",
+        "canonicalInputSha256": "ba0ddf7f86c0e190dfcfc0e88d3f1880519fd235c1967bc425381169e2963938",
+        "caseContextSha256": "fd8eee19778c27d7bc0d75baa7ab1806fd97262bd0046953760ce24818d5d47a",
+        "accessSha256": "af17fae2cd559faeaa163e0bee8a5e5354f8511162e0551e304ea5febd2ba407",
+        "policyVersion": "source-document-native/1",
+        "readerSha256": "e745ab9bf180da35d3fd59be8021da0f0944b203b34debb83549a590921d6166",
+        "gatewayPolicySha256": null,
+        "layoutCap": null,
+        "mode": "native_only",
+        "subjectScope": "existing isolated local Windows operator process; human authentication not established"
+      },
+      "resultRef": {
+        "sha256": "76aeb8d859c59e4af3d80eadaec3517c0bdee06b89a4a9fe8529a53a0021930c",
+        "assetId": "document:b15e790a-65c8-4920-ba59-608a7cd25204",
+        "version": 1
+      },
+      "resultPrivateCopy": "E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/epsg7415-accepted-result.json",
+      "statusPath": "/api/v1/ingestion/cases/18d2aba5-35aa-4db1-9432-d6552d3bdcfb/sources/0bb1289a-a087-4b33-9590-4e693ddaa23b/documents/jobs/b15e790a-65c8-4920-ba59-608a7cd25204",
+      "sameKeyReplay": "201 with exact original receipt; no extra source/job/attempt",
+      "capability": "literal native text parts available for future private evidence binding; no semantic parsing/approval"
+    },
+    {
+      "id": "3dbagapi",
+      "caseId": "b45d7625-9d99-41a9-8cde-e366fa933378",
+      "sourceId": "d37030cf-0c46-4268-ae0b-18097aa30858",
+      "jobId": "e63f6bd6-f6f9-4384-8a3f-7cc51d86da8c",
+      "sourceSha256": "79f8def3e9b60f24279e0afb7bd03852d3c25afe16a411c5873f4aabb7064aee",
+      "resultSha256": "4e94b38fb271b181fdf22bb97ca557b9eb7004b93e0c2c1f4a690e71202f9ce3",
+      "parts": 687,
+      "pages": 28,
+      "selectedParts": [
+        {
+          "id": "5f488a53-0c0c-40bd-8d26-203d34e66ddc",
+          "sourceId": "d37030cf-0c46-4268-ae0b-18097aa30858",
+          "sourceRevision": 1,
+          "sourceSha256": "79f8def3e9b60f24279e0afb7bd03852d3c25afe16a411c5873f4aabb7064aee",
+          "text": "<p>The 3DBAG API is currently not OGC-compliant, but we aim for full compliance with the <a href=\"https://ogcapi.ogc.org/features/\">OGC API Features specification</a> in a later release. At the moment the only supported CRS is Amersfoort / RD New + NAP height (EPSG:7415).</p>",
+          "sha256": "7447629fd97563a09820a1a443afc6e4684ee0be2b4f15bbdafafdfff043b484",
+          "locator": {
+            "label": "line 1261",
+            "line": 1261,
+            "unitId": "12b88ea3-c2cb-464e-8e86-66f4de1406df",
+            "unitSha256": "7447629fd97563a09820a1a443afc6e4684ee0be2b4f15bbdafafdfff043b484",
+            "segmentIndex": 0,
+            "segmentCount": 1,
+            "characterStart": 0,
+            "characterEnd": 276
+          },
+          "method": "native_text",
+          "apiPage": 23,
+          "pageIndex": 14
+        },
+        {
+          "id": "c4d5c4ec-bfdf-4adc-ad41-cd565f05065c",
+          "sourceId": "d37030cf-0c46-4268-ae0b-18097aa30858",
+          "sourceRevision": 1,
+          "sourceSha256": "79f8def3e9b60f24279e0afb7bd03852d3c25afe16a411c5873f4aabb7064aee",
+          "text": "<li>Tileset and content CRS is EPSG:4978.</li>",
+          "sha256": "8c3c45cc919d3080c4c13cde3dac731cac1e85deb1c5d75d8f40ba0c5780f7e9",
+          "locator": {
+            "label": "line 1272",
+            "line": 1272,
+            "unitId": "4a49d478-9694-4011-8e32-41c9d6f27180",
+            "unitSha256": "8c3c45cc919d3080c4c13cde3dac731cac1e85deb1c5d75d8f40ba0c5780f7e9",
+            "segmentIndex": 0,
+            "segmentCount": 1,
+            "characterStart": 0,
+            "characterEnd": 46
+          },
+          "method": "native_text",
+          "apiPage": 24,
+          "pageIndex": 0
+        }
+      ],
+      "sourceBytes": 37989,
+      "caseRevision": 1,
+      "sourceRevision": 1,
+      "inputSha256": "991a7eb3e372328b4bf2b2b49299d03313f092d086bb53c7aeaec72b633f91d6",
+      "caseContextSha256": "fd8eee19778c27d7bc0d75baa7ab1806fd97262bd0046953760ce24818d5d47a",
+      "accessSha256": "af17fae2cd559faeaa163e0bee8a5e5354f8511162e0551e304ea5febd2ba407",
+      "policyVersion": "source-document-native/1",
+      "readerSha256": "e745ab9bf180da35d3fd59be8021da0f0944b203b34debb83549a590921d6166",
+      "resultBytes": 412076,
+      "resultKey": "document-results/e63f6bd6-f6f9-4384-8a3f-7cc51d86da8c/4e94b38fb271b181fdf22bb97ca557b9eb7004b93e0c2c1f4a690e71202f9ce3.json",
+      "acceptedFence": 1,
+      "originalRead": {
+        "status": 200,
+        "cacheControl": "private, max-age=60",
+        "bytes": 37989,
+        "sha256": "79f8def3e9b60f24279e0afb7bd03852d3c25afe16a411c5873f4aabb7064aee"
+      },
+      "redactedLines": [
+        1240,
+        1245,
+        1399
+      ],
+      "partsCacheControl": "no-store",
+      "modelStatus": "not_requested",
+      "modelCalls": 0,
+      "sourceOriginal": {
+        "id": "3dbag-webservices.html",
+        "url": "https://docs.3dbag.nl/en/delivery/webservices/",
+        "finalUrl": "https://docs.3dbag.nl/en/delivery/webservices/",
+        "issuer": "3DBAG by TU Delft 3D geoinformation research group and 3DGI",
+        "acquiredAtUtc": "2026-10-01T01:06:49.474179+00:00",
+        "sha256": "79f8def3e9b60f24279e0afb7bd03852d3c25afe16a411c5873f4aabb7064aee",
+        "bytes": 37989,
+        "privatePath": "E:/BhuAayam-data/task-data/desktop-cityjson-reference-evidence/3dbag-webservices.html",
+        "documentVersion": {
+          "pageVersion": null,
+          "snapshotAtUtc": "2026-10-01T01:06:49.474179+00:00",
+          "versionBinding": "Current documentation snapshot, not bound to retained D1 API release."
+        },
+        "licence": {
+          "state": "documented",
+          "licence": "CC BY 4.0",
+          "evidenceId": "3dbag-copyright.html",
+          "licenceUrl": "http://creativecommons.org/licenses/by/4.0/",
+          "attribution": "© 3DBAG by tudelft3d and 3DGI",
+          "conditions": "Credit, licence link and indication of changes. Digital maps link copyright page at bottom right. Separately marked third-party content retains its own terms."
+        },
+        "applicability": "Issuer explanations of delivery, attributes, releases and general methodology; not independent object controls."
+      },
+      "sourceName": "3DBAG API coordinate reference and delivery limitations",
+      "originalObjectKey": "sources/d37030cf-0c46-4268-ae0b-18097aa30858/79f8def3e9b60f24279e0afb7bd03852d3c25afe16a411c5873f4aabb7064aee",
+      "inputReceipt": {
+        "privatePath": "E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/3dbagapi-lineage.json",
+        "canonicalInputSha256": "991a7eb3e372328b4bf2b2b49299d03313f092d086bb53c7aeaec72b633f91d6",
+        "caseContextSha256": "fd8eee19778c27d7bc0d75baa7ab1806fd97262bd0046953760ce24818d5d47a",
+        "accessSha256": "af17fae2cd559faeaa163e0bee8a5e5354f8511162e0551e304ea5febd2ba407",
+        "policyVersion": "source-document-native/1",
+        "readerSha256": "e745ab9bf180da35d3fd59be8021da0f0944b203b34debb83549a590921d6166",
+        "gatewayPolicySha256": null,
+        "layoutCap": null,
+        "mode": "native_only",
+        "subjectScope": "existing isolated local Windows operator process; human authentication not established"
+      },
+      "resultRef": {
+        "sha256": "4e94b38fb271b181fdf22bb97ca557b9eb7004b93e0c2c1f4a690e71202f9ce3",
+        "assetId": "document:e63f6bd6-f6f9-4384-8a3f-7cc51d86da8c",
+        "version": 1
+      },
+      "resultPrivateCopy": "E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/3dbagapi-accepted-result.json",
+      "statusPath": "/api/v1/ingestion/cases/b45d7625-9d99-41a9-8cde-e366fa933378/sources/d37030cf-0c46-4268-ae0b-18097aa30858/documents/jobs/e63f6bd6-f6f9-4384-8a3f-7cc51d86da8c",
+      "sameKeyReplay": "201 with exact original receipt; no extra source/job/attempt",
+      "capability": "literal native text parts available for future private evidence binding; no semantic parsing/approval"
+    }
+  ],
+  "preservation": {
+    "retainedSha256": "febbba01db49493ab5a0c312076b6e44bca3f48f593c9fb3b4d073562f7e8133",
+    "registrySha256": "6a86a5b84c8ba84b9f7cb9cdda7f32f7bf817bbcfcc917070864395780986335",
+    "validationSha256": "e0960add4fce2fd0af91234de3ec1a8dd718879ad54a20b35df34452e24baa77",
+    "oldObjectsUnchanged": 9,
+    "existingGlobalRowsUnchanged": true,
+    "existingBucketEntriesUnchanged": 1360,
+    "allowedAdditions": {
+      "cases": 2,
+      "sources": 2,
+      "jobs": 2,
+      "metadata": 2,
+      "attempts": 2,
+      "events": 0,
+      "operations": 4
+    },
+    "addedObjects": [
+      {
+        "key": "document-results/b15e790a-65c8-4920-ba59-608a7cd25204/76aeb8d859c59e4af3d80eadaec3517c0bdee06b89a4a9fe8529a53a0021930c.json",
+        "bytes": 20352,
+        "etag": "\"3fdea5014615aa59a40b70128fa9a73c\""
+      },
+      {
+        "key": "document-results/e63f6bd6-f6f9-4384-8a3f-7cc51d86da8c/4e94b38fb271b181fdf22bb97ca557b9eb7004b93e0c2c1f4a690e71202f9ce3.json",
+        "bytes": 412076,
+        "etag": "\"9f923169d0b3f170115158651300a189\""
+      },
+      {
+        "key": "sources/0bb1289a-a087-4b33-9590-4e693ddaa23b/0972790c9b2befabb049c27a17c628cf96faa65ff4eb1bee0e834e845678ecd9",
+        "bytes": 2037,
+        "etag": "\"81aa9217db8b121433b7c8254be0d915\""
+      },
+      {
+        "key": "sources/d37030cf-0c46-4268-ae0b-18097aa30858/79f8def3e9b60f24279e0afb7bd03852d3c25afe16a411c5873f4aabb7064aee",
+        "bytes": 37989,
+        "etag": "\"bf9986ea5e8ea2d4dc085a49bc574f31\""
+      }
+    ],
+    "activeJobs": []
+  },
+  "cleanup": {
+    "ownedApplicationAndProcessingStopped": true,
+    "storageRetained": true,
+    "configUnchanged": true,
+    "portsFree": [
+      3192,
+      28000
+    ]
+  },
+  "runtimePins": {
+    "servedTree": "5ecbf7e2d09bb838408c83cc24d52d40f68fd79e",
+    "documentReaderSha256": "e745ab9bf180da35d3fd59be8021da0f0944b203b34debb83549a590921d6166",
+    "cityJSONReaderSha256": "377edfe71f3d08e0a1f4fb710441022b9a26fdadd0efa70724d0d1dea0f3d398",
+    "executedProcessingImage": "sha256:f522efd1bf4975575b016cdeb587c1d12f0236697b9e20c45fcf64e9947e6a30",
+    "builtTagImageNotExecuted": "sha256:b66134c2e9c6821c3797188345a15d9776b76f1ff04dd299da6b32c9da6593f5",
+    "safeConfigPins": [
+      {
+        "name": "ownership.json",
+        "sha256": "32881e4b7882ad1eacb962e156d16e22799b968031b4b3ddb1bda74506a57e6b"
+      },
+      {
+        "name": "restore-completed.json",
+        "sha256": "fb4d0ab6989d1b7fa457b6f7d0cd8e795fa50f7575e0abc60ad382ca12702e5d"
+      },
+      {
+        "name": "compose.json",
+        "sha256": "b8a1e1afef45382842420eba41f28fbd8b85cc973f4a866784118e7d57cb26e2"
+      },
+      {
+        "name": "desktop-ai03c-app.compose.json",
+        "sha256": "19782a9d0f248bd3dd782c67f413b19991e4791be7da8dc3e753f6b8393bb5cb"
+      },
+      {
+        "name": "run.env.json",
+        "sha256": "4b34569b40d80f70e91ae7d3cb1c62c1e68c746c8afba96d7c25aea7e691d6c4"
+      }
+    ],
+    "processPinsPrivateReceipt": "live.json",
+    "environment": "Same accepted explicit guarded launch environment/paths; OS process environment unobserved.",
+    "readerCheckoutRecovery": "Preserved stale CRLF native_cityjson.py privately and restored exact accepted Git LF bytes; git blob and index content unchanged.",
+    "codePinsReceipt": {
+      "privatePath": "E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/live.json",
+      "sha256": "643a882f98f4020fee4512d18139e1e5c0f537d8e74ca208b19c070ff610cf6c",
+      "hostFiles": 31,
+      "freshContainerCopies": 26,
+      "scope": "Full exact physical/Git/container code pins are retained in this hash-bound private receipt; source/app bytes are not duplicated in this report."
+    }
+  },
+  "execution": {
+    "permissions": {
+      "approval_policy": "never",
+      "sandbox_mode": "danger-full-access"
+    },
+    "requested": {
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "tier": "default-standard"
+    },
+    "actualModelEffortTier": "unexposed",
+    "processingValidatorOcrModelProviderInvocation": "No native validators/OCR/models/providers invoked; existing literal-text processing only.",
+    "newSourceDiscovery": false,
+    "newRegistryRecordsOrAssociations": false,
+    "commands": [
+      {
+        "command": "bundled node --import tsx private runtime.mjs preflight",
+        "exit": 0,
+        "scope": "After preserving/correcting Windows import and LF/stat checkout causes; no old pins weakened."
+      },
+      {
+        "command": "bundled node --import tsx private runtime.mjs start",
+        "exit": 0
+      },
+      {
+        "command": "bundled node --import tsx private runtime.mjs live",
+        "exit": 0
+      },
+      {
+        "command": "bundled node --import tsx private runtime.mjs enroll",
+        "exit": 0,
+        "scope": "Resume saved receipts after cache expectation and byte-decoding helper corrections; successful HTTP enrollments not repeated."
+      },
+      {
+        "command": "bundled node --import tsx private runtime.mjs stop",
+        "exit": 0
+      },
+      {
+        "command": "bundled node --import tsx private verify.mjs",
+        "exit": 0
+      },
+      {
+        "command": "git diff --check and staged whitespace check",
+        "exit": 0
+      }
+    ],
+    "helperCorrections": [
+      "Initial Windows ESM path import corrected before runtime.",
+      "Stale CRLF CityJSON reader restored from exact accepted Git LF bytes, old bytes preserved; unchanged blob/index content.",
+      "Helper expected private,no-store but observed valid no-store parts header; resumed saved observations.",
+      "Stored object Uint8Array explicitly decoded through Buffer; no source/job repeated.",
+      "Initial noncanonical jsonb-order input serialization replaced by verified application canonical fingerprint; earlier helper receipts retained."
+    ]
+  },
+  "limitations": [
+    "Literal UTF-8 text reader only; no semantic HTML/XML parsing or active-content execution.",
+    "Three HTML lines have conservative redactions; five selected reference parts match raw original lines exactly.",
+    "Private original access uses its existing private,max-age=60 header; native status/parts use no-store.",
+    "No D1 reference attachment, accuracy/admission qualification, recorded registry changes, validation/OCR/model/provider run or release claim."
+  ],
+  "privateArtifactPins": [
+    {
+      "path": "3dbagapi-accepted-result.json",
+      "bytes": 412076,
+      "sha256": "4e94b38fb271b181fdf22bb97ca557b9eb7004b93e0c2c1f4a690e71202f9ce3"
+    },
+    {
+      "path": "3dbagapi-case.json",
+      "bytes": 306,
+      "sha256": "4fb318aad03ad713aff8e27fb48e8b22cff14a9f360e27b0b7517f508506027d"
+    },
+    {
+      "path": "3dbagapi-completion.json",
+      "bytes": 22029,
+      "sha256": "f827dd126092b821bb6c84feebcb6ac0b790eb81b94a0ed3e703002759f2280e"
+    },
+    {
+      "path": "3dbagapi-keys.json",
+      "bytes": 127,
+      "sha256": "fe6e7823b3225234b9cba55ac889f6227f5c957a1fff52dbe084b6be31942ddf"
+    },
+    {
+      "path": "3dbagapi-lineage-pre-canonical-pin.json",
+      "bytes": 6775,
+      "sha256": "93a12fa5ea80b7b47589dbfb4665a2de32cc24c66ffcd1abdddbaa6a27eb1e62"
+    },
+    {
+      "path": "3dbagapi-lineage.json",
+      "bytes": 7057,
+      "sha256": "88f9996921ccdc1422e76fc97ff759d1bced4f4ef812a918b638e5b592653484"
+    },
+    {
+      "path": "3dbagapi-original-read.json",
+      "bytes": 159,
+      "sha256": "5dd41abe170cb3a6da943d10bb61a3332b6452a975521c29d33e5b8fed4a164e"
+    },
+    {
+      "path": "3dbagapi-page-0.json",
+      "bytes": 22156,
+      "sha256": "d5061aeb902666c9607fe8f4dead4e693beb149a9f95041db2d6dac698999fc5"
+    },
+    {
+      "path": "3dbagapi-page-1.json",
+      "bytes": 20977,
+      "sha256": "07ccd839f72e695ad1d3d7c215c4bfbcfcad5ccd2b97347f6101819ac1c395fa"
+    },
+    {
+      "path": "3dbagapi-page-10.json",
+      "bytes": 21144,
+      "sha256": "29af143a9eb09a6b9b7e1d7fce726c41aad2fbedf7dc0f36f1767e5433007772"
+    },
+    {
+      "path": "3dbagapi-page-11.json",
+      "bytes": 20927,
+      "sha256": "3750bbe3276ef55b624afccb52aff5e4d2ff48013bddd0269f5c7d2f6a958438"
+    },
+    {
+      "path": "3dbagapi-page-12.json",
+      "bytes": 21218,
+      "sha256": "ad8388733fafc7b9fb48a19cbe8f1c037ff94b1ed006db415ebb2ba78facf9ac"
+    },
+    {
+      "path": "3dbagapi-page-13.json",
+      "bytes": 21030,
+      "sha256": "d162fe4f84fe5f9d236e36150a8328f82e5415c3393a152f7e1b0a797b495431"
+    },
+    {
+      "path": "3dbagapi-page-14.json",
+      "bytes": 20818,
+      "sha256": "e544d448e48648ba6015ff61fc9da20f9a0ad01e6ab1bc4d23304dcbd1bec26d"
+    },
+    {
+      "path": "3dbagapi-page-15.json",
+      "bytes": 20674,
+      "sha256": "486c0b03061bdfbb26acfa94b45ae43d82ab1866d5b41f850660c0b3a62cad1a"
+    },
+    {
+      "path": "3dbagapi-page-16.json",
+      "bytes": 20737,
+      "sha256": "5542969f62e978c1b68a82ef9a349f9ccfd250178441a116b0c36d3ade1e5596"
+    },
+    {
+      "path": "3dbagapi-page-17.json",
+      "bytes": 21031,
+      "sha256": "1358629ed9b4596c41fa43a475026713a95262700ec537cd49b9203e7637e3bf"
+    },
+    {
+      "path": "3dbagapi-page-18.json",
+      "bytes": 21406,
+      "sha256": "3ade19d52483a1043b700205e12e3f8b143ab02817c0b059f96ff37786cb11f0"
+    },
+    {
+      "path": "3dbagapi-page-19.json",
+      "bytes": 20856,
+      "sha256": "93e99ca462510905f5bab3f66c0da5b1ea2953f0e84fb1f2f8ded33961ba6e5a"
+    },
+    {
+      "path": "3dbagapi-page-2.json",
+      "bytes": 21055,
+      "sha256": "2530b5a369b52ea36bd07ffcedc50f52d1432870dcf999fd8856b3df0147b9d3"
+    },
+    {
+      "path": "3dbagapi-page-20.json",
+      "bytes": 20840,
+      "sha256": "3b44531ab92f6315cd29236022a361524949946c4be414b299f897363a0951e9"
+    },
+    {
+      "path": "3dbagapi-page-21.json",
+      "bytes": 21934,
+      "sha256": "961a274c2722b4fa3121a1cb3d8b0fa36d91c3cda21379a34a351a7869392958"
+    },
+    {
+      "path": "3dbagapi-page-22.json",
+      "bytes": 23415,
+      "sha256": "82d931a675c2e8b9bf3d1bd1b98a180e7fc923879394f206875824c7e58149f5"
+    },
+    {
+      "path": "3dbagapi-page-23.json",
+      "bytes": 22563,
+      "sha256": "7f4239aedf29b6f3a90e1d3a00a9736485232650fbd2fe30ff3cf337ea4c59cf"
+    },
+    {
+      "path": "3dbagapi-page-24.json",
+      "bytes": 22440,
+      "sha256": "0580f1a3fa4646b16a530bfb68a9ae7836a5a2048ab4d7ee58055b1fa1c7bcf8"
+    },
+    {
+      "path": "3dbagapi-page-25.json",
+      "bytes": 21061,
+      "sha256": "088509d6bcd3898ef77cde198c2e5ff9060b928fa834e257061cbe002f785f67"
+    },
+    {
+      "path": "3dbagapi-page-26.json",
+      "bytes": 24664,
+      "sha256": "1922dfc0766618174cdd3e1992c1916b21990c6dc7a7b675d00ac46c41b3e37c"
+    },
+    {
+      "path": "3dbagapi-page-27.json",
+      "bytes": 11578,
+      "sha256": "56d73a1c35f242881a4af3211a8ce490143e26c05c8086b4e8de0825d76caedc"
+    },
+    {
+      "path": "3dbagapi-page-3.json",
+      "bytes": 21762,
+      "sha256": "325da454a75f91e05857cb6d9aabbd45e167e97504bbd1e4138f20bc1ebb508e"
+    },
+    {
+      "path": "3dbagapi-page-4.json",
+      "bytes": 21843,
+      "sha256": "546fcda757b0b8707b3e9720242f5cf64d0dc08568f863552d3dcbf5f7e7915e"
+    },
+    {
+      "path": "3dbagapi-page-5.json",
+      "bytes": 20966,
+      "sha256": "515a8e219e3d2ff30bb083d106457499d3081a118a8426cb1361093cab30da56"
+    },
+    {
+      "path": "3dbagapi-page-6.json",
+      "bytes": 21664,
+      "sha256": "bda62a7ec865c1baa061cf5e0d4c5cb643d61e7611a7b8135f1967167c7bf26e"
+    },
+    {
+      "path": "3dbagapi-page-7.json",
+      "bytes": 20812,
+      "sha256": "aac6b74254a706ccd238833c77e91cc8ab1426c53f316430b0ad03020e2329a7"
+    },
+    {
+      "path": "3dbagapi-page-8.json",
+      "bytes": 21170,
+      "sha256": "843cf21db820639676491f1530b3171f0fe7488687ff998c66474cdc27cc710a"
+    },
+    {
+      "path": "3dbagapi-page-9.json",
+      "bytes": 20759,
+      "sha256": "08db52cfaa10049242232f8c2d31d04c0ac515a12fe72d54d67c8dc7836f83ae"
+    },
+    {
+      "path": "3dbagapi-replay.json",
+      "bytes": 658,
+      "sha256": "c2b278a0b37a25f59e02cbbe98d1b32ee863cba2d6844f2bd8712789cc0b89a2"
+    },
+    {
+      "path": "3dbagapi-retain.json",
+      "bytes": 658,
+      "sha256": "f5713de3ca79f7a7ee21bb915367fef13982c178d9ce28767201436917548869"
+    },
+    {
+      "path": "after.json",
+      "bytes": 851246,
+      "sha256": "efe5f7a53de17460d0b33f4c47b5399886ae24959d96ffa90e9554829a7f7f41"
+    },
+    {
+      "path": "baseline.json",
+      "bytes": 837430,
+      "sha256": "66a5708463858372f5b4234b1330630a822b357b97e226c3238c5ebb26f17b55"
+    },
+    {
+      "path": "cleanup.json",
+      "bytes": 3604,
+      "sha256": "0911895822a7ac503f9c584ea8f4821196d656d0ebeabc97f6c2bcdebbd86542"
+    },
+    {
+      "path": "epsg7415-accepted-result.json",
+      "bytes": 20352,
+      "sha256": "76aeb8d859c59e4af3d80eadaec3517c0bdee06b89a4a9fe8529a53a0021930c"
+    },
+    {
+      "path": "epsg7415-case.json",
+      "bytes": 306,
+      "sha256": "583886397b8c1e4895b46909cc119696d7b24685010d1a909007c5130c3bc616"
+    },
+    {
+      "path": "epsg7415-completion.json",
+      "bytes": 21708,
+      "sha256": "3115cc09578fcfd5d5a5f1b827fb40473235909e37d1cb6ba5c25d3e22f967ca"
+    },
+    {
+      "path": "epsg7415-keys.json",
+      "bytes": 127,
+      "sha256": "63738bcc91b7f8cc536a739d2843c2cd9f1162ab11703d0717a0d80edf6b9891"
+    },
+    {
+      "path": "epsg7415-lineage-pre-canonical-pin.json",
+      "bytes": 7449,
+      "sha256": "b72075d2d89bd728b8327314e0b386bdb37b3b96177113872f4741bdec4db625"
+    },
+    {
+      "path": "epsg7415-lineage.json",
+      "bytes": 7731,
+      "sha256": "1b8671cf4a50d2e4deed70dc90e44c6e064191295d2281e177803dc92b3feae3"
+    },
+    {
+      "path": "epsg7415-original-read.json",
+      "bytes": 158,
+      "sha256": "700e8eef1b014fb552b7528226ada19c485f5eba95795202305f97ceace4d44c"
+    },
+    {
+      "path": "epsg7415-page-0.json",
+      "bytes": 21736,
+      "sha256": "b36257f81cb0af224171b0a3f99299150e9e240917ef6136934d20757724a28a"
+    },
+    {
+      "path": "epsg7415-page-1.json",
+      "bytes": 6511,
+      "sha256": "a23f50103695295c9f466e9cad9f4a4fdcdfadce783618cf39e5c1180065d884"
+    },
+    {
+      "path": "epsg7415-replay.json",
+      "bytes": 657,
+      "sha256": "dfeb39c9aecc17325dbcd0dbb99613a291e82051407ed29573f569731643e3b6"
+    },
+    {
+      "path": "epsg7415-retain.json",
+      "bytes": 657,
+      "sha256": "f0f3dee1749bc56a12c747d9273aa9176a4ace8f656db30624c6b4c72795956a"
+    },
+    {
+      "path": "final.json",
+      "bytes": 851246,
+      "sha256": "1e101bb80627ccafd5156d9f86138fa7fb01b0d360f1337a2b15abdf50e783d1"
+    },
+    {
+      "path": "journey.json",
+      "bytes": 957,
+      "sha256": "2399292e73f7f997d9b455a2769737244f0bbb2a271aadb889f0b96d306ee472"
+    },
+    {
+      "path": "live-geo/api.py",
+      "bytes": 6398,
+      "sha256": "16451edf086fafc2be7c5d79b3a8cbfe968cec6352ca10877116f7838e240082"
+    },
+    {
+      "path": "live-geo/archive_member_inspection.py",
+      "bytes": 1566,
+      "sha256": "ebd7cdfdbf37db859862fa88e0c3ade4d5033cc570b508c904ccd8af28cef264"
+    },
+    {
+      "path": "live-geo/area.py",
+      "bytes": 43543,
+      "sha256": "5fd21a3a74d74d4dc29e8f9beafebb477e25dd63b3679b5baa115b5f7aab467b"
+    },
+    {
+      "path": "live-geo/cityjson_processing.py",
+      "bytes": 5526,
+      "sha256": "4dae1815520281f153ba367252f33e484421a3005aa0121ed3dd3c9352cb457b"
+    },
+    {
+      "path": "live-geo/gis_inspection.py",
+      "bytes": 8500,
+      "sha256": "901bd56f50e2c5766c09aa778367c7cf4b88cb923503092fbe87e3a321ba4885"
+    },
+    {
+      "path": "live-geo/native_archive.py",
+      "bytes": 7509,
+      "sha256": "c4fa47a9cc65da479399312280a0d33d72dafe9a94ae533853a8c157e15590e4"
+    },
+    {
+      "path": "live-geo/native_archive_member.py",
+      "bytes": 7161,
+      "sha256": "cdc0a3a8817e6fe54c2710d9b9477117ee7a2c632326a6fa133eb6e6c9b7bcac"
+    },
+    {
+      "path": "live-geo/native_cityjson.py",
+      "bytes": 20168,
+      "sha256": "12befa78d15c61ad6e4f3aec3c581eb0723a33c4f7b34516e86f4299e84f5492"
+    },
+    {
+      "path": "live-geo/native_gis.py",
+      "bytes": 15900,
+      "sha256": "6478be873cfb52978436a8e003e646f85ba7aaa40bdc3086fde94036f56e7ecf"
+    },
+    {
+      "path": "live-geo/native_pdf.py",
+      "bytes": 8511,
+      "sha256": "0d21bdd304b0fb12beea694a049078cd4ee0cbddb272102f16a0c706feef966f"
+    },
+    {
+      "path": "live-geo/native_schedule.py",
+      "bytes": 7853,
+      "sha256": "a786d8135790ce3f32510cf8b52e06685e94f4a6b64a25fa388b34f799edb346"
+    },
+    {
+      "path": "live-geo/native_workbook.py",
+      "bytes": 13670,
+      "sha256": "37cb34de543dc1617390633c395d2613d7e11c9ac27834e59cc734bc2b98a5d4"
+    },
+    {
+      "path": "live-geo/usp_document_candidates/docling_tesseract.py",
+      "bytes": 21883,
+      "sha256": "b402c5cf6b8dfb1cd2d5f304b8c40bd57616eeab480a8dbd28342244997a30f3"
+    },
+    {
+      "path": "live-worker/api.py",
+      "bytes": 6398,
+      "sha256": "16451edf086fafc2be7c5d79b3a8cbfe968cec6352ca10877116f7838e240082"
+    },
+    {
+      "path": "live-worker/archive_member_inspection.py",
+      "bytes": 1566,
+      "sha256": "ebd7cdfdbf37db859862fa88e0c3ade4d5033cc570b508c904ccd8af28cef264"
+    },
+    {
+      "path": "live-worker/area.py",
+      "bytes": 43543,
+      "sha256": "5fd21a3a74d74d4dc29e8f9beafebb477e25dd63b3679b5baa115b5f7aab467b"
+    },
+    {
+      "path": "live-worker/cityjson_processing.py",
+      "bytes": 5526,
+      "sha256": "4dae1815520281f153ba367252f33e484421a3005aa0121ed3dd3c9352cb457b"
+    },
+    {
+      "path": "live-worker/gis_inspection.py",
+      "bytes": 8500,
+      "sha256": "901bd56f50e2c5766c09aa778367c7cf4b88cb923503092fbe87e3a321ba4885"
+    },
+    {
+      "path": "live-worker/native_archive.py",
+      "bytes": 7509,
+      "sha256": "c4fa47a9cc65da479399312280a0d33d72dafe9a94ae533853a8c157e15590e4"
+    },
+    {
+      "path": "live-worker/native_archive_member.py",
+      "bytes": 7161,
+      "sha256": "cdc0a3a8817e6fe54c2710d9b9477117ee7a2c632326a6fa133eb6e6c9b7bcac"
+    },
+    {
+      "path": "live-worker/native_cityjson.py",
+      "bytes": 20168,
+      "sha256": "12befa78d15c61ad6e4f3aec3c581eb0723a33c4f7b34516e86f4299e84f5492"
+    },
+    {
+      "path": "live-worker/native_gis.py",
+      "bytes": 15900,
+      "sha256": "6478be873cfb52978436a8e003e646f85ba7aaa40bdc3086fde94036f56e7ecf"
+    },
+    {
+      "path": "live-worker/native_pdf.py",
+      "bytes": 8511,
+      "sha256": "0d21bdd304b0fb12beea694a049078cd4ee0cbddb272102f16a0c706feef966f"
+    },
+    {
+      "path": "live-worker/native_schedule.py",
+      "bytes": 7853,
+      "sha256": "a786d8135790ce3f32510cf8b52e06685e94f4a6b64a25fa388b34f799edb346"
+    },
+    {
+      "path": "live-worker/native_workbook.py",
+      "bytes": 13670,
+      "sha256": "37cb34de543dc1617390633c395d2613d7e11c9ac27834e59cc734bc2b98a5d4"
+    },
+    {
+      "path": "live-worker/usp_document_candidates/docling_tesseract.py",
+      "bytes": 21883,
+      "sha256": "b402c5cf6b8dfb1cd2d5f304b8c40bd57616eeab480a8dbd28342244997a30f3"
+    },
+    {
+      "path": "live.json",
+      "bytes": 23070,
+      "sha256": "643a882f98f4020fee4512d18139e1e5c0f537d8e74ca208b19c070ff610cf6c"
+    },
+    {
+      "path": "preflight.json",
+      "bytes": 12294,
+      "sha256": "604f28db1e1874b2d734febc83f36088dcf700807bdde2b296c1f749bd243447"
+    },
+    {
+      "path": "reader-checkout-observation.json",
+      "bytes": 663,
+      "sha256": "7a7a3e7d80148f6ded84d387ecf56f9485be412805e6a4cde4b0d277e234173a"
+    },
+    {
+      "path": "reader-pre-lf-native_cityjson.py",
+      "bytes": 20549,
+      "sha256": "762c757d8e553cef2a465978b94e4038bf61d896debe860a9f96a83c8ba98f79"
+    },
+    {
+      "path": "runtime-before-byte-decoding-correction.mjs",
+      "bytes": 17568,
+      "sha256": "2edc4d948e5ee8b72d0dbcf0889e7cb706d318d2b358bee054731233f2884cb3"
+    },
+    {
+      "path": "runtime-before-cache-observation-correction.mjs",
+      "bytes": 17335,
+      "sha256": "9140f3710cd0047bc0d727ee31da6435339d7e0bb169f2318c57a13d914c926b"
+    },
+    {
+      "path": "runtime-before-result-key-correction.mjs",
+      "bytes": 17577,
+      "sha256": "d58321234d72f3e63219d1856f9f98625ca07c54305102f93ea0db6efc99aca1"
+    },
+    {
+      "path": "runtime-initial.mjs",
+      "bytes": 17569,
+      "sha256": "0e710fa19b47c6d5ee751a94cb3627085cc6dea9b023d1eaecd7adf28c140ea6"
+    },
+    {
+      "path": "runtime.mjs",
+      "bytes": 17639,
+      "sha256": "0187d8e75f7b15e52f04ee868548a22938b890e976e2d9d6b17c9a543bbe3c3a"
+    },
+    {
+      "path": "start.json",
+      "bytes": 210,
+      "sha256": "186f1fe71da70c99103edb0962c61d17abe074986d1efcf9ae9040b5773f8a84"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 11430,
+      "sha256": "dcc059a1bf2aebb528dd3a600d2e8984cad98a03a6151d3f93b1dbcefb975ce5"
+    },
+    {
+      "path": "verify.mjs",
+      "bytes": 9330,
+      "sha256": "203b3117af80f63dd7b4503da2f00b04cd77ae183cab71aadb1c534672f3532d"
+    }
+  ]
+}
