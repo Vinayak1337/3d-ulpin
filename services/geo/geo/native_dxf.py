@@ -77,6 +77,39 @@ def _locator(index):
     return {"tagIndex": index, "codeLine": index * 2 + 1, "valueLine": index * 2 + 2}
 
 
+def _codepage_declaration(text, budget):
+    """Locate the original HEADER value before selecting any text decoder."""
+    from ezdxf.lldxf.tagger import ascii_tags_loader
+    header, section_name, pending, declaration = False, False, None, None
+    for index, tag in enumerate(ascii_tags_loader(io.StringIO(text, newline=None), skip_comments=False)):
+        if index >= MAX_TAGS:
+            _fail("TAG_LIMIT", "DXF exceeds 500,000 source tags.", status="limit")
+        if index % 512 == 0:
+            budget.check()
+        if tag.code == 0:
+            if header and tag.value == "ENDSEC":
+                if pending is not None:
+                    _fail("CODEPAGE_DECLARATION", "Codepage declaration has no group-code 3 value.",
+                          _locator(pending), status="unsupported")
+                return declaration
+            section_name = tag.value == "SECTION"
+            header = False
+        elif section_name and tag.code == 2:
+            header, section_name = tag.value == "HEADER", False
+        elif header:
+            if pending is not None and tag.code != 999:
+                if tag.code != 3:
+                    _fail("CODEPAGE_DECLARATION", "Codepage declaration requires a group-code 3 value.",
+                          _locator(index), status="unsupported")
+                declaration = {"tagIndex": index, "rawValue": tag.value}
+                pending = None
+            elif tag.code == 9 and tag.value == "$DWGCODEPAGE":
+                if declaration is not None:
+                    _fail("HEADER", "Duplicate header variable.", _locator(index))
+                pending = index
+    return declaration
+
+
 def _typed(tag):
     from ezdxf.lldxf.types import cast_tag_value
     try:
@@ -245,8 +278,25 @@ def read_dxf(raw):
     budget = _Budget()
     # Latin-1 is a reversible initial scan of the ASCII header. Actual text is
     # decoded strictly with the parser's header encoding, never replacement.
-    info = dxf_stream_info(io.StringIO(raw.decode("latin-1"), newline=None))
-    encoding = "utf-8" if info.version >= "AC1021" else info.encoding
+    header_text = raw.decode("latin-1")
+    info = dxf_stream_info(io.StringIO(header_text, newline=None))
+    if info.version >= "AC1021":
+        encoding = "utf-8"
+    else:
+        declaration = _codepage_declaration(header_text, budget)
+        if declaration is None:
+            encoding = "cp1252"
+        else:
+            from ezdxf.tools.codepage import codepage_to_encoding
+            supported = {"ANSI_" + code: codec for code, codec in codepage_to_encoding.items()}
+            encoding = supported.get(declaration["rawValue"])
+            if encoding is None:
+                # ezdxf.toencoding() silently defaults unknown values to cp1252.
+                # Reject them before decoding; keep a bounded original locator.
+                _fail("CODEPAGE_UNSUPPORTED", "Declared DXF codepage is unsupported; text was not decoded.",
+                      {**_locator(declaration["tagIndex"]), "headerVariable": "$DWGCODEPAGE",
+                       "rawValue": declaration["rawValue"][:128],
+                       "rawValueTruncated": len(declaration["rawValue"]) > 128}, status="unsupported")
     try:
         text = raw.decode(encoding)
     except (UnicodeError, LookupError):
