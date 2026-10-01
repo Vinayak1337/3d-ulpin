@@ -1,0 +1,29 @@
+# KML-01 local inspection — 1 October 2026
+
+Code commit: `8ad86d671b78cf8502d8d6781eac946a2199862c`, base `f687cd29d17925f5893d7d1cddcfe31d30300177`. Only the new reader, CLI, focused tests and this evidence directory are owned. [Sources](sources.json) and [verification](verification.json) pin the retained private inputs/results. Source/catalogue publication and later canonical wiring belong to the lead.
+
+The CLI provides useful literal feature IDs/names/fields, Point/LineString/Polygon/MultiGeometry coordinate sequences, separate rings, source altitude/extrude/tessellate declarations, and XML element paths with start line/column. Text is decoded XML character data; tuple lexemes and decoded-text offsets remain available. Source IDs are source identifiers only. KML specification defaults are separate from absent declarations; omitted Z stays absent. No elevation, qualified vertical datum, global analytical geometry, property identity or rights are inferred.
+
+KMZ inventory verifies actual expanded bytes, CRCs and member hashes without extracting files. A sole KML entry is selected explicitly by that rule; multiple entries produce `needs_input` with exact candidates. `--member` chooses an exact entry. Parent hash, member path/ordinal/hash and XML hash remain distinct. Assets, styles, overlays, links, models, XInclude and extensions are inventoried without execution or resolution. Unknown/unsupported content makes inspection partial. Unnamespaced feature fragments remain explicitly incomplete with unknown horizontal reference.
+
+Windows-only supervision gates parser import/read/serialization behind a Job Object with one active process, 2 GiB process/job private memory, at most two affinity cores and a 45-second deadline. Compute pool environment settings request one thread; **there is no OS thread ceiling**. The parent captures at most 16 MiB + one overflow byte, terminates its owned Job on timeout/overflow, and refuses publication after failure. Other operating systems fail closed; Linux is unqualified. There is no in-process fallback in the public `inspect_kml`/CLI flow. Private worker functions are test/internal entry points, not a service registration.
+
+Bounds: 16 MiB original/XML/output; 256 KMZ members; 64 MiB aggregate actual expansion; 100:1 per-member expansion; depth 64; 100,000 XML elements; 10,000 features; 100,000 tuples. DTD/entities, traversal, symlinks/special entries, duplicate normalized paths, encryption, unsafe compression and unsupported ZIP directory profiles are refused. Geometry is source inspection, not full KML/schema/topology validation. Missing or conflicting rings/coordinates/declarations stay partial; no repairs or rendering are attempted.
+
+Use a separate environment and the lane-specific hash lock, for example:
+
+```powershell
+python -m venv E:/BhuAayam-data/task-data/desktop-kml-native/venv
+E:/BhuAayam-data/task-data/desktop-kml-native/venv/Scripts/python.exe -m pip install --require-hashes -r docs/evidence/usp/native-kml/requirements.lock
+E:/BhuAayam-data/task-data/desktop-kml-native/venv/Scripts/python.exe scripts/usp/desktop-kml-read.py E:/BhuAayam-data/task-data/desktop-kml-native/originals/kmlsamples.kml --expected-sha256 5a97b905a05c97ca0c43e59d423fe1db66299efd9ed75d1738c422da11605dfd --output-dir E:/BhuAayam-data/task-data/desktop-kml-native/new-run
+```
+
+Output must be a fresh directory outside Git with an existing parent. Expected original SHA is mandatory. `kml.json` and `receipt.json` are written to an owned temporary directory, source bytes are rechecked, and Windows directory rename publishes both together. Existing output is refused. Failed publication cleans only owned temporary files.
+
+Saved final checks: nine focused regressions and Python compilation pass. The unchanged upstream KML produces **39 features / 182 tuples**, with 240 unimplemented elements and 30 unresolved references. The unchanged four-entry KMZ produces selection-required; selecting `doc/doc.kml` produces one named feature with absent geometry and unknown reference. Independent ElementTree/path/line/value and ZIP-hash reconciliation passes. All three final CLI runs exit 0 and retain identical source hashes. Existing-output and wrong-hash CLI attempts were refused (tool-observed nonzero exit 1); no extra source was acquired. A rejected combined verification command was replaced by narrower read-only reconciliation and separate guards; no rejected action ran. Earlier development output remains retained separately.
+
+The Job/immutable-input patterns were adapted from existing repository helpers, whose physical/Git pins are recorded; neither helper is imported or edited. New runtime/lock bytes matched their committed LF blobs at this checkpoint. Existing autocrlf policy may produce CRLF in another checkout: compare actual bytes to receipt pins before claiming replay, and do not rewrite historical receipts to conceal drift.
+
+Public examples are `test_only` development inputs from Google libkml at an exact revision, with retained BSD terms and no operational/learning labels. Formal launch clearance is deferred. This checkpoint does not qualify an Indian official KML source, format-wide support, API/job/source registration, full schema validity, geographical accuracy, analytical admission, scale, renderer behavior or any release gate. No Docker, services, frontend, GPU/model, provider, push or deployment was used.
+
+Requested settings: GPT-6.1 Sol/xhigh/default-standard; supplied actual permissions `approval_policy=never`, `sandbox_mode=danger-full-access`. Per-turn model/effort/tier are not independently returned by these tools. No Fast/priority request or app-state/config edit was made. Capacity interruption preserved the staged checkpoint and completed evidence; no successful check was restarted on resume.
