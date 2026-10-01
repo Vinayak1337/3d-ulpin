@@ -19,6 +19,7 @@ from typing import Any
 
 from geo.usp_learning.corpus import input_proof, load_examples, sha256_file
 from geo.usp_learning.resources import guarded_run, write_json_once
+from model_isolation import require_model_boundary, local_model_path
 
 
 REVISION = "e61197ed45024b0ed8a2d74b80b4d909f1255473"
@@ -32,6 +33,7 @@ PRIOR_FILES = {
     "requirements-resolved.txt": "c27e534e121858d96dfa531e14374642a43bed9544aeef0426b39353280ab4e3",
 }
 CODE_PATHS = (
+    "scripts/usp/learning/model_isolation.py", "scripts/usp/security/appcontainer_audit.py",
     "scripts/usp/learning/compare_reranker.py", "services/geo/geo/usp_learning/corpus.py",
     "services/geo/geo/usp_learning/model.py", "services/geo/geo/usp_learning/resources.py",
     "services/geo/geo/usp_learning/experiment.py",
@@ -65,6 +67,7 @@ def prompts_for(items: list[dict], targets: list[dict]) -> list[str]:
 
 
 def checked_context(args: argparse.Namespace, *, check_model: bool = False) -> tuple[dict, list[dict], dict, dict]:
+    require_model_boundary(args)
     for name, digest in PRIOR_FILES.items():
         require(sha256_file(args.retained_dir / name) == digest, f"prior smoke evidence changed: {name}")
     require(sha256_file(args.corpus) == CORPUS_SHA and sha256_file(args.input_proof) == PROOF_SHA,
@@ -86,7 +89,7 @@ def checked_context(args: argparse.Namespace, *, check_model: bool = False) -> t
     receipt = read_json(args.retained_dir / "reranker-download-receipt.json")
     require(receipt["revision"] == REVISION and receipt["license"] == "apache-2.0"
             and not receipt["remoteCodeDownloaded"], "unexpected retained model")
-    model_dir = Path(receipt["path"])
+    model_dir = local_model_path()
     if check_model:
         for evidence in receipt["files"]:
             path = model_dir / evidence["file"]
@@ -139,6 +142,7 @@ def frozen_config(args: argparse.Namespace, inputs: dict, receipt: dict, version
 
 
 def prepare(args: argparse.Namespace) -> None:
+    require_model_boundary(args)
     import psutil
     import torch
     from transformers import AutoTokenizer
@@ -152,7 +156,7 @@ def prepare(args: argparse.Namespace) -> None:
     require(memory.available > SETTINGS["maxPeakProcessRssBytes"] + 1024**3, "insufficient RAM headroom")
     require(disk.free > 256 * 1024**2, "insufficient artifact disk space")
     inputs = selected_inputs(items, corpus["targets"])
-    tokenizer = AutoTokenizer.from_pretrained(receipt["path"], padding_side="left", local_files_only=True, trust_remote_code=False)
+    tokenizer = AutoTokenizer.from_pretrained(str(local_model_path()), padding_side="left", local_files_only=True, trust_remote_code=False)
     lengths = [len(tokenizer.encode(text, add_special_tokens=False)) for text in inputs["prompts"]]
     require(max(lengths) <= SETTINGS["maxTokens"], "refuse to truncate any source profile")
     args.output_dir.mkdir(parents=True, exist_ok=False)
@@ -184,10 +188,8 @@ def validate(args: argparse.Namespace, *, check_model: bool = False) -> tuple[di
 
 
 def worker(args: argparse.Namespace) -> None:
+    require_model_boundary(args)
     import psutil
-
-    supervisor = int(os.environ.get("USP_LEARNING_SUPERVISOR_PID", "0"))
-    require(supervisor in {proc.pid for proc in psutil.Process().parents()}, "worker requires its live supervisor")
     attempt = read_json(args.output_dir / "attempt.json")
     require(attempt["freezeSha256"] == sha256_file(args.output_dir / "freeze.json")
             and attempt["outputDir"] == str(args.output_dir.resolve()), "supervised attempt does not match")
@@ -215,14 +217,14 @@ def worker(args: argparse.Namespace) -> None:
                 and torch.cuda.max_memory_reserved() <= SETTINGS["maxCudaReservedBytes"], "GPU allocation/reservation budget exceeded")
         require(current_free >= SETTINGS["minimumFreeCudaBytes"], "GPU free headroom breached")
 
-    tokenizer = AutoTokenizer.from_pretrained(frozen["model"]["path"], padding_side="left", local_files_only=True, trust_remote_code=False)
+    tokenizer = AutoTokenizer.from_pretrained(str(local_model_path()), padding_side="left", local_files_only=True, trust_remote_code=False)
     texts = prompts_for(items, corpus["targets"])
     lengths = [len(tokenizer.encode(text, add_special_tokens=False)) for text in texts]
     require(lengths == frozen["tokenLengths"] and max(lengths) <= SETTINGS["maxTokens"], "tokenized inputs differ or need truncation")
     yes, no = tokenizer.convert_tokens_to_ids("yes"), tokenizer.convert_tokens_to_ids("no")
     require(yes != no and yes != tokenizer.unk_token_id and no != tokenizer.unk_token_id, "invalid answer tokens")
     model = AutoModelForCausalLM.from_pretrained(
-        frozen["model"]["path"], torch_dtype=torch.float16, attn_implementation="sdpa",
+        str(local_model_path()), torch_dtype=torch.float16, attn_implementation="sdpa",
         local_files_only=True, trust_remote_code=False, use_safetensors=True).to("cuda").eval()
     require(next(model.parameters()).dtype == torch.float16 and model.config._attn_implementation == "sdpa",
             "loaded model precision/attention differs from freeze")
@@ -294,12 +296,19 @@ def main() -> None:
     for name in ("corpus", "input-proof", "originals-dir", "retained-dir", "e5-result", "output-dir"):
         parser.add_argument("--" + name, required=True, type=Path)
     parser.add_argument("--_worker", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--containment-profile", required=True, type=Path)
+    parser.add_argument("--containment-sha256", required=True)
     args = parser.parse_args()
+    if not args._worker:
+        guard = guarded_run([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]],
+                            args.containment_profile.parent / "receipts", SETTINGS,
+                            containment_profile=args.containment_profile, containment_sha256=args.containment_sha256)
+        print(json.dumps({"exitCode": guard["exitCode"], "outputsAccepted": guard["outputsAccepted"]}), flush=True)
+        raise SystemExit(guard["exitCode"])
+    require_model_boundary(args)
     os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", HF_HUB_DISABLE_TELEMETRY="1",
                       TOKENIZERS_PARALLELISM="false", OMP_NUM_THREADS="2", MKL_NUM_THREADS="2")
-    if args._worker:
-        worker(args)
-    elif args.action == "prepare":
+    if args.action == "prepare":
         prepare(args)
     else:
         _, _, frozen = validate(args)
@@ -307,14 +316,7 @@ def main() -> None:
         write_json_once(args.output_dir / "attempt.json", {"freezeSha256": sha256_file(args.output_dir / "freeze.json"),
                         "outputDir": str(args.output_dir.resolve()), "rule": "One pass only, including failures; any further pass needs a new assignment"})
         (args.output_dir / "run").mkdir()
-        guard = guarded_run([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:], "--_worker"],
-                            args.output_dir / "run", frozen["settings"])
-        if guard["exitCode"]:
-            raise SystemExit(guard["exitCode"])
-        result = read_json(args.output_dir / "run/result.json")
-        write_json_once(args.output_dir / "run/run.json", {**result, "supervisor": guard})
-        print(json.dumps({"run": str(args.output_dir / "run/run.json"), "threshold": result["selection"]["calibratedGlobalThreshold"],
-                          "evaluationOpened": False, "promoted": False}))
+        worker(args)
 
 
 if __name__ == "__main__":
