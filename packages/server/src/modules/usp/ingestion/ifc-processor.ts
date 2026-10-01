@@ -29,6 +29,9 @@ export function ifcSummary(bytes:Buffer,input:IFCInput){
 }
 const controlledCode=z.string().regex(/^IFC_[A-Z_]{1,60}$/);
 function reapIFC(config:IFCConfig,pid:number,scratch:string){
+  try{assertIFCTools(config.pins,Date.now()+5000);}catch{
+    return Promise.reject(new AppError(503,'IFC_REAP_UNAVAILABLE','Reaper imports are not verified; private scratch remains retained.'));
+  }
   return new Promise<void>((resolve,reject)=>{
     const reaper=spawn(config.python,['-I','-S','-B',config.supervisor,'--reap-pid',String(pid)],{shell:false,windowsHide:true,cwd:scratch,
       env:{SystemRoot:process.env.SystemRoot??'C:\\Windows',TEMP:scratch,TMP:scratch},stdio:['ignore','pipe','ignore']});
@@ -41,6 +44,7 @@ function reapIFC(config:IFCConfig,pid:number,scratch:string){
 }
 export function superviseIFC(config:IFCConfig,requestPath:string,scratch:string,signal:AbortSignal){
   signal.throwIfAborted();
+  assertIFCTools(config.pins);
   return new Promise<void>((resolve,reject)=>{
     const child=spawn(config.python,['-I','-S','-B',config.supervisor,'--request',requestPath],{shell:false,windowsHide:true,cwd:scratch,
       env:{SystemRoot:process.env.SystemRoot??'C:\\Windows',TEMP:scratch,TMP:scratch},stdio:['ignore','pipe','pipe']});

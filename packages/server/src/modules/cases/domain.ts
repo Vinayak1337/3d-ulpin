@@ -881,6 +881,8 @@ export async function retryJob(jobId: string) {
       notFound();
     if (original.operation === "spatial-inference")
       throw new AppError(422, "ML_ITEM_RETRY_REQUIRED", "Retry this extraction from its spatial batch item so its source, model and attempt history stay linked.");
+    if(original.operation==='ifc-native')
+      throw new AppError(422,'IFC_CANONICAL_RETRY_REQUIRED','Retry through the source-bound IFC retry operation with current case/source/access pins; generic job copying is unsupported.');
     const current = await lockCase(client, original.case_id);
     if(original.operation==='projected-vector')
       throw new AppError(422,'PROJECTED_VECTOR_RETRY_REQUIRED','Retry this retained source through its scoped projected-vector admission operation.');

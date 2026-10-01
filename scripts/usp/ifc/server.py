@@ -8,6 +8,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import subprocess
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -15,6 +16,15 @@ import profile as dependency_profile
 
 class Busy(OSError):
     pass
+
+class VerifiedCacheSubprocess:
+    """Keep accepted CLI bytes; add the interpreter's no-cache-write flag to its one child."""
+    def __init__(self,python):self.python=Path(python).resolve()
+    def __getattr__(self,name):return getattr(subprocess,name)
+    def Popen(self,command,*args,**kwargs):
+        if not isinstance(command,list) or Path(command[0]).resolve()!=self.python or command[1:4]!=['-I','-S','-c']:
+            raise ValueError('unexpected_child_command')
+        return subprocess.Popen([command[0],'-I','-S','-B',*command[3:]],*args,**kwargs)
 
 def bounded(path, limit):
     with Path(path).open('rb') as stream:
@@ -167,6 +177,7 @@ def main():
             spec=importlib.util.spec_from_file_location('ifc_cli',cli_path)
             cli=importlib.util.module_from_spec(spec)
             spec.loader.exec_module(cli)
+            cli.subprocess=VerifiedCacheSubprocess(profile['python'])
             receipt=cli.read_file(source,Path(request['output']))
             dependency_profile.verify(profile)
             if digest(bounded(request['profilePath'],2*1024**2))!=pins['profileSha256'] or digest(bounded(source,32*1024**2))!=request['sourceSha256']:

@@ -6,9 +6,13 @@ import json
 from pathlib import Path
 
 RUNTIME_NAMES = ('python.exe', 'python312.dll', 'python3.dll', 'vcruntime140.dll', 'vcruntime140_1.dll', 'DLLs', 'Lib')
+ROOT=Path(__file__).resolve().parents[3]
+REPOSITORY_SOURCES=('scripts/usp/ifc/server.py','scripts/usp/ifc/profile.py','scripts/usp/desktop-ifc-read.py',
+                    'services/geo/geo/__init__.py','services/geo/geo/native_ifc.py')
+REPOSITORY_CACHE_DIRECTORIES=('scripts/usp/ifc','scripts/usp','services/geo/geo')
 
 
-def inventory(python: Path, environment: Path):
+def inventory(python: Path, environment: Path, repository: Path=ROOT):
     files, total = [], 0
     allowed=set(RUNTIME_NAMES)|{'LICENSE.txt','pythonw.exe'}
     for path in python.parent.iterdir():
@@ -19,8 +23,6 @@ def inventory(python: Path, environment: Path):
         nonlocal total
         if path.is_symlink():
             raise ValueError('profile_symlink')
-        if path.name == '__pycache__' or path.suffix == '.pyc':
-            return
         if path.is_dir():
             if kind == 'runtime' and path.name == 'site-packages':
                 return
@@ -40,10 +42,19 @@ def inventory(python: Path, environment: Path):
     for name in RUNTIME_NAMES:
         walk(python.parent, python.parent/name, 'runtime')
     walk(environment, environment/'Lib/site-packages', 'environment')
+    for path in REPOSITORY_SOURCES:
+        walk(repository,repository/path,'repository')
+    for directory in REPOSITORY_CACHE_DIRECTORIES:
+        for path in (repository/directory).iterdir():
+            if path.name.lower()=='__pycache__' or path.suffix.lower()=='.pyc':
+                walk(repository,path,'repository')
     return sorted(files, key=lambda f: (f['root'], f['path']))
 
 
 def verify(profile):
+    if profile.get('schemaVersion')!='ifc-python-profile/2' or profile.get('cachePolicy')!='verified_bytecode_read_no_write' \
+            or Path(profile['repositoryRoot']).resolve()!=ROOT:
+        raise ValueError('profile_changed')
     actual = inventory(Path(profile['python']), Path(profile['environmentRoot']))
     if actual != profile['files']:
         raise ValueError('profile_changed')
@@ -56,7 +67,8 @@ def main():
     p.add_argument('--scratch', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
     a = p.parse_args()
-    profile = {'schemaVersion': 'ifc-python-profile/1', 'platform': 'windows-x86_64',
+    profile = {'schemaVersion': 'ifc-python-profile/2', 'platform': 'windows-x86_64',
+               'cachePolicy':'verified_bytecode_read_no_write','repositoryRoot':str(ROOT),
                'python': str(a.python.resolve()), 'environmentRoot': str(a.environment.resolve()),
                'scratchRoot': str(a.scratch.resolve()), 'files': inventory(a.python.resolve(), a.environment.resolve())}
     data = (json.dumps(profile, indent=2)+'\n').encode('utf-8')
