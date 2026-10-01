@@ -128,6 +128,35 @@ def _selection(page: fitz.Page, region: list[float] | None) -> tuple[fitz.Rect, 
     return fitz.Rect(x0, y0, x1, y1), [float(x0), float(y0), float(x1), float(y1)]
 
 
+def _bounded_render_scale(clip: fitz.Rect) -> float:
+    scale = min(3.0, MAX_IMAGE_SIDE / clip.width, MAX_IMAGE_SIDE / clip.height,
+                math.sqrt(MAX_PIXELS / (clip.width * clip.height)))
+    if not math.isfinite(scale) or scale <= 0:
+        raise SourceOcrError("invalid_render_scale")
+
+    def fits(candidate: float) -> bool:
+        # Use MuPDF's transformed integer bounds, including the pixel origin,
+        # before allocating a raster. Continuous width/height alone can undercount.
+        pixels = (clip * fitz.Matrix(candidate, candidate)).irect
+        return (min(pixels.width, pixels.height) > 0
+                and max(pixels.width, pixels.height) <= MAX_IMAGE_SIDE
+                and pixels.width * pixels.height <= MAX_PIXELS)
+
+    if fits(scale):
+        return scale
+    # Reserve one rounding pixel at each edge. Solve
+    # (width * scale + 2) * (height * scale + 2) <= MAX_PIXELS.
+    # A single deterministic adjustment preserves already-fitting renders.
+    width, height = clip.width, clip.height
+    area_scale = (MAX_PIXELS - 4) / (
+        width + height + math.sqrt((width - height)**2 + MAX_PIXELS * width * height))
+    scale = min(scale, (MAX_IMAGE_SIDE - 2) / width,
+                (MAX_IMAGE_SIDE - 2) / height, area_scale)
+    if not fits(scale):
+        raise SourceOcrError("render_pixel_limit_exceeded")
+    return scale
+
+
 def render_pdf_selection(source: Path, expected_sha256: str, page_number: int,
                          region: list[float] | None, png_path: Path) -> dict[str, Any]:
     """Render once inside the supervised worker; expose its exact pixel affine."""
@@ -156,10 +185,7 @@ def render_pdf_selection(source: Path, expected_sha256: str, page_number: int,
             raise SourceOcrError("page_count_or_selection_unsupported", unsupported=True)
         page = document[page_number - 1]
         clip, selected = _selection(page, region)
-        scale = min(3.0, MAX_IMAGE_SIDE / clip.width, MAX_IMAGE_SIDE / clip.height,
-                    math.sqrt(MAX_PIXELS / (clip.width * clip.height)))
-        if not math.isfinite(scale) or scale <= 0:
-            raise SourceOcrError("invalid_render_scale")
+        scale = _bounded_render_scale(clip)
         pix = page.get_pixmap(matrix=fitz.Matrix(scale, scale), clip=clip,
                               colorspace=fitz.csRGB, alpha=False)
         if (pix.width * pix.height > MAX_PIXELS or max(pix.width, pix.height) > MAX_IMAGE_SIDE

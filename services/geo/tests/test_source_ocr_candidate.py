@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import tempfile
 import hashlib
+import math
 import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import fitz
 
@@ -18,6 +20,63 @@ from geo.usp_document_candidates.docling_tesseract import (
 
 
 class SourceOcrCandidateTests(unittest.TestCase):
+    def test_integer_crop_bounds_preserve_caps_affine_and_fitting_scale(self) -> None:
+        # Blank technical control only: reproduce the observed T3-1 geometry,
+        # the related rounded area overflow, and an accepted T3-2 crop's scale.
+        cases = (
+            ([2250, 1025, 2555, 1685], [648, 1401]),
+            ([100.25, 200.5, 1100.25, 1200.5], [1266, 1266]),
+            ([2250, 990, 2565, 1690], [630, 1400]),
+        )
+        original_get_pixmap = fitz.Page.get_pixmap
+
+        def guarded_get_pixmap(page, *, matrix, clip, **kwargs):
+            predicted = (clip * matrix).irect
+            self.assertLessEqual(max(predicted.width, predicted.height), 1400)
+            self.assertLessEqual(predicted.width * predicted.height, 1_600_000)
+            pix = original_get_pixmap(page, matrix=matrix, clip=clip, **kwargs)
+            self.assertEqual([pix.x, pix.y, pix.width, pix.height],
+                             [predicted.x0, predicted.y0, predicted.width, predicted.height])
+            return pix
+
+        with tempfile.TemporaryDirectory() as directory:
+            source, png = Path(directory)/"control.pdf", Path(directory)/"crop.png"
+            with fitz.open() as document:
+                document.new_page(width=2586, height=1695)
+                document.save(source)
+            source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+            for region, old_pixels in cases:
+                with self.subTest(region=region):
+                    clip = fitz.Rect(region)
+                    old_scale = min(3.0, 1400/clip.width, 1400/clip.height,
+                                    math.sqrt(1_600_000/(clip.width*clip.height)))
+                    old_bounds = (clip * fitz.Matrix(old_scale, old_scale)).irect
+                    self.assertEqual([old_bounds.width, old_bounds.height], old_pixels)
+                    with patch.object(fitz.Page, "get_pixmap", guarded_get_pixmap):
+                        frame = render_pdf_selection(source, source_hash, 1, region, png)
+                    self.assertEqual(frame["source"]["sha256"], source_hash)
+                    self.assertEqual(frame["requestedRegion"], region)
+                    render = frame["render"]
+                    if old_pixels == [630, 1400]:
+                        self.assertEqual(render["scale"], 2.0)
+                        self.assertEqual(render["pixels"], old_pixels)
+                        self.assertEqual(render["pixelOrigin"], [4500, 1980])
+                    else:
+                        self.assertLess(render["scale"], old_scale)
+                    dpi_x, dpi_y = render["dpi"]
+                    box = SimpleNamespace(l=10*72/dpi_x, t=10*72/dpi_y,
+                                          r=100*72/dpi_x, b=25*72/dpi_y,
+                                          coord_origin="TOPLEFT")
+                    cited = source_page_box(box, frame)["box"]
+                    sx, sy = render["pixelOrigin"]
+                    for actual, expected in zip(
+                            [cited[0]*render["scale"]-sx, cited[1]*render["scale"]-sy,
+                             cited[2]*render["scale"]-sx, cited[3]*render["scale"]-sy],
+                            [10, 10, 100, 25]):
+                        self.assertAlmostEqual(actual, expected, places=8)
+                    self.assertTrue(region[0] <= cited[0] < cited[2] <= region[2])
+                    self.assertTrue(region[1] <= cited[1] < cited[3] <= region[3])
+
     def test_large_page_requires_bounded_crop_and_preserves_source_affine(self) -> None:
         page = SimpleNamespace(rect=fitz.Rect(0, 0, 6000, 8000), rotation=0)
         region = [4800.25, 6500.125, 5100.75, 6600.875]
