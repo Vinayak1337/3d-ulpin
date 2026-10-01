@@ -61638,8 +61638,7 @@
           }
         },
         "required": [
-          "expectedDraftRevision",
-          "validationJobId"
+          "expectedDraftRevision"
         ],
         "additionalProperties": false
       },
@@ -62060,6 +62059,49 @@
                 "type": "string",
                 "enum": [
                   "not_bound"
+                ],
+                "description": "Reviewed applicable reference evidence is not bound; authorized operator selections are reported separately."
+              },
+              "selections": {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "operator_selected"
+                    ]
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 25
+                  },
+                  "ids": {
+                    "maxItems": 25,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "referencesSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "state",
+                  "count",
+                  "ids",
+                  "referencesSha256"
+                ],
+                "additionalProperties": false
+              },
+              "reviewedReference": {
+                "type": "string",
+                "enum": [
+                  "not_assessed"
                 ]
               },
               "accuracy": {
@@ -62090,6 +62132,8 @@
               "qualifiedFrame",
               "qualifiedTransform",
               "referenceEvidence",
+              "selections",
+              "reviewedReference",
               "accuracy",
               "accuracyMetres",
               "globalPlacement"
@@ -62097,6 +62141,7 @@
             "additionalProperties": false
           },
           "validation": {
+            "nullable": true,
             "type": "object",
             "properties": {
               "inputSha256": {
@@ -62538,6 +62583,7 @@
               "structuralValidity": {
                 "type": "string",
                 "enum": [
+                  "not_assessed",
                   "passed",
                   "pending",
                   "failed",
@@ -62653,7 +62699,7 @@
             }
           },
           "actions": {
-            "minItems": 6,
+            "minItems": 5,
             "maxItems": 6,
             "type": "array",
             "items": {

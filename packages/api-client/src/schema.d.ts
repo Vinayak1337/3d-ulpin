@@ -7323,7 +7323,7 @@ export interface components {
         POST_registry_drafts_draftId_native_exterior_admission_assessment_Request_application_json: {
             expectedDraftRevision: number;
             /** Format: uuid */
-            validationJobId: string;
+            validationJobId?: string;
         };
         POST_registry_drafts_draftId_native_exterior_admission_assessment_Response_200_application_json: {
             /** @enum {string} */
@@ -7423,8 +7423,20 @@ export interface components {
                 qualifiedFrame: null;
                 /** @enum {string|null} */
                 qualifiedTransform: null;
-                /** @enum {string} */
+                /**
+                 * @description Reviewed applicable reference evidence is not bound; authorized operator selections are reported separately.
+                 * @enum {string}
+                 */
                 referenceEvidence: "not_bound";
+                selections: {
+                    /** @enum {string} */
+                    state: "none" | "operator_selected";
+                    count: number;
+                    ids: string[];
+                    referencesSha256: string;
+                };
+                /** @enum {string} */
+                reviewedReference: "not_assessed";
                 /** @enum {string} */
                 accuracy: "not_assessed";
                 /** @enum {string|null} */
@@ -7513,7 +7525,7 @@ export interface components {
                         resultSha256: string;
                     } | null;
                 };
-            };
+            } | null;
             findings: {
                 sourceIntegrity: {
                     /** @enum {string} */
@@ -7524,7 +7536,7 @@ export interface components {
                     originalBytes: "not_reverified";
                 };
                 /** @enum {string} */
-                structuralValidity: "passed" | "pending" | "failed" | "stale" | "invalid" | "unsupported";
+                structuralValidity: "not_assessed" | "passed" | "pending" | "failed" | "stale" | "invalid" | "unsupported";
                 /** @enum {string} */
                 referenceAccuracy: "not_assessed";
                 /** @enum {string} */
