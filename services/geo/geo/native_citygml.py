@@ -14,6 +14,8 @@ import re
 
 CORE = "http://www.opengis.net/citygml/2.0"
 BUILDING = "http://www.opengis.net/citygml/building/2.0"
+BOUNDARY_SURFACES = {"GroundSurface", "WallSurface", "RoofSurface", "ClosureSurface",
+                     "OuterCeilingSurface", "OuterFloorSurface", "CeilingSurface", "FloorSurface"}
 GML = "http://www.opengis.net/gml"
 XLINK = "http://www.w3.org/1999/xlink"
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
@@ -186,8 +188,26 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
         nodes.append(node)
         if stack:
             stack[-1]["children"] += 1
+        # Only these structural paths admit typed associations. Everything else
+        # is opaque to this projection, even when its descendants reuse known
+        # namespaces. Literal inventory and coordinate opacity are independent.
+        parent_context = stack[-1]["semantic_context"] if stack else None
+        context = None
+        if not stack:
+            context = "model"
+        elif parent_context == "model" and uri == CORE and local == "cityObjectMember":
+            context = "member"
+        elif uri == BUILDING:
+            if (parent_context, local) in (("member", "Building"), ("part_member", "BuildingPart")):
+                context = "building"
+            elif parent_context == "building" and local == "consistsOfBuildingPart":
+                context = "part_member"
+            elif parent_context == "building" and local == "boundedBy":
+                context = "boundary_member"
+            elif parent_context == "boundary_member" and local in BOUNDARY_SURFACES:
+                context = "boundary_surface"
         owner = stack[-1]["owner"] if stack else None
-        if uri == BUILDING and local in ("Building", "BuildingPart"):
+        if context == "building":
             parent_owner, owner = owner, ordinal
             ident = attributes.get(GML + "|id")
             buildings.append({"element": ordinal, "type": local, "id": ident,
@@ -217,6 +237,7 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
                                    "state": "pending_inventory"})
         reference_fields = {e["name"]: e for e in lexical if e["name"] in REFERENCE_ATTRIBUTES or e["name"] == key(GML, "uom")}
         stack.append({"node": node, "bindings": bindings, "owner": owner, "children": 0,
+                      "semantic_context": context, "semantic_parent_context": parent_context,
                       "text": [], "text_bytes": 0, "tag_end": tag_end,
                       "self_closing": raw[offset:tag_end].rstrip().endswith(b"/>"),
                       "geometry_supported": geometry_supported, "reference_fields": reference_fields})
@@ -298,9 +319,11 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
         if frame["owner"] is not None:
             owner = building_index.get(frame["owner"])
             if owner is not None:
-                if node["parent"] == owner["element"] and node["text"] is not None:
+                if (frame["semantic_parent_context"] == "building" and node["parent"] == owner["element"]
+                        and node["text"] is not None and not node["interpretation"].startswith("unsupported")):
                     owner["properties"].append(node["ordinal"])
-                if node["namespace"] == BUILDING and re.match(r"lod[0-4]", node["localName"]):
+                if (frame["semantic_parent_context"] in ("building", "boundary_surface")
+                        and node["namespace"] == BUILDING and re.match(r"lod[0-4]", node["localName"])):
                     owner["lodDeclarations"].append({"element": node["ordinal"], "name": node["localName"],
                                                      "lodLiteral": node["localName"][3], "locator": locator(node)})
 

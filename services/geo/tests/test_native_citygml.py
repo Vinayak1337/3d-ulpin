@@ -91,6 +91,27 @@ class NativeCityGMLTests(unittest.TestCase):
             self.assertFalse((root/"failed-output").exists())
             self.assertEqual(raw, original.read_bytes())
 
+    @unittest.skipUnless(os.environ.get("CITYGML_REVIEW_CONTROL") and os.environ.get("CITYGML_ORIGINALS"),
+                         "Set CITYGML_REVIEW_CONTROL and CITYGML_ORIGINALS to retained reviewer/source directories")
+    def test_opaque_ade_keeps_literals_without_typed_associations(self):
+        control = Path(os.environ["CITYGML_REVIEW_CONTROL"])
+        raw = (control/"opaque-ade-control.gml").read_bytes()
+        self.assertEqual("b85e43be0ffb480959663a72736248006b7e161032f47db76d98243bd17224cb", hashlib.sha256(raw).hexdigest())
+        before = json.loads((control/"ade-control-result/projection.json").read_bytes())
+        result = extract(raw)
+        self.assertEqual([], result["buildings"])
+        self.assertEqual(0, result["counts"]["buildingsAndParts"])
+        for field in ("elements", "namespaces", "identifiers", "references"):
+            self.assertEqual(before[field], result[field], field)
+        # The coordinate guard is unchanged; no opaque body values are decoded.
+        expected_coordinates = [dict(c, buildingElement=None) for c in before["coordinates"]]
+        self.assertEqual(expected_coordinates, result["coordinates"])
+        originals = Path(os.environ["CITYGML_ORIGINALS"])
+        for name, saved in (("Building_and_garage_LOD2-EPSG25832.gml", "run-02-lod2"),
+                            ("Building_LOD1-LocalEngineeringCRS.gml", "run-02-local")):
+            self.assertEqual((originals.parent/saved/"projection.json").read_bytes(),
+                             encode_result(extract((originals/name).read_bytes())), name)
+
     @unittest.skipUnless(os.environ.get("CITYGML_ORIGINALS"), "Set CITYGML_ORIGINALS to the retained unchanged OGC originals")
     def test_retained_ogc_literals_and_byte_locators(self):
         source = Path(os.environ["CITYGML_ORIGINALS"])/"Building_and_garage_LOD2-EPSG25832.gml"
