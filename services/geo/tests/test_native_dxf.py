@@ -80,6 +80,59 @@ class NativeDXFTests(unittest.TestCase):
         self.assertTrue(result["opaqueRecordTypes"])
         self.assertEqual(result["projectedEntityCountIncludingChildren"], 4)
 
+    def test_unknown_codepage_rejected_without_changing_absent_known_or_utf8(self):
+        # Only in-memory header controls; unchanged originals are retained and
+        # these malformed metadata variants are never qualification truth.
+        def with_codepage(raw, value):
+            lines = raw.splitlines(keepends=True)
+            for index, line in enumerate(lines):
+                if line.strip() == b"$DWGCODEPAGE":
+                    self.assertEqual(lines[index + 1].strip(), b"3")
+                    newline = b"\r\n" if lines[index + 2].endswith(b"\r\n") else b"\n"
+                    lines[index + 2] = value + newline
+                    return b"".join(lines), index + 2
+            header = next(i for i, line in enumerate(lines)
+                          if line.strip() == b"HEADER" and lines[i - 1].strip() == b"2")
+            newline = b"\r\n" if lines[header].endswith(b"\r\n") else b"\n"
+            inserted = newline.join((b"  9", b"$DWGCODEPAGE", b"  3", value)) + newline
+            return b"".join(lines[:header + 1]) + inserted + b"".join(lines[header + 1:]), header + 4
+
+        original = self.raw["ASCII_R12.dxf"]
+        unknown, value_line = with_codepage(original, b"ANSI_9999")
+        self.assertEqual(hashlib.sha256(unknown).hexdigest(), "cbca9feb9732cf232c65305aef32af8fb0dfcbb3a444e5e508529ac9b72680c4")
+        with self.assertRaises(dxf.DXFError) as found:
+            dxf.inspect_dxf(unknown, temporary_parent=self.scratch)
+        self.assertEqual(found.exception.status, "unsupported")
+        self.assertEqual(found.exception.code, "CODEPAGE_UNSUPPORTED")
+        self.assertEqual(found.exception.locator["rawValue"], "ANSI_9999")
+        self.assertEqual(found.exception.locator["valueLine"], value_line + 1)
+        self.assertEqual(unknown.splitlines()[value_line], b"ANSI_9999")
+
+        known, value_line = with_codepage(original, b"ANSI_1252")
+        result = dxf.inspect_dxf(known, temporary_parent=self.scratch)
+        self.assertEqual(result["encoding"], {"name": "cp1252", "basis": "declared_codepage"})
+        declaration = result["headerVariables"]["$DWGCODEPAGE"][0]
+        self.assertEqual(declaration["rawValue"], "ANSI_1252")
+        self.assertEqual(declaration["tagIndex"] * 2 + 1, value_line)
+
+        for filename, expected in (("ASCII_R12.dxf", {"name": "cp1252", "basis": "parser_default_cp1252_not_declared"}),
+                                   ("1_polylines.dxf", {"name": "utf-8", "basis": "DXF R2007+ UTF-8"})):
+            result = dxf.inspect_dxf(self.raw[filename], temporary_parent=self.scratch)
+            self.assertEqual(result["encoding"], expected)
+            saved_run = "absent-final" if filename == "ASCII_R12.dxf" else "declared-final"
+            saved_path = self.source.parent / "runs" / saved_run / "drawing.json"
+            # Saved local receipts are optional outside this development lane.
+            # When present, prove every projection value remains unchanged.
+            if saved_path.is_file():
+                saved = json.loads(saved_path.read_text(encoding="utf-8"))
+                result.pop("supervision")
+                saved.pop("supervision")
+                self.assertEqual(result, saved)
+        utf8_unknown, _ = with_codepage(self.raw["1_polylines.dxf"], b"ANSI_9999")
+        result = dxf.inspect_dxf(utf8_unknown, temporary_parent=self.scratch)
+        self.assertEqual(result["encoding"], {"name": "utf-8", "basis": "DXF R2007+ UTF-8"})
+        self.assertEqual(result["headerVariables"]["$DWGCODEPAGE"][0]["rawValue"], "ANSI_9999")
+
     def test_budgets_stop_unchanged_inputs(self):
         # Lower configured ceilings; preserve every source byte and value.
         raw = self.raw["1_polylines.dxf"]
