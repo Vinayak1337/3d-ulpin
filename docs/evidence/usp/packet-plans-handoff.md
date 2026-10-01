@@ -48,7 +48,7 @@ Actual persistence, concurrent PostgreSQL/MVCC behavior, mounted private HTTP jo
 
 ## Pins and worker state
 
-SHA256 values below are the reviewed working-file bytes before Git line-ending normalization; committed blob pins can be reproduced from the returned commit. SQL file/statement hashes and accepted base are in `database/manifest.json`.
+SHA256 values below are the original `e12374a5` candidate's reviewed working-file bytes before Git line-ending normalization; they remain historical evidence. Current P2 correction pins follow below. Committed blob pins can be reproduced from the returned commits. SQL file/statement hashes and accepted base are in `database/manifest.json`.
 
 | File | SHA256 |
 | --- | --- |
@@ -60,3 +60,33 @@ SHA256 values below are the reviewed working-file bytes before Git line-ending n
 | `apps/api/src/modules/evidence/packet-plans.controller.ts` | `b43fdeeec65fb98c2f429ddc78c69b0429a47c9f226afee27954c876cf662c1a` |
 
 Actual supplied permissions: `approval_policy=never`, `sandbox_mode=danger-full-access`. Assignment requested GPT-6.1 Sol/xhigh/default-standard; the actual model/effort/tier was not exposed by this turn and no speed setting was requested or claimed. Staging remained read-only. No runtime resources were started or taken over. Owned changes are committed before the single authorized lead callback; no unrelated dirty files are present. No polls, schedules, subagents or new chats were created.
+
+## P2 correction — protected historical disclosure
+
+Returned review `1606f1036ee6d9b9deb22522b4120a908ace1f79`, integrated report `02ce15f6`, identified an archive committing between the final case eligibility SELECT and subsequent source authority check. Correction continues the same clean branch from `e12374a5313de30a1f9fbf7c3f591eacc4677ff9` under the [bounded correction assignment](../../orchestration/PARALLEL_20261002C.md). The original reviewer report/probe is preserved; this is owner correction evidence awaiting original-reviewer closure.
+
+Historical `readPacketPlan` now discovers the full selected and accepted-shared source closure, including both retained and current copied-source lineage. It obtains sorted existing `registry-import:<caseId>` destination gates and case `FOR SHARE` locks before the existing `physical-area-recording` mutex, then protects source rows and rediscovers the closure. Changed case/lineage discovery rejects before disclosure. Current target checks use `FOR SHARE OF r`; the existing declaration/document authority runs in protected **replay** mode after protection, retaining source/case/target authority through transaction commit. Current extraction receipts, old source/target revision equality and expiry are still not requirements for historical access.
+
+The concrete archive writer `scripts/archive-workspaces.ts:10–13` uses `UPDATE cases SET archived=$1 WHERE id=ANY($2::uuid[]) RETURNING id`; case share locks conflict with that update. The target lifecycle uses the existing recording mutex. `source-case-lock.ts`, declaration/document authority and all writers remain read-only reuse. No second access store or write fence was added. Source/case discovery is bounded by the existing eight-source lineage depth and 2,000-source/case limits; this is a metadata authorization section, not a performance or live contention qualification.
+
+The linked PACK0 reader already invokes `readPacketPlan` before and after object I/O. Both calls now use this protected transaction, while object I/O stays outside historical read transactions. An archive committed during the object gap denies the final packet result. A conflicting archive started inside protected authorization must wait for its transaction to finish; later reads deny after archive commit. A read serialized before a revocation can finish normally. No receipt/event/object write occurs on these reads or on authorized cached replay. Direct PACK0, contracts, SQL, source bytes and generated publication were not changed by this correction.
+
+Reused the original probe's final eligibility/source-query schedules in the owned focused tests, with archive effects now respecting observed case share locks. The private original `E:/BhuAayam-data/task-data/desktop-packet-plans-review/historical-read-archive.probe.test.ts` remains SHA256 `9c3e8cceafe1b448b81eae97d6f3397123defe8292adad1d6f48e72fd969cff4`, matching the review receipt. Its fixture applies archive effects without lock conflict modelling, and its assertions intentionally prove the old bug; it was not overwritten or relabelled as corrected behavior. The owned regressions check both schedules, case-first/recording/source/target order, queued archive until commit, subsequent denial, prior object-gap revocation, full retained/current lineage and private shared-consent cases, and rejection after changed dependency discovery. Existing healthy history, benign drift/expiry, zero-write replay and direct PACK0 compatibility checks remain passing.
+
+Actual correction commands from `C:/Users/kvina/.codex/worktrees/desktop-citygml/3d-ulpin`:
+
+| Command | Exit / result |
+| --- | --- |
+| `pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/usp-packet-plans.test.ts` | 0, 13 passed, no skips |
+| `pnpm typecheck:backend` | 0, server and API |
+| `git diff --check` | 0 |
+
+Correction working-file SHA256 before Git normalization:
+
+| File | SHA256 |
+| --- | --- |
+| `packages/server/src/modules/usp/packets/plan-authority.ts` | `aab1f8380ddbf8f50a7ceb132568844f8e91ff58bf4a0e2ebfa249a98b228121` |
+| `packages/server/src/modules/usp/packets/plan-service.ts` | `3668e53df4e41cf9596676600ac319da5a1626773084186606ef7a651e5ebded` |
+| `tests/usp-packet-plans.test.ts` | `3fba2c6d54812682632defb20bb0eb2a3b73c49ee24d029636d8d8757b08393d` |
+
+These are controlled query-boundary/lock simulations using actual candidate functions and the concrete SQL conflict; actual PostgreSQL/MVCC concurrency, persistence and mounted HTTP disclosure remain unqualified. No service/DB/Docker/migration, model/provider/GPU, frontend/generated/source, push/main/deployment, polling or schedule action occurred. Supplied never/danger-full-access permissions were verified from the continuation context; GPT-6.1 Sol/xhigh/default-standard was requested, with actual model/effort/tier unexposed. Staging and reviewer artifacts remain read-only; no runtime resource was taken over. Return the owned correction commit and clean-state receipt to the authorized lead callback, then stop for reviewer closure.

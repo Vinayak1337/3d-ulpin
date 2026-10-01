@@ -14,7 +14,7 @@ import { lockDeclarationSiteTx } from '../declarations/authority';
 import { requestReceiptTx } from '../commands';
 import { appendUspOutboxTx } from '../outbox';
 import { preparePacket0Artifact, registerPacket0Tx } from '../packet0';
-import { assessPlanTx, assertAssessment, authorizePlanTx } from './plan-authority';
+import { assessPlanTx, assertAssessment, authorizePlanTx, protectPlanDisclosureTx } from './plan-authority';
 import { prepareSharedAuthority, SharedAuthorityNeeded, type SharedAuthority } from './plan-shared';
 
 /** Test I/O transport is explicit and never accepted from HTTP input. */
@@ -135,12 +135,13 @@ export async function readPacketPlan(ctx: RequestContext, raw: unknown) {
   const command = UspReadPacketPlanSchema.parse(raw);
   return transaction(async client => {
     const plan = await loadTx(client, command.planId, command.version);
-    await authorizePlanTx(client, ctx, plan);
+    await protectPlanDisclosureTx(client, ctx, plan);
+    await authorizePlanTx(client, ctx, plan, true);
     const confirmationBody = (await client.query('SELECT body FROM usp_packet_plan_confirmations WHERE plan_id=$1 AND version=$2',
       [plan.planId, plan.version])).rows[0]?.body ?? null;
     const executionBody = (await client.query('SELECT body FROM usp_packet_plan_executions WHERE plan_id=$1 AND version=$2',
       [plan.planId, plan.version])).rows[0]?.body ?? null;
-    await authorizePlanTx(client, ctx, plan);
+    await authorizePlanTx(client, ctx, plan, true);
     const confirmation = confirmationBody ? validateConfirmation(plan, confirmationBody) : null;
     const execution = executionBody ? validateExecution(plan, executionBody) : null;
     if (execution && execution.confirmationId !== confirmation?.confirmationId) conflict('The execution confirmation is unavailable.');

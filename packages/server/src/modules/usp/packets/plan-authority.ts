@@ -1,5 +1,6 @@
 import type { PoolClient } from 'pg';
-import type { RequestContext, TargetPin, EvidencePointer } from '@ulpin/contracts/usp';
+import type { RequestContext, TargetPin, EvidencePointer, DeclarationEvidence } from '@ulpin/contracts/usp';
+import { z } from 'zod';
 import type { PacketPlan, PacketPlanInput, PacketPlanEntry } from '../../../../../contracts/src/usp/packets';
 import { UspPacketPlanEntrySchema } from '../../../../../contracts/src/usp/packets';
 import { canonical, fingerprint } from '../../cases/domain';
@@ -12,6 +13,7 @@ import { UspDeclarationInputSchema, UspReviewDeclarationSchema } from '@ulpin/co
 import { selectExactPart, type Packet0Line } from '../packet0';
 import { captureDocumentSourceTx } from '../ingestion/document-authority';
 import { sharedKey, SharedAuthorityNeeded, type SharedAuthority } from './plan-shared';
+import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 
 async function capturedTx(client: PoolClient, manifestId: string, pin: TargetPin) {
   const row = (await client.query(`SELECT body,body_sha256 FROM usp_snapshot_bodies WHERE manifest_id=$1
@@ -25,27 +27,82 @@ export function assertPlanActor(ctx: RequestContext, plan: PacketPlan) {
     || ctx.policyVersion !== plan.policyVersion)
     throw new AppError(403, 'PACKET_PLAN_ACCESS', 'Current access does not authorize this private plan.');
 }
-/** Historical disclosure checks current access, not current extraction/revision eligibility. */
-export async function authorizePlanTx(client: PoolClient, ctx: RequestContext, plan: PacketPlan) {
-  assertPlanActor(ctx, plan);
-  await scopedManifestTx(client, ctx, plan.input.scope);
-  const current = (await client.query(`SELECT r.*,c.status AS project_status FROM registry_records r
-    LEFT JOIN usp_project_codes c ON c.record_id=r.id WHERE r.id=$1 AND r.site_id=$2`,
-    [plan.input.target.ref.id, plan.input.scope.scopeId])).rows[0] ?? notFound('The selected target is unavailable.');
-  if (['retired', 'cancelled_error'].includes(current.project_status))
-    throw new AppError(403, 'PACKET_PLAN_TARGET_ACCESS', 'The selected target is unavailable.');
-  await assertDeclarationEvidenceTx(client, ctx, plan.input.scope, plan.entries.map(e => ({
+async function planEvidenceTx(client: PoolClient, plan: PacketPlan): Promise<DeclarationEvidence[]> {
+  const evidence: DeclarationEvidence[] = plan.entries.map(e => ({
     pointer: { ...e.selection.pointer, assetRevision: null, partRevision: null }, sha256: e.sourceSha256, bytes: e.sourceBytes,
-  })), false, 'replay');
+  }));
   // Accepted shared context can depend on private contributing sources besides the selected excerpt.
   for (const entry of plan.entries) if (entry.applicabilitySha256 && entry.selection.review.kind === 'shared') {
     const selection = entry.selection;
     if (selection.review.kind !== 'shared') continue;
     const captured = await capturedTx(client, plan.input.scope.manifestId, selection.review.declaration);
     const input = UspDeclarationInputSchema.parse(captured.body.input), review = UspReviewDeclarationSchema.parse(captured.body.review);
-    await assertDeclarationEvidenceTx(client, ctx, plan.input.scope,
-      [...declarationEvidence(input), ...review.consentEvidence, ...review.applicability.map(a => a.evidence)], false, 'replay');
+    evidence.push(...declarationEvidence(input), ...review.consentEvidence, ...review.applicability.map(a => a.evidence));
   }
+  return evidence;
+}
+/** Discovery is not authorization. Retained roots and current roots both contribute
+ * their current lineage, exactly as the existing replay authorizer traverses it. */
+async function disclosureDependenciesTx(client: PoolClient, plan: PacketPlan) {
+  const evidence = await planEvidenceTx(client, plan), cases = new Set<string>();
+  const sources = new Map<string, { id: string; caseId: string; parentId: string | null }>();
+  const captured = new Map<string, Record<string, any>>();
+  const denied = (): never => { throw new AppError(403, 'DECLARATION_SOURCE_DENIED', 'The source authorization dependencies are unavailable.'); };
+  const visit = async (id: string, path: Set<string>): Promise<void> => {
+    if (!z.uuid().safeParse(id).success || path.has(id) || path.size >= 8) denied();
+    if (sources.has(id)) return;
+    const next = new Set(path).add(id);
+    const row = (await client.query('SELECT * FROM sources WHERE id=$1', [id])).rows[0];
+    if (!row || !z.uuid().safeParse(row.case_id).success) denied();
+    const parentId = row.inspection?.copiedFrom?.sourceRevisionId ?? null;
+    if (parentId !== null && typeof parentId !== 'string') denied();
+    cases.add(row.case_id); sources.set(id, { id, caseId: row.case_id, parentId });
+    if (sources.size > 2000 || cases.size > 2000) throw new AppError(413, 'PACKET_PLAN_ACCESS_LIMIT', 'Select a smaller authorization scope.');
+    if (parentId) await visit(parentId, next);
+  };
+  for (const e of evidence) {
+    const key = canonical(e.pointer.sourceRevision);
+    let root = captured.get(key);
+    if (!root) { root = (await capturedTx(client, plan.input.scope.manifestId, e.pointer.sourceRevision)).body; captured.set(key, root); }
+    if (!z.uuid().safeParse(root.case_id).success) denied();
+    cases.add(root.case_id);
+    await visit(root.id, new Set());
+    const retainedParent = root.inspection?.copiedFrom?.sourceRevisionId;
+    if (retainedParent !== undefined) {
+      if (typeof retainedParent !== 'string') denied();
+      await visit(retainedParent, new Set([root.id]));
+    }
+  }
+  return { cases: [...cases].sort(), sources: [...sources.values()].sort((a, b) => a.id.localeCompare(b.id)) };
+}
+/** Historical disclosure takes no write fence and performs no writes. Cases/gates
+ * precede recording and source/registry locks, matching the existing writers.
+ * Rediscovery after protection rejects a changed case/lineage closure before disclosure. */
+export async function protectPlanDisclosureTx(client: PoolClient, ctx: RequestContext, plan: PacketPlan) {
+  assertPlanActor(ctx, plan);
+  await scopedManifestTx(client, ctx, plan.input.scope);
+  const dependencies = await disclosureDependenciesTx(client, plan);
+  for (const caseId of dependencies.cases) await lockSourceCaseDestinationTx(client, caseId);
+  const cases = (await client.query('SELECT id FROM cases WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE', [dependencies.cases])).rows;
+  if (cases.length !== dependencies.cases.length) throw new AppError(403, 'DECLARATION_SOURCE_DENIED', 'The source cases are unavailable.');
+  await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
+  await client.query('SELECT id FROM registry_sites WHERE id=$1 FOR SHARE', [plan.input.scope.scopeId]);
+  const sourceIds = dependencies.sources.map(s => s.id);
+  await client.query('SELECT id FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE', [sourceIds]);
+  if (canonical(await disclosureDependenciesTx(client, plan)) !== canonical(dependencies))
+    conflict('Source authorization dependencies changed. Retry this exact historical read.');
+}
+/** Caller holds case-first/recording protection. Check current original access,
+ * never current extraction/old revision eligibility, and retain locks until commit. */
+export async function authorizePlanTx(client: PoolClient, ctx: RequestContext, plan: PacketPlan, protect = false) {
+  assertPlanActor(ctx, plan);
+  await scopedManifestTx(client, ctx, plan.input.scope);
+  const current = (await client.query(`SELECT r.*,c.status AS project_status FROM registry_records r
+    LEFT JOIN usp_project_codes c ON c.record_id=r.id WHERE r.id=$1 AND r.site_id=$2${protect ? ' FOR SHARE OF r' : ''}`,
+    [plan.input.target.ref.id, plan.input.scope.scopeId])).rows[0] ?? notFound('The selected target is unavailable.');
+  if (['retired', 'cancelled_error'].includes(current.project_status))
+    throw new AppError(403, 'PACKET_PLAN_TARGET_ACCESS', 'The selected target is unavailable.');
+  await assertDeclarationEvidenceTx(client, ctx, plan.input.scope, await planEvidenceTx(client, plan), protect, 'replay');
   assertPlanActor(ctx, plan);
 }
 function samePart(a: EvidencePointer, b: EvidencePointer) {
