@@ -78,7 +78,7 @@ async function currentAssessment(draftValue:string,raw:unknown,dependencies:Depe
   if(geometry.type!=='Solid')missing.push({requirement:'solid_exterior_profile',state:'needs_input',reason:
     'A valid MultiSurface is surface evidence; this selection does not supply a Solid exterior for solid admission.'});
   missing.push({requirement:'reviewed_reference_evidence',state:'needs_input',reason:
-    'Bind applicable independent reference/control evidence with exact source identity, geometry, date and horizontal/vertical reference; none is bound by this native profile.'},
+    'Reviewed applicable independent reference/control evidence with exact source identity, geometry, date and horizontal/vertical reference is still required. Operator-selected document attachments do not establish reviewed applicability or accuracy.'},
   {requirement:'reference_accuracy_check',state:'producer_unavailable',reason:
     'Reference accuracy needs reviewed control comparisons, documented tolerances and any required transform for this selection. The native reference-check path is unavailable; a declared CRS and encoded scale/translate do not establish accuracy.'},
   {requirement:'native_admission_review',state:'producer_unavailable',reason:
@@ -103,8 +103,10 @@ async function currentAssessment(draftValue:string,raw:unknown,dependencies:Depe
     actions:[{kind:'inspect_original',method:'GET',path:`/api/v1/ingestion/cases/${s.caseId}/sources/${s.sourceId}/cityjson/original`},
       {kind:'inspect_native',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior`},
       {kind:'inspect_validation',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior/validations/${request.validationJobId}`},
-      {kind:'request_validation',method:'POST',path:`/api/v1/registry-drafts/${draftId}/native-exterior/validations`}],
-    capabilities:{inspect:true,requestValidation:'requires_configured_validator',bindReferenceEvidence:false,reviewAdmission:false,recordNativeExterior:false,
+      {kind:'request_validation',method:'POST',path:`/api/v1/registry-drafts/${draftId}/native-exterior/validations`},
+      {kind:'inspect_reference_selections',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior/references`},
+      {kind:'bind_reference_evidence',method:'POST',path:`/api/v1/registry-drafts/${draftId}/native-exterior/references`}],
+    capabilities:{inspect:true,requestValidation:'requires_configured_validator',bindReferenceEvidence:true,reviewAdmission:false,recordNativeExterior:false,
       qualifyGeometry:false,analyticalGeometry:false,exportQualifiedGeometry:false}};
   // Application evidence fingerprint, never the SQL post-write qualification hash or a recording capability.
   const assessment=RegistryCityJSONAdmissionAssessmentSchema.parse({...value,assessmentSha256:fingerprint(value)});

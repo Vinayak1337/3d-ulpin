@@ -27,9 +27,9 @@ export const RegistryCityJSONAdmissionAssessmentSchema=z.strictObject({version:z
   sufficiency:DataSufficiencyVerdictSchema,
   missing:z.array(z.strictObject({requirement:z.string().min(1).max(100),reason:z.string().min(1).max(512),
     state:z.enum(['needs_input','needs_validation','producer_unavailable'])})).min(1).max(8),
-  actions:z.array(z.strictObject({kind:z.enum(['inspect_original','inspect_native','inspect_validation','request_validation']),
-    method:z.enum(['GET','POST']),path:z.string().startsWith('/api/v1/').max(512)})).length(4),
-  capabilities:z.strictObject({inspect:z.literal(true),requestValidation:z.literal('requires_configured_validator'),bindReferenceEvidence:z.literal(false),
+  actions:z.array(z.strictObject({kind:z.enum(['inspect_original','inspect_native','inspect_validation','request_validation','inspect_reference_selections','bind_reference_evidence']),
+    method:z.enum(['GET','POST']),path:z.string().startsWith('/api/v1/').max(512)})).length(6),
+  capabilities:z.strictObject({inspect:z.literal(true),requestValidation:z.literal('requires_configured_validator'),bindReferenceEvidence:z.literal(true),
     reviewAdmission:z.literal(false),recordNativeExterior:z.literal(false),qualifyGeometry:z.literal(false),analyticalGeometry:z.literal(false),exportQualifiedGeometry:z.literal(false)}),
 }).superRefine((value,ctx)=>{
   if(JSON.stringify(value.missing.map(v=>v.requirement))!==JSON.stringify(value.sufficiency.missing))

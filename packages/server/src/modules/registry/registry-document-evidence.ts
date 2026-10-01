@@ -29,8 +29,8 @@ export function assertDocumentReviewContext(review:{documentReviewContext?:Regis
 }
 /** General projections hide private citations, native pins and derived geometry. */
 export function publicRegistryBody<T extends object>(body:T):T{
-  const {documentCitations:_privateCitations,nativeExteriorCandidate:_privateNative,...publicBody}=
-    body as T&{documentCitations?:unknown;nativeExteriorCandidate?:unknown};
+  const {documentCitations:_privateCitations,nativeExteriorCandidate:_privateNative,nativeExteriorReferences:_privateReferences,...publicBody}=
+    body as T&{documentCitations?:unknown;nativeExteriorCandidate?:unknown;nativeExteriorReferences?:unknown};
   return (Object.hasOwn(body,'nativeExteriorCandidate')?{...publicBody,footprint:[]}:publicBody) as T;
 }
 export function publicRegistryDraft<T extends {records:RegistryRecord[]}>(draft:T):T{

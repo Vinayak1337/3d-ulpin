@@ -4,6 +4,8 @@ import {RegistryCityJSONPrepareSchema,RegistryCityJSONReceiptSchema,RegistryCity
   RegistryCityJSONRemoveSchema,RegistryCityJSONRemovalReceiptSchema} from '@ulpin/contracts';
 import {RegistryCityJSONValidationRequestSchema,RegistryCityJSONValidationReceiptSchema,RegistryCityJSONValidationStatusSchema} from '@ulpin/contracts';
 import {RegistryCityJSONAdmissionRequestSchema,RegistryCityJSONAdmissionAssessmentSchema} from '@ulpin/contracts';
+import {CITYJSON_REFERENCE_LIMITS,RegistryCityJSONReferenceAttachSchema,RegistryCityJSONReferenceRemoveSchema,
+  RegistryCityJSONReferenceReceiptSchema,RegistryCityJSONReferenceReadSchema} from '@ulpin/contracts';
 import {AppError} from '@ulpin/server/infrastructure/errors';
 import {PrivateSpatialGuard} from '../spatial/private-spatial.guard';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -31,6 +33,32 @@ function noNativeQuery(req:Request){
 @Controller('api/v1')
 export class RegisterController {
   constructor(@Inject(RegisterService) private readonly service: RegisterService) {}
+
+  @Post('registry-drafts/:draftId/native-exterior/references') @HttpCode(200)
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_native_exterior_references',summary:'Attach exact operator-selected native document parts to an unrecorded exterior draft'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryCityJSONReferenceReceiptSchema),RegistryCityJSONReferenceAttachSchema)
+  async attachNativeReferences(@Param('draftId') draftId:string,@Req() req:Request){
+    noNativeQuery(req);
+    return this.service.attachNativeReferences(idSchema.parse(draftId),RegistryCityJSONReferenceAttachSchema.parse(await readJsonBody(req,CITYJSON_REFERENCE_LIMITS.bodyBytes)));
+  }
+
+  @Get('registry-drafts/:draftId/native-exterior/references')
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_native_exterior_references',summary:'Privately read exact literal document selections without assessing applicability or accuracy'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryCityJSONReferenceReadSchema))
+  nativeReferences(@Param('draftId') draftId:string,@Req() req:Request){
+    noNativeQuery(req);return this.service.nativeReferences(idSchema.parse(draftId));
+  }
+
+  @Post('registry-drafts/:draftId/native-exterior/references/remove') @HttpCode(200)
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_native_exterior_references_remove',summary:'Remove exact draft reference selections, including unavailable sources, without changing native geometry'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryCityJSONReferenceReceiptSchema),RegistryCityJSONReferenceRemoveSchema)
+  async removeNativeReferences(@Param('draftId') draftId:string,@Req() req:Request){
+    noNativeQuery(req);
+    return this.service.removeNativeReferences(idSchema.parse(draftId),RegistryCityJSONReferenceRemoveSchema.parse(await readJsonBody(req,CITYJSON_REFERENCE_LIMITS.bodyBytes)));
+  }
 
   @Post('registry-drafts/:draftId/native-exterior/admission-assessment') @HttpCode(200)
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
