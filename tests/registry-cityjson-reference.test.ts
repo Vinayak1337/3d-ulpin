@@ -14,6 +14,7 @@ import {publicRegistryBody,publicRegistryDraft,publicRegistryReview} from '../pa
 import {assertNoNativeCandidates,createRegistryDraftTx,recordBodySchema} from '../packages/server/src/modules/registry/registry';
 import {associationDocumentInputTx} from '../packages/server/src/modules/usp/ingestion/document-association-authority';
 import {documentInput} from '../packages/server/src/modules/usp/ingestion/document-context';
+import {documentReaderSha} from '../packages/server/src/modules/usp/ingestion/document-native';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
@@ -234,4 +235,65 @@ test('canonical document helper scopes opaque job/source IDs and fences exact ac
   completedHash=selection.document.resultSha256;current.archived=true;
   await assert.rejects(()=>associationDocumentInputTx(client,localRequestContext('control'),selection.document),rejected(403));
   assert(queries.some(sql=>sql.includes('FOR UPDATE')));assert(!queries.some(sql=>/^(INSERT|UPDATE|DELETE)/.test(sql)));
+}));
+
+test('accepted reference enrollment selects five exact EPSG/3DBAG lines across both cases without approving applicability or changing the native CRS',()=>attributed(async()=>{
+  // Accepted at lead 310f20c; exact full result bytes are read from retained
+  // files. Authority remains a snapshot double, not current DB authority in
+  // this code-only checkout (its physical document-reader digest is reported).
+  const manifest=json('desktop-cityjson-reference-binding/accepted-enrollment-manifest.json');
+  assert.equal(sha256(readFileSync(manifest.verificationReceipt.path)),manifest.verificationReceipt.sha256);
+  const documents=manifest.enrollments.map((entry:any)=>{
+    const bytes=readFileSync(entry.resultPrivateCopy);assert.equal(bytes.length,entry.resultBytes);assert.equal(sha256(bytes),entry.resultSha256);
+    const result=DocumentResultSchema.parse(JSON.parse(bytes.toString('utf8')));
+    assert.equal(fingerprint(result.input),entry.inputSha256);assert.equal(result.input.readerSha256,entry.readerSha256);
+    assert.equal(entry.acceptedFence,1);
+    const source=readFileSync(entry.sourceOriginal.privatePath);assert.equal(source.length,entry.sourceBytes);assert.equal(sha256(source),entry.sourceSha256);
+    const lines=source.toString('utf8').split(/\r?\n/),parts=entry.selectedParts.map((selected:any)=>{
+      const part=result.native.parts.find(p=>p.id===selected.id)!;assert(part);
+      assert.equal(part.text,lines[part.locator.line!-1]);assert.equal(part.sha256,selected.sha256);assert.equal(sha256(part.text),part.sha256);
+      assert.deepEqual(part.locator,selected.locator);return part;
+    });
+    const pin={caseId:entry.caseId,caseRevision:entry.caseRevision,sourceId:entry.sourceId,sourceRevision:entry.sourceRevision,
+      sourceSha256:entry.sourceSha256,jobId:entry.jobId,resultSha256:entry.resultSha256};
+    return {entry,result,parts,pin};
+  });
+  const f=fixture(),initialRecord=structuredClone(f.state.draft.records[0]),denied=new Set<string>(),checks:string[]=[];
+  const dependencies={...f.dependencies,
+    document:async(_c:PoolClient,_ctx:unknown,pin:any,expected?:any)=>{
+      checks.push(pin.caseId);const document=documents.find((v:any)=>v.pin.caseId===pin.caseId&&v.pin.jobId===pin.jobId&&v.pin.sourceId===pin.sourceId);
+      if(!document||denied.has(pin.caseId))throw new AppError(404,'DOCUMENT_UNAVAILABLE','Snapshot unavailable.');
+      if(fingerprint(pin)!==fingerprint(document.pin)||(expected&&fingerprint(expected)!==fingerprint(document.result.input)))
+        throw new AppError(409,'DOCUMENT_PIN','Snapshot document input/result changed.');
+      return document.result.input;
+    },result:async(enrolled:any,resultHash:string)=>{
+      const document=documents.find((v:any)=>v.result.input.jobId===enrolled.jobId)!;
+      assert.equal(resultHash,document.entry.resultSha256);f.state.reads++;return structuredClone(document.result);
+    }};
+  let revision=1;
+  for(const document of documents){
+    const request={requestKey:randomUUID(),expectedDraftRevision:revision,document:document.pin,partIds:document.parts.map((p:any)=>p.id)};
+    const receipt=await attachRegistryCityJSONReferencesTx(f.client,f.draftId,request,dependencies);assert.equal(receipt.draftRevision,++revision);
+    assert.deepEqual(await attachRegistryCityJSONReferencesTx(f.client,f.draftId,request,dependencies),receipt);
+  }
+  const read=await readRegistryCityJSONReferencesTx(f.client,f.draftId,dependencies);assert.equal(read.references.length,5);
+  assert.equal(read.referenceDeclaration.crs,'EPSG:7415');assert.equal(read.referenceDeclaration.qualification,'not_assessed');
+  assert.equal(read.reviewedReference,'not_assessed');assert.equal(read.accuracyMetres,null);assert.equal(read.globalPlacement,'not_qualified');
+  assert(read.references.some(v=>v.part.text.includes('EPSG:4978')));assert(read.references.every(v=>v.pin.accuracy==='not_assessed'&&v.pin.applicability==='not_assessed'));
+  const {nativeExteriorReferences:_private,...unchanged}=f.state.draft.records[0];assert.deepEqual(unchanged,initialRecord);
+  assert.throws(()=>assertCityJSONValidationAuthority(validation.input,{draft:f.state.draft,site:f.state.site,record:f.state.draft.records[0],candidate:f.candidate}),rejected(409));
+  const html=documents.find((v:any)=>v.entry.id==='3dbagapi'),redacted=html.result.native.parts.find((part:any)=>/\[redacted/i.test(part.text));assert(redacted);
+  await assert.rejects(()=>attachRegistryCityJSONReferencesTx(f.client,f.draftId,{requestKey:randomUUID(),expectedDraftRevision:revision,
+    document:html.pin,partIds:[redacted.id]},dependencies),rejected(422));assert.equal(f.state.writes,2);
+  const xml=documents.find((v:any)=>v.entry.id==='epsg7415');denied.add(xml.pin.caseId);const beforeChecks=checks.length;
+  const removed=await removeRegistryCityJSONReferencesTx(f.client,f.draftId,{requestKey:randomUUID(),expectedDraftRevision:revision,
+    remove:read.references.filter(v=>v.pin.document.caseId===xml.pin.caseId).map(v=>v.pin.id)},dependencies);
+  assert.equal(removed.draftRevision,++revision);assert(checks.slice(beforeChecks).every(id=>id===html.pin.caseId));
+  const retained=await readRegistryCityJSONReferencesTx(f.client,f.draftId,dependencies);assert.equal(retained.references.length,2);
+  const cleared=await removeRegistryCityJSONReferencesTx(f.client,f.draftId,{requestKey:randomUUID(),expectedDraftRevision:revision,clearAll:true},dependencies);
+  assert.equal(cleared.draftRevision,++revision);assert.deepEqual(f.state.draft.records[0],initialRecord);
+  const output=process.env.ULPIN_CITYJSON_REFERENCE_ENROLLMENT_OUTPUT;
+  if(output){assert(!existsSync(output));writeFileSync(output,JSON.stringify({read,removed,retained,cleared,
+    acceptedEnrollmentCommit:'310f20c7318e6b7431bab783e004a2c0cdcb087e',acceptedDocumentReaderSha256:documents[0].entry.readerSha256,
+    currentCheckoutDocumentReaderSha256:documentReaderSha(),sourceContextChanged:false,protocolOnly:true},null,2)+'\n',{flag:'wx'});}
 }));
