@@ -1,5 +1,7 @@
 # MODEL-EGRESS-02 — mandatory Qwen containment adapter
 
+**Lead acceptance, 1 October:** reviewed adapter and host-loader correction integrate as `8310531` / `9114718`; the [review closure](desktop-backend-review/model-egress-enforcement-review.md) records exact evidence and six passing integrated stdlib controls. Both host loaders execute verified source bytes directly. This closes the scoped host-cache P2, with no actual Qwen run, retraining, model promotion or expanded network qualification. Any later execution needs a newly pinned profile for its exact code/runtime; saved source pins are not rewritten.
+
 1 October 2026. Assignment/base `142905fa76a6a32b0fab3ce49ff635d43de1b097`. Owned worktree: `C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin`, branch `task/desktop-model-egress-enforcement`. The prior failed experiment branch remains at `f41ae65b6895abe0d4445fd11b3ac7d331d39df6`; none of its code/settings was cherry-picked. Primary staging stayed read-only, later observed at `4f6ca13858823c9453ca14854aa81ed81a2700f1`. Supplied permissions: `never` / `danger-full-access`; requested Sol6.1/xhigh/default-standard. Actual model/effort/request tier are unexposed.
 
 ## Delivered behavior
