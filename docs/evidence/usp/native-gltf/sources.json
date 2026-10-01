@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "gltf-development-sources/1",
+  "publisher": "KhronosGroup/glTF-Sample-Assets",
+  "repositoryRevision": "f36bfdabd1031c3cf6689a50570b8cdf3678b49c",
+  "artist": "Cesium",
+  "copyrightYear": "2017",
+  "licence": "CC-BY-4.0",
+  "licenceUrl": "https://creativecommons.org/licenses/by/4.0/legalcode",
+  "attribution": "Box model, copyright 2017 Cesium; KhronosGroup glTF-Sample-Assets at f36bfdabd1031c3cf6689a50570b8cdf3678b49c; CC BY 4.0",
+  "purpose": "test_only",
+  "classification": "published upstream graphics example; no operational or property facts",
+  "geography": null,
+  "horizontalCrs": null,
+  "verticalDatum": null,
+  "placement": "unknown",
+  "linearUnits": "metre under glTF 2.0 specification semantics; not surveyed accuracy",
+  "trainingQualification": false,
+  "productionQualification": false,
+  "launchClearance": "Later release workstream must retain model-specific attribution and assess the intended use; these observations qualify local parser development only.",
+  "sources": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.glb",
+      "bytes": 1664,
+      "sha256": "ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e",
+      "originalUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/f36bfdabd1031c3cf6689a50570b8cdf3678b49c/Models/Box/glTF-Binary/Box.glb",
+      "acquiredAt": "2026-10-01T15:27:02.591522+00:00",
+      "acquisitionTimeBasis": "retained file write timestamp; acquisition command succeeded, HTTP headers not retained",
+      "format": "glb",
+      "capability": "self_contained_POSITION_indices_local_hierarchy",
+      "unchangedOriginal": true,
+      "stage": "tested_for_local_inspection",
+      "limitations": "No renderer, global placement, property identity, analytical measurements, operational accuracy or runtime registration."
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.gltf",
+      "bytes": 2898,
+      "sha256": "4a0d69eecfce0672a50b71dc218cbacec6c53fe2445040c235c6314b1b2c41b9",
+      "originalUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/f36bfdabd1031c3cf6689a50570b8cdf3678b49c/Models/Box/glTF/Box.gltf",
+      "acquiredAt": "2026-10-01T15:27:02.914571+00:00",
+      "acquisitionTimeBasis": "retained file write timestamp; acquisition command succeeded, HTTP headers not retained",
+      "format": "gltf",
+      "capability": "incomplete_external_buffer_not_resolved",
+      "unchangedOriginal": true,
+      "stage": "tested_for_local_inspection",
+      "limitations": "No renderer, global placement, property identity, analytical measurements, operational accuracy or runtime registration."
+    }
+  ],
+  "supportingMetadata": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\upstream\\LICENSE.md",
+      "bytes": 771,
+      "sha256": "2759bbffe3b8aebe789958875a098045fe4039eb3e2291ef0fd09c65994bdddc",
+      "originalUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/f36bfdabd1031c3cf6689a50570b8cdf3678b49c/Models/Box/LICENSE.md"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\upstream\\README.md",
+      "bytes": 898,
+      "sha256": "ae63b4ad1c8136b881686e66faf930c9b9e71fa823a7a4b1738076ae06739c35",
+      "originalUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/f36bfdabd1031c3cf6689a50570b8cdf3678b49c/Models/Box/README.md"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\upstream\\metadata.json",
+      "bytes": 624,
+      "sha256": "f5867d1cb319a739e434cce40177c7da65701e747198eef97da025610eac9af6",
+      "originalUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/f36bfdabd1031c3cf6689a50570b8cdf3678b49c/Models/Box/metadata.json"
+    }
+  ]
+}
