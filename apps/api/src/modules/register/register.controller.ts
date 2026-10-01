@@ -3,6 +3,7 @@ import {RegistryDocumentAmendmentSchema,RegistryDocumentAmendmentReceiptSchema,R
 import {RegistryCityJSONPrepareSchema,RegistryCityJSONReceiptSchema,RegistryCityJSONReadSchema,
   RegistryCityJSONRemoveSchema,RegistryCityJSONRemovalReceiptSchema} from '@ulpin/contracts';
 import {RegistryCityJSONValidationRequestSchema,RegistryCityJSONValidationReceiptSchema,RegistryCityJSONValidationStatusSchema} from '@ulpin/contracts';
+import {RegistryCityJSONAdmissionRequestSchema,RegistryCityJSONAdmissionAssessmentSchema} from '@ulpin/contracts';
 import {AppError} from '@ulpin/server/infrastructure/errors';
 import {PrivateSpatialGuard} from '../spatial/private-spatial.guard';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -30,6 +31,15 @@ function noNativeQuery(req:Request){
 @Controller('api/v1')
 export class RegisterController {
   constructor(@Inject(RegisterService) private readonly service: RegisterService) {}
+
+  @Post('registry-drafts/:draftId/native-exterior/admission-assessment') @HttpCode(200)
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_native_exterior_admission_assessment',summary:'Assess current private native admission evidence and missing prerequisites without recording'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryCityJSONAdmissionAssessmentSchema),RegistryCityJSONAdmissionRequestSchema)
+  async nativeAdmission(@Param('draftId') draftId:string,@Req() req:Request){
+    noNativeQuery(req);
+    return this.service.nativeAdmission(idSchema.parse(draftId),RegistryCityJSONAdmissionRequestSchema.parse(await readJsonBody(req,16*1024)));
+  }
 
   @Post('registry-drafts/:draftId/native-exterior/validations') @HttpCode(202)
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
