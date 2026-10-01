@@ -1,6 +1,9 @@
 """Pixel leakage, frame and source checks for the new private crop leaf."""
 import hashlib
 import io
+import json
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 import fitz
@@ -36,6 +39,35 @@ def control(rotation=0):
 
 
 class PacketRegionTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, str(REPO / "scripts/usp/document-models"))
+        import packet_region_loader as loader
+        cls.loader = loader
+        cls.profile_dir = tempfile.TemporaryDirectory(prefix="packet-region-test-")
+        path = Path(cls.profile_dir.name) / "profile.json"
+        loader.build_profile(REPO, path)
+        profile = json.loads(path.read_bytes())
+        # This direct functional harness is also explicitly inventoried. Actual
+        # cache/startup guarantees are exercised by the isolated CLI controls.
+        pinned = {entry["path"] for entry in profile["files"]}
+        for module in list(sys.modules.values()):
+            origin = getattr(module, "__file__", None)
+            if not origin:
+                continue
+            test_file = Path(origin).resolve()
+            if str(test_file) not in pinned:
+                profile["files"].append({"path": str(test_file), "bytes": test_file.stat().st_size,
+                                         "sha256": loader.digest(test_file)})
+                pinned.add(str(test_file))
+        path.write_text(json.dumps(profile), encoding="utf-8")
+        loader.activate(path, loader.digest(path))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.loader.close()
+        cls.profile_dir.cleanup()
+
     def test_nonzero_cropbox_rotated_crop_excludes_neighbour_pixels_and_metadata(self):
         for rotation in (0, 90):
             with self.subTest(rotation=rotation):

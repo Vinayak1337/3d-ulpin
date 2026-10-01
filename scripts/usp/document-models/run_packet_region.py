@@ -3,18 +3,15 @@
 import argparse
 import hashlib
 import json
-import os
 import socket
 import sys
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve()
 REPO = SCRIPT.parents[3]
-# The accepted gate initializes base site packages before the configured venv.
-# Prefer the supervisor's own configured purelib for this pinned renderer.
-if os.environ.get("ULPIN_TRIAL_SITEPACKAGES"):
-    sys.path.insert(0, os.environ["ULPIN_TRIAL_SITEPACKAGES"])
-sys.path.insert(0, str(REPO / "services/geo"))
+import packet_region_loader as loader
+# No unverified direct entry: the host bootstrap must activate the frozen profile.
+loader.recipe_hash(REPO)
 from geo.usp_packet_regions import extract_region, RegionError, MAX_SOURCE
 MEMORY = 512*1024**2
 MAX_RESULT = 16*1024
@@ -58,6 +55,8 @@ def main():
     parser.add_argument("--selection", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--seconds", type=int, default=25)
+    parser.add_argument("--profile", type=Path, required=True)
+    parser.add_argument("--profile-sha256", required=True)
     parser.add_argument("--worker", action="store_true")
     args = parser.parse_args()
     if (not 1 <= args.page <= 8 or not 1 <= args.seconds <= 25 or len(args.sha256) != 64 or
@@ -65,14 +64,21 @@ def main():
         parser.error("unsupported page/hash/process bounds")
     if args.worker:
         return worker(args)
-    from run_trial import _run_worker
     args.output.mkdir(mode=0o700, exist_ok=False)
-    execution = _run_worker([sys.executable, str(SCRIPT), *sys.argv[1:], "--worker"],
-                            args.output / "worker.log", args.seconds, MEMORY, 64*1024)
+    receipt = {"version": "packet-region-execution/2", "seconds": args.seconds, "memoryBytes": MEMORY,
+               "profileSha256": loader.recipe_hash(REPO), "cleanup": "unresolved",
+               "code": "PACKET_REGION_CLEANUP_UNRESOLVED"}
+    try:
+        execution = loader.supervisor()([sys.executable, str(SCRIPT), *sys.argv[1:], "--worker"],
+                                        args.output / "worker.log", args.seconds, MEMORY, 64*1024)
+    except BaseException:
+        # A supervisor exception cannot establish process-tree/log cleanup.
+        # Never expose its exception text, paths or original bytes.
+        (args.output / "receipt.json").write_bytes(encode(receipt))
+        return 1
     path = args.output / "result.json"
     result_hash = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() and path.stat().st_size <= MAX_RESULT else None
-    receipt = {"version": "packet-region-execution/1", "seconds": args.seconds, "memoryBytes": MEMORY,
-               "worker": execution, "resultSha256": result_hash}
+    receipt.update({"cleanup": "confirmed", "code": None, "worker": execution, "resultSha256": result_hash})
     (args.output / "receipt.json").write_bytes(encode(receipt))
     return 0 if execution["exitCode"] == 0 and execution["stopReason"] is None and result_hash else 1
 

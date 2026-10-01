@@ -17,9 +17,8 @@ class RegionError(Exception):
 
 
 def recipe_hash(repo: Path) -> str:
-    paths = ["services/geo/geo/usp_packet_regions.py", "scripts/usp/document-models/run_packet_region.py",
-             "scripts/usp/document-models/run_trial.py", "packages/contracts/src/packet-region.ts"]
-    return hashlib.sha256(b"".join((repo / path).read_bytes() for path in paths)).hexdigest()
+    from packet_region_loader import recipe_hash as verified_recipe
+    return verified_recipe(repo)
 
 
 def pixel_transform(selection: dict) -> dict:
@@ -53,14 +52,13 @@ def pixel_transform(selection: dict) -> dict:
 
 def extract_region(original: bytes, expected_hash: str, page_number: int, selection: dict,
                    repo: Path) -> tuple[dict, bytes]:
+    recipe = recipe_hash(repo)  # Require verified execution before native imports.
     import importlib.metadata
     import fitz
     import pypdfium2 as pdfium
     import pypdfium2_raw as raw
     from PIL import Image
     # Reuse the existing external-file/JavaScript admission check unchanged.
-    import sys
-    sys.path.insert(0, str(repo / "scripts/usp/document-models"))
     from run_pdf_pages import _deny_external_files, PageError
     if not 0 < len(original) <= MAX_SOURCE:
         raise RegionError("PACKET_REGION_SOURCE_LIMIT")
@@ -137,7 +135,7 @@ def extract_region(original: bytes, expected_hash: str, page_number: int, select
     if len(png) > MAX_PNG:
         raise RegionError("PACKET_REGION_OUTPUT_LIMIT")
     result = {"version": "packet-region-local/1", "sourceSha256": expected_hash, "sourceBytes": len(original),
-              "page": page_number, "selection": selection, "recipeSha256": recipe_hash(repo),
+              "page": page_number, "selection": selection, "recipeSha256": recipe,
               "renderer": {"pypdfium2": "5.13.0", "pdfium": "153.0.7999.0", "pymupdf": "1.25.5", "pillow": "12.3.0", "pdfiumSha256": PDFIUM_HASH},
               "transform": transform, "output": {"sha256": hashlib.sha256(png).hexdigest(), "bytes": len(png),
                 "pixels": [right-left, bottom-top], "format": "png", "metadataPolicy": "fresh_rgb_pixels_only/1",
