@@ -6,7 +6,7 @@ import type {PoolClient} from 'pg';
 import {RegistryCityJSONReferenceAttachSchema,RegistryCityJSONReferenceRemoveSchema,CITYJSON_REFERENCE_LIMITS} from '../packages/contracts/src';
 import {DocumentInputSchema,DocumentResultSchema} from '../packages/contracts/src/usp/document-ingestion';
 import {attachRegistryCityJSONReferencesTx,readRegistryCityJSONReferencesTx,removeRegistryCityJSONReferencesTx,
-  cityjsonReferenceId} from '../packages/server/src/modules/registry/cityjson-reference';
+  cityjsonReferenceId,readRegistryCityJSONReferenceAuthorityTx} from '../packages/server/src/modules/registry/cityjson-reference';
 import {registryCityJSONAuthorityTx,removeRegistryCityJSONDraftTx} from '../packages/server/src/modules/registry/cityjson-draft';
 import {assertCityJSONValidationAuthority} from '../packages/server/src/modules/registry/cityjson-validation';
 import {assessCityJSONAdmission} from '../packages/server/src/modules/registry/cityjson-admission';
@@ -93,7 +93,8 @@ test('retained LGD literal parts attach/read/remove on exact Dutch native select
   const job=nativeSnapshot.validations.jobs.find((value:any)=>value.id===validation.input.jobId);
   const meta=nativeSnapshot.validations.metadata.find((value:any)=>value.job_id===validation.input.jobId);
   const attempt=nativeSnapshot.validations.attempts.find((value:any)=>value.job_id===validation.input.jobId);
-  const admissionDependencies:any={transaction:async(work:any)=>work(f.client),authority:f.dependencies.native,
+  const admissionDependencies:any={transaction:async(work:any)=>work(f.client),
+    references:(c:PoolClient,id:string,revision:number)=>readRegistryCityJSONReferenceAuthorityTx(c,id,revision,f.dependencies),
     validation:async()=>({input:validation.input,job:{...job,...meta,id:job.id,attempt_state:attempt.state,attempt_fence:attempt.fence,
       completion_sha256:attempt.completion_sha256}}),native:async()=>savedNative,status:async()=>savedStatus};
   const assessment=await assessCityJSONAdmission(f.draftId,{expectedDraftRevision:1,validationJobId:validation.input.jobId},admissionDependencies);

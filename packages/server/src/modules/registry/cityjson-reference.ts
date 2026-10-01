@@ -178,9 +178,15 @@ export const removeRegistryCityJSONReferencesTx=(client:PoolClient,draftId:strin
   privateEvidence(()=>mutate(client,draftId,raw,'remove',dependencies));
 export const attachRegistryCityJSONReferences=(draftId:string,raw:unknown)=>transaction(client=>attachRegistryCityJSONReferencesTx(client,draftId,raw));
 export const removeRegistryCityJSONReferences=(draftId:string,raw:unknown)=>transaction(client=>removeRegistryCityJSONReferencesTx(client,draftId,raw));
-export const readRegistryCityJSONReferencesTx=(client:PoolClient,draftValue:string,dependencies:Dependencies=defaults)=>privateEvidence(async()=>{
+/** Same-client aggregate for consumers that need native authority and selected evidence.
+ * This is an entry point: complete case gates precede any destination/native locks. */
+export const readRegistryCityJSONReferenceAuthorityTx=(client:PoolClient,draftValue:string,expectedRevision?:number,
+  dependencies:Dependencies=defaults)=>privateEvidence(async()=>{
   const current=await lockedAuthority(client,uuid.parse(draftValue),dependencies);
+  if(expectedRevision!==undefined&&current.draft.revision!==expectedRevision)conflict('Pin the current native draft revision.');
   const resolved=await evidence(client,current,refs(current.record),dependencies);
-  return view(current,resolved.entries);
+  return {current,references:view(current,resolved.entries)};
 });
+export const readRegistryCityJSONReferencesTx=async(client:PoolClient,draftValue:string,dependencies:Dependencies=defaults)=>
+  (await readRegistryCityJSONReferenceAuthorityTx(client,draftValue,undefined,dependencies)).references;
 export const readRegistryCityJSONReferences=(draftId:string)=>transaction(client=>readRegistryCityJSONReferencesTx(client,draftId));

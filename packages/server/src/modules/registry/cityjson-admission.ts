@@ -6,21 +6,22 @@ import {AppError,conflict,notFound} from '../../infrastructure/errors';
 import {fingerprint} from '../cases/domain';
 import {registryCityJSONAuthorityTx,readRegistryCityJSONDraftTx} from './cityjson-draft';
 import {cityjsonValidationStatusTx,readCityJSONValidationStatus,assertCityJSONValidationAuthority,validationSelections} from './cityjson-validation';
+import {readRegistryCityJSONReferenceAuthorityTx} from './cityjson-reference';
 
 type Authority=Awaited<ReturnType<typeof registryCityJSONAuthorityTx>>;
 type Validation=Awaited<ReturnType<typeof cityjsonValidationStatusTx>>;
-type Dependencies={transaction:typeof transaction;authority:typeof registryCityJSONAuthorityTx;
+type Dependencies={transaction:typeof transaction;references:typeof readRegistryCityJSONReferenceAuthorityTx;
   validation:typeof cityjsonValidationStatusTx;native:typeof readRegistryCityJSONDraftTx;status:typeof readCityJSONValidationStatus};
-const defaults:Dependencies={transaction,authority:registryCityJSONAuthorityTx,validation:cityjsonValidationStatusTx,
+const defaults:Dependencies={transaction,references:readRegistryCityJSONReferenceAuthorityTx,validation:cityjsonValidationStatusTx,
   native:readRegistryCityJSONDraftTx,status:readCityJSONValidationStatus};
 const uuid=z.uuid().transform(v=>v.toLowerCase());
 // Deliberately omit lease/timestamps: only the exact identity, state and accepted
 // evidence are relevant to this aggregate; a benign heartbeat need not invalidate it.
-function authorityPin(current:Authority,row:Validation){
-  return fingerprint({site:current.site,draft:current.draft,record:current.record,candidate:current.candidate,input:row.input,
+function authorityPin(current:Authority,row:Validation|null){
+  return fingerprint({site:current.site,draft:current.draft,record:current.record,candidate:current.candidate,validation:row&&{input:row.input,
     jobId:row.job.id,status:row.job.status,error:row.job.error,logicalState:row.job.logical_state,
     inputSha256:row.job.input_sha256,resultRef:row.job.result_ref,acceptedFence:row.job.accepted_fence,
-    attemptState:row.job.attempt_state,attemptFence:row.job.attempt_fence,completionSha256:row.job.completion_sha256});
+    attemptState:row.job.attempt_state,attemptFence:row.job.attempt_fence,completionSha256:row.job.completion_sha256}});
 }
 function matched(current:Authority,row:Validation,jobId:string){
   assertCityJSONValidationAuthority(row.input,current);
@@ -41,39 +42,50 @@ export async function assessCityJSONAdmission(draftValue:string,raw:unknown,depe
 }
 async function currentAssessment(draftValue:string,raw:unknown,dependencies:Dependencies){
   const draftId=uuid.parse(draftValue),request=RegistryCityJSONAdmissionRequestSchema.parse(raw);
-  const resolve=()=>dependencies.transaction(async client=>{
-    const current=await dependencies.authority(client,draftId);
+  const resolve=(readNative=false)=>dependencies.transaction(async client=>{
+    // Discover/lock all retained reference cases before native/destination locks.
+    // Document object I/O and final aggregate checks remain in that authority.
+    const {current,references}=await dependencies.references(client,draftId,request.expectedDraftRevision);
     if(current.draft.revision!==request.expectedDraftRevision)conflict('Pin the current native draft revision.');
-    // Scope the supplied ID before resolving its private payload or result.
-    if(!(await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='cityjson-validation' AND payload->>'draftId'=$2",
-      [request.validationJobId,draftId])).rowCount)notFound();
-    // Reuse the same resolved authority on this client; its source gate precedes job locks.
-    const row=await dependencies.validation(client,draftId,request.validationJobId,async()=>current);
-    matched(current,row,request.validationJobId);return {current,row};
+    let row:Validation|null=null;
+    if(request.validationJobId){
+      // Scope the supplied ID before resolving its private payload or result.
+      if(!(await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='cityjson-validation' AND payload->>'draftId'=$2",
+        [request.validationJobId,draftId])).rowCount)notFound();
+      // Reuse the same resolved authority on this client; its source gate precedes job locks.
+      row=await dependencies.validation(client,draftId,request.validationJobId,async()=>current);
+      matched(current,row,request.validationJobId);
+    }
+    // The native reader reacquires only gates already held by reference authority.
+    const native=readNative?await dependencies.native(client,draftId):null;
+    return {current,row,references,native};
   });
-  const before=await resolve();
-  const native=await dependencies.transaction(client=>dependencies.native(client,draftId));
+  const before=await resolve(true),native=before.native!;
   if(native.draftId!==draftId||native.draftRevision!==before.current.draft.revision||native.recordId!==before.current.record.id||
     fingerprint(native.candidate)!==fingerprint(before.current.candidate))conflict('Native evidence changed during the assessment.');
-  const status=RegistryCityJSONValidationStatusSchema.parse(await dependencies.status(draftId,request.validationJobId));
-  if(status.jobId!==request.validationJobId||status.draftId!==draftId||status.draftRevision!==request.expectedDraftRevision)
-    conflict('Validation evidence belongs to another draft or revision.');
-  const expected=before.row.job.logical_state==='cancelled'?'failed':before.row.job.status==='succeeded'?'completed':before.row.job.status;
-  if(status.status!==expected||status.result?.resultSha256!==(before.row.job.result_ref?.sha256??undefined)||
-    (status.result&&fingerprint(status.result.summary.validator)!==fingerprint(before.row.input.validator))||
-    (status.result&&fingerprint(status.result.summary.sourceLocators)!==fingerprint(before.row.input.selections)))
-    conflict('Validation result changed during the assessment.');
+  const status=request.validationJobId?RegistryCityJSONValidationStatusSchema.parse(await dependencies.status(draftId,request.validationJobId)):null;
+  if(status&&before.row){
+    if(status.jobId!==request.validationJobId||status.draftId!==draftId||status.draftRevision!==request.expectedDraftRevision)
+      conflict('Validation evidence belongs to another draft or revision.');
+    const expected=before.row.job.logical_state==='cancelled'?'failed':before.row.job.status==='succeeded'?'completed':before.row.job.status;
+    if(status.status!==expected||status.result?.resultSha256!==(before.row.job.result_ref?.sha256??undefined)||
+      (status.result&&fingerprint(status.result.summary.validator)!==fingerprint(before.row.input.validator))||
+      (status.result&&fingerprint(status.result.summary.sourceLocators)!==fingerprint(before.row.input.selections)))
+      conflict('Validation result changed during the assessment.');
+  }
   const after=await resolve();
-  if(authorityPin(before.current,before.row)!==authorityPin(after.current,after.row))
+  if(authorityPin(before.current,before.row)!==authorityPin(after.current,after.row)||
+    fingerprint(before.references)!==fingerprint(after.references))
     conflict('Admission evidence changed during private object I/O; refresh the assessment.');
   const {current,row}=after,{candidate}=current,s=candidate.input;
   const geometry=z.object({type:z.enum(['Solid','MultiSurface']),lod:z.union([z.string().max(64),z.number().finite()]).nullable().optional()}).parse(native.native.geometry);
   const lod=Object.hasOwn(geometry,'lod')?geometry.lod===null?{state:'null' as const}:{state:'known' as const,value:geometry.lod!}:{state:'absent' as const};
-  const structural=status.status==='queued'||status.status==='running'?'pending':status.status==='stale'?'stale':status.status==='failed'?'failed':
+  const structural=status===null?'not_assessed':status.status==='queued'||status.status==='running'?'pending':status.status==='stale'?'stale':status.status==='failed'?'failed':
     status.result?.summary.outcome==='valid'&&status.result.summary.documentSchema==='valid'&&status.result.summary.selectedGeometry==='valid'?'passed':
     status.result?.summary.outcome==='invalid'?'invalid':'unsupported';
   const missing:{requirement:string;reason:string;state:'needs_input'|'needs_validation'|'producer_unavailable'}[]=[];
   if(structural!=='passed')missing.push({requirement:'accepted_structural_validation',state:'needs_validation',reason:
+    status===null?'No validation was selected for this assessment. Select or request validation of this exact current draft; admission needs accepted full-document and selected-geometry validity.':
     `The selected validation is ${structural}; admission needs accepted full-document and selected-geometry validity on these exact pins.`});
   if(geometry.type!=='Solid')missing.push({requirement:'solid_exterior_profile',state:'needs_input',reason:
     'A valid MultiSurface is surface evidence; this selection does not supply a Solid exterior for solid admission.'});
@@ -89,20 +101,23 @@ async function currentAssessment(draftValue:string,raw:unknown,dependencies:Depe
     'reviewed_reference_evidence','reference_accuracy_check','native_admission_review','post_write_qualification'];
   const value={version:CITYJSON_ADMISSION_VERSION,
     draft:{id:draftId,draftRevision:current.draft.revision,siteId:current.site.id,siteRevision:current.site.revision,recordId:current.record.id,
-      recordRevision:0 as const,state:candidate.state,candidateSha256:fingerprint(candidate),footprintSha256:row.input.footprintSha256},
+      recordRevision:0 as const,state:candidate.state,candidateSha256:fingerprint(candidate),footprintSha256:fingerprint(current.record.footprint)},
     source:{caseId:s.caseId,caseRevision:s.caseRevision,caseContextSha256:s.caseContextSha256,id:s.sourceId,familyId:s.sourceFamilyId,
       revision:s.sourceRevision,sha256:s.sourceSha256,bytes:s.sourceBytes,readerSha256:s.readerSha256},
     native:{jobId:s.jobId,resultSha256:candidate.resultSha256,acceptedFence:candidate.acceptedFence,artifactSha256:candidate.artifact.sha256,
       artifactBytes:candidate.artifact.bytes,selection:candidate.selection,geometry:{type:geometry.type,lod}},
     reference:{declaration:candidate.reference,siteFrameSha256:candidate.site.frameSha256,horizontalUnit:current.site.frame.horizontalUnit,verticalUnit:current.site.frame.verticalUnit,qualifiedFrame:null,
-      qualifiedTransform:null,referenceEvidence:'not_bound',accuracy:'not_assessed',accuracyMetres:null,globalPlacement:'not_assessed'},
-    validation:{inputSha256:row.job.input_sha256,acceptedFence:row.job.accepted_fence===null?null:Number(row.job.accepted_fence),validator:row.input.validator,status},
+      qualifiedTransform:null,referenceEvidence:'not_bound',
+      selections:{state:after.references.references.length?'operator_selected':'none',count:after.references.references.length,
+        ids:after.references.references.map(entry=>entry.pin.id),referencesSha256:fingerprint(after.references.references.map(entry=>entry.pin))},
+      reviewedReference:'not_assessed',accuracy:'not_assessed',accuracyMetres:null,globalPlacement:'not_assessed'},
+    validation:row&&status?{inputSha256:row.job.input_sha256,acceptedFence:row.job.accepted_fence===null?null:Number(row.job.accepted_fence),validator:row.input.validator,status}:null,
     findings:{sourceIntegrity:{state:'current_authority',nativeArtifact:'verified',originalBytes:'not_reverified'},structuralValidity:structural,
       referenceAccuracy:'not_assessed',admission:'unavailable',qualification:'not_assessed'},
     sufficiency:{task:'native-exterior-admission',requirements,missing:missing.map(v=>v.requirement),outcome:'partial'},missing,
     actions:[{kind:'inspect_original',method:'GET',path:`/api/v1/ingestion/cases/${s.caseId}/sources/${s.sourceId}/cityjson/original`},
       {kind:'inspect_native',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior`},
-      {kind:'inspect_validation',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior/validations/${request.validationJobId}`},
+      ...(status?[{kind:'inspect_validation',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior/validations/${request.validationJobId}`}]:[]),
       {kind:'request_validation',method:'POST',path:`/api/v1/registry-drafts/${draftId}/native-exterior/validations`},
       {kind:'inspect_reference_selections',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior/references`},
       {kind:'bind_reference_evidence',method:'POST',path:`/api/v1/registry-drafts/${draftId}/native-exterior/references`}],
