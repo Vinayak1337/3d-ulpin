@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {randomUUID} from 'node:crypto';
+import {Readable} from 'node:stream';
 import type {PoolClient} from 'pg';
 import {RegistryDocumentAmendmentSchema,type RegistryRecord} from '../packages/contracts/src';
 import {DocumentPartSchema,DocumentResultSchema,type DocumentInput} from '../packages/contracts/src/usp/document-ingestion';
@@ -19,6 +20,8 @@ import {associationDocumentInputTx} from '../packages/server/src/modules/usp/ing
 import {documentInput} from '../packages/server/src/modules/usp/ingestion/document-context';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';
+import {fusionSourceProjection,fusionContextProjection} from '../packages/server/src/modules/usp/ingestion/source-fusion';
+import {readFusionResult,readFusionObject} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
 
 // Memory-only technical protocol controls. These are neither persisted property
 // records nor a positive operational source/target example, accuracy label or geometry qualification.
@@ -324,4 +327,126 @@ test('actual canonical commit rejects stale draft or server review context befor
   await assert.rejects(()=>commitRegistryReviewTx(client,review.id,''),status(409));assert.equal(writes,0);
   review.documentReviewContext.subject='wrong-subject';
   await assert.rejects(()=>commitRegistryReviewTx(client,review.id,''),status(403));assert.equal(writes,0);
+}));
+
+function fusionFixture(){
+  const f=fixture(),ocr=fixture();
+  // This memory-only recorded target already has ordinary recording evidence;
+  // selected citations do not bypass that independent existing requirement.
+  for(const body of [f.body,f.record,f.state.row.body,f.state.draft.records[0]])
+    body.evidence=[{sourceId:f.input.sourceId,locator:'technical existing-record evidence'}] as any;
+  f.state.history.set(1,structuredClone(f.body));
+  const input={...ocr.input,ocrSelection:{page:1},ocrConfigSha256:digest};
+  const result=DocumentResultSchema.parse({...ocr.result,input,native:{...ocr.result.native,status:'needs_ocr',format:'pdf',parts:[]},
+    ocr:{sourceSha256:input.sourceSha256,sourceRevision:1,sourcePage:1,requestedRegion:null,
+      sourcePageFrame:{kind:'pdf_display_page_top_left_points',rotation:0,width:400,height:500},
+      method:'ocr:tesseract-cli-5.5.1:sparse-tsv-v1',toolStatus:'complete',outputStatus:'partial',textCompleteness:'unverified',
+      issues:['technical_incomplete_coverage'],items:[{text:'Technical OCR literal 0049?',label:'text',method:'ocr:tesseract-cli-sparse-tsv',
+        sourcePageBoxes:[{pageNumber:1,frame:'pdf_display_page_top_left_points',box:[10,20,100,40],derivedFrom:'tesseract_tsv_pixels_via_mupdf_pixel_origin'}]}]}});
+  const rows=[{input:f.input,result:f.result,kind:'document' as const},{input,result,kind:'document_ocr' as const}];
+  const selections=rows.map(row=>({kind:row.kind,pin:{caseId:row.input.caseId,caseRevision:1,sourceId:row.input.sourceId,
+    sourceRevision:1,sourceSha256:row.input.sourceSha256,jobId:row.input.jobId,inputSha256:fingerprint(row.input),
+    readerSha256:row.input.readerSha256,acceptedFence:1,resultSha256:sha256(JSON.stringify(row.result)),resultBytes:Buffer.byteLength(JSON.stringify(row.result))},
+    ...(row.kind==='document'?{partIds:[f.part.id]}:{itemOrdinals:[0]})})) as any[];
+  const sources=selections.map((selection,i)=>fusionSourceProjection(selection,{kind:'document',result:rows[i].result}))
+    .sort((a,b)=>a.pin.caseId.localeCompare(b.pin.caseId)||a.pin.sourceId.localeCompare(b.pin.sourceId));
+  const context=fusionContextProjection(sources);
+  const request={requestKey:randomUUID(),expectedDraftRevision:1,recordId:f.record.id,expectedRecordRevision:1,
+    addFusion:{contextSha256:context.contextSha256,selection:{sources:selections}}};
+  const state={revoked:false,configDrift:false,revokeAtTarget:false,readOnlyReview:false,registryWrites:0,events:[] as string[]};
+  const originalQuery=f.client.query.bind(f.client) as any;
+  const client={query:async(sql:string,args:any[]=[])=>{
+    state.events.push(sql);
+    if(sql.includes('SELECT id FROM cases')||sql.includes('SELECT id FROM sources'))return {rows:[]};
+    if(sql.includes('FROM registry_records r')&&!sql.includes('CASE WHEN')&&state.revokeAtTarget&&f.state.reads>=2)state.revoked=true;
+    return originalQuery(sql,args);
+  }} as PoolClient;
+  const dependencies={...f.dependencies,
+    source:async(_client:PoolClient,_ctx:unknown,pin:any,expected?:DocumentInput,lock=false)=>{
+      if(state.readOnlyReview)assert.equal(lock,false);
+      const index=selections.findIndex(s=>s.pin.sourceId===pin.sourceId);assert(index>=0);
+      if(index===1&&state.revoked)throw new AppError(403,'DOCUMENT_DENIED','Technical revoked source');
+      const current=index===1&&state.configDrift?{...rows[index].input,ocrConfigSha256:'b'.repeat(64)}:rows[index].input;
+      if(pin.resultSha256!==selections[index].pin.resultSha256||pin.sourceRevision!==current.sourceRevision||
+        (expected&&fingerprint(current)!==fingerprint(expected)))throw new AppError(409,'DOCUMENT_STALE','Technical accepted pin changed');
+      return current;
+    },
+    result:async(current:DocumentInput)=>{f.state.reads++;return structuredClone(rows.find(r=>r.input.sourceId===current.sourceId)!.result);},
+    fusionResult:async(selection:any,authority:any,budget:any)=>{
+      f.state.reads++;const index=selections.findIndex(s=>s.pin.sourceId===selection.pin.sourceId);
+      const bytes=Buffer.from(JSON.stringify(rows[index].result));
+      return readFusionResult(selection,authority,budget,(key,size,hash,b)=>readFusionObject(key,size,hash,b,async()=>({body:Readable.from([bytes]),etag:'technical-memory-only'})));
+    }};
+  return {...f,client,dependencies,request,context,ocr:rows[1],selections,fusionState:state};
+}
+
+test('fusion OCR/native amendment privately resolves exact observations and participates in canonical review/commit without broad disclosure',()=>attributed(async()=>{
+  const f=fusionFixture();
+  assert(RegistryDocumentAmendmentSchema.safeParse(f.request).success);
+  assert(!RegistryDocumentAmendmentSchema.safeParse({...f.request,add:f.request.addFusion.selection.sources[0]}).success);
+  assert(!RegistryDocumentAmendmentSchema.safeParse({...f.request,addFusion:{...f.request.addFusion,text:'caller text'}}).success);
+  const receipt=await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies);
+  assert.equal(receipt.draftRevision,2);assert.equal(f.state.writes,1);
+  const record=f.state.draft.records[0],pins=record.documentCitations!;
+  assert.equal(pins.length,2);assert.equal(pins.filter(pin=>pin.version==='registry-document-citation/1').length,1);
+  const ocrPin=pins.find(pin=>pin.version==='registry-document-ocr-citation/1')!;
+  assert(!Object.hasOwn(ocrPin,'partId'));assert(!JSON.stringify(pins).includes(f.ocr.result.ocr!.items[0].text));
+  assert.equal((ocrPin as any).ocr.textCompleteness,'unverified');assert.equal((ocrPin as any).ocr.outputStatus,'partial');
+  assert.deepEqual(publicRegistryBody(record),f.record);
+  const read=await readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies);
+  const ocrRead=read.citations.find(entry=>entry.pin.version==='registry-document-ocr-citation/1') as any;
+  assert.deepEqual(ocrRead.item,f.ocr.result.ocr!.items[0]);assert.deepEqual(ocrRead.pin,ocrPin);
+  assert.deepEqual(await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies),receipt);assert.equal(f.state.writes,1);
+  // The existing review snapshot stage is read-only; final persistence/commit
+  // runs the same citation checker with protected current authority.
+  f.fusionState.readOnlyReview=true;
+  await assertRegistryDocumentCitationsTx(f.client,f.siteId,record,false,f.dependencies);
+  f.fusionState.readOnlyReview=false;
+  const frame={id:'technical-control'},reviewContext=documentReviewContext();
+  const review:any={id:randomUUID(),draftId:f.draftId,draftRevision:2,siteRevision:1,records:[structuredClone(record)],before:[f.record],
+    findings:[],committed:false,documentReviewContext:reviewContext,inputFingerprint:fingerprint({validatorVersion:'registry-relationships-v2',
+      records:[record],frame,draftRevision:2,siteRevision:1,documentReviewContext:reviewContext})};
+  assert(!('documentCitations' in publicRegistryReview(review).records[0]));
+  const commitClient={query:async(sql:string,args:any[]=[])=>{
+    if(sql.includes('registry_reviews')&&sql.startsWith('SELECT'))return {rows:[{draft_id:f.draftId,body:review,committed:false}]};
+    if(sql.includes('SELECT * FROM registry_sites'))return {rows:[{id:f.siteId,identifier:'technical-control',name:'technical-control',revision:1,frame,synthetic:true}]};
+    if(sql.includes('SELECT * FROM registry_records WHERE site_id'))return {rows:[{...f.state.row,identifier:f.record.identifier}]};
+    if(sql.includes('FROM building_preparations'))return {rows:[]};
+    if(sql.includes('SELECT s.* FROM sources'))return {rows:[{id:f.input.sourceId,case_id:f.input.caseId,family_id:f.input.familyId,
+      revision:1,sha256:digest,bytes:1,name:'technical-control',profile:'technical-control',mime_type:'text/plain',
+      created_at:'2026-09-30T00:00:00Z',status:'ready',inspection:{}}]};
+    if(/^(UPDATE registry_records|INSERT INTO registry_revisions|DELETE FROM registry_|UPDATE registry_sites|UPDATE registry_drafts SET status|UPDATE registry_reviews)/.test(sql)){
+      f.fusionState.registryWrites++;return {rows:[]};
+    }
+    return (f.client.query as any)(sql,args);
+  }} as PoolClient;
+  const citationCheck:typeof assertRegistryDocumentCitationsTx=(client,siteId,record,lock)=>assertRegistryDocumentCitationsTx(client,siteId,record,lock,f.dependencies);
+  f.fusionState.revoked=true;
+  await assert.rejects(()=>commitRegistryReviewTx(commitClient,review.id,'',undefined,citationCheck),status(403));assert.equal(f.fusionState.registryWrites,0);
+  f.fusionState.revoked=false;
+  const committed=await commitRegistryReviewTx(commitClient,review.id,'',undefined,citationCheck);
+  assert.equal(committed.committed,true);assert(f.fusionState.registryWrites>0);assert(!('documentCitations' in committed.records[0]));
+  const caseGates=f.fusionState.events.filter(sql=>sql.includes('pg_advisory_xact_lock'));
+  assert(caseGates.length>0);
+}));
+
+test('fusion OCR citation tampering, stale configuration and revocation at the final write boundary deny the complete amendment/read',()=>attributed(async()=>{
+  const failed=fusionFixture();failed.fusionState.revokeAtTarget=true;
+  await assert.rejects(()=>amendRegistryDocumentCitationsTx(failed.client,failed.draftId,failed.request,failed.dependencies),status(403));
+  assert.equal(failed.state.writes,0);assert.equal(failed.state.operations.size,0);assert.deepEqual(failed.state.draft.records,[failed.record]);
+  const f=fusionFixture();await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies);
+  const record=f.state.draft.records[0],original=structuredClone(record.documentCitations!);
+  const ocrIndex=original.findIndex(pin=>pin.version==='registry-document-ocr-citation/1');
+  for(const change of [{itemOrdinal:63},{document:{...original[ocrIndex].document,resultSha256:'b'.repeat(64)}}]){
+    const pins=structuredClone(original);pins[ocrIndex]={...pins[ocrIndex],...change} as any;
+    await assert.rejects(()=>assertRegistryDocumentCitationsTx(f.client,f.siteId,{...record,documentCitations:pins},true,f.dependencies));
+  }
+  f.fusionState.configDrift=true;
+  await assert.rejects(()=>readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies),status(422));
+  f.fusionState.configDrift=false;f.fusionState.revoked=true;
+  await assert.rejects(()=>readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies),status(403));
+  const cleared=await amendRegistryDocumentCitationsTx(f.client,f.draftId,{requestKey:randomUUID(),expectedDraftRevision:2,
+    recordId:f.record.id,expectedRecordRevision:1,clearAll:true},f.dependencies);
+  assert.equal(cleared.draftRevision,3);assert.deepEqual(f.state.draft.records[0].documentCitations,[]);
+  assert.deepEqual(record.documentCitations,original);
 }));

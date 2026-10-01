@@ -474,12 +474,13 @@ async function evidenceChecks(
   site: RegistrySite,
   records: RegistryRecord[],
   lock=false,
+  documentCheck:typeof assertRegistryDocumentCitationsTx=assertRegistryDocumentCitationsTx,
 ) {
   assertNoNativeCandidates(records);
   for (const r of records) {
     recordBodySchema.parse(bodyOnly(r));
     await assertRegistryMetadataTx(client, site.id, r.kind, r.registryMetadata);
-    await assertRegistryDocumentCitationsTx(client,site.id,r,lock);
+    await documentCheck(client,site.id,r,lock);
     if (site.synthetic && r.officialUlpin)
       throw new AppError(
         422,
@@ -758,6 +759,7 @@ export async function commitRegistryReviewTx(
   id: string,
   acknowledgement: string,
   heldCases?:RegistryReviewCaseLocks,
+  documentCheck:typeof assertRegistryDocumentCitationsTx=assertRegistryDocumentCitationsTx,
 ): Promise<RegistryReview> {
     const gates=heldCases??await lockRegistryReviewCasesTx(client,id);
     if(gates.reviewId!==id)conflict('The reviewed gate context changed.');
@@ -797,7 +799,7 @@ export async function commitRegistryReviewTx(
     assertNoNativeCandidates([...d.records,...review.records,...review.before]);
     assertDocumentReviewContext(review);
     if (row.committed) {
-      for(const record of review.records)await assertRegistryDocumentCitationsTx(client,site.id,record,true);
+      for(const record of review.records)await documentCheck(client,site.id,record,true);
       return publicRegistryReview({
         ...review,
         committed: true,
@@ -850,7 +852,7 @@ export async function commitRegistryReviewTx(
       if(!proposed||fingerprint(proposed.documentCitations??[])!==fingerprint(record.documentCitations??[]))
         conflict('The reviewed document citation amendment changed.');
     }
-    await evidenceChecks(client, site, combined,true);
+    await evidenceChecks(client, site, combined,true,documentCheck);
     const next = site.revision + 1;
     for (const record of review.records) {
       const body = { ...record };
