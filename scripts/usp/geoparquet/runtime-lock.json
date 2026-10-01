@@ -1,0 +1,65 @@
+{
+  "format": "usp-geoparquet-runtime-lock/1",
+  "python": {
+    "version": "3.13.7",
+    "platform": "win_amd64",
+    "baseExecutable": "C:/Python313/python.exe"
+  },
+  "versions": {
+    "pyarrow": "21.0.0",
+    "Shapely": "2.0.7",
+    "numpy": "2.2.6",
+    "psutil": "7.0.0"
+  },
+  "wheels": [
+    {
+      "file": "numpy-2.2.6-cp313-cp313-win_amd64.whl",
+      "bytes": 12610885,
+      "sha256": "b0544343a702fa80c95ad5d3d608ea3599dd54d4632df855e4c8d24eb6ecfa1c",
+      "url": "https://files.pythonhosted.org/packages/cb/3b/d58c12eafcb298d4e6d0d40216866ab15f59e55d148a5658bb3132311fcf/numpy-2.2.6-cp313-cp313-win_amd64.whl",
+      "licenceFiles": [
+        "numpy-2.2.6.dist-info/LICENSE.txt"
+      ]
+    },
+    {
+      "file": "psutil-7.0.0-cp37-abi3-win_amd64.whl",
+      "bytes": 244885,
+      "sha256": "4cf3d4eb1aa9b348dec30105c55cd9b7d4629285735a102beb4441e38db90553",
+      "url": "https://files.pythonhosted.org/packages/50/1b/6921afe68c74868b4c9fa424dad3be35b095e16687989ebbb50ce4fceb7c/psutil-7.0.0-cp37-abi3-win_amd64.whl",
+      "licenceFiles": [
+        "psutil-7.0.0.dist-info/LICENSE"
+      ]
+    },
+    {
+      "file": "pyarrow-21.0.0-cp313-cp313-win_amd64.whl",
+      "bytes": 26087551,
+      "sha256": "186aa00bca62139f75b7de8420f745f2af12941595bbbfa7ed3870ff63e25636",
+      "url": "https://files.pythonhosted.org/packages/01/63/581f2076465e67b23bc5a37d4a2abff8362d389d29d8105832e82c9c811c/pyarrow-21.0.0-cp313-cp313-win_amd64.whl",
+      "licenceFiles": [
+        "pyarrow-21.0.0.dist-info/LICENSE.txt",
+        "pyarrow-21.0.0.dist-info/NOTICE.txt"
+      ]
+    },
+    {
+      "file": "shapely-2.0.7-cp313-cp313-win_amd64.whl",
+      "bytes": 1442300,
+      "sha256": "aaaf5f7e6cc234c1793f2a2760da464b604584fb58c6b6d7d94144fd2692d67e",
+      "url": "https://files.pythonhosted.org/packages/d7/1e/6461e5cfc8e73ae165b8cff6eb26a4d65274fad0e1435137c5ba34fe4e88/shapely-2.0.7-cp313-cp313-win_amd64.whl",
+      "licenceFiles": [
+        "shapely-2.0.7.dist-info/LICENSE.txt",
+        "shapely-2.0.7.dist-info/LICENSE_GEOS",
+        "shapely-2.0.7.dist-info/LICENSE_win32"
+      ]
+    }
+  ],
+  "rootDependenciesChanged": false,
+  "installation": "pip --no-index --no-deps --require-hashes; isolated private venv",
+  "nativeImports": "Only in gated worker after OS bounds attach",
+  "terms": {
+    "pyarrow": "Apache-2.0; bundled third-party notices retained in wheel",
+    "Shapely": "BSD-3-Clause; GEOS LGPL-2.1 and Windows dependency notices retained in wheel",
+    "numpy": "BSD-3-Clause; bundled third-party notices retained in wheel",
+    "psutil": "BSD-3-Clause"
+  },
+  "egress": "Local BufferReader and no resource dispatch; no OS outbound-network enforcement claimed"
+}
