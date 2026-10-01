@@ -8,7 +8,7 @@ import { transaction,type DbDeadline } from '../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx } from './commands';
 import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, StreamingVectorInputSchema,
-  StreamedProfileInputSchema, ChunkMappingInputSchema, RasterWindowInputSchema, PointBatchInputSchema, CityJSONInputSchema } from '@ulpin/contracts/usp';
+  StreamedProfileInputSchema, ChunkMappingInputSchema, RasterWindowInputSchema, PointBatchInputSchema, CityJSONInputSchema, IFCInputSchema } from '@ulpin/contracts/usp';
 
 const LEASE_SECONDS = 180;
 const MAX_ATTEMPTS = 3;
@@ -50,6 +50,12 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
       ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
       throw new AppError(422,'CITYJSON_INPUT_SCOPE','CityJSON jobs must pin their unchanged source and exact intake context.');
+  } else if(job.operation==='ifc-native'){
+    const input=IFCInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
+      throw new AppError(422,'IFC_INPUT_SCOPE','IFC jobs must pin their unchanged source and exact intake context.');
   } else if(job.operation==='cityjson-validation'){
     const input=RegistryCityJSONValidationInputSchema.parse(job.payload),source=input.candidate.input,
       binding=ingestionBinding(source.caseId),digest=fingerprint(input);

@@ -1,0 +1,69 @@
+"""Pin or verify an existing isolated Windows IFC interpreter, never install it."""
+from __future__ import annotations
+import argparse
+import hashlib
+import json
+from pathlib import Path
+
+RUNTIME_NAMES = ('python.exe', 'python312.dll', 'python3.dll', 'vcruntime140.dll', 'vcruntime140_1.dll', 'DLLs', 'Lib')
+
+
+def inventory(python: Path, environment: Path):
+    files, total = [], 0
+    allowed=set(RUNTIME_NAMES)|{'LICENSE.txt','pythonw.exe'}
+    for path in python.parent.iterdir():
+        if not path.is_dir() and path.name not in allowed:
+            raise ValueError('profile_loader_override')
+
+    def walk(root, path, kind):
+        nonlocal total
+        if path.is_symlink():
+            raise ValueError('profile_symlink')
+        if path.name == '__pycache__' or path.suffix == '.pyc':
+            return
+        if path.is_dir():
+            if kind == 'runtime' and path.name == 'site-packages':
+                return
+            for child in sorted(path.iterdir()):
+                walk(root, child, kind)
+            return
+        size = path.stat().st_size
+        total += size
+        if not path.is_file() or size > 64*1024**2 or total > 256*1024**2 or len(files) >= 10000:
+            raise ValueError('profile_bounds')
+        digest = hashlib.sha256()
+        with path.open('rb') as stream:
+            while chunk := stream.read(1024*1024):
+                digest.update(chunk)
+        files.append({'root': kind, 'path': path.relative_to(root).as_posix(), 'bytes': size, 'sha256': digest.hexdigest()})
+
+    for name in RUNTIME_NAMES:
+        walk(python.parent, python.parent/name, 'runtime')
+    walk(environment, environment/'Lib/site-packages', 'environment')
+    return sorted(files, key=lambda f: (f['root'], f['path']))
+
+
+def verify(profile):
+    actual = inventory(Path(profile['python']), Path(profile['environmentRoot']))
+    if actual != profile['files']:
+        raise ValueError('profile_changed')
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--python', type=Path, required=True)
+    p.add_argument('--environment', type=Path, required=True)
+    p.add_argument('--scratch', type=Path, required=True)
+    p.add_argument('--output', type=Path, required=True)
+    a = p.parse_args()
+    profile = {'schemaVersion': 'ifc-python-profile/1', 'platform': 'windows-x86_64',
+               'python': str(a.python.resolve()), 'environmentRoot': str(a.environment.resolve()),
+               'scratchRoot': str(a.scratch.resolve()), 'files': inventory(a.python.resolve(), a.environment.resolve())}
+    data = (json.dumps(profile, indent=2)+'\n').encode('utf-8')
+    with a.output.open('xb') as stream:
+        stream.write(data)
+    print(json.dumps({'sha256': hashlib.sha256(data).hexdigest(), 'files': len(profile['files']), 'bytes': len(data)}))
+
+
+if __name__ == '__main__':
+    main()

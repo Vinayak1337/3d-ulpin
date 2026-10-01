@@ -14,7 +14,7 @@ import {fingerprint} from '../../cases/domain';
 import {localOperatorSubject} from '../principal';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding} from './events';
-import {semanticPublisherSha,reserveSemanticDisplaysTx,sealedPrefixTx} from './semantic-chunks';
+import {semanticPublisherSha,semanticPublisherReadCompatible,reserveSemanticDisplaysTx,sealedPrefixTx} from './semantic-chunks';
 
 const uuid=z.string().uuid();
 export const projectedParserSha=()=>sha256(readFileSync(join(settings.repositoryRoot,'services/geo/geo/projected_vector.py')));
@@ -31,11 +31,18 @@ export async function projectedContextTx(client:PoolClient,caseId:string,sourceI
   return {current,source,access:ingestionBinding(caseId).access};
 }
 export function assertProjectedInput(ctx:Awaited<ReturnType<typeof projectedContextTx>>,payload:unknown){
+  return projectedInput(ctx,payload,false);
+}
+export function assertProjectedReadInput(ctx:Awaited<ReturnType<typeof projectedContextTx>>,payload:unknown){
+  return projectedInput(ctx,payload,true);
+}
+function projectedInput(ctx:Awaited<ReturnType<typeof projectedContextTx>>,payload:unknown,immutableRead:boolean){
   const input=ProjectedVectorInputSchema.parse(payload);
   const {inputFingerprint,...base}=input;
   if(fingerprint(base)!==inputFingerprint || ctx.current.id!==input.caseId || ctx.current.revision!==input.caseRevision || ctx.source.id!==input.sourceId || ctx.source.revision!==input.sourceRevision
     || ctx.source.family_id!==input.sourceFamilyId || ctx.source.sha256!==input.sha256 || ctx.source.object_key!==input.objectKey
-    || ctx.access!==input.accessBinding || input.parserSha256!==projectedParserSha() || input.semanticChunks && input.semanticChunks.publisherSha256!==semanticPublisherSha())
+    || ctx.access!==input.accessBinding || input.parserSha256!==projectedParserSha() || input.semanticChunks &&
+      (immutableRead?!semanticPublisherReadCompatible(input.semanticChunks.publisherSha256):input.semanticChunks.publisherSha256!==semanticPublisherSha()))
     throw new AppError(409,'PROJECTED_CONTEXT_STALE','The source, case, converter or private access context changed.');
   return input;
 }
@@ -53,7 +60,7 @@ export async function projectedStatusTx(client:PoolClient,caseId:string,sourceId
   const job=(await client.query("SELECT id,status,error FROM jobs WHERE id=$1 AND source_id=$2 AND operation='projected-vector'",[jobId??pointer?.currentJobId,sourceId])).rows[0]??notFound('No projected admission job exists for this retained source.');
   const accepted=pointer?.accepted?.jobId===job.id?pointer.accepted:null;
   const latest=(await client.query('SELECT sequence,sha256 FROM usp_display.source_semantic_chunks WHERE job_id=$1 AND source_id=$2 ORDER BY sequence DESC LIMIT 1',[job.id,sourceId])).rows[0];
-  const prefix=latest?await sealedPrefixTx(client,caseId,sourceId,job.id,{sequence:latest.sequence,sha256:latest.sha256}):null;
+  const prefix=latest?await sealedPrefixTx(client,caseId,sourceId,job.id,{sequence:latest.sequence,sha256:latest.sha256},'immutable_read'):null;
   const reservationRow=(await client.query("SELECT result FROM operations WHERE kind='stream-display-capacity' AND case_id=$1 AND operation_key=$2",[caseId,`stream-display:${job.id}`])).rows[0];
   let displayMilestones;
   if(reservationRow){const reservation=SemanticDisplayReservationSchema.parse(reservationRow.result);displayMilestones=[];
@@ -64,17 +71,17 @@ export async function projectedStatusTx(client:PoolClient,caseId:string,sourceId
   return ProjectedVectorStatusSchema.parse({version:profile.version,caseId,sourceId,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,
     currentCaseRevision:ctx.current.revision,jobId:job.id,status:job.status,totals:accepted?.totals??null,transform:accepted?.transform??null,errorCode,...(displayMilestones?{displayMilestones}:{}),...(prefix?{coverage:prefix.chunk.coverage,chunk:prefix.pin,currentSourceAccepted:job.status==='succeeded'&&Boolean(accepted)}:{})});
 }
-export async function acceptedProjectedTx(client:PoolClient,caseId:string,sourceId:string,jobId?:string){
+export async function acceptedProjectedTx(client:PoolClient,caseId:string,sourceId:string,jobId?:string,mode:'current'|'immutable_read'='current'){
   const ctx=await projectedContextTx(client,caseId,sourceId),pointer=ctx.source.inspection.projectedVector?.accepted;
   if(!pointer || jobId && pointer.jobId!==jobId)throw new AppError(409,'PROJECTED_NOT_ACCEPTED','Refresh the current accepted source generation.');
   const job=(await client.query(`SELECT j.*,m.accepted_fence,m.result_ref FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id
     WHERE j.id=$1 AND j.source_id=$2 AND j.operation='projected-vector'`,[pointer.jobId,sourceId])).rows[0];
   if(!job || job.status!=='succeeded' || Number(job.accepted_fence)!==pointer.fence || job.result_ref?.sha256!==pointer.index.sha256)
     throw new AppError(409,'PROJECTED_NOT_ACCEPTED','This source generation is unavailable.');
-  const input=assertProjectedInput(ctx,job.payload);
+  const input=mode==='immutable_read'?assertProjectedReadInput(ctx,job.payload):assertProjectedInput(ctx,job.payload);
   if(input.semanticChunks){
     if(!pointer.finalChunk)throw new AppError(409,'SEMANTIC_PREFIX_CLOSURE','Complete source adoption requires its exact final seal.');
-    const prefix=await sealedPrefixTx(client,caseId,sourceId,job.id,pointer.finalChunk);
+    const prefix=await sealedPrefixTx(client,caseId,sourceId,job.id,pointer.finalChunk,mode);
     if(prefix.chunk.coverage.remainingRecords!==0||prefix.pin.sequence!==prefix.preparation.partitions.length)throw new AppError(422,'SEMANTIC_PREFIX_CLOSURE','The accepted complete source differs from its sealed prefix.');
   }
   return {ctx,pointer,job,input};
@@ -156,7 +163,7 @@ export class ProjectedVectorService{
     if(input.bbox && (input.bbox[0]>=input.bbox[2] || input.bbox[1]>=input.bbox[3]))throw new AppError(422,'PROJECTED_BOUNDS','Use an increasing finite geographic envelope.');
     const caseId=uuid.parse(caseIdValue).toLowerCase(),sourceId=uuid.parse(sourceIdValue).toLowerCase();
     return transaction(async client=>{
-      const prefix=input.chunk?await sealedPrefixTx(client,caseId,sourceId,input.jobId!,input.chunk):null,accepted=prefix??await acceptedProjectedTx(client,caseId,sourceId,input.jobId),bbox=input.bbox??null;
+      const prefix=input.chunk?await sealedPrefixTx(client,caseId,sourceId,input.jobId!,input.chunk,'immutable_read'):null,accepted=prefix??await acceptedProjectedTx(client,caseId,sourceId,input.jobId,'immutable_read'),bbox=input.bbox??null;
       const rows=(await client.query(`SELECT o.job_id,o.feature_index,o.unit_id,o.source_locator,o.properties,o.disposition,o.reason,o.native_bounds,o.geographic_bounds,o.raw_ref,o.geographic_ref,u.native_key
         FROM administrative_unit_observations o JOIN administrative_units u ON u.id=o.unit_id WHERE o.job_id=$1 AND o.source_id=$2 AND o.feature_index>=$3
         AND ($4::boolean OR (o.disposition='admitted' AND o.geographic_geometry && ST_MakeEnvelope($5,$6,$7,$8,4326))) AND ($10::int IS NULL OR o.committed_chunk_sequence<=$10) ORDER BY o.feature_index LIMIT $9`,
@@ -170,12 +177,12 @@ export class ProjectedVectorService{
     if(jobId!==undefined)jobId=uuid.parse(jobId).toLowerCase();
     const caseId=uuid.parse(caseIdValue).toLowerCase(),sourceId=uuid.parse(sourceIdValue).toLowerCase(),unitId=uuid.parse(unitIdValue).toLowerCase();
     const pinned=await transaction(async client=>{
-      const accepted=chunk?await sealedPrefixTx(client,caseId,sourceId,jobId!,chunk):await acceptedProjectedTx(client,caseId,sourceId,jobId),row=(await client.query('SELECT disposition,raw_ref,geographic_ref FROM administrative_unit_observations WHERE job_id=$1 AND source_id=$2 AND unit_id=$3 AND ($4::int IS NULL OR committed_chunk_sequence<=$4)',[accepted.job.id,sourceId,unitId,chunk?.sequence??null])).rows[0]??notFound('Administrative observation not found in this accepted source.');
+      const accepted=chunk?await sealedPrefixTx(client,caseId,sourceId,jobId!,chunk,'immutable_read'):await acceptedProjectedTx(client,caseId,sourceId,jobId,'immutable_read'),row=(await client.query('SELECT disposition,raw_ref,geographic_ref FROM administrative_unit_observations WHERE job_id=$1 AND source_id=$2 AND unit_id=$3 AND ($4::int IS NULL OR committed_chunk_sequence<=$4)',[accepted.job.id,sourceId,unitId,chunk?.sequence??null])).rows[0]??notFound('Administrative observation not found in this accepted source.');
       if(representation==='geographic' && row.disposition!=='admitted')throw new AppError(422,'PROJECTED_QUARANTINE','Quarantined native geometry has no globally readable derivative.');
       return {accepted,ref:representation==='native'?row.raw_ref:row.geographic_ref};
     });
     const bytes=await readProjectedArtifact(pinned.ref,pinned.accepted.input,representation==='native'?profile.featureBytes:profile.geographicBytes);
-    await transaction(client=>chunk?sealedPrefixTx(client,caseId,sourceId,pinned.accepted.job.id,chunk):acceptedProjectedTx(client,caseId,sourceId,pinned.accepted.job.id));
+    await transaction(client=>chunk?sealedPrefixTx(client,caseId,sourceId,pinned.accepted.job.id,chunk,'immutable_read'):acceptedProjectedTx(client,caseId,sourceId,pinned.accepted.job.id,'immutable_read'));
     return {bytes,sha256:pinned.ref.sha256,sourceCrs:'EPSG:7755',targetCrs:representation==='native'?'EPSG:7755':'EPSG:4326',chunk};
   }
 }

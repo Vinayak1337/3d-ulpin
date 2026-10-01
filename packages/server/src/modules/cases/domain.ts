@@ -64,6 +64,10 @@ export function caseFrom(row: Row): CaseRecord {
 }
 export function sourceFrom(row: Row): SourceRevision {
   let inspection=row.inspection;
+  if(row.profile==='ifc-native-v1'||inspection&&typeof inspection==='object'&&Object.hasOwn(inspection,'ifcOriginal')){
+    const {ifcOriginal:_ifcOriginal,ifcAccepted:_ifcAccepted,referenceParts:_ifcParts,...metadata}=inspection??{};
+    inspection=metadata;
+  }
   if(inspection?.documentOriginal){
     const {documentOriginal:_original,documentAccepted:_accepted,referenceParts:_parts,...metadata}=inspection;
     inspection=metadata;

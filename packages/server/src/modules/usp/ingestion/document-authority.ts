@@ -3,6 +3,7 @@ import {DocumentInputSchema} from '@ulpin/contracts/usp';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {documentSourceTx,assertDocumentInputTx} from './document-context';
+import {isIFCProtectedSource} from './ifc';
 
 type SourceRow=Record<string,any>;
 type Mode='original'|'snapshot'|'copy';
@@ -14,6 +15,8 @@ export async function documentAuthorityTx(client:PoolClient,captured:SourceRow,m
   if(typeof captured.id!=='string')denied();
   if(seen.has(captured.id)||seen.size>=8)denied();seen.add(captured.id);
   const current=(await client.query('SELECT * FROM sources WHERE id=$1',[captured.id])).rows[0];
+  if(isIFCProtectedSource(captured)||current&&isIFCProtectedSource(current))
+    throw new AppError(409,'IFC_CANONICAL_SOURCE_REQUIRED','Use the current private IFC original/job authority; legacy snapshot and copy admission are unsupported.');
   const marked=Boolean(captured.inspection?.documentOriginal||current?.inspection?.documentOriginal);
   const lineage=captured.inspection?.copiedFrom??current?.inspection?.copiedFrom;
   if(!current){if(marked||lineage)denied();return false;}
