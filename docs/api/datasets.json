@@ -4876,6 +4876,168 @@
         "No analytical geometry, operational truth, learning labels or release qualification."
       ],
       "acquisitionTimeBasis": "retained file write timestamp; acquisition command succeeded, HTTP headers not retained"
+    },
+    {
+      "id": "retained-document-image-png-20261001",
+      "classification": "test_only",
+      "issuer": "NYC official public imagery tile service",
+      "originalUrl": "https://maps.nyc.gov/xyz/1.0.0/photo/2018/18/77177/98555.png8",
+      "acquiredAt": "2026-09-27T12:46:44.468690+00:00",
+      "geography": "Manhattan, NYC, USA",
+      "sourceLineage": {
+        "issuer": "NYC official public imagery tile service",
+        "classification": "foreign test_only",
+        "url": "https://maps.nyc.gov/xyz/1.0.0/photo/2018/18/77177/98555.png8",
+        "sourceYear": 2018,
+        "acquiredAt": "2026-09-27T12:46:44.468690+00:00",
+        "geography": "Manhattan, NYC, USA",
+        "terms": "Retained source manifest: local development use; no broader redistribution licence inferred.",
+        "referenceSystem": "Standalone original image pixels only; tile-service geographic placement not evaluated here."
+      },
+      "apiInstallation": "not-verified",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/originals/ortho-2018-18-77177-98555.png",
+        "bytes": 58129,
+        "sha256": "b96b407333edc78a855eeba79dc4d166ee21be88f83a91166a884255ec4e0a5e",
+        "format": "png",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "guide": "docs/evidence/usp/document-images-handoff.md",
+        "review": "docs/evidence/usp/desktop-backend-review/document-images-review.md",
+        "acceptedCommit": "8d67f3d",
+        "receipt": "E:/BhuAayam-data/task-data/desktop-document-images/verification-pins.json",
+        "receiptSha256": "04b4a5683092db70f6320ab3ca36f0a51de1fb0624b440d6de5aab8f36322256",
+        "scope": "Windows local metadata and raster inspection; source-bound HTTP unrun"
+      },
+      "limitations": [
+        "Calibration null; no geographic, metric, colorimetric, OCR, association, learning or release qualification.",
+        "Fixture package version and actual decoder version are distinct; rights and launch clearance remain as recorded."
+      ]
+    },
+    {
+      "id": "retained-document-image-jpeg-20261001",
+      "classification": "test_only",
+      "issuer": "conda-forge libjpeg-turbo feedstock / libjpeg-turbo development test fixture",
+      "originalUrl": "https://github.com/conda-forge/libjpeg-turbo-feedstock/blob/cc922f6dba346613d6c2820d58011f1c6c175e7d/recipe/testorig.jpg",
+      "acquiredAt": null,
+      "geography": "unknown; no operational geographic claim",
+      "sourceLineage": {
+        "issuer": "conda-forge libjpeg-turbo feedstock / libjpeg-turbo development test fixture",
+        "classification": "public upstream development test_only; not official operational data",
+        "package": "libjpeg-turbo 3.2.0 hfd05255_1 win-64",
+        "packageUrl": "https://conda.anaconda.org/conda-forge/win-64/libjpeg-turbo-3.2.0-hfd05255_1.conda",
+        "fixtureOrigin": "https://github.com/conda-forge/libjpeg-turbo-feedstock/blob/cc922f6dba346613d6c2820d58011f1c6c175e7d/recipe/testorig.jpg",
+        "sourceArchive": "https://github.com/libjpeg-turbo/libjpeg-turbo/archive/3.2.0.tar.gz",
+        "sourceArchiveDeclaredSha256": "980dd81f425082aa6d7c9e47fef27554ce7a9ffc8e2f6e863b97d263c5c50858",
+        "acquisition": "Reused previously retained package fixture; original acquisition timestamp unrecorded in this task.",
+        "geography": "unknown; no operational geographic claim",
+        "softwareTerms": "IJG AND BSD-3-Clause AND Zlib",
+        "imageSpecificRights": "not independently established; software terms do not establish photographic rights",
+        "referenceSystem": "Unqualified source pixels; JFIF unit 0/aspect ratio 1:1 is not physical calibration."
+      },
+      "apiInstallation": "not-verified",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/mamba-root/pkgs/https/conda.anaconda.org/conda-forge/win-64/libjpeg-turbo-3.2.0-hfd05255_1/info/test/testorig.jpg",
+        "bytes": 5770,
+        "sha256": "acc6ec555d41d15b368320edaa3b20958ee6fa97cb6e4a18d1213d5ae8bec73b",
+        "format": "jpeg",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "guide": "docs/evidence/usp/document-images-handoff.md",
+        "review": "docs/evidence/usp/desktop-backend-review/document-images-review.md",
+        "acceptedCommit": "8d67f3d",
+        "receipt": "E:/BhuAayam-data/task-data/desktop-document-images/verification-pins.json",
+        "receiptSha256": "04b4a5683092db70f6320ab3ca36f0a51de1fb0624b440d6de5aab8f36322256",
+        "scope": "Windows local metadata and raster inspection; source-bound HTTP unrun"
+      },
+      "limitations": [
+        "Calibration null; no geographic, metric, colorimetric, OCR, association, learning or release qualification.",
+        "Fixture package version and actual decoder version are distinct; rights and launch clearance remain as recorded."
+      ]
+    },
+    {
+      "id": "google-libkml-1-20261001",
+      "manifest": "docs/evidence/usp/native-kml/sources.json",
+      "manifestSha256": "2b8fafe19eeb10c9687bde97d45f278cf756e839bd36b44903ebe05c1a172bc4",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "public_upstream_development_sample",
+      "classification": "test_only",
+      "issuer": "Google Inc., libkml examples",
+      "originalUrl": "https://raw.githubusercontent.com/google/libkml/8609edf7c8d13ae2ddb6eac2bca7c8e49c67a5f8/examples/kml/kmlsamples.kml",
+      "sourceVersion": "8609edf7c8d13ae2ddb6eac2bca7c8e49c67a5f8",
+      "acquiredAt": "2026-10-01T15:28:21.047474+00:00",
+      "geography": "Published example coordinates around California, United States; no operational property qualification",
+      "horizontalReference": "KML specification longitude/latitude; source accuracy unqualified",
+      "verticalReference": "unqualified",
+      "terms": {
+        "note": "BSD-3-Clause root COPYING; source-specific copyright retained; launch clearance unreviewed",
+        "attribution": "Google Inc., libkml published examples; source comments and unchanged originals retained"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\originals\\kmlsamples.kml",
+        "bytes": 36196,
+        "sha256": "5a97b905a05c97ca0c43e59d423fe1db66299efd9ed75d1738c422da11605dfd",
+        "format": "kml",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "guide": "docs/evidence/usp/native-kml/README.md",
+        "review": "docs/evidence/usp/desktop-backend-review/native-kml-review.md",
+        "acceptedCommit": "cdae3b3",
+        "correctionReceiptSha256": "8b7112cf88a6af810006918633bb2e07b2294fb04e5b1cb6878f89508f2f3a9c",
+        "scope": "Windows source-native bounded inventory; opaque descendants inert"
+      },
+      "limitations": [
+        "External references unresolved; no geometry/CRS transformation, API/job, operational, association, learning or release qualification."
+      ]
+    },
+    {
+      "id": "google-libkml-2-20261001",
+      "manifest": "docs/evidence/usp/native-kml/sources.json",
+      "manifestSha256": "2b8fafe19eeb10c9687bde97d45f278cf756e839bd36b44903ebe05c1a172bc4",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "public_upstream_development_sample",
+      "classification": "test_only",
+      "issuer": "Google Inc., libkml examples",
+      "originalUrl": "https://raw.githubusercontent.com/google/libkml/8609edf7c8d13ae2ddb6eac2bca7c8e49c67a5f8/testdata/kmz/multikml-doc.kmz",
+      "sourceVersion": "8609edf7c8d13ae2ddb6eac2bca7c8e49c67a5f8",
+      "acquiredAt": "2026-10-01T15:28:21.434210+00:00",
+      "geography": "Not stated; selected fragment has no coordinates",
+      "horizontalReference": "Unknown; selected entry is an unnamespaced feature fragment",
+      "verticalReference": "Absent geometry; unknown",
+      "terms": {
+        "note": "BSD-3-Clause root COPYING; source-specific copyright retained; launch clearance unreviewed",
+        "attribution": "Google Inc., libkml published examples; source comments and unchanged originals retained"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:\\BhuAayam-data\\task-data\\desktop-kml-native\\originals\\multikml-doc.kmz",
+        "bytes": 652,
+        "sha256": "8b3faf50d7550fcad29d635a9c951e6f179885af7117288dbca199d4e770c8ac",
+        "format": "kmz",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "guide": "docs/evidence/usp/native-kml/README.md",
+        "review": "docs/evidence/usp/desktop-backend-review/native-kml-review.md",
+        "acceptedCommit": "cdae3b3",
+        "correctionReceiptSha256": "8b7112cf88a6af810006918633bb2e07b2294fb04e5b1cb6878f89508f2f3a9c",
+        "scope": "Windows source-native bounded inventory; opaque descendants inert"
+      },
+      "limitations": [
+        "External references unresolved; no geometry/CRS transformation, API/job, operational, association, learning or release qualification."
+      ]
     }
   ],
   "offlineLearningCorpus": {

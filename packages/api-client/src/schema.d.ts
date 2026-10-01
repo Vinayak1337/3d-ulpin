@@ -1949,6 +1949,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sources/{sourceId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inspect exact retained PNG/JPEG pixel frames; calibration remains unavailable */
+        get: operations["GET_api_v1_sources_sourceId_image"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources/{sourceId}/image/raster": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Decode one explicitly pinned private PNG/JPEG original into a bounded metadata-free display PNG */
+        get: operations["GET_api_v1_sources_sourceId_image_raster"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/spatial-datasets/search": {
         parameters: {
             query?: never;
@@ -27630,6 +27664,83 @@ export interface components {
                 region: null;
             }[];
         };
+        GET_sources_sourceId_image_Response_200_application_json: {
+            /** @enum {string} */
+            version: "document-image/1";
+            /** Format: uuid */
+            sourceId: string;
+            /** Format: uuid */
+            caseId: string;
+            caseRevision: number;
+            sourceRevision: number;
+            sourceSha256: string;
+            sourceBytes: number;
+            name: string;
+            image: {
+                /** @enum {string} */
+                format: "png" | "jpeg";
+                mode: string;
+                frame: {
+                    /** @enum {string} */
+                    kind: "image_source_top_left_pixels";
+                    width: number;
+                    height: number;
+                };
+                /** @enum {number} */
+                frameCount: 1;
+                orientation: {
+                    exifValue: number | null;
+                    applied: number;
+                    /** @enum {string} */
+                    provenance: "source_exif" | "specification_default";
+                };
+                densityDeclarations: {
+                    /** @enum {string} */
+                    kind: "png_phys" | "jpeg_jfif" | "exif_resolution";
+                    unitCode: number | null;
+                    x: (number)[] | null;
+                    y: (number)[] | null;
+                    /** @enum {string} */
+                    status: "supplied" | "unsupported";
+                    /** @enum {string} */
+                    qualification: "not_calibrated";
+                }[];
+                color: {
+                    embeddedIcc: boolean;
+                    declaredSrgb: boolean | null;
+                    /** @enum {string} */
+                    transparency: "absent" | "supplied";
+                };
+                display: {
+                    frame: {
+                        /** @enum {string} */
+                        kind: "image_display_top_left_pixels";
+                        width: number;
+                        height: number;
+                    };
+                    sourceToRaster: (number)[];
+                    /** @enum {string} */
+                    coordinateConvention: "pixel_edges/1";
+                    /** @enum {string} */
+                    mode: "RGB" | "RGBA";
+                    /** @enum {string} */
+                    resampling: "none" | "lanczos";
+                    /** @enum {string} */
+                    colorInterpretation: "encoded_samples_unmanaged";
+                } | null;
+                /** @enum {string|null} */
+                unsupportedReason: "unsupported_color_profile" | "unsupported_pixel_mode" | null;
+            };
+            url: string | null;
+            /** @enum {string|null} */
+            calibration: null;
+            locator: {
+                /** @enum {string} */
+                kind: "original_image";
+                /** @enum {number} */
+                frame: 0;
+            };
+        };
         GET_spatial_datasets_search_Response_200_application_json: {
             matches: {
                 objectId: string;
@@ -47324,6 +47435,60 @@ export interface operations {
             header?: never;
             path: {
                 page: number;
+                sourceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+        };
+    };
+    GET_api_v1_sources_sourceId_image: {
+        parameters: {
+            query: {
+                sha256: string;
+                revision: number;
+            };
+            header?: never;
+            path: {
+                sourceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_sources_sourceId_image_Response_200_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_sources_sourceId_image_raster: {
+        parameters: {
+            query: {
+                sha256: string;
+                revision: number;
+            };
+            header?: never;
+            path: {
                 sourceId: string;
             };
             cookie?: never;

@@ -1,5 +1,7 @@
 # DOC-IMAGE-01 — private retained PNG/JPEG inspection
 
+**Lead integration, 1 October:** code `8d67f3d`, handoff `52e36d6` and review `691ec98` accepted at code/local-render scope. Lead matched reviewer receipt SHA `04104541401fe0bc4b850fd5d3ff317141539e27960a2f78d7c4091d4cad69f9` and 109 physical pins including primary/delivery receipts. Integrated four service checks, one no-listener Nest check, three Python image controls and backend typechecks pass (all exit 0). Retained native renders are reused. Contract export/API publication is lead-owned; actual source-bound HTTP/current access stays pending Docker recovery. Resource, calibration, egress and all scientific qualification limits below remain unchanged.
+
 1 October 2026. Code checkpoint `d8ab6ec763a2951e1cb9b4c5c5b49165cd84feab`, branch `task/desktop-private-document-images`, exact dispatch `8c50f88e1adcf123ee0f5d885f087ad62ca9534f`. Assigned worktree: `C:/Users/kvina/.codex/worktrees/b3eb/3d-ulpin`. The former PDF branch remains at `4f81f09f435d0bf5c8d6901ed98b1cf94c9791e6`; branch-transfer evidence confirms unchanged physical bytes for both pre-existing CityJSON EOL/status entries and retention of `.pnpm-store/`. No reset, stash or deletion occurred. Primary staging stayed read-only, observed at `142905fa76a6a32b0fab3ce49ff635d43de1b097` during closure.
 
 Private receipt: `E:/BhuAayam-data/task-data/desktop-document-images/verification-pins.json`, 52,573 bytes, SHA-256 `04b4a5683092db70f6320ab3ca36f0a51de1fb0624b440d6de5aab8f36322256`. It records nine owned code files, 33 preserved code files, 33 evidence artifacts, 16 runtime/dependency files, unchanged originals, source context and physical versus Git-normalized bytes. Final local output is `final-render/local-render.json`; initial pre-density outputs are preserved separately. No new source acquisition occurred.
@@ -24,6 +26,8 @@ Display pixels are `encoded_samples_unmanaged`: no colorimetric qualification or
 Raster is a bounded metadata-free PNG with `private, no-store`, `nosniff`, inline `image.png` and exact Content-Length. Headers provide `X-Source-Revision`, `X-Source-Sha256`, `X-Render-Sha256`, `X-Image-Source-Pixels`, `X-Image-Display-Pixels`, `X-Image-Orientation`, `X-Image-Pixel-Affine` and `X-Image-Pixel-Convention`. Fresh pixels prevent inherited EXIF/GPS/comments/ICC/text from entering the output.
 
 Contract: `packages/contracts/src/document-images.ts`; explicit relative contract imports avoid shared barrel edits. Evidence module and operation manifest registration are additive; existing manifest operations/schema-source prefix are unchanged. **Lead owns contract export, OpenAPI/client/catalogue updates and later exclusive source-bound HTTP/runtime assignment.** IFC-owned cases/privacy/jobs/dispatcher/ingestion and contracts/usp seams, accepted PDF code and old native reader/worker/fingerprint functions were not edited.
+
+Lead publication now includes the contract export, generated OpenAPI/client and four retained test-only source additions across images/KML. The OpenAPI catalogue has 211 operations/244 schemas: only the two image paths and one schema were added, with all previous paths/schemas unchanged. API validation and generated client typecheck pass. No source-bound HTTP execution is inferred from publication.
 
 ## Runtime and recovery limits
 
