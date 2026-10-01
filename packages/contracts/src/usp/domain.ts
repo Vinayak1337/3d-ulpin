@@ -6,8 +6,11 @@ import {
 import {
   UspAssetRefSchema, UspEvidencePointerSchema, UspMutationGuardSchema,
   UspProposalSelectionSchema, UspScopeSchema, UspSnapshotScopeSchema, UspTargetPinSchema,
+  UspCreateGuardSchema, UspPinnedUpdateGuardSchema,
 } from './common';
 import { UspGeometryProjectionSchema } from './geometry';
+import { UspDeclarationInputSchema, DECLARATION_ACKNOWLEDGEMENT } from './declarations';
+export * from './declarations';
 
 const pin = CoreRevisionRefSchema;
 const orderedPins = z.array(pin).max(10000).readonly();
@@ -114,6 +117,8 @@ export const UspDeclarationChangeSchema = z.strictObject({
   applicability: z.array(pin.refine(value => value.ref.namespace === 'applicability')).max(10000).readonly(),
   instrument: pin.refine(value => value.ref.namespace === 'source_revision', 'Expected instrument source revision'),
   supersedes: pin.nullable(),
+  // Optional for legacy wire readability; executable preparation requires it.
+  payload: UspDeclarationInputSchema.optional(),
 }).superRefine((value, ctx) => {
   if ((value.action === 'create' && value.supersedes !== null) ||
     (value.action === 'amend' && (!value.supersedes || value.supersedes.ref.namespace !== 'declaration' ||
@@ -138,6 +143,16 @@ export const UspCommitProposalSchema = z.strictObject({
   scope: UspSnapshotScopeSchema, guard: UspMutationGuardSchema,
   acknowledgement: z.string().trim().max(2048),
 }).readonly();
+export const UspPrepareDeclarationSchema = z.intersection(z.strictObject({
+  kind: z.literal('declaration'), scope: UspSnapshotScopeSchema,
+  changes: z.tuple([UspDeclarationChangeSchema.unwrap().safeExtend({ payload: UspDeclarationInputSchema }).readonly()]).readonly(),
+  evidence: z.array(UspEvidencePointerSchema).max(256).readonly(), guard: UspCreateGuardSchema,
+}).readonly(), UspProposalSelectionSchema);
+export const UspCommitDeclarationSchema = z.strictObject({
+  kind: z.literal('declaration'), proposalId: z.uuid(), reviewId: z.uuid(),
+  scope: UspSnapshotScopeSchema, guard: UspPinnedUpdateGuardSchema,
+  acknowledgement: z.literal(DECLARATION_ACKNOWLEDGEMENT),
+}).readonly();
 const receiptFields = {
   receiptId: CoreIdSchema, operation: CoreIdSchema, requestKey: coreText(128),
   commandSha256: CoreSha256Schema, reviewId: CoreIdSchema,
@@ -152,8 +167,12 @@ export const UspIdentityCommitReceiptSchema = z.strictObject({
   ...receiptFields, kind: z.literal('project_identity'),
   outcome: z.strictObject({ codes: z.record(CoreIdSchema, z.string().regex(/^P3-[0-9A-HJKMNP-TV-Z]{20}-[0-9A-HJKMNP-TV-Z]{2}$/)) }).readonly(),
 }).readonly();
-/** One registered receipt boundary; registry proposals and reviewed identity commands are variants. */
-export const UspCommitReceiptSchema = z.union([UspRegistryCommitReceiptSchema, UspIdentityCommitReceiptSchema]);
+export const UspDeclarationCommitReceiptSchema = z.strictObject({
+  ...receiptFields, kind: z.literal('declaration'), proposalId: CoreIdSchema,
+  technicalStatus: z.literal('technically_accepted'), legalStatus: z.literal('not_assessed'),
+}).readonly();
+/** One registered receipt boundary for registry, identity and declaration variants. */
+export const UspCommitReceiptSchema = z.union([UspRegistryCommitReceiptSchema, UspIdentityCommitReceiptSchema, UspDeclarationCommitReceiptSchema]);
 
 export const UspJobProjectionSchema = z.strictObject({
   jobId: CoreIdSchema, version: CorePositiveRevisionSchema, operation: CoreIdSchema,

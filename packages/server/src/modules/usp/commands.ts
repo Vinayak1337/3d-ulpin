@@ -11,6 +11,8 @@ import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { commitRegistryReviewTx, lockRegistryReviewCasesTx } from '../registry/registry';
 import { assertLocalUsp, captureRegistrySnapshotTx } from './snapshots';
 import { appendUspOutboxTx } from './outbox';
+import { prepareDeclarationTx, commitDeclarationTx, reviewDeclarationTx } from './declarations/service';
+import type { ReviewDeclaration } from '@ulpin/contracts/usp';
 export { appendUspOutboxTx } from './outbox';
 
 export async function scopedManifestTx(client: PoolClient, ctx: RequestContext, scope: CommitProposal['scope']) {
@@ -40,8 +42,7 @@ export async function requestReceiptTx(client: PoolClient, ctx: RequestContext, 
 export async function prepareProposalTx(client: PoolClient, ctx: RequestContext, raw: PrepareProposal) {
   assertLocalUsp(ctx);
   const command = UspPrepareProposalSchema.parse(raw);
-  if (command.kind === 'declaration') throw new AppError(422, 'USP_DECLARATION_NOT_ASSESSED',
-    'Declaration revisions are understood, but declaration acceptance is not implemented. No rights were recorded.');
+  if (command.kind === 'declaration') return prepareDeclarationTx(client, ctx, command, declarationPorts);
   if (command.kind !== 'registry' || command.changes.length !== 1
     || command.changes[0].kind !== 'registry_draft' || command.guard.mode !== 'create') {
     throw new AppError(422, 'USP_PROPOSAL_UNSUPPORTED', 'This preparation operation is not supported by the registry bridge.');
@@ -82,12 +83,13 @@ export async function prepareProposal(ctx: RequestContext, raw: PrepareProposal)
   return transaction(async client => {
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
     return prepareProposalTx(client, ctx, raw);
-  });
+  }).catch(error => declarationConcurrencyError(error, raw.kind === 'declaration'));
 }
 
 export async function commitProposalTx(client: PoolClient, ctx: RequestContext, raw: CommitProposal) {
   assertLocalUsp(ctx);
   const command = UspCommitProposalSchema.parse(raw);
+  if (command.kind === 'declaration') return commitDeclarationTx(client, ctx, command, declarationPorts);
   if (command.kind !== 'registry' || command.guard.mode !== 'update'
     || command.guard.expectedManifestId !== command.scope.manifestId) {
     throw new AppError(422, 'USP_COMMIT_UNSUPPORTED', 'This reviewed commit operation is not supported.');
@@ -151,5 +153,20 @@ export async function commitProposal(ctx: RequestContext, raw: CommitProposal) {
   return transaction(async client => {
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
     return commitProposalTx(client, ctx, raw);
-  });
+  }).catch(error => declarationConcurrencyError(error, raw.kind === 'declaration'));
+}
+
+function declarationConcurrencyError(error: unknown, declaration: boolean): never {
+  const code = (error as { code?: string } | null)?.code;
+  if (declaration && ['40001', '40P01', '23505'].includes(code ?? ''))
+    throw new AppError(409, 'DECLARATION_REFRESH', 'A concurrent declaration or dependency changed. Refresh the exact snapshot and retry.');
+  throw error;
+}
+
+const declarationPorts = { manifest: scopedManifestTx, capture: captureRegistrySnapshotTx, receipt: requestReceiptTx };
+export async function reviewDeclaration(ctx: RequestContext, raw: ReviewDeclaration) {
+  return transaction(async client => {
+    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+    return reviewDeclarationTx(client, ctx, raw, declarationPorts);
+  }).catch(error => declarationConcurrencyError(error, true));
 }

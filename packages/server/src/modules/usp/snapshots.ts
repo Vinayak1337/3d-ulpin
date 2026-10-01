@@ -14,6 +14,7 @@ import { readObject, sha256 } from '../../infrastructure/storage';
 import { geometryProjection, withUspAnalyticalReader } from './geometry';
 import { localOperatorSubject } from './principal';
 import {documentAuthorityTx,documentSnapshotView,captureDocumentSourceTx} from './ingestion/document-authority';
+import { declarationSnapshotRowsTx, declarationMembership, declarationSnapshotView } from './declarations/projection';
 
 type BodyRow = { namespace: string; object_id: string; revision: number; body: Record<string, any> };
 
@@ -96,6 +97,7 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
       OR (q.namespace='area_feature' AND EXISTS(SELECT 1 FROM physical_features f JOIN map_areas a ON a.id=f.area_id WHERE f.id=q.record_id AND a.site_id=$1 AND f.revision=q.record_revision))
     ORDER BY q.namespace,q.record_id,q.record_revision,q.revision DESC`, [siteId])).rows;
   return ([
+    ...await declarationSnapshotRowsTx(client, siteId),
     ...qualifications.map(row => ({ namespace: 'geometry_qualification',
       object_id: `${row.namespace}:${row.record_id}@${row.record_revision}`, revision: Number(row.revision), body: row })),
     { namespace: 'registry_site', object_id: site.id, revision: Number(site.revision), body: site },
@@ -122,6 +124,13 @@ export async function captureRegistrySnapshot(ctx: RequestContext, siteId: strin
 export async function captureRegistrySnapshotTx(client: PoolClient, ctx: RequestContext, siteId: string, selection: { kind: 'site' } | { kind: 'targets'; pins: readonly TargetPin[] }) {
     assertLocalUsp(ctx);
     const rows = await snapshotRows(client, siteId);
+    // New authority names share a prefix (declaration/declaration_entry).
+    // Contract ordering is code-point ordering, while the legacy locale sort
+    // places '_' before ':'. Preserve zero-declaration digest ordering exactly.
+    if (rows.some(row => row.namespace === 'declaration')) rows.sort((a, b) => {
+      const key = (row: BodyRow) => `${row.namespace}:${encodeURIComponent(row.object_id)}@${row.revision}`;
+      return key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0;
+    });
     assertLocalUsp(ctx);
     if (selection.kind === 'targets') {
       if (!selection.pins.length || selection.pins.length > 100) throw new AppError(422, 'USP_SELECTION', 'Choose 1 to 100 targets.');
@@ -134,7 +143,10 @@ export async function captureRegistrySnapshotTx(client: PoolClient, ctx: Request
     const site = rows.find(row => row.namespace === 'registry_site')!.body;
     const members = rows.map(row => ({ pin: recordPin(row), bodySha256: fingerprint(row.body),
       bodyRef: fingerprint([row.namespace, row.object_id, row.revision, row.body]),
-      authority: row.namespace === 'geometry_qualification' ? 'geometry' as const
+      authority: row.namespace === 'declaration' ? 'declaration' as const
+        : row.namespace === 'declaration_entry' ? 'declaration_entry' as const
+        : row.namespace === 'applicability' ? 'applicability' as const
+        : row.namespace === 'geometry_qualification' ? 'geometry' as const
         : row.namespace === 'registry_record' ? 'registry' as const
         : row.namespace === 'area_feature' ? 'area_feature' as const
         : row.namespace === 'source_revision' ? 'source' as const : 'registry' as const }));
@@ -150,7 +162,7 @@ export async function captureRegistrySnapshotTx(client: PoolClient, ctx: Request
     const manifest = UspSnapshotManifestSchema.parse({
       schemaVersion: 'usp/1', id, digest, scope, capturedAt: new Date().toISOString(),
       selection: normalizedSelection, members,
-      declarations: { state: 'not_assessed', declarationRevisions: [], entryRevisions: [], applicabilityRevisions: [] },
+      declarations: declarationMembership(members),
       frame: { horizontal: site.frame?.id ?? null, vertical: site.frame?.benchmark ?? null,
         unit: site.frame?.horizontalUnit ?? null, transform: null },
       policyVersion: ctx.policyVersion, accessViewId: ctx.accessViewId,
@@ -208,6 +220,8 @@ export async function readSnapshotBody(ctx: RequestContext, scope: SnapshotScope
   }
   if(pin.ref.namespace==='source_revision')return transaction(async client=>{const view=documentSnapshotView(found.body,await documentAuthorityTx(client,found.body));assertLocalUsp(ctx);return view;});
   if(pin.ref.namespace==='registry_record')return registryDocumentSnapshotView(found.body);
+  if (['declaration', 'declaration_entry', 'applicability'].includes(pin.ref.namespace))
+    return declarationSnapshotView(pin.ref.namespace, found.body);
   return found.body;
 }
 
