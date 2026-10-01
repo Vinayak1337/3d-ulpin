@@ -6,6 +6,8 @@ import {RegistryCityJSONValidationRequestSchema,RegistryCityJSONValidationReceip
 import {RegistryCityJSONAdmissionRequestSchema,RegistryCityJSONAdmissionAssessmentSchema} from '@ulpin/contracts';
 import {CITYJSON_REFERENCE_LIMITS,RegistryCityJSONReferenceAttachSchema,RegistryCityJSONReferenceRemoveSchema,
   RegistryCityJSONReferenceReceiptSchema,RegistryCityJSONReferenceReadSchema} from '@ulpin/contracts';
+import {CITYJSON_REFERENCE_REVIEW_LIMITS,RegistryCityJSONReferenceReviewRequestSchema,RegistryCityJSONReferenceReviewReadSchema,
+  RegistryCityJSONReferenceReviewIdSchema} from '@ulpin/contracts';
 import {AppError} from '@ulpin/server/infrastructure/errors';
 import {PrivateSpatialGuard} from '../spatial/private-spatial.guard';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -33,6 +35,23 @@ function noNativeQuery(req:Request){
 @Controller('api/v1')
 export class RegisterController {
   constructor(@Inject(RegisterService) private readonly service: RegisterService) {}
+
+  @Post('registry-drafts/:draftId/native-exterior/references/reviews') @HttpCode(200)
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_native_exterior_references_reviews',summary:'Record an immutable scoped officer judgment about exact selected reference conventions without geometry qualification'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryCityJSONReferenceReviewReadSchema),RegistryCityJSONReferenceReviewRequestSchema)
+  async reviewNativeReferences(@Param('draftId') draftId:string,@Req() req:Request){
+    noNativeQuery(req);return this.service.reviewNativeReferences(idSchema.parse(draftId),
+      RegistryCityJSONReferenceReviewRequestSchema.parse(await readJsonBody(req,CITYJSON_REFERENCE_REVIEW_LIMITS.bodyBytes)));
+  }
+
+  @Get('registry-drafts/:draftId/native-exterior/references/reviews/:reviewId')
+  @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
+  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_native_exterior_references_reviews_reviewId',summary:'Read an explicitly selected immutable reference review through exact current private authority'})
+  @doc.ApiContract(200,doc.requestSchema(RegistryCityJSONReferenceReviewReadSchema))
+  nativeReferenceReview(@Param('draftId') draftId:string,@Param('reviewId') reviewId:string,@Req() req:Request){
+    noNativeQuery(req);return this.service.nativeReferenceReview(idSchema.parse(draftId),RegistryCityJSONReferenceReviewIdSchema.parse(reviewId));
+  }
 
   @Post('registry-drafts/:draftId/native-exterior/references') @HttpCode(200)
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
