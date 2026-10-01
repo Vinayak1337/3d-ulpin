@@ -2,7 +2,9 @@ import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {RegistryDocumentAmendmentSchema,RegistryDocumentAmendmentReceiptSchema,RegistryDocumentCitationSchema,
   RegistryDocumentCitationsSchema,RegistryDocumentEvidenceSchema,RegistryDocumentReviewContextSchema,
-  type RegistryRecord,type RegistryDocumentCitation,type RegistryDocumentReviewContext} from '@ulpin/contracts';
+  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,
+  type RegistryRecord,type RegistryDocumentCitation,type RegistryNativeDocumentCitation,type RegistryOcrDocumentCitation,
+  type RegistryDocumentReviewContext} from '@ulpin/contracts';
 import {DocumentPartSchema,type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
 import {transaction} from '../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../infrastructure/errors';
@@ -15,8 +17,13 @@ import {documentPartEligibleForProposal} from '../usp/ingestion/document-model';
 import {registrySourceTx,registryMetadataEvidence} from './registry-metadata';
 import {RegistryMetadataSchema} from '@ulpin/contracts';
 import {registryDocumentCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
+import {resolveFusionCitationsTx,ocrCitationFusionSelection,fusionOcrCitationFields,fusionCitationDocumentPin,citationReadBudget,
+  type FusionCitationDependencies} from '../usp/ingestion/source-fusion-citations';
+import {fusionSourceProjection} from '../usp/ingestion/source-fusion';
+import {readFusionResult,fusionLive} from '../usp/ingestion/source-fusion-authority';
 
-type Dependencies={source:typeof associationDocumentInputTx;result:typeof readDocumentResult;registrySource:typeof registrySourceTx};
+export type RegistryDocumentDependencies=FusionCitationDependencies&{result:typeof readDocumentResult;registrySource:typeof registrySourceTx};
+type Dependencies=RegistryDocumentDependencies;
 const defaults:Dependencies={source:associationDocumentInputTx,result:readDocumentResult,registrySource:registrySourceTx};
 const context=()=>localRequestContext(randomUUID());
 export function documentReviewContext():RegistryDocumentReviewContext{
@@ -76,11 +83,14 @@ export function literalCitationParts(result:DocumentResult,input:DocumentInput,i
   }
   return ids.map(id=>{
     const part=byId.get(id);
-    if(!part||part.sourceId!==input.sourceId||part.sourceRevision!==input.sourceRevision||part.sourceSha256!==input.sourceSha256||
-      sha256(part.text)!==part.sha256 || !documentPartEligibleForProposal(part)||!part.text.trim()||/\[redacted/i.test(part.text))
-      throw new AppError(422,'REGISTRY_DOCUMENT_PART_SELECTION','Choose exact eligible literal native parts from this result.');
-    return part;
+    return eligibleCitationPart(part,input);
   });
+}
+function eligibleCitationPart(part:DocumentResult['native']['parts'][number]|undefined,input:DocumentInput){
+  if(!part||part.sourceId!==input.sourceId||part.sourceRevision!==input.sourceRevision||part.sourceSha256!==input.sourceSha256||
+    sha256(part.text)!==part.sha256 || !documentPartEligibleForProposal(part)||!part.text.trim()||/\[redacted/i.test(part.text))
+    throw new AppError(422,'REGISTRY_DOCUMENT_PART_SELECTION','Choose exact eligible literal native parts from this result.');
+  return part;
 }
 async function acceptedFenceTx(client:PoolClient,jobId:string){
   const row=(await client.query('SELECT accepted_fence FROM usp_job_metadata WHERE job_id=$1',[jobId])).rows[0];
@@ -107,27 +117,46 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   const citations=RegistryDocumentCitationsSchema.parse(record.documentCitations??[]);
   if(!citations.length)return [];
   requireCorrection(record);
-  const ctx=context(),entries:{pin:RegistryDocumentCitation;part:DocumentResult['native']['parts'][number]}[]=[];
+  const ctx=context(),entries:ReturnType<typeof RegistryDocumentEvidenceSchema.parse>['citations']=[],budget=citationReadBudget();
   const checked:{pin:RegistryDocumentCitation;input:DocumentInput;source:Awaited<ReturnType<Dependencies['registrySource']>>;fence:number}[]=[];
   const groups=new Map<string,RegistryDocumentCitation[]>();
   for(const pin of citations){
     if(pin.selection.subject!==ctx.principal.subject)
       throw new AppError(403,'REGISTRY_DOCUMENT_DENIED','This document citation is unavailable to the current operator.');
     await historicalTargetTx(client,siteId,record,pin);
-    const key=fingerprint(pin.document);groups.set(key,[...(groups.get(key)??[]),pin]);
+    const key=`${pin.version}:${fingerprint(pin.document)}`;groups.set(key,[...(groups.get(key)??[]),pin]);
   }
   for(const group of groups.values()){
     const first=group[0],source=await dependencies.registrySource(client,siteId,first.document.sourceId);
     const input=await dependencies.source(client,ctx,first.document,undefined,lock),fence=await acceptedFenceTx(client,input.jobId);
     if(source.revision!==input.sourceRevision||source.sha256!==input.sourceSha256)conflict('The site document source pins changed.');
-    const result=await dependencies.result(input,first.document.resultSha256);
-    const parts=literalCitationParts(result,input,group.map(pin=>pin.partId));
-    for(const [index,pin] of group.entries()){
-      const part=parts[index];
-      if(pin.id!==citationId(pin)||pin.inputSha256!==fingerprint(input)||pin.readerSha256!==input.readerSha256||pin.acceptedFence!==fence||
-        pin.selection.accessSha256!==input.accessSha256||pin.partSha256!==part.sha256||fingerprint(pin.locator)!==fingerprint(part.locator))
-        conflict('The exact native part, reader, accepted attempt or access pin changed.');
-      entries.push({pin,part});
+    if(first.version==='registry-document-citation/1'){
+      const nativePins=group.map(pin=>RegistryNativeDocumentCitationSchema.parse(pin));
+      const result=await dependencies.result(input,first.document.resultSha256);
+      const parts=literalCitationParts(result,input,nativePins.map(pin=>pin.partId));
+      for(const [index,pin] of nativePins.entries()){
+        const part=parts[index];
+        if(pin.id!==citationId(pin)||pin.inputSha256!==fingerprint(input)||pin.readerSha256!==input.readerSha256||pin.acceptedFence!==fence||
+          pin.selection.accessSha256!==input.accessSha256||pin.partSha256!==part.sha256||fingerprint(pin.locator)!==fingerprint(part.locator))
+          conflict('The exact native part, reader, accepted attempt or access pin changed.');
+        entries.push({pin,part});
+      }
+    }else{
+      const ocrPins=group.map(pin=>RegistryOcrDocumentCitationSchema.parse(pin)),selection=ocrCitationFusionSelection(first);
+      // All observations in this result share one exact full input/fence/byte pin.
+      if(ocrPins.some(pin=>fingerprint(ocrCitationFusionSelection(pin).pin)!==fingerprint(selection.pin)))
+        conflict('The exact OCR result selection pins differ.');
+      selection.itemOrdinals=[...new Set(ocrPins.map(pin=>pin.itemOrdinal))];
+      const loaded=await (dependencies.fusionResult??readFusionResult)(selection,{kind:'document',input,acceptedFence:fence},budget);
+      const projected=fusionSourceProjection(selection,loaded);
+      if(projected.kind!=='document_ocr')conflict('The accepted OCR observation is unavailable.');
+      for(const pin of ocrPins){
+        const {version:_,id:__,target:___,selection:attribution,associationState:____,qualification:_____,...fields}=pin;
+        if(pin.id!==citationId(pin)||pin.inputSha256!==fingerprint(input)||pin.readerSha256!==input.readerSha256||pin.acceptedFence!==fence||
+          attribution.accessSha256!==input.accessSha256||fingerprint(fields)!==fingerprint(fusionOcrCitationFields(projected,pin.itemOrdinal)))
+          conflict('The exact OCR observation, configuration, locator, attempt or access pin changed.');
+        entries.push({pin,item:projected.observations.find(item=>item.ordinal===pin.itemOrdinal)!.item});
+      }
     }
     await dependencies.source(client,ctx,first.document,input,lock);
     const current=await dependencies.registrySource(client,siteId,first.document.sourceId);
@@ -151,10 +180,14 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
     if(fingerprint(current)!==fingerprint(item.source)||await acceptedFenceTx(client,item.input.jobId)!==item.fence)
       conflict('The aggregate document source or accepted attempt changed during its read.');
   }
+  if(citations.some(pin=>pin.version==='registry-document-ocr-citation/1'))fusionLive(budget);
   return entries;
 }
-export function citationId(pin:Pick<RegistryDocumentCitation,'document'|'partId'|'target'>){
-  return fingerprint({document:pin.document,partId:pin.partId,target:pin.target});
+export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation){
+  if('partId' in pin)return fingerprint({document:pin.document,partId:pin.partId,target:pin.target});
+  return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,readerSha256:pin.readerSha256,
+    acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,ocrConfigSha256:pin.ocrConfigSha256,
+    itemOrdinal:pin.itemOrdinal,itemSha256:pin.itemSha256,target:pin.target});
 }
 export function applyCitationAmendment(record:RegistryRecord,added:RegistryDocumentCitation[],remove:readonly string[]){
   const old=RegistryDocumentCitationsSchema.parse(record.documentCitations??[]);
@@ -180,10 +213,23 @@ async function lockedDraftTx(client:PoolClient,draftId:string,recordId?:string,l
     throw new AppError(422,'REGISTRY_DOCUMENT_DRAFT_SCOPE','Amend one existing building or floor correction per draft.');
   requireCorrection(records[0]);return {draft,record:records[0]};
 }
+/** Verified immutable results may be reused within this one locked amendment;
+ * every source/access/fence is still checked again through canonical authority. */
+function fusionValidationDependencies(fusion:Awaited<ReturnType<typeof resolveFusionCitationsTx>>,dependencies:Dependencies):Dependencies{
+  return {...dependencies,result:async(input,hash)=>fusion.documents.get(`${input.jobId}/${hash}`)?.loaded.result??dependencies.result(input,hash),
+    fusionResult:async(selection,authority,budget)=>{
+      const cached=fusion.documents.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`);
+      return cached&&fingerprint(cached.pin)===fingerprint(selection.pin)?cached.loaded:
+        (dependencies.fusionResult??readFusionResult)(selection,authority,budget);
+    }};
+}
 /** Existing operations holds only the idempotency receipt; citations live solely in registry_drafts/records/history. */
 export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId:string,raw:unknown,dependencies:Dependencies=defaults){
-  const request=RegistryDocumentAmendmentSchema.parse(raw),{draft,record}=await lockedDraftTx(client,draftId,request.recordId,true,
-    request.add?[request.add.document.caseId]:[]);
+  const request=RegistryDocumentAmendmentSchema.parse(raw);
+  if(request.addFusion&&Buffer.byteLength(JSON.stringify(request))>32*1024)
+    throw new AppError(413,'REGISTRY_DOCUMENT_REQUEST_LIMIT','Select a smaller explicit citation amendment.');
+  const {draft,record}=await lockedDraftTx(client,draftId,request.recordId,true,
+    request.add?[request.add.document.caseId]:request.addFusion?request.addFusion.selection.sources.map(source=>source.pin.caseId):[]);
   if(draft.status!=='draft'||record.revision!==request.expectedRecordRevision)conflict('Use the exact active correction and recorded target revision.');
   const target=await currentTargetTx(client,draft.site_id,record,true,dependencies),ctx=context();
   const operationKey=`registry-document-citations:${draftId}:${request.requestKey}`;
@@ -193,10 +239,44 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   if(prior){
     const receipt=RegistryDocumentAmendmentReceiptSchema.parse(prior.result);
     if(prior.payload_hash!==digest||draft.revision!==receipt.draftRevision)conflict('This amendment request or its draft changed.');
-    await assertRegistryDocumentCitationsTx(client,draft.site_id,record,true,dependencies);return receipt;
+    if(request.addFusion){
+      for(const selected of request.addFusion.selection.sources)if(selected.kind!=='cityjson')
+        await dependencies.registrySource(client,draft.site_id,selected.pin.sourceId);
+      const fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies);
+      await assertRegistryDocumentCitationsTx(client,draft.site_id,record,true,fusionValidationDependencies(fusion,dependencies));
+      await currentTargetTx(client,draft.site_id,record,true,dependencies);await fusion.revalidate();
+    }else await assertRegistryDocumentCitationsTx(client,draft.site_id,record,true,dependencies);
+    return receipt;
   }
   if(draft.revision!==request.expectedDraftRevision)conflict('The draft changed. Refresh before amending its exact citations.');
   const added:RegistryDocumentCitation[]=[];
+  let fusion:Awaited<ReturnType<typeof resolveFusionCitationsTx>>|undefined;
+  if(request.addFusion){
+    // Deny site-ineligible citation sources before reading their private results.
+    for(const selected of request.addFusion.selection.sources)if(selected.kind!=='cityjson')
+      await dependencies.registrySource(client,draft.site_id,selected.pin.sourceId);
+    fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies);
+    const targetPin={recordId:record.id,revision:record.revision,bodySha256:fingerprint(target.body)};
+    const attribution=(input:DocumentInput)=>({subject:ctx.principal.subject,accessSha256:input.accessSha256,selectedAt:new Date().toISOString()});
+    for(const source of fusion.context.sources){
+      if(source.kind==='cityjson')continue;
+      const input=fusion.inputs.get(source.pin.sourceId)!;
+      if(source.kind==='document'){
+        if(source.parts.length&&(source.nativeStatus!=='extracted'||input.archiveSelection))
+          throw new AppError(422,'REGISTRY_DOCUMENT_NATIVE_REQUIRED','Select eligible literal native document parts.');
+        for(const entry of source.parts){
+          const part=eligibleCitationPart(entry.part,input),pin={document:fusionCitationDocumentPin(source.pin),partId:part.id,target:targetPin};
+          added.push(RegistryNativeDocumentCitationSchema.parse({...pin,id:citationId(pin),version:'registry-document-citation/1',
+            inputSha256:source.pin.inputSha256,readerSha256:source.pin.readerSha256,acceptedFence:source.pin.acceptedFence,
+            partSha256:part.sha256,locator:part.locator,selection:attribution(input),associationState:'operator_selected',qualification:'not_assessed'}));
+        }
+      }else for(const observation of source.observations){
+        const pin=RegistryOcrDocumentCitationSchema.parse({...fusionOcrCitationFields(source,observation.ordinal),id:'0'.repeat(64),
+          version:'registry-document-ocr-citation/1',target:targetPin,selection:attribution(input),associationState:'operator_selected',qualification:'not_assessed'});
+        pin.id=citationId(pin);added.push(pin);
+      }
+    }
+  }
   if(request.add){
     const source=await dependencies.registrySource(client,draft.site_id,request.add.document.sourceId);
     const input=await dependencies.source(client,ctx,request.add.document,undefined,true),fence=await acceptedFenceTx(client,input.jobId);
@@ -216,8 +296,9 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   // Removal remains useful when the removed source is unavailable; retained/additional citations still require current authority.
   const remove=request.clearAll?(record.documentCitations??[]).map(pin=>pin.id):request.remove;
   const next=applyCitationAmendment(record,added,remove);
-  await assertRegistryDocumentCitationsTx(client,draft.site_id,next,true,dependencies);
+  await assertRegistryDocumentCitationsTx(client,draft.site_id,next,true,fusion?fusionValidationDependencies(fusion,dependencies):dependencies);
   await currentTargetTx(client,draft.site_id,record,true,dependencies);
+  if(fusion)await fusion.revalidate();
   const changed=fingerprint(record.documentCitations??[])!==fingerprint(next.documentCitations??[]);
   if(changed)await client.query('UPDATE registry_drafts SET records=$2,revision=revision+1 WHERE id=$1',[draftId,JSON.stringify([next])]);
   const receipt=RegistryDocumentAmendmentReceiptSchema.parse({draftId,draftRevision:draft.revision+(changed?1:0),
@@ -226,7 +307,8 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     [draft.case_id,operationKey,digest,receipt]);
   return receipt;
 }
-export const amendRegistryDocumentCitations=(draftId:string,raw:unknown)=>transaction(client=>amendRegistryDocumentCitationsTx(client,draftId,raw));
+export const amendRegistryDocumentCitations=(draftId:string,raw:unknown)=>transaction(client=>amendRegistryDocumentCitationsTx(client,draftId,raw),
+  RegistryDocumentAmendmentSchema.parse(raw).addFusion?{deadlineAt:Date.now()+30_000}:undefined);
 export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:string,dependencies:Dependencies=defaults){
   const {draft,record}=await lockedDraftTx(client,draftId);
   const expected=draft.status==='recorded'?{...record,revision:record.revision+1}:record;

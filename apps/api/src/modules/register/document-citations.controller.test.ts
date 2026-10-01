@@ -19,6 +19,11 @@ test('canonical register owns private citation routes with bounded exact selecti
     const request=(path!.post!.requestBody as any).content['application/json'].schema;
     assert.equal(request.additionalProperties,false);
     assert.equal(request.properties.add.properties.partIds.maxItems,25);
+    assert.equal(request.properties.addFusion.additionalProperties,false);
+    const fusionSources=request.properties.addFusion.properties.selection.properties.sources;
+    assert.equal(fusionSources.maxItems,8);
+    const ocr=fusionSources.items.oneOf.find((s:any)=>s.properties.kind.enum?.includes('document_ocr'));
+    assert.equal(ocr.properties.itemOrdinals.items.maximum,63);
     assert.equal(request.properties.remove.maxItems,25);
     assert.deepEqual(request.properties.clearAll.enum,[true]);
     assert.equal(request.required.includes('clearAll'),false);
