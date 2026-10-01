@@ -9,8 +9,8 @@ import {AppError} from '../packages/server/src/infrastructure/errors';
 import {sha256} from '../packages/server/src/infrastructure/storage';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';
-import {assembleSourceFusion,fusionSourceProjection,fusionContextProjection,type SourceFusionDependencies} from '../packages/server/src/modules/usp/ingestion/source-fusion';
-import {fusionAuthorityBatch,fusionJson,readFusionObject,type FusionBudget} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
+import {assembleSourceFusion,fusionSourceProjection,fusionOcrSourceProjection,fusionContextProjection,type SourceFusionDependencies} from '../packages/server/src/modules/usp/ingestion/source-fusion';
+import {fusionAuthorityBatch,fusionJson,readFusionObject,readFusionResult,type FusionBudget} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
 
 const digest='a'.repeat(64),subject='source-fusion-technical-control';
 const uuid=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -54,6 +54,21 @@ function city(n:number){
     sourceRevision:1,sourceSha256:digest,jobId:input.jobId,resultSha256:sha256(JSON.stringify(result)),readerSha256:digest,
     inputSha256:fingerprint(input),acceptedFence:1,resultBytes:Buffer.byteLength(JSON.stringify(result))},objectIds:[id]};
   return {selection,loaded:{kind:'cityjson' as const,result,native},authority:{kind:'cityjson' as const,input,acceptedFence:1}};
+}
+function ocrDocument(n:number){
+  const base=document(n),input={...base.authority.input,ocrSelection:{page:1,region:[0,0,400,500] as [number,number,number,number]},ocrConfigSha256:digest};
+  const result=DocumentResultSchema.parse({...base.loaded.result,input,native:{...base.loaded.result.native,status:'needs_ocr',format:'pdf',parts:[]},
+    ocr:{sourceSha256:input.sourceSha256,sourceRevision:input.sourceRevision,sourcePage:1,requestedRegion:input.ocrSelection.region,
+      sourcePageFrame:{kind:'pdf_display_page_top_left_points',rotation:0,width:400,height:500},
+      method:'ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned',toolStatus:'complete',outputStatus:'partial',
+      textCompleteness:'unverified',issues:['technical_partial_coverage'],items:[0,1].map(i=>({text:'OCR control G+41? (unverified)',label:'text',
+        method:'ocr:docling-tesseract-cli-full-page',sourcePageBoxes:[{pageNumber:1,frame:'pdf_display_page_top_left_points',
+          box:[10,10+i*20,80,20+i*20],derivedFrom:'docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin'}]})),
+      execution:{maxSeconds:90,exitCode:0,receiptSha256:digest,candidateSha256:digest,
+        worker:{exitCode:0,stopReason:null,elapsedSeconds:1,peakObservedRssBytes:1,peakJobPrivateBytes:1,gatedStart:true,logSha256:digest}}}});
+  const pin={...base.selection.pin,inputSha256:fingerprint(input),resultSha256:sha256(JSON.stringify(result)),resultBytes:Buffer.byteLength(JSON.stringify(result))};
+  const selection:Extract<SourceFusionSelection,{kind:'document_ocr'}>={kind:'document_ocr',pin,itemOrdinals:[1,0]};
+  return {selection,loaded:{kind:'document' as const,result},authority:{kind:'document' as const,input,acceptedFence:1}};
 }
 async function local<T>(run:(ctx:RequestContext)=>Promise<T>){
   const prior=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=subject;
@@ -191,3 +206,72 @@ test('read allocation, exact bytes/hash, JSON depth, response size and expired w
   citySource.objects[0].attributes={state:'declared',value:{oversized:'x'.repeat(SOURCE_FUSION_LIMITS.responseBytes)}};
   assert.throws(()=>fusionContextProjection(sources),(e:any)=>e.code==='SOURCE_FUSION_RESPONSE_LIMIT');
 });
+
+test('explicit OCR selections join native/CityJSON fragments with exact observations, source citations and reproducible ordinal hashes',async()=>local(async ctx=>{
+  const native=document(1),geometry=city(2),ocr=ocrDocument(3),rows=[native,geometry,ocr];
+  const deps:SourceFusionDependencies={authority:async()=>rows.map(r=>r.authority),
+    read:async selection=>rows.find(r=>r.selection.pin.sourceId===selection.pin.sourceId)!.loaded};
+  const response=await assembleSourceFusion(ctx,{sources:rows.map(r=>r.selection)},deps),source=response.sources[2];
+  assert(source.kind==='document_ocr');assert.equal(source.nativeStatus,'needs_ocr');assert.equal(source.capability,'selected_ocr_observations');
+  assert.deepEqual(source.ocrInput,{selection:ocr.authority.input.ocrSelection,configSha256:digest});
+  const {items,...metadata}=ocr.loaded.result.ocr!;assert.deepEqual(source.ocr,metadata);
+  assert.equal(source.ocr!.outputStatus,'partial');assert.equal(source.ocr!.textCompleteness,'unverified');
+  assert.deepEqual(source.coverage,{selectedItems:2,availableItems:2,storedItems:2,scope:'explicit_selection_only',nativeExtraction:'separate'});
+  assert.deepEqual(source.observations.map(o=>o.ordinal),[0,1]);assert.notEqual(source.observations[0].itemSha256,source.observations[1].itemSha256);
+  for(const observed of source.observations){
+    assert.deepEqual(observed.item,items[observed.ordinal]);
+    assert.equal(observed.itemSha256,fingerprint({version:'source-fusion-ocr-item/1',pin:source.pin,ordinal:observed.ordinal,item:observed.item}));
+    assert.equal(observed.key,`${source.namespace}/ocr/${source.pin.jobId}/${source.pin.resultSha256}/${observed.ordinal}`);
+  }
+  const {contextSha256,...body}=response;assert.equal(contextSha256,fingerprint(body));assert.equal(response.association.state,'not_assessed');
+  assert(!SourceFusionRequestSchema.safeParse({sources:[ocr.selection,{...ocr.selection,kind:'document',partIds:[]}]}).success);
+  assert(!SourceFusionRequestSchema.safeParse({sources:[native.selection,{...ocr.selection,itemOrdinals:[0,0]}]}).success);
+  assert(!SourceFusionRequestSchema.safeParse({sources:[native.selection,{...ocr.selection,itemOrdinals:[64]}]}).success);
+  assert(!SourceFusionRequestSchema.safeParse({sources:[native.selection,geometry.selection,{...ocr.selection,itemOrdinals:Array.from({length:24},(_,i)=>i)}]}).success);
+}));
+
+test('empty, missing, failed and unavailable OCR retain explicit gaps; unknown items and inconsistent source citations fail generically',async()=>local(async ctx=>{
+  const a=document(1),b=ocrDocument(2),empty={...b.selection,itemOrdinals:[]};
+  assert.equal(fusionOcrSourceProjection(empty,b.loaded.result).capability,'selection_required');
+  const variants=[{...b.loaded.result,ocr:{...b.loaded.result.ocr!,items:[]}},
+    {...b.loaded.result,ocr:{...b.loaded.result.ocr!,toolStatus:'failed' as const,outputStatus:'failed' as const,items:[]}},
+    {...b.loaded.result,ocr:{...b.loaded.result.ocr!,toolStatus:'unavailable' as const,outputStatus:'failed' as const,items:[]}}];
+  for(const [i,result] of variants.entries()){
+    const projected=fusionOcrSourceProjection(empty,result);assert(projected.kind==='document_ocr');
+    assert.equal(projected.gap,['ocr_empty','ocr_failed','ocr_unavailable'][i]);assert.equal(projected.capability,'ocr_unavailable');
+    assert.deepEqual(projected.observations,[]);assert.throws(()=>fusionOcrSourceProjection(b.selection,result),(e:any)=>e.status===422);
+  }
+  const missing=document(3),missingSelection={kind:'document_ocr' as const,pin:missing.selection.pin,itemOrdinals:[]};
+  const projected=fusionOcrSourceProjection(missingSelection,missing.loaded.result);assert(projected.kind==='document_ocr');
+  assert.equal(projected.gap,'ocr_missing');assert.equal(projected.ocr,null);assert.deepEqual(projected.ocrInput,{selection:null,configSha256:null});
+  const {execution:_,...ocrWithoutExecution}=b.loaded.result.ocr!;
+  const noExecution={...b.loaded.result,ocr:ocrWithoutExecution};
+  const noExecutionProjection=fusionOcrSourceProjection(b.selection,noExecution);assert(noExecutionProjection.kind==='document_ocr');
+  assert(!Object.hasOwn(noExecutionProjection.ocr!,'execution'));
+  assert.throws(()=>fusionOcrSourceProjection(empty,{...b.loaded.result,ocr:undefined}),(e:any)=>e.status===422);
+  const dependencies:SourceFusionDependencies={authority:async()=>[a.authority,b.authority],read:async s=>s.kind==='document'?a.loaded:b.loaded};
+  await assert.rejects(()=>assembleSourceFusion(ctx,{sources:[a.selection,{...b.selection,itemOrdinals:[63]}]},dependencies),
+    (e:any)=>e.status===422&&e.code==='SOURCE_FUSION_UNAVAILABLE'&&!e.message.includes(b.selection.pin.sourceId));
+  assert.throws(()=>fusionOcrSourceProjection(b.selection,{...b.loaded.result,ocr:{...b.loaded.result.ocr!,sourceSha256:'b'.repeat(64)}}),(e:any)=>e.status===422);
+  // The runtime OCR adapter still parses the full canonical result, including
+  // input/config/source/region/item consistency, over exact bounded bytes.
+  const bad={...b.loaded.result,ocr:{...b.loaded.result.ocr!,items:[{...b.loaded.result.ocr!.items[0],sourcePageBoxes:[{
+    ...b.loaded.result.ocr!.items[0].sourcePageBoxes[0],pageNumber:2}]}]}};
+  const bytes=Buffer.from(JSON.stringify(bad)),selection={...b.selection,pin:{...b.selection.pin,resultSha256:sha256(bytes),resultBytes:bytes.length}};
+  await assert.rejects(()=>readFusionResult(selection,b.authority,budget(),async()=>bytes));
+}));
+
+test('OCR uses the same document authority and final aggregate denial when its source changes during later object I/O',async()=>local(async ctx=>{
+  const rows=[ocrDocument(1),document(2)];let changed=false,inTransaction=false,transactions=0,reads=0,writes=0;
+  const client={query:async(sql:string)=>{if(/^(INSERT|UPDATE|DELETE)\b/i.test(sql))writes++;return {rows:sql.includes('accepted_fence')?[{accepted_fence:1}]:[]};}};
+  const authorityDependencies:any={transaction:async(action:any)=>{transactions++;inTransaction=true;try{return await action(client);}finally{inTransaction=false;}},
+    gate:async()=>{},document:async(_client:any,_ctx:any,pin:any,_prior:any,lock:boolean)=>{
+      assert(lock);const input=rows.find(r=>r.selection.pin.sourceId===pin.sourceId)!.authority.input;
+      return changed&&pin.sourceId===rows[0].selection.pin.sourceId?{...input,ocrConfigSha256:'b'.repeat(64)}:input;
+    },cityjson:async()=>assert.fail('OCR must reuse document authority')};
+  const dependencies:SourceFusionDependencies={authority:(ctx,selections,budget,expected)=>fusionAuthorityBatch(ctx,selections,budget,expected,authorityDependencies),
+    read:async selection=>{assert(!inTransaction);reads++;if(reads===2)changed=true;return rows.find(r=>r.selection.pin.sourceId===selection.pin.sourceId)!.loaded;}};
+  await assert.rejects(()=>assembleSourceFusion(ctx,{sources:rows.map(r=>r.selection)},dependencies),
+    (e:any)=>e.status===409&&e.code==='SOURCE_FUSION_STALE'&&!e.message.includes(rows[0].selection.pin.sourceId));
+  assert.equal(transactions,2);assert.equal(reads,2);assert.equal(writes,0);
+}));

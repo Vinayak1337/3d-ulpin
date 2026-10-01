@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {DocumentAssociationSourceSchema} from './document-association';
-import {DocumentPartSchema,DocumentFormatSchema} from './usp/document-ingestion';
+import {DocumentPartSchema,DocumentFormatSchema,DocumentOcrItemSchema,DocumentOcrSelectionSchema,DocumentStatusSchema} from './usp/document-ingestion';
 
 export const SOURCE_FUSION_VERSION='source-fusion-context/1' as const;
 export const SOURCE_FUSION_LIMITS=Object.freeze({sources:8,selections:25,requestBytes:64*1024,
@@ -50,16 +50,19 @@ export const SourceFusionPinSchema=DocumentAssociationSourceSchema.extend({caseI
 export const SourceFusionSelectionSchema=z.discriminatedUnion('kind',[
   z.strictObject({kind:z.literal('document'),pin:SourceFusionPinSchema,partIds:z.array(id).max(25)}),
   z.strictObject({kind:z.literal('cityjson'),pin:SourceFusionPinSchema,
-    objectIds:z.array(z.string().min(1).max(512)).min(1).max(25)})]);
+    objectIds:z.array(z.string().min(1).max(512)).min(1).max(25)}),
+  z.strictObject({kind:z.literal('document_ocr'),pin:SourceFusionPinSchema,
+    itemOrdinals:z.array(z.number().int().min(0).max(63)).max(25)})]);
 export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFusionSelectionSchema).min(2).max(8)})
   .superRefine((value,ctx)=>{
     const keys=value.sources.map(s=>s.pin.sourceId.toLowerCase());
     if(new Set(keys).size!==keys.length)ctx.addIssue({code:'custom',message:'Select each source once.'});
     let count=0;
     for(const source of value.sources){
-      const ids=source.kind==='document'?source.partIds:source.objectIds;count+=ids.length;
-      if(new Set(ids.map(id=>source.kind==='document'?id.toLowerCase():id)).size!==ids.length)
-        ctx.addIssue({code:'custom',message:'Select each native part or object once.'});
+      const ids=source.kind==='document'?source.partIds:source.kind==='cityjson'?source.objectIds:source.itemOrdinals;count+=ids.length;
+      const uniqueIds=source.kind==='document'?source.partIds.map(id=>id.toLowerCase()):ids;
+      if(new Set<string|number>(uniqueIds).size!==ids.length)
+        ctx.addIssue({code:'custom',message:'Select each native part, OCR ordinal or object once.'});
       if(source.kind==='cityjson'&&source.pin.resultBytes>16*1024)
         ctx.addIssue({code:'custom',message:'CityJSON result receipts have a 16 KiB profile.'});
     }
@@ -86,8 +89,19 @@ export const SourceFusionCityJSONSchema=z.strictObject({...base,kind:z.literal('
   coverage:z.strictObject({selectedObjects:z.number().int().nonnegative(),availableNativeObjects:z.number().int().nonnegative(),
     scope:z.literal('explicit_selection_only'),geometryArrays:z.literal('omitted; exact artifact references retained')}),
   hierarchyIssues:z.array(SourceFusionLiteralJsonSchema).max(1000)});
+export const SourceFusionOcrSchema=z.strictObject({...base,kind:z.literal('document_ocr'),
+  format:DocumentFormatSchema,nativeStatus:SourceFusionDocumentSchema.shape.nativeStatus,
+  nativeCode:SourceFusionDocumentSchema.shape.code,nativeWarnings:SourceFusionDocumentSchema.shape.warnings,
+  ocrInput:z.strictObject({selection:DocumentOcrSelectionSchema.nullable(),configSha256:hash.nullable()}),
+  ocr:DocumentStatusSchema.shape.ocr.unwrap(),
+  capability:z.enum(['selected_ocr_observations','selection_required','ocr_unavailable']),
+  gap:z.enum(['none','selection_required','ocr_missing','ocr_failed','ocr_unavailable','ocr_empty']),
+  coverage:z.strictObject({selectedItems:z.number().int().nonnegative().max(25),availableItems:z.number().int().nonnegative().max(64),
+    storedItems:z.number().int().nonnegative().max(64),scope:z.literal('explicit_selection_only'),nativeExtraction:z.literal('separate')}),
+  itemHashBasis:z.literal('accepted_result_pin_item_ordinal_and_literal_observation'),
+  observations:z.array(z.strictObject({key:z.string(),ordinal:z.number().int().min(0).max(63),itemSha256:hash,item:DocumentOcrItemSchema})).max(25)});
 export const SourceFusionContextSchema=z.strictObject({version:z.literal(SOURCE_FUSION_VERSION),contextSha256:hash,
-  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema])).min(2).max(8),
+  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema])).min(2).max(8),
   association:z.strictObject({state:z.literal('not_assessed'),membership:z.literal('operator_selection'),
     reason:z.literal('source_set_membership_does_not_establish_relationships'),
     canonicalTargets:z.array(z.never()).max(0),crossSourceFrameAlignment:z.literal('not_assessed'),

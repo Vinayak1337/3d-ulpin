@@ -44,7 +44,7 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
       fusionLive(budget);
       const pin=selection.pin;
       let authority:FusionAuthority;
-      if(selection.kind==='document'){
+      if(selection.kind!=='cityjson'){
         const prior=expected?.[index];
         const input=await deps.document(client,ctx,pin,prior?.kind==='document'?prior.input:undefined,true);
         const row=(await client.query('SELECT accepted_fence FROM usp_job_metadata WHERE job_id=$1',[pin.jobId])).rows[0];
@@ -112,10 +112,10 @@ export function fusionJson(bytes:Uint8Array,budget:Pick<FusionBudget,'deadlineAt
 export async function readFusionResult(selection:SourceFusionSelection,authority:FusionAuthority,budget:FusionBudget,
   read:typeof readFusionObject=readFusionObject){
   const pin=selection.pin;
-  const key=selection.kind==='document'?documentResultKey(pin.jobId,pin.resultSha256):cityjsonResultKey(pin.jobId,pin.resultSha256);
+  const key=selection.kind!=='cityjson'?documentResultKey(pin.jobId,pin.resultSha256):cityjsonResultKey(pin.jobId,pin.resultSha256);
   const bytes=await read(key,pin.resultBytes,pin.resultSha256,budget);
   const value=fusionJson(bytes,budget);
-  if(selection.kind==='document'&&authority.kind==='document'){
+  if(selection.kind!=='cityjson'&&authority.kind==='document'){
     const result=DocumentResultSchema.parse(value);
     if(fingerprint(result.input)!==fingerprint(authority.input)||result.native.readerSha256!==pin.readerSha256)
       throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted document input differs from its pin.');

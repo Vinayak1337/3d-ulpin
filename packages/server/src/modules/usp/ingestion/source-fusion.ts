@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import type {RequestContext} from '@ulpin/contracts/usp';
+import {DocumentInputSchema,DocumentOcrSchema,type DocumentResult,type RequestContext} from '@ulpin/contracts/usp';
 import {SOURCE_FUSION_VERSION,SOURCE_FUSION_LIMITS,SourceFusionRequestSchema,SourceFusionContextSchema,
   SourceFusionLiteralJsonSchema,SourceFusionLiteralObjectSchema,
   type SourceFusionContext,type SourceFusionSelection} from '../../../../../contracts/src/source-fusion';
@@ -32,11 +32,46 @@ const nativeSchema=z.object({schemaVersion:z.literal('source-native-cityjson/1')
     pointer:z.string(),type:z.string(),status:z.string()})).max(1000)})).max(1000),
   hierarchyIssues:z.array(SourceFusionLiteralJsonSchema).max(1000)});
 
+/** Projection needs only these actual accepted-result fields; saved status +
+ * job payload may qualify this pure boundary without inventing result timestamps
+ * or bytes. Runtime always reaches it through the full exact result reader. */
+export function fusionOcrSourceProjection(selection:Extract<SourceFusionSelection,{kind:'document_ocr'}>,
+  result:Pick<DocumentResult,'input'|'native'|'ocr'>):Extract<SourceFusionContext['sources'][number],{kind:'document_ocr'}>{
+  const checkedInput=DocumentInputSchema.safeParse(result.input);if(!checkedInput.success)return fail();
+  const input=checkedInput.data,pin=selection.pin;
+  if(input.caseId!==pin.caseId||input.caseRevision!==pin.caseRevision||input.sourceId!==pin.sourceId||
+    input.sourceRevision!==pin.sourceRevision||input.sourceSha256!==pin.sourceSha256||input.jobId!==pin.jobId||
+    input.readerSha256!==pin.readerSha256||result.native.readerSha256!==pin.readerSha256||fingerprint(input)!==pin.inputSha256)return fail();
+  const checkedOcr=result.ocr===undefined?undefined:DocumentOcrSchema.safeParse(result.ocr);
+  if(checkedOcr&&!checkedOcr.success)return fail();
+  const ocr=checkedOcr?.data;
+  if(Boolean(ocr)!==Boolean(input.ocrSelection)||(ocr&&(!input.ocrConfigSha256||ocr.sourceSha256!==input.sourceSha256||
+    ocr.sourceRevision!==input.sourceRevision||ocr.sourcePage!==input.ocrSelection!.page||
+    JSON.stringify(ocr.requestedRegion)!==JSON.stringify(input.ocrSelection!.region??null))))return fail();
+  const ns=namespace(selection),usable=ocr!==undefined&&ocr.outputStatus!=='failed'&&ocr.toolStatus!=='failed'&&ocr.toolStatus!=='unavailable';
+  const observations=[...selection.itemOrdinals].sort((a,b)=>a-b).map(ordinal=>{
+    if(!usable||!ocr?.items[ordinal])return fail();
+    const item=ocr.items[ordinal];
+    return {key:`${ns}/ocr/${pin.jobId}/${pin.resultSha256}/${ordinal}`,ordinal,
+      itemSha256:fingerprint({version:'source-fusion-ocr-item/1',pin,ordinal,item}),item};
+  });
+  const gap=!ocr?'ocr_missing':ocr.toolStatus==='unavailable'?'ocr_unavailable':!usable?'ocr_failed':
+    !ocr.items.length?'ocr_empty':!observations.length?'selection_required':'none';
+  const metadata=ocr?(({items,...metadata})=>metadata)(ocr):null;
+  return {kind:'document_ocr',pin,namespace:ns,sourceSetRole:'operator_selected_fragment',format:result.native.format,
+    nativeStatus:result.native.status,nativeCode:result.native.code,nativeWarnings:result.native.warnings,
+    ocrInput:{selection:input.ocrSelection??null,configSha256:input.ocrConfigSha256??null},ocr:metadata,
+    capability:observations.length?'selected_ocr_observations':gap==='selection_required'?'selection_required':'ocr_unavailable',gap,
+    coverage:{selectedItems:observations.length,availableItems:usable?ocr.items.length:0,storedItems:ocr?.items.length??0,
+      scope:'explicit_selection_only',nativeExtraction:'separate'},itemHashBasis:'accepted_result_pin_item_ordinal_and_literal_observation',observations};
+}
+
 /** Pure projection of already read/verified selections; never a matching result. */
 export function fusionSourceProjection(selection:SourceFusionSelection,loaded:Loaded):SourceFusionContext['sources'][number]{
   if(fingerprint(loaded.result.input)!==selection.pin.inputSha256||loaded.result.input.readerSha256!==selection.pin.readerSha256)
     return fail();
   const ns=namespace(selection),base={pin:selection.pin,namespace:ns,sourceSetRole:'operator_selected_fragment' as const};
+  if(selection.kind==='document_ocr'&&loaded.kind==='document')return fusionOcrSourceProjection(selection,loaded.result);
   if(selection.kind==='document'&&loaded.kind==='document'){
     const native=loaded.result.native;
     const byId=new Map(native.parts.map(part=>[part.id,part]));
