@@ -226,6 +226,7 @@ export * from './building-registry-report';
 export * from './document-association';
 export * from './document-pages';
 export * from './document-images';
+export * from './source-fusion';
 export * from './registry-document-evidence';
 export * from './registry-cityjson-draft';
 export * from './registry-cityjson-validation';

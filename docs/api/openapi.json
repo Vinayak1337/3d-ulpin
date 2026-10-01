@@ -23225,6 +23225,216 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/evidence/source-fusion/context": {
+      "post": {
+        "operationId": "POST_api_v1_usp_evidence_source_fusion_context",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "JSON; maximum 64 KiB of received bytes; 2–8 exact sources and 25 selections total",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_evidence_source_fusion_context_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Private bounded context; association remains not_assessed",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-store"
+                  ]
+                }
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_source_fusion_context_Response_200_application_json"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict source selection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Common private Host/Origin or current-access denial",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Requested accepted context unavailable; no partial source details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "408": {
+            "description": "Bounded request body deadline expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Accepted source/job/reader/attempt pins changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Request, artifact or response exceeds the profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Exact selected evidence or integrity unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Bounded service unavailable or deadline expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Assemble private explicitly selected accepted document/CityJSON fragments without establishing an association",
+        "tags": [
+          "USP combined source context"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/source-fusion.controller.ts",
+        "x-batch": "FUSION-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/spatial-datasets/search": {
       "get": {
         "operationId": "GET_api_v1_spatial_datasets_search",
@@ -168448,6 +168658,1492 @@
           "url",
           "calibration",
           "locator"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_evidence_source_fusion_context_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "sources": {
+            "minItems": 2,
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "document"
+                      ]
+                    },
+                    "pin": {
+                      "type": "object",
+                      "properties": {
+                        "caseId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "caseRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "sourceRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "jobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "resultSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 4194304
+                        }
+                      },
+                      "required": [
+                        "caseId",
+                        "caseRevision",
+                        "sourceId",
+                        "sourceRevision",
+                        "sourceSha256",
+                        "jobId",
+                        "resultSha256",
+                        "readerSha256",
+                        "inputSha256",
+                        "acceptedFence",
+                        "resultBytes"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "partIds": {
+                      "maxItems": 25,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "pin",
+                    "partIds"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "cityjson"
+                      ]
+                    },
+                    "pin": {
+                      "type": "object",
+                      "properties": {
+                        "caseId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "caseRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "sourceRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "jobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "resultSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 4194304
+                        }
+                      },
+                      "required": [
+                        "caseId",
+                        "caseRevision",
+                        "sourceId",
+                        "sourceRevision",
+                        "sourceSha256",
+                        "jobId",
+                        "resultSha256",
+                        "readerSha256",
+                        "inputSha256",
+                        "acceptedFence",
+                        "resultBytes"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "objectIds": {
+                      "minItems": 1,
+                      "maxItems": 25,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "pin",
+                    "objectIds"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "sources"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_evidence_source_fusion_context_Response_200_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "enum": [
+                  "source-fusion-context/1"
+                ]
+              },
+              "contextSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sources": {
+                "minItems": 2,
+                "maxItems": 8,
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "pin": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {},
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {},
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {},
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "readerSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "inputSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "acceptedFence": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "resultBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 4194304
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256",
+                            "readerSha256",
+                            "inputSha256",
+                            "acceptedFence",
+                            "resultBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "namespace": {
+                          "type": "string"
+                        },
+                        "sourceSetRole": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected_fragment"
+                          ]
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "document"
+                          ]
+                        },
+                        "format": {
+                          "type": "string",
+                          "enum": [
+                            "pdf",
+                            "text",
+                            "csv",
+                            "docx",
+                            "xlsx",
+                            "png",
+                            "jpeg",
+                            "archive",
+                            "unsupported"
+                          ]
+                        },
+                        "nativeStatus": {
+                          "type": "string",
+                          "enum": [
+                            "extracted",
+                            "needs_ocr",
+                            "unsupported",
+                            "encrypted",
+                            "tool_error"
+                          ]
+                        },
+                        "code": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "warnings": {
+                          "maxItems": 100,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "maxLength": 512
+                          }
+                        },
+                        "capability": {
+                          "type": "string",
+                          "enum": [
+                            "selected_native_text",
+                            "selection_required",
+                            "native_incomplete"
+                          ]
+                        },
+                        "coverage": {
+                          "type": "object",
+                          "properties": {
+                            "selectedParts": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "availableNativeParts": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "scope": {
+                              "type": "string",
+                              "enum": [
+                                "explicit_selection_only"
+                              ]
+                            },
+                            "assistedExtraction": {
+                              "type": "string",
+                              "enum": [
+                                "outside_profile"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "selectedParts",
+                            "availableNativeParts",
+                            "scope",
+                            "assistedExtraction"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "parts": {
+                          "maxItems": 25,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "part": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  "sourceId": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  "sourceRevision": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "sourceSha256": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{64}$"
+                                  },
+                                  "text": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 4096
+                                  },
+                                  "sha256": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{64}$"
+                                  },
+                                  "locator": {
+                                    "type": "object",
+                                    "properties": {
+                                      "label": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 512
+                                      },
+                                      "page": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "row": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "line": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "lineEnd": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "paragraph": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "table": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "column": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "headerRow": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "sheet": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 128
+                                      },
+                                      "sheetIndex": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "sheetId": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "cell": {
+                                        "type": "string",
+                                        "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+                                      },
+                                      "cellState": {
+                                        "type": "string",
+                                        "enum": [
+                                          "literal",
+                                          "empty",
+                                          "empty_string",
+                                          "whitespace",
+                                          "formula_cached",
+                                          "formula_uncached",
+                                          "error",
+                                          "unsupported"
+                                        ]
+                                      },
+                                      "cellType": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 20
+                                      },
+                                      "unitId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                      },
+                                      "unitSha256": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{64}$"
+                                      },
+                                      "segmentIndex": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "segmentCount": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "characterStart": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "characterEnd": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": [
+                                      "label",
+                                      "characterStart",
+                                      "characterEnd"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "method": {
+                                    "type": "string",
+                                    "enum": [
+                                      "native_text"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "sourceId",
+                                  "sourceRevision",
+                                  "sourceSha256",
+                                  "text",
+                                  "sha256",
+                                  "locator",
+                                  "method"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "textState": {
+                                "type": "string",
+                                "enum": [
+                                  "native_derivative",
+                                  "redacted_native_derivative"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "part",
+                              "textState"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "pin",
+                        "namespace",
+                        "sourceSetRole",
+                        "kind",
+                        "format",
+                        "nativeStatus",
+                        "code",
+                        "warnings",
+                        "capability",
+                        "coverage",
+                        "parts"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "pin": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {},
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {},
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {},
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "readerSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "inputSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "acceptedFence": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "resultBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 4194304
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256",
+                            "readerSha256",
+                            "inputSha256",
+                            "acceptedFence",
+                            "resultBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "namespace": {
+                          "type": "string"
+                        },
+                        "sourceSetRole": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected_fragment"
+                          ]
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "cityjson"
+                          ]
+                        },
+                        "nativeStatus": {
+                          "type": "string",
+                          "enum": [
+                            "supported",
+                            "partial_unsupported"
+                          ]
+                        },
+                        "artifactSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "reference": {
+                          "type": "object",
+                          "properties": {
+                            "frame": {
+                              "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                              "type": "object",
+                              "additionalProperties": true
+                            },
+                            "metadata": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "absent"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "state"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "declared"
+                                      ]
+                                    },
+                                    "value": {
+                                      "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "nullable": true,
+                                          "enum": [
+                                            null
+                                          ]
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {}
+                                        },
+                                        {
+                                          "type": "object",
+                                          "additionalProperties": true
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "state",
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            },
+                            "transform": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "absent"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "state"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "declared"
+                                      ]
+                                    },
+                                    "value": {
+                                      "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "nullable": true,
+                                          "enum": [
+                                            null
+                                          ]
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {}
+                                        },
+                                        {
+                                          "type": "object",
+                                          "additionalProperties": true
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "state",
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "frame",
+                            "metadata",
+                            "transform"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "objects": {
+                          "maxItems": 25,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "pointer": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "geometryState": {
+                                "type": "string",
+                                "enum": [
+                                  "present",
+                                  "absent"
+                                ]
+                              },
+                              "attributes": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "absent"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "state"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "declared"
+                                        ]
+                                      },
+                                      "value": {
+                                        "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "boolean"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "nullable": true,
+                                            "enum": [
+                                              null
+                                            ]
+                                          },
+                                          {
+                                            "type": "array",
+                                            "items": {}
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "state",
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              },
+                              "parents": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "absent"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "state"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "declared"
+                                        ]
+                                      },
+                                      "value": {
+                                        "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "boolean"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "nullable": true,
+                                            "enum": [
+                                              null
+                                            ]
+                                          },
+                                          {
+                                            "type": "array",
+                                            "items": {}
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "state",
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              },
+                              "children": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "absent"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "state"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "declared"
+                                        ]
+                                      },
+                                      "value": {
+                                        "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "boolean"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "nullable": true,
+                                            "enum": [
+                                              null
+                                            ]
+                                          },
+                                          {
+                                            "type": "array",
+                                            "items": {}
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "state",
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              },
+                              "geometries": {
+                                "maxItems": 1000,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "pointer": {
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "type": "string"
+                                    },
+                                    "status": {
+                                      "type": "string"
+                                    },
+                                    "lod": {
+                                      "oneOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "absent"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "state"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "declared"
+                                              ]
+                                            },
+                                            "value": {
+                                              "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "boolean"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "nullable": true,
+                                                  "enum": [
+                                                    null
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "array",
+                                                  "items": {}
+                                                },
+                                                {
+                                                  "type": "object",
+                                                  "additionalProperties": true
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "state",
+                                            "value"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "pointer",
+                                    "type",
+                                    "status",
+                                    "lod"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "id",
+                              "pointer",
+                              "type",
+                              "geometryState",
+                              "attributes",
+                              "parents",
+                              "children",
+                              "geometries"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "coverage": {
+                          "type": "object",
+                          "properties": {
+                            "selectedObjects": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "availableNativeObjects": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "scope": {
+                              "type": "string",
+                              "enum": [
+                                "explicit_selection_only"
+                              ]
+                            },
+                            "geometryArrays": {
+                              "type": "string",
+                              "enum": [
+                                "omitted; exact artifact references retained"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "selectedObjects",
+                            "availableNativeObjects",
+                            "scope",
+                            "geometryArrays"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "hierarchyIssues": {
+                          "maxItems": 1000,
+                          "type": "array",
+                          "items": {
+                            "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string",
+                                "nullable": true,
+                                "enum": [
+                                  null
+                                ]
+                              },
+                              {
+                                "type": "array",
+                                "items": {}
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": true
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "pin",
+                        "namespace",
+                        "sourceSetRole",
+                        "kind",
+                        "nativeStatus",
+                        "artifactSha256",
+                        "reference",
+                        "objects",
+                        "coverage",
+                        "hierarchyIssues"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "association": {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "membership": {
+                    "type": "string",
+                    "enum": [
+                      "operator_selection"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "source_set_membership_does_not_establish_relationships"
+                    ]
+                  },
+                  "canonicalTargets": {
+                    "maxItems": 0,
+                    "type": "array",
+                    "items": {
+                      "not": {}
+                    }
+                  },
+                  "crossSourceFrameAlignment": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "conflicts": {
+                    "type": "string",
+                    "enum": [
+                      "literal_values_retained_per_source; not_reconciled"
+                    ]
+                  }
+                },
+                "required": [
+                  "state",
+                  "membership",
+                  "reason",
+                  "canonicalTargets",
+                  "crossSourceFrameAlignment",
+                  "conflicts"
+                ],
+                "additionalProperties": false
+              },
+              "capabilities": {
+                "type": "object",
+                "properties": {
+                  "contextAssembly": {
+                    "type": "string",
+                    "enum": [
+                      "available"
+                    ]
+                  },
+                  "matching": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "recordedBuildingRequired": {
+                    "type": "boolean",
+                    "enum": [
+                      false
+                    ]
+                  },
+                  "geometryQualification": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "rights": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  }
+                },
+                "required": [
+                  "contextAssembly",
+                  "matching",
+                  "recordedBuildingRequired",
+                  "geometryQualification",
+                  "rights"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "version",
+              "contextSha256",
+              "sources",
+              "association",
+              "capabilities"
+            ],
+            "additionalProperties": false
+          },
+          "meta": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "enum": [
+                  "usp/1"
+                ]
+              },
+              "requestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "intake"
+                        ]
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "workspaceId",
+                      "version"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "snapshot"
+                        ]
+                      },
+                      "scopeId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "world": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "manifestId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "snapshotDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "stage": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "recorded",
+                          "retained"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "scopeId",
+                      "world",
+                      "manifestId",
+                      "snapshotDigest",
+                      "stage"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "requestId",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
         ],
         "additionalProperties": false
       },
