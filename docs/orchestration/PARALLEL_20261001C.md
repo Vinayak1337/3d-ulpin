@@ -49,3 +49,7 @@ The same owner additionally owns one additive strict `ifc-native.changed` union 
 ## Image worker recovery
 
 `AI-04B Documents Full Access` ended with model-capacity error after successful branch transfer, before implementation changes. Preserve its `task/desktop-private-document-images` checkpoint and both physical CityJSON EOL markers/untracked store. Resume DOC-IMAGE-01 once with Sol6.1/xhigh; no duplicate image owner or permissions question. If capacity remains unavailable, report it rather than repeated retries or an unsupported speed change.
+
+## Dispatch acknowledgments
+
+The app accepted all seven assignments/continuations, not proof of execution or completion. New local project chats: CITYGML-01 `01a0f841-fbd0-7192-8b35-1608e015e801`; GEOPARQUET-01 `01a0f841-fec0-7403-bef3-b4f830baf780`. Their exclusive worktrees were created at `6f56c274cd923ac2ab677c564371690350daa764`. Existing IFC, image, glTF and Astra-review chats accepted their bounded messages. A one-time fresh read also found KML had stopped on model capacity after staging four owned files; its original owner `01a0f810-a75d-7b52-b023-6a60e6d3602b` received one Sol6.1/xhigh continuation preserving that checkpoint. No failed-history fork or duplicate owner was created. Actual worker permissions must be verified from supplied turn settings before implementation; current lead/global settings alone are not attestation. Lead ends dispatch turn and resumes on callbacks.
