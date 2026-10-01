@@ -44,7 +44,7 @@ Original owner `01a0f810-a9ec-73b2-9a47-dc2884e09c2d`, existing clean `desktop-g
 
 Lead inspected `sufficiency-context.ts:75` (actual caller is `sufficiencySourceTx`): it reads already-accepted projected evidence and does not enroll/compile/publish. IFC-02 owner additionally owns only propagation of explicit `immutable_read` to that `acceptedProjectedTx` call in `packages/server/src/modules/usp/ingestion/sufficiency-context.ts`. All current access/source/result checks remain, and default writer assertions stay strict. Include the call in focused read/writer compatibility proof. No other sufficiency changes or runtime transfer.
 
-The same owner additionally owns the single additive `ifc-native.changed` literal in `packages/contracts/src/usp/ingestion-events.ts::CaseIngestionChangeSchema.kind`. The strict enum already contains `cityjson-native.changed`; reuse the existing canonical outbox helper and event envelope. Preserve existing literals and event behavior; include schema/type validation, no new SQL or event authority.
+The same owner additionally owns one additive strict `ifc-native.changed` union member in `packages/contracts/src/usp/ingestion-events.ts::CaseIngestionChangeSchema`, with the same source/revision/job/status envelope as the existing `cityjson-native.changed` member. Inspection confirms this is a discriminated union, not a standalone kind enum. Reuse the canonical outbox helper; preserve all existing members and behavior. Include schema/type validation, no new SQL or event authority.
 
 ## Image worker recovery
 
