@@ -4,6 +4,7 @@ import {prepareRegistryCityJSONDraft,readRegistryCityJSONDraft,removeRegistryCit
 import {enqueueCityJSONValidation,readCityJSONValidationStatus} from '@ulpin/server/modules/registry/cityjson-validation';
 import {assessCityJSONAdmission} from '@ulpin/server/modules/registry/cityjson-admission';
 import {attachRegistryCityJSONReferences,readRegistryCityJSONReferences,removeRegistryCityJSONReferences} from '@ulpin/server/modules/registry/cityjson-reference';
+import {createRegistryCityJSONReferenceReview,readRegistryCityJSONReferenceReview} from '@ulpin/server/modules/registry/cityjson-reference-review';
 import type { z } from 'zod';
 import {
   commitRegistryReview, createRegistryDraft, createSite, draftDetail,
@@ -21,6 +22,8 @@ import type {
 
 @Injectable()
 export class RegisterService {
+  reviewNativeReferences(draftId:string,input:unknown){return createRegistryCityJSONReferenceReview(draftId,input);}
+  nativeReferenceReview(draftId:string,reviewId:string){return readRegistryCityJSONReferenceReview(draftId,reviewId);}
   attachNativeReferences(draftId:string,input:unknown){return attachRegistryCityJSONReferences(draftId,input);}
   nativeReferences(draftId:string){return readRegistryCityJSONReferences(draftId);}
   removeNativeReferences(draftId:string,input:unknown){return removeRegistryCityJSONReferences(draftId,input);}

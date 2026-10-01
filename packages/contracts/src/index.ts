@@ -229,6 +229,7 @@ export * from './registry-cityjson-draft';
 export * from './registry-cityjson-validation';
 export * from './registry-cityjson-admission';
 export * from './registry-cityjson-reference';
+export * from './registry-cityjson-reference-review';
 export * from './area';
 
 export * from "./spatial";
