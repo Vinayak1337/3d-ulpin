@@ -1,0 +1,37 @@
+# FUSION-02-R — accepted OCR context review
+
+2 October 2026. **No actionable finding in the assigned additive change.** Suitable for lead integration at the stated code and saved-field projection scope. This does not qualify current accepted authority or HTTP runtime. The prior FUSION-01 review and literal-key correction remain closed.
+
+Candidate `5440fb1d90dd2b5445cd44435b45a5640bffc415`, code `509c983d96c2480e572fcc48211e4c490a8bf965`, accepted base `99987bda30e925be411b8ba10e02da337e6f97a5`. Reviewed the six changed code/test files and two returned documents. Reviewer branch `task/desktop-source-fusion-ocr-review` in `C:/Users/kvina/.codex/worktrees/desktop-ifc-api-review/3d-ulpin`; prior branch preserved at `1b11fe8b5a2547f7cb35437f86e88b95a7334d2c`. Staging observed read-only at `7cf2e535944bf1ff61b6c3df9909eff6cb8c1d3c`.
+
+## Code review
+
+- The strict `document_ocr` request selects unique integer ordinals 0–63 against an explicit result pin. Native/OCR occurrences of the same source are rejected. OCR shares the existing 25-fragment total, 2–8-source, request, artifact, response and deadline limits. Empty selection is explicit; it never broadens to all items or a newer result.
+- OCR follows the canonical document authority and full `DocumentResultSchema` reader, including exact result length/hash, input/reader/source checks and existing OCR refinements. Source/page/region, method/box derivation, frame bounds, config and execution consistency are retained. The pure saved-field helper separately checks input/native-reader/OCR source consistency; it is not substituted for the full runtime reader.
+- The same final all-source transaction runs after all artifact I/O. Existing document input reconstruction includes current OCR config; accepted result/fence and captured input comparisons remain intact. The delta changes adapter dispatch only and adds no store, mutation or lock-order change. Saved drift control confirms final denial through transaction doubles, not real PostgreSQL concurrency.
+- Literal selected items, page boxes, native status/warnings, partial/issues, selection/config and optional execution/candidate receipt hashes survive projection. `textCompleteness` stays `unverified`; native `needs_ocr` is independent of usable OCR. Missing OCR without an OCR input, empty output, failed/unavailable output and no selected items have distinct gaps. Missing expected OCR or a selected nonexistent/unusable ordinal fails generically without partial observations. No confidence, canonical target, relationship or learning label is introduced.
+- Namespaced keys bind source/job/result/ordinal; each item hash additionally binds the full pin and literal observation. The response fingerprint still hashes the exact validated returned body. Native/CityJSON branches and literal-own-key validation are unchanged. Existing production module registration, private guard/filter and no-store behavior remain intact; controller changes are additive metadata and schema assertions.
+
+## Evidence reconciliation
+
+Independently matched **31 physical pins**, all **eight candidate file Git-byte hashes**, and **five unchanged dependency hashes**. Owner and reviewer checkout representations normalize to the pinned Git bytes; original source bytes were not normalized. Completion receipt is 12,934 bytes / SHA `b9249fbf1f73ca9ee7692afdc84f2ba002b2598ee93b7168fd312a5ec6b4d5aa`; projection receipt is 6,187 bytes / SHA `111db66e3deb56c21259efa31faf5d72a0c8a5f8b660cd26d153bbb6bf86ac2b`.
+
+The USGS original remains 9,344,939 bytes / `fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf`. Saved job payload, input fingerprint, metadata, accepted fence 1, attempt input/completion hashes, status and bucket length agree for job `4f56a26c-44b0-4c85-8c52-cff39380968c`. Historical result SHA is `b1b88373bcf8310f7524d5cde8ff91edab4d2d62f6b1aeadead3e8327884ad6f`, recorded length 5,954 bytes. Reader/config pins remain historical and unchanged.
+
+Saved status has OCR page 0, no further page and 12 items; the existing status implementation slices items without reordering, so selected ordinal **11** corresponds to the stored array position. Its exact text `CENTRAL CITY, COLO.`, box `[969.6142857142856,1418.1142857142856,1092.4178571428572,1448.0142857142857]`, method, frame and all OCR metadata match the saved accepted status. Execution/candidate hashes match those metadata; no new OCR or visual accuracy check was performed. Item fingerprint independently recomputes to `6147bc28861e0734891c54aa8533ea314c25f00c3752abfcec91900d0b01d33d`. Output remains partial with `low_confidence_words_withheld` and unverified completeness.
+
+The mixed context fingerprint independently recomputes to `12058b2711142152e577c0ac2b3dd4e87d17ef64c1e58333421ff12003344a48` and compact data is 11,947 bytes. Its two ordinary source projections are unchanged. The complete ordinary saved context is byte-identical: 16,875 bytes / `92bfe44612eecbfdb000bc8b3cd7e6a8b25a56d023827967b7be2613c968e8b0`, fingerprint `5e84138f7202679ee38fb15bdd3069f4e3a06c50b4a0c21eb62c6d551925724d`.
+
+**The real-output proof exercises pure projection of actual saved status fields plus accepted historical payload. Raw OCR result bytes are unavailable: no full result, timestamp or serialization was reconstructed, and its historical SHA/length were not represented as fresh byte verification.** Current access/reader/config/accepted-attempt authority, HTTP/SQL/object-service execution and OCR accuracy remain unrun.
+
+## Checks, limits and return
+
+Reused hash-verified logs for four OCR controls (three new plus existing native-needs-OCR), two compatibility controls, backend typecheck, one production-module no-listener schema check and the saved projection; final recorded exits are 0. The owner's initial typecheck failure and correction are disclosed. No test or OCR campaign was repeated.
+
+Fresh reviewer command: `node E:/BhuAayam-data/task-data/desktop-source-fusion-ocr-review/reconcile.mjs`, final exit **0**, from the reviewer worktree. This is saved-file/hash/semantic reconciliation only. Initial exit 1 was a reviewer-checker assumption that the saved assignment existed at the code commit; both documentation files were correctly checked at the handoff commit, and the initial log is retained. Owned-report `git diff --check` and staged whitespace check pass.
+
+Private evidence root: `E:/BhuAayam-data/task-data/desktop-source-fusion-ocr-review/`. `review-receipt.json` SHA `cbd6b1bbd1a3904360be11dc5ce72b7bbc8cdafc42d74694a6267cf87a517b50` pins scripts/logs/reconciliation; `reconciliation.json` SHA `0a45c8f0bed1842479b8e81032f4c8b65499cfcaf80b2be8f68703c63b6b19e3` contains exact physical and Git pins.
+
+USGS remains foreign `test_only`; reference documents and D1 remain operator-selected context, without Indian property/relationship/learning, geometry/rights, scale or release qualification. Large-plan OCR contract changes are outside this pinned candidate; lead owns the combined-schema check and additive OpenAPI/client publication after acceptance.
+
+Only this report and assigned private evidence were written. No production/generated/frontend/source edits, services/listeners/Docker/DB, OCR/model/GPU/provider/held-out work, acquisition, push or deployment; no owned process remains. Supplied permissions verified `never` / `danger-full-access`. Requested Astra/xhigh/default-standard; actual model/effort/per-turn tier remain unexposed. Return the report commit through the authorized lead callback, then stop.
