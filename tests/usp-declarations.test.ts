@@ -68,6 +68,8 @@ class ControlDb {
   failAcceptedEvent = false; staleFence = false; archived = false; wrongSource = false;
   source = { id: sourceId, case_id: caseId, revision: 1, sha256: 'a'.repeat(64), bytes: 123,
     object_key: 'technical-control-only', mime_type: 'application/pdf', inspection: {} };
+  extraSources: typeof this.source[] = [];
+  archivedCases = new Set<string>();
   records = [targetA, targetB].map(p => ({ id: p.ref.id, site_id: siteId, revision: 1, kind: 'space',
     label: 'Technical control record', body: {}, project_status: null }));
   client = { release: () => { this.releases++; }, query: async (sql: string, v: any[] = []) => this.query(sql, v) } as unknown as PoolClient;
@@ -92,10 +94,13 @@ class ControlDb {
     if (q.startsWith('SELECT r.id,r.revision')) return result(this.records.filter(r => v[1].includes(r.id)));
     if (q.includes('FROM usp_project_lineage') || q.includes('FROM registry_aliases') || q.includes('FROM physical_features')
       || q.includes('FROM import_packages') || q.includes('FROM usp_geometry_qualifications')) return result();
-    if (q.startsWith('SELECT s.* FROM sources')) return result([this.source]);
-    if (q.startsWith('SELECT * FROM sources WHERE')) return result(v[0] === sourceId ? [{ ...this.source,
-      sha256: this.wrongSource ? 'b'.repeat(64) : this.source.sha256 }] : []);
-    if (q.startsWith('SELECT site_id,archived FROM cases')) return result([{ site_id: siteId, archived: this.archived }]);
+    if (q.startsWith('SELECT s.* FROM sources')) return result([this.source, ...this.extraSources]);
+    if (q.startsWith('SELECT * FROM sources WHERE')) {
+      const source = [this.source, ...this.extraSources].find(s => s.id === v[0]);
+      return result(source ? [{ ...source, sha256: this.wrongSource && source.id === sourceId ? 'b'.repeat(64) : source.sha256 }] : []);
+    }
+    if (q.startsWith('SELECT site_id,archived FROM cases')) return result([this.source, ...this.extraSources].some(s => s.case_id === v[0])
+      ? [{ site_id: siteId, archived: this.archived && v[0] === caseId || this.archivedCases.has(v[0]) }] : []);
     if (q.startsWith('SELECT DISTINCT ON(id)')) {
       const latest = new Map<string, any>();
       for (const d of this.state.declarations) if (!latest.has(d.id) || latest.get(d.id).revision < d.revision) latest.set(d.id, d);
@@ -125,7 +130,8 @@ class ControlDb {
     if (q.startsWith('SELECT command_sha256,body FROM usp_command_receipts')) return result(this.state.receipts.filter(r =>
       r.subject === v[0] && r.scope_key === v[1] && r.operation === v[2] && r.request_key === v[3]));
     if (q.startsWith('SELECT * FROM usp_declaration_proposals')) return result(this.state.proposals.filter(p => p.id === v[0] && p.site_id === v[1]));
-    if (q.startsWith('SELECT * FROM usp_declaration_reviews')) return result(this.state.reviews.filter(p => p.id === v[0] && p.proposal_id === v[1] && p.site_id === v[2]));
+    if (q.startsWith('SELECT * FROM usp_declaration_reviews')) return result(this.state.reviews.filter(p => q.includes('WHERE proposal_id=')
+      ? p.proposal_id === v[0] && p.site_id === v[1] : p.id === v[0] && p.proposal_id === v[1] && p.site_id === v[2]));
     if (q.startsWith('SELECT id FROM usp_declaration_reviews')) return result(this.state.reviews.filter(p => p.proposal_id === v[0]));
     if (q.startsWith('SELECT 1 FROM usp_declaration_commit_links')) return result(this.state.links.filter(p => p.proposal_id === v[0] || v[1] && p.review_id === v[1]));
     if (q.startsWith('INSERT INTO usp_snapshots')) { this.state.snapshots.push({ id: v[0], scope_id: v[1], digest: v[2], body: structuredClone(v[3]) }); return result(); }
@@ -169,14 +175,16 @@ async function draft(db: ControlDb, ctx: ReturnType<typeof localRequestContext>,
   assert.deepEqual(await prepareProposal(ctx, command), prepared);
   return { command, prepared, manifest };
 }
-async function reviewed(db: ControlDb, ctx: ReturnType<typeof localRequestContext>, revision = 1, consent = true) {
+async function reviewed(db: ControlDb, ctx: ReturnType<typeof localRequestContext>, revision = 1, consent = true,
+  overrides?: { consentEvidence?: ReturnType<typeof evidence>[]; applicabilityEvidence?: ReturnType<typeof evidence> }) {
   const d = await draft(db, ctx, revision);
   const review = UspReviewDeclarationSchema.parse({ proposalId: d.prepared.proposalId, scope: d.manifest.scope,
     guard: { mode: 'update', expectedVersion: 1, expectedManifestId: d.manifest.id, requestKey: `review-${revision}` },
     acknowledgement: DECLARATION_ACKNOWLEDGEMENT, sourceAcknowledged: true, populationAcknowledged: true,
     assessmentState: 'reconciled', reason: 'Explicit control review of source, population and arithmetic',
-    consentEvidence: revision > 1 && consent ? [input().instrument] : [],
-    applicability: input().entries.map(e => ({ target: e.target, state: 'applicable', evidence: e.evidence,
+    consentEvidence: overrides?.consentEvidence ?? (revision > 1 && consent ? [input().instrument] : []),
+    applicability: input().entries.map(e => ({ target: e.target, state: 'applicable', evidence: overrides?.applicabilityEvidence
+      ? { ...overrides.applicabilityEvidence, pointer: { ...overrides.applicabilityEvidence.pointer, target: e.target.ref } } : e.evidence,
       reason: e.target.ref.id === targetB.ref.id ? 'B_PRIVATE_REVIEW' : 'Selected control clause reviewed', purpose: 'declared_share', relationPath: [], validity })),
   });
   const reviewResult = await reviewDeclaration(ctx, review);
@@ -272,4 +280,66 @@ test('amendment keeps original entries/effective period; missing consent is with
     declaration: pin('declaration', declarationId, 2), validAt: '2026-07-01' });
   assert.equal(amended.applicability!.consentStatus, 'not_assessed'); assert.equal(amended.packetState, 'not_assessed');
   assert.equal(amended.supersedes!.revision, 1);
+}));
+
+test('current packet eligibility checks the whole accepted population while preserving historical entries', async () => withDb(async (db, ctx) => {
+  const r = await reviewed(db, ctx);
+  const receipt = await commitProposal(ctx, r.commit);
+  const before = await readSelectedDeclaration(ctx, { scope: receipt.snapshot, target: targetA,
+    declaration: pin('declaration', declarationId), validAt: '2026-10-02' });
+  db.records[1].revision = 2;
+  db.records[1].project_status = 'retired';
+  const fresh = await captureRegistrySnapshotTx(db.client, ctx, siteId, { kind: 'targets', pins: [targetA] });
+  const selected = await readSelectedDeclaration(ctx, { scope: fresh.scope, target: targetA,
+    declaration: pin('declaration', declarationId), validAt: '2026-10-02' });
+  assert.equal(selected.packetState, 'not_assessed');
+  assert.deepEqual(selected.entry, before.entry); assert.deepEqual(selected.assessment, before.assessment);
+  assert.equal(JSON.stringify(selected).includes('B_PRIVATE'), false);
+  const history = await readSelectedDeclaration(ctx, { scope: receipt.snapshot, target: targetA,
+    declaration: pin('declaration', declarationId), validAt: '2026-03-01' });
+  assert.deepEqual(history.entry, before.entry); assert.equal(history.packetState, 'not_assessed');
+  // Lifecycle status is a dependency even when the revision pin matches.
+  db.records[1].revision = 1; db.records[1].project_status = 'cancelled_error';
+  const cancelled = await captureRegistrySnapshotTx(db.client, ctx, siteId, { kind: 'targets', pins: [targetA] });
+  assert.equal((await readSelectedDeclaration(ctx, { scope: cancelled.scope, target: targetA,
+    declaration: pin('declaration', declarationId), validAt: '2026-10-02' })).packetState, 'not_assessed');
+}));
+
+test('cached declaration receipts reauthorize retained source access without changing receipts or durable state', async () => withDb(async (db, ctx) => {
+  const consentSource = { ...db.source, id: uuid(90), case_id: uuid(91), sha256: 'c'.repeat(64), object_key: 'control-consent-only' };
+  const appSource = { ...db.source, id: uuid(92), case_id: uuid(93), sha256: 'd'.repeat(64), object_key: 'control-applicability-only' };
+  db.extraSources = [consentSource, appSource];
+  const citation = (source: typeof db.source) => ({ ...evidence(pin('declaration', declarationId).ref, 'Additional control clause'),
+    pointer: { ...evidence(pin('declaration', declarationId).ref, 'Additional control clause').pointer,
+      sourceRevision: pin('source_revision', source.id) }, sha256: source.sha256 });
+  const original = await reviewed(db, ctx); const originalReceipt = await commitProposal(ctx, original.commit);
+  const r = await reviewed(db, ctx, 2, true, { consentEvidence: [citation(consentSource)], applicabilityEvidence: citation(appSource) });
+  const receipt = await commitProposal(ctx, r.commit), before = structuredClone(db.state);
+  const replayStart = db.queries.length;
+  const replays = (context = ctx) => [() => prepareProposal(context, r.command), () => reviewDeclaration(context, r.review), () => commitProposal(context, r.commit)];
+  // This is the review's archival reproduction, now asserting denial.
+  db.archived = true;
+  for (const replay of replays())
+    await assert.rejects(replay(), (e: any) => e.status === 403 && e.code === 'DECLARATION_SOURCE_DENIED');
+  assert.deepEqual(db.state, before);
+  db.archived = false;
+  // Cached prepare must also check the immutable review added after preparation.
+  for (const caseId of [consentSource.case_id, appSource.case_id]) {
+    db.archivedCases.add(caseId);
+    for (const replay of replays()) await assert.rejects(replay(), (e: any) => e.status === 403 && e.code === 'DECLARATION_SOURCE_DENIED');
+    db.archivedCases.delete(caseId);
+  }
+  for (const replay of replays({ ...ctx, accessViewId: 'revoked-control-view' }))
+    await assert.rejects(replay(), (e: any) => e.status === 409);
+  // Access remains authorized: ordinary source/registry/declaration drift must
+  // not reexecute or repin previously successful commands.
+  db.source.revision = 2; db.records[1].revision = 2;
+  assert.deepEqual(await prepareProposal(ctx, r.command), r.prepared);
+  assert.deepEqual(await reviewDeclaration(ctx, r.review), r.reviewResult);
+  assert.deepEqual(await commitProposal(ctx, r.commit), receipt);
+  assert.deepEqual(await prepareProposal(ctx, original.command), original.prepared);
+  assert.deepEqual(await reviewDeclaration(ctx, original.review), original.reviewResult);
+  assert.deepEqual(await commitProposal(ctx, original.commit), originalReceipt);
+  assert.deepEqual(db.state, before);
+  assert.deepEqual(db.queries.slice(replayStart).filter(q => /^(INSERT|UPDATE|DELETE)\b/.test(q)), []);
 }));
