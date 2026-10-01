@@ -1273,5 +1273,99 @@
       "Engineering CRS, anchors, axis order and units not applied or independently qualified",
       "Not API/job/registry admission, official Indian data, learning, performance or release qualification"
     ]
+  },
+  {
+    "id": "upstream-geoparquet-example-1-20261001",
+    "manifest": "docs/evidence/usp/native-geoparquet/sources.json",
+    "manifestSha256": "802d1fb898baa72a37bfac5e2a59f831b886da9da79b3e1f67bf064886eaac73",
+    "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+    "classification": "test_only",
+    "originKind": "public_upstream_development_sample",
+    "issuer": "Open Geospatial Consortium / GeoParquet upstream",
+    "originalUrl": "https://raw.githubusercontent.com/opengeospatial/geoparquet/525b8f9150db637a7dfa9d8ba46af5f0ed354094/examples/example.parquet",
+    "sourceVersion": "525b8f9150db637a7dfa9d8ba46af5f0ed354094",
+    "acquiredAt": "2026-10-01T16:21:00.585922+00:00",
+    "geography": "Foreign country-level upstream examples; checked rows Fiji and Tanzania; never relocated to India",
+    "terms": {
+      "note": "Apache-2.0 repository terms; educational upstream example; underlying country geometry/attribute accuracy and independent data redistribution chain are not qualified",
+      "attribution": "Open Geospatial Consortium / GeoParquet upstream"
+    },
+    "reference": {
+      "state": "declared",
+      "id": {
+        "authority": "OGC",
+        "code": "CRS84"
+      },
+      "qualification": "unqualified",
+      "axisDeclarations": "longitude, latitude; degree, retained as literal PROJJSON",
+      "verticalReference": "absent"
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "content": {
+      "externalPath": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/originals/example.parquet",
+      "bytes": 29834,
+      "sha256": "f3e4bf0b0376904f851057d2047bb69e81dce913f2ff1aabe8a4dc1ec0789bc2",
+      "format": "parquet",
+      "repositoryBytesVerified": false
+    },
+    "nativeInspectionEvidence": {
+      "guide": "docs/evidence/usp/native-geoparquet-handoff.md",
+      "review": "docs/evidence/usp/desktop-backend-review/native-geoparquet-review.md",
+      "acceptedCommit": "37e97ce",
+      "reviewReceipt": "E:/BhuAayam-data/task-data/desktop-geoparquet-review/verification.json",
+      "reviewReceiptSha256": "4d67d0cde9a38b7032471a160f5faf2573dab6aef80aaec4719e087ff295daa8",
+      "scope": "Windows bounded schema/row/native XY WKB declaration inspection; no API admission"
+    },
+    "limitations": [
+      "GeoParquet 1.1.0, XY WKB types 1-7, UNCOMPRESSED/SNAPPY only.",
+      "Non-microsecond time64[ns] refuses ROW_DECODE; broad temporal support unqualified.",
+      "No geometry/format conformance, global placement, operational accuracy, learning, scale, Linux or release qualification."
+    ]
+  },
+  {
+    "id": "upstream-geoparquet-example-2-20261001",
+    "manifest": "docs/evidence/usp/native-geoparquet/sources.json",
+    "manifestSha256": "802d1fb898baa72a37bfac5e2a59f831b886da9da79b3e1f67bf064886eaac73",
+    "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+    "classification": "test_only",
+    "originKind": "public_upstream_development_sample",
+    "issuer": "Apache Parquet testing upstream",
+    "originalUrl": "https://raw.githubusercontent.com/apache/parquet-testing/56653c437c8092f704a092d0d1d4e600124cd49f/data/alltypes_plain.parquet",
+    "sourceVersion": "56653c437c8092f704a092d0d1d4e600124cd49f",
+    "acquiredAt": "2026-10-01T16:50:58.557663+00:00",
+    "geography": "Not applicable: upstream scalar-type test corpus",
+    "terms": {
+      "note": "Apache-2.0 repository terms; software test corpus, not operational evidence",
+      "attribution": "Apache Parquet testing upstream"
+    },
+    "reference": {
+      "state": "absent",
+      "specificationDefault": null
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "content": {
+      "externalPath": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/originals/alltypes_plain.parquet",
+      "bytes": 1851,
+      "sha256": "12a618d20a59ee0967fef45e7ec1ff6d451e724838edc1bbeac780ca15e8fcc4",
+      "format": "parquet",
+      "repositoryBytesVerified": false
+    },
+    "nativeInspectionEvidence": {
+      "guide": "docs/evidence/usp/native-geoparquet-handoff.md",
+      "review": "docs/evidence/usp/desktop-backend-review/native-geoparquet-review.md",
+      "acceptedCommit": "37e97ce",
+      "reviewReceipt": "E:/BhuAayam-data/task-data/desktop-geoparquet-review/verification.json",
+      "reviewReceiptSha256": "4d67d0cde9a38b7032471a160f5faf2573dab6aef80aaec4719e087ff295daa8",
+      "scope": "Windows bounded schema/row/native XY WKB declaration inspection; no API admission"
+    },
+    "limitations": [
+      "GeoParquet 1.1.0, XY WKB types 1-7, UNCOMPRESSED/SNAPPY only.",
+      "Non-microsecond time64[ns] refuses ROW_DECODE; broad temporal support unqualified.",
+      "No geometry/format conformance, global placement, operational accuracy, learning, scale, Linux or release qualification."
+    ]
   }
 ]
