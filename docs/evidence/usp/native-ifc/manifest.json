@@ -1,0 +1,377 @@
+{
+  "schemaVersion": "ulpin-native-ifc-evidence/1",
+  "createdAt": "2026-10-01T15:14:58.669341+00:00",
+  "assignment": "IFC-01",
+  "dispatchCommit": "78a9d0c293dccf6e18a9f7c3f5e2a9442efd1b0b",
+  "codeCommit": "4c686c2b9621a4e2c46656fa760d2eedc9ab90a6",
+  "branch": "task/desktop-ifc-native-reader",
+  "worktree": "C:/Users/kvina/.codex/worktrees/association-sources/3d-ulpin",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native",
+  "scope": "local source-native building/storey/space metadata checkpoint; no canonical API or admission qualification",
+  "settings": {
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "observation": "Model/effort/tier are not exposed by this turn; supplied permissions are never/danger-full-access."
+  },
+  "parser": {
+    "name": "IfcOpenShell",
+    "version": "0.8.5",
+    "origin": "https://pypi.org/project/ifcopenshell/0.8.5/",
+    "upstream": "https://github.com/IfcOpenShell/IfcOpenShell",
+    "license": "LGPL-3.0-or-later (wheel classifier and package copyright header)",
+    "choice": "Existing published CPython 3.12 Windows wheel; schema-native inspection only, no geometry or writer API."
+  },
+  "dependencyLock": "docs/evidence/usp/native-ifc/requirements-win-py312.lock",
+  "dependencyPins": [
+    {
+      "name": "ifcopenshell",
+      "version": "0.8.5",
+      "wheel": "ifcopenshell-0.8.5-py312-none-win_amd64.whl",
+      "sha256": "7927921dbfd18024f44780880c37e48460bbca7476da3b0c2607e044b31521d5",
+      "bytes": 24539561
+    },
+    {
+      "name": "isodate",
+      "version": "0.7.2",
+      "wheel": "isodate-0.7.2-py3-none-any.whl",
+      "sha256": "28009937d8031054830160fce6d409ed342816b543597cece116d966c6d99e15",
+      "bytes": 22320
+    },
+    {
+      "name": "lark",
+      "version": "1.3.1",
+      "wheel": "lark-1.3.1-py3-none-any.whl",
+      "sha256": "c629b661023a014c37da873b4ff58a817398d12635d3bbb2c5a03be7fe5d1e12",
+      "bytes": 113151
+    },
+    {
+      "name": "numpy",
+      "version": "2.5.3",
+      "wheel": "numpy-2.5.3-cp312-cp312-win_amd64.whl",
+      "sha256": "0a59a421a32580a009e8a1751345bf829631b990dc1794b80514ab722b435def",
+      "bytes": 12567828
+    },
+    {
+      "name": "psutil",
+      "version": "7.2.2",
+      "wheel": "psutil-7.2.2-cp37-abi3-win_amd64.whl",
+      "sha256": "eb7e81434c8d223ec4a219b5fc1c47d0417b12be7ea866e24fb5ad6e84b3d988",
+      "bytes": 137737
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "wheel": "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+      "sha256": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427",
+      "bytes": 229892
+    },
+    {
+      "name": "shapely",
+      "version": "2.1.2",
+      "wheel": "shapely-2.1.2-cp312-cp312-win_amd64.whl",
+      "sha256": "743044b4cfb34f9a67205cee9279feaf60ba7d02e69febc2afc609047cb49179",
+      "bytes": 1722861
+    },
+    {
+      "name": "six",
+      "version": "1.17.0",
+      "wheel": "six-1.17.0-py2.py3-none-any.whl",
+      "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+      "bytes": 11050
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "wheel": "typing_extensions-4.16.0-py3-none-any.whl",
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "bytes": 45571
+    }
+  ],
+  "runtime": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+    "pythonExecutable": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\env\\Scripts\\python.exe",
+    "platform": "Windows x64",
+    "install": "isolated venv; local pinned wheels; --no-index --require-hashes",
+    "otherPlatforms": "not exercised; Linux path includes RLIMIT_AS/CPU/FSIZE and affinity, but this lock is Windows/CPython 3.12 only"
+  },
+  "sources": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc2x3-building-architecture.ifc",
+      "repositoryPath": "IFC 2.3.0.1 (IFC 2x3 TC1)/Simple-Scene/Building-Architecture.ifc",
+      "url": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%202.3.0.1%20%28IFC%202x3%20TC1%29/Simple-Scene/Building-Architecture.ifc",
+      "finalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%202.3.0.1%20%28IFC%202x3%20TC1%29/Simple-Scene/Building-Architecture.ifc",
+      "sha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885",
+      "bytes": 92542,
+      "acquiredAt": "2026-10-01T14:48:53.936797+00:00",
+      "classification": "test_only",
+      "issuer": "buildingSMART International Ltd.",
+      "license": "CC-BY-4.0",
+      "attribution": "Copyright buildingSMART International Ltd.; Certification-datasets, pinned revision 80d976a9b193a26a8e928c3e79bff67af1de68a8, Building-Architecture sample",
+      "geography": "educational/certification model; physical geography unknown; IFC4 source declares EPSG:32760, not transformed",
+      "trainingQualification": "not_assessed",
+      "operationalQualification": "not_assessed"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc4-building-architecture.ifc",
+      "repositoryPath": "IFC 4.0.2.1 (IFC 4 ADD2 TC1)/Simple-Scene/Building-Architecture.ifc",
+      "url": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%204.0.2.1%20%28IFC%204%20ADD2%20TC1%29/Simple-Scene/Building-Architecture.ifc",
+      "finalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%204.0.2.1%20%28IFC%204%20ADD2%20TC1%29/Simple-Scene/Building-Architecture.ifc",
+      "sha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80",
+      "bytes": 142325,
+      "acquiredAt": "2026-10-01T14:48:54.447521+00:00",
+      "classification": "test_only",
+      "issuer": "buildingSMART International Ltd.",
+      "license": "CC-BY-4.0",
+      "attribution": "Copyright buildingSMART International Ltd.; Certification-datasets, pinned revision 80d976a9b193a26a8e928c3e79bff67af1de68a8, Building-Architecture sample",
+      "geography": "educational/certification model; physical geography unknown; IFC4 source declares EPSG:32760, not transformed",
+      "trainingQualification": "not_assessed",
+      "operationalQualification": "not_assessed"
+    }
+  ],
+  "sourceMetadata": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\upstream-license",
+      "repositoryPath": "LICENSE",
+      "url": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/LICENSE",
+      "finalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/LICENSE",
+      "sha256": "3e20c50b6edfdb4be207f64495586115d0574c8394538109d74f79e1d8976d18",
+      "bytes": 317,
+      "acquiredAt": "2026-10-01T14:48:54.753925+00:00"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\upstream-readme.md",
+      "repositoryPath": "README.md",
+      "url": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/README.md",
+      "finalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/README.md",
+      "sha256": "1e3e0abf571e1b641a45d489e089034ef674e020345e3226523d5444b3646b44",
+      "bytes": 406,
+      "acquiredAt": "2026-10-01T14:48:55.103856+00:00"
+    }
+  ],
+  "sourcePolicy": {
+    "retainedSearch": "No IFC original found in source index/catalogue, repository or private source tree. Two published buildingSMART examples acquired; no other IFC acquisition.",
+    "repository": "buildingSMART/Certification-datasets",
+    "revision": "80d976a9b193a26a8e928c3e79bff67af1de68a8",
+    "originalsUnchanged": true
+  },
+  "codePins": [
+    {
+      "path": "services/geo/geo/native_ifc.py",
+      "physicalSha256": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+      "gitBlobBytesSha256": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+      "bytes": 18578
+    },
+    {
+      "path": "scripts/usp/desktop-ifc-read.py",
+      "physicalSha256": "85dd8549992680b557ac8720b42084c51b3c05882027584acf39d0ccb26fd4f8",
+      "gitBlobBytesSha256": "85dd8549992680b557ac8720b42084c51b3c05882027584acf39d0ccb26fd4f8",
+      "bytes": 13550
+    },
+    {
+      "path": "services/geo/tests/test_native_ifc.py",
+      "physicalSha256": "d941e86be4111573a99d74ed112b22b68147d14774e854078d3e116338ea1f14",
+      "gitBlobBytesSha256": "d941e86be4111573a99d74ed112b22b68147d14774e854078d3e116338ea1f14",
+      "bytes": 8368
+    },
+    {
+      "path": "docs/evidence/usp/native-ifc/requirements-win-py312.lock",
+      "physicalSha256": "2cb966fe12eac6e8de321dc8abfc52b1c5e92d6e62c01013f0ff2d6f317402fd",
+      "gitBlobBytesSha256": "7316f0aa8e0c2ce2b1161b7ef68c7050566e7261b14377e7e677ed080ec58b60",
+      "bytes": 941
+    }
+  ],
+  "checks": [
+    {
+      "command": "NATIVE_IFC_TEST_SOURCES=E:/BhuAayam-data/task-data/desktop-ifc-native/originals; env/Scripts/python.exe services/geo/tests/test_native_ifc.py -v",
+      "exitCode": 0,
+      "testsPassed": 8,
+      "elapsedSeconds": 3.812,
+      "stdoutRetention": "Observed in tool transcript; not saved as original command output.",
+      "coverage": "Two unchanged published originals and exact attribute slices; incomplete georeference; duplicate STEP IDs/GlobalIds, dangling/wrong-type references, cycle, unsupported schema, comment/$ preservation, reduced input/entity/record/output/memory bounds, timeout, failed Job attachment, no overwrite."
+    },
+    {
+      "command": "py_compile.compile(..., cfile=private checks directory, doraise=True)",
+      "exitCode": 0,
+      "files": [
+        "services/geo/geo/native_ifc.py",
+        "scripts/usp/desktop-ifc-read.py",
+        "services/geo/tests/test_native_ifc.py"
+      ]
+    },
+    {
+      "command": "git diff --cached --check (code commit)",
+      "exitCode": 0
+    }
+  ],
+  "runs": [
+    {
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\env\\Scripts\\python.exe",
+        "C:\\Users\\kvina\\.codex\\worktrees\\association-sources\\3d-ulpin\\scripts\\usp\\desktop-ifc-read.py",
+        "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc2x3-building-architecture.ifc",
+        "--output",
+        "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc2x3.json"
+      ],
+      "exitCode": 0,
+      "receipt": {
+        "bytes": 55011,
+        "counts": {
+          "projectedRecords": 45,
+          "sourceEntities": 2046
+        },
+        "execution": {
+          "baselineOsThreads": 1,
+          "computePoolThreads": 1,
+          "exitCode": 0,
+          "gatedStart": true,
+          "literalTwoOsThreadsEnforced": false,
+          "memoryEnforcement": "Windows Job private-byte ceiling",
+          "osHelperAllowance": 4,
+          "peakJobPrivateBytes": 47505408,
+          "peakSampledRssBytes": 70430720,
+          "peakSampledThreads": 3,
+          "platform": "win32",
+          "processLimit": 1,
+          "processingCpuLimit": 2,
+          "seconds": 0.359,
+          "totalOsThreadCeiling": 6
+        },
+        "output": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc2x3.json",
+        "schema": "IFC2X3",
+        "sha256": "66dcfb321cac47b605ffed87beaf060b50b1203a151b738fe446b6251d003d3a",
+        "sourceSha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885",
+        "status": "available"
+      }
+    },
+    {
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\env\\Scripts\\python.exe",
+        "C:\\Users\\kvina\\.codex\\worktrees\\association-sources\\3d-ulpin\\scripts\\usp\\desktop-ifc-read.py",
+        "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc4-building-architecture.ifc",
+        "--output",
+        "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc4.json"
+      ],
+      "exitCode": 0,
+      "receipt": {
+        "bytes": 68748,
+        "counts": {
+          "projectedRecords": 56,
+          "sourceEntities": 371
+        },
+        "execution": {
+          "baselineOsThreads": 1,
+          "computePoolThreads": 1,
+          "exitCode": 0,
+          "gatedStart": true,
+          "literalTwoOsThreadsEnforced": false,
+          "memoryEnforcement": "Windows Job private-byte ceiling",
+          "osHelperAllowance": 4,
+          "peakJobPrivateBytes": 47775744,
+          "peakSampledRssBytes": 71360512,
+          "peakSampledThreads": 4,
+          "platform": "win32",
+          "processLimit": 1,
+          "processingCpuLimit": 2,
+          "seconds": 0.344,
+          "totalOsThreadCeiling": 6
+        },
+        "output": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc4.json",
+        "schema": "IFC4",
+        "sha256": "b0d08570e368ccd6f1b32adc113b1363afa523cc8fa359fe65e087009bd6b0b6",
+        "sourceSha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80",
+        "status": "available"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\acquisition.json",
+      "sha256": "7545dfef4d4397e315d86974e340edccc3b5228ff119c22ba3b1023d4cb8b56c",
+      "bytes": 3209
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\dependencies.json",
+      "sha256": "59cfb56e0da7a3102d0b5ed51a07b169992a681205d02e6ca11ea91b92f6f6c6",
+      "bytes": 4412
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\qualification.json",
+      "sha256": "f3387a768bdcccde3823e44c20f69727ecc00aa4ad3de5d0964ac02e23f8144f",
+      "bytes": 4955
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc2x3.json",
+      "sha256": "66dcfb321cac47b605ffed87beaf060b50b1203a151b738fe446b6251d003d3a",
+      "bytes": 55011
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc2x3.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc2x3.stdout.json",
+      "sha256": "398c0ca64138a1ae0a5402d983077ae0425a967b069b5f1e3eb493ad65eea462",
+      "bytes": 793
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc4.json",
+      "sha256": "b0d08570e368ccd6f1b32adc113b1363afa523cc8fa359fe65e087009bd6b0b6",
+      "bytes": 68748
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc4.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc4.stdout.json",
+      "sha256": "f38b8813906e2657bbb4eb04a7a600ef960a3eec8c941c1c84745e3d368411f5",
+      "bytes": 788
+    }
+  ],
+  "bounds": {
+    "inputBytes": 33554432,
+    "entities": 100000,
+    "projectedRecords": 10000,
+    "outputBytes": 16777216,
+    "nativeProcessingWorkers": 1,
+    "memoryBytes": 2147483648,
+    "wallSeconds": 60,
+    "traversalDepth": 64,
+    "memoryEnforcement": "Windows Job process+job private-memory ceilings, kill on close, active process limit 1 before gate release",
+    "publication": "complete fsynced JSON, atomic exclusive hard link; no replacement",
+    "temporaryCleanup": "all parser copies/results under supervisor-owned temporary directory, including hard-kill cleanup"
+  },
+  "threadBoundary": {
+    "requestedThreads": 2,
+    "processingCpuAffinity": 2,
+    "nativeComputePoolThreads": 1,
+    "windowsOsHelperAllowance": 4,
+    "totalOsThreadsMonitoredCeiling": 6,
+    "observedFinalPeakOsThreads": [
+      3,
+      4
+    ],
+    "literalTwoOsThreadsEnforced": false,
+    "acceptance": "Literal two-total-OS-thread qualification is open. Windows interpreter showed four OS threads before the input gate; two-CPU/single-compute-pool bounds are enforced. Lead must reconcile this explicit interpretation before claiming the complete assigned envelope."
+  },
+  "limitations": [
+    "No tessellation, geometry validity, measurement, unit conversion, global transform, equal-floor-height inference, legal unit or rights/registration claim.",
+    "Decoded optional null, absent schema fields and unsupported derived values remain separate. Unprojected content remains in original with source type inventory.",
+    "Only IfcLocalPlacement/axis/point/direction metadata is interpreted as placement metadata; other placement profiles are explicit unsupported findings.",
+    "Attribute type/reference checks are not full EXPRESS rules, cadastral semantics or official sample/operational accuracy.",
+    "Public development/certification inputs cannot qualify Indian operational data, association, learning labels, release gates or runtime API integration.",
+    "Thread sampling is not a kernel limit on total OS thread creation; literal two-OS-thread guarantee not qualified.",
+    "No shared requirements, dispatch, geo app, TypeScript/OpenAPI, registry, jobs, SQL, catalogue, frontend or existing reader edits."
+  ],
+  "launchClearanceGaps": [
+    "IfcOpenShell LGPL and bundled/transitive binary redistribution obligations need release review; wheel metadata/pins and upstream attribution retained.",
+    "No operational source/accuracy, global placement, learning or production-launch qualification is granted by these development examples."
+  ],
+  "cleanup": "All invoked parser workers exited and owned temporary trees cleaned; isolated environment, unchanged originals and useful results retained. No API/DB/Docker/model/provider/GPU work started."
+}
