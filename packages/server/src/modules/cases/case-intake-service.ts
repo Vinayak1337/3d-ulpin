@@ -1,4 +1,5 @@
 import {CityJSONIngestionService,isCityJSONProtectedSource} from '../usp/ingestion/cityjson';
+import {IFCIngestionService,isIFCProtectedSource} from '../usp/ingestion/ifc';
 import { AppError } from '../../infrastructure/errors';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { largeOriginalDownload } from '../usp/ingestion/download';
@@ -29,6 +30,8 @@ export class CaseIntakeService {
 
   async sourceFile(id: string) {
     const source = await getSource(id);
+    if(isIFCProtectedSource(source))
+      return {...await new IFCIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
     if(isCityJSONProtectedSource(source))
       return {...await new CityJSONIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
     if(source.inspection?.documentOriginal)return new DocumentIngestionService().original(source.case_id,id);
@@ -42,6 +45,7 @@ export class CaseIntakeService {
   }
   async streamedSourceFile(id:string,signal:AbortSignal){
     const source=await getSource(id);
+    if(isIFCProtectedSource(source))return null;
     if(isCityJSONProtectedSource(source))return null;
     return source.profile==='large-original-v1'?largeOriginalDownload(id,signal):null;
   }

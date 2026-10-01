@@ -72,7 +72,7 @@ export async function sufficiencySourceTx(client:PoolClient,scope:Awaited<Return
   let projectedAccepted=Boolean(row.profile==='large-original-v1' && row.sha256===PROJECTED_VECTOR_PROFILE.zipSha256 &&
     acceptedJob?.operation==='projected-vector' && acceptedJob.status==='succeeded' &&
     Number(acceptedJob.accepted_fence)===accepted?.fence && acceptedJob.result_ref?.sha256===accepted?.index?.sha256);
-  if(projectedAccepted)try{await acceptedProjectedTx(client,scope.row.id,sourceId);}catch(error){
+  if(projectedAccepted)try{await acceptedProjectedTx(client,scope.row.id,sourceId,undefined,'immutable_read');}catch(error){
     if(error instanceof AppError&&error.status===409)projectedAccepted=false;else throw error;
   }
   const document=staged?await documentEvidenceTx(client,scope.row.id,pin):null;

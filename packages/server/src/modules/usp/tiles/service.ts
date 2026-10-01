@@ -25,9 +25,9 @@ export async function mvtObservationsTx(client:PoolClient,admissionJobId:string,
   return rows.map(row=>({unitId:row.unit_id as string,featureIndex:row.feature_index as number,disposition:row.disposition as string,
     bounds:row.geographic_bounds as Bounds|null,rawSha256:row.raw_sha as string,geographicSha256:row.geo_sha as string|null,nativeKey:row.native_key}));
 }
-export async function mvtContextTx(client:PoolClient,caseId:string,sourceId:string,admissionJobId?:string,lock=false,chunkPin?:unknown){
+export async function mvtContextTx(client:PoolClient,caseId:string,sourceId:string,admissionJobId?:string,lock=false,chunkPin?:unknown,mode:'current'|'immutable_read'='current'){
   if(lock)await projectedContextTx(client,caseId,sourceId,true);
-  const prefix=chunkPin?await sealedPrefixTx(client,caseId,sourceId,admissionJobId!,chunkPin):null,accepted=prefix??await acceptedProjectedTx(client,caseId,sourceId,admissionJobId),
+  const prefix=chunkPin?await sealedPrefixTx(client,caseId,sourceId,admissionJobId!,chunkPin,mode):null,accepted=prefix??await acceptedProjectedTx(client,caseId,sourceId,admissionJobId,mode),
     chunk=prefix?{pin:prefix.pin,coverage:prefix.chunk.coverage}:undefined,observations=await mvtObservationsTx(client,accepted.job.id,sourceId,chunk);
   if(observations.some(row=>row.nativeKey.type!=='number'||!Number.isSafeInteger(row.nativeKey.value)||row.nativeKey.value<0))
     throw new AppError(422,'MVT_NATIVE_ID','This profile requires its actual nonnegative numeric native transport IDs.');
@@ -41,8 +41,8 @@ export async function mvtContextTx(client:PoolClient,caseId:string,sourceId:stri
     throw new AppError(409,'MVT_SOURCE_CLOSURE','The exact admitted/quarantined and unique native transport-ID source profile changed.');
   return {accepted,observations,source,compiler};
 }
-async function assertMvtSourceInputTx(client:PoolClient,job:any,lock=false){
-  const input=PrivateMvtInputSchema.parse(job.payload),ctx=await mvtContextTx(client,input.source.caseId,input.source.sourceId,input.source.admissionJobId,lock,input.source.chunk?.pin),
+async function assertMvtSourceInputTx(client:PoolClient,job:any,lock=false,mode:'current'|'immutable_read'='current'){
+  const input=PrivateMvtInputSchema.parse(job.payload),ctx=await mvtContextTx(client,input.source.caseId,input.source.sourceId,input.source.admissionJobId,lock,input.source.chunk?.pin,mode),
     {inputFingerprint,...base}=input;
   if(input.jobId!==job.id||job.case_id!==input.source.caseId||job.source_id!==input.source.sourceId
     ||job.input_fingerprint!==inputFingerprint||fingerprint(base)!==inputFingerprint
@@ -57,7 +57,7 @@ export async function assertMvtInputTx(client:PoolClient,job:any,lock=false){
   return result;
 }
 async function assertMvtReadInputTx(client:PoolClient,job:any){
-  const result=await assertMvtSourceInputTx(client,job);
+  const result=await assertMvtSourceInputTx(client,job,false,'immutable_read');
   if(!mvtReadCompilerCompatible(result.input.compiler,result.ctx.compiler,Boolean(result.input.source.chunk)))
     throw new AppError(409,'MVT_CONTEXT_STALE','The immutable tile compiler profile is not approved for reads.');
   return result;

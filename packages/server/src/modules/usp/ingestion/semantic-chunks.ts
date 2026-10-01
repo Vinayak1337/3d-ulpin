@@ -10,7 +10,7 @@ import {sha256} from '../../../infrastructure/storage';
 import {AppError,notFound} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {assertUspJobAttemptTx,type UspJobAttempt} from '../jobs';
-import {projectedContextTx,assertProjectedInput} from './projected-vector';
+import {projectedContextTx,assertProjectedInput,assertProjectedReadInput} from './projected-vector';
 import {appendCaseIngestionTx} from './events';
 import {privateMvtCapacityTx} from '../tiles/capacity';
 import {mvtTransaction} from '../tiles/bounds';
@@ -23,6 +23,11 @@ export function semanticPublisherSha(){
     'packages/server/src/modules/usp/ingestion/semantic-chunks.ts','packages/server/src/modules/usp/ingestion/semantic-display.ts',
     'packages/server/src/modules/usp/jobs.ts','packages/server/src/modules/usp/tiles/capacity.ts','database/sql/95-ingestion/semantic-chunks.sql'];
   return sha256(Buffer.concat(paths.flatMap(path=>[Buffer.from(path+'\0'),readFileSync(join(settings.repositoryRoot,path))])));
+}
+const preIFCPublisherReadSha=new Set(['2fc75b285a9b57fffaebad822497a30c59274b6e7345e44f760470a39f284be1',
+  '2410cb1dc2581631c11f3eea1f10bbe79c5d328d457426b7fb60ae550594673a']);
+export function semanticPublisherReadCompatible(stored:string,current=semanticPublisherSha()){
+  return stored===current||preIFCPublisherReadSha.has(stored)&&current===semanticPublisherSha();
 }
 export function semanticPartitions(index:SemanticPreparation['index']):SemanticPartition[]{
   const partitions:SemanticPartition[]=[];let first=0,positions=0,bytes=0;
@@ -56,9 +61,9 @@ export async function prepareSemanticTx(client:PoolClient,job:any,attempt:UspJob
 function record(row:any):SemanticRecord{return {featureIndex:row.feature_index,unitId:row.unit_id,key:row.native_key,disposition:row.disposition,
   rawSha256:row.raw_ref.sha256,geographicSha256:row.geographic_ref?.sha256??null,nativeGeometrySha256:row.native_geometry_sha256,
   geographicGeometrySha256:row.geographic_geometry_sha256,recordSha256:row.record_sha256};}
-export async function sealedPrefixTx(client:PoolClient,caseId:string,sourceId:string,jobId:string,pinValue:unknown){
+export async function sealedPrefixTx(client:PoolClient,caseId:string,sourceId:string,jobId:string,pinValue:unknown,mode:'current'|'immutable_read'='current'){
   const pin=ProjectedChunkPinSchema.parse(pinValue),ctx=await projectedContextTx(client,caseId,sourceId),job=(await client.query("SELECT * FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='projected-vector'",[jobId,caseId,sourceId])).rows[0]??notFound('Source chunk job not found.');
-  const input=assertProjectedInput(ctx,job.payload);if(!input.semanticChunks)throw new AppError(409,'SEMANTIC_MODE','This source job does not publish semantic chunks.');
+  const input=mode==='immutable_read'?assertProjectedReadInput(ctx,job.payload):assertProjectedInput(ctx,job.payload);if(!input.semanticChunks)throw new AppError(409,'SEMANTIC_MODE','This source job does not publish semantic chunks.');
   const prepRow=(await client.query('SELECT sha256,body FROM usp_display.source_semantic_preparations WHERE job_id=$1 AND source_id=$2',[jobId,sourceId])).rows[0]??notFound('Verified complete source preparation is unavailable.');
   const preparation=SemanticPreparationSchema.parse(prepRow.body);
   if(sha256(JSON.stringify(preparation))!==prepRow.sha256||preparation.inputFingerprint!==input.inputFingerprint||preparation.publisherSha256!==input.semanticChunks.publisherSha256)
@@ -144,7 +149,7 @@ export class SemanticChunkService{
   async chunk(caseId:string,sourceId:string,jobId:string,sequence:number){
     for(const v of [caseId,sourceId,jobId])z.string().uuid().parse(v);
     return mvtTransaction(async client=>{await projectedContextTx(client,caseId,sourceId);const row=(await client.query('SELECT sha256 FROM usp_display.source_semantic_chunks WHERE job_id=$1 AND source_id=$2 AND sequence=$3',[jobId,sourceId,sequence])).rows[0]??notFound('Source chunk is not committed.');
-      const value=await sealedPrefixTx(client,caseId,sourceId,jobId,{sequence,sha256:row.sha256});
+      const value=await sealedPrefixTx(client,caseId,sourceId,jobId,{sequence,sha256:row.sha256},'immutable_read');
       return SemanticChunkResponseSchema.parse({pin:value.pin,chunk:value.chunk,currentSourceAccepted:value.ctx.source.inspection.projectedVector?.accepted?.jobId===jobId&&value.job.status==='succeeded',sourceJobStatus:value.job.status});});
   }
 }

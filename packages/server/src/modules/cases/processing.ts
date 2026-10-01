@@ -16,6 +16,7 @@ import {runChunkMappingJob} from '../usp/ingestion/chunk-mapping-worker';
 import {runStreamedProfileJob} from '../usp/ingestion/streamed-profile-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
+import {runIFCJob} from '../usp/ingestion/ifc-worker';
 import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 import {runCityJSONValidationJob} from '../registry/cityjson-validation-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
@@ -24,6 +25,7 @@ let streamingVectorWorker:Promise<void>|undefined;
 let chunkMappingWorker:Promise<void>|undefined;
 let streamedProfileWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
+let ifcWorker:Promise<void>|undefined;
 let cityjsonWorker:Promise<void>|undefined;
 let cityjsonValidationWorker:Promise<void>|undefined;
 let pointBatchWorker:Promise<void>|undefined;
@@ -213,6 +215,12 @@ export async function dispatchTick(): Promise<number> {
         if(!cityjsonValidationWorker)cityjsonValidationWorker=runCityJSONValidationJob(job.id)
           .catch(()=>{/* Canonical fenced validation status owns recovery; retries are explicit. */})
           .finally(()=>{cityjsonValidationWorker=undefined;});
+        return;
+      }
+      if(job.operation==='ifc-native'){
+        if(!ifcWorker)ifcWorker=runIFCJob(job.id)
+          .catch(()=>{/* Canonical fenced status owns recovery; native retries are explicit. */})
+          .finally(()=>{ifcWorker=undefined;});
         return;
       }
       if(job.operation==='cityjson-native'){

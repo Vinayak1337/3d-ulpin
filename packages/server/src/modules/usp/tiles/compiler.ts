@@ -37,10 +37,17 @@ const preDocumentCodeSha='3d060fda17b9cd542c4c8c2ffb29ad5fafb6cd28e34053235885ce
 // AI-05B adds only point-job enrollment to the shared job authority. This
 // reconstructed pre-point parent digest retains exact non-code pins.
 const prePointCodeSha='20f90748a73f2051f3cabba45bc76432cdcae723381a497ddf81c4d7939ed339';
+const preIFCReadCodeSha=new Set(['37f9c493f48724bc8d9627718a5781d3a3514e91d2055ab57492041729dbcbfc',
+  '9a9790012ba12ed203ecde3660406a307f59b178399f704e8e9d3e5246c83c76']);
 export function mvtReadCompilerCompatible(stored:PrivateMvtInput['compiler'],current:PrivateMvtInput['compiler'],hasSourceChunk=false){
   const valid=(pin:PrivateMvtInput['compiler'])=>{const {sha256,...base}=pin;return fingerprint(base)===sha256;};
   if(!valid(stored)||!valid(current))return false;
   if(fingerprint(stored)===fingerprint(current))return true;
+  // Reviewed pre-IFC bytes only. Current writers never call this predicate.
+  if(preIFCReadCodeSha.has(stored.codeSha256)&&current.codeSha256===mvtCodeSha()){
+    const {sha256:_s,codeSha256:_sc,...oldProfile}=stored,{sha256:_c,codeSha256:_cc,...newProfile}=current;
+    if(fingerprint(oldProfile)===fingerprint(newProfile))return true;
+  }
   if(stored.codeSha256===preDocumentCodeSha||stored.codeSha256===prePointCodeSha){
     const {sha256:_storedHash,codeSha256:_storedCode,...storedProfile}=stored;
     const {sha256:_currentHash,codeSha256:_currentCode,...currentProfile}=current;
