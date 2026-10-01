@@ -50,4 +50,6 @@ Reuse retained sources first; otherwise retain at most two small published Khron
 
 ## Runtime and callback boundary
 
+Dispatch acknowledged at `f687cd29d17925f5893d7d1cddcfe31d30300177`: KML project chat `01a0f810-a75d-7b52-b023-6a60e6d3602b`; glTF project chat `01a0f810-a9ec-73b2-9a47-dc2884e09c2d`. Both existing review chats accepted their continuation messages. PDF owner `01a0ee2d-5889-7ac3-a75d-2d2248265c26` was observed active during assignment reconciliation and was not restarted. These are dispatch receipts, not completion or actual-tier evidence.
+
 Docker is unavailable and the attempted socket cleanup was rejected by automatic review with only “blocked by policy”. No lane may retry that cleanup by another method, reset volumes, or start Docker. These five lanes are code/local-reader work. Reference-review HTTP persistence remains unrun; current stored data is unobserved, not newly qualified. Existing PDF work continues unchanged. Two reader implementations plus PDF each keep only one bounded child; avoid overlapping multiple local test processes per lane. Lead integrates accepted results on callbacks and assigns the next dependency-ready canonical wiring. Goal tracker stays paused as reference; project completion is not claimed.
