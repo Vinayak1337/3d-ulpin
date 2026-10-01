@@ -1,10 +1,10 @@
 # INTEGRATE-02 — finished-work reconciliation, 2 October 2026
 
-The reviewed recent backend lanes were already integrated. The only newly accepted feature integrated during this task is FUSION-01, after the lead's explicit correction acceptance and transfer of API registration. Its private context route and generated client are now present; no runtime/model/release gate advances.
+The reviewed recent backend lanes were already integrated. FUSION-01 was newly accepted and integrated after the lead transferred API registration. A subsequent accepted DATA-FUSION-01 callback adds the bounded retained-plan extraction checkpoint. The private context route/generated client and honest native `needs_ocr` results are now present; no runtime/model/release gate advances.
 
 - Before: clean `staging@b4fe12eb051460bdbf4bc7b9ca53035e2d1d7166` in `E:/Projects/3d-ulpin`.
-- After functional integration: `staging@15dd8a9efcd62a4632a8e1f8035cab301116882f`. The subsequent documentation commit containing this report supplies the reconciliation/current snapshots; its exact SHA is returned in the completion callback (a report cannot embed its own commit hash).
-- Preparation: exclusive `C:/Users/kvina/.codex/worktrees/desktop-integration-20261002/3d-ulpin`, `task/desktop-integration-20261002`. Five exact, inspected commits were transferred with `git cherry-pick --ff` only after checking staging branch, HEAD, empty index/working tree and the complete parent chain. No historical branch merge, deletion, stash or reset.
+- After accepted code/data checkpoints: `staging@be0544dba8645278e25e0ccffff95ef9174ee7da`. Initial FUSION registration was `15dd8a9efcd62a4632a8e1f8035cab301116882f`, first reconciliation `99987bda30e925be411b8ba10e02da337e6f97a5`. The final documentation commit's exact SHA is returned in the follow-up completion callback (a report cannot embed its own commit hash).
+- Preparation: exclusive `C:/Users/kvina/.codex/worktrees/desktop-integration-20261002/3d-ulpin`, `task/desktop-integration-20261002`. Exact inspected commits were transferred with `git cherry-pick --ff` only after checking staging branch, HEAD, empty index/working tree and the complete parent chain. No historical branch merge, deletion, stash or reset.
 - Supplied current-turn instructions confirm `approval_policy=never` and `sandbox_mode=danger-full-access`; environment permission profile is `:danger-full-access`. Astra/xhigh/default-standard was requested. Actual model/effort/request tier are not exposed by these tools; no speed change is claimed or requested.
 
 ## Inventory and disposition
@@ -50,6 +50,14 @@ The route is `POST /api/v1/usp/evidence/source-fusion/context`: 2–8 exact acce
 
 Completion receipt `E:/BhuAayam-data/task-data/desktop-source-fusion/literal-correction/completion-receipt.json` is 8,133 bytes, SHA-256 `e0e0897ea3a9b51fedffa1c1159cced2ea5c2cd6b26de18eddc55a0191089524`. The ordinary saved reference-document/D1 context remains 16,875 bytes, SHA-256 `92bfe44612eecbfdb000bc8b3cd7e6a8b25a56d023827967b7be2613c968e8b0`. Reconstructed historical CityJSON result metadata retains its explicit reconstruction label; neither it nor reference-document prose becomes new operational evidence.
 
+## Accepted DATA-FUSION-01 follow-up
+
+The lead's accepted data callback crossed the first completion message and explicitly retained sole staging ownership for this bounded addition. The lead confirmed no intervening staging/index write. Exact candidate `80514149f995f549301c03563a08219bf235fb16` maps to **`be0544dba8645278e25e0ccffff95ef9174ee7da`**, adding only [the runner](../../../scripts/usp/desktop-plan-extraction.py) and [handoff](plan-extraction-handoff.md). It was absent by patch comparison before integration. The lead inspected both files and matched five receipts/24 referenced physical pins; this integration rechecked the five immutable receipts, nine original/output pins, accepted runner Git SHA-256 and source-only syntax (exit 0). No extraction, metadata render or OCR was rerun, and no moving production file was inspected as a finished result.
+
+All three unchanged T3-1/T3-2/T3-4 originals genuinely produced one page, zero text/parts and `needs_ocr`. The local environment used pypdf **6.10.0**, versus production **5.5.0**; this mismatch remains explicit and prevents production-runtime qualification. Measured T3-2 is **2586 × 1694 points**. The existing 2000-point full-page precheck refuses it before considering a region, so **no OCR ran**. Prior visual floor/title evidence, multiple-floor scopes, G+41/G+42 conflict and unknown current approved revision remain separate from machine outputs. No accepted API artifacts, canonical links or learning labels were fabricated.
+
+The subsequent **OCR-LARGE-PLAN-01** continuation in the same document-owner worktree is excluded. Its renderer, OCR-frame contract, tests and context/pin compatibility code remain under that owner's exclusive control. No production OCR/contract change or regenerated API publication is needed for this two-file local checkpoint.
+
 ## Checks and preserved evidence
 
 | Command/check | Actual result |
@@ -80,11 +88,11 @@ Preserved dirty paths:
 - `C:/Users/kvina/.codex/worktrees/b3eb/3d-ulpin`: the two status entries `services/geo/geo/cityjson_processing.py`, `services/geo/geo/native_cityjson.py`, plus untracked `.pnpm-store/`; no normalization or cleanup.
 - `C:/Users/kvina/.codex/worktrees/backend-review/3d-ulpin`: physical EOL/status entries `services/geo/geo/area.py`, `services/geo/geo/native_archive.py`, `services/geo/geo/native_pdf.py`; no index refresh/write or normalization. Status entries had empty content diffs and were deliberately retained.
 - `E:/Projects/ulpin-ab-isolated-implementation-20260923`: all 19 staged additions under `ab-task/`, including `solution.zip`; their saved physical hashes and staged path state are preserved.
-- DATA-FUSION-01's `desktop-plan-extraction` worktree remains independently owned. Its moving output/checkpoint is not inspected as a finished candidate or integrated by this task.
+- `desktop-plan-extraction` remains independently owned. Only exact accepted DATA-FUSION-01 commit `80514149` is integrated; its moving OCR-LARGE-PLAN-01 continuation remains excluded.
 
 No unresolved accepted finished-code delta remains in the audited local lanes. Actual next backend work is:
 
-1. Accept the independently returning DATA-FUSION-01 native outputs, then compare cited T3-1/T3-2/T3-4 extraction with the retained reviewed observations. Preserve multiple-floor scopes, G+41/G+42 conflict and unknown approved revision. Only after its receipt establishes usable inputs, scope the next bounded retrieval/ranking/reconciliation step; no qualified relationship labels or model fit are implied.
+1. Complete the independently assigned OCR-LARGE-PLAN-01 selected-region path for the observed oversized T3-2 page; then assess its actual cited output against retained visual observations. Native extraction is now accepted but has no readable parts. Preserve multiple-floor scopes, G+41/G+42 conflict and unknown approved revision. Retrieval/ranking/reconciliation still needs usable inputs and separate scope; no qualified relationship labels or model fit are implied.
 2. Once the existing Docker environment is restored through its separate authorized owner, perform FUSION's current accepted-source HTTP/SQL/object-authority journey. Reuse existing code/proof; do not fabricate accepted rows or bypass historical producer pins.
 3. Under the same runtime dependency, generate an IFC profile/2 for the exact integrated runtime and finish its canonical persistence flow; finish the previously accepted officer-reference review persistence check. Neither is a reason to replay completed local/native campaigns now.
 
@@ -179,7 +187,7 @@ Snapshot heads below are exact local observations; source FUSION's returned head
 | `model-egress-enforcement-audit` | `e692b7ac70db` | patch `a1c1edb18c52` |
 | `pdf-bounds` | `899592e726ba` | patch `61d0008b4fb1` |
 | `pdf-review` | `0f887a792729` | patch `4580b0c16d41` |
-| `plan-extraction` | `b4fe12eb0514` | active DATA-FUSION-01; excluded from finished work |
+| `plan-extraction` | `b4fe12eb0514` | later accepted `80514149 → be0544d`; moving OCR continuation excluded |
 | `plan-windows` | `b67441dd240a` | patch `a6944c064f80` |
 | `point-review` | `1f659aa2d338` | patch `69d418098a1c` |
 | `prediction-model-fit` | `1b84e5299e9b` | patch `42ae7bde8284` |
