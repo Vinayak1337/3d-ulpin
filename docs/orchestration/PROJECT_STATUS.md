@@ -1,4 +1,10 @@
-# Project status — 1 October 2026
+# Project status — 2 October 2026
+
+Current: [INTEGRATE-02 reconciliation](../evidence/usp/finished-work-reconciliation-20261002.md) accounts for all 109 local branches and 18 worktrees. Prioritized finished IFC, Qwen containment, image/PDF, GeoParquet, CityGML, DXF, glTF and KML lanes were already integrated; obsolete merges and retired weight-1 code are preserved without replay. The lead's later FUSION correction acceptance is now integrated through `15dd8a9`, including the private context route and generated API/client: **217 operations / 249 schemas**, prior contracts unchanged. Seven fusion controls, one production-module route control and backend/client/API checks pass. Worker dirty paths and originals remain intact; no runtime/model/release gate advances.
+
+Next: DATA-FUSION-01 independently prepares retained T3-1/T3-2/T3-4 native outputs. Its completion can support a scoped extraction/context comparison and retrieval/reconciliation assignment; matching labels and current approved revision remain unqualified. FUSION's current HTTP/SQL/object-authority journey, IFC integrated profile/2 persistence and officer-reference review persistence remain blocked by the unchanged Docker ingest-socket problem. No runtime workaround, fit or new format lane is started. Delegated staging integration ownership returns to the lead after the completion callback.
+
+## Earlier snapshots — preserved history
 
 Latest: PDF pages are integrated/reviewed with nine focused checks and backend/client typechecks passing; published API 209 operations/243 schemas. Real HTTP remains unrun. The image owner now receives private PNG/JPEG original inspection; glTF's returned local reader receives focused Astra review. IFC API wiring, KML/KMZ and DXF correction continue independently. These five assignments advance code/accepted local evidence without starting Docker or reviving completed models/reviews.
 
