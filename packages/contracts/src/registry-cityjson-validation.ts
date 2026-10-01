@@ -2,6 +2,14 @@ import {z} from 'zod';
 import {RegistryCityJSONCandidateSchema} from './registry-cityjson-draft';
 
 export const CITYJSON_VALIDATION_VERSION='registry-cityjson-validation/1' as const;
+export const CITYJSON_VALIDATION_ERROR_CODES=[
+  'CITYJSON_VALIDATION_CANCELLED','CITYJSON_VALIDATION_TIMEOUT','CITYJSON_VALIDATION_COMMIT_UNKNOWN',
+  'CITYJSON_VALIDATION_STALE','CITYJSON_VALIDATION_INTERRUPTED','CITYJSON_VALIDATION_ACCESS_REVOKED',
+  'CITYJSON_VALIDATION_STORAGE_UNAVAILABLE','CITYJSON_VALIDATION_UNAVAILABLE','CITYJSON_VALIDATION_UNSUPPORTED_PLATFORM',
+  'CITYJSON_VALIDATION_TOOL_CHANGED','CITYJSON_VALIDATION_TOOL_FAILURE','CITYJSON_VALIDATION_BUSY',
+  'CITYJSON_VALIDATION_INTEGRITY','CITYJSON_VALIDATION_REPORT_LIMIT','CITYJSON_VALIDATION_RESULT_LIMIT',
+  'CITYJSON_VALIDATION_HISTORY_LIMIT','CITYJSON_VALIDATION_SELECTION','CITYJSON_VALIDATION_INPUT_SCOPE',
+] as const;
 export const CITYJSON_VALIDATION_LIMITS=Object.freeze({seconds:120,reportBytes:4*1024*1024,
   resultBytes:32*1024,statusBytes:16*1024,jobsPerDraft:16,active:2});
 const id=z.uuid().transform(v=>v.toLowerCase()),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
@@ -30,7 +38,7 @@ export const RegistryCityJSONValidationResultSchema=z.strictObject({version:z.li
     key:z.string().min(1).max(512),sha256:hash,bytes:rev.max(CITYJSON_VALIDATION_LIMITS.reportBytes)})).min(1).max(6)});
 export const RegistryCityJSONValidationStatusSchema=z.strictObject({version:z.literal(CITYJSON_VALIDATION_VERSION),
   draftId:id,draftRevision:rev.min(1),jobId:id,status:z.enum(['queued','running','completed','failed','stale']),
-  code:z.string().regex(/^CITYJSON_VALIDATION_[A-Z_]{1,60}$/).nullable(),
+  code:z.enum(CITYJSON_VALIDATION_ERROR_CODES).nullable(),
   result:z.strictObject({summary:RegistryCityJSONValidationSummarySchema,createdAt:z.iso.datetime(),resultSha256:hash}).nullable()});
 export type RegistryCityJSONValidationInput=z.infer<typeof RegistryCityJSONValidationInputSchema>;
 export type CityJSONValidatorPins=z.infer<typeof CityJSONValidatorPinsSchema>;

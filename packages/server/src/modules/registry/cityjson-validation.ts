@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
-import {CITYJSON_VALIDATION_VERSION,CITYJSON_VALIDATION_LIMITS,RegistryCityJSONValidationRequestSchema,
+import {CITYJSON_VALIDATION_VERSION,CITYJSON_VALIDATION_LIMITS,CITYJSON_VALIDATION_ERROR_CODES,RegistryCityJSONValidationRequestSchema,
   RegistryCityJSONValidationInputSchema,RegistryCityJSONValidationReceiptSchema,RegistryCityJSONValidationResultSchema,
   RegistryCityJSONValidationStatusSchema,type RegistryCityJSONValidationInput} from '@ulpin/contracts';
 import {transaction} from '../../infrastructure/db';
@@ -138,8 +138,8 @@ export function encodeCityJSONValidationResult(raw:unknown){
   return Buffer.concat([json,Buffer.alloc(CITYJSON_VALIDATION_LIMITS.resultBytes-json.length,0x20)]);
 }
 
-export async function cityjsonValidationStatusTx(client:PoolClient,draftId:string,jobId:string){
-  const current=await registryCityJSONAuthorityTx(client,draftId);
+export async function cityjsonValidationStatusTx(client:PoolClient,draftId:string,jobId:string,authority=registryCityJSONAuthorityTx){
+  const current=await authority(client,draftId);
   const job=(await client.query(`SELECT j.*,m.result_ref,m.input_sha256,m.logical_state,m.accepted_fence,
     a.state attempt_state,a.fence attempt_fence,a.input_sha256 attempt_input_sha256,a.completion_sha256
     FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id LEFT JOIN usp_job_attempts a ON a.job_id=j.id AND a.fence=m.accepted_fence
@@ -154,19 +154,25 @@ export async function cityjsonValidationStatusTx(client:PoolClient,draftId:strin
   }
   return {input,job};
 }
-export async function readCityJSONValidationStatus(draftValue:string,jobValue:string){
+export function controlledCityJSONValidationError(error:unknown){
+  return CITYJSON_VALIDATION_ERROR_CODES.find(code=>code===error)??'CITYJSON_VALIDATION_TOOL_FAILURE';
+}
+export async function readCityJSONValidationStatus(draftValue:string,jobValue:string,authority=registryCityJSONAuthorityTx){
   const draftId=uuid.parse(draftValue),jobId=uuid.parse(jobValue);
-  const row=await transaction(client=>cityjsonValidationStatusTx(client,draftId,jobId));
+  const row=await transaction(client=>cityjsonValidationStatusTx(client,draftId,jobId,authority));
   const result=row.job.status==='succeeded'?await readCityJSONValidationResult(row.input,row.job.result_ref.sha256):null;
   if(result&&fingerprint(cityjsonValidationConfig().pins)!==fingerprint(row.input.validator))conflict('Validator configuration changed; result is historical.');
   await transaction(async client=>{
-    const after=await cityjsonValidationStatusTx(client,draftId,jobId);
+    const after=await cityjsonValidationStatusTx(client,draftId,jobId,authority);
     if(fingerprint(after.input)!==fingerprint(row.input)||after.job.status!==row.job.status||
-      fingerprint(after.job.result_ref)!==fingerprint(row.job.result_ref)||after.job.accepted_fence!==row.job.accepted_fence)
+      fingerprint(after.job.result_ref)!==fingerprint(row.job.result_ref)||after.job.accepted_fence!==row.job.accepted_fence||
+      after.job.logical_state!==row.job.logical_state||after.job.error!==row.job.error)
       conflict('Validation status changed during private report I/O.');
   });
   const response=RegistryCityJSONValidationStatusSchema.parse({version:CITYJSON_VALIDATION_VERSION,draftId,draftRevision:row.input.draftRevision,jobId,
-    status:row.job.status==='succeeded'?'completed':row.job.status,code:row.job.error??null,
+    status:row.job.logical_state==='cancelled'?'failed':row.job.status==='succeeded'?'completed':row.job.status,
+    code:row.job.logical_state==='cancelled'?'CITYJSON_VALIDATION_CANCELLED':row.job.error?controlledCityJSONValidationError(row.job.error):
+      ['failed','stale'].includes(row.job.status)?row.job.status==='stale'?'CITYJSON_VALIDATION_STALE':'CITYJSON_VALIDATION_TOOL_FAILURE':null,
     result:result?{summary:result.summary,createdAt:result.createdAt,resultSha256:row.job.result_ref.sha256}:null});
   if(Buffer.byteLength(JSON.stringify(response))>CITYJSON_VALIDATION_LIMITS.statusBytes)throw new AppError(413,'CITYJSON_VALIDATION_RESULT_LIMIT','Status exceeds its bounded profile.');
   return response;

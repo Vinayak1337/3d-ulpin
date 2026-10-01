@@ -61,8 +61,20 @@ configuration fails closed with a controlled code and preserves previous history
 The Windows x86-64 supervisor owns a kill-on-close Job Object for its descendants
 and the fixed host-wide `Global\ULPIN-CityJSON-Validation-v1` mutex across dispatcher
 processes. Busy hosts require an explicit retry. The native validation deadline
-is 120 seconds; source/report I/O is individually bounded, and the complete
-worker/publication has a 300-second cancellation deadline with live lease checks.
+is 120 seconds; source/report I/O is individually bounded. One absolute 300-second
+worker deadline starts before initial DB acquisition/claim and reaches SQL waits,
+live lease checks, publication and the final commit boundary. The opt-in DB scope
+sets transaction-local statement/lock/idle bounds, checks server/client deadlines,
+and destroys its exclusive pooled connection on stop/expiry. A late callback cannot
+issue SQL or commit through that closed scope. Failure bookkeeping has its own
+two-second allowance; unavailable authority preserves fence/expiry recovery and
+emits a controlled cleanup-deferred warning. Monitor shutdown cancels its scope.
+COMMIT dispatched while live can have an unknown outcome when stop, timeout or
+transport error interrupts its acknowledgement. This is reported as
+`CITYJSON_VALIDATION_COMMIT_UNKNOWN`; it never asserts rollback or retries commit.
+A fresh current-authority read resolves the canonical outcome. Canonical cancelled
+metadata projects to failed / `CITYJSON_VALIDATION_CANCELLED`; stored errors use an
+explicit allowlist, never arbitrary text.
 Native tools run outside database transactions. This is offline configuration,
 not an OS network-sandbox claim. Other platforms currently abstain.
 

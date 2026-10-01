@@ -12,14 +12,14 @@ import {sha256} from '../packages/server/src/infrastructure/storage';
 import {AppError} from '../packages/server/src/infrastructure/errors';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
-import {registerUspJobInputTx,assertUspJobAttemptTx} from '../packages/server/src/modules/usp/jobs';
+import {registerUspJobInputTx,assertUspJobAttemptTx,cancelUspJob} from '../packages/server/src/modules/usp/jobs';
 import {registryCityJSONAuthorityTx} from '../packages/server/src/modules/registry/cityjson-draft';
 import {assertNoNativeCandidates} from '../packages/server/src/modules/registry/registry';
 import {validationSummary,CITYJSON_VALIDATION_REPORT_NAMES} from '../packages/server/src/modules/registry/cityjson-validation-processor';
 import {cityjsonValidationFailureCode} from '../packages/server/src/modules/registry/cityjson-validation-worker';
 import {cityjsonValidationConfig} from '../packages/server/src/modules/registry/cityjson-validation-config';
 import {enqueueCityJSONValidationTx,validationSelections,assertCityJSONValidationAuthority,assertCityJSONValidationJob,
-  encodeCityJSONValidationResult,cityjsonValidationReportKey} from '../packages/server/src/modules/registry/cityjson-validation';
+  encodeCityJSONValidationResult,cityjsonValidationReportKey,readCityJSONValidationStatus} from '../packages/server/src/modules/registry/cityjson-validation';
 
 // In-memory technical identities only; unchanged source and previously accepted parser evidence.
 // No database, validator, new operational row or runtime acceptance is produced here.
@@ -163,3 +163,35 @@ test('configuration fails closed without server pins and reads actual local tool
     const rel=relative(realpathSync(tmpdir()),realpathSync(scratch));assert.ok(rel&&!rel.startsWith('..')&&!isAbsolute(rel));rmSync(scratch,{recursive:true});
   }
 });
+
+test('canonical cancellation reaches actual current-authority status; stored error text is allowlisted',()=>attributed(async()=>{
+  const f=fixture(),digest=fingerprint(f.input),source=f.input.candidate.input,globals=globalThis as any,prior=globals.ulpinPool;
+  const job:any={id:f.input.jobId,operation:'cityjson-validation',case_id:source.caseId,source_id:source.sourceId,
+    case_revision:source.caseRevision,payload:f.input,input_fingerprint:digest,status:'queued',error:null};
+  const meta={logical_state:'queued',version:1,input_sha256:digest,result_ref:null,accepted_fence:null},attempt={state:'active'};
+  const client={release(){},query:async(sql:string)=>{
+    if(['BEGIN','COMMIT','ROLLBACK'].includes(sql))return {rows:[]};
+    if(sql.startsWith('SELECT id FROM jobs'))return {rows:[{id:job.id}]};
+    if(sql.startsWith('SELECT * FROM usp_job_metadata'))return {rows:[meta]};
+    if(sql.startsWith('UPDATE usp_job_attempts')){attempt.state='fenced';return {rows:[]};}
+    if(sql.startsWith('UPDATE usp_job_metadata')){meta.logical_state='cancelled';meta.version++;return {rows:[]};}
+    if(sql.startsWith('UPDATE jobs')){job.status='failed';job.error='Cancelled by local operator';return {rows:[]};}
+    if(sql.startsWith('INSERT INTO usp_outbox'))return {rows:[]};
+    if(sql.startsWith('UPDATE usp_outbox_streams'))return {rows:[{sequence:'1'}]};
+    if(sql.startsWith('SELECT j.*'))return {rows:[structuredClone({...job,...meta})]};
+    throw new Error('Unexpected technical SQL: '+sql);
+  }};
+  let checks=0;const authority:any=async()=>{checks++;return structuredClone(f.current);};
+  globals.ulpinPool={connect:async()=>client};
+  try{
+    await cancelUspJob(job.id,1);assert.equal(attempt.state,'fenced');assert.equal(job.error,'Cancelled by local operator');
+    const status=await readCityJSONValidationStatus(f.input.draftId,job.id,authority);
+    assert.equal(status.status,'failed');assert.equal(status.code,'CITYJSON_VALIDATION_CANCELLED');assert.equal(checks,2);
+    assert.equal(JSON.stringify(status).includes('Cancelled by local operator'),false);
+    meta.logical_state='failed';job.error='CITYJSON_VALIDATION_INTERNAL_SECRET';
+    assert.equal((await readCityJSONValidationStatus(f.input.draftId,job.id,authority)).code,'CITYJSON_VALIDATION_TOOL_FAILURE');
+    job.error='private command path C:/secret';
+    assert.equal((await readCityJSONValidationStatus(f.input.draftId,job.id,authority)).code,'CITYJSON_VALIDATION_TOOL_FAILURE');
+    await assert.rejects(()=>readCityJSONValidationStatus(f.input.draftId,job.id,async()=>{throw new AppError(403,'DENIED','technical revoked');}),rejected(403));
+  }finally{if(prior===undefined)delete globals.ulpinPool;else globals.ulpinPool=prior;}
+}));

@@ -39,7 +39,7 @@ export function cityjsonValidationConfig(){
       'packages/server/src/modules/registry/cityjson-draft.ts',
       ...['config','processor','worker'].map(v=>`packages/server/src/modules/registry/cityjson-validation-${v}.ts`),
       'packages/server/src/modules/registry/cityjson-validation.ts',
-      'packages/server/src/modules/usp/jobs.ts','packages/server/src/infrastructure/storage.ts'];
+      'packages/server/src/modules/usp/jobs.ts','packages/server/src/infrastructure/storage.ts','packages/server/src/infrastructure/db.ts'];
     const pins=CityJSONValidatorPinsSchema.parse({platform:lock.platform,pythonSha256,
       adapterSha256:sha256(bytes(adapter,1024*1024)),supervisorSha256:sha256(bytes(supervisor,1024*1024)),
       toolLockSha256:sha256(lockBytes),tools,codeSha256:fingerprint(codeFiles.map(file=>({file,sha256:sha256(bytes(join(repo,file),1024*1024))}))),
