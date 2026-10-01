@@ -227,6 +227,7 @@ export * from './document-association';
 export * from './registry-document-evidence';
 export * from './registry-cityjson-draft';
 export * from './registry-cityjson-validation';
+export * from './registry-cityjson-admission';
 export * from './area';
 
 export * from "./spatial";

@@ -1,0 +1,114 @@
+import {z} from 'zod';
+import {CITYJSON_ADMISSION_VERSION,CITYJSON_ADMISSION_MAX_BYTES,RegistryCityJSONAdmissionRequestSchema,
+  RegistryCityJSONAdmissionAssessmentSchema,RegistryCityJSONValidationStatusSchema} from '@ulpin/contracts';
+import {transaction} from '../../infrastructure/db';
+import {AppError,conflict,notFound} from '../../infrastructure/errors';
+import {fingerprint} from '../cases/domain';
+import {registryCityJSONAuthorityTx,readRegistryCityJSONDraftTx} from './cityjson-draft';
+import {cityjsonValidationStatusTx,readCityJSONValidationStatus,assertCityJSONValidationAuthority,validationSelections} from './cityjson-validation';
+
+type Authority=Awaited<ReturnType<typeof registryCityJSONAuthorityTx>>;
+type Validation=Awaited<ReturnType<typeof cityjsonValidationStatusTx>>;
+type Dependencies={transaction:typeof transaction;authority:typeof registryCityJSONAuthorityTx;
+  validation:typeof cityjsonValidationStatusTx;native:typeof readRegistryCityJSONDraftTx;status:typeof readCityJSONValidationStatus};
+const defaults:Dependencies={transaction,authority:registryCityJSONAuthorityTx,validation:cityjsonValidationStatusTx,
+  native:readRegistryCityJSONDraftTx,status:readCityJSONValidationStatus};
+const uuid=z.uuid().transform(v=>v.toLowerCase());
+// Deliberately omit lease/timestamps: only the exact identity, state and accepted
+// evidence are relevant to this aggregate; a benign heartbeat need not invalidate it.
+function authorityPin(current:Authority,row:Validation){
+  return fingerprint({site:current.site,draft:current.draft,record:current.record,candidate:current.candidate,input:row.input,
+    jobId:row.job.id,status:row.job.status,error:row.job.error,logicalState:row.job.logical_state,
+    inputSha256:row.job.input_sha256,resultRef:row.job.result_ref,acceptedFence:row.job.accepted_fence,
+    attemptState:row.job.attempt_state,attemptFence:row.job.attempt_fence,completionSha256:row.job.completion_sha256});
+}
+function matched(current:Authority,row:Validation,jobId:string){
+  assertCityJSONValidationAuthority(row.input,current);
+  if(row.input.jobId!==jobId||row.job.id!==jobId||fingerprint(row.input.selections)!==fingerprint(validationSelections(current.candidate)))
+    conflict('Select the validation of this exact current native geometry.');
+}
+/** No writes: resolve accepted authorities, perform their private object reads,
+ * then repeat the entire aggregate authority before returning a public projection. */
+export async function assessCityJSONAdmission(draftValue:string,raw:unknown,dependencies:Dependencies=defaults){
+  try{return await currentAssessment(draftValue,raw,dependencies);}
+  catch(error){
+    // Missing, unrelated and inaccessible supplied evidence have the same private
+    // response. Current authorized evidence that changed still returns conflict.
+    if(error instanceof AppError&&(error.status===403||error.status===404))
+      throw new AppError(404,'CITYJSON_ADMISSION_UNAVAILABLE','The requested native admission evidence is unavailable.');
+    throw error;
+  }
+}
+async function currentAssessment(draftValue:string,raw:unknown,dependencies:Dependencies){
+  const draftId=uuid.parse(draftValue),request=RegistryCityJSONAdmissionRequestSchema.parse(raw);
+  const resolve=()=>dependencies.transaction(async client=>{
+    const current=await dependencies.authority(client,draftId);
+    if(current.draft.revision!==request.expectedDraftRevision)conflict('Pin the current native draft revision.');
+    // Scope the supplied ID before resolving its private payload or result.
+    if(!(await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='cityjson-validation' AND payload->>'draftId'=$2",
+      [request.validationJobId,draftId])).rowCount)notFound();
+    // Reuse the same resolved authority on this client; its source gate precedes job locks.
+    const row=await dependencies.validation(client,draftId,request.validationJobId,async()=>current);
+    matched(current,row,request.validationJobId);return {current,row};
+  });
+  const before=await resolve();
+  const native=await dependencies.transaction(client=>dependencies.native(client,draftId));
+  if(native.draftId!==draftId||native.draftRevision!==before.current.draft.revision||native.recordId!==before.current.record.id||
+    fingerprint(native.candidate)!==fingerprint(before.current.candidate))conflict('Native evidence changed during the assessment.');
+  const status=RegistryCityJSONValidationStatusSchema.parse(await dependencies.status(draftId,request.validationJobId));
+  if(status.jobId!==request.validationJobId||status.draftId!==draftId||status.draftRevision!==request.expectedDraftRevision)
+    conflict('Validation evidence belongs to another draft or revision.');
+  const expected=before.row.job.logical_state==='cancelled'?'failed':before.row.job.status==='succeeded'?'completed':before.row.job.status;
+  if(status.status!==expected||status.result?.resultSha256!==(before.row.job.result_ref?.sha256??undefined)||
+    (status.result&&fingerprint(status.result.summary.validator)!==fingerprint(before.row.input.validator))||
+    (status.result&&fingerprint(status.result.summary.sourceLocators)!==fingerprint(before.row.input.selections)))
+    conflict('Validation result changed during the assessment.');
+  const after=await resolve();
+  if(authorityPin(before.current,before.row)!==authorityPin(after.current,after.row))
+    conflict('Admission evidence changed during private object I/O; refresh the assessment.');
+  const {current,row}=after,{candidate}=current,s=candidate.input;
+  const geometry=z.object({type:z.enum(['Solid','MultiSurface']),lod:z.union([z.string().max(64),z.number().finite()]).nullable().optional()}).parse(native.native.geometry);
+  const lod=Object.hasOwn(geometry,'lod')?geometry.lod===null?{state:'null' as const}:{state:'known' as const,value:geometry.lod!}:{state:'absent' as const};
+  const structural=status.status==='queued'||status.status==='running'?'pending':status.status==='stale'?'stale':status.status==='failed'?'failed':
+    status.result?.summary.outcome==='valid'&&status.result.summary.documentSchema==='valid'&&status.result.summary.selectedGeometry==='valid'?'passed':
+    status.result?.summary.outcome==='invalid'?'invalid':'unsupported';
+  const missing:{requirement:string;reason:string;state:'needs_input'|'needs_validation'|'producer_unavailable'}[]=[];
+  if(structural!=='passed')missing.push({requirement:'accepted_structural_validation',state:'needs_validation',reason:
+    `The selected validation is ${structural}; admission needs accepted full-document and selected-geometry validity on these exact pins.`});
+  if(geometry.type!=='Solid')missing.push({requirement:'solid_exterior_profile',state:'needs_input',reason:
+    'A valid MultiSurface is surface evidence; this selection does not supply a Solid exterior for solid admission.'});
+  missing.push({requirement:'reviewed_reference_evidence',state:'needs_input',reason:
+    'Bind applicable independent reference/control evidence with exact source identity, geometry, date and horizontal/vertical reference; none is bound by this native profile.'},
+  {requirement:'reference_accuracy_check',state:'producer_unavailable',reason:
+    'Reference accuracy needs reviewed control comparisons, documented tolerances and any required transform for this selection. The native reference-check path is unavailable; a declared CRS and encoded scale/translate do not establish accuracy.'},
+  {requirement:'native_admission_review',state:'producer_unavailable',reason:
+    'A native admission review must accept this exact candidate, structural validation and reference evidence; generic draft review excludes native exterior candidates.'},
+  {requirement:'post_write_qualification',state:'producer_unavailable',reason:
+    'Recording must qualify the resulting canonical geometry revision using accepted source, validity, reference and admission-review evidence. This recording and qualification path is unavailable.'});
+  const requirements=['current_source_native_evidence','accepted_structural_validation','solid_exterior_profile',
+    'reviewed_reference_evidence','reference_accuracy_check','native_admission_review','post_write_qualification'];
+  const value={version:CITYJSON_ADMISSION_VERSION,
+    draft:{id:draftId,draftRevision:current.draft.revision,siteId:current.site.id,siteRevision:current.site.revision,recordId:current.record.id,
+      recordRevision:0 as const,state:candidate.state,candidateSha256:fingerprint(candidate),footprintSha256:row.input.footprintSha256},
+    source:{caseId:s.caseId,caseRevision:s.caseRevision,caseContextSha256:s.caseContextSha256,id:s.sourceId,familyId:s.sourceFamilyId,
+      revision:s.sourceRevision,sha256:s.sourceSha256,bytes:s.sourceBytes,readerSha256:s.readerSha256},
+    native:{jobId:s.jobId,resultSha256:candidate.resultSha256,acceptedFence:candidate.acceptedFence,artifactSha256:candidate.artifact.sha256,
+      artifactBytes:candidate.artifact.bytes,selection:candidate.selection,geometry:{type:geometry.type,lod}},
+    reference:{declaration:candidate.reference,siteFrameSha256:candidate.site.frameSha256,horizontalUnit:current.site.frame.horizontalUnit,verticalUnit:current.site.frame.verticalUnit,qualifiedFrame:null,
+      qualifiedTransform:null,referenceEvidence:'not_bound',accuracy:'not_assessed',accuracyMetres:null,globalPlacement:'not_assessed'},
+    validation:{inputSha256:row.job.input_sha256,acceptedFence:row.job.accepted_fence===null?null:Number(row.job.accepted_fence),validator:row.input.validator,status},
+    findings:{sourceIntegrity:{state:'current_authority',nativeArtifact:'verified',originalBytes:'not_reverified'},structuralValidity:structural,
+      referenceAccuracy:'not_assessed',admission:'unavailable',qualification:'not_assessed'},
+    sufficiency:{task:'native-exterior-admission',requirements,missing:missing.map(v=>v.requirement),outcome:'partial'},missing,
+    actions:[{kind:'inspect_original',method:'GET',path:`/api/v1/ingestion/cases/${s.caseId}/sources/${s.sourceId}/cityjson/original`},
+      {kind:'inspect_native',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior`},
+      {kind:'inspect_validation',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior/validations/${request.validationJobId}`},
+      {kind:'request_validation',method:'POST',path:`/api/v1/registry-drafts/${draftId}/native-exterior/validations`}],
+    capabilities:{inspect:true,requestValidation:'requires_configured_validator',bindReferenceEvidence:false,reviewAdmission:false,recordNativeExterior:false,
+      qualifyGeometry:false,analyticalGeometry:false,exportQualifiedGeometry:false}};
+  // Application evidence fingerprint, never the SQL post-write qualification hash or a recording capability.
+  const assessment=RegistryCityJSONAdmissionAssessmentSchema.parse({...value,assessmentSha256:fingerprint(value)});
+  if(Buffer.byteLength(JSON.stringify(assessment))>CITYJSON_ADMISSION_MAX_BYTES)
+    throw new AppError(413,'CITYJSON_ADMISSION_LIMIT','The admission evidence exceeds its bounded private profile.');
+  return assessment;
+}
