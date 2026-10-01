@@ -158,6 +158,38 @@ class NativeGltfTest(unittest.TestCase):
                 reader.write_inspection(result, io.BytesIO())
         self.assertEqual(caught.exception.code, "OUTPUT_LIMIT")
 
+    def test_reserved_unsigned_indices(self):
+        source = os.environ.get("GLTF_TEST_RESERVED_INDEX_SOURCE")
+        if not source:
+            self.skipTest("Retained reviewer reserved-index input is required.")
+        raw = Path(source).read_bytes()
+        self.assertEqual(hashlib.sha256(raw).hexdigest(),
+                         "cea62fcd4c8a06037c7080f9dde3769a18132493361ee89e6c5766b359903bc7")
+        self.error("RESERVED_INDEX", raw)
+        json_raw, binary, _, _ = reader._container(raw)
+        document, binary = json.loads(json_raw), bytes(binary[0])
+        index_accessor = document["meshes"][0]["primitives"][0]["indices"]
+        index_view = document["accessors"][index_accessor]["bufferView"]
+        for component, fmt, reserved in ((5121, "B", 255), (5123, "H", 65535), (5125, "I", 4294967295)):
+            with self.subTest(componentType=component):
+                mutated = copy.deepcopy(document)
+                payload = struct.pack("<" + fmt * 3, 0, 1, reserved)
+                mutated["accessors"][index_accessor].update(componentType=component, byteOffset=0, max=[reserved])
+                mutated["bufferViews"][index_view].update(byteOffset=len(binary), byteLength=len(payload))
+                mutated["buffers"][0]["byteLength"] = len(binary) + len(payload)
+                self.error("RESERVED_INDEX", glb(mutated, binary + payload))
+        # Adjacent unsigned-byte value is valid with the retained 256 positions.
+        mutated = copy.deepcopy(document)
+        mutated["bufferViews"][index_view].update(byteOffset=len(binary), byteLength=3)
+        mutated["buffers"][0]["byteLength"] = len(binary) + 3
+        accepted = reader.inspect_gltf(glb(mutated, binary + bytes([0, 1, 254])))
+        self.assertEqual(accepted["primitives"][0]["status"], "available_local_projection")
+        # Non-reserved ordinary out-of-range indices must still fail.
+        mutated["accessors"][index_accessor].update(componentType=5123, byteOffset=0, max=[256])
+        mutated["bufferViews"][index_view]["byteLength"] = 6
+        mutated["buffers"][0]["byteLength"] = len(binary) + 6
+        self.error("INDEX_RANGE", glb(mutated, binary + struct.pack("<HHH", 0, 1, 256)))
+
     @unittest.skipUnless(sys.platform == "win32", "Windows Job profile only")
     def test_supervision_timeout_memory_process_and_gate(self):
         def run(code, **kwargs):

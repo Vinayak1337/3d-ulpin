@@ -331,6 +331,10 @@ def _accessor(index, role, accessors, views, buffers, budget):
         if item % 1024 == 0:
             budget.check()
         value = codec.unpack_from(data, start + item * stride)
+        # glTF reserves each unsigned component's maximum for primitive
+        # restart; it is forbidden even when below the POSITION count.
+        if role == "indices" and value[0] == (1 << (8 * component_bytes)) - 1:
+            _fail("RESERVED_INDEX", pointer, "Index uses the component type's reserved maximum.")
         if any(isinstance(v, float) and not math.isfinite(v) for v in value):
             _fail("NONFINITE_BUFFER", pointer, "Accessor contains nonfinite floating-point data.")
         values.append(list(value) if components > 1 else value[0])
