@@ -85,3 +85,28 @@ Add one operation-manifest entry:
 ```
 
 Then republish OpenAPI and the generated API/client/catalogue through the lead-owned pipeline. The new controller metadata check remains usable before registration. Existing single-document preview, recorded-target citations and consumer compatibility are untouched. This candidate does not advance runtime, learning, scale, release or deployment gates.
+
+## Literal-preservation correction — 2 October
+
+Code correction `3f2cb3e71dc65c12672c500a099ca949a1d2c840` continues the preserved candidate `9ea4e9e6152726c9752262d02c16201612f9ae06`. The [independent review](desktop-backend-review/source-fusion-review.md), original commit `1b11fe8b5a2547f7cb35437f86e88b95a7334d2c`, established one P2: locked Zod's JSON record parser dropped own `__proto__` properties after the fingerprint was computed. Read-only lead dispatch head was `d7b1de4ae3e06c40f6157a87f8ff9bc492ee48a3`; this correction stays on the assigned branch for lead integration.
+
+Fusion's dynamic declarations, frame and hierarchy-issue values now use a local literal JSON validator that inspects own data descriptors without rebuilding records or assigning dynamic keys. Nested legal own keys, including `__proto__` and `constructor`, survive with their ordinary object prototypes intact. Nonfinite/non-JSON values, accessors, non-JSON array properties, excessive depth and excessive value counts are rejected. No shared parser/fingerprint/authority/dependency changes were made. OpenAPI describes JSON scalar/array/object alternatives and dynamic own object properties. The response is validated first, measured against the existing response allowance including its hash field, then fingerprinted over that exact validated returned body.
+
+One added focused regression covers nested own-key retention in attributes, frame, metadata and hierarchy issues; no prototype mutation; JSON wire/schema roundtrip; returned-body fingerprint equality; and rejection of accessors, nonfinite/undefined values and excessive depth. Only the affected existing read/response-bound control was rerun, alongside the existing no-listener controller conversion and backend typecheck. Completed authority/lock review and native/source campaigns were reused.
+
+New proof files stay under `E:/BhuAayam-data/task-data/desktop-source-fusion/literal-correction/`; historical owner and reviewer receipts/files are unchanged. The actual fusion bounded-result adapters reuse the reviewer's saved 191-byte original and 1,251-byte native technical control, without rerunning Python. Corrected returned attributes match the review's pre-loss declaration exactly, and the returned body recomputes to the review's intended `6b88dc85c380eb59aa3d8ae2b54a17b0d84d1c1774baec20b7cc5ff6c5d551ca`. This remains an isolated synthetic technical control, with no operational job/source, authority transaction or training label.
+
+The changed native declaration projection was also checked against the unchanged saved D1 artifact/result metadata, reusing the saved document projections. Ordinary context remains **16,875 bytes / SHA-256 `92bfe44612eecbfdb000bc8b3cd7e6a8b25a56d023827967b7be2613c968e8b0`**, with unchanged context fingerprint `5e84138f7202679ee38fb15bdd3069f4e3a06c50b4a0c21eb62c6d551925724d`. Input hashes remained unchanged. The correction proof receipt is **4,011 bytes / SHA-256 `7b11f16654e19fe813f2b221729f38749658b8b1e4ff961da7dc4b31f4d3eac0`**; its completion receipt additionally pins the correction code/Git bytes, handoff, scripts, outputs and observed checks.
+
+Fresh relevant checks, all final exit **0**:
+
+- `pnpm exec tsx --test --test-name-pattern='literal own JSON keys' tests/source-fusion.test.ts` — one new regression.
+- `pnpm exec tsx --test --test-name-pattern='read allocation' tests/source-fusion.test.ts` — one affected bounds control.
+- `pnpm typecheck:backend` — server and API; the running command completed with exit 0.
+- `pnpm exec tsx --tsconfig apps/api/tsconfig.json --test apps/api/src/modules/evidence/source-fusion.controller.test.ts` — existing no-listener provider/guard/route/OpenAPI check.
+- `pnpm exec tsx E:/BhuAayam-data/task-data/desktop-source-fusion/literal-correction/literal-proof.mts` — reviewer control reuse, unchanged ordinary projection and explicit literal-schema conversion.
+- `git diff --check` and `git diff --cached --check` — correction code/handoff.
+
+Three initial private proof invocations exited 1 because its import path and schema lookup were wrong (missing root Zod link, then `anyOf` lookup against the discriminator's `oneOf`). Their logs are retained separately; the harness now uses the installed locked Zod path and correct discriminator shape. These were proof-harness errors, with no production/runtime/source mutation; the final proof passes.
+
+Actual supplied permissions remain never/danger-full-access. This continuation requested Sol6.1/high/default-standard; exact actual model/effort/per-turn tier remains unexposed. Only fusion contract/projection/test/handoff changed; no owned process remains. Registration stays lead-owned and the candidate awaits narrow review closure. Current DB/access/concurrency/HTTP, model/learning, geometry/rights and release qualifications remain unchanged and unrun.
