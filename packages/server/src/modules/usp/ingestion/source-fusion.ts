@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import type {RequestContext} from '@ulpin/contracts/usp';
 import {SOURCE_FUSION_VERSION,SOURCE_FUSION_LIMITS,SourceFusionRequestSchema,SourceFusionContextSchema,
+  SourceFusionLiteralJsonSchema,SourceFusionLiteralObjectSchema,
   type SourceFusionContext,type SourceFusionSelection} from '../../../../../contracts/src/source-fusion';
 import {AppError} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
@@ -26,10 +27,10 @@ function pointer(root:unknown,path:string):any{
   return value;
 }
 const nativeSchema=z.object({schemaVersion:z.literal('source-native-cityjson/1'),sourceSha256:z.string(),sourceBytes:z.number(),
-  sourceDocument:z.unknown(),frame:z.record(z.string(),z.json()),transformPointer:z.string().nullable(),
+  sourceDocument:z.unknown(),frame:SourceFusionLiteralObjectSchema,transformPointer:z.string().nullable(),
   objects:z.array(z.object({id:z.string(),pointer:z.string(),type:z.string(),geometryState:z.enum(['present','absent']),geometries:z.array(z.object({
     pointer:z.string(),type:z.string(),status:z.string()})).max(1000)})).max(1000),
-  hierarchyIssues:z.array(z.json()).max(1000)});
+  hierarchyIssues:z.array(SourceFusionLiteralJsonSchema).max(1000)});
 
 /** Pure projection of already read/verified selections; never a matching result. */
 export function fusionSourceProjection(selection:SourceFusionSelection,loaded:Loaded):SourceFusionContext['sources'][number]{
@@ -86,10 +87,15 @@ export function fusionContextProjection(sources:SourceFusionContext['sources']):
       crossSourceFrameAlignment:'not_assessed' as const,conflicts:'literal_values_retained_per_source; not_reconciled' as const},
     capabilities:{contextAssembly:'available' as const,matching:'not_assessed' as const,recordedBuildingRequired:false as const,
       geometryQualification:'not_assessed' as const,rights:'not_assessed' as const}};
-  // Serialization allowance includes the controller's USP metadata envelope.
-  if(Buffer.byteLength(JSON.stringify(body))>SOURCE_FUSION_LIMITS.responseBytes-8192)
+  const validated=SourceFusionContextSchema.parse({...body,contextSha256:'0'.repeat(64)});
+  // Validate JSON before serialization; malformed in-process declarations must
+  // not execute accessors/toJSON. The actual response includes its hash field.
+  if(Buffer.byteLength(JSON.stringify(validated))>SOURCE_FUSION_LIMITS.responseBytes-8192)
     throw new AppError(413,'SOURCE_FUSION_RESPONSE_LIMIT','Select fewer or smaller evidence fragments.');
-  return SourceFusionContextSchema.parse({...body,contextSha256:fingerprint(body)});
+  const {contextSha256:_,...returnedBody}=validated;
+  // Hash exactly what will be returned, after literal-preserving validation.
+  validated.contextSha256=fingerprint(returnedBody);
+  return validated;
 }
 
 export async function assembleSourceFusion(ctx:RequestContext,raw:unknown,deps:SourceFusionDependencies=defaults){

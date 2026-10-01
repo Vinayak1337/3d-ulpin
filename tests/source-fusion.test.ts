@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {Readable} from 'node:stream';
-import {SourceFusionRequestSchema,SOURCE_FUSION_LIMITS,type SourceFusionSelection} from '../packages/contracts/src/source-fusion';
+import {SourceFusionRequestSchema,SourceFusionContextSchema,SourceFusionLiteralJsonSchema,SOURCE_FUSION_LIMITS,type SourceFusionSelection} from '../packages/contracts/src/source-fusion';
 import {DocumentPartSchema,DocumentResultSchema,type DocumentInput} from '../packages/contracts/src/usp/document-ingestion';
 import {CityJSONResultSchema,type CityJSONInput} from '../packages/contracts/src/usp/cityjson-ingestion';
 import type {RequestContext} from '../packages/contracts/src/usp/common';
@@ -105,6 +105,33 @@ test('multiple documents retain native-needs-OCR separately; unknown selected pa
   await assert.rejects(()=>assembleSourceFusion(ctx,{sources:[{...a.selection,partIds:[uuid(9999)]},b.selection]},deps),
     (e:any)=>e.status===422&&e.code==='SOURCE_FUSION_UNAVAILABLE'&&!e.message.includes(a.selection.pin.sourceId));
 }));
+
+test('literal own JSON keys survive nested declarations safely and the returned validated body reproduces its hash',()=>{
+  const a=document(1),b=city(2);
+  const attributes=JSON.parse('{"__proto__":{"literal":"retained","__proto__":null},"constructor":{"prototype":{"literal":"inert"}},"nested":[{"__proto__":{"literal":"nested"}}]}');
+  const object=b.loaded.native.sourceDocument.CityObjects['Building/~unit'];object.attributes=attributes;
+  Object.defineProperty(b.loaded.native.frame,'__proto__',{value:{literal:'frame'},enumerable:true});
+  Object.defineProperty(b.loaded.native.sourceDocument.metadata,'__proto__',{value:{literal:'metadata'},enumerable:true});
+  b.loaded.native.hierarchyIssues.push(JSON.parse('{"code":"technical-control","__proto__":{"literal":"issue"}}'));
+  const context=fusionContextProjection([fusionSourceProjection(a.selection,a.loaded),fusionSourceProjection(b.selection,b.loaded)]);
+  const source=context.sources[1];assert(source.kind==='cityjson');assert.equal(source.objects[0].attributes.state,'declared');
+  const returned=source.objects[0].attributes.value as any;
+  assert(Object.hasOwn(returned,'__proto__'));assert.deepEqual(returned,attributes);
+  assert(Object.hasOwn(returned.__proto__,'__proto__'));assert.equal(returned.__proto__.__proto__,null);
+  assert(Object.hasOwn(returned.nested[0],'__proto__'));assert.equal(Object.getPrototypeOf(returned),Object.prototype);
+  assert(Object.hasOwn(source.reference.frame,'__proto__'));
+  assert(source.reference.metadata.state==='declared'&&Object.hasOwn(source.reference.metadata.value as object,'__proto__'));
+  assert(Object.hasOwn(source.hierarchyIssues.at(-1) as object,'__proto__'));
+  assert.equal(Object.hasOwn(Object.prototype,'literal'),false);assert.equal(Object.hasOwn(Array.prototype,'literal'),false);
+  const {contextSha256,...body}=context;assert.equal(contextSha256,fingerprint(body));
+  const wire=JSON.parse(JSON.stringify(context));assert.deepEqual(wire,context);
+  assert.deepEqual(SourceFusionContextSchema.parse(wire),context);
+  let getterCalls=0;const accessor={get value(){getterCalls++;return 'never called';}};
+  assert(!SourceFusionLiteralJsonSchema.safeParse(accessor).success);assert.equal(getterCalls,0);
+  assert(!SourceFusionLiteralJsonSchema.safeParse({value:Infinity}).success);
+  assert(!SourceFusionLiteralJsonSchema.safeParse({value:undefined}).success);
+  let deep:any={};for(let i=0;i<64;i++)deep={nested:deep};assert(!SourceFusionLiteralJsonSchema.safeParse(deep).success);
+});
 
 test('aggregate authority holds ordered canonical locks and rejects same-revision source/hash drift',async()=>local(async ctx=>{
   const rows=[document(1),document(2)],queries:string[]=[],gates:string[]=[];let changed=false,transactions=0;
