@@ -1,0 +1,251 @@
+{
+  "schemaVersion": "cityjson-reference-runtime/1",
+  "servedCodeCommit": "d00f205dd8d371131ab44c994fe6990218c8d34c",
+  "acceptedLeadCommit": "0f9ca4eb46e3e8c407cf40dd9f5c5ef5a8c573fd",
+  "originalReceipt": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-cityjson-reference-runtime\\verification.json",
+    "bytes": 82322,
+    "sha256": "64580af242c505b1bf04b2df02ea4fc72dd18fe34bcb28570494d7cf75c8e78f"
+  },
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "outcome": "passed_at_bounded_scope",
+  "sourceManifests": [
+    "fixtures/usp/D1/single-roof/manifest.json",
+    "docs/evidence/usp/reference-document-enrollment/manifest.json"
+  ],
+  "journey": {
+    "draftId": "bacc6fee-3156-438b-9720-8e7a531f9a47",
+    "initialRevision": 1,
+    "finalRevision": 5,
+    "retainedParts": 5,
+    "finalPrivateReadBytes": 12964,
+    "xmlParts": 3,
+    "htmlParts": 2,
+    "associationState": "operator_selected",
+    "applicability": "not_assessed",
+    "accuracy": "not_assessed",
+    "nativeSelectionFootprintFrameUnchanged": true,
+    "observations": [
+      {
+        "name": "historic-validation",
+        "status": 409,
+        "bytes": 153,
+        "responseSha256": "985c338eb98091ada5dfa894ed6621735011e6e66f3eda4ee44737053a494bca",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 122,
+        "errorCode": "STALE_REVISION",
+        "draftRevision": null
+      },
+      {
+        "name": "attach-xml",
+        "status": 200,
+        "bytes": 266,
+        "responseSha256": "540855955f913a81f9e060a851dbfcb742d95cb478f8b83b06c3678ec176bae5",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 84,
+        "errorCode": null,
+        "draftRevision": 2
+      },
+      {
+        "name": "replay-xml",
+        "status": 200,
+        "bytes": 266,
+        "responseSha256": "540855955f913a81f9e060a851dbfcb742d95cb478f8b83b06c3678ec176bae5",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 47,
+        "errorCode": null,
+        "draftRevision": 2
+      },
+      {
+        "name": "attach-html",
+        "status": 200,
+        "bytes": 266,
+        "responseSha256": "4dc4e6cd6f74f0b0f0acdc36aa24d76024e9708830e42e654cd64698e3626e6c",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 97,
+        "errorCode": null,
+        "draftRevision": 3
+      },
+      {
+        "name": "read-five",
+        "status": 200,
+        "bytes": 12964,
+        "responseSha256": "8517e6000e1498efa77f37824693675e6eba6feeb7778d27956e5836ed9818ef",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 101,
+        "errorCode": null,
+        "draftRevision": 3
+      },
+      {
+        "name": "stale",
+        "status": 409,
+        "bytes": 167,
+        "responseSha256": "26faecb234859c2eeb786862e7016962a6cc9d6344bf2f809f78bdd20f04c225",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 42,
+        "errorCode": "STALE_REVISION",
+        "draftRevision": null
+      },
+      {
+        "name": "redacted",
+        "status": 422,
+        "bytes": 177,
+        "responseSha256": "d294c11dc66719f16fed84c4c72910cf65b3851e08bdc237ce4a7c597ec69229",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 41,
+        "errorCode": "REGISTRY_DOCUMENT_PART_SELECTION",
+        "draftRevision": null
+      },
+      {
+        "name": "remove-html",
+        "status": 200,
+        "bytes": 266,
+        "responseSha256": "bd2976deb04beca44a35effa482a0161a99bf8d06fa9b3add166748f5ce11c2f",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 49,
+        "errorCode": null,
+        "draftRevision": 4
+      },
+      {
+        "name": "read-xml",
+        "status": 200,
+        "bytes": 8288,
+        "responseSha256": "b907a6ee095d53f33e80886a8cd1166efbbca1321ee685fca022265a73d3c385",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 41,
+        "errorCode": null,
+        "draftRevision": 4
+      },
+      {
+        "name": "restore-html",
+        "status": 200,
+        "bytes": 266,
+        "responseSha256": "72af0e786b6aa0291fde92e5a70b42f182c309ac8b5521e07e3b98178e26ebec",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 75,
+        "errorCode": null,
+        "draftRevision": 5
+      },
+      {
+        "name": "read-restored-five",
+        "status": 200,
+        "bytes": 12964,
+        "responseSha256": "a1ca7172e3cb3f30c059484c8ceb1c14917c781328cb09979b7ea21b6ac52124",
+        "cacheControl": "private, no-store",
+        "elapsedMs": 93,
+        "errorCode": null,
+        "draftRevision": 5
+      },
+      {
+        "name": "public-draft",
+        "status": 200,
+        "bytes": 535,
+        "responseSha256": "a51339e39a88eca1605dafcc6f0ad8e4bf616bdc09a868452de1f3fa90026138",
+        "cacheControl": "no-store",
+        "elapsedMs": 4,
+        "errorCode": null,
+        "draftRevision": 5
+      }
+    ],
+    "allHttpObservations": 12,
+    "originalXmlReceiptReplayByteIdentical": true,
+    "finalReferencePinsSha256": "aeb200467a568960b9b86ba63f48bb4a4907c93652f2fe1e72454cf8fa91f29a"
+  },
+  "validatorFreshness": {
+    "beforeDraftRevision": 1,
+    "jobId": "8dfb4724-b4e8-4c11-a910-492303ae6df6",
+    "changedConstituents": [
+      "packages/server/src/modules/registry/cityjson-draft.ts"
+    ],
+    "responseStatus": 409,
+    "responseCode": "STALE_REVISION",
+    "responseMessage": "Validator configuration changed; result is historical.",
+    "savedPinsChanged": false,
+    "validatorsInvoked": false,
+    "laterDraftRevisionStaleAlso": true
+  },
+  "validatorProducerPins": {
+    "savedCodeSha256": "262ec0e47a56e3130b2a7a552ef2132cecd4e3bb70f19e74abae685104bc858d",
+    "currentCodeSha256": "f8669961bd8de0a3fcef0e6cdb8a10bd3351d94fbb15ba4550a1177463f319f5"
+  },
+  "gateObservation": {
+    "at": "2026-10-01T13:06:05.321Z",
+    "cases": [
+      "18d2aba5-35aa-4db1-9432-d6552d3bdcfb",
+      "88ca2024-d901-4ae4-84cb-a05cac578b2a",
+      "92e28360-9276-4f2b-b433-83bcaf3107ea",
+      "b45d7625-9d99-41a9-8cde-e366fa933378"
+    ],
+    "events": [
+      {
+        "phase": "holder_gates_and_existing_rows",
+        "at": "2026-10-01T13:06:05.150Z"
+      },
+      {
+        "phase": "holder_release",
+        "elapsedMs": 163
+      },
+      {
+        "phase": "waiter_gates_acquired",
+        "elapsedMs": 165
+      },
+      {
+        "phase": "waiter_existing_rows_acquired",
+        "elapsedMs": 169
+      }
+    ],
+    "finiteStatementMs": 2500,
+    "finiteLockMs": 2200,
+    "rollbackOnly": true,
+    "fullRecordedCitationCommit": false,
+    "scope": "Existing sorted reference/workspace gates and existing site/draft/case rows. Waiter blocks at common advisory gate before destination/source row phase, then completes after release."
+  },
+  "preservation": {
+    "beforeGlobalCounts": {
+      "cases": 39,
+      "sources": 36,
+      "jobs": 73,
+      "metadata": 73,
+      "attempts": 73,
+      "events": 0,
+      "operations": 129
+    },
+    "afterGlobalCounts": {
+      "cases": 39,
+      "sources": 36,
+      "jobs": 73,
+      "metadata": 73,
+      "attempts": 73,
+      "events": 0,
+      "operations": 133
+    },
+    "allPriorGlobalRowsUnchanged": true,
+    "sourceEnrollmentAndValidatorHistoriesUnchanged": true,
+    "registryChangesOnlyDraftRevisionAndPrivateReferences": true,
+    "objectsUnchanged": 13,
+    "bucketEntriesUnchanged": 1364,
+    "addedReferenceOperationReceipts": 4,
+    "activeJobs": [],
+    "noNewReviewRecordedRevisionOrQualification": true
+  },
+  "cleanup": {
+    "applicationAndProcessingStopped": true,
+    "storageRetained": true,
+    "portsFree": [
+      3192,
+      28000
+    ],
+    "scratchEmpty": true
+  },
+  "readers": {
+    "document": "e745ab9bf180da35d3fd59be8021da0f0944b203b34debb83549a590921d6166",
+    "cityjson": "377edfe71f3d08e0a1f4fb710441022b9a26fdadd0efa70724d0d1dea0f3d398",
+    "physicalReconciliation": "Three exact EOL files match accepted enrollment profile; source content and saved pins unchanged."
+  },
+  "limits": [
+    "Operator-selected references do not establish applicability, reviewed reference, surveyed accuracy, rights, recording/qualification or learning labels.",
+    "Historic validation has a producer-code conflict already at draft revision 1; subsequent revision 5 also exceeds saved draft pin. No saved-pin rewrite or replacement validator run.",
+    "Actual rollback-only common-gate observation uses existing reference/workspace/site/case rows; no competing recorded-citation commit or universal deadlock-freedom claim.",
+    "No new ingestion/OCR/native processing/model/provider/GPU, frontend/generated changes, public deployment, repeated completed code tests or release-gate advancement."
+  ]
+}

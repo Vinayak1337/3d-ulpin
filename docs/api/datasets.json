@@ -509,6 +509,27 @@
               "No new validation, processing, source ingestion or broad race/deadline/scale campaign was run.",
               "Executed processing image differs from the newly built unserved tag; immutable retained image and fresh exact reader copies are recorded."
             ]
+          },
+          {
+            "receipt": "docs/evidence/usp/cityjson-reference-runtime.json",
+            "servedCodeCommit": "d00f205dd8d371131ab44c994fe6990218c8d34c",
+            "operations": {
+              "POST /api/v1/registry-drafts/{draftId}/native-exterior/references": "Exact accepted XML/HTML part selections advance draft revision; duplicate-key replay preserves receipt and stale/redacted input fails without writes.",
+              "GET /api/v1/registry-drafts/{draftId}/native-exterior/references": "Private bounded exact five-part reference read and XML-only read; selection remains unreviewed, accuracy not assessed, general draft omits private pins.",
+              "POST /api/v1/registry-drafts/{draftId}/native-exterior/references/remove": "Explicit HTML selection removal preserves XML and native geometry; later legitimate restore retains all five references without a validation prerequisite."
+            },
+            "environment": {
+              "kind": "stopped-isolated",
+              "project": "ulpin-usptest-b050544f3d2cb99e",
+              "url": "http://127.0.0.1:3192/api/v1"
+            },
+            "qualification": "Private retained-source native-draft reference attach/read/remove/restore and safe denials, with exact histories/objects preserved and one bounded rollback-only common-gate observation.",
+            "unqualified": [
+              "Operator-selected references do not establish applicability, reviewed reference, surveyed accuracy, rights, recording/qualification or learning labels.",
+              "Historic validation has a producer-code conflict already at draft revision 1; subsequent revision 5 also exceeds saved draft pin. No saved-pin rewrite or replacement validator run.",
+              "Actual rollback-only common-gate observation uses existing reference/workspace/site/case rows; no competing recorded-citation commit or universal deadlock-freedom claim.",
+              "No new ingestion/OCR/native processing/model/provider/GPU, frontend/generated changes, public deployment, repeated completed code tests or release-gate advancement."
+            ]
           }
         ]
       },
