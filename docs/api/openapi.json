@@ -9205,8 +9205,27 @@
         "x-batch": "CITYJSON-ADMISSION-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "sourceManifests": [
+            "fixtures/usp/D1/single-roof/manifest.json"
+          ],
+          "scope": "Current retained D1 evidence and four honest reference/admission gaps; no write or positive accuracy/admission qualification.",
+          "evidencePointers": [
+            "/assessment",
+            "/observations",
+            "/preservation",
+            "/source"
+          ],
+          "receipt": "docs/evidence/usp/cityjson-admission-runtime.json",
+          "servedCodeCommit": "61a2df5a10a15c9c45aec26c052b1535004b5d1b",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-b050544f3d2cb99e",
+            "url": "http://127.0.0.1:3192/api/v1"
+          },
+          "limitation": "Private read-only admission assessment on retained passed/failed structural results, stable replay, safe denials and unchanged sources/registry/validation history."
+        },
         "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
         "x-max-body-bytes": 16384,
         "x-dataset-catalogue": "/api/docs/datasets.json"

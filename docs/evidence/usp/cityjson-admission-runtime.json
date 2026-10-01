@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "cityjson-admission-runtime/1",
+  "servedCodeCommit": "61a2df5a10a15c9c45aec26c052b1535004b5d1b",
+  "dispatchCommit": "fa279ce32ed18281e7d13fd121ea883a46cbfb48",
+  "originalReceipt": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-cityjson-admission-runtime\\verification.json",
+    "bytes": 29462,
+    "sha256": "e1038efa420e9606d8736cc40e46b4083829d90aa489a5ef37ad55f7516bd9ef"
+  },
+  "project": "ulpin-usptest-b050544f3d2cb99e",
+  "outcome": "passed_at_bounded_scope",
+  "source": {
+    "manifest": "fixtures/usp/D1/single-roof/manifest.json",
+    "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2"
+  },
+  "assessment": {
+    "fingerprint": "f1d80536068448deed79b42514fdb36034c281d474bb23068829f129afe7425d",
+    "failedFingerprint": "c8845e499dfdf53e6901db688b4f8d40b377aacd653f109f82d2155f2548771d",
+    "passedBytes": 8920,
+    "failedBytes": 7218,
+    "replayBytesIdentical": true,
+    "resultSha256": "82c3b05a37731aed7fb624d98f017817b2f463cad27825e7ed92ff72f9cfe5c4",
+    "sourceSha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+    "admission": "unavailable",
+    "referenceAccuracy": "not_assessed",
+    "missing": [
+      "reviewed_reference_evidence",
+      "reference_accuracy_check",
+      "native_admission_review",
+      "post_write_qualification"
+    ]
+  },
+  "observations": [
+    {
+      "label": "passed",
+      "status": 200,
+      "cacheControl": "private, no-store",
+      "bytes": 8920,
+      "responseSha256": "330b06c698b9e38678ae6af3937b28cf4acac3679c85f5a4829c8a727f39c1a0",
+      "elapsedMs": 174,
+      "assessmentSha256": "f1d80536068448deed79b42514fdb36034c281d474bb23068829f129afe7425d",
+      "errorCode": null
+    },
+    {
+      "label": "replay",
+      "status": 200,
+      "cacheControl": "private, no-store",
+      "bytes": 8920,
+      "responseSha256": "330b06c698b9e38678ae6af3937b28cf4acac3679c85f5a4829c8a727f39c1a0",
+      "elapsedMs": 140,
+      "assessmentSha256": "f1d80536068448deed79b42514fdb36034c281d474bb23068829f129afe7425d",
+      "errorCode": null
+    },
+    {
+      "label": "failed",
+      "status": 200,
+      "cacheControl": "private, no-store",
+      "bytes": 7218,
+      "responseSha256": "3a1ec3f1159dd6db14bb4c299d7cc91a00c4b0457de76b6748452bd3b2815e29",
+      "elapsedMs": 66,
+      "assessmentSha256": "c8845e499dfdf53e6901db688b4f8d40b377aacd653f109f82d2155f2548771d",
+      "errorCode": null
+    },
+    {
+      "label": "stale",
+      "status": 409,
+      "cacheControl": "private, no-store",
+      "bytes": 137,
+      "responseSha256": "1842f2987b2885552802049d813eb7f6b47162f69dcdf932cbb34d36c0fa19b7",
+      "elapsedMs": 24,
+      "assessmentSha256": null,
+      "errorCode": "STALE_REVISION"
+    },
+    {
+      "label": "missing",
+      "status": 404,
+      "cacheControl": "private, no-store",
+      "bytes": 170,
+      "responseSha256": "577033145d1ef2a9cfedbbc745bda2d52377d1522779e8e2b3bd63baaa944a07",
+      "elapsedMs": 14,
+      "assessmentSha256": null,
+      "errorCode": "CITYJSON_ADMISSION_UNAVAILABLE"
+    },
+    {
+      "label": "unrelated",
+      "status": 404,
+      "cacheControl": "private, no-store",
+      "bytes": 170,
+      "responseSha256": "f72df24efebfffb22a2fcbd086f8a53b82f3c9157b0a65a01f7747d4051c2693",
+      "elapsedMs": 15,
+      "assessmentSha256": null,
+      "errorCode": "CITYJSON_ADMISSION_UNAVAILABLE"
+    },
+    {
+      "label": "denied",
+      "status": 403,
+      "cacheControl": "no-store",
+      "bytes": 145,
+      "responseSha256": "8196316cab881c61507773a3cf5883408fab702f1bf3448164bca8c5dda4fb13",
+      "elapsedMs": 18,
+      "assessmentSha256": null,
+      "errorCode": "CROSS_ORIGIN_READ"
+    }
+  ],
+  "preservation": {
+    "retainedSha256": "febbba01db49493ab5a0c312076b6e44bca3f48f593c9fb3b4d073562f7e8133",
+    "registrySha256": "6a86a5b84c8ba84b9f7cb9cdda7f32f7bf817bbcfcc917070864395780986335",
+    "validationSha256": "e0960add4fce2fd0af91234de3ec1a8dd718879ad54a20b35df34452e24baa77",
+    "objectsSha256": "25f266ea2560cbe7d5c1f66dabe7355e323c7c5a9982539da01afe2f889be8d6",
+    "sourceRegistryValidationUnchanged": true,
+    "validationJobs": 2,
+    "attempts": 2,
+    "acceptedAttempts": 1,
+    "fencedAttempts": 1,
+    "registryReviews": 0,
+    "recordedRevisions": 0,
+    "draftRevision": 1,
+    "recordRevision": 0
+  },
+  "processing": {
+    "executedImage": "sha256:f522efd1bf4975575b016cdeb587c1d12f0236697b9e20c45fcf64e9947e6a30",
+    "builtNotServedImage": "sha256:80bb7b89e29e56c646fbfc1071dfb46cd1603a7fb3f0f25a90d99fb6cf80ebbe",
+    "readerSha256": "377edfe71f3d08e0a1f4fb710441022b9a26fdadd0efa70724d0d1dea0f3d398",
+    "containerReaderPins": {
+      "geo": "377edfe71f3d08e0a1f4fb710441022b9a26fdadd0efa70724d0d1dea0f3d398",
+      "worker": "377edfe71f3d08e0a1f4fb710441022b9a26fdadd0efa70724d0d1dea0f3d398"
+    }
+  },
+  "cleanup": {
+    "status": "stopped_application_and_processing_storage_retained",
+    "portsFree": [
+      3192,
+      28000
+    ],
+    "scratchEmpty": true
+  },
+  "limits": [
+    "Read-only current evidence assessment only; reference accuracy, native admission, recording, post-write qualification, analytical/export and release gates remain unqualified.",
+    "No new validation, processing, source ingestion or broad race/deadline/scale campaign was run.",
+    "Executed processing image differs from the newly built unserved tag; immutable retained image and fresh exact reader copies are recorded."
+  ]
+}
