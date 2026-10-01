@@ -88,12 +88,25 @@ export const DocumentOcrExecutionSchema=z.strictObject({maxSeconds:z.number().in
 const DocumentOcrBaseSchema=z.strictObject({sourceSha256:hash,sourceRevision:z.number().int().positive(),
   sourcePage:z.number().int().min(1).max(8),requestedRegion:ocrBox.nullable(),
   sourcePageFrame:z.strictObject({kind:z.literal('pdf_display_page_top_left_points'),rotation:z.literal(0),
-    width:z.number().positive().max(2000),height:z.number().positive().max(2000)}).nullable(),
+    width:z.number().finite().positive().max(14400),height:z.number().finite().positive().max(14400)}).nullable(),
   method:z.enum(['ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned','ocr:tesseract-cli-5.5.1:sparse-tsv-v1']),
   toolStatus:z.enum(['complete','partial','failed','unavailable']),outputStatus:z.enum(['complete','partial','failed']),
   textCompleteness:z.literal('unverified'),issues:z.array(z.string().min(1).max(200)).max(32),
   items:z.array(DocumentOcrItemSchema).max(64),execution:DocumentOcrExecutionSchema.optional()});
+function refineOcrFrame(value:Pick<z.infer<typeof DocumentOcrBaseSchema>,'sourcePageFrame'|'requestedRegion'>,ctx:z.RefinementCtx){
+    const frame=value.sourcePageFrame,region=value.requestedRegion;
+    // A missing frame remains useful for an unavailable/failed attempt. A
+    // rendered large frame must have an explicit crop, never a whole-page claim.
+    if(frame===null)return;
+    if(region===null){
+      if(frame.width>2000||frame.height>2000)
+        ctx.addIssue({code:'custom',message:'Whole-page OCR exceeds its supported page frame.'});
+    }else if(region[2]>frame.width||region[3]>frame.height||
+      region[2]-region[0]<1||region[3]-region[1]<1||region[2]-region[0]>2000||region[3]-region[1]>2000)
+      ctx.addIssue({code:'custom',message:'OCR selection must be a bounded crop inside its source page frame.'});
+}
 export const DocumentOcrSchema=DocumentOcrBaseSchema.superRefine((value,ctx)=>{
+    refineOcrFrame(value,ctx);
     const sparse=value.method==='ocr:tesseract-cli-5.5.1:sparse-tsv-v1';
     if(value.items.some(item=>item.method!==(sparse?'ocr:tesseract-cli-sparse-tsv':'ocr:docling-tesseract-cli-full-page')||
       item.sourcePageBoxes.some(cite=>cite.derivedFrom!==(sparse?'tesseract_tsv_pixels_via_mupdf_pixel_origin':
@@ -193,7 +206,7 @@ export const DocumentStatusSchema=z.strictObject({version:z.literal(DOCUMENT_VER
   status:z.enum(['queued','running','completed','failed','stale']),currentCaseRevision:rev,sourceRevision:z.number().int().positive(),
   sourceSha256:hash,resultSha256:hash.nullable(),native:DocumentResultSchema.shape.native.omit({parts:true}).nullable(),
   model:DocumentResultSchema.shape.model.nullable(),parts:z.array(DocumentPartSchema).max(25),
-  page:rev,hasMore:z.boolean(),ocr:DocumentOcrBaseSchema.omit({items:true}).nullable().optional(),
+  page:rev,hasMore:z.boolean(),ocr:DocumentOcrBaseSchema.omit({items:true}).superRefine(refineOcrFrame).nullable().optional(),
   ocrItems:z.array(DocumentOcrItemSchema).max(25).optional(),ocrPage:rev.optional(),ocrHasMore:z.boolean().optional(),
   archiveInspection:DocumentArchiveInspectionSchema.nullable().optional(),code:z.string().nullable()});
 export type DocumentInput=z.infer<typeof DocumentInputSchema>;

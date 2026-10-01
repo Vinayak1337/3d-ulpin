@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import tempfile
+import hashlib
 import sys
 import unittest
 from pathlib import Path
@@ -12,11 +13,65 @@ import fitz
 
 from geo.usp_document_candidates.docling_tesseract import (
     MAX_RESULT_BYTES, SourceOcrError, _selection, collect_items,
-    encode_result_bounded, source_page_box, collect_tsv_items,
+    encode_result_bounded, source_page_box, collect_tsv_items, render_pdf_selection,
 )
 
 
 class SourceOcrCandidateTests(unittest.TestCase):
+    def test_large_page_requires_bounded_crop_and_preserves_source_affine(self) -> None:
+        page = SimpleNamespace(rect=fitz.Rect(0, 0, 6000, 8000), rotation=0)
+        region = [4800.25, 6500.125, 5100.75, 6600.875]
+        self.assertEqual(_selection(page, region)[1], region)
+        with self.assertRaisesRegex(SourceOcrError, "unsupported_pdf_page_frame"):
+            _selection(page, None)
+        # Exact source/crop profile boundaries, invalid input and out-of-page
+        # requests must reject before get_pixmap, regardless of output scaling.
+        _selection(SimpleNamespace(rect=fitz.Rect(0, 0, 14400, 14400), rotation=0), [12400, 12400, 14400, 14400])
+        for box, code in (([0, 0, 2001, 10], "region_side_limit_exceeded"),
+                          ([0, 0, 10, 2001], "region_side_limit_exceeded"),
+                          ([5990, 0, 6010, 10], "region_outside_supported_page"),
+                          ([0, 0, 0.5, 10], "region_outside_supported_page"),
+                          ([0, 0, float("nan"), 10], "invalid_region"),
+                          ([0, False, 10, 10], "invalid_region")):
+            with self.subTest(box=box), self.assertRaisesRegex(SourceOcrError, code):
+                _selection(page, box)
+        for rect, rotation in ((fitz.Rect(0, 0, 14401, 8000), 0),
+                               (fitz.Rect(1, 0, 6000, 8000), 0),
+                               (fitz.Rect(0, 0, 6000, 8000), 90),
+                               (fitz.Rect(0, 0, 0, 8000), 0)):
+            with self.subTest(rect=rect, rotation=rotation), self.assertRaisesRegex(SourceOcrError, "unsupported_pdf_page_frame"):
+                _selection(SimpleNamespace(rect=rect, rotation=rotation), region)
+        _selection(SimpleNamespace(rect=fitz.Rect(0, 0, 2000, 2000), rotation=0), None)
+        # This blank technical-control PDF is not a source record or OCR label.
+        # Render a fractional-offset crop to exercise real MuPDF pixel rounding.
+        with tempfile.TemporaryDirectory() as directory:
+            source, png = Path(directory)/"control.pdf", Path(directory)/"crop.png"
+            with fitz.open() as document:
+                document.new_page(width=6000, height=8000)
+                document.save(source)
+            frame = render_pdf_selection(source, hashlib.sha256(source.read_bytes()).hexdigest(), 1, region, png)
+            self.assertEqual(frame["pageFrame"]["width"], 6000)
+            self.assertEqual(frame["pageFrame"]["height"], 8000)
+            self.assertEqual(frame["regionKind"], "selected_region")
+            self.assertEqual(frame["requestedRegion"], region)
+            render = frame["render"]
+            self.assertLessEqual(max(render["pixels"]), 1400)
+            self.assertLessEqual(render["pixels"][0]*render["pixels"][1], 1_600_000)
+            dpi_x, dpi_y = render["dpi"]
+            pixel_box = [10, 10, 100, 25]
+            box = SimpleNamespace(l=10*72/dpi_x, t=10*72/dpi_y, r=100*72/dpi_x,
+                                  b=25*72/dpi_y, coord_origin="TOPLEFT")
+            cited = source_page_box(box, frame)["box"]
+            sx, sy = render["pixelOrigin"]
+            roundtrip = [cited[0]*render["scale"]-sx, cited[1]*render["scale"]-sy,
+                         cited[2]*render["scale"]-sx, cited[3]*render["scale"]-sy]
+            for actual, expected in zip(roundtrip, pixel_box):
+                self.assertAlmostEqual(actual, expected, places=8)
+            self.assertGreaterEqual(cited[0], region[0])
+            self.assertGreaterEqual(cited[1], region[1])
+            self.assertLessEqual(cited[2], region[2])
+            self.assertLessEqual(cited[3], region[3])
+
     def test_sparse_tsv_keeps_literal_words_and_maps_pixels_without_docling_dpi(self) -> None:
         header = "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n"
         tsv = header + (
