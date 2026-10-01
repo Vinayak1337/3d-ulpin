@@ -13,8 +13,10 @@ const labels=['api','dispatcher'];
 const bareKeys=['SystemRoot','WINDIR','PATH','TEMP','TMP','USERPROFILE','APPDATA','LOCALAPPDATA'];
 const ocrKeys=['ULPIN_DOCUMENT_OCR_PYTHON','ULPIN_DOCUMENT_OCR_MODELS','ULPIN_DOCUMENT_OCR_TESSERACT',
   'ULPIN_DOCUMENT_OCR_TESSDATA','ULPIN_DOCUMENT_OCR_SCRATCH'];
+const validatorKeys=['ULPIN_CITYJSON_VALIDATOR_PYTHON','ULPIN_CITYJSON_VALIDATOR_PYTHON_SHA256',
+  'ULPIN_CITYJSON_VALIDATOR_TOOLS_ROOT','ULPIN_CITYJSON_VALIDATOR_SCRATCH_ROOT'];
 const safeEnv=env=>Object.fromEntries([...bareKeys.map(key=>[key,process.env[key]]),
-  ...ocrKeys.map(key=>[key,process.env[key]]),...Object.entries(env),
+  ...ocrKeys.map(key=>[key,process.env[key]]),...validatorKeys.map(key=>[key,process.env[key]]),...Object.entries(env),
   ['ULPIN_FIXTURE_ROOT',join(root,'fixtures')]].filter(([,value])=>typeof value==='string'));
 function command(file,args,env={},timeout=300000){
   try{return execFileSync(file,args,{cwd:root,env:safeEnv(env),encoding:'utf8',timeout,stdio:['ignore','pipe','pipe']}).trim();}
