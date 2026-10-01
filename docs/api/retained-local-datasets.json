@@ -755,7 +755,16 @@
       "No tessellation, inferred floors/heights, geometry accuracy, global transform, canonical admission, association labels or operational facts.",
       "Windows two-core/single-compute-pool profile with monitored helper-thread allowance; Linux and API/job runtime unqualified.",
       "Published examples are not official Indian property records, learning labels or release qualification."
-    ]
+    ],
+    "privateWorkflowEvidence": {
+      "guide": "docs/evidence/usp/ifc-api-handoff.md",
+      "review": "docs/evidence/usp/desktop-backend-review/ifc-api-correction-review.md",
+      "acceptedCommit": "205bdb1",
+      "correctionReceiptSha256": "1cd656b9df723ea228c5c4ba1c899a5e9db7574529531b77c40d7af14c43cbac",
+      "scope": "Private canonical workflow code and local controls; corrected real host smoke uses IFC2X3 with SQL/storage doubles; IFC4 summary reuses retained output.",
+      "httpPersistenceVerified": false,
+      "integratedRuntimeProfile": "requires fresh profile/2 for actual checkout; saved owner profile is historical"
+    }
   },
   {
     "id": "buildingsmart-certification-ifc4-20261001",
@@ -799,7 +808,16 @@
       "No tessellation, inferred floors/heights, geometry accuracy, global transform, canonical admission, association labels or operational facts.",
       "Windows two-core/single-compute-pool profile with monitored helper-thread allowance; Linux and API/job runtime unqualified.",
       "Published examples are not official Indian property records, learning labels or release qualification."
-    ]
+    ],
+    "privateWorkflowEvidence": {
+      "guide": "docs/evidence/usp/ifc-api-handoff.md",
+      "review": "docs/evidence/usp/desktop-backend-review/ifc-api-correction-review.md",
+      "acceptedCommit": "205bdb1",
+      "correctionReceiptSha256": "1cd656b9df723ea228c5c4ba1c899a5e9db7574529531b77c40d7af14c43cbac",
+      "scope": "Private canonical workflow code and local controls; corrected real host smoke uses IFC2X3 with SQL/storage doubles; IFC4 summary reuses retained output.",
+      "httpPersistenceVerified": false,
+      "integratedRuntimeProfile": "requires fresh profile/2 for actual checkout; saved owner profile is historical"
+    }
   },
   {
     "id": "ezdxf-1-polylines-20261001",
