@@ -53,6 +53,9 @@ def catalogue():
     reference_reports = {
         "fixtures/usp/D1/single-roof/manifest.json": "docs/evidence/usp/cityjson-reference-evidence/manifest.json",
     }
+    reference_enrollments = {
+        "fixtures/usp/D1/single-roof/manifest.json": "docs/evidence/usp/reference-document-enrollment/manifest.json",
+    }
     for file in sorted((ROOT / "fixtures/usp").glob("**/manifest.json")):
         raw = file.read_bytes()
         manifest = json.loads(raw)
@@ -82,6 +85,12 @@ def catalogue():
                 "manifestSha256": sha((ROOT / reference_reports[file.relative_to(ROOT).as_posix()]).read_bytes().replace(b'\r\n', b'\n')),
                 "manifestHashScope": "crlf-to-lf",
                 "scope": "Source-declared Dutch RD/NAP axes and metre units; issuer quality-field interpretation. Not independent object accuracy, API release binding or qualified transformation.",
+                **({"documentEnrollment": {
+                    "manifest": reference_enrollments[file.relative_to(ROOT).as_posix()],
+                    "manifestSha256": sha((ROOT / reference_enrollments[file.relative_to(ROOT).as_posix()]).read_bytes().replace(b'\r\n', b'\n')),
+                    "manifestHashScope": "crlf-to-lf",
+                    "scope": "Two separate source-only cases with accepted literal reference-document parts. No attachment to D1, reviewed applicability, accuracy or admission qualification.",
+                }} if file.relative_to(ROOT).as_posix() in reference_enrollments else {}),
             }} if file.relative_to(ROOT).as_posix() in reference_reports else {}),
             "missingCapabilities": manifest.get("missingCapabilities", []),
             "assets": assets,

@@ -758,6 +758,63 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/reference-document-enrollment/runtime.json",
+      "receiptSha256": "c87fd6547de8c91a8ec45f9f860f40f3ca84b2bf89a2a52cf82d2576ab8564c4",
+      "servedCodeCommit": "64dc4e7fc7f553625361f15ffd46e2cabd16b90c",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-b050544f3d2cb99e",
+        "url": "http://127.0.0.1:3192/api/v1"
+      },
+      "qualification": "Two source-only reference document enrollments, exact native literal text parts, replay and original reads; earlier geometry/registry/validation history preserved.",
+      "unqualified": [
+        "Literal UTF-8 text reader only; no semantic HTML/XML parsing or active-content execution.",
+        "Three HTML lines have conservative redactions; five selected reference parts match raw original lines exactly.",
+        "Private original access uses its existing private,max-age=60 header; native status/parts use no-store.",
+        "No D1 reference attachment, accuracy/admission qualification, recorded registry changes, validation/OCR/model/provider run or release claim."
+      ],
+      "operations": {
+        "POST /api/v1/source-cases": {
+          "sourceManifests": [
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Two separate evidence workspaces named from retained issuer documents; no property or geometry records.",
+          "evidencePointers": [
+            "/enrollments",
+            "/preservation"
+          ]
+        },
+        "POST /api/v1/ingestion/cases/{caseId}/documents": {
+          "sourceManifests": [
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Two unchanged reference originals retained in native_only mode; same-key replay creates no duplicate source/job.",
+          "evidencePointers": [
+            "/enrollments",
+            "/sameKeyReplay"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}": {
+          "sourceManifests": [
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Accepted literal UTF-8 extraction and bounded no-store pages for XML/HTML, with exact selected lines and disclosed redactions. No semantic markup parser.",
+          "evidencePointers": [
+            "/enrollments"
+          ]
+        },
+        "GET /api/v1/sources/{sourceId}/file": {
+          "sourceManifests": [
+            "docs/evidence/usp/reference-document-enrollment/manifest.json"
+          ],
+          "scope": "Both original bytes/hash/size preserved; existing private,max-age=60 response. No new access-race or privacy qualification.",
+          "evidencePointers": [
+            "/enrollments"
+          ]
+        }
+      }
     }
   ]
 }
