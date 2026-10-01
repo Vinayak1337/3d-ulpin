@@ -6,6 +6,8 @@
 
 ## Delivered
 
+Published OpenAPI/client: 216 operations, 247 schemas; five IFC routes and three response schemas added. Existing paths/schemas are unchanged except the additive `ifc-native.changed` event member. API/handoff validators and generated client typecheck pass. Lead's first semantic event comparison used the incorrect expected spelling `ifc.changed`; the corrected exact comparison passes and confirms no other event-route change.
+
 Five guarded private Nest routes: unchanged multipart original receipt, explicit retry, exact-job status, accepted native JSON and original download. Reuses existing cases/sources/operations, private objects, canonical fenced attempts and transactional outbox. No SQL, queue, registry, provider, geometry conversion or frontend was added. Lineage remains caller-declared. Missing tools queue a retained original and produce recoverable `IFC_UNAVAILABLE`; interrupted native jobs require a new explicit retry.
 
 Case/source/access/archive/latest-family/context/reader and accepted-fence checks run before and after relevant object I/O. Staged artifact and size-pinned result are read back before acceptance. Unknown COMMIT outcome preserves canonical state. Generic originals delegate to IFC authority; generic streaming refuses IFC. Source projections omit private marker/lineage/parts. Captured/current malformed markers, snapshot/copy/package paths and copied-source ancestry cannot fall back to legacy handling.
