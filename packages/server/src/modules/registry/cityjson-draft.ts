@@ -241,7 +241,7 @@ export async function removeRegistryCityJSONDraftTx(client:PoolClient,draftId:st
     assertIngestionBinding(binding);return RegistryCityJSONRemovalReceiptSchema.parse(prior.result);}
   if(draft.revision!==request.expectedDraftRevision)conflict('Pin the current draft before removing its native candidate.');
   const record=nativeRecord(draft);if(record.id!==request.recordId)conflict('Choose the exact draft record.');
-  const {nativeExteriorCandidate:_removed,...remaining}=record;
+  const {nativeExteriorCandidate:_removed,nativeExteriorReferences:_removedReferences,...remaining}=record;
   await client.query('UPDATE registry_drafts SET records=$2,revision=revision+1 WHERE id=$1',[draftId,JSON.stringify([{...remaining,footprint:[]}])]);
   const response=RegistryCityJSONRemovalReceiptSchema.parse({draftId,draftRevision:draft.revision+1,recordId:record.id,siteId:site.id,state:'removed'});
   await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'registry-cityjson-remove',$3,$4)",

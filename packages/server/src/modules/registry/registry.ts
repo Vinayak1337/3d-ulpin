@@ -1,5 +1,5 @@
 import { requireQualifiedGeometryRecords } from '../usp/geometry';
-import { RegistryMetadataSchema,RegistryDocumentCitationsSchema,RegistryCityJSONCandidateSchema } from '@ulpin/contracts';
+import { RegistryMetadataSchema,RegistryDocumentCitationsSchema,RegistryCityJSONCandidateSchema,RegistryCityJSONReferencesSchema } from '@ulpin/contracts';
 import {assertRegistryDocumentCitationsTx,assertCitationEdit,publicRegistryBody,publicRegistryDraft,publicRegistryReview,
   documentReviewContext,assertDocumentReviewContext} from './registry-document-evidence';
 import { assertRegistryMetadataTx } from './registry-metadata';
@@ -39,8 +39,8 @@ const binding = z
   .object({ sourceId: idSchema, locator: z.string().trim().min(1).max(500) })
   .strict();
 /** Presence, including malformed/null values, cannot bypass draft-only admission. */
-export function assertNoNativeCandidates(records:readonly {nativeExteriorCandidate?:unknown}[]) {
-  if(records.some(record=>Object.hasOwn(record,'nativeExteriorCandidate')))
+export function assertNoNativeCandidates(records:readonly {nativeExteriorCandidate?:unknown;nativeExteriorReferences?:unknown}[]) {
+  if(records.some(record=>Object.hasOwn(record,'nativeExteriorCandidate')||Object.hasOwn(record,'nativeExteriorReferences')))
     throw new AppError(422,'REGISTRY_CITYJSON_UNRECORDED',
       'Remove the native exterior candidate explicitly before generic editing or review. Recording requires a separately qualified admission path.');
 }
@@ -86,6 +86,7 @@ export const recordBodySchema = z
     registryMetadata: RegistryMetadataSchema.optional(),
     documentCitations: RegistryDocumentCitationsSchema.optional(),
     nativeExteriorCandidate: RegistryCityJSONCandidateSchema.optional(),
+    nativeExteriorReferences: RegistryCityJSONReferencesSchema.optional(),
   })
   .strict();
 export const editDraftSchema = z
