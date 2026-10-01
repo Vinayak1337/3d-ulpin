@@ -1,5 +1,45 @@
 # CITYGML-01 — bounded literal CityGML inspection
 
+**P2 correction checkpoint, 1 October:** code
+`982f064e1a104c37b494f38de60c7638328c2032` continues preserved
+`f9829103bdb0bc37be1ed689feb41696841948c9` under lead assignment
+`a1c3460033b01831e02a106fe23d7a627036a50e`. Review
+`6b179ff9a502a6c82a283a6440dcb023fbfdefa8` / integrated `dd87fda` identified
+opaque ADE descendants entering typed building/property/LoD inventory. Typed
+associations now require the supported structural path: CityModel →
+cityObjectMember → Building, direct consistsOfBuildingPart → BuildingPart, or
+direct boundedBy → boundary surface for its LoD. Other payloads terminate that
+typed context. Literal inventory, original locators and the coordinate guard
+remain independent and intact. This narrows interpretation, without adding
+schema conformance or format support.
+
+One focused regression reuses the exact unchanged reviewer wrapper control,
+SHA-256 `b85e43be0ffb480959663a72736248006b7e161032f47db76d98243bd17224cb`:
+zero typed buildings, properties and LoD associations; full literal
+elements/attributes/text/namespaces/identifiers/references equal the saved review
+projection; opaque coordinates retain their states/values with no typed owner.
+Both ordinary originals reproduce their saved projection bytes exactly. That
+regression and compilation of the two changed Python files exit 0. One actual
+supervised wrapper CLI read exits 0 with partial output: 257 literal elements,
+28 coordinate declarations and 15 references; only the six Envelope coordinate
+values outside the wrapper are decoded. Job peak private bytes 48,545,792,
+affinity `[0,1]`, four sampled threads, 0.118 seconds. No full campaign reran.
+
+Correction evidence is
+`E:/BhuAayam-data/task-data/desktop-citygml-native/correction-01/verification.json`,
+9,377 bytes, SHA-256
+`12f261abd6ce1be6ba4e67f590f0d43e6d4fd5e129035fd6a0c6a8857fec0a53`.
+It pins changed physical/Git code bytes, the unchanged supervisor, reviewer
+control/evidence, original/prior output hashes, focused logs and the new private
+projection/receipt. The existing source manifest and initial proof below remain
+historical and unchanged. Only reader/test/handoff changed; no acquisition,
+dependency/profile/supervisor/shared/API/service/model work. Child stopped and
+private evidence retained. Requested Sol6.1/high/default-standard; actual
+model/effort/tier unexposed, supplied never/danger-full-access. Candidate remains
+unintegrated pending review closure; all previous qualification limits remain.
+
+The original checkpoint and evidence are retained below.
+
 Code: `1b2ba4ea07468b84e72dd1830d55ae2f94e0a962`, from assigned base
 `6f56c274cd923ac2ab677c564371690350daa764`, on
 `task/desktop-citygml-native-reader` in
