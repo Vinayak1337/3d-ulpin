@@ -499,6 +499,12 @@
         "reportSha256": "375c30e9e3e58a274a0038e3b6bd91625e3efa44e2a77a7137bcbc54ff6b0d7d",
         "reportHashScope": "crlf-to-lf"
       },
+      "referenceInterpretationEvidence": {
+        "manifest": "docs/evidence/usp/cityjson-reference-evidence/manifest.json",
+        "manifestSha256": "45f83588bbc80c0a54064415e357a797c500286a0ca443b579d7705c0168c796",
+        "manifestHashScope": "crlf-to-lf",
+        "scope": "Source-declared Dutch RD/NAP axes and metre units; issuer quality-field interpretation. Not independent object accuracy, API release binding or qualified transformation."
+      },
       "missingCapabilities": [
         "product_parser_qualification",
         "triangulated_roof_rendering",

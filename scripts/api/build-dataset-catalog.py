@@ -50,6 +50,9 @@ def catalogue():
     offline_reports = {
         "fixtures/usp/D1/single-roof/manifest.json": "docs/evidence/usp/cityjson-validity-handoff.md",
     }
+    reference_reports = {
+        "fixtures/usp/D1/single-roof/manifest.json": "docs/evidence/usp/cityjson-reference-evidence/manifest.json",
+    }
     for file in sorted((ROOT / "fixtures/usp").glob("**/manifest.json")):
         raw = file.read_bytes()
         manifest = json.loads(raw)
@@ -74,6 +77,12 @@ def catalogue():
                 "reportSha256": sha((ROOT / offline_reports[file.relative_to(ROOT).as_posix()]).read_bytes().replace(b'\r\n', b'\n')),
                 "reportHashScope": "crlf-to-lf",
             }} if file.relative_to(ROOT).as_posix() in offline_reports else {}),
+            **({"referenceInterpretationEvidence": {
+                "manifest": reference_reports[file.relative_to(ROOT).as_posix()],
+                "manifestSha256": sha((ROOT / reference_reports[file.relative_to(ROOT).as_posix()]).read_bytes().replace(b'\r\n', b'\n')),
+                "manifestHashScope": "crlf-to-lf",
+                "scope": "Source-declared Dutch RD/NAP axes and metre units; issuer quality-field interpretation. Not independent object accuracy, API release binding or qualified transformation.",
+            }} if file.relative_to(ROOT).as_posix() in reference_reports else {}),
             "missingCapabilities": manifest.get("missingCapabilities", []),
             "assets": assets,
         })
