@@ -1,0 +1,392 @@
+{
+  "schemaVersion": "ulpin-native-citygml-evidence/1",
+  "assignment": "CITYGML-01",
+  "createdAt": "2026-10-01T16:45:00.517394+00:00",
+  "baseCommit": "6f56c274cd923ac2ab677c564371690350daa764",
+  "codeCommit": "1b2ba4ea07468b84e72dd1830d55ae2f94e0a962",
+  "branch": "task/desktop-citygml-native-reader",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-citygml\\3d-ulpin",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native",
+  "scope": "bounded Windows local literal inventory; not API, official source accuracy, learning, scale or release qualification",
+  "settings": {
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "sourceDiscovery": "Consulted docs/api/real-sources.md and docs/api/datasets.json; no retained CityGML input listed. Acquired exactly two small unchanged OGC examples. Shared source index/catalogue remain lead-owned.",
+  "sources": [
+    {
+      "id": "ogc-citygml-2-building-garage-lod2",
+      "issuer": "Open Geospatial Consortium official schema repository; CityGML example contributors SIG 3D/GDI-DE acknowledged in original XML",
+      "originalUrl": "https://schemas.opengis.net/citygml/examples/2.0/building/Building_and_garage_LOD2-EPSG25832.gml",
+      "finalUrl": "https://schemas.opengis.net/citygml/examples/2.0/building/Building_and_garage_LOD2-EPSG25832.gml",
+      "localPath": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\originals\\Building_and_garage_LOD2-EPSG25832.gml",
+      "acquiredAt": "2026-10-01T16:21:11.913896+00:00",
+      "sha256": "2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a",
+      "bytes": 19499,
+      "version": "CityGML 2.0, February 2012 (literal source comment); repository Last-Modified 2025-04-09",
+      "httpLastModified": "Wed, 09 Apr 2025 01:48:37 GMT",
+      "httpETag": "\"4c2b-6324eaaf4e76e\"",
+      "purpose": "test_only",
+      "sourceKind": "published standards example, not operational property evidence",
+      "geography": "Source example refers to Germany; unchanged original coordinates retained; no Indian relocation or global qualification",
+      "terms": {
+        "status": "specific_example_licence_not_verified",
+        "notice": "Directory footer identifies OGC copyright and Terms and Conditions; original XML attributes contributors but contains no explicit example redistribution grant. Development research use is user-authorized; no release/legal clearance asserted.",
+        "termsUrl": "https://www.ogc.org/about-ogc/legal-notices-term-and-conditions/",
+        "attribution": "Open Geospatial Consortium CityGML 2.0 examples; SIG 3D/GDI-DE acknowledgement retained",
+        "launchGaps": [
+          "Specific example redistribution/licence clearance",
+          "No permission or qualified labels for model training is asserted"
+        ]
+      },
+      "referenceDeclarations": {
+        "envelopeSrsName": "urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783",
+        "envelopeDimension": "3",
+        "axisAndUnits": "No CRS resolution. All raw uom/axis/reference fields remain original literals; local engineering axis definitions are inventory only.",
+        "coordinateDimension": "Many posList declarations omit dimension; retained flat, no dimension/CRS/default inference",
+        "qualification": "not_assessed",
+        "transformApplied": false
+      },
+      "stage": "tested_local_reader",
+      "localResult": {
+        "status": "partial",
+        "counts": {
+          "buildingsAndParts": 2,
+          "coordinateDeclarations": 28,
+          "decodedCoordinateValues": 213,
+          "elements": 256,
+          "references": 15
+        },
+        "outputPins": [
+          {
+            "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\run-02-lod2\\projection.json",
+            "sha256": "c075f2a686e45c80e0ef155a3d3b911346a4e3c0d9e73a5ed45722f59b707dd6",
+            "bytes": 167401
+          },
+          {
+            "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\run-02-lod2\\receipt.json",
+            "sha256": "a888e45d7952384adc414ec92e70eb91e52eb78a464784c53c07d4db248e2f8c",
+            "bytes": 1054
+          }
+        ],
+        "execution": {
+          "appliedCpuAffinity": [
+            0,
+            1
+          ],
+          "baselineOsThreads": 1,
+          "computePoolThreads": 1,
+          "exitCode": 0,
+          "gatedStart": true,
+          "literalTwoOsThreadsEnforced": false,
+          "memoryEnforcement": "Windows Job private-byte ceiling",
+          "osEgressEnforced": false,
+          "osHelperAllowance": 4,
+          "peakJobPrivateBytes": 48627712,
+          "peakSampledRssBytes": 22740992,
+          "peakSampledThreads": 4,
+          "platform": "win32",
+          "processLimit": 1,
+          "processingCpuLimit": 2,
+          "seconds": 0.112,
+          "totalOsThreadCeiling": 6,
+          "xmlExternalResourcesDenied": true
+        }
+      },
+      "limitations": [
+        "CityGML 2.0 UTF-8 XML literal profile only; no schema or solid validity claim",
+        "Relief/TIN, OrientableSurface, MultiPoint, non-building modules/ADE content are unsupported literal inventory",
+        "Engineering CRS, anchors, axis order and units not applied or independently qualified",
+        "Not API/job/registry admission, official Indian data, learning, performance or release qualification"
+      ]
+    },
+    {
+      "id": "ogc-citygml-2-building-local-engineering-lod1",
+      "issuer": "Open Geospatial Consortium official schema repository; CityGML example contributors SIG 3D/GDI-DE acknowledged in original XML",
+      "originalUrl": "https://schemas.opengis.net/citygml/examples/2.0/building/Building_LOD1-LocalEngineeringCRS.gml",
+      "finalUrl": "https://schemas.opengis.net/citygml/examples/2.0/building/Building_LOD1-LocalEngineeringCRS.gml",
+      "localPath": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\originals\\Building_LOD1-LocalEngineeringCRS.gml",
+      "acquiredAt": "2026-10-01T16:21:12.545538+00:00",
+      "sha256": "7dd55005787996074333a90a6e6a49a66fb43332a988a93be8bfc9804c35813e",
+      "bytes": 11158,
+      "version": "CityGML 2.0, February 2012 (literal source comment); repository Last-Modified 2025-04-09",
+      "httpLastModified": "Wed, 09 Apr 2025 01:48:37 GMT",
+      "httpETag": "\"2b96-6324eaaf4d7ce\"",
+      "purpose": "test_only",
+      "sourceKind": "published standards example, not operational property evidence",
+      "geography": "Source example refers to Germany; unchanged original coordinates retained; no Indian relocation or global qualification",
+      "terms": {
+        "status": "specific_example_licence_not_verified",
+        "notice": "Directory footer identifies OGC copyright and Terms and Conditions; original XML attributes contributors but contains no explicit example redistribution grant. Development research use is user-authorized; no release/legal clearance asserted.",
+        "termsUrl": "https://www.ogc.org/about-ogc/legal-notices-term-and-conditions/",
+        "attribution": "Open Geospatial Consortium CityGML 2.0 examples; SIG 3D/GDI-DE acknowledgement retained",
+        "launchGaps": [
+          "Specific example redistribution/licence clearance",
+          "No permission or qualified labels for model training is asserted"
+        ]
+      },
+      "referenceDeclarations": {
+        "envelopeSrsName": "#local-CRS-1",
+        "envelopeDimension": "absent on Envelope; its two pos elements declare 3",
+        "axisAndUnits": "No CRS resolution. All raw uom/axis/reference fields remain original literals; local engineering axis definitions are inventory only.",
+        "coordinateDimension": "Many posList declarations omit dimension; retained flat, no dimension/CRS/default inference",
+        "qualification": "not_assessed",
+        "transformApplied": false
+      },
+      "stage": "tested_local_reader",
+      "localResult": {
+        "status": "partial",
+        "counts": {
+          "buildingsAndParts": 1,
+          "coordinateDeclarations": 18,
+          "decodedCoordinateValues": 96,
+          "elements": 157,
+          "references": 1
+        },
+        "outputPins": [
+          {
+            "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\run-02-local\\projection.json",
+            "sha256": "0c1061c377bd318efb7e27ba774f2990afc0b9ad9e53204d8cdd782ce795ce6f",
+            "bytes": 92114
+          },
+          {
+            "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\run-02-local\\receipt.json",
+            "sha256": "647ddaf5143a67189fe888b70c346fd239f51a97c89d94b4bb6d64502d2968b8",
+            "bytes": 1052
+          }
+        ],
+        "execution": {
+          "appliedCpuAffinity": [
+            0,
+            1
+          ],
+          "baselineOsThreads": 4,
+          "computePoolThreads": 1,
+          "exitCode": 0,
+          "gatedStart": true,
+          "literalTwoOsThreadsEnforced": false,
+          "memoryEnforcement": "Windows Job private-byte ceiling",
+          "osEgressEnforced": false,
+          "osHelperAllowance": 4,
+          "peakJobPrivateBytes": 47489024,
+          "peakSampledRssBytes": 21958656,
+          "peakSampledThreads": 4,
+          "platform": "win32",
+          "processLimit": 1,
+          "processingCpuLimit": 2,
+          "seconds": 0.097,
+          "totalOsThreadCeiling": 6,
+          "xmlExternalResourcesDenied": true
+        }
+      },
+      "limitations": [
+        "CityGML 2.0 UTF-8 XML literal profile only; no schema or solid validity claim",
+        "Relief/TIN, OrientableSurface, MultiPoint, non-building modules/ADE content are unsupported literal inventory",
+        "Engineering CRS, anchors, axis order and units not applied or independently qualified",
+        "Not API/job/registry admission, official Indian data, learning, performance or release qualification"
+      ]
+    }
+  ],
+  "proof": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\local-proof.json",
+    "sha256": "5db4db347775113ac75bd24f36b475488bb845a05300450668ec6c8001b82552",
+    "bytes": 16345
+  },
+  "acquisition": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\acquisition.json",
+    "sha256": "a5b684ef8c6094210f1d618aa17afdf99d3116449c2e7ae83477a43199066484",
+    "bytes": 2082
+  },
+  "independentOriginalOracle": {
+    "pin": {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\checks\\original-oracle.json",
+      "sha256": "315eafdf3e62f5c4bfd777141507a14533bbbf5829ed1eba07746fab9c2e4e05",
+      "bytes": 1485
+    },
+    "method": "literal regex searches on unchanged original byte strings, independent of reader output",
+    "observations": [
+      {
+        "source": "lod2",
+        "field": "identifier",
+        "type": "Building",
+        "literal": "GML_7b1a5a6f-ddad-4c3d-a507-3eb9ee0a8e68",
+        "byteStart": 1421,
+        "byteEnd": 1461
+      },
+      {
+        "source": "lod2",
+        "field": "identifier",
+        "type": "BuildingPart",
+        "literal": "GMLID_BUI379228_1244_301",
+        "byteStart": 8351,
+        "byteEnd": 8375
+      },
+      {
+        "source": "lod2",
+        "field": "firstPosList",
+        "firstThree": [
+          "458875.0",
+          "5438350.0",
+          "112.0"
+        ],
+        "byteStart": 3400,
+        "byteEnd": 3537
+      },
+      {
+        "source": "lod2",
+        "field": "srsName",
+        "literal": "urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783",
+        "byteStart": 1165,
+        "byteEnd": 1211
+      },
+      {
+        "source": "lod2",
+        "field": "storeysAboveGround",
+        "literal": "1",
+        "byteStart": 1926,
+        "byteEnd": 1927
+      },
+      {
+        "source": "lod2",
+        "field": "firstXLink",
+        "literal": "#GML_d3981803-d4b0-4b5b-969c-53f657594757",
+        "byteStart": 2184,
+        "byteEnd": 2225
+      },
+      {
+        "source": "local",
+        "field": "srsName",
+        "literal": "#local-CRS-1",
+        "byteStart": 4309,
+        "byteEnd": 4321
+      },
+      {
+        "source": "local",
+        "field": "axisUnit",
+        "literal": "urn:ogc:def:uom:EPSG::9001",
+        "byteStart": 2114,
+        "byteEnd": 2140
+      },
+      {
+        "source": "local",
+        "field": "anchorPoint",
+        "literal": "458868.0 5438343.0 112.0",
+        "byteStart": 3559,
+        "byteEnd": 3583
+      }
+    ]
+  },
+  "physicalCodePins": [
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-citygml\\3d-ulpin\\services\\geo\\geo\\native_citygml.py",
+      "sha256": "9d09e6720eeca449bf7ea43c8fef99ec27a1fe040068d9533cf99c417c5940e5",
+      "bytes": 25635
+    },
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-citygml\\3d-ulpin\\services\\geo\\tests\\test_native_citygml.py",
+      "sha256": "8f70544a1a93c6e6d87ac923013362ee93f1f79958898cf07d4e73e07d3c8614",
+      "bytes": 8561
+    },
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-citygml\\3d-ulpin\\scripts\\usp\\desktop-citygml-read.py",
+      "sha256": "61c7c878206d983012536ceb6ac0848b939dc40b33cd1ec87b1f8c3f71e57042",
+      "bytes": 16309
+    },
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-citygml\\3d-ulpin\\scripts\\usp\\citygml\\runtime-lock.json",
+      "sha256": "c2d707917edc3b0cd6076545ed9adc3df4e422092346c9c7d87472c967f02fad",
+      "bytes": 928
+    }
+  ],
+  "gitCodePins": [
+    {
+      "path": "services/geo/geo/native_citygml.py",
+      "sha256": "9d09e6720eeca449bf7ea43c8fef99ec27a1fe040068d9533cf99c417c5940e5",
+      "bytes": 25635
+    },
+    {
+      "path": "services/geo/tests/test_native_citygml.py",
+      "sha256": "8f70544a1a93c6e6d87ac923013362ee93f1f79958898cf07d4e73e07d3c8614",
+      "bytes": 8561
+    },
+    {
+      "path": "scripts/usp/desktop-citygml-read.py",
+      "sha256": "61c7c878206d983012536ceb6ac0848b939dc40b33cd1ec87b1f8c3f71e57042",
+      "bytes": 16309
+    },
+    {
+      "path": "scripts/usp/citygml/runtime-lock.json",
+      "sha256": "c2d707917edc3b0cd6076545ed9adc3df4e422092346c9c7d87472c967f02fad",
+      "bytes": 928
+    }
+  ],
+  "runtimePins": [
+    {
+      "path": "C:\\Python313\\python.exe",
+      "sha256": "d932e5e2f324d57f392e8fd063dcf6d0185be8a664c57c6d24e7762ed02c28ca",
+      "bytes": 105816
+    },
+    {
+      "path": "C:\\Python313\\DLLs\\pyexpat.pyd",
+      "sha256": "719dc29fee125f0d5026319da9a3001c130c84419db7ef7c5473fb496d56cfc2",
+      "bytes": 206168
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\wheels\\psutil-7.2.2-cp37-abi3-win_amd64.whl",
+      "sha256": "eb7e81434c8d223ec4a219b5fc1c47d0417b12be7ea866e24fb5ad6e84b3d988",
+      "bytes": 137737
+    }
+  ],
+  "runtimeLock": "scripts/usp/citygml/runtime-lock.json",
+  "checks": [
+    {
+      "command": "python -B -m unittest discover -s services/geo/tests -p test_native_citygml.py -v",
+      "retainedSourceEnv": "CITYGML_ORIGINALS=<privateRoot>/originals",
+      "exitCode": 0,
+      "result": "6 focused tests passed; targeted XML-base/original-locator checks passed after final change",
+      "pins": [
+        {
+          "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\checks\\tests-stabilized.txt",
+          "sha256": "ca7103811c0229f62fa8cd7fddd6867a14a7f8077812e32be18ba845399a2371",
+          "bytes": 929
+        },
+        {
+          "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\checks\\xml-base-and-original-final.txt",
+          "sha256": "fad420984ae99ac37cf4b7d8a87be2c1c6110d2742880066b6e614adc9a7550e",
+          "bytes": 357
+        }
+      ]
+    },
+    {
+      "command": "compile(Path(p).read_bytes(), p, exec) for three owned Python files",
+      "exitCode": 0,
+      "result": "no pycache compile check",
+      "pin": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\checks\\compile-final.txt",
+        "sha256": "550aa15e8da21c4bce2c2d407a2e6dd8a784486bd34543167cb9b3031a5ad2a1",
+        "bytes": 47
+      }
+    },
+    {
+      "command": "<privateRoot>/checks/final-proof.py; all child commands use explicit assigned worktree cwd",
+      "exitCode": 0,
+      "result": "2 source CLI exits 0 with partial inventory; DTD/malformed/existing-output controls exit 2 as expected; 12 expected/actual checks passed; originals and prior output hashes unchanged"
+    }
+  ],
+  "modelHashes": [],
+  "privacyEvidence": {
+    "scope": "Only owned desktop-citygml-native directory ACL changed; shared parent untouched. Windows current owner, SYSTEM and administrators only; output temp directories also have owner-only inheritance.",
+    "artifact": {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\checks\\acl-after.json",
+      "sha256": "fd5704bff9d549c4454095d0f1bb066f7ab03eff899c20970b0d65f5e691cc6e",
+      "bytes": 3429
+    }
+  },
+  "cleanup": "All owned processing children stopped after each invocation. Isolated env, sources, outputs and failed check evidence retained; no Docker/API/DB/GPU/provider process started. No push/deploy/main/frontend/shared seam changes."
+}
