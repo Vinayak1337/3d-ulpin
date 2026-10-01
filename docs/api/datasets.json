@@ -4675,6 +4675,207 @@
         "Windows two-core/single-compute-pool profile with monitored helper-thread allowance; Linux and API/job runtime unqualified.",
         "Published examples are not official Indian property records, learning labels or release qualification."
       ]
+    },
+    {
+      "id": "ezdxf-1-polylines-20261001",
+      "manifest": "docs/evidence/usp/native-dxf/manifest.json",
+      "manifestSha256": "bc3d0d2600b132393bd1b89c36058eca6f56acc65d7a7c865e919fcef3cc13ed",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "public_upstream_development_sample",
+      "classification": "test_only",
+      "issuer": "Manfred Moitzi / mozman/ezdxf upstream project",
+      "originalUrl": "https://raw.githubusercontent.com/mozman/ezdxf/df5ef277fcc674d77580143212ec63dd981cc2b3/examples/edgeminer/1_polylines.dxf",
+      "acquiredAt": "2026-10-01T14:48:58.320464+00:00",
+      "geography": null,
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": {
+        "state": "declared",
+        "header": "$INSUNITS",
+        "code": 6,
+        "name": "m"
+      },
+      "terms": {
+        "identifier": "MIT",
+        "url": "https://raw.githubusercontent.com/mozman/ezdxf/df5ef277fcc674d77580143212ec63dd981cc2b3/LICENSE",
+        "retainedPath": "E:/BhuAayam-data/task-data/desktop-dxf-native/acquisition/LICENSE",
+        "sha256": "db97ca426fc0d2b8124145de0f36181db73e6e713ce642d42fed2efc442edf19",
+        "attribution": "Copyright (c) 2020 Manfred Moitzi. MIT notice must accompany redistributed substantial portions.",
+        "scope": "Upstream repository licence retained; these examples are development input, never official Indian property evidence. No separate property-rights authority is supplied."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/1_polylines.dxf",
+        "bytes": 82846,
+        "sha256": "37f57491672a9b330be08888200a8ad893d15af52af91e1c6be54b0c9cda75de",
+        "format": "dxf",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "scope": "Windows local source-native inspection only; no API/job qualification",
+        "guide": "docs/evidence/usp/native-dxf/README.md",
+        "review": "docs/evidence/usp/desktop-backend-review/native-dxf-review.md",
+        "codeCommit": "ec13cc57acfc0a5d0e6e7d324203f4cb36c4b6b2",
+        "acceptedCommit": "950c894",
+        "correctionReceiptSha256": "a6f15c49129294c4bb10d64a44464065dc769835f8909b08705de3a42aa5c31d",
+        "capability": "Local ASCII R2018 tag-linked inspection: 52 LINE, 22 ARC, 9 TEXT entities. The filename does not establish POLYLINE coverage."
+      },
+      "limitations": [
+        "Upstream development drawing, no operational records or property identifiers.",
+        "No georeference or geometry/measurement qualification.",
+        "No Indian official-source CAD profile or operational-record qualification.",
+        "Native inspection is not source/job/API admission or legal/geometric validation.",
+        "No analytical geometry, operational truth, learning labels or release qualification."
+      ]
+    },
+    {
+      "id": "ezdxf-ascii-r12-20261001",
+      "manifest": "docs/evidence/usp/native-dxf/manifest.json",
+      "manifestSha256": "bc3d0d2600b132393bd1b89c36058eca6f56acc65d7a7c865e919fcef3cc13ed",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "public_upstream_development_sample",
+      "classification": "test_only",
+      "issuer": "Manfred Moitzi / mozman/ezdxf upstream project",
+      "originalUrl": "https://raw.githubusercontent.com/mozman/ezdxf/df5ef277fcc674d77580143212ec63dd981cc2b3/integration_tests/data/ASCII_R12.dxf",
+      "acquiredAt": "2026-10-01T14:48:58.320464+00:00",
+      "geography": null,
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": {
+        "state": "absent",
+        "header": "$INSUNITS",
+        "code": null,
+        "name": null
+      },
+      "terms": {
+        "identifier": "MIT",
+        "url": "https://raw.githubusercontent.com/mozman/ezdxf/df5ef277fcc674d77580143212ec63dd981cc2b3/LICENSE",
+        "retainedPath": "E:/BhuAayam-data/task-data/desktop-dxf-native/acquisition/LICENSE",
+        "sha256": "db97ca426fc0d2b8124145de0f36181db73e6e713ce642d42fed2efc442edf19",
+        "attribution": "Copyright (c) 2020 Manfred Moitzi. MIT notice must accompany redistributed substantial portions.",
+        "scope": "Upstream repository licence retained; these examples are development input, never official Indian property evidence. No separate property-rights authority is supplied."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/ASCII_R12.dxf",
+        "bytes": 6766,
+        "sha256": "b476d3e53fe24c1db3c701d20b2bebd774f7bd7966b12d81891505b9b29e4d21",
+        "format": "dxf",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "scope": "Windows local source-native inspection only; no API/job qualification",
+        "guide": "docs/evidence/usp/native-dxf/README.md",
+        "review": "docs/evidence/usp/desktop-backend-review/native-dxf-review.md",
+        "codeCommit": "ec13cc57acfc0a5d0e6e7d324203f4cb36c4b6b2",
+        "acceptedCommit": "950c894",
+        "correctionReceiptSha256": "a6f15c49129294c4bb10d64a44464065dc769835f8909b08705de3a42aa5c31d",
+        "capability": "Incomplete source-local R12 inspection: 2 LINE and 1 INSERT model-space entities plus 1 block-definition TEXT. Missing units and INSERT scale/rotation remain absent."
+      },
+      "limitations": [
+        "No declared $DWGCODEPAGE; decoding uses explicit parser-default cp1252, not a source declaration.",
+        "Escaped text/layer names and original lexemes remain unmodified.",
+        "No block explosion, scale inference or qualification.",
+        "No Indian official-source CAD profile or operational-record qualification.",
+        "Native inspection is not source/job/API admission or legal/geometric validation.",
+        "No analytical geometry, operational truth, learning labels or release qualification."
+      ]
+    },
+    {
+      "id": "khronos-cesium-box-glb-20261001",
+      "manifest": "docs/evidence/usp/native-gltf/sources.json",
+      "manifestSha256": "d5e723376ed173932ca515b4b76dbea0b33da201cf88f2d856eb66adc51e165f",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "public_upstream_development_sample",
+      "classification": "test_only",
+      "issuer": "KhronosGroup/glTF-Sample-Assets / Cesium",
+      "originalUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/f36bfdabd1031c3cf6689a50570b8cdf3678b49c/Models/Box/glTF-Binary/Box.glb",
+      "acquiredAt": "2026-10-01T15:27:02.591522+00:00",
+      "geography": null,
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": "metre under glTF 2.0 specification semantics; not surveyed accuracy",
+      "terms": {
+        "state": "documented",
+        "license": "CC-BY-4.0",
+        "reference": "https://creativecommons.org/licenses/by/4.0/legalcode",
+        "attribution": "Box model, copyright 2017 Cesium; KhronosGroup glTF-Sample-Assets at f36bfdabd1031c3cf6689a50570b8cdf3678b49c; CC BY 4.0"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.glb",
+        "bytes": 1664,
+        "sha256": "ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e",
+        "format": "glb",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "scope": "Windows local source-native inspection only; no API/job qualification",
+        "guide": "docs/evidence/usp/native-gltf/README.md",
+        "review": "docs/evidence/usp/desktop-backend-review/native-gltf-review.md",
+        "codeCommit": "5001f7c180b6249c80f8d934f549df86fae76d80",
+        "acceptedCommit": "63462cc",
+        "correctionReceiptSha256": "9f714776a7db6a5157939fef46861134275ecb10e6470a96931da0e0f1b6ebda",
+        "capability": "self_contained_POSITION_indices_local_hierarchy"
+      },
+      "limitations": [
+        "No renderer, global placement, property identity, analytical measurements, operational accuracy or runtime registration.",
+        "Later release workstream must retain model-specific attribution and assess the intended use; these observations qualify local parser development only.",
+        "No analytical geometry, operational truth, learning labels or release qualification."
+      ],
+      "acquisitionTimeBasis": "retained file write timestamp; acquisition command succeeded, HTTP headers not retained"
+    },
+    {
+      "id": "khronos-cesium-box-gltf-20261001",
+      "manifest": "docs/evidence/usp/native-gltf/sources.json",
+      "manifestSha256": "d5e723376ed173932ca515b4b76dbea0b33da201cf88f2d856eb66adc51e165f",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "public_upstream_development_sample",
+      "classification": "test_only",
+      "issuer": "KhronosGroup/glTF-Sample-Assets / Cesium",
+      "originalUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/f36bfdabd1031c3cf6689a50570b8cdf3678b49c/Models/Box/glTF/Box.gltf",
+      "acquiredAt": "2026-10-01T15:27:02.914571+00:00",
+      "geography": null,
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": "metre under glTF 2.0 specification semantics; not surveyed accuracy",
+      "terms": {
+        "state": "documented",
+        "license": "CC-BY-4.0",
+        "reference": "https://creativecommons.org/licenses/by/4.0/legalcode",
+        "attribution": "Box model, copyright 2017 Cesium; KhronosGroup glTF-Sample-Assets at f36bfdabd1031c3cf6689a50570b8cdf3678b49c; CC BY 4.0"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:\\BhuAayam-data\\task-data\\desktop-gltf-native\\originals\\Box.gltf",
+        "bytes": 2898,
+        "sha256": "4a0d69eecfce0672a50b71dc218cbacec6c53fe2445040c235c6314b1b2c41b9",
+        "format": "gltf",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "scope": "Windows local source-native inspection only; no API/job qualification",
+        "guide": "docs/evidence/usp/native-gltf/README.md",
+        "review": "docs/evidence/usp/desktop-backend-review/native-gltf-review.md",
+        "codeCommit": "5001f7c180b6249c80f8d934f549df86fae76d80",
+        "acceptedCommit": "63462cc",
+        "correctionReceiptSha256": "9f714776a7db6a5157939fef46861134275ecb10e6470a96931da0e0f1b6ebda",
+        "capability": "incomplete_external_buffer_not_resolved"
+      },
+      "limitations": [
+        "No renderer, global placement, property identity, analytical measurements, operational accuracy or runtime registration.",
+        "Later release workstream must retain model-specific attribution and assess the intended use; these observations qualify local parser development only.",
+        "No analytical geometry, operational truth, learning labels or release qualification."
+      ],
+      "acquisitionTimeBasis": "retained file write timestamp; acquisition command succeeded, HTTP headers not retained"
     }
   ],
   "offlineLearningCorpus": {
