@@ -12,6 +12,10 @@ import {sha256} from '../packages/server/src/infrastructure/storage';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';
 import {ModelGatewayConfigSchema,hash} from '../packages/server/src/modules/model-gateway/config';
+import {ModelGateway} from '../packages/server/src/modules/model-gateway/gateway';
+import {SarvamAdapter} from '../packages/server/src/modules/model-gateway/adapter';
+import {UspSnapshotManifestSchema} from '../packages/contracts/src/usp/domain';
+import {associationTargets,associationTargetAuthority} from '../packages/server/src/modules/usp/ingestion/document-association-targets';
 import {fusionContextProjection,fusionSourceProjection} from '../packages/server/src/modules/usp/ingestion/source-fusion';
 import {proposeFusionAssociations,type FusionAssociationDependencies} from '../packages/server/src/modules/usp/ingestion/source-fusion-associations';
 import {associationLiterals,validateFusionAssociations,exactIdentifier} from '../packages/server/src/modules/usp/ingestion/source-fusion-associations-projection';
@@ -72,7 +76,7 @@ function fixture(){
   const deps:FusionAssociationDependencies={capture:async()=>({context:structuredClone(context),unsupportedCitationSources:[],revalidate:async()=>{
     state.rechecks++;if(state.sourceRevoked)throw new AppError(403,'DOCUMENT_DENIED','Technical revoked source');}}),
     targets:async()=>structuredClone(state.targetDrift?targets.map(target=>({...target,pin:{...target.pin,revision:2}})):targets),
-    citationSites:async(_ctx,siteId)=>assert.equal(siteId,scope.scopeId),policy:()=>state.policy,
+    policy:()=>state.policy,
     gateway:async()=>{state.factoryCalls++;return {config,port:trusted=>{
       state.trusted=trusted;return {modelGateway:async(_ctx,input)=>{
         assert.equal(trusted.attempt,1);assert.equal(trusted.consumer,'INGEST');assert.equal(trusted.taskKind,input.taskKind);
@@ -151,5 +155,119 @@ test('source, target and model-policy drift during a stubbed single gateway call
     };
     await assert.rejects(()=>proposeFusionAssociations(ctx,f.request,f.deps),(error:any)=>[403,409].includes(error.status));
     assert.equal(f.state.calls,1);
+  }
+}));
+
+// Reuses the review's A-then-B committed archive schedule. This catches stale
+// final/no-config eligibility and transport reachability, not PostgreSQL MVCC.
+test('complete target authority rejects earlier evidence revocation before final return and adapter dispatch',t=>local(async ctx=>{
+  for(const mode of ['final-no-config','pre-egress','healthy']){
+    const f=fixture(),scope={...f.scope,manifestId:randomUUID()};
+    const sources=[...f.targets.map(()=>({id:randomUUID(),case_id:randomUUID()})),
+      ...f.rows.map(row=>({id:row.input.sourceId,case_id:row.input.caseId}))].map(row=>({...row,
+      family_id:randomUUID(),revision:1,sha256:digest,bytes:1,object_key:'technical-recording-control',status:'ready',inspection:{}}));
+    const cases=sources.map(source=>({id:source.case_id,site_id:scope.scopeId,archived:false,revision:1,context:null,frame:null}));
+    const records=f.targets.map((target,index)=>({id:target.pin.ref.id,site_id:scope.scopeId,kind:target.kind,
+      identifier:target.identifiers[0].value,revision:1,projectIdentity:null,
+      body:{name:`Technical selected target ${index}`,evidence:[{sourceId:sources[index].id,locator:'technical recording source'}],
+        links:[],synthetic:true}}));
+    const manifest=UspSnapshotManifestSchema.parse({schemaVersion:'usp/1',id:scope.manifestId,digest:scope.snapshotDigest,scope,
+      capturedAt:'2026-10-02T00:00:00Z',selection:{kind:'targets',pins:f.request.targets},
+      members:records.map(record=>({pin:{ref:{namespace:'registry_record',id:record.id},revision:1},bodySha256:fingerprint(record),
+        bodyRef:`technical:${record.id}`,authority:'registry'})).sort((a,b)=>a.pin.ref.id.localeCompare(b.pin.ref.id)),
+      frame:{horizontal:null,vertical:null,unit:null,transform:null},policyVersion:ctx.policyVersion,accessViewId:ctx.accessViewId,
+      validAt:null,asOf:null,coverage:{state:'partial',reasonCodes:['technical-control']}});
+    const state={armed:false,revocations:0,targetReads:0,fetches:0,writes:0,protectedChecks:0,active:0};
+    const priorPool=(globalThis as any).ulpinPool;
+    const connect=()=>{
+      const gates=new Set<string>(),protectedCases=new Set<string>(),protectedSources=new Set<string>();
+      const query=async(sql:string,args:any[]=[])=>{
+        let rows:any[]=[];
+        if(sql==='BEGIN')state.active++;
+        else if(sql==='COMMIT'||sql==='ROLLBACK'){state.active--;gates.clear();protectedCases.clear();protectedSources.clear();}
+        else if(sql.startsWith('SELECT set_config'))rows=[{deadline_live:true}];
+        else if(sql.startsWith('SET TRANSACTION')){}
+        else if(sql.includes('pg_advisory_xact_lock'))gates.add(String(args[0]).replace('registry-import:',''));
+        else if(sql.includes('FROM cases WHERE id=ANY')){
+          assert.deepEqual(args[0],[...args[0]].sort());assert.deepEqual([...gates].sort(),args[0]);
+          args[0].forEach((id:string)=>protectedCases.add(id));rows=cases.filter(row=>args[0].includes(row.id));
+        }else if(sql.includes('FOR SHARE')){
+          assert.equal(gates.size,cases.length,'all ordinary and citation cases gated before destination locks');
+          assert.equal(protectedCases.size,cases.length);
+          if(sql.includes('FROM sources WHERE id=ANY')){
+            args[0].forEach((id:string)=>protectedSources.add(id));rows=sources.filter(row=>args[0].includes(row.id))
+              .sort((a,b)=>a.id.localeCompare(b.id));
+          }else if(sql.includes('FROM usp_snapshots'))rows=[{body:manifest}];
+          else if(sql.includes('FROM usp_snapshot_bodies')&&!sql.includes("namespace='source_revision'")){
+            const body=records.find(record=>record.id===args[1]);rows=body?[{body,body_sha256:fingerprint(body)}]:[];
+          }else if(sql.includes('FROM registry_records r'))rows=records.filter(record=>record.id===args[0]);
+          else if(sql.includes('FROM registry_records WHERE id=ANY'))rows=records.filter(record=>args[0].includes(record.id));
+          else if(sql.includes('FROM registry_sites'))rows=[{id:scope.scopeId}];
+          else if(!sql.includes('usp_snapshot_bodies')&&!sql.includes('usp_project_'))throw new Error(`Unexpected protected SQL: ${sql}`);
+        }else if(sql.includes('FROM usp_snapshots'))rows=[{body:manifest}];
+        else if(sql.includes('FROM usp_snapshot_bodies')){
+          if(!sql.includes("namespace='source_revision'")){
+            const id=sql.includes("namespace='registry_record'")?args[1]:args[2],body=records.find(record=>record.id===id);
+            rows=body?[{body,body_sha256:fingerprint(body)}]:[];
+          }
+        }else if(sql.includes('FROM registry_records r'))rows=records.filter(record=>record.id===args[0]);
+        else if(sql.includes('FROM sources s JOIN cases')){
+          const source=sources.find(source=>source.id===args[0]);
+          if(state.armed&&source===sources[1]){
+            // Equivalent to the review's separate committed archive after A's
+            // transaction. In the protected pass this update cannot commit.
+            assert(!protectedCases.has(cases[0].id));cases[0].archived=true;state.armed=false;state.revocations++;
+          }
+          if(protectedCases.size){
+            assert.equal(protectedCases.size,cases.length);assert.equal(protectedSources.size,sources.length);
+            state.protectedChecks++;
+          }
+          const context=cases.find(row=>row.id===source?.case_id);
+          rows=source&&context?[{...source,source_site_id:context.site_id,source_archived:context.archived,
+            case_revision:context.revision,case_context:context.context,case_frame:context.frame}]:[];
+        }else if(sql.includes('FROM sources WHERE id=ANY'))rows=sources.filter(row=>args[0].includes(row.id)).sort((a,b)=>a.id.localeCompare(b.id));
+        else if(sql.includes('FROM sources WHERE id=$1'))rows=sources.filter(row=>row.id===args[0]);
+        else{if(/^(INSERT|UPDATE|DELETE)/.test(sql))state.writes++;throw new Error(`Unexpected technical SQL: ${sql}`);}
+        return {rows:structuredClone(rows),rowCount:rows.length};
+      };
+      return {query,release(){}};
+    };
+    (globalThis as any).ulpinPool={connect:async()=>connect(),query:connect().query};
+    try{
+      f.deps.targets=async(...args)=>{
+        state.targetReads++;if(mode==='final-no-config'&&state.targetReads===2)state.armed=true;
+        return associationTargetAuthority(...args);
+      };
+      if(mode==='final-no-config')f.state.policy=undefined;
+      else{
+        const config=(await f.deps.gateway())!.config,call={id:randomUUID(),deadline_at:new Date(Date.now()+30000)};
+        const ledger={reserve:async()=>({call,admitted:true}),dispatch:async()=>{},releaseBeforeDispatch:async()=>{},
+          retainExposure:async()=>{},settle:async(_id:any,_cost:any,output:any,receipt:any)=>({...call,output,receipt})};
+        const actual=new SarvamAdapter('technical-no-secret',async()=>{
+          state.fetches++;assert.equal(state.active,0,'database protections release before provider I/O');
+          return new Response(JSON.stringify({choices:[{finish_reason:'stop',message:{content:JSON.stringify({suggestions:[],abstentions:[]})}}],
+            usage:{prompt_tokens:1,completion_tokens:1}}),{status:200,headers:{'content-type':'application/json'}});
+        });
+        f.deps.gateway=async()=>new ModelGateway(config,ledger as any,{kind:'sarvam',propose:async req=>{
+          if(mode==='pre-egress')state.armed=true;return actual.propose(req);
+        }});
+      }
+      // First exercise the unchanged serving reader for compatibility, then
+      // the producer's real complete-set helper at every authorization boundary.
+      const legacy=await associationTargets(ctx,scope,f.request.targets);
+      assert.equal(legacy[0].sourceEvidence,'available');
+      if(mode==='healthy'){
+        const response=await proposeFusionAssociations(ctx,{...f.request,scope},f.deps);
+        assert.equal(response.state,'needs_input');assert.equal(response.targets[0].sourceEvidence,'available');
+        assert.equal(state.revocations,0);assert.equal(state.fetches,1);
+      }else{
+        await assert.rejects(()=>proposeFusionAssociations(ctx,{...f.request,scope},f.deps),
+          (error:any)=>error.status===403&&error.code==='REGISTRY_SOURCE_DENIED');
+        assert.equal(state.revocations,1);assert.equal(state.fetches,0);
+      }
+      assert.equal(state.writes,0);assert.equal(state.active,0);
+      assert(state.protectedChecks>=sources.length,'the healthy capture validated ordinary and citation sources under complete protections');
+      t.diagnostic(JSON.stringify({mode,...state}));
+    }finally{if(priorPool===undefined)delete (globalThis as any).ulpinPool;else (globalThis as any).ulpinPool=priorPool;}
   }
 }));
