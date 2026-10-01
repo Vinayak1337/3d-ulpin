@@ -198,3 +198,16 @@ test('dispatcher stop cancels initial SQL and consumes a late lookup without sta
   assert.deepEqual(releases,[true]);finish({rows:[{status:'queued'}]});await new Promise(resolve=>setImmediate(resolve));
   assert.equal(f.calls.some(sql=>sql.startsWith('INSERT INTO usp_job_attempts')),false);assert.equal(f.source.sha256,f.hash);
 }));
+
+test('generic retry caller refuses failed IFC jobs before any copy, source update or capacity mutation',{skip:!present},()=>isolated(async f=>{
+  const service=new CaseIntakeService(),saved=structuredClone(f.source);
+  for(let i=0;i<2;i++){
+    const id=randomUUID(),input=ifcInput(await ifcSourceTx(f.client as any,f.caseId,f.sourceId),id,'complete_bounded_source',null);
+    f.jobs.set(id,{id,operation:'ifc-native',case_id:f.caseId,source_id:f.sourceId,status:'failed',payload:input});
+    const before=f.calls.length;
+    await assert.rejects(()=>service.retry(id),(e:any)=>e.status===422&&e.code==='IFC_CANONICAL_RETRY_REQUIRED'&&e.message.includes('source-bound IFC'));
+    assert.equal(f.calls.slice(before).some(sql=>/^(INSERT|UPDATE|DELETE)/.test(sql)||sql.includes('FROM cases')),false);
+  }
+  assert.equal(f.jobs.size,2);assert.equal([...f.jobs.values()].filter(j=>['queued','running'].includes(j.status)).length,0);
+  assert.deepEqual(f.source,saved);assert.equal(f.events.length,0);
+}));

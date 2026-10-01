@@ -8,10 +8,14 @@ import {fingerprint} from '../../cases/domain';
 import {AppError} from '../../../infrastructure/errors';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
-const file=z.strictObject({root:z.enum(['runtime','environment']),path:z.string().min(1).max(512),
+const file=z.strictObject({root:z.enum(['runtime','environment','repository']),path:z.string().min(1).max(512),
   bytes:z.number().int().nonnegative().max(64*1024*1024),sha256:hash});
-const profileSchema=z.strictObject({schemaVersion:z.literal('ifc-python-profile/1'),platform:z.literal('windows-x86_64'),
+const profileSchema=z.strictObject({schemaVersion:z.literal('ifc-python-profile/2'),platform:z.literal('windows-x86_64'),
+  cachePolicy:z.literal('verified_bytecode_read_no_write'),repositoryRoot:z.string(),
   python:z.string(),environmentRoot:z.string(),scratchRoot:z.string(),files:z.array(file).min(1).max(10000)});
+const repositorySources=['scripts/usp/ifc/server.py','scripts/usp/ifc/profile.py','scripts/usp/desktop-ifc-read.py',
+  'services/geo/geo/__init__.py','services/geo/geo/native_ifc.py'];
+const repositoryCacheDirectories=['scripts/usp/ifc','scripts/usp','services/geo/geo'];
 export function ifcUnavailable(code='IFC_UNAVAILABLE'):never{
   throw new AppError(503,code,'Pinned local IFC reading is unavailable; original and prior outcomes remain retained.');
 }
@@ -33,17 +37,17 @@ export function ifcConfig(deadlineAt=Date.now()+20_000){
     const profile=profileSchema.parse(JSON.parse(data.toString('utf8'))),python=local(profile.python),
       environmentRoot=local(profile.environmentRoot),scratchRoot=local(profile.scratchRoot),runtimeRoot=realpathSync(join(python,'..')),
       repo=realpathSync(settings.repositoryRoot);
+    if(local(profile.repositoryRoot)!==repo)ifcUnavailable('IFC_TOOL_CHANGED');
     if(!statSync(environmentRoot).isDirectory()||!statSync(scratchRoot).isDirectory()||inside(repo,scratchRoot)||inside(repo,runtimeRoot)||inside(repo,environmentRoot)
       ||inside(environmentRoot,scratchRoot)||inside(runtimeRoot,scratchRoot))ifcUnavailable();
     // -I -S still searches python312.zip and the executable directory. Reject
     // added archives, path/config/manifest overrides or DLLs outside this profile.
     const rootFiles=new Set(['LICENSE.txt','python.exe','pythonw.exe','python312.dll','python3.dll','vcruntime140.dll','vcruntime140_1.dll']);
     for(const name of readdirSync(runtimeRoot))if(!lstatSync(join(runtimeRoot,name)).isDirectory()&&!rootFiles.has(name))ifcUnavailable('IFC_TOOL_CHANGED');
-    const actual:z.infer<typeof file>[]=[],roots={runtime:runtimeRoot,environment:environmentRoot};let total=0;
-    const walk=(kind:'runtime'|'environment',path:string)=>{
+    const actual:z.infer<typeof file>[]=[],roots={runtime:runtimeRoot,environment:environmentRoot,repository:repo};let total=0;
+    const walk=(kind:keyof typeof roots,path:string)=>{
       check();const s=lstatSync(path),name=path.split(/[\\/]/).at(-1);
       if(s.isSymbolicLink())ifcUnavailable('IFC_TOOL_CHANGED');
-      if(name==='__pycache__'||path.endsWith('.pyc'))return;
       if(s.isDirectory()){
         if(kind==='runtime'&&name==='site-packages')return;
         for(const entry of readdirSync(path))walk(kind,join(path,entry));return;
@@ -53,6 +57,11 @@ export function ifcConfig(deadlineAt=Date.now()+20_000){
     };
     for(const name of ['python.exe','python312.dll','python3.dll','vcruntime140.dll','vcruntime140_1.dll','DLLs','Lib'])walk('runtime',join(runtimeRoot,name));
     walk('environment',join(environmentRoot,'Lib/site-packages'));
+    // Node verifies caches before any Python bootstrap/stdlib/helper import.
+    // Repo modules are also reachable by the unchanged CLI's native child.
+    for(const path of repositorySources)walk('repository',join(repo,path));
+    for(const directory of repositoryCacheDirectories)for(const name of readdirSync(join(repo,directory)))
+      if(name.toLowerCase()==='__pycache__'||name.toLowerCase().endsWith('.pyc'))walk('repository',join(repo,directory,name));
     const order=(a:z.infer<typeof file>,b:z.infer<typeof file>)=>Buffer.compare(Buffer.from(a.root+'/'+a.path),Buffer.from(b.root+'/'+b.path));
     if(fingerprint(actual.sort(order))!==fingerprint(profile.files))ifcUnavailable('IFC_TOOL_CHANGED');
     check();
