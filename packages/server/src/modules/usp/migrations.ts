@@ -34,5 +34,10 @@ export async function migrateUsp() {
     await migrateStreamingVectorTx(client);
     await migrateChunkMappingTx(client);
     await migrateStreamedProfileTx(client);
+    const packetPlansName = 'usp_packet_plans_001';
+    if (!(await client.query(sql('usp.packet-plans.check'), [packetPlansName])).rowCount) {
+      await client.query(sql('usp.packet-plans.schema'));
+      await client.query(sql('usp.packet-plans.mark'), [packetPlansName]);
+    }
   });
 }

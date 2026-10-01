@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { PoolClient } from 'pg';
 import {
   UspPacket0ReceiptSchema, UspPacket0RequestSchema, UspExactPartResultSchema,
   type Packet0Request, type RequestContext, type EvidencePointer, type SnapshotScope,
@@ -66,6 +67,33 @@ export async function readExactPart(ctx: RequestContext, scope: SnapshotScope, p
     : { state: 'available', data: { pointer, sourceSha256: line.sourceSha256, text: line.excerpt } });
 }
 
+/** Shared PACK0 artifact writer; authority and selected lines are server-owned.
+ * A plan uses the same renderer/storage and registers its linkage on the same client. */
+export async function preparePacket0Artifact(target: { id: string; label: string }, lines: readonly Packet0Line[],
+  format: 'text' | 'csv', put: typeof putOriginal = putOriginal) {
+  const bytes = Buffer.from(renderPacket0(target, lines, format), 'utf8');
+  const artifactHash = sha256(bytes), packetId = randomUUID();
+  const contentType = format === 'csv' ? 'text/csv; charset=utf-8' : 'text/plain; charset=utf-8';
+  const objectKey = `usp/packets/${packetId}/${artifactHash}`;
+  await put(objectKey, bytes, contentType);
+  return { artifactHash, packetId, contentType, objectKey };
+}
+/** Internal registration only: callers must finish current authorization under their locks first. */
+export async function registerPacket0Tx(client: PoolClient, ctx: RequestContext, request: Packet0Request,
+  lines: readonly Packet0Line[], artifact: Awaited<ReturnType<typeof preparePacket0Artifact>>, hash: string) {
+  const included = lines.filter(line => line.excerpt !== null).map(line => line.pointer);
+  const unavailable = lines.filter(line => line.excerpt === null).map(line => ({ pointer: line.pointer, reasonCode: line.reasonCode! }));
+  const receipt = UspPacket0ReceiptSchema.parse({ packetId: artifact.packetId, target: request.target, scope: request.scope,
+    format: request.format, artifact: { assetId: artifact.packetId, version: 1, sha256: artifact.artifactHash },
+    included, unavailable, contentType: artifact.contentType, createdAt: new Date().toISOString(),
+    status: unavailable.length ? 'incomplete' : 'complete', commandSha256: hash });
+  assertLocalUsp(ctx);
+  await client.query(`INSERT INTO usp_packets(id,manifest_id,target_namespace,target_id,artifact_hash,object_key,body)
+    VALUES($1,$2,$3,$4,$5,$6,$7)`, [artifact.packetId, request.scope.manifestId, request.target.ref.namespace,
+    request.target.ref.id, artifact.artifactHash, artifact.objectKey, receipt]);
+  return receipt;
+}
+
 export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
   assertLocalUsp(ctx);
   const request = UspPacket0RequestSchema.parse(raw);
@@ -88,11 +116,7 @@ export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
   }
   const lines: Packet0Line[] = [];
   for (const pointer of request.evidence) lines.push(await packetLine(ctx, request.scope, pointer));
-  const content = renderPacket0({ id: request.target.ref.id, label: target.data.label }, lines, request.format);
-  const bytes = Buffer.from(content, 'utf8'), artifactHash = sha256(bytes), packetId = randomUUID();
-  const contentType = request.format === 'csv' ? 'text/csv; charset=utf-8' : 'text/plain; charset=utf-8';
-  const objectKey = `usp/packets/${packetId}/${artifactHash}`;
-  await putOriginal(objectKey, bytes, contentType);
+  const artifact = await preparePacket0Artifact({ id: request.target.ref.id, label: target.data.label }, lines, request.format);
   return transaction(async client => {
     await assertSnapshotDocumentsTx(client,ctx,request.scope,true);
     const key = `${ctx.principal.subject}:${scopeKey}:packet0:${request.guard.requestKey}`;
@@ -106,18 +130,7 @@ export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
       if (replay.command_sha256 !== hash) conflict('This packet request key was used with different inputs.');
       return UspPacket0ReceiptSchema.parse(replay.body);
     }
-    const included = lines.filter(line => line.excerpt !== null).map(line => line.pointer);
-    const unavailable = lines.filter(line => line.excerpt === null).map(line => ({
-      pointer: line.pointer, reasonCode: line.reasonCode!,
-    }));
-    const receipt = UspPacket0ReceiptSchema.parse({ packetId, target: request.target, scope: request.scope,
-      format: request.format, artifact: { assetId: packetId, version: 1, sha256: artifactHash },
-      included, unavailable, contentType, createdAt: new Date().toISOString(),
-      status: unavailable.length ? 'incomplete' : 'complete', commandSha256: hash });
-    assertLocalUsp(ctx);
-    await client.query(`INSERT INTO usp_packets(id,manifest_id,target_namespace,target_id,artifact_hash,object_key,body)
-      VALUES($1,$2,$3,$4,$5,$6,$7)`, [packetId, manifest.id, request.target.ref.namespace,
-      request.target.ref.id, artifactHash, objectKey, receipt]);
+    const receipt = await registerPacket0Tx(client, ctx, request, lines, artifact, hash);
     await client.query(`INSERT INTO usp_command_receipts(id,subject,scope_key,operation,request_key,command_sha256,body)
       VALUES($1,$2,$3,'packet0',$4,$5,$6)`, [randomUUID(), ctx.principal.subject,
       scopeKey, request.guard.requestKey, hash, receipt]);
@@ -125,11 +138,23 @@ export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
   });
 }
 
-export async function readPacket0(ctx: RequestContext, packetId: string) {
+export async function readPacket0(ctx: RequestContext, packetId: string, read: typeof readObject = readObject) {
   assertLocalUsp(ctx);
   const row = (await query('SELECT body,object_key,artifact_hash FROM usp_packets WHERE id=$1', [packetId])).rows[0];
   if (!row) throw new AppError(404, 'USP_PACKET_NOT_FOUND', 'The packet is unavailable.');
   const receipt = UspPacket0ReceiptSchema.parse(row.body);
+  const execution = (await query('SELECT body FROM usp_packet_plan_executions WHERE packet_id=$1', [packetId])).rows[0]?.body;
+  if (execution) {
+    const { readPacketPlan } = await import('./packets/plan-service');
+    const view = await readPacketPlan(ctx, { planId: execution.planId, version: execution.version });
+    if (!view.execution || canonical(view.execution.packet) !== canonical(receipt))
+      throw new AppError(422, 'USP_PACKET_PLAN_LINK', 'The packet does not match its immutable plan execution.');
+    const bytes = await read(row.object_key);
+    if (sha256(bytes) !== row.artifact_hash || row.artifact_hash !== receipt.artifact.sha256)
+      throw new AppError(422, 'USP_PACKET_INTEGRITY', 'The saved packet no longer matches its receipt.');
+    await readPacketPlan(ctx, { planId: execution.planId, version: execution.version });
+    return { bytes, receipt };
+  }
   await readManifest(ctx, receipt.scope);
   const target = await resolveRegistryTarget(ctx, receipt.scope, receipt.target);
   if (target.state !== 'available') throw new AppError(404, 'USP_PACKET_TARGET', 'The packet target is unavailable.');
@@ -138,7 +163,7 @@ export async function readPacket0(ctx: RequestContext, packetId: string) {
       throw new AppError(403, 'USP_PACKET_SCOPE', 'The packet evidence is unavailable for this target.');
     }
   }
-  const bytes = await readObject(row.object_key);
+  const bytes = await read(row.object_key);
   if (sha256(bytes) !== row.artifact_hash || row.artifact_hash !== receipt.artifact.sha256) {
     throw new AppError(422, 'USP_PACKET_INTEGRITY', 'The saved packet no longer matches its receipt.');
   }
