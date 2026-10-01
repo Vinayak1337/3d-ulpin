@@ -754,6 +754,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/registry-drafts/{draftId}/native-exterior/validations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enqueue bounded local validation of the exact current private native draft */
+        post: operations["POST_api_v1_registry_drafts_draftId_native_exterior_validations"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/registry-drafts/{draftId}/native-exterior/validations/{jobId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read validation state and bounded result through current private candidate and accepted-attempt authority */
+        get: operations["GET_api_v1_registry_drafts_draftId_native_exterior_validations_jobId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/registry-cityjson-drafts": {
         parameters: {
             query?: never;
@@ -7027,6 +7061,88 @@ export interface components {
             stale?: boolean;
             error?: string;
         };
+        POST_registry_drafts_draftId_native_exterior_validations_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedDraftRevision: number;
+        };
+        POST_registry_drafts_draftId_native_exterior_validations_Response_202_application_json: {
+            /** @enum {string} */
+            version: "registry-cityjson-validation/1";
+            /** Format: uuid */
+            draftId: string;
+            draftRevision: number;
+            /** Format: uuid */
+            jobId: string;
+        };
+        POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json: {
+            error: {
+                code: string;
+                message: string;
+                requestId: string;
+                /** @description Source-shaped JSON value retained without interpretation */
+                details?: unknown;
+            };
+        };
+        GET_registry_drafts_draftId_native_exterior_validations_jobId_Response_200_application_json: {
+            /** @enum {string} */
+            version: "registry-cityjson-validation/1";
+            /** Format: uuid */
+            draftId: string;
+            draftRevision: number;
+            /** Format: uuid */
+            jobId: string;
+            /** @enum {string} */
+            status: "queued" | "running" | "completed" | "failed" | "stale";
+            /** @enum {string|null} */
+            code: "CITYJSON_VALIDATION_CANCELLED" | "CITYJSON_VALIDATION_TIMEOUT" | "CITYJSON_VALIDATION_COMMIT_UNKNOWN" | "CITYJSON_VALIDATION_STALE" | "CITYJSON_VALIDATION_INTERRUPTED" | "CITYJSON_VALIDATION_ACCESS_REVOKED" | "CITYJSON_VALIDATION_STORAGE_UNAVAILABLE" | "CITYJSON_VALIDATION_UNAVAILABLE" | "CITYJSON_VALIDATION_UNSUPPORTED_PLATFORM" | "CITYJSON_VALIDATION_TOOL_CHANGED" | "CITYJSON_VALIDATION_TOOL_FAILURE" | "CITYJSON_VALIDATION_BUSY" | "CITYJSON_VALIDATION_INTEGRITY" | "CITYJSON_VALIDATION_REPORT_LIMIT" | "CITYJSON_VALIDATION_RESULT_LIMIT" | "CITYJSON_VALIDATION_HISTORY_LIMIT" | "CITYJSON_VALIDATION_SELECTION" | "CITYJSON_VALIDATION_INPUT_SCOPE" | null;
+            result: {
+                summary: {
+                    /** @enum {string} */
+                    outcome: "valid" | "invalid" | "unsupported";
+                    /** @enum {string} */
+                    documentSchema: "valid" | "invalid" | "unsupported";
+                    /** @enum {string} */
+                    selectedGeometry: "valid" | "invalid" | "unsupported";
+                    hasWarnings: boolean;
+                    codes: string[];
+                    sourceLocators: {
+                        objectId: string;
+                        geometryIndex: number;
+                        /** Format: starts_with */
+                        geometryPointer: string;
+                    }[];
+                    validator: {
+                        /** @enum {string} */
+                        platform: "windows-x86_64";
+                        pythonSha256: string;
+                        adapterSha256: string;
+                        supervisorSha256: string;
+                        toolLockSha256: string;
+                        codeSha256: string;
+                        configSha256: string;
+                        tools: {
+                            /** @enum {string} */
+                            name: "cjval" | "val3dity";
+                            version: string;
+                            files: {
+                                sha256: string;
+                                executable: boolean;
+                            }[];
+                        }[];
+                    };
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    referenceAccuracy: "not_assessed";
+                    /** @enum {string} */
+                    canonicalAdmission: "not_assessed";
+                };
+                /** Format: date-time */
+                createdAt: string;
+                resultSha256: string;
+            } | null;
+        };
         POST_registry_cityjson_drafts_Request_application_json: {
             /** Format: uuid */
             requestKey: string;
@@ -7071,15 +7187,6 @@ export interface components {
             state: "unrecorded";
             /** @enum {string} */
             qualification: "not_assessed";
-        };
-        POST_registry_cityjson_drafts_Response_400_application_json: {
-            error: {
-                code: string;
-                message: string;
-                requestId: string;
-                /** @description Source-shaped JSON value retained without interpretation */
-                details?: unknown;
-            };
         };
         GET_registry_drafts_draftId_native_exterior_Response_200_application_json: {
             /** Format: uuid */
@@ -38822,6 +38929,213 @@ export interface operations {
             };
         };
     };
+    POST_api_v1_registry_drafts_draftId_native_exterior_validations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_202_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_registry_drafts_draftId_native_exterior_validations_jobId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_registry_drafts_draftId_native_exterior_validations_jobId_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
+                };
+            };
+        };
+    };
     POST_api_v1_registry_cityjson_drafts: {
         parameters: {
             query?: never;
@@ -38854,7 +39168,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38865,7 +39179,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38876,7 +39190,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38887,7 +39201,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38898,7 +39212,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38909,7 +39223,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38920,7 +39234,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -38955,7 +39269,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38966,7 +39280,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38977,7 +39291,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38988,7 +39302,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -38999,7 +39313,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39010,7 +39324,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39021,7 +39335,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39060,7 +39374,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39071,7 +39385,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39082,7 +39396,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39093,7 +39407,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39104,7 +39418,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39115,7 +39429,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39126,7 +39440,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39163,7 +39477,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39174,7 +39488,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39185,7 +39499,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39196,7 +39510,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39207,7 +39521,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39218,7 +39532,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39229,7 +39543,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39262,7 +39576,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39273,7 +39587,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39284,7 +39598,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39295,7 +39609,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39306,7 +39620,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39317,7 +39631,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39328,7 +39642,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39365,7 +39679,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39376,7 +39690,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39387,7 +39701,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39398,7 +39712,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39409,7 +39723,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39420,7 +39734,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39431,7 +39745,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39466,7 +39780,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39477,7 +39791,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39488,7 +39802,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39499,7 +39813,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39510,7 +39824,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39521,7 +39835,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39532,7 +39846,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39567,7 +39881,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39578,7 +39892,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39589,7 +39903,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39600,7 +39914,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39611,7 +39925,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39622,7 +39936,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39633,7 +39947,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39668,7 +39982,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39679,7 +39993,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39690,7 +40004,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39701,7 +40015,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39712,7 +40026,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39723,7 +40037,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39734,7 +40048,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39773,7 +40087,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39784,7 +40098,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39795,7 +40109,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39806,7 +40120,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39817,7 +40131,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39828,7 +40142,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39839,7 +40153,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39878,7 +40192,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39889,7 +40203,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39900,7 +40214,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39911,7 +40225,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39922,7 +40236,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39933,7 +40247,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39944,7 +40258,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -39983,7 +40297,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -39994,7 +40308,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40005,7 +40319,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40016,7 +40330,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40027,7 +40341,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40038,7 +40352,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40049,7 +40363,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -40084,7 +40398,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40095,7 +40409,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40106,7 +40420,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40117,7 +40431,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40128,7 +40442,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40139,7 +40453,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40150,7 +40464,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -40186,7 +40500,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40197,7 +40511,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40208,7 +40522,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40219,7 +40533,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40230,7 +40544,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40241,7 +40555,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40252,7 +40566,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -40287,7 +40601,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40298,7 +40612,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40309,7 +40623,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40320,7 +40634,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40331,7 +40645,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40342,7 +40656,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40353,7 +40667,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -40388,7 +40702,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40399,7 +40713,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40410,7 +40724,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40421,7 +40735,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40432,7 +40746,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40443,7 +40757,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40454,7 +40768,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -40489,7 +40803,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40500,7 +40814,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40511,7 +40825,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40522,7 +40836,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40533,7 +40847,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40544,7 +40858,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40555,7 +40869,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -40594,7 +40908,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40605,7 +40919,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40616,7 +40930,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40627,7 +40941,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40638,7 +40952,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40649,7 +40963,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40660,7 +40974,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -40695,7 +41009,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40706,7 +41020,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40717,7 +41031,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40728,7 +41042,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40739,7 +41053,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40750,7 +41064,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40761,7 +41075,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -40800,7 +41114,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40811,7 +41125,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40822,7 +41136,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40833,7 +41147,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40844,7 +41158,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40855,7 +41169,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40866,7 +41180,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -40905,7 +41219,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40916,7 +41230,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40927,7 +41241,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40938,7 +41252,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40949,7 +41263,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40960,7 +41274,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -40971,7 +41285,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41010,7 +41324,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41021,7 +41335,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41032,7 +41346,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41043,7 +41357,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41054,7 +41368,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41065,7 +41379,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41076,7 +41390,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41113,7 +41427,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41124,7 +41438,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41135,7 +41449,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41146,7 +41460,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41157,7 +41471,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41168,7 +41482,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41179,7 +41493,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41216,7 +41530,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41227,7 +41541,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41238,7 +41552,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41249,7 +41563,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41260,7 +41574,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41271,7 +41585,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41282,7 +41596,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41321,7 +41635,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41332,7 +41646,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41343,7 +41657,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41354,7 +41668,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41365,7 +41679,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41376,7 +41690,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41387,7 +41701,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41422,7 +41736,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41433,7 +41747,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41444,7 +41758,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41455,7 +41769,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41466,7 +41780,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41477,7 +41791,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41488,7 +41802,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41521,7 +41835,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41532,7 +41846,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41543,7 +41857,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41554,7 +41868,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41565,7 +41879,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41576,7 +41890,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41587,7 +41901,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41622,7 +41936,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41633,7 +41947,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41644,7 +41958,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41655,7 +41969,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41666,7 +41980,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41677,7 +41991,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41688,7 +42002,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41734,7 +42048,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41745,7 +42059,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41756,7 +42070,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41767,7 +42081,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41778,7 +42092,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41789,7 +42103,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41800,7 +42114,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41839,7 +42153,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41850,7 +42164,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41861,7 +42175,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41872,7 +42186,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41883,7 +42197,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41894,7 +42208,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41905,7 +42219,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -41955,7 +42269,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41966,7 +42280,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41977,7 +42291,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41988,7 +42302,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -41999,7 +42313,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42010,7 +42324,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42021,7 +42335,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42058,7 +42372,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42069,7 +42383,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42080,7 +42394,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42091,7 +42405,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42102,7 +42416,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42113,7 +42427,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42124,7 +42438,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42161,7 +42475,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42172,7 +42486,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42183,7 +42497,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42194,7 +42508,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42205,7 +42519,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42216,7 +42530,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42227,7 +42541,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42262,7 +42576,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42273,7 +42587,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42284,7 +42598,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42295,7 +42609,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42306,7 +42620,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42317,7 +42631,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42328,7 +42642,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42363,7 +42677,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42374,7 +42688,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42385,7 +42699,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42396,7 +42710,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42407,7 +42721,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42418,7 +42732,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42429,7 +42743,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42468,7 +42782,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42479,7 +42793,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42490,7 +42804,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42501,7 +42815,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42512,7 +42826,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42523,7 +42837,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42534,7 +42848,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42573,7 +42887,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42584,7 +42898,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42595,7 +42909,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42606,7 +42920,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42617,7 +42931,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42628,7 +42942,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42639,7 +42953,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42678,7 +42992,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42689,7 +43003,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42700,7 +43014,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42711,7 +43025,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42722,7 +43036,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42733,7 +43047,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42744,7 +43058,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42783,7 +43097,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42794,7 +43108,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42805,7 +43119,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42816,7 +43130,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42827,7 +43141,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42838,7 +43152,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42849,7 +43163,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42886,7 +43200,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42897,7 +43211,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42908,7 +43222,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42919,7 +43233,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42930,7 +43244,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42941,7 +43255,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42952,7 +43266,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -42987,7 +43301,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -42998,7 +43312,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43009,7 +43323,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43020,7 +43334,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43031,7 +43345,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43042,7 +43356,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43053,7 +43367,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -43092,7 +43406,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43103,7 +43417,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43114,7 +43428,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43125,7 +43439,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43136,7 +43450,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43147,7 +43461,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43158,7 +43472,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -43197,7 +43511,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43208,7 +43522,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43219,7 +43533,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43230,7 +43544,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43241,7 +43555,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43252,7 +43566,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43263,7 +43577,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -43303,7 +43617,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43314,7 +43628,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43325,7 +43639,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43336,7 +43650,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43347,7 +43661,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43358,7 +43672,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43369,7 +43683,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
@@ -43409,7 +43723,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43420,7 +43734,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43431,7 +43745,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43442,7 +43756,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43453,7 +43767,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43464,7 +43778,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -43475,7 +43789,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_registry_cityjson_drafts_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_validations_Response_400_application_json"];
                 };
             };
         };
