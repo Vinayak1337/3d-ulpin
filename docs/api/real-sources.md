@@ -1,5 +1,7 @@
 # Official source index and retained dataset catalogue
 
+1 October: [admission readiness runtime](../evidence/usp/cityjson-admission-readiness-runtime.json) qualifies the retained revision-5 draft checklist with no selected validation and five exact reference selections, a stable repeat and stale revision/historical-job conflicts. All retained authority snapshots, 13 objects and 1,364 bucket entries are unchanged. Guarded launch omitted validator configuration; actual OS environment was not inspected. Processing is stopped and storage retained. This does not qualify reviewed reference applicability, independent accuracy, native recording/post-write geometry or learning labels.
+
 Local full-map demo upload: [fixed NYC normalization, SSE and runbook](demo-import.md). This opt-in display adapter is separate from the real registry and does not qualify production ingestion.
 
 Use this index before source-dependent orchestration and frontend/API integration. Official discovery links and retained source packs are separate: an online listing is not a downloaded original, an inspected original is not an installed record, and a runtime receipt qualifies only its stated profile. Last discovery/status review: **30 September 2026**. Exact bytes, hashes and qualification history belong in the linked manifests/receipts, not duplicated here.
