@@ -4,7 +4,7 @@ import {fingerprint} from '../cases/domain';
 import {ingestionBinding,assertIngestionBinding} from './ingestion/events';
 import { UspJobProjectionSchema, UspAssetRefSchema, UspScopeSchema,
   type AssetRef, type UspScope } from '@ulpin/contracts/usp';
-import { transaction } from '../../infrastructure/db';
+import { transaction,type DbDeadline } from '../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx } from './commands';
 import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, StreamingVectorInputSchema,
@@ -106,7 +106,7 @@ export async function assertUspJobAttemptTx(client:PoolClient,attempt:Attempt){
     conflict('This worker completion expired, changed inputs or was fenced.');
 }
 
-export async function claimUspJobAttempt(jobId: string, owner: string,beforeLocks?:(client:PoolClient)=>Promise<void>): Promise<Attempt> {
+export async function claimUspJobAttempt(jobId: string, owner: string,beforeLocks?:(client:PoolClient)=>Promise<void>,deadline?:DbDeadline): Promise<Attempt> {
   if (!owner || owner.length > 128) throw new AppError(400, 'USP_JOB_OWNER', 'A bounded worker identity is required.');
   return transaction(async client => {
     if(beforeLocks)await beforeLocks(client);
@@ -125,10 +125,10 @@ export async function claimUspJobAttempt(jobId: string, owner: string,beforeLock
     await client.query(`UPDATE usp_job_metadata SET logical_state='running',version=version+1 WHERE job_id=$1`, [jobId]);
     await client.query(`UPDATE jobs SET status='running',attempts=$2 WHERE id=$1`, [jobId, number]);
     return { jobId, number, fence, owner, leaseUntil: new Date(row.lease_until).toISOString(), inputSha256: meta.input_sha256 };
-  });
+  },deadline);
 }
 
-export async function heartbeatUspJobAttempt(attempt: Attempt,beforeLocks?:(client:PoolClient)=>Promise<void>) {
+export async function heartbeatUspJobAttempt(attempt: Attempt,beforeLocks?:(client:PoolClient)=>Promise<void>,deadline?:DbDeadline) {
   return transaction(async client => {
     if(beforeLocks)await beforeLocks(client);
     const row = (await client.query(`UPDATE usp_job_attempts SET lease_until=now()+interval '180 seconds'
@@ -137,13 +137,13 @@ export async function heartbeatUspJobAttempt(attempt: Attempt,beforeLocks?:(clie
       [attempt.jobId, attempt.number, attempt.fence, attempt.owner, attempt.inputSha256])).rows[0];
     if (!row) conflict('This worker lease expired or was fenced.');
     return { ...attempt, leaseUntil: new Date(row.lease_until).toISOString() };
-  });
+  },deadline);
 }
 
 /** Completion is accepted only through a registered operation's result validator. */
 export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
   validateResult: (client: PoolClient, job: Record<string, unknown>, result: AssetRef) => Promise<void>,
-  beforeLocks?: (client:PoolClient)=>Promise<void>,beforeCommit?:(client:PoolClient)=>void|Promise<void>) {
+  beforeLocks?: (client:PoolClient)=>Promise<void>,beforeCommit?:(client:PoolClient)=>void|Promise<void>,deadline?:DbDeadline) {
   const asset = UspAssetRefSchema.parse(result);
   return transaction(async client => {
     if(beforeLocks)await beforeLocks(client);
@@ -167,7 +167,7 @@ export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
       fence: attempt.fence, result: asset, inputManifestId: meta.input_manifest_id });
     if(beforeCommit)await beforeCommit(client);
     return asset;
-  });
+  },deadline);
 }
 
 export async function cancelUspJob(jobId: string, expectedVersion: number) {
