@@ -1,0 +1,152 @@
+{
+  "version": "student-selector-fit-acceptance/1",
+  "recordedAt": "2026-10-03",
+  "ownerCommit": "95a0df5f8346f45a99941e353d9f35d791c747f2",
+  "executionCodeCommit": "5f3f7d7fc352e9d5e7677f40d969b92cc815ab1b",
+  "coordinatorIntegrationCommit": "4c78ff02f2b28c487e30937c0bef944de50fdefd",
+  "primaryStagingHeadObservedReadOnly": "2dc194caf07eafe7913d3e3241fce10f8ee3eb0f",
+  "status": "technical_fit_accepted_quality_unmeasured",
+  "inspection": "Evidence-only delta inspected and both integrated Git blobs matched. Twenty executable pins, forty retained reference pins, ten input pins, nine model pins and all twenty-one accepted output artifacts match. One CPU accepted_fit invocation reproduces the entire retained and receipt proof. All six seed17 orders,66 updates,17040 supervised tokens, complete targets/EOS, losses and cumulative histories match. Original train files,290 base tensors,96 exact saved adapter tensors, resource and cleanup controls are preserved. No model rerun or unrelated verification campaign.",
+  "cpuReview": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-fit-coordinator-review-20261003-95a0df5f\\review-summary.json",
+    "sha256": "0faacfa3604ddb93b4d615b8a5d7ee988e92e7638e64a9c4eaad8bcf7adf4c50",
+    "bytes": 3065,
+    "commands": [
+      {
+        "command": [
+          "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+          "-B",
+          "-I",
+          "-S",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-fit-coordinator-review-20261003-95a0df5f\\review.py"
+        ],
+        "exitCode": 1,
+        "acceptedFitCalls": 1,
+        "acceptedFitAndFullProofMatchPassed": true,
+        "failure": "Audit-only guard metric-name KeyError after proof acceptance; preserved original script."
+      },
+      {
+        "command": [
+          "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+          "-B",
+          "-I",
+          "-S",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-fit-coordinator-review-20261003-95a0df5f\\review-tail.py"
+        ],
+        "exitCode": 0,
+        "acceptedFitCalls": 0,
+        "seconds": 0.0035362999988137744,
+        "scope": "Correct guard peakJobMemoryBytes comparison and finish receipt/history checks; no helper/model rerun."
+      }
+    ],
+    "singleAcceptedFitInvocation": true,
+    "completeProofMatchesRetainedAndReceipt": true,
+    "noModelModulesImported": true
+  },
+  "acceptedFit": {
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-selector-fit-c73b74907e694b2b833d4d7b82e29998",
+    "profileSha256": "d23b89d93af48b007ab7918ff8046d4e180b9af3fb9df290ba60fb3569f9bd3d",
+    "guardSha256": "d1908e32a1fa156b2452bf51f2a68ca69caaa7bbafd6c040036d826ecf2334b0",
+    "adapterManifestSha256": "59c0182a4f5cc6760f2f8fa55a445c7a20feea6cd311385ece60060f3b77b3a0",
+    "fitResultSha256": "f186d50831cde98a951d0dc5eed24629636c63b31ca03fb764c7be0672cb7e17",
+    "adapterWeightsSha256": "93890e8ba23dd0c363cdcb36ed7e6f6b8f0a2ab2e3a3fe6e675ce91dfd277c70"
+  },
+  "retainedProofSha256": "6a23bc3dd4e8bb2699a3527c01ee2672657345f804c019371efb8a995ec855cc",
+  "rawOwnerReceiptSha256": "3ea91b33c5ed681abb1d9d1491555445fef6fcc778372f6d14520a8832a757f9",
+  "representation": {
+    "version": "association-selector-training/1",
+    "datasetSha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb",
+    "parentSha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+    "promptVersion": "association-selector-prompt/1",
+    "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+    "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+    "lexicalPolicy": {
+      "version": "lossless_lexical_spans/1",
+      "pattern": "\\w+|\\s+|[^\\w\\s]",
+      "flags": "Python re.UNICODE default; no normalization or case folding."
+    },
+    "target": "canonical raw selector JSON plus EOS; expanded strings for admission only",
+    "teacherSupervision": "provisional; not independent truth or operational facts"
+  },
+  "trainingPlan": {
+    "datasetSha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb",
+    "epochs": 6,
+    "plannedUpdates": 66,
+    "teacherExamples": 11,
+    "version": "association-training-plan/1"
+  },
+  "baseTensorCount": 290,
+  "savedAdapterTensorCount": 96,
+  "trainableParameters": 540672,
+  "combinedTokens": {
+    "minimum": 496,
+    "maximum": 1230,
+    "limit": 4096,
+    "truncation": false,
+    "excludedRows": []
+  },
+  "supervisedTokens": 17040,
+  "resources": {
+    "bounds": {
+      "maxJobCommittedBytes": 6442450944,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "minimumCudaFreeBytes": 1610612736,
+      "maxChildPhaseSeconds": 600,
+      "maxFitSequenceTokens": 4096,
+      "cpuThreads": 2,
+      "batchSize": 1
+    },
+    "peakJobCommittedBytes": 5415858176,
+    "peakProcessRssBytes": 4219752448,
+    "rssMethod": "50ms actual Job-member RSS/peak working sets",
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpuSampleCount": 135,
+    "maxCudaAllocatedBytes": 1250886144,
+    "maxCudaReservedBytes": 1402994688,
+    "minimumSampledFreeCudaBytes": 5950668800,
+    "cumulativePeaksNeverReset": true,
+    "resourceHistoryAccepted": true,
+    "noObservedCapBreach": true,
+    "stageSeconds": 200.0,
+    "hostInvocationSeconds": 476.598,
+    "guardSetupChildCleanupSeconds": 310.5779999999977,
+    "childElapsedSeconds": null,
+    "childElapsedQualification": "No separate child wall-clock duration is exposed; the unchanged guard enforced its 600-second child limit. Host duration includes runtime verification outside that phase.",
+    "modelSectionSeconds": 82.9405998000002,
+    "fitSeconds": 78.37806930000079,
+    "tokenizationSeconds": 0.30260249999992084,
+    "memoryObservationRows": 755,
+    "attentionObservationRows": 133
+  },
+  "containmentAndCleanup": "Guard/output acceptance, AppContainer and bounded Job validation/closure, ACL/profile cleanup passed.",
+  "quality": {
+    "validRawResponses": 0,
+    "responseDenominator": 2,
+    "correctAcceptedClaims": 0,
+    "expectedClaimDenominator": 6,
+    "precision": null,
+    "rerun": false
+  },
+  "learningQualityGainClaimed": false,
+  "modelRerun": false,
+  "evaluationOpened": false,
+  "promotionAuthorized": false,
+  "nextDecision": "Freeze one separate saved-adapter reload on the unchanged two ordered IFC development examples and host-only six source-supported expectations. Teacher stays idle; no second fit, diagnosis, repair, sweep or held-out access.",
+  "settings": {
+    "assignmentSha256": "b198df7b47b8834e8de89e8fbfd0d721b310a43b30e8da61080446d32a1f3079",
+    "cleanCodeHead": "5f3f7d7fc352e9d5e7677f40d969b92cc815ab1b",
+    "sourceCanonicalAndGitPinsMatched": 20,
+    "preparationAcceptancePinMatched": true,
+    "runtimeProfilePinMatched": true,
+    "originalSelectorAndParentPinsMatched": true,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null
+  }
+}
