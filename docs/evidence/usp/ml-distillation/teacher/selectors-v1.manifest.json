@@ -1,0 +1,89 @@
+{
+  "version": "ml-distill-teacher-selectors/1",
+  "recordedAt": "2026-10-03",
+  "status": "provisional_synthetic_supervision",
+  "split": "train",
+  "familyIds": [
+    "in-bihar-magnolia-residency",
+    "in-haryana-rera-2831"
+  ],
+  "parent": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v2.jsonl",
+    "bytes": 70333,
+    "sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c"
+  },
+  "assignment": {
+    "task": "TEACHER-04",
+    "version": "ml-distillation-selector-target-preparation/1",
+    "assignmentPath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/teacher-04.selector-targets.assignment.json",
+    "assignmentCommit": "1b877bada13447f88727be50803707366625b340",
+    "assignmentCanonicalLfSha256": "85891272c8083094c22356815d701e45326d11a203a595decebea75472d06f04",
+    "workerBaseCommit": "89f28e129a92065831b4c751faeccdd45a49fffd"
+  },
+  "policyVersion": "lossless_lexical_spans/1",
+  "originalContractPins": {
+    "schema": "3ba8fab2958ba93b042493bc4e6c0693f2049bdaa07f260c6639110c87a36a42",
+    "freeze": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+  },
+  "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+  "codePinsCanonicalLf": {
+    "prepare_selector_targets_v1.py": "29c7cfc1716c052ce569b90c08c519504afb5b1611bd16ef7a43c3205177f0d9",
+    "decode_selector_targets_v1.py": "06e60c6df39aeb6207253f8a84fb04a1c586a27e07a66bc0f77394f5b09a14c3"
+  },
+  "counts": {
+    "rows": 11,
+    "claimAppearances": 62,
+    "conflictAppearances": 2,
+    "abstentionAppearances": 22,
+    "noCanonicalTargets": 11,
+    "evidenceFragmentAppearances": 39,
+    "claimStates": {
+      "conflicting": 4,
+      "declared": 51,
+      "unknown": 7
+    }
+  },
+  "quoteSelectors": 84,
+  "nonNullLiteralUnitSelectors": 58,
+  "exactParentRecoveryRows": 11,
+  "supervisionDelta": [
+    "selectorProjection"
+  ],
+  "augmentationUnchanged": true,
+  "rejectsRetained": 5,
+  "artifacts": [
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-selectors-v1.jsonl",
+      "bytes": 78908,
+      "sha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/selector-targets-v1.mapping.json",
+      "bytes": 151605,
+      "sha256": "2d4e73f01f91a3e5c12b9d226cc0aa8126514c09dfc497a8013aa119a69d91c7"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/contracts/selector-schema-v1.json",
+      "bytes": 5698,
+      "sha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/selector-targets-v1.receipt.json",
+      "bytes": 20649,
+      "sha256": "173df178d81f7725fda89fe00e608f053966380b873bcefc18d027fde4daacd5"
+    }
+  ],
+  "reviewState": "needs_independent_review",
+  "teacher": {
+    "role": "dedicated_ML_teacher",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "max",
+    "observedModelReasoningTier": "unexposed",
+    "requiredSpeed": "default/standard",
+    "method": "task_teacher_authored/1"
+  },
+  "qualification": "Lossless representation of the same provisional training labels; no new facts or measured quality gain",
+  "evaluationAccess": false,
+  "devRawAccess": false,
+  "sourceSpecificLaunchClearance": "unconfirmed; user-authorized public local development only"
+}
