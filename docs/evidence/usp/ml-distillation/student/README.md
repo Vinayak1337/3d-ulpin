@@ -1,6 +1,8 @@
 # STUDENT-01 — cited association baseline
 
-Latest checkpoint: [STUDENT-05's pre-backward reclamation](live-graph-reclamation-attempt-v1.md) preserved the tested live graph/state/RNG and released 769,654,784 bytes of reserve before the longest example's backward. That backward still failed after six updates, with Job peak above 6 GiB. The fit was rejected; no adapter, reload or new quality result exists. Cleanup passed.
+Latest checkpoint: [STUDENT-06's checkpointed query attention](query-sdpa-attempt-v1.md) passed the frozen attention controls and completed all 66 updates within bounds (Job peak 5.10 GiB). The base remained unchanged; all 96 saved adapter tensors reloaded exactly. The original development comparison still yields **0/2 valid outputs and 0/6 accepted claims**: malformed JSON and invalid missing-value semantics. Quality criteria fail; no promotion or evaluation follows. Both runs exited and cleanup passed.
+
+Previous checkpoint: [STUDENT-05's pre-backward reclamation](live-graph-reclamation-attempt-v1.md) preserved the tested live graph/state/RNG and released 769,654,784 bytes of reserve before the longest example's backward. That backward still failed after six updates, with Job peak above 6 GiB. The fit was rejected; no adapter, reload or new quality result exists. Cleanup passed.
 
 Previous checkpoint: [STUDENT-04's unused-cache reclamation](reclamation-attempt-v1.md) passed the state/RNG/next-step control, released unused reserve and completed six updates within bounds. The longest seventh example failed during backward with a CUDA allocation error and recorded Job committed-memory peak above 6 GiB. The fit was rejected; no adapter, reload or new quality result exists. Containment cleanup passed.
 
