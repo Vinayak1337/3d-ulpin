@@ -1,5 +1,7 @@
 # STUDENT-01 — cited association baseline
 
+Subsequent checkpoint: [STUDENT-02's single frozen adapter attempt](adapter-attempt-v1.md) passed teacher/token preflight but failed native allocation during its first backward, with recorded Job committed memory above the 6 GiB cap. Zero updates completed; no adapter/reload or new quality result exists. The baseline record below remains its original historical checkpoint.
+
 2 October 2026. **Contained execution passed; pretrained output quality failed.** Code commit `5df8a978f631192082651270269d747c601bcb93` implements the runnable source-to-model-to-validation path. Both raw responses violate the frozen contract, so the accepted projection contains only explicit abstentions. No format repair or additional prompt/model attempt was used. [The receipt](baseline-v1.json) records exact commands, source/model/input pins, raw output, resource acceptance and limitations.
 
 The assigned worktree is `C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin`, branch `task/ml-association-student-20261002`, created clean at coordinator `c351625f5ae258ee8653be2413082b16d3c09835`. The prior `task/desktop-model-egress-enforcement@5c536ff8` and retired weight-1 branch remain preserved. Supplied permissions are `never` / `danger-full-access`; requested Astra/max follows the explicit human override. Default/standard is required; actual request tier is unexposed. Primary staging and coordinator/teacher files were read-only.

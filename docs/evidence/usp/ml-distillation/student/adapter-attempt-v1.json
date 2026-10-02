@@ -1,0 +1,358 @@
+{
+  "artifacts": {
+    "adapter-summary.json": "c8358d712b263a6c2cc2a8abba81b5a087bf945d5c8d9ceb2bb6264043e21f5e",
+    "host-command-result.json": "cb578e69d5b7f3bd36b0759e8f3da89f6f6aa9f368af2e80014c12a05629a6a3",
+    "host-stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "host-stdout.log": "31806a3e81f560775d40444631811d982a719fe28d98e7c387aaf321cd3cd055",
+    "inputs/assignment.json": "a941d8ac62563ea0c2297a657d9c1e596484043365cad61e943b419b0b171bcf",
+    "inputs/family-freeze.json": "93c243f28895ac084c3f1853cba80b9e0b5286f881aba44d6cb7ab6e3a164730",
+    "inputs/model-acquisition.json": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2",
+    "inputs/run-freeze.json": "28124064de3c640039b9165b58f86440fb0b4d04c5510641f712c6057cbc4111",
+    "inputs/runtime-requirements-resolved.txt": "c27e534e121858d96dfa531e14374642a43bed9544aeef0426b39353280ab4e3",
+    "inputs/schema-v1.json": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+    "inputs/train-teacher-v1.jsonl": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+    "inputs/train-teacher-v2.jsonl": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+    "outputs/fit/failure.json": "aac309bf18af8a2c8a3f71f9e2076bd4672d19c45955647fc3ac2fb6160b71c4",
+    "outputs/fit/fit-progress.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "outputs/fit/gpu-samples.jsonl": "9133e631445e202089556071cc8532cf98614b7c3f92b30204d66ad20e999dca",
+    "outputs/fit/teacher-delta.json": "31e05c069174477070e982228ffad30c90a71ef731d9fd8837af0424059af134",
+    "outputs/fit/token-preflight.json": "6df56d3c999fde56b9d8c0689109cc30e52694ca3841543388136aa32a44da62",
+    "profile.json": "997b561e2cd177070be23de3241e2beda0b96d6e5cefee6d8aee5f0b8abd7f46",
+    "receipts/association_adapter-fit-guard.json": "4fdff8b8230c15091d68132d2efdbede8ed701f4a5b16bfa2d81e806fd577888",
+    "stage.json": "80a24f4cc59a43c6b1dbdcc97a4b119f6db73bd354ec6a20fb7687d3cdfbb7da",
+    "state/association_adapter-fit-attempt.json": "5bb41220a235353e68220561c201526b25eafc8c8be86a4458a48bd6d66387eb",
+    "state/association_adapter-fit-session.json": "60bc030c4540bc04d919fbd27f8a32350927e9cf311e3aaa5e9e6331652741d3"
+  },
+  "baselinePreserved": {
+    "codeCommit": "5df8a978f631192082651270269d747c601bcb93",
+    "evidenceCommit": "fe4c134fc9e658e3987b54bbf2724832fecdd2ef",
+    "examples": 2,
+    "expectedClaims": 6,
+    "expectedClaimsAccepted": 0,
+    "profileSha256": "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438",
+    "rerun": false,
+    "validRawOutputs": 0
+  },
+  "boundaries": {
+    "evaluationOpened": false,
+    "historicalMappingDataOpened": false,
+    "originalsChanged": false,
+    "parameterRetry": false,
+    "promoted": false,
+    "releaseOrGeneralizationQualified": false,
+    "servicesOrSharedEnvironmentChanged": false,
+    "teacherReceivedDevelopmentOutputs": false,
+    "trainingInputsOnlyInFit": true
+  },
+  "branch": "task/ml-association-student-20261002",
+  "checks": {
+    "affectedStudentTests": 6,
+    "compiledSources": 15,
+    "executedPhysicalCodePinsMatched": 10,
+    "fitReceiptEvidenceAssertionsPassed": true,
+    "newFocusedTests": 6,
+    "receiptPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\checks-v2-a25fdd03\\checks.json",
+    "sha256": "0bffe375a5ecdffdc0690e81a870f7bf85ffc7233b8fbb1288fdb79b57e1114b"
+  },
+  "codeCommit": "a25fdd0326b23b98e9719d7c757674911281b0ce",
+  "containment": {
+    "capabilityCount": 0,
+    "childExitCode": 1,
+    "cleanupPassed": true,
+    "inheritedHandles": 2,
+    "jobClosed": true,
+    "outputTruncated": false,
+    "outputsAccepted": false,
+    "preResumeJobPassed": true,
+    "preResumeTokenPassed": true,
+    "securityPrimitiveChanged": false
+  },
+  "coordinatorHeadAtFreeze": "9a91a5e0a09be76c4ac6b73806dabcb7516434e8",
+  "dependencies": {
+    "receipts": {
+      "accelerate": {
+        "path": "E:\\BhuAayam-model-evaluation\\20260929\\v8-lora-dependencies\\accelerate-receipt.json",
+        "sha256": "0984327fdbefba8675927f607f8d41d6b66642794b3cb7c4ada9622ab3779109"
+      },
+      "peft": {
+        "path": "E:\\BhuAayam-model-evaluation\\20260929\\v8-lora-dependencies\\peft-receipt.json",
+        "sha256": "3ede9466ed482ee5a97ae1eee97296f720d0788bdf7b247192363a7f8f3f17fc"
+      }
+    },
+    "strategy": "fresh isolated copy of accepted baseline runtime plus pinned offline PEFT/Accelerate wheels; no shared environment install/change",
+    "wheels": {
+      "accelerate-1.10.1-py3-none-any.whl": "3621cff60b9a27ce798857ece05e2b9f56fcc71631cfb31ccf71f0359c311f11",
+      "peft-0.17.1-py3-none-any.whl": "3d129d64def3d74779c32a080d2567e5f7b674e77d546e3585138216d903f99e"
+    }
+  },
+  "executedPhysicalCodePins": {
+    "code/scripts/usp/learning/association/association_adapter.py": "9d9194ac90f43b7733d92a31e20a8e112c3410573bd0db0a5ba3377ab7b569e4",
+    "code/scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "code/scripts/usp/security/appcontainer_audit.py": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca",
+    "code/services/geo/geo/__init__.py": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+    "code/services/geo/geo/usp_learning/__init__.py": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335",
+    "code/services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "code/services/geo/geo/usp_learning/association/adapter.py": "57ed43d5e6a01dff0f4a2c92a1d8ad7e7f769e328b4fb939567c2e2bbf7dd9e3",
+    "code/services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+    "code/services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "code/services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+  },
+  "execution": {
+    "childDeadlineSeconds": 600,
+    "childExactElapsedSeconds": null,
+    "copied": {
+      "bytes": 8604635390,
+      "fileCount": 19656
+    },
+    "fitCommand": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\association_adapter.py",
+      "fit",
+      "--schema",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a\\inputs\\schema-v1.json",
+      "--family-freeze",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a\\inputs\\family-freeze.json",
+      "--model-receipt",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a\\inputs\\model-acquisition.json",
+      "--assignment",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a\\inputs\\assignment.json",
+      "--teacher-v1",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a\\inputs\\train-teacher-v1.jsonl",
+      "--training-data",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a\\inputs\\train-teacher-v2.jsonl",
+      "--run-freeze",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a\\inputs\\run-freeze.json",
+      "--output-dir",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a\\outputs\\fit",
+      "--containment-profile",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a\\profile.json",
+      "--containment-sha256",
+      "997b561e2cd177070be23de3241e2beda0b96d6e5cefee6d8aee5f0b8abd7f46"
+    ],
+    "fitExitCode": 1,
+    "guardSetupChildCleanupSeconds": 225.71899999992456,
+    "hostSeconds": 431.8652064000489,
+    "stageCommand": [
+      "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "scripts/usp/learning/association/stage_adapter.py",
+      "fit"
+    ],
+    "stageExitCode": 0,
+    "timedOut": false
+  },
+  "fit": {
+    "acceptedFitReceipt": false,
+    "attempts": 1,
+    "baseEqualityAfterFit": "not measured because fit failed",
+    "completedUpdates": 0,
+    "developmentComparisonAttempted": false,
+    "failedEpoch": 1,
+    "failedExample": "teacher-bihar-identifier-conflict",
+    "failedOperation": "scaler.scale(loss).backward()",
+    "lossMeasurement": "finite forward loss check reached; numeric loss not persisted before failed backward",
+    "nativeDiagnostic": "fatal   : Memory allocation failure",
+    "nextObservedIssue": "First backward failed native allocation with Job committed peak above frozen 6 GiB cap. A separately assigned bounded repair must address this before another fit; allocator/root cause not further isolated.",
+    "plannedUpdates": 66,
+    "pythonException": "AcceleratorError",
+    "pythonMessage": "CUDA error: unknown error\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+    "reloadAttempted": false,
+    "savedAdapter": false
+  },
+  "limitations": [
+    "No completed fit, saved adapter, reload or new development quality measurement.",
+    "Finite first forward and exact token/delta preflights do not establish learner quality.",
+    "GPU samples do not prove full failed-backward peak bounds.",
+    "Native allocator root cause beyond recorded failure and Job over-cap observation remains unresolved."
+  ],
+  "model": {
+    "licence": "Apache-2.0",
+    "name": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "safetensorsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+  },
+  "modelSettings": {
+    "actualWorkerModelAndTier": "not exposed by this tool session; no configuration change claimed",
+    "assignmentRequired": "Astra/max latest human override; default/standard required, per-turn tier unexposed",
+    "standardSpeedRequired": true
+  },
+  "numerics": {
+    "adamBetas": [
+      0.9,
+      0.999
+    ],
+    "adamEpsilon": 1e-08,
+    "adapterDtype": "float32",
+    "attention": "sdpa",
+    "baseDtype": "float16",
+    "checkpointing": "non-reentrant",
+    "initialGradientScale": 128.0,
+    "logits": "only positions predicting supervised assistant JSON plus EOS; prompt labels masked",
+    "lossDtype": "float32",
+    "scaleGrowthInterval": 2000,
+    "shuffle": "Random(17), one permutation per epoch"
+  },
+  "permissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access",
+    "source": "supplied environment"
+  },
+  "primaryStagingHeadObservedBeforeWork": "795452b0515d6e08c148659a2e9e8efca452f633",
+  "recordedAt": "2026-10-02T10:42:47.424097+00:00",
+  "resourceObservation": {
+    "gpuPeakQualification": "Three samples end after first forward; no successful post-backward full-run allocator peak receipt. These are samples, not proven whole-run peaks.",
+    "gpuSampleCount": 3,
+    "jobCapBytes": 6442450944,
+    "jobCapExcessBytes": 23597056,
+    "maxSampledGpuAllocatedBytes": 1751900672,
+    "maxSampledGpuReservedBytes": 2449473536,
+    "minimumSampledGpuFreeBytes": 4939841536,
+    "peakJobCommittedBytes": 6466048000,
+    "resourceAccepted": false,
+    "sampledPeakRssBytes": 3209150464
+  },
+  "runRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a",
+  "settings": {
+    "alpha": 16,
+    "batchSize": 1,
+    "cacheDuringFit": false,
+    "cpuThreads": 2,
+    "dropout": 0.05,
+    "epochs": 6,
+    "gradientAccumulation": 1,
+    "gradientCheckpointing": true,
+    "gradientClipNorm": 1,
+    "learningRate": 0.0002,
+    "loss": "assistant JSON target plus EOS only; all prompt tokens masked",
+    "maxSequenceTokens": 4096,
+    "method": "supervised_causal_LoRA",
+    "optimizer": "AdamW",
+    "rank": 8,
+    "seed": 17,
+    "targets": [
+      "q_proj",
+      "v_proj"
+    ],
+    "warmupSteps": 0,
+    "weightDecay": 0
+  },
+  "status": "failed_first_backward_no_adapter",
+  "task": "STUDENT-02",
+  "teacher": {
+    "addedCanonicalAbstentions": 11,
+    "claimsUnchanged": 62,
+    "conflictsUnchanged": 2,
+    "deltaPassed": true,
+    "examples": 11,
+    "qualification": "provisional teacher supervision, not official or independent truth",
+    "v1Sha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+    "v2Sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c"
+  },
+  "tokenPreflight": {
+    "examples": 11,
+    "excludedRows": [],
+    "lengths": [
+      {
+        "assistantJsonPlusEosTokens": 1240,
+        "combinedTokens": 1736,
+        "exampleId": "teacher-haryana-floor01",
+        "promptSha256": "13d8aa66a6edfa695559964afd2ecc09a74945f378902e29e7d7fef5f3633589",
+        "promptTokens": 496,
+        "targetSha256": "e2152746f790055a73f51d052524056579fca57df24fa1e25ad9c13fbe576236"
+      },
+      {
+        "assistantJsonPlusEosTokens": 447,
+        "combinedTokens": 871,
+        "exampleId": "teacher-haryana-floor02",
+        "promptSha256": "05d8574eb69dca6c22fbaf6569b543a19c37396b95ca259a05eaeb81499ece98",
+        "promptTokens": 424,
+        "targetSha256": "591b1e9e927f28bd38f09709db58fc755451673e6a5a52c159d03b7976148057"
+      },
+      {
+        "assistantJsonPlusEosTokens": 1693,
+        "combinedTokens": 2333,
+        "exampleId": "teacher-haryana-title02",
+        "promptSha256": "bfe28d3f6fa728fa06b35c20f557cd8e9fd2cbbe560ec02ba7e4dc9153d2d541",
+        "promptTokens": 640,
+        "targetSha256": "57294a63e8cb020246c943974eb791adc4a5cd00b38cf99f74c6a131ae757d64"
+      },
+      {
+        "assistantJsonPlusEosTokens": 273,
+        "combinedTokens": 710,
+        "exampleId": "teacher-haryana-section-title",
+        "promptSha256": "791d3f1446cc716b2032a42ec2913c0d5ff774af07cd7183ed62101417b43c72",
+        "promptTokens": 437,
+        "targetSha256": "a42fce52482b8efab7cfcdac89dcaacb8a11392f3b16ecdcc330b26c0150c038"
+      },
+      {
+        "assistantJsonPlusEosTokens": 391,
+        "combinedTokens": 841,
+        "exampleId": "teacher-haryana-refuge-multifloor",
+        "promptSha256": "57daaddcc28d58e6fe2ad86e00038c1dd6e220fa134b672ede93b274769bdefb",
+        "promptTokens": 450,
+        "targetSha256": "114ab1b83f45d6934adc9b2d9c1af15bbf14bb6f66fb71fe9e2e1c1be5d87156"
+      },
+      {
+        "assistantJsonPlusEosTokens": 328,
+        "combinedTokens": 751,
+        "exampleId": "teacher-haryana-site-conflict",
+        "promptSha256": "d998042d5b877ee1fef35109d2d84c27f7c50ed08380c2b3f430d9a499280d90",
+        "promptTokens": 423,
+        "targetSha256": "a4576b331b07d7c1264cb9dc785e1ec0a9de1d5a74b845e9cff12766ef614b56"
+      },
+      {
+        "assistantJsonPlusEosTokens": 485,
+        "combinedTokens": 908,
+        "exampleId": "teacher-bihar-type5-multilevel",
+        "promptSha256": "868a73de2d230a21a5d18c7f2d2eb4004932cb380db160ea1b83981d1c8de9cb",
+        "promptTokens": 423,
+        "targetSha256": "7563712409f2518ce9688bbc14c45c48758dfa489f8e334c99c6d451f32b96d5"
+      },
+      {
+        "assistantJsonPlusEosTokens": 724,
+        "combinedTokens": 1264,
+        "exampleId": "teacher-bihar-identifier-conflict",
+        "promptSha256": "bf925c027cc2f9e8c5d79a1e38da04746d89f50cc57cc6b7c5f398973e888e24",
+        "promptTokens": 540,
+        "targetSha256": "d817f6b74ef1ea162c91c74edc66f780922842e5e657e87d01f8aea641688f2c"
+      },
+      {
+        "assistantJsonPlusEosTokens": 326,
+        "combinedTokens": 801,
+        "exampleId": "teacher-bihar-table-units-missing",
+        "promptSha256": "ce5292b17f2294108c634c984aa36c75899eb2bb1d572031887f1eeea7a988fd",
+        "promptTokens": 475,
+        "targetSha256": "26205772d5e6adce9e56a035196c731f570f4496f69a69ce65c48a0387634e03"
+      },
+      {
+        "assistantJsonPlusEosTokens": 303,
+        "combinedTokens": 778,
+        "exampleId": "teacher-haryana-portal-revision-gap",
+        "promptSha256": "1d117a791435f7e0213be527d4da29af77cefdaadb089a4f7de2eec4b4ed4569",
+        "promptTokens": 475,
+        "targetSha256": "c4e0526d31d203ef4ceb17e61b8cf89519bfec8171bcc2283eaed3e491137545"
+      },
+      {
+        "assistantJsonPlusEosTokens": 112,
+        "combinedTokens": 490,
+        "exampleId": "teacher-bihar-unusable-approval-date",
+        "promptSha256": "3bb5aca15d6ff790becc394d01906f5e6c8e15950574622d79e9fabfe7820b0a",
+        "promptTokens": 378,
+        "targetSha256": "77fd0df366bfad76a174c6d9f6dd6d58e1a61f371359b76f8394c75659432392"
+      }
+    ],
+    "maximumCombinedTokens": 2333,
+    "minimumCombinedTokens": 490,
+    "passed": true,
+    "seconds": 0.30682749999687076,
+    "sequenceLimit": 4096,
+    "truncation": false
+  },
+  "version": "association-student-adapter-attempt/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
