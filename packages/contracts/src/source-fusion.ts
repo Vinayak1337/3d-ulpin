@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {DocumentAssociationSourceSchema} from './document-association';
 import {DocumentPartSchema,DocumentFormatSchema,DocumentOcrItemSchema,DocumentOcrSelectionSchema,DocumentStatusSchema} from './usp/document-ingestion';
 import {IFCSummarySchema,IFC_LIMITS} from './usp/ifc-ingestion';
+import {DXFSummarySchema,DXF_LIMITS} from './usp/dxf-ingestion';
 
 export const SOURCE_FUSION_VERSION='source-fusion-context/1' as const;
 export const SOURCE_FUSION_LIMITS=Object.freeze({sources:8,selections:25,requestBytes:64*1024,
@@ -55,7 +56,9 @@ export const SourceFusionSelectionSchema=z.discriminatedUnion('kind',[
   z.strictObject({kind:z.literal('document_ocr'),pin:SourceFusionPinSchema,
     itemOrdinals:z.array(z.number().int().min(0).max(63)).max(25)}),
   z.strictObject({kind:z.literal('ifc'),pin:SourceFusionPinSchema,
-    stepIds:z.array(z.number().int().positive()).min(1).max(25)})]);
+    stepIds:z.array(z.number().int().positive()).min(1).max(25)}),
+  z.strictObject({kind:z.literal('dxf'),pin:SourceFusionPinSchema,
+    entityOrdinals:z.array(z.number().int().min(0).max(9999)).min(1).max(25)})]);
 export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFusionSelectionSchema).min(2).max(8)})
   .superRefine((value,ctx)=>{
     const keys=value.sources.map(s=>s.pin.sourceId.toLowerCase());
@@ -63,14 +66,16 @@ export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFus
     let count=0;
     for(const source of value.sources){
       const ids=source.kind==='document'?source.partIds:source.kind==='cityjson'?source.objectIds:
-        source.kind==='ifc'?source.stepIds:source.itemOrdinals;count+=ids.length;
+        source.kind==='ifc'?source.stepIds:source.kind==='dxf'?source.entityOrdinals:source.itemOrdinals;count+=ids.length;
       const uniqueIds=source.kind==='document'?source.partIds.map(id=>id.toLowerCase()):ids;
       if(new Set<string|number>(uniqueIds).size!==ids.length)
-        ctx.addIssue({code:'custom',message:'Select each native part, OCR ordinal, object or IFC STEP ID once.'});
+        ctx.addIssue({code:'custom',message:'Select each native part, OCR ordinal, object, IFC STEP ID or DXF entity ordinal once.'});
       if(source.kind==='cityjson'&&source.pin.resultBytes>16*1024)
         ctx.addIssue({code:'custom',message:'CityJSON result receipts have a 16 KiB profile.'});
       if(source.kind==='ifc'&&source.pin.resultBytes>IFC_LIMITS.resultBytes)
         ctx.addIssue({code:'custom',message:'IFC result receipts have a 16 KiB profile.'});
+      if(source.kind==='dxf'&&source.pin.resultBytes>DXF_LIMITS.resultBytes)
+        ctx.addIssue({code:'custom',message:'DXF result receipts have a 16 KiB profile.'});
     }
     if(count>25)ctx.addIssue({code:'custom',message:'Select at most 25 native parts/objects total.'});
   });
@@ -128,8 +133,27 @@ export const SourceFusionIFCMetadataSchema=z.strictObject({summary:IFCSummarySch
     unselectedEntityMetadata:z.literal('not_expanded'),geometry:z.literal('unsupported'),
     hierarchyQualification:z.literal('source_edges_only; not_canonical_relationships')})});
 export const SourceFusionIFCSchema=SourceFusionIFCMetadataSchema.extend({...base,kind:z.literal('ifc')});
+/** Literal native records only. Handles, layer names, coordinates and drawing
+ * text remain source-local observations, never application property identifiers. */
+export const SourceFusionDXFMetadataSchema=z.strictObject({summary:DXFSummarySchema,artifactSha256:hash,
+  artifactBytes:z.number().int().positive().max(DXF_LIMITS.artifactBytes),selectionSha256:hash,
+  selectionHashBasis:z.literal('accepted_artifact_source_and_sorted_entity_ordinals'),
+  nativeIdentifierScope:z.literal('source_native_only; not_canonical_registry_ids'),
+  parser:SourceFusionLiteralObjectSchema,
+  entities:z.array(z.strictObject({ordinal:z.number().int().min(0).max(9999),pointer:z.string(),recordSha256:hash,
+    record:SourceFusionLiteralObjectSchema})).min(1).max(25),
+  reference:z.strictObject({encoding:SourceFusionLiteralObjectSchema,units:SourceFusionLiteralObjectSchema,
+    headerVariables:SourceFusionLiteralObjectSchema,layers:z.array(SourceFusionLiteralObjectSchema).max(10000),
+    blocks:z.array(SourceFusionLiteralObjectSchema).max(10000)}),
+  findings:z.array(SourceFusionLiteralJsonSchema).max(10000),qualification:SourceFusionLiteralObjectSchema,
+  limitations:z.array(z.string().max(1000)).max(100),
+  coverage:z.strictObject({selectedEntities:z.number().int().positive().max(25),availableNativeEntities:z.number().int().nonnegative().max(10000),
+    scope:z.literal('explicit_entity_records; source_reference_metadata; referenced_block_definitions_only'),
+    unselectedEntities:z.literal('not_expanded'),blockExpansion:z.literal('not_performed'),
+    geometryQualification:z.literal('not_assessed'),propertyMatching:z.literal('unsupported')})});
+export const SourceFusionDXFSchema=SourceFusionDXFMetadataSchema.extend({...base,kind:z.literal('dxf')});
 export const SourceFusionContextSchema=z.strictObject({version:z.literal(SOURCE_FUSION_VERSION),contextSha256:hash,
-  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema])).min(2).max(8),
+  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema,SourceFusionDXFSchema])).min(2).max(8),
   association:z.strictObject({state:z.literal('not_assessed'),membership:z.literal('operator_selection'),
     reason:z.literal('source_set_membership_does_not_establish_relationships'),
     canonicalTargets:z.array(z.never()).max(0),crossSourceFrameAlignment:z.literal('not_assessed'),

@@ -1,4 +1,5 @@
 import {DocumentResultSchema,CityJSONResultSchema,IFCResultSchema,IFC_LIMITS,type DocumentInput,type CityJSONInput,type IFCInput} from '@ulpin/contracts/usp';
+import {DXFResultSchema,DXF_LIMITS,type DXFInput} from '@ulpin/contracts/usp';
 import type {RequestContext} from '@ulpin/contracts/usp';
 import {SOURCE_FUSION_LIMITS,type SourceFusionSelection} from '../../../../../contracts/src/source-fusion';
 import {transaction} from '../../../infrastructure/db';
@@ -13,9 +14,13 @@ import {documentResultKey} from './documents';
 import {ifcResultKey,ifcArtifactKey} from './ifc';
 import {ifcSummary} from './ifc-processor';
 import {acceptedFusionIFCTx,verifyFusionIFCTools} from './source-fusion-ifc-authority';
+import {dxfResultKey,dxfArtifactKey} from './dxf';
+import {dxfSummary} from './dxf-processor';
+import {acceptedFusionDXFTx,verifyFusionDXFTools} from './source-fusion-dxf-authority';
 
 export type FusionAuthority={kind:'document';input:DocumentInput;acceptedFence:number}|
-  {kind:'cityjson';input:CityJSONInput;acceptedFence:number}|{kind:'ifc';input:IFCInput;acceptedFence:number};
+  {kind:'cityjson';input:CityJSONInput;acceptedFence:number}|{kind:'ifc';input:IFCInput;acceptedFence:number}|
+  {kind:'dxf';input:DXFInput;acceptedFence:number};
 export type FusionBudget={deadlineAt:number;signal:AbortSignal;reservedBytes:number};
 export function fusionLive(budget:Pick<FusionBudget,'deadlineAt'|'signal'>){
   if(budget.signal.aborted||Date.now()>=budget.deadlineAt)
@@ -23,7 +28,8 @@ export function fusionLive(budget:Pick<FusionBudget,'deadlineAt'|'signal'>){
 }
 type AuthorityDependencies={transaction:typeof transaction;document:typeof associationDocumentInputTx;
   cityjson:typeof acceptedCityJSONTx;gate:typeof lockSourceCaseDestinationTx;
-  ifc?:typeof acceptedFusionIFCTx;ifcTools?:typeof verifyFusionIFCTools};
+  ifc?:typeof acceptedFusionIFCTx;ifcTools?:typeof verifyFusionIFCTools;
+  dxf?:typeof acceptedFusionDXFTx;dxfTools?:typeof verifyFusionDXFTools};
 const defaults:AuthorityDependencies={transaction,document:associationDocumentInputTx,cityjson:acceptedCityJSONTx,gate:lockSourceCaseDestinationTx};
 
 /** All final rows share one transaction after ALL object I/O. No persistent write. */
@@ -50,6 +56,8 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
       let authority:FusionAuthority;
       if(selection.kind==='ifc'){
         authority=await (deps.ifc??acceptedFusionIFCTx)(client,pin,true);
+      }else if(selection.kind==='dxf'){
+        authority=await (deps.dxf??acceptedFusionDXFTx)(client,pin,true);
       }else if(selection.kind!=='cityjson'){
         const prior=expected?.[index];
         const input=await deps.document(client,ctx,pin,prior?.kind==='document'?prior.input:undefined,true);
@@ -67,8 +75,10 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
     }
     fusionLive(budget);assertLocalUsp(ctx);return result;
   },{deadlineAt:budget.deadlineAt,signal:budget.signal});
-  for(const authority of captured)if(authority.kind==='ifc')
-    (deps.ifcTools??verifyFusionIFCTools)(authority.input,budget);
+  for(const authority of captured){
+    if(authority.kind==='ifc')(deps.ifcTools??verifyFusionIFCTools)(authority.input,budget);
+    if(authority.kind==='dxf')(deps.dxfTools??verifyFusionDXFTools)(authority.input,budget);
+  }
   fusionLive(budget);assertLocalUsp(ctx);return captured;
 }
 
@@ -121,12 +131,14 @@ export function fusionJson(bytes:Uint8Array,budget:Pick<FusionBudget,'deadlineAt
 export async function readFusionResult(selection:SourceFusionSelection,authority:FusionAuthority,budget:FusionBudget,
   read:typeof readFusionObject=readFusionObject){
   const pin=selection.pin;
-  if((selection.kind==='ifc'&&authority.kind!=='ifc')||(selection.kind==='cityjson'&&authority.kind!=='cityjson')||
+  if((selection.kind==='ifc'&&authority.kind!=='ifc')||(selection.kind==='dxf'&&authority.kind!=='dxf')||(selection.kind==='cityjson'&&authority.kind!=='cityjson')||
     ((selection.kind==='document'||selection.kind==='document_ocr')&&authority.kind!=='document'))
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
   if(selection.kind==='ifc'&&pin.resultBytes>IFC_LIMITS.resultBytes)
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted IFC result exceeds its receipt profile.');
-  const key=selection.kind==='ifc'?ifcResultKey(pin.jobId,pin.resultSha256):
+  if(selection.kind==='dxf'&&pin.resultBytes>DXF_LIMITS.resultBytes)
+    throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted DXF result exceeds its receipt profile.');
+  const key=selection.kind==='dxf'?dxfResultKey(pin.jobId,pin.resultSha256):selection.kind==='ifc'?ifcResultKey(pin.jobId,pin.resultSha256):
     selection.kind==='cityjson'?cityjsonResultKey(pin.jobId,pin.resultSha256):documentResultKey(pin.jobId,pin.resultSha256);
   const bytes=await read(key,pin.resultBytes,pin.resultSha256,budget);
   const value=fusionJson(bytes,budget);
@@ -170,6 +182,16 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
     if(fingerprint(ifcSummary(artifact,authority.input))!==fingerprint(result.summary))
       throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted IFC metadata differs from its summary.');
     return {kind:'ifc' as const,result,native};
+  }
+  if(selection.kind==='dxf'&&authority.kind==='dxf'){
+    const result=DXFResultSchema.parse(value);
+    if(fingerprint(result.input)!==fingerprint(authority.input)||result.artifact.key!==dxfArtifactKey(pin.jobId,result.artifact.sha256))
+      throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted DXF artifact belongs to another input.');
+    const artifact=await read(result.artifact.key,result.artifact.bytes,result.artifact.sha256,budget);
+    const native=fusionJson(artifact,budget);
+    if(fingerprint(dxfSummary(artifact,authority.input))!==fingerprint(result.summary))
+      throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted DXF metadata differs from its summary.');
+    return {kind:'dxf' as const,result,native};
   }
   throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
 }
