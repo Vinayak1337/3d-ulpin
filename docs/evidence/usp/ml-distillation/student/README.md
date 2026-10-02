@@ -1,5 +1,7 @@
 # STUDENT-01 — cited association baseline
 
+Latest checkpoint: [STUDENT-03's loss-memory repair](memory-repair-attempt-v1.md) passed contained loss/gradient equivalence and the original first backward/update. The run was rejected after optimizer step 3 for a recorded Job committed-memory peak above 6 GiB. No adapter, reload or new quality result was accepted.
+
 Subsequent checkpoint: [STUDENT-02's single frozen adapter attempt](adapter-attempt-v1.md) passed teacher/token preflight but failed native allocation during its first backward, with recorded Job committed memory above the 6 GiB cap. Zero updates completed; no adapter/reload or new quality result exists. The baseline record below remains its original historical checkpoint.
 
 2 October 2026. **Contained execution passed; pretrained output quality failed.** Code commit `5df8a978f631192082651270269d747c601bcb93` implements the runnable source-to-model-to-validation path. Both raw responses violate the frozen contract, so the accepted projection contains only explicit abstentions. No format repair or additional prompt/model attempt was used. [The receipt](baseline-v1.json) records exact commands, source/model/input pins, raw output, resource acceptance and limitations.
