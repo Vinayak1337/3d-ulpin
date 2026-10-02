@@ -28,7 +28,18 @@ def worker(args):
     args.output_dir.mkdir(exist_ok=False)
     try:
         freeze = json.loads(args.run_freeze.read_bytes())
-        if freeze["settings"] != SETTINGS or freeze["systemPromptSha256"] != hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest():
+        selector_mode = str(freeze["version"]).startswith("association-selector-")
+        runner, runner_options, system_prompt = run_local, {}, SYSTEM_PROMPT
+        if selector_mode:
+            from geo.usp_learning.association.selector_baseline import checked_run_inputs, run_selectors
+            from geo.usp_learning.association.selectors import SYSTEM_PROMPT as SELECTOR_PROMPT
+            selector_contract, selector_assignment = checked_run_inputs(freeze, args.run_freeze.parent)
+            runner, system_prompt = run_selectors, SELECTOR_PROMPT
+            runner_options = {"selector_contract": selector_contract, "cases": selector_assignment["cases"],
+                "preserve_preflight": lambda value: write_json_once(args.output_dir / "selector-preflight.json", value)}
+        elif "lexicalPolicy" in freeze or "selectorSchemaCanonicalLfSha256" in freeze:
+            raise RuntimeError("explicit selector baseline freeze required")
+        if freeze["settings"] != SETTINGS or freeze["systemPromptSha256"] != hashlib.sha256(system_prompt.encode()).hexdigest():
             raise RuntimeError("frozen baseline settings or prompt drift")
         for option, digest in freeze["inputSha256"].items():
             if sha(getattr(args, option)) != digest:
@@ -47,9 +58,9 @@ def worker(args):
         batch = json.loads(args.input_batch.read_bytes())
         if batch["version"] != "association-development/1" or len(batch["examples"]) != 2:
             raise RuntimeError("requires the frozen compact development baseline")
-        raw, result = run_local(batch["examples"], json.loads(schema_bytes), family, model_path,
+        raw, result = runner(batch["examples"], json.loads(schema_bytes), family, model_path,
                                 lambda: require_model_boundary(args),
-                                lambda index, value: write_json_once(args.output_dir / f"raw-{index}.json", value))
+                                lambda index, value: write_json_once(args.output_dir / f"raw-{index}.json", value), **runner_options)
         write_json_once(args.output_dir / "raw-outputs.json", raw)
         write_json_once(args.output_dir / "result.json", result)
         print(json.dumps({"exampleCount": len(raw), "modelOutputValidCount": result["modelOutputValidCount"],
