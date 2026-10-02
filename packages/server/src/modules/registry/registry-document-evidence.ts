@@ -25,6 +25,7 @@ import {readFusionResult,fusionLive} from '../usp/ingestion/source-fusion-author
 import {registryIFCCitationSourceTx} from './registry-ifc-citation-source';
 import {verifyFusionIFCTools} from '../usp/ingestion/source-fusion-ifc-authority';
 import {SOURCE_FUSION_LIMITS} from '../../../../contracts/src/source-fusion';
+import {ifcIdentityFields,assertIFCIdentityEvidence} from './registry-ifc-identifiers';
 
 export type RegistryDocumentDependencies=FusionCitationDependencies&{result:typeof readDocumentResult;registrySource:typeof registrySourceTx;
   citationSource?:typeof registryDocumentSourceAccessTx};
@@ -151,11 +152,13 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
       const loaded=await (dependencies.fusionResult??readFusionResult)(selection,captured.authority,budget),projected=fusionSourceProjection(selection,loaded);
       if(projected.kind!=='ifc')conflict('The accepted IFC record is unavailable.');
       for(const pin of pins){
-        const {version:_,id:__,target:___,selection:attribution,associationState:____,qualification:_____,...fields}=pin;
+        const {version:_,id:__,target:___,selection:attribution,associationState:____,qualification:_____,identityAssertion:______,...fields}=pin;
         if(pin.id!==citationId(pin)||attribution.accessSha256!==captured.authority.input.accessSha256||
           fingerprint(fields)!==fingerprint(fusionIFCCitationFields(projected,pin.ifc.stepId)))
           conflict('The exact IFC artifact, record, locator, attempt or access pin changed.');
-        entries.push({pin,record:projected.entities.find(entry=>entry.record.stepId===pin.ifc.stepId)!.record});
+        const native=projected.entities.find(entry=>entry.record.stepId===pin.ifc.stepId)!.record;
+        assertIFCIdentityEvidence(record.kind,pin,native,captured.authority.input.accessSha256);
+        entries.push({pin,record:native});
       }
       const current=await ifcSource(dependencies)(client,siteId,selection.pin,lock);
       if(fingerprint(current)!==fingerprint(captured))conflict('The IFC source changed during its private read.');
@@ -354,7 +357,20 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   }
   // Removal remains useful when the removed source is unavailable; retained/additional citations still require current authority.
   const remove=request.clearAll?(record.documentCitations??[]).map(pin=>pin.id):request.remove;
-  const next=applyCitationAmendment(record,added,remove);
+  let next=applyCitationAmendment(record,added,remove);
+  if(request.assertIFCIdentity){
+    const entries=await assertRegistryDocumentCitationsTx(client,draft.site_id,next,true,dependencies);
+    const entry=entries.find(entry=>entry.pin.id===request.assertIFCIdentity);
+    if(!entry||entry.pin.version!=='registry-ifc-citation/1'||!('record' in entry))
+      throw new AppError(422,'REGISTRY_IFC_IDENTITY_SELECTION','Confirm an existing exact IFC citation from this correction.');
+    const pin=entry.pin;
+    if(!pin.identityAssertion){
+      const identityAssertion={...ifcIdentityFields(record.kind,entry.record),subject:ctx.principal.subject,
+        accessSha256:pin.selection.accessSha256,confirmedAt:new Date().toISOString()};
+      next={...next,documentCitations:next.documentCitations!.map(item=>item.id===pin.id?
+        RegistryIFCCitationSchema.parse({...pin,identityAssertion}):item)};
+    }
+  }
   await assertRegistryDocumentCitationsTx(client,draft.site_id,next,true,fusion?fusionValidationDependencies(fusion,dependencies):dependencies);
   await currentTargetTx(client,draft.site_id,record,true,dependencies);
   if(fusion)await fusion.revalidate();
@@ -366,8 +382,11 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     [draft.case_id,operationKey,digest,receipt]);
   return receipt;
 }
-export const amendRegistryDocumentCitations=(draftId:string,raw:unknown)=>transaction(client=>amendRegistryDocumentCitationsTx(client,draftId,raw),
-  RegistryDocumentAmendmentSchema.parse(raw).addFusion?{deadlineAt:Date.now()+30_000}:undefined);
+export const amendRegistryDocumentCitations=(draftId:string,raw:unknown)=>{
+  const request=RegistryDocumentAmendmentSchema.parse(raw);
+  return transaction(client=>amendRegistryDocumentCitationsTx(client,draftId,request),
+    request.addFusion||request.assertIFCIdentity?{deadlineAt:Date.now()+30_000}:undefined);
+};
 export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:string,dependencies:Dependencies=defaults){
   const {draft,record}=await lockedDraftTx(client,draftId);
   const expected=draft.status==='recorded'?{...record,revision:record.revision+1}:record;

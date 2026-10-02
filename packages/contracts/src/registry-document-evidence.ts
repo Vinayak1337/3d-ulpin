@@ -21,6 +21,11 @@ export const RegistryOcrDocumentCitationSchema=z.strictObject({...citationBase,
 /** The historical `document` envelope identifies the actual IFC original/job,
  * solely for common source-case collection. No document input/part is created. */
 export const RegistryIFCCitationSchema=z.strictObject({...citationBase,version:z.literal('registry-ifc-citation/1'),
+  /** Explicit officer confirmation, never implied by ordinary attachment. All
+   * source/artifact/STEP/target pins are inherited from this exact citation. */
+  identityAssertion:z.strictObject({globalId:z.string().regex(/^[0-3][0-9A-Za-z_$]{21}$/),
+    attributeSha256:hash,attributeLocator:SourceFusionLiteralObjectSchema,
+    subject:z.string().min(1).max(256),accessSha256:hash,confirmedAt:z.iso.datetime()}).optional(),
   resultBytes:z.number().int().positive().max(IFC_LIMITS.resultBytes),
   ifc:z.strictObject({artifactSha256:hash,artifactBytes:z.number().int().positive().max(IFC_LIMITS.artifactBytes),
     profile:z.literal('ulpin-native-ifc/1'),stepId:z.number().int().positive(),
@@ -38,10 +43,13 @@ export const RegistryDocumentAmendmentSchema=z.strictObject({requestKey:z.uuid()
   recordId:z.uuid(),expectedRecordRevision:revision,
   add:z.strictObject({document:DocumentAssociationSourceSchema,partIds:z.array(z.uuid()).min(1).max(25)}).optional(),
   addFusion:z.strictObject({contextSha256:hash,selection:SourceFusionRequestSchema}).optional(),
+  assertIFCIdentity:hash.optional(),
   remove:z.array(hash).max(25).default([]),
   clearAll:z.literal(true).optional(),
 }).superRefine((value,ctx)=>{
-  if(!value.add&&!value.addFusion&&!value.remove.length&&!value.clearAll)ctx.addIssue({code:'custom',message:'Select citations to add, remove or explicitly clear.'});
+  if(!value.add&&!value.addFusion&&!value.assertIFCIdentity&&!value.remove.length&&!value.clearAll)ctx.addIssue({code:'custom',message:'Select citations to add, confirm IFC identity, remove or explicitly clear.'});
+  if(value.assertIFCIdentity&&(value.add||value.addFusion||value.remove.length||value.clearAll))
+    ctx.addIssue({code:'custom',message:'Confirm one existing exact IFC citation as a separate amendment. Withdraw it by removing the citation.'});
   if(value.add&&value.addFusion)ctx.addIssue({code:'custom',message:'Use one explicit addition per amendment.'});
   if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:s.kind==='ifc'?s.stepIds.length:false))
     ctx.addIssue({code:'custom',message:'Select at least one native document, OCR observation or IFC record to cite.'});
