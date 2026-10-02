@@ -98,8 +98,11 @@ test('IFC plus retained document preserves selected native literals, hierarchy, 
   assert.equal(context.association.crossSourceFrameAlignment,'not_assessed');assert.deepEqual(context.association.canonicalTargets,[]);
   const oldContext=JSON.parse(readFileSync('E:/BhuAayam-data/task-data/desktop-source-fusion-ocr/mixed-context.json','utf8'));
   assert.deepEqual(fusionContextProjection(oldContext.sources),oldContext);
-  assert.throws(()=>associationLiterals(context),(error:any)=>error.code==='SOURCE_FUSION_IFC_CONTEXT_ONLY');
-  assert.throws(()=>associationManualSelection({context:{selection:request}} as any,context,[]),(error:any)=>error.code==='SOURCE_FUSION_IFC_CONTEXT_ONLY');
+  assert.equal(associationLiterals(context).filter(literal=>literal.citation.kind==='ifc').length,3);
+  // With no cited IFC record, only one empty document source remains. Do not
+  // keep an unrelated IFC record merely to satisfy fusion's two-source minimum.
+  assert.throws(()=>associationManualSelection({context:{selection:request}} as any,context,[]),
+    (error:any)=>error.code==='FUSION_ASSOCIATION_MANUAL_CONTEXT');
   await assert.rejects(()=>resolveFusionCitationsTx({query:()=>assert.fail('no citation I/O')} as any,ctx,
     {contextSha256:context.contextSha256,selection:request},{source:()=>assert.fail('no document authority')} as any),
     (error:any)=>error.code==='SOURCE_FUSION_IFC_CONTEXT_ONLY');
