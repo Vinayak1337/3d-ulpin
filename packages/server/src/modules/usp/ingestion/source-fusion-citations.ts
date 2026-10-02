@@ -24,6 +24,8 @@ export function citationReadBudget():FusionBudget{
  * No independent transaction, write or trusted caller-supplied context exists. */
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string){
+  if(request.selection.sources.some(source=>source.kind==='kml'))
+    throw new AppError(422,'SOURCE_FUSION_KML_CONTEXT_ONLY','KML fragments support source context only; reviewed citation attachment is unsupported.');
   if(request.selection.sources.some(source=>source.kind==='dxf'))
     throw new AppError(422,'SOURCE_FUSION_DXF_CONTEXT_ONLY','DXF fragments support source context only; reviewed citation attachment is unsupported.');
   if(request.selection.sources.some(source=>source.kind==='ifc')&&!siteId)
@@ -49,7 +51,7 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
     }});
   // Keep registry consumers' citation union exact. The request is refused above;
   // never drop a context-only fragment from a hash and then accept the remainder.
-  const citationSources=context.sources.filter((source):source is Exclude<SourceFusionContext['sources'][number],{kind:'dxf'}>=>source.kind!=='dxf');
+  const citationSources=context.sources.filter((source):source is Exclude<SourceFusionContext['sources'][number],{kind:'dxf'|'kml'}>=>source.kind!=='dxf'&&source.kind!=='kml');
   if(citationSources.length!==context.sources.length)
     throw new AppError(422,'SOURCE_FUSION_DXF_CONTEXT_ONLY','DXF fragments support source context only; reviewed citation attachment is unsupported.');
   if(context.contextSha256!==request.contextSha256)conflict('The explicitly selected fusion context changed.');

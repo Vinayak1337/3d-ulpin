@@ -17,10 +17,14 @@ import {acceptedFusionIFCTx,verifyFusionIFCTools} from './source-fusion-ifc-auth
 import {dxfResultKey,dxfArtifactKey} from './dxf';
 import {dxfSummary} from './dxf-processor';
 import {acceptedFusionDXFTx,verifyFusionDXFTools} from './source-fusion-dxf-authority';
+import {KMLResultSchema,KML_LIMITS,type KMLInput} from '@ulpin/contracts/usp';
+import {kmlResultKey,kmlArtifactKey} from './kml';
+import {kmlSummary} from './kml-processor';
+import {acceptedFusionKMLTx,verifyFusionKMLTools} from './source-fusion-kml-authority';
 
 export type FusionAuthority={kind:'document';input:DocumentInput;acceptedFence:number}|
   {kind:'cityjson';input:CityJSONInput;acceptedFence:number}|{kind:'ifc';input:IFCInput;acceptedFence:number}|
-  {kind:'dxf';input:DXFInput;acceptedFence:number};
+  {kind:'dxf';input:DXFInput;acceptedFence:number}|{kind:'kml';input:KMLInput;acceptedFence:number};
 export type FusionBudget={deadlineAt:number;signal:AbortSignal;reservedBytes:number};
 export function fusionLive(budget:Pick<FusionBudget,'deadlineAt'|'signal'>){
   if(budget.signal.aborted||Date.now()>=budget.deadlineAt)
@@ -29,7 +33,8 @@ export function fusionLive(budget:Pick<FusionBudget,'deadlineAt'|'signal'>){
 type AuthorityDependencies={transaction:typeof transaction;document:typeof associationDocumentInputTx;
   cityjson:typeof acceptedCityJSONTx;gate:typeof lockSourceCaseDestinationTx;
   ifc?:typeof acceptedFusionIFCTx;ifcTools?:typeof verifyFusionIFCTools;
-  dxf?:typeof acceptedFusionDXFTx;dxfTools?:typeof verifyFusionDXFTools};
+  dxf?:typeof acceptedFusionDXFTx;dxfTools?:typeof verifyFusionDXFTools;
+  kml?:typeof acceptedFusionKMLTx;kmlTools?:typeof verifyFusionKMLTools};
 const defaults:AuthorityDependencies={transaction,document:associationDocumentInputTx,cityjson:acceptedCityJSONTx,gate:lockSourceCaseDestinationTx};
 
 /** All final rows share one transaction after ALL object I/O. No persistent write. */
@@ -58,6 +63,8 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
         authority=await (deps.ifc??acceptedFusionIFCTx)(client,pin,true);
       }else if(selection.kind==='dxf'){
         authority=await (deps.dxf??acceptedFusionDXFTx)(client,pin,true);
+      }else if(selection.kind==='kml'){
+        authority=await (deps.kml??acceptedFusionKMLTx)(client,pin,true);
       }else if(selection.kind!=='cityjson'){
         const prior=expected?.[index];
         const input=await deps.document(client,ctx,pin,prior?.kind==='document'?prior.input:undefined,true);
@@ -78,6 +85,7 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
   for(const authority of captured){
     if(authority.kind==='ifc')(deps.ifcTools??verifyFusionIFCTools)(authority.input,budget);
     if(authority.kind==='dxf')(deps.dxfTools??verifyFusionDXFTools)(authority.input,budget);
+    if(authority.kind==='kml')(deps.kmlTools??verifyFusionKMLTools)(authority.input,budget);
   }
   fusionLive(budget);assertLocalUsp(ctx);return captured;
 }
@@ -132,13 +140,16 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
   read:typeof readFusionObject=readFusionObject){
   const pin=selection.pin;
   if((selection.kind==='ifc'&&authority.kind!=='ifc')||(selection.kind==='dxf'&&authority.kind!=='dxf')||(selection.kind==='cityjson'&&authority.kind!=='cityjson')||
+    (selection.kind==='kml'&&authority.kind!=='kml')||
     ((selection.kind==='document'||selection.kind==='document_ocr')&&authority.kind!=='document'))
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
   if(selection.kind==='ifc'&&pin.resultBytes>IFC_LIMITS.resultBytes)
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted IFC result exceeds its receipt profile.');
   if(selection.kind==='dxf'&&pin.resultBytes>DXF_LIMITS.resultBytes)
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted DXF result exceeds its receipt profile.');
-  const key=selection.kind==='dxf'?dxfResultKey(pin.jobId,pin.resultSha256):selection.kind==='ifc'?ifcResultKey(pin.jobId,pin.resultSha256):
+  if(selection.kind==='kml'&&pin.resultBytes>KML_LIMITS.resultBytes)
+    throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted KML result exceeds its receipt profile.');
+  const key=selection.kind==='kml'?kmlResultKey(pin.jobId,pin.resultSha256):selection.kind==='dxf'?dxfResultKey(pin.jobId,pin.resultSha256):selection.kind==='ifc'?ifcResultKey(pin.jobId,pin.resultSha256):
     selection.kind==='cityjson'?cityjsonResultKey(pin.jobId,pin.resultSha256):documentResultKey(pin.jobId,pin.resultSha256);
   const bytes=await read(key,pin.resultBytes,pin.resultSha256,budget);
   const value=fusionJson(bytes,budget);
@@ -192,6 +203,16 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
     if(fingerprint(dxfSummary(artifact,authority.input))!==fingerprint(result.summary))
       throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted DXF metadata differs from its summary.');
     return {kind:'dxf' as const,result,native};
+  }
+  if(selection.kind==='kml'&&authority.kind==='kml'){
+    const result=KMLResultSchema.parse(value);
+    if(fingerprint(result.input)!==fingerprint(authority.input)||result.artifact.key!==kmlArtifactKey(pin.jobId,result.artifact.sha256))
+      throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted KML artifact belongs to another input.');
+    const artifact=await read(result.artifact.key,result.artifact.bytes,result.artifact.sha256,budget);
+    const native=fusionJson(artifact,budget);
+    if(fingerprint(kmlSummary(artifact,authority.input))!==fingerprint(result.summary))
+      throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted KML metadata differs from its summary.');
+    return {kind:'kml' as const,result,native};
   }
   throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
 }
