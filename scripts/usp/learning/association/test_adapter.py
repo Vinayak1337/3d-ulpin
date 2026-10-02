@@ -23,6 +23,7 @@ from geo.usp_learning.association import adapter, student
 from geo.usp_learning.association.validation import InvalidEvidence
 from stage_adapter import BASELINE, TEACHER
 from geo.usp_learning.association.memory_observation import PhaseRecorder
+from geo.usp_learning.association.query_attention import validate_options
 
 
 class TokenizerControl:
@@ -38,6 +39,15 @@ class TokenizerControl:
 
 
 class AdapterTests(unittest.TestCase):
+    def test_fit_attention_refuses_unsupported_context_and_options(self):
+        validate_options(None, 0.0, 0.125, {"sliding_window": None, "use_cache": False, "output_attentions": False})
+        for mask, dropout, scale, options in ((object(), 0.0, 0.125, {}), (None, 0.1, 0.125, {}),
+                (None, 0.0, 0.25, {}), (None, 0.0, 0.125, {"use_cache": True}),
+                (None, 0.0, 0.125, {"sliding_window": 128}), (None, 0.0, 0.125, {"output_attentions": True}),
+                (None, 0.0, 0.125, {"is_causal": False}), (None, 0.0, 0.125, {"head_mask": object()})):
+            with self.subTest(options=options), self.assertRaises(InvalidEvidence):
+                validate_options(mask, dropout, scale, options)
+
     @classmethod
     def setUpClass(cls):
         cls.v1 = (TEACHER / "train-teacher-v1.jsonl").read_bytes()

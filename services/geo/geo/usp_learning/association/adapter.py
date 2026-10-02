@@ -13,6 +13,7 @@ from .student import SETTINGS, SYSTEM_PROMPT, prompt_messages, run_local
 from .validation import require, strict_json, validate_output
 from .chunked_loss import LOSS_POLICY, checkpointed_head_loss, run_equivalence, supervised_positions
 from .reclamation import RECLAMATION_POLICY, release_unused_cache, run_reclamation_control
+from .query_attention import ATTENTION_POLICY, fit_attention_scope, run_attention_control
 
 V1_SHA = "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec"
 V2_SHA = "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c"
@@ -192,6 +193,7 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     phases.sample("after_cuda_initialization", torch)
     run_equivalence(torch, output_dir, write, phases)
     run_reclamation_control(torch, output_dir, write, phases)
+    run_attention_control(torch, output_dir, write, phases)
     phases.sample("before_model_load", torch)
     load_started = time.perf_counter()
     base = AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
@@ -232,11 +234,12 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     phases.sample("setup_after_reclamation", torch, **setup_reclamation)
     updates, supervised_tokens, losses = 0, 0, []
     fit_started = time.perf_counter()
-    with (output_dir / "fit-progress.jsonl").open("x", encoding="utf-8", newline="\n") as progress:
+    with fit_attention_scope(decoder, output_dir) as attention, (output_dir / "fit-progress.jsonl").open("x", encoding="utf-8", newline="\n") as progress:
         for epoch, order in enumerate(orders):
             for index in order:
                 row, before = encoded[index], time.perf_counter()
                 context = {"update": updates + 1, "exampleId": row["exampleId"], "epoch": epoch + 1}
+                attention.begin(context, len(row["inputIds"]))
                 phases.sample("example_start", torch, **context)
                 ids = torch.tensor([row["inputIds"]], dtype=torch.long, device="cuda")
                 labels = torch.tensor([row["labels"]], dtype=torch.long, device="cuda")
@@ -258,7 +261,8 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                     # the same Qwen2Model instance retains all q/v adapters and RNG behavior.
                     with model._enable_peft_forward_hooks(use_cache=False):
                         hidden = decoder(input_ids=ids, attention_mask=torch.ones_like(ids), use_cache=False).last_hidden_state
-                    phases.sample("first_after_decoder" if updates == 0 else "after_decoder", torch, **context)
+                    phases.sample("first_after_decoder" if updates == 0 else "after_decoder", torch, **context,
+                                  attentionBlocks=attention.snapshot("decoder"))
                     loss = checkpointed_head_loss(hidden[:, selected, :], target, head)
                 require(bool(torch.isfinite(loss)), "nonfinite_training_loss")
                 numeric_loss = float(loss.detach())
@@ -272,7 +276,8 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 phases.sample("after_backward_reclamation", torch, **context, loss=numeric_loss,
                               finite=True, supervisedDenominator=target.numel(), **pre_backward_reclamation)
                 scaler.scale(loss).backward()
-                phases.sample("first_after_backward" if updates == 0 else "after_backward", torch, **context, loss=numeric_loss)
+                phases.sample("first_after_backward" if updates == 0 else "after_backward", torch, **context, loss=numeric_loss,
+                              attentionBlocks=attention.snapshot("backward"))
                 scaler.unscale_(optimizer)
                 require(all(p.grad is not None and bool(torch.isfinite(p.grad).all()) for _, p in trainable), "missing_or_nonfinite_adapter_gradient")
                 require(any(bool(torch.count_nonzero(p.grad)) for _, p in trainable), "all_adapter_gradients_zero")
@@ -296,6 +301,7 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 reclamation = release_unused_cache(torch)
                 phases.sample("after_reclamation", torch, **context, **reclamation)
     require(updates == 66, "incomplete_frozen_fit")
+    require(attention.restored, "fit_attention_scope_not_restored")
     fit_seconds = time.perf_counter() - fit_started
     optimizer.zero_grad(set_to_none=True)
     base_after = _tensor_digest(frozen)
@@ -310,6 +316,7 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 "tensorCount": len(saved), "baseParametersBefore": base_before, "baseParametersAfter": base_after,
                 "savedStateMatchesTrainableAdapter": True, "updates": updates, "settings": FIT, "numerics": NUMERICS,
                 "reclamationImplementation": RECLAMATION_POLICY,
+                "attentionImplementation": ATTENTION_POLICY, "attentionControlSha256": digest_file(output_dir / "attention-control.json"),
                 "reclamationControlSha256": digest_file(output_dir / "reclamation-control.json"),
                 "lossImplementation": LOSS_POLICY, "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json")}
     verify_adapter_files(adapter_dir, manifest)
@@ -324,6 +331,9 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
               "runtime": {name: metadata.version(name) for name in ("torch", "transformers", "peft", "accelerate", "safetensors")},
               "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json"), "lossImplementation": LOSS_POLICY,
               "reclamationImplementation": RECLAMATION_POLICY,
+              "attentionImplementation": ATTENTION_POLICY, "attentionControlSha256": digest_file(output_dir / "attention-control.json"),
+              "attentionBlocksSha256": digest_file(output_dir / "attention-blocks.jsonl"),
+              "attentionScopeSha256": digest_file(output_dir / "attention-scope.json"),
               "reclamationControlSha256": digest_file(output_dir / "reclamation-control.json"),
               "memoryPhasesSha256": digest_file(output_dir / "memory-phases.jsonl"),
               "evaluationOpened": False, "developmentOpened": False, "fitPerformed": True}

@@ -18,6 +18,7 @@ import model_isolation as isolation
 from geo.usp_learning.association.adapter import FIT, NUMERICS, V1_SHA, V2_SHA, checked_teacher, verify_adapter_files
 from geo.usp_learning.association.chunked_loss import LOSS_POLICY
 from geo.usp_learning.association.reclamation import RECLAMATION_POLICY
+from geo.usp_learning.association.query_attention import ATTENTION_POLICY, ATTENTION_CONTROL, query_blocks
 from geo.usp_learning.association.student import SETTINGS, SYSTEM_PROMPT
 from stage_baseline import CODE as BASELINE_CODE, PYTHON_ROOT
 
@@ -25,7 +26,7 @@ BASELINE = isolation.ASSOCIATION_STAGING_PARENT / "baseline-af47550c33ea4dc2a3dc
 BASELINE_PROFILE_SHA = "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438"
 EXPECTATIONS_SHA = "061b98c57bdb386c8fc4bce38660b18fd16340d739d40f75b60b10f95a6f93ce"
 COORDINATOR = Path("C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin")
-ASSIGNMENT = COORDINATOR / "docs/evidence/usp/ml-distillation/adapter-04.pre-backward-reclamation.assignment.json"
+ASSIGNMENT = COORDINATOR / "docs/evidence/usp/ml-distillation/adapter-05.query-chunked-sdpa.assignment.json"
 TEACHER = Path("E:/BhuAayam-data/task-data/ml-distillation/teacher")
 WHEELS = Path("E:/BhuAayam-model-evaluation/20260929/v8-lora-dependencies")
 DEPENDENCIES = {
@@ -36,7 +37,8 @@ CODE = tuple(p for p in BASELINE_CODE if not p.endswith("association_student.py"
     "services/geo/geo/usp_learning/association/adapter.py",
     "services/geo/geo/usp_learning/association/chunked_loss.py",
     "services/geo/geo/usp_learning/association/memory_observation.py",
-    "services/geo/geo/usp_learning/association/reclamation.py")
+    "services/geo/geo/usp_learning/association/reclamation.py",
+    "services/geo/geo/usp_learning/association/query_attention.py")
 
 
 def require(value, message):
@@ -102,6 +104,29 @@ def accepted_fit(root):
             and equivalence["policy"] == LOSS_POLICY and equivalence["passed"] and equivalence["rngUnchanged"]
             and len(equivalence["cases"]) == 2 and all(case["passed"] for case in equivalence["cases"]), "loss equivalence not proven")
     require(result["memoryPhasesSha256"] == isolation.sha(output / "memory-phases.jsonl"), "phase observations drift")
+    attention_control = isolation.read(output / "attention-control.json")
+    attention_sha = isolation.sha(output / "attention-control.json")
+    require(freeze["attentionImplementation"] == result["attentionImplementation"] == manifest["attentionImplementation"] == ATTENTION_POLICY
+            and assignment["attentionControlBeforeFit"] == ATTENTION_CONTROL and attention_control["policy"] == ATTENTION_POLICY
+            and attention_control["passed"] and attention_control["trainingRngRestored"] and attention_control["rngUnchangedInsideControl"]
+            and len(attention_control["cases"]) == 2 and all(row["passed"] for row in attention_control["cases"])
+            and result["attentionControlSha256"] == manifest["attentionControlSha256"] == attention_sha, "attention control not proven")
+    require(result["attentionBlocksSha256"] == isolation.sha(output / "attention-blocks.jsonl")
+            and result["attentionScopeSha256"] == isolation.sha(output / "attention-scope.json"), "attention observation drift")
+    scope = isolation.read(output / "attention-scope.json")
+    require(scope == {"restored": True, "globalRegistryUnchanged": True, "fitOnly": True, "layers": 24}, "attention scope not restored")
+    blocks = [json.loads(line) for line in (output / "attention-blocks.jsonl").read_text().splitlines()]
+    for boundary in ("decoder", "backward"):
+        selected = [row for row in blocks if row["boundary"] == boundary]
+        require([row["update"] for row in selected] == list(range(1, 67)), "attention block history incomplete")
+        for row in selected:
+            sizes = [b - a for a, b in query_blocks(row["tokens"])]
+            require(row["blockSizes"] == sizes and row["maxQueryBlockTokens"] == max(sizes)
+                    and row["fullKeyTokens"] == row["tokens"] and row["minimumBlockStart"] == 0
+                    and row["maximumBlockStart"] == (len(sizes) - 1) * 128
+                    and set(row["layerCalls"]) == {str(i) for i in range(24)}
+                    and all(count == (1 if boundary == "decoder" else 2) for count in row["layerCalls"].values())
+                    and row["primitiveCallsStarted"] >= 24 * len(sizes), "attention block bounds or layer coverage changed")
     reclaim_proof = isolation.read(output / "reclamation-control.json")
     reclaim_sha = isolation.sha(output / "reclamation-control.json")
     require(freeze["reclamationImplementation"] == result["reclamationImplementation"] == manifest["reclamationImplementation"] == RECLAMATION_POLICY
@@ -140,6 +165,9 @@ def accepted_fit(root):
             "lossEquivalenceSha256": equivalent_sha, "lossImplementation": LOSS_POLICY,
             "reclamationImplementation": RECLAMATION_POLICY, "reclamationControlPassed": True, "reclamationControlSha256": reclaim_sha,
             "liveGraphControlPassed": True, "preBackwardReclamationHistoryPassed": True,
+            "attentionImplementation": ATTENTION_POLICY, "attentionControlPassed": True, "attentionControlSha256": attention_sha,
+            "attentionScopeRestored": True, "attentionBlockHistoryPassed": True,
+            "attentionBlocksSha256": result["attentionBlocksSha256"], "attentionScopeSha256": result["attentionScopeSha256"],
             "memoryPhasesSha256": result["memoryPhasesSha256"]}
 
 
@@ -152,10 +180,12 @@ def stage(action, fit_root=None):
     require(assignment["settings"] == FIT and assignment["teacherV1Sha256"] == V1_SHA
             and assignment["teacherV2Sha256"] == V2_SHA and Path(assignment["unchangedBaseline"]) == BASELINE,
             "frozen assignment changed")
-    require(assignment["task"] == "STUDENT-05" and assignment["unchangedRecipe"]
+    require(assignment["task"] == "STUDENT-06" and assignment["unchangedRecipe"]
+            and assignment["attentionControlBeforeFit"] == ATTENTION_CONTROL
+            and assignment["memoryExecutionPolicy"]["queryChunkedAttention"]["queryChunkTokens"] == 128
             and assignment["memoryExecutionPolicy"].get("preBackwardReclamation")
             and assignment["memoryExecutionPolicy"]["headChunkTokens"] == LOSS_POLICY["headChunkTokens"], "memory repair assignment drift")
-    require(isolation.sha(REPO / "docs/evidence/usp/ml-distillation/student/reclamation-attempt-v1.json")
+    require(isolation.sha(REPO / "docs/evidence/usp/ml-distillation/student/live-graph-reclamation-attempt-v1.json")
             == assignment["previousFailureReceiptSha256"], "historical failure receipt drift")
     fit_proof = accepted_fit(fit_root.resolve()) if action == "reload" else None
     if action == "fit":
@@ -166,7 +196,7 @@ def stage(action, fit_root=None):
         committed = subprocess.check_output(["git", "show", commit + ":" + relative], cwd=REPO)
         require((REPO / relative).read_bytes().replace(b"\r\n", b"\n") == committed, "uncommitted execution source: " + relative)
     require(shutil.disk_usage(BASELINE.parent).free >= 15 * 1024**3, "insufficient private staging disk")
-    root = BASELINE.parent / ("adapter-live-reclaim-" + action + "-" + uuid.uuid4().hex)
+    root = BASELINE.parent / ("adapter-query-sdpa-" + action + "-" + uuid.uuid4().hex)
     root.mkdir()
     for name in (*isolation.READONLY, "outputs", "scratch", "state", "receipts"):
         (root / name).mkdir()
@@ -188,6 +218,9 @@ def stage(action, fit_root=None):
     for relative, digest in baseline["files"].items():
         if relative.startswith(("runtime/", "model/")):
             copy(isolation.safe_path(BASELINE, relative), relative, digest)
+    for relative, digest in assignment["inspectedAttentionSources"].items():
+        if relative.startswith("runtime/"):
+            require(files[relative] == digest, "inspected attention dependency drift: " + relative)
     for name, digest in DEPENDENCIES.items():
         wheel = WHEELS / name
         require(isolation.sha(wheel) == digest, "offline wheel pin drift")
@@ -227,9 +260,10 @@ def stage(action, fit_root=None):
             copy(fit_root / "outputs/fit/adapter" / name, "inputs/adapter/" + name, digest)
         isolation.write(root / "inputs/fit-proof.json", fit_proof)
         files["inputs/fit-proof.json"] = isolation.sha(root / "inputs/fit-proof.json")
-    freeze = {"version": "association-adapter-freeze/4", "action": action, "fitSettings": FIT, "numerics": NUMERICS,
+    freeze = {"version": "association-adapter-freeze/5", "action": action, "fitSettings": FIT, "numerics": NUMERICS,
               "memoryExecutionPolicy": assignment["memoryExecutionPolicy"], "lossImplementation": LOSS_POLICY,
               "reclamationImplementation": RECLAMATION_POLICY,
+              "attentionImplementation": ATTENTION_POLICY,
               "previousFailedFit": assignment["previousFailedFit"], "previousFailureReceiptSha256": assignment["previousFailureReceiptSha256"],
               "inferenceSettings": SETTINGS, "systemPromptSha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest(),
               "inputSha256": {key: files["inputs/" + name] for key, name in input_names.items()},
@@ -237,6 +271,9 @@ def stage(action, fit_root=None):
               "baselineProfileSha256": BASELINE_PROFILE_SHA, "dependencyWheels": DEPENDENCIES,
               "inspectedRuntimeSources": {name: files[name] for name in (
                   "runtime/packages/transformers/models/qwen2/modeling_qwen2.py", "runtime/packages/peft/peft_model.py",
+                  "runtime/packages/transformers/integrations/sdpa_attention.py", "runtime/packages/transformers/modeling_utils.py",
+                  "runtime/packages/transformers/utils/generic.py", "runtime/packages/torch/nn/functional.py",
+                  "runtime/packages/torch/nn/attention/__init__.py",
                   "runtime/packages/peft/tuners/lora/model.py", "runtime/packages/torch/utils/checkpoint.py")},
               "nativeJobObservationSource": {"url": "https://raw.githubusercontent.com/microsoft/win32metadata/main/generation/WinSDK/RecompiledIdlHeaders/um/winnt.h",
                   "observedSha256": "404019933323ca25f5db8ce14437483e1054398ce454d5c75df2e187cec2ae40",
