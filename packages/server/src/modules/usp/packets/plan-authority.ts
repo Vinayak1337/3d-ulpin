@@ -1,7 +1,9 @@
 import type { PoolClient } from 'pg';
 import type { RequestContext, TargetPin, EvidencePointer, DeclarationEvidence } from '@ulpin/contracts/usp';
 import { z } from 'zod';
-import type { PacketPlan, PacketPlanInput, PacketPlanEntry } from '../../../../../contracts/src/usp/packets';
+import type { PacketPlan, PacketPlanInput, PacketPlanEntry,AnyPacketPlan } from '../../../../../contracts/src/usp/packets';
+import {isPdfPlan} from './plan-store';
+import {protectPdfPlanTx,authorizePdfPlanTx,assertPdfPlanActor} from './pdf-authority';
 import { UspPacketPlanEntrySchema } from '../../../../../contracts/src/usp/packets';
 import { canonical, fingerprint } from '../../cases/domain';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -21,7 +23,7 @@ async function capturedTx(client: PoolClient, manifestId: string, pin: TargetPin
   if (!row || fingerprint(row.body) !== row.body_sha256) conflict('The exact captured context is unavailable.');
   return row as { body: Record<string, any>; body_sha256: string };
 }
-export function assertPlanActor(ctx: RequestContext, plan: PacketPlan) {
+export function assertPlanActor(ctx: RequestContext, plan: AnyPacketPlan) {
   assertLocalUsp(ctx);
   if (canonical(ctx.principal) !== canonical(plan.creator) || ctx.accessViewId !== plan.accessViewId
     || ctx.policyVersion !== plan.policyVersion)
@@ -78,7 +80,8 @@ async function disclosureDependenciesTx(client: PoolClient, plan: PacketPlan) {
 /** Historical disclosure takes no write fence and performs no writes. Cases/gates
  * precede recording and source/registry locks, matching the existing writers.
  * Rediscovery after protection rejects a changed case/lineage closure before disclosure. */
-export async function protectPlanDisclosureTx(client: PoolClient, ctx: RequestContext, plan: PacketPlan) {
+export async function protectPlanDisclosureTx(client: PoolClient, ctx: RequestContext, plan: AnyPacketPlan) {
+  if(isPdfPlan(plan)){assertPdfPlanActor(ctx,plan);await protectPdfPlanTx(client,ctx,plan.input);return;}
   assertPlanActor(ctx, plan);
   await scopedManifestTx(client, ctx, plan.input.scope);
   const dependencies = await disclosureDependenciesTx(client, plan);
@@ -94,7 +97,8 @@ export async function protectPlanDisclosureTx(client: PoolClient, ctx: RequestCo
 }
 /** Caller holds case-first/recording protection. Check current original access,
  * never current extraction/old revision eligibility, and retain locks until commit. */
-export async function authorizePlanTx(client: PoolClient, ctx: RequestContext, plan: PacketPlan, protect = false) {
+export async function authorizePlanTx(client: PoolClient, ctx: RequestContext, plan: AnyPacketPlan, protect = false) {
+  if(isPdfPlan(plan))return authorizePdfPlanTx(client,ctx,plan);
   assertPlanActor(ctx, plan);
   await scopedManifestTx(client, ctx, plan.input.scope);
   const current = (await client.query(`SELECT r.*,c.status AS project_status FROM registry_records r

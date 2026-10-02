@@ -3,7 +3,8 @@ import type { PoolClient } from 'pg';
 import type { RequestContext } from '@ulpin/contracts/usp';
 import { UspGeneratePropertyCardSchema, UspReadPropertyCardSchema, UspPropertyCardSchema,
   UspPropertyCardViewSchema, type PropertyCard } from '../../../../../contracts/src/usp/property-card';
-import { UspPacketPlanViewSchema, type PacketPlan } from '../../../../../contracts/src/usp/packets';
+import { UspPacketPlanViewSchema,UspTextPacketPlanSchema,UspTextPacketPlanExecutionSchema,
+  type PacketPlan,type PacketPlanConfirmation,type PacketPlanExecution } from '../../../../../contracts/src/usp/packets';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { readObject, openObjectStream, putOriginal, sha256 } from '../../../infrastructure/storage';
@@ -65,13 +66,15 @@ async function storedTx(client: PoolClient, cardId: string, revision: number) {
     || row.object_key !== `usp/property-cards/${cardId}/${revision}/${card.artifact.sha256}`) conflict('The saved card linkage changed.');
   return { card, objectKey: row.object_key as string };
 }
-type Executed = Awaited<ReturnType<typeof readPacketPlan>> & { confirmation: NonNullable<Awaited<ReturnType<typeof readPacketPlan>>['confirmation']>;
-  execution: NonNullable<Awaited<ReturnType<typeof readPacketPlan>>['execution']> };
+type Executed={plan:PacketPlan;confirmation:PacketPlanConfirmation;execution:PacketPlanExecution};
 async function executed(ctx: RequestContext, planId: string, version: number): Promise<Executed> {
   const view = await readPacketPlan(ctx, { planId, version });
+  if(view.plan.input.format==='pdf')throw new AppError(422,'CARD_PDF_PLAN_UNSUPPORTED',
+    'Property cards currently require an executed text/CSV plan.');
   if (!view.confirmation || !view.execution || view.plan.requiredContext !== 'available')
     throw new AppError(422, 'CARD_EXECUTED_PLAN_REQUIRED', 'Execute a confirmed complete text/CSV plan before generating a card.');
-  return view as Executed;
+  return {plan:UspTextPacketPlanSchema.parse(view.plan),confirmation:view.confirmation,
+    execution:UspTextPacketPlanExecutionSchema.parse(view.execution)};
 }
 /** Compare the exact immutable linkage on this same protected transaction client. */
 async function protectedTx(client: PoolClient, ctx: RequestContext, view: Executed) {

@@ -24,5 +24,11 @@ test('registered private plans expose bounded strict contracts and deny invalid 
       await assert.rejects(() => controller[method](req as any, { setHeader: (k: string, v: string) => headers.set(k, v) } as any));
       assert.equal(headers.get('Cache-Control'), 'private, no-store');
     }
+    const download=doc.paths['/api/v1/usp/packets/pdf/{packetId}/download']?.get;
+    assert.equal(download?.operationId,'GET_api_v1_usp_packets_pdf_packetId_download');
+    assert(download?.responses['200']);
+    await assert.rejects(()=>controller.downloadPdf('invalid-id',{url:'/'} as any,{} as any));
+    await assert.rejects(()=>controller.downloadPdf('00000000-0000-4000-8000-000000000001',
+      {url:'/?source=untrusted'} as any,{} as any),(error:any)=>error.code==='PACKET_PDF_QUERY');
   } finally { await app.close(); }
 });
