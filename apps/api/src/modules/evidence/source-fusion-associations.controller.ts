@@ -22,7 +22,7 @@ export class SourceFusionAssociationsController{
   @Post('association-proposals')
   @HttpCode(200)
   @ApiOperation({operationId:'POST_api_v1_usp_evidence_source_fusion_association_proposals',
-    summary:'Propose private exact-identifier building/floor associations for explicit review; no automatic recording'})
+    summary:'Propose private exact-identifier native/OCR/IFC building/floor associations for review; IFC requires a sourced GlobalId crosswalk'})
   @ApiBody({required:true,description:'Strict JSON, maximum 64 KiB; 2–8 accepted sources, 25 fragments and at most 8 exact recorded targets',
     schema:requestApiSchema(FusionAssociationRequestSchema)})
   @ApiResponse({status:200,description:'Proposals or explicit abstentions; manual selection remains available',

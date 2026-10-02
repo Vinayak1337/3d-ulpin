@@ -25187,7 +25187,7 @@
             }
           }
         },
-        "summary": "Propose private exact-identifier building/floor associations for explicit review; no automatic recording",
+        "summary": "Propose private exact-identifier native/OCR/IFC building/floor associations for review; IFC requires a sourced GlobalId crosswalk",
         "tags": [
           "USP source association proposals"
         ],
@@ -194885,6 +194885,196 @@
                               "itemSha256"
                             ],
                             "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "ifc"
+                                ]
+                              },
+                              "key": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "quote": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1000
+                              },
+                              "pin": {
+                                "type": "object",
+                                "properties": {
+                                  "caseId": {},
+                                  "caseRevision": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "sourceId": {},
+                                  "sourceRevision": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "sourceSha256": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{64}$"
+                                  },
+                                  "jobId": {},
+                                  "resultSha256": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{64}$"
+                                  },
+                                  "readerSha256": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{64}$"
+                                  },
+                                  "inputSha256": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{64}$"
+                                  },
+                                  "acceptedFence": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "resultBytes": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 4194304
+                                  }
+                                },
+                                "required": [
+                                  "caseId",
+                                  "caseRevision",
+                                  "sourceId",
+                                  "sourceRevision",
+                                  "sourceSha256",
+                                  "jobId",
+                                  "resultSha256",
+                                  "readerSha256",
+                                  "inputSha256",
+                                  "acceptedFence",
+                                  "resultBytes"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "artifactSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "artifactBytes": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 16777216
+                              },
+                              "profile": {
+                                "type": "string",
+                                "enum": [
+                                  "ulpin-native-ifc/1"
+                                ]
+                              },
+                              "stepId": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
+                              "entityType": {
+                                "type": "string",
+                                "enum": [
+                                  "IfcBuilding",
+                                  "IfcBuildingStorey",
+                                  "IfcSpace"
+                                ]
+                              },
+                              "recordPointer": {
+                                "type": "string",
+                                "pattern": "^\\/records\\/\\d+$"
+                              },
+                              "recordSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "attribute": {
+                                "type": "string",
+                                "enum": [
+                                  "GlobalId"
+                                ]
+                              },
+                              "attributePointer": {
+                                "type": "string",
+                                "pattern": "^\\/records\\/\\d+\\/attributes\\/GlobalId$"
+                              },
+                              "attributeSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "locator": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              },
+                              "attributeLocator": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              },
+                              "identifierScheme": {
+                                "type": "string",
+                                "enum": [
+                                  "ifc-globalid"
+                                ]
+                              },
+                              "identifierNamespace": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "quoteBasis": {
+                                "type": "string",
+                                "enum": [
+                                  "native_attribute_decoded_value"
+                                ]
+                              },
+                              "identifierScope": {
+                                "type": "string",
+                                "enum": [
+                                  "source_native_only; not_canonical_registry_ids"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "key",
+                              "quote",
+                              "pin",
+                              "artifactSha256",
+                              "artifactBytes",
+                              "profile",
+                              "stepId",
+                              "entityType",
+                              "recordPointer",
+                              "recordSha256",
+                              "attribute",
+                              "attributePointer",
+                              "attributeSha256",
+                              "locator",
+                              "attributeLocator",
+                              "identifierScheme",
+                              "identifierNamespace",
+                              "quoteBasis",
+                              "identifierScope"
+                            ],
+                            "additionalProperties": false
                           }
                         ]
                       }
@@ -195756,7 +195946,7 @@
                   "promptVersion": {
                     "type": "string",
                     "enum": [
-                      "source-fusion-exact-associations/1"
+                      "source-fusion-exact-associations/2"
                     ]
                   },
                   "promptSha256": {
