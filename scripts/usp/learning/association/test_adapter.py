@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 import sys
 import tempfile
+import time
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import uuid
@@ -20,6 +22,7 @@ import model_isolation as isolation
 from geo.usp_learning.association import adapter, student
 from geo.usp_learning.association.validation import InvalidEvidence
 from stage_adapter import BASELINE, TEACHER
+from geo.usp_learning.association.memory_observation import PhaseRecorder
 
 
 class TokenizerControl:
@@ -143,6 +146,25 @@ class AdapterTests(unittest.TestCase):
         current = (REPO / "services/geo/geo/usp_learning/association/student.py").read_text()
         # The actual generation and raw/projection path remain byte-identical.
         self.assertEqual(current[current.index("    raw_outputs, results = [], []"):], source[source.index("    raw_outputs, results = [], []"):])
+
+    def test_unhealthy_cuda_preserves_native_failure_observation(self):
+        with tempfile.TemporaryDirectory(prefix="association-memory-control-") as temporary:
+            root = Path(temporary).resolve()
+            self.assertEqual(root.parent, Path(tempfile.gettempdir()).resolve())
+            self.assertTrue(root.name.startswith("association-memory-control-"))
+            recorder = PhaseRecorder.__new__(PhaseRecorder)
+            recorder.path = root / "phases.jsonl"
+            recorder.started = time.perf_counter()
+            recorder.native = lambda: {"jobCurrentCommittedBytes": 6466048000, "jobPeakCommittedBytes": 6466048000,
+                                       "processPeakRssBytes": 3209150464}
+            def unhealthy():
+                raise RuntimeError("technical CUDA observation failure")
+            torch_control = SimpleNamespace(cuda=SimpleNamespace(is_initialized=lambda: True, mem_get_info=unhealthy))
+            row = recorder.sample("failure", torch_control, failure=True, primaryException="OriginalBackwardError")
+            self.assertEqual(row["primaryException"], "OriginalBackwardError")
+            self.assertEqual(row["native"]["jobPeakCommittedBytes"], 6466048000)
+            self.assertIn("technical CUDA", row["gpuObservationError"])
+            self.assertEqual(json.loads(recorder.path.read_text()), row)
 
 
 if __name__ == "__main__":
