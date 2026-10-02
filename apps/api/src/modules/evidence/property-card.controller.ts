@@ -15,7 +15,7 @@ import { EvidenceExceptionFilter, parseUspPath, readUspBody, UspJsonPost, uspEnv
 @Controller('api/v1/usp/property-cards')
 export class PropertyCardController {
   @Post('generate') @HttpCode(200)
-  @UspJsonPost('POST_api_v1_usp_property_cards_generate', 'Generate a private one-page summary from an executed confirmed text/CSV plan', UspGeneratePropertyCardSchema, UspPropertyCardSchema)
+  @UspJsonPost('POST_api_v1_usp_property_cards_generate', 'Generate a private one-page summary linked to an executed confirmed text/CSV or one-region PDF plan', UspGeneratePropertyCardSchema, UspPropertyCardSchema)
   async generate(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     res.setHeader('Cache-Control', 'private, no-store');
     const command = await readUspBody(req, UspGeneratePropertyCardSchema);

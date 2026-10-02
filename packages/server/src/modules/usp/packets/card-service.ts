@@ -3,8 +3,9 @@ import type { PoolClient } from 'pg';
 import type { RequestContext } from '@ulpin/contracts/usp';
 import { UspGeneratePropertyCardSchema, UspReadPropertyCardSchema, UspPropertyCardSchema,
   UspPropertyCardViewSchema, type PropertyCard } from '../../../../../contracts/src/usp/property-card';
-import { UspPacketPlanViewSchema,UspTextPacketPlanSchema,UspTextPacketPlanExecutionSchema,
-  type PacketPlan,type PacketPlanConfirmation,type PacketPlanExecution } from '../../../../../contracts/src/usp/packets';
+import { UspPacketPlanViewSchema, type AnyPacketPlan, type PacketPlanConfirmation,
+  type PacketPlanExecution } from '../../../../../contracts/src/usp/packets';
+import type { PdfPacketPlanExecution } from '../../../../../contracts/src/usp/packet-pdf';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { readObject, openObjectStream, putOriginal, sha256 } from '../../../infrastructure/storage';
@@ -14,6 +15,8 @@ import { requestReceiptTx } from '../commands';
 import { appendUspOutboxTx } from '../outbox';
 import { readPacket0 } from '../packet0';
 import { readPacketPlan } from './plan-service';
+import { readPacketPdf, type PdfPacketIo } from './pdf-service';
+import { isPdfPlan } from './plan-store';
 import { authorizePlanTx, protectPlanDisclosureTx } from './plan-authority';
 import { projectCardFactsTx } from './card-projection';
 import { propertyCardResolverUrl } from './card-render';
@@ -22,7 +25,7 @@ import { renderPropertyCardProfile, selectPropertyCardProfile } from './card-ren
 const MAX_BYTES = 524288;
 type ArtifactRead = (key: string, bytes: number, hash: string) => Promise<Uint8Array>;
 /** Internal controlled transport, never accepted from an HTTP request. */
-export type PropertyCardIo = { readPacket: typeof readObject; readCard: ArtifactRead; put: typeof putOriginal };
+export type PropertyCardIo = { readPacket: typeof readObject; readCard: ArtifactRead; put: typeof putOriginal; pdf?: PdfPacketIo };
 async function boundedCardRead(key: string, bytes: number, hash: string) {
   const object = await openObjectStream(key, bytes, 30000), chunks: Buffer[] = []; let count = 0;
   try {
@@ -66,15 +69,19 @@ async function storedTx(client: PoolClient, cardId: string, revision: number) {
     || row.object_key !== `usp/property-cards/${cardId}/${revision}/${card.artifact.sha256}`) conflict('The saved card linkage changed.');
   return { card, objectKey: row.object_key as string };
 }
-type Executed={plan:PacketPlan;confirmation:PacketPlanConfirmation;execution:PacketPlanExecution};
+type Executed = { plan: AnyPacketPlan; confirmation: PacketPlanConfirmation; execution: PacketPlanExecution | PdfPacketPlanExecution };
 async function executed(ctx: RequestContext, planId: string, version: number): Promise<Executed> {
   const view = await readPacketPlan(ctx, { planId, version });
-  if(view.plan.input.format==='pdf')throw new AppError(422,'CARD_PDF_PLAN_UNSUPPORTED',
-    'Property cards currently require an executed text/CSV plan.');
   if (!view.confirmation || !view.execution || view.plan.requiredContext !== 'available')
-    throw new AppError(422, 'CARD_EXECUTED_PLAN_REQUIRED', 'Execute a confirmed complete text/CSV plan before generating a card.');
-  return {plan:UspTextPacketPlanSchema.parse(view.plan),confirmation:view.confirmation,
-    execution:UspTextPacketPlanExecutionSchema.parse(view.execution)};
+    throw new AppError(422, 'CARD_EXECUTED_PLAN_REQUIRED', 'Execute a confirmed complete packet plan before generating a card.');
+  return { plan: view.plan, confirmation: view.confirmation, execution: view.execution };
+}
+async function linkedPacket(ctx: RequestContext, view: Executed, io: PropertyCardIo) {
+  const packet = isPdfPlan(view.plan)
+    ? await readPacketPdf(ctx, view.execution.packet.packetId, io.pdf)
+    : await readPacket0(ctx, view.execution.packet.packetId, io.readPacket);
+  if (canonical(packet.receipt) !== canonical(view.execution.packet)) conflict('The exact linked packet is unavailable.');
+  return packet;
 }
 /** Compare the exact immutable linkage on this same protected transaction client. */
 async function protectedTx(client: PoolClient, ctx: RequestContext, view: Executed) {
@@ -85,6 +92,13 @@ async function protectedTx(client: PoolClient, ctx: RequestContext, view: Execut
   const confirmation = (await client.query('SELECT body FROM usp_packet_plan_confirmations WHERE plan_id=$1 AND version=$2', [planId, version])).rows[0]?.body;
   const execution = (await client.query('SELECT body FROM usp_packet_plan_executions WHERE plan_id=$1 AND version=$2', [planId, version])).rows[0]?.body;
   if (canonical(UspPacketPlanViewSchema.parse({ plan, confirmation, execution })) !== canonical(view)) conflict('The exact executed plan linkage changed.');
+  if (isPdfPlan(view.plan)) {
+    const receipt = view.execution.packet;
+    const row = (await client.query('SELECT body,object_key,artifact_hash FROM usp_packets WHERE id=$1 FOR SHARE', [receipt.packetId])).rows[0];
+    if (!row || canonical(row.body) !== canonical(receipt) || row.artifact_hash !== receipt.artifact.sha256
+      || row.object_key !== `usp/packets/${receipt.packetId}/${receipt.artifact.sha256}`)
+      conflict('The exact linked PDF packet is unavailable.');
+  }
 }
 function link(card: PropertyCard, view: Executed) {
   const plan = view.plan;
@@ -99,7 +113,7 @@ function link(card: PropertyCard, view: Executed) {
 async function authorityTx(client: PoolClient, ctx: RequestContext, card: PropertyCard, view: Executed) {
   actor(ctx, card); link(card, view); await protectedTx(client, ctx, view); await liveTx(client, card.expiresAt);
 }
-async function currentRevisionTx(client: PoolClient, plan: PacketPlan) {
+async function currentRevisionTx(client: PoolClient, plan: AnyPacketPlan) {
   const row = (await client.query('SELECT revision FROM registry_records WHERE id=$1 AND site_id=$2 FOR SHARE',
     [plan.input.target.ref.id, plan.input.scope.scopeId])).rows[0] ?? notFound('The selected target is unavailable.');
   const revision = Number(row.revision);
@@ -142,8 +156,7 @@ export async function generatePropertyCard(ctx: RequestContext, raw: unknown, io
   const first = await transaction(prepare);
   if (first.replay) return first.replay;
   // The linked private packet is verified through its existing protected reader.
-  const packet = await readPacket0(ctx, view.execution.packet.packetId, io.readPacket);
-  if (canonical(packet.receipt) !== canonical(view.execution.packet)) conflict('The exact linked packet is unavailable.');
+  const packet = await linkedPacket(ctx, view, io);
   const cardId = command.cardId ?? randomUUID(), revision = first.revision!;
   const body = { cardId, revision, previousRevision: revision === 1 ? null : revision - 1,
     profile: selectPropertyCardProfile(first.projection!.facts), mode: 'local_operator' as const,
@@ -175,12 +188,15 @@ export async function generatePropertyCard(ctx: RequestContext, raw: unknown, io
   });
 }
 /** Exact immutable metadata, with current target revision reported separately. */
-export async function readPropertyCard(ctx: RequestContext, raw: unknown) {
+export async function readPropertyCard(ctx: RequestContext, raw: unknown, io: PropertyCardIo = storage) {
   assertLocalUsp(ctx);
   const command = UspReadPropertyCardSchema.parse(raw);
   const saved = await transaction(client => storedTx(client, command.cardId, command.revision));
   actor(ctx, saved.card);
   const view = await executed(ctx, saved.card.planId, saved.card.planVersion);
+  // PDF detail is checked by its dedicated bounded reader, outside card SQL.
+  // Its exact stored linkage is rechecked on the final protected card client.
+  if (isPdfPlan(view.plan)) await linkedPacket(ctx, view, io);
   return transaction(async client => {
     await authorityTx(client, ctx, saved.card, view);
     const currentTargetRevision = await currentRevisionTx(client, view.plan);
@@ -191,11 +207,11 @@ export async function readPropertyCard(ctx: RequestContext, raw: unknown) {
 }
 /** Resolver and download share one bounded, before/after protected read path. */
 export async function resolvePropertyCard(ctx: RequestContext, raw: unknown, io: PropertyCardIo = storage) {
-  const before = await readPropertyCard(ctx, raw), card = before.card;
+  const before = await readPropertyCard(ctx, raw, io), card = before.card;
   const key = `usp/property-cards/${card.cardId}/${card.revision}/${card.artifact.sha256}`;
   const bytes = await io.readCard(key, card.artifact.bytes, card.artifact.sha256);
   if (bytes.length !== card.artifact.bytes || bytes.length > MAX_BYTES || sha256(bytes) !== card.artifact.sha256)
     throw new AppError(422, 'CARD_ARTIFACT_INTEGRITY', 'The saved PDF does not match this exact card revision.');
-  const after = await readPropertyCard(ctx, raw);
+  const after = await readPropertyCard(ctx, raw, io);
   return { ...after, bytes };
 }
