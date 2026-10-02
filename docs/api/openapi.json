@@ -14251,7 +14251,7 @@
             }
           }
         },
-        "summary": "Amend exact operator-selected native/OCR/IFC citations on one current correction; spaces support IFC only",
+        "summary": "Amend native/OCR/IFC citations or explicitly confirm an IFC building/floor identity; spaces support citation attachment only",
         "tags": [
           "registry"
         ],
@@ -75101,6 +75101,47 @@
                             "registry-ifc-citation/1"
                           ]
                         },
+                        "identityAssertion": {
+                          "type": "object",
+                          "properties": {
+                            "globalId": {
+                              "type": "string",
+                              "pattern": "^[0-3][0-9A-Za-z_$]{21}$"
+                            },
+                            "attributeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "attributeLocator": {
+                              "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                              "type": "object",
+                              "additionalProperties": true
+                            },
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "confirmedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "globalId",
+                            "attributeSha256",
+                            "attributeLocator",
+                            "subject",
+                            "accessSha256",
+                            "confirmedAt"
+                          ],
+                          "additionalProperties": false
+                        },
                         "resultBytes": {
                           "type": "integer",
                           "minimum": 0,
@@ -85128,6 +85169,47 @@
                             "registry-ifc-citation/1"
                           ]
                         },
+                        "identityAssertion": {
+                          "type": "object",
+                          "properties": {
+                            "globalId": {
+                              "type": "string",
+                              "pattern": "^[0-3][0-9A-Za-z_$]{21}$"
+                            },
+                            "attributeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "attributeLocator": {
+                              "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                              "type": "object",
+                              "additionalProperties": true
+                            },
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "confirmedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "globalId",
+                            "attributeSha256",
+                            "attributeLocator",
+                            "subject",
+                            "accessSha256",
+                            "confirmedAt"
+                          ],
+                          "additionalProperties": false
+                        },
                         "resultBytes": {
                           "type": "integer",
                           "minimum": 0,
@@ -87037,6 +87119,10 @@
             ],
             "additionalProperties": false
           },
+          "assertIFCIdentity": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
           "remove": {
             "default": [],
             "maxItems": 25,
@@ -88366,6 +88452,47 @@
                           "enum": [
                             "registry-ifc-citation/1"
                           ]
+                        },
+                        "identityAssertion": {
+                          "type": "object",
+                          "properties": {
+                            "globalId": {
+                              "type": "string",
+                              "pattern": "^[0-3][0-9A-Za-z_$]{21}$"
+                            },
+                            "attributeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "attributeLocator": {
+                              "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                              "type": "object",
+                              "additionalProperties": true
+                            },
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "confirmedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "globalId",
+                            "attributeSha256",
+                            "attributeLocator",
+                            "subject",
+                            "accessSha256",
+                            "confirmedAt"
+                          ],
+                          "additionalProperties": false
                         },
                         "resultBytes": {
                           "type": "integer",

@@ -230,7 +230,7 @@ export class RegisterController {
 
   @Post('registry-drafts/:draftId/document-citations') @HttpCode(200)
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
-  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_document_citations',summary:'Amend exact operator-selected native/OCR/IFC citations on one current correction; spaces support IFC only'})
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_document_citations',summary:'Amend native/OCR/IFC citations or explicitly confirm an IFC building/floor identity; spaces support citation attachment only'})
   @doc.ApiContract(200,doc.requestSchema(RegistryDocumentAmendmentReceiptSchema),RegistryDocumentAmendmentSchema)
   async amendDocumentCitations(@Param('draftId') draftId:string,@Req() req:Request){
     if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
