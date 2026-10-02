@@ -341,7 +341,7 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     return result
 
 
-def reload_and_compare(examples, contract, family_freeze, model_path, adapter_dir, manifest, require_boundary, preserve_raw):
+def reload_and_compare(examples, contract, family_freeze, model_path, adapter_dir, manifest, require_boundary, preserve_raw, *, inference_runner=run_local):
     require_boundary()
     verify_adapter_files(adapter_dir, manifest)
     verified = {}
@@ -361,7 +361,7 @@ def reload_and_compare(examples, contract, family_freeze, model_path, adapter_di
         verified.update(tensorCount=len(saved), savedTensorsExact=True, explicitLocalBase=True, remoteBaseLookup=False)
         return model.eval()
 
-    raw, result = run_local(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, model_loader=load_local)
+    raw, result = inference_runner(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, model_loader=load_local)
     result.update(adapterApplied=True, adapterReload=verified, teacherOutputsUsed=True, teacherInputsInReload=False,
                   adapterTrainingUpdates=manifest["updates"], fitPerformed=True, fitPerformedInThisProcess=False)
     return raw, result

@@ -83,10 +83,25 @@ def worker(args):
                     or proof["lossEquivalenceSha256"] != manifest["lossEquivalenceSha256"]):
                 raise RuntimeError("adapter lacks matching accepted fit receipt")
             batch = json.loads(args.input_batch.read_bytes())
-            if batch["version"] != "association-development/1" or len(batch["examples"]) != 2:
+            runner_options = {}
+            if "trainingDiagnostic" in freeze:
+                from functools import partial
+                from geo.usp_learning.association.training_generation import checked_batch, run_training
+                diagnostic = freeze["trainingDiagnostic"]
+                checked_batch(batch, diagnostic, contract, family)
+                if (freeze["version"] != "association-training-generation-freeze/1" or freeze["developmentInputsPresent"]
+                        or diagnostic["fitManifestSha256"] != digest_file(args.adapter_manifest)
+                        or diagnostic["fitResultSha256"] != proof["fitResultSha256"]
+                        or diagnostic["adapterSafetensorsSha256"] != digest_file(args.adapter_dir / "adapter_model.safetensors")):
+                    raise RuntimeError("training diagnostic fit/scope changed")
+                runner_options["inference_runner"] = partial(run_training, cases=diagnostic["cases"])
+            elif batch["version"] != "association-development/1" or len(batch["examples"]) != 2:
                 raise RuntimeError("frozen development input changed")
             raw, result = reload_and_compare(batch["examples"], contract, family, model_path, args.adapter_dir, manifest,
-                lambda: require_model_boundary(args), lambda index, value: write_json_once(args.output_dir / f"raw-{index}.json", value))
+                lambda: require_model_boundary(args), lambda index, value: write_json_once(args.output_dir / f"raw-{index}.json", value), **runner_options)
+            if runner_options:
+                result.update(teacherInputsInReload=True, teacherTargetsInReload=False, fitPerformed=False,
+                    teacherOutputsUseScope="prior accepted fit only; diagnostic inference loads no targets")
             write_json_once(args.output_dir / "raw-outputs.json", raw)
             write_json_once(args.output_dir / "result.json", result)
             print(json.dumps({"examples": len(raw), "validRawOutputs": result["modelOutputValidCount"], "gpu": result["runtime"]}), flush=True)
