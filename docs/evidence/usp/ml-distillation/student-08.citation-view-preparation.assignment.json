@@ -1,0 +1,55 @@
+{
+  "version": "ml-distillation-citation-view-code-preparation/1",
+  "task": "STUDENT-08-PREP",
+  "recordedAt": "2026-10-02",
+  "purpose": "Prepare the existing fit chain to admit a separately frozen, exactly checked citation-view dataset and derive row/update counts correctly. This assignment authorizes code preparation only.",
+  "executionOwner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "workerWorktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "workerCodeBase": "be4e9b09399ad8c03e4986bab53754be2d324d5c",
+  "coordinatorIntegrationHead": "3a764a4d0b67cb9e217330f2daf6eada56c2f343",
+  "primaryStagingHeadObservedReadOnly": "7840cc1a32bed5679dc9e956e014bdb1cbbe27e5",
+  "requestedModel": "gpt-6-astra",
+  "requestedReasoning": "xhigh",
+  "reasoningChoice": "Retain the sole learner owner; fail-closed dataset/fit proof changes merit careful quality control. Historical max receipts remain historical; this continuation uses xhigh.",
+  "speed": "Default/standard required; dispatch has no per-turn tier field. Verify supplied never/danger-full-access before edits and report actual settings honestly.",
+  "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "dataPolicyAssignment": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/teacher-03.citation-view.assignment.json",
+  "acceptedParent": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v2.jsonl",
+    "sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+    "rows": 11,
+    "claims": 62
+  },
+  "implementation": [
+    "Preserve historical checked_teacher(v1,v2), its exact parent pins and accepted 11-row/66-update behavior. Add an explicit versioned dataset declaration for the citation-view mode; do not loosen old checks or admit arbitrary counts/content.",
+    "New admission must require the coordinator-frozen v3 digest and row count plus accepted parent identity, exact original prefix and the declared inverse key/order transform. Verify every input/output/source/locator/quote/role/state/literal/unit/conflict/abstention invariant with existing validation and original train-family membership. Metadata changes are confined to the declared experimental example ID, citation aliases/order and augmentation provenance.",
+    "Replace implicit 11/66 assumptions in the new path with checked row count and epochs: shuffling, planned/completed updates, progress, epoch means, result/adapter manifests, fit acceptance and reload proof must agree. With 22 rows and the unchanged six epochs, a later fit would require 132 updates, not historical66.",
+    "Use the existing containment/stage/fit/save/reload chain and fresh immutable run inputs. Keep historical stage/diagnostic paths usable; a separate narrow new leaf or explicit mode may avoid rewriting their historical assignments. No placeholder digest, stage creation or fit is authorized.",
+    "Keep Qwen revision, full-context 128-query fit attention, 64-token assistant JSON+EOS objective, LoRA/optimizer/seed/numerics, original prompt and greedy generation, strict validation, adapter/base checks and resource/cleanup controls unchanged. Freeze declaration/settings before any later execution.",
+    "Model targets/explanations remain absent from inference prompts and model-visible reload batches. No output repair, constrained decoding, state conflation, revised metric credit or partial acceptance of a rejected response."
+  ],
+  "verification": "CPU-only focused checks using accepted v1/v2 rows and in-memory integrity mutations; no second teacher dataset assembly. Check legacy exact admission/counts plus new mapping/source/target drift refusal and declaration/update consistency. Compile the owned delta and review it; reuse unrelated completed controls. Do not import/load model dependencies on the host.",
+  "return": "Exact owned code and short handoff commits with commands/exits, affected count/pin paths, checks and limitations. New v3 data and its SHA are pending teacher/coordinator acceptance; leave model execution blocked until a separate fit assignment freezes them.",
+  "executionAllowance": {
+    "codePreparation": true,
+    "cpuIntegrityChecks": true,
+    "assembleTeacherDataset": false,
+    "stageModelRun": false,
+    "loadModel": false,
+    "fit": false,
+    "inference": false,
+    "developmentRerun": false,
+    "evaluationOpened": false,
+    "promotion": false
+  },
+  "futureBoundsUnchanged": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600
+  },
+  "ownership": "Existing learner exclusively owns association fit/stage/admission code and focused tests under scripts/usp/learning/association/ and services/geo/geo/usp_learning/association/, plus one new student handoff. New teacher dataset/code/manifests belong to teacher and are not a dependency for this preparation. Coordinator status/schema/freeze/assignments, staging, shared model_isolation/resources/security, third-party sources/dependencies and all original/historical artifacts remain read-only.",
+  "continuation": "Callback only to coordinator and end the turn. No fit/development/evaluation or automatic follow-on until coordinator accepts both preparation results and freezes a new assignment. GPU remains with this sole owner but unused during preparation."
+}

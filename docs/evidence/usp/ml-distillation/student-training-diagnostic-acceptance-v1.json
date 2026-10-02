@@ -1,0 +1,75 @@
+{
+  "version": "ml-distillation-training-diagnostic-acceptance/1",
+  "task": "STUDENT-07",
+  "recordedAt": "2026-10-02",
+  "acceptedScope": "Experimental train-only diagnostic code, execution and retained failure evidence; in-sample quality remains insufficient. No quality promotion or gateway registration.",
+  "ownerCommits": ["559b2b12fd1e501b9ad1941c00839691ef9f2f35", "be4e9b09399ad8c03e4986bab53754be2d324d5c"],
+  "integratedCommits": ["b5ae65d5bacb68f629a7eff427b18cfba0d5e27c", "3a764a4d0b67cb9e217330f2daf6eada56c2f343"],
+  "ownerReceiptSha256": "39ffe37c249e3426f4535029322928ed2727dc5e8073ac7cc2ecb38811b53bd2",
+  "runRoot": "E:/BhuAayam-data/task-data/ml-distillation/student/training-generation-b4e13b7ea0e842e4a8bf84993d53d397",
+  "primaryStagingHeadObservedReadOnly": "7840cc1a32bed5679dc9e956e014bdb1cbbe27e5",
+  "coordinatorInspection": {
+    "changedGenerationValidationStagingComparisonAndRawOutputsInspected": true,
+    "rawArtifactPinsMatched": 28,
+    "executedPhysicalAndOwnerGitPinsMatched": 15,
+    "checksReceiptAndOwnedSourcePinsMatched": 5,
+    "codeComparison": "Only code-to-Git comparisons normalize CRLF to LF; artifacts use exact raw bytes.",
+    "allEightIntegratedChangedGitBlobsMatchOwner": true,
+    "workerFocusedChecksReused": 3,
+    "workerCompiledSourcesReused": 5,
+    "coordinatorModelExecution": false,
+    "commands": [
+      {"command": "python -B -I -S - (inline verifier: 28 artifact hashes, 15 physical/Git code pins, checks receipt and five owned sources)", "exit": 0},
+      {"command": "git cherry-pick 559b2b12fd1e501b9ad1941c00839691ef9f2f35 be4e9b09399ad8c03e4986bab53754be2d324d5c", "exit": 0},
+      {"command": "git diff --exit-code be4e9b09399ad8c03e4986bab53754be2d324d5c HEAD -- (eight changed owned paths)", "exit": 0},
+      {"command": "git diff --check", "exit": 0}
+    ]
+  },
+  "trainingReconstruction": {
+    "split": "train",
+    "examples": 2,
+    "families": 2,
+    "expectedProvisionalClaims": 7,
+    "syntaxAndSchemaValid": "2/2",
+    "fullRawOutputValid": "1/2",
+    "acceptedExpectedClaims": "1/7",
+    "acceptedPrecision": "1/1",
+    "coverage": 0.14285714285714285,
+    "extraAcceptedClaims": 0,
+    "rawTargetValueSignatures": "2/7; inspection only, not accepted credit",
+    "exactExtractableRawQuotes": "9/9; five Haryana literals bind to the wrong supporting quote",
+    "cases": [
+      {"exampleId": "teacher-haryana-floor02", "acceptedClaims": "0/6", "failure": "Whole output rejected for literal_not_cited; tower-only quote repeated for five other literals, drawing caption misclassified as floor, four printed floor literals misclassified as unknown level values."},
+      {"exampleId": "teacher-bihar-unusable-approval-date", "acceptedClaims": "1/1", "result": "Exact provisional target reconstructed, with unknown revision and null literal/unit; no real approval date asserted."}
+    ],
+    "unknownNullRuleViolationsInRejectedRawOutput": 4,
+    "generationSeconds": [24.213, 7.125],
+    "outputTokens": [367, 112],
+    "tokenLimitReached": false,
+    "qualification": "In-sample comparison against provisional teacher labels, not independent source truth or generalization. Cross-family coverage gaps alone do not explain the observed errors."
+  },
+  "execution": {
+    "adapterSafetensorsSha256": "4456b00aba8591c751ecfef8ac78f1272eabd3f56e0212266f8b5fc2c508b485",
+    "savedAdapterTensorsReloadedExactly": 96,
+    "jobPeakCommittedBytes": 5174374400,
+    "jobCapBytes": 6442450944,
+    "peakRssBytes": 3215663104,
+    "cudaPeakAllocatedBytes": 1073165312,
+    "cudaPeakReservedBytes": 1111490560,
+    "minimumSampledCudaFreeBytes": 6275727360,
+    "hostAndChildExit": 0,
+    "cleanupPassed": true,
+    "authoritativeScope": "Pinned trainingDiagnostic freeze and train-only result; legacy source_native_development_only completion metadata is explicitly non-authoritative."
+  },
+  "unchangedBoundaries": {
+    "baseline": "0/2 valid raw outputs; 0/6 accepted claims",
+    "development": "0/2 valid raw outputs; 0/6 accepted claims",
+    "newFit": false,
+    "developmentRerun": false,
+    "evaluationOpened": false,
+    "repairApplied": false,
+    "promoted": false,
+    "gatewayRegistered": false
+  },
+  "nextDecision": "One deterministic train-only citation-key/evidence-order augmentation, plus CPU-only strict dataset/count preparation by the existing learner. This is a repair hypothesis; no fit until both returned increments are inspected and the next dataset SHA/settings are frozen."
+}

@@ -1,0 +1,53 @@
+{
+  "version": "ml-distillation-citation-view-preparation/1",
+  "task": "TEACHER-03",
+  "recordedAt": "2026-10-02",
+  "purpose": "Prepare one deterministic key/order variant of each accepted train row to test whether citation binding improves without changing source text or factual labels.",
+  "workerThreadId": "01a0fbd5-4561-7692-b366-ebd123380593",
+  "workerWorktree": "C:/Users/kvina/.codex/worktrees/ml-teacher-20261002/3d-ulpin",
+  "branch": "task/ml-distillation-teacher",
+  "workerCodeBase": "59afe9b78b06f6452abbeeba27a73b46653b64d3",
+  "coordinatorIntegrationHead": "3a764a4d0b67cb9e217330f2daf6eada56c2f343",
+  "primaryStagingHeadObservedReadOnly": "7840cc1a32bed5679dc9e956e014bdb1cbbe27e5",
+  "requestedModel": "gpt-6.1-sol",
+  "requestedReasoning": "max",
+  "reasoningChoice": "Preserve the user's existing teacher role setting; review exact source/target invariance rather than author new facts.",
+  "speed": "Default/standard required; dispatch has no per-turn tier field. Verify supplied never/danger-full-access before edits and report settings only when actually observed.",
+  "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "parentDataset": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v2.jsonl",
+  "parentSha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+  "outputDataset": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v3.jsonl",
+  "contract": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/scripts/usp/learning/association/schema-v1.json",
+  "familyFreeze": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/family-freeze.json",
+  "trainOnlyFeedback": {
+    "rawOutputs": "E:/BhuAayam-data/task-data/ml-distillation/student/training-generation-b4e13b7ea0e842e4a8bf84993d53d397/outputs/reload/raw-outputs.json",
+    "rawOutputsSha256": "d01b1298a19fcd4802c9641a7cfacf257917a676095339aad7074aec928e4351",
+    "haryana": "TOWER03 is correct, but five other literals reuse its tower-only citation. The caption is misclassified as a floor and 13rd/21st/30th/38th as unknown level values. Retain the existing drawing/floor targets and printed 13rd unchanged.",
+    "bihar": "The unusable-approval-date response reconstructs the accepted unknown revision/null target exactly; preserve its abstentions.",
+    "interpretation": "These are observed train-family predictions, not new source truth. Positional/key shortcutting is a hypothesis; this task does not establish its cause or a quality improvement."
+  },
+  "augmentationPolicy": {
+    "version": "opaque_keys_reverse_evidence/1",
+    "parentRows": 11,
+    "variantRows": 11,
+    "outputRows": 22,
+    "originalPrefix": "Copy all original v2 row bytes as the exact v3 prefix, preserving their order and supervision unchanged.",
+    "variantOrder": "Append one variant per parent in original parent order.",
+    "exampleId": "Parent exampleId followed by -citation-view01; experimental sample identity only.",
+    "keyDerivation": "For each old fragment key: view01:k- followed by the first 16 lowercase hex digits of SHA256(UTF8(parent exampleId + U+0000 + old key)). Require a collision-free bijection per row.",
+    "evidenceOrder": "Reverse the original evidence array; a single-fragment row is still re-keyed.",
+    "outputKeys": "Replace citation keys consistently in every claim, conflict and abstention. Preserve array order and every other output field, including exact quotes, roles, states, literals, units and empty canonicalLinks.",
+    "sourceInvariance": "Preserve every fragment's familyId, sourceSha256, method, locator and text exactly. Do not normalize spelling, OCR, identifiers, whitespace, dates or source text.",
+    "supervision": "Preserve original supervision except augmentation=true on variants and one explicit citationViewAugmentation object recording this version, parent data/row hashes and ID, key bijection, old/new evidence order and assignment provenance. Keep originals and variants provisional; no new fact or independent truth.",
+    "counts": "22 rows and 124 claim appearances from 62 parent-row claims; four conflict appearances from two parent conflicts; 44 abstention appearances including exactly 22 no_canonical_targets. No added factual labels, absent/null-state examples or native IFC examples."
+  },
+  "acceptance": [
+    "Use unchanged retained train families/sources from the official source index, catalogue and accepted v2 lineage; no acquisition or repeated source review.",
+    "Return executable augmentation/validation code, a small v3 manifest and receipt, and exact dataset/code hashes. No large JSONL in Git.",
+    "Validate all rows with the existing schema/citation/literal/source-family checks; verify inverse mapping recovers each parent's input/output exactly and original supervision changes are limited to declared augmentation metadata.",
+    "Verify parent prefix bytes, all source/locator/quote/role/state/null/conflict/abstention invariants and historical data pins. Retain mapping and denominators; test only concrete corruption guards needed for this transformation.",
+    "One actual CPU-only assembly/validation; report commands/exits, retained paths, clean owned commit and cleanup. Do not fit, change labels or infer new facts."
+  ],
+  "ownership": "Only new teacher code/manifests/report under docs/evidence/usp/ml-distillation/teacher/ and new private teacher artifacts. Coordinator schema/freeze/status/assignments, student code, staging/source catalogue and all originals are read-only.",
+  "exclusions": "No development/evaluation contents, expectations or predictions; no earlier mapping holdouts; no GPU/model process, provider/Sarvam calls, services, dependencies, frontend, canonical records, promotion or deployment. Callback only to coordinator, then end the turn."
+}
