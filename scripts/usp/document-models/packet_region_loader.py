@@ -48,7 +48,9 @@ def build_profile(repo: Path, output: Path, purelib: Path | None = None):
     purelib = (purelib or Path(sysconfig.get_paths()["purelib"])).resolve()
     base = Path(sys.base_prefix).resolve()
     roots = [(base/"Lib", True, False), (base/"DLLs", False, False)]
-    roots += [(purelib/name, False, True) for name in ("pypdfium2", "pypdfium2_raw", "pypdfium2_cfg", "pymupdf", "fitz", "PIL", "psutil")]
+    # Pillow imports defusedxml.ElementTree when installed. Pin that optional
+    # package in full rather than exempting it from verified source loading.
+    roots += [(purelib/name, False, True) for name in ("pypdfium2", "pypdfium2_raw", "pypdfium2_cfg", "pymupdf", "fitz", "PIL", "psutil", "defusedxml")]
     files = {path for root, excluded, all_files in roots if root.exists() for path in inventory(root, excluded, all_files)}
     files.update(path.resolve() for path in base.iterdir() if path.is_file() and path.suffix.lower() in EXTENSIONS)
     executable_dir = Path(sys.executable).resolve().parent
@@ -59,7 +61,7 @@ def build_profile(repo: Path, output: Path, purelib: Path | None = None):
     files.update([Path(sys.executable).resolve(), Path(sys._base_executable).resolve()])
     files.update(repo/path for path in REPO_FILES)
     # Distribution metadata is consulted by the renderer; bind the resolved files.
-    for name in ("pypdfium2", "pymupdf", "pillow", "psutil"):
+    for name in ("pypdfium2", "pymupdf", "pillow", "psutil", "defusedxml"):
         for directory in purelib.glob(name+"-*.dist-info"):
             files.update(path.resolve() for path in directory.iterdir() if path.is_file())
     entries = [{"path": str(path), "bytes": path.stat().st_size, "sha256": digest(path)} for path in sorted(files)]
