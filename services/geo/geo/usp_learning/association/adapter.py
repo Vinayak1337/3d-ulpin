@@ -5,7 +5,6 @@ import copy
 import hashlib
 import json
 from pathlib import Path
-import random
 import stat
 import time
 
@@ -164,7 +163,10 @@ def _gpu_runtime(output_dir):
     return torch, check, report
 
 
-def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write, phases):
+def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write, phases, *, dataset_declaration=None):
+    from .citation_view import training_plan, epoch_orders, epoch_means
+    plan = training_plan(dataset_declaration)
+    require(len(rows) == plan["teacherExamples"], "admitted_training_row_count_drift")
     require_boundary()
     for row in rows:
         validate_output(row["output"], row["input"], contract, family_freeze, ("train",))
@@ -180,12 +182,10 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     require(metadata.version("peft") == "0.17.1" and metadata.version("accelerate") == "1.10.1", "isolated_dependency_version_drift")
     tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False)
     encoded, lengths = encode_training(tokenizer, rows)
-    rng, orders = random.Random(17), []
-    for _ in range(6):
-        order = list(range(11)); rng.shuffle(order); orders.append(order)
+    orders = epoch_orders(plan)
     proof = {"lengths": lengths, "maximumCombinedTokens": max(row["combinedTokens"] for row in lengths),
              "sequenceLimit": 4096, "truncation": False, "excludedRows": [], "epochOrder": orders,
-             "plannedUpdates": 66, "settings": FIT, "numerics": NUMERICS, "lossImplementation": LOSS_POLICY,
+             "plannedUpdates": plan["plannedUpdates"], "trainingPlan": plan, "settings": FIT, "numerics": NUMERICS, "lossImplementation": LOSS_POLICY,
              "systemPromptSha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest(), "tokenizationSeconds": time.perf_counter() - started}
     write(output_dir / "token-preflight.json", proof)
     require(proof["maximumCombinedTokens"] <= 4096, "teacher_sequence_exceeds_frozen_4096_bound")
@@ -300,7 +300,7 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 del ids, labels, target, selected, hidden, loss, norm
                 reclamation = release_unused_cache(torch)
                 phases.sample("after_reclamation", torch, **context, **reclamation)
-    require(updates == 66, "incomplete_frozen_fit")
+    require(updates == plan["plannedUpdates"], "incomplete_frozen_fit")
     require(attention.restored, "fit_attention_scope_not_restored")
     fit_seconds = time.perf_counter() - fit_started
     optimizer.zero_grad(set_to_none=True)
@@ -314,7 +314,7 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     require(set(saved) == set(state) and all(torch.equal(saved[k], state[k].detach().cpu()) for k in saved), "saved_adapter_state_mismatch")
     manifest = {"files": {p.name: digest_file(p) for p in adapter_dir.iterdir()}, "trainableParameters": 540672,
                 "tensorCount": len(saved), "baseParametersBefore": base_before, "baseParametersAfter": base_after,
-                "savedStateMatchesTrainableAdapter": True, "updates": updates, "settings": FIT, "numerics": NUMERICS,
+                "savedStateMatchesTrainableAdapter": True, "updates": updates, "trainingPlan": plan, "settings": FIT, "numerics": NUMERICS,
                 "reclamationImplementation": RECLAMATION_POLICY,
                 "attentionImplementation": ATTENTION_POLICY, "attentionControlSha256": digest_file(output_dir / "attention-control.json"),
                 "reclamationControlSha256": digest_file(output_dir / "reclamation-control.json"),
@@ -324,9 +324,9 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     gpu_check()
     phases.sample("after_save_and_base_verification", torch, baseUnchanged=True, savedTensorsExact=True)
     result = {"version": "association-adapter-fit/1", "updates": updates, "supervisedTokens": supervised_tokens,
-              "epochMeanLoss": [sum(losses[i:i + 11]) / 11 for i in range(0, 66, 11)], "stepLosses": losses,
+              "epochMeanLoss": epoch_means(losses, plan), "stepLosses": losses, "trainingPlan": plan,
               "modelAndBaseVerificationSeconds": load_seconds, "fitSeconds": fit_seconds,
-              "elapsedSeconds": time.perf_counter() - started, "gpu": gpu_report(), "teacherExamples": 11,
+              "elapsedSeconds": time.perf_counter() - started, "gpu": gpu_report(), "teacherExamples": plan["teacherExamples"],
               "baseUnchanged": base_before == base_after, "adapterManifestSha256": digest_file(output_dir / "adapter-manifest.json"),
               "runtime": {name: metadata.version(name) for name in ("torch", "transformers", "peft", "accelerate", "safetensors")},
               "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json"), "lossImplementation": LOSS_POLICY,
@@ -364,4 +364,6 @@ def reload_and_compare(examples, contract, family_freeze, model_path, adapter_di
     raw, result = inference_runner(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, model_loader=load_local)
     result.update(adapterApplied=True, adapterReload=verified, teacherOutputsUsed=True, teacherInputsInReload=False,
                   adapterTrainingUpdates=manifest["updates"], fitPerformed=True, fitPerformedInThisProcess=False)
+    if "trainingPlan" in manifest:
+        result["trainingPlan"] = manifest["trainingPlan"]
     return raw, result

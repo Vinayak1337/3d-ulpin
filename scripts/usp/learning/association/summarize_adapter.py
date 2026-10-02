@@ -9,15 +9,25 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from stage_adapter import BASELINE, EXPECTATIONS_SHA, accepted_fit, accepted_outputs, isolation, require
 from geo.usp_learning.association.validation import strict_json
+from geo.usp_learning.association.citation_view import checked_freeze, checked_reload_counts, same
 
 
 def compare(root):
     guard, _ = accepted_outputs(root, "reload")
+    freeze = isolation.read(root / "inputs/run-freeze.json")
+    require("trainingDiagnostic" not in freeze, "training diagnostic must use its own summarizer")
+    plan = checked_freeze(freeze, isolation.read(root / "inputs/assignment.json"))
+    checked_reload_counts(isolation.read(root / "inputs/fit-proof.json"),
+                          isolation.read(root / "inputs/adapter-manifest.json"), plan,
+                          versioned="datasetDeclaration" in freeze)
     stage = isolation.read(root / "stage.json")
     expected_path = Path(stage["sourceExpectations"])
     require(isolation.sha(expected_path) == EXPECTATIONS_SHA, "unchanged development expectations drift")
     expected = {r["exampleId"]: r["expected"] for r in isolation.read(expected_path)["examples"]}
     result = isolation.read(root / "outputs/reload/result.json")
+    require(result["adapterTrainingUpdates"] == plan["plannedUpdates"], "reload update count drift")
+    if "datasetDeclaration" in freeze or "trainingPlan" in result:
+        require(same(result.get("trainingPlan"), plan), "reload training plan drift")
     raw = isolation.read(root / "outputs/reload/raw-outputs.json")
     baseline_raw = {r["exampleId"]: r for r in isolation.read(BASELINE / "outputs/baseline/raw-outputs.json")}
     batch = {r["exampleId"]: r for r in isolation.read(root / "inputs/development.json")["examples"]}
