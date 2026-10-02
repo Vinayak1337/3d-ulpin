@@ -68,12 +68,14 @@ def checked_teacher(v1_bytes, v2_bytes, contract, family_freeze):
                        if key not in ("input", "output") and old[key] != new[key]]} for old, new in zip(before, after)]}
 
 
-def encode_training(tokenizer, rows):
+def encode_training(tokenizer, rows, *, representation=None):
     encoded, lengths = [], []
     for row in rows:
-        prompt = tokenizer.apply_chat_template(prompt_messages(row["input"]), tokenize=False, add_generation_prompt=True)
-        target = json.dumps(row["output"], ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        rendered = tokenizer.apply_chat_template(prompt_messages(row["input"]) + [{"role": "assistant", "content": target}],
+        messages = prompt_messages(row["input"]) if representation is None else representation.messages(row)
+        prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        target = (json.dumps(row["output"], ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+                  if representation is None else representation.target(row))
+        rendered = tokenizer.apply_chat_template(messages + [{"role": "assistant", "content": target}],
                                                  tokenize=False, add_generation_prompt=False)
         require(rendered == prompt + target + tokenizer.eos_token + "\n", "chat_template_target_boundary_changed")
         prompt_ids = tokenizer.encode(prompt, add_special_tokens=False)
@@ -163,9 +165,12 @@ def _gpu_runtime(output_dir):
     return torch, check, report
 
 
-def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write, phases, *, dataset_declaration=None):
+def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write, phases, *, dataset_declaration=None, representation=None):
     from .citation_view import training_plan, epoch_orders, epoch_means
-    plan = training_plan(dataset_declaration)
+    require(representation is None or dataset_declaration is None, "conflicting_training_representations")
+    plan = training_plan(dataset_declaration) if representation is None else representation.training_plan
+    representation_metadata = {} if representation is None else {"representation": representation.metadata}
+    actual_prompt = SYSTEM_PROMPT if representation is None else representation.system_prompt
     require(len(rows) == plan["teacherExamples"], "admitted_training_row_count_drift")
     require_boundary()
     for row in rows:
@@ -181,12 +186,13 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     started = time.perf_counter()
     require(metadata.version("peft") == "0.17.1" and metadata.version("accelerate") == "1.10.1", "isolated_dependency_version_drift")
     tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False)
-    encoded, lengths = encode_training(tokenizer, rows)
+    encoded, lengths = encode_training(tokenizer, rows, representation=representation)
     orders = epoch_orders(plan)
     proof = {"lengths": lengths, "maximumCombinedTokens": max(row["combinedTokens"] for row in lengths),
              "sequenceLimit": 4096, "truncation": False, "excludedRows": [], "epochOrder": orders,
              "plannedUpdates": plan["plannedUpdates"], "trainingPlan": plan, "settings": FIT, "numerics": NUMERICS, "lossImplementation": LOSS_POLICY,
-             "systemPromptSha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest(), "tokenizationSeconds": time.perf_counter() - started}
+             "systemPromptSha256": hashlib.sha256(actual_prompt.encode()).hexdigest(), "tokenizationSeconds": time.perf_counter() - started,
+             **representation_metadata}
     write(output_dir / "token-preflight.json", proof)
     require(proof["maximumCombinedTokens"] <= 4096, "teacher_sequence_exceeds_frozen_4096_bound")
     torch, gpu_check, gpu_report = _gpu_runtime(output_dir)
@@ -318,7 +324,8 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 "reclamationImplementation": RECLAMATION_POLICY,
                 "attentionImplementation": ATTENTION_POLICY, "attentionControlSha256": digest_file(output_dir / "attention-control.json"),
                 "reclamationControlSha256": digest_file(output_dir / "reclamation-control.json"),
-                "lossImplementation": LOSS_POLICY, "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json")}
+                "lossImplementation": LOSS_POLICY, "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json"),
+                **representation_metadata}
     verify_adapter_files(adapter_dir, manifest)
     write(output_dir / "adapter-manifest.json", manifest)
     gpu_check()
@@ -336,7 +343,7 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
               "attentionScopeSha256": digest_file(output_dir / "attention-scope.json"),
               "reclamationControlSha256": digest_file(output_dir / "reclamation-control.json"),
               "memoryPhasesSha256": digest_file(output_dir / "memory-phases.jsonl"),
-              "evaluationOpened": False, "developmentOpened": False, "fitPerformed": True}
+              "evaluationOpened": False, "developmentOpened": False, "fitPerformed": True, **representation_metadata}
     write(output_dir / "fit-result.json", result)
     return result
 

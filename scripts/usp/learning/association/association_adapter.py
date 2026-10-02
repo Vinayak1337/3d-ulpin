@@ -20,6 +20,16 @@ from geo.usp_learning.association.query_attention import ATTENTION_POLICY, ATTEN
 from geo.usp_learning.association.citation_view import checked_freeze, checked_citation_teacher, checked_reload_counts
 
 
+def representation_module(freeze, assignment):
+    if freeze.get("version") == "association-selector-adapter-freeze/1":
+        from geo.usp_learning.association import selector_adapter
+        return selector_adapter
+    if (str(freeze.get("version", "")).startswith("association-selector") or "representation" in freeze
+            or assignment.get("version") == "association-selector-adapter-execution/1"):
+        raise RuntimeError("explicit selector adapter freeze required")
+    return None
+
+
 def worker(args):
     require_model_boundary(args)
     args.output_dir.mkdir(exist_ok=False)
@@ -27,6 +37,8 @@ def worker(args):
     try:
         freeze = json.loads(args.run_freeze.read_bytes())
         assignment = json.loads(args.assignment.read_bytes())
+        selector = representation_module(freeze, assignment)
+        actual_prompt = SYSTEM_PROMPT if selector is None else selector.SYSTEM_PROMPT
         if (assignment["settings"] != FIT or assignment["teacherV2Sha256"] != V2_SHA
                 or freeze["fitSettings"] != FIT or freeze["numerics"] != NUMERICS
                 or freeze["inferenceSettings"] != SETTINGS or freeze["action"] != args.action
@@ -41,12 +53,13 @@ def worker(args):
                 or not assignment["memoryExecutionPolicy"].get("preBackwardReclamation")
                 or freeze["previousFailureReceiptSha256"] != assignment["previousFailureReceiptSha256"]
                 or freeze["previousFailedFit"] != assignment["previousFailedFit"]
-                or freeze["systemPromptSha256"] != hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest()):
+                or freeze["systemPromptSha256"] != hashlib.sha256(actual_prompt.encode()).hexdigest()):
             raise RuntimeError("frozen assignment/settings/prompt drift")
         for option, digest in freeze["inputSha256"].items():
             if digest_file(getattr(args, option)) != digest:
                 raise RuntimeError("frozen input drift: " + option)
-        plan = checked_freeze(freeze, assignment)
+        plan = checked_freeze(freeze, assignment) if selector is None else selector.checked_freeze(freeze, assignment)
+        selector_contract = None if selector is None else selector.checked_inputs(freeze, assignment, args.run_freeze.parent)
         family = json.loads(args.family_freeze.read_bytes())
         schema_bytes = args.schema.read_bytes()
         if hashlib.sha256(schema_bytes.replace(b"\r\n", b"\n")).hexdigest() != family["schemaSha256"]:
@@ -62,7 +75,12 @@ def worker(args):
         if args.action == "fit":
             from geo.usp_learning.association.memory_observation import PhaseRecorder
             phases = PhaseRecorder(args.output_dir, lambda: require_model_boundary(args))
-            if "datasetDeclaration" in freeze:
+            fit_options = {"dataset_declaration": freeze.get("datasetDeclaration")}
+            if selector is not None:
+                rows, delta = selector.checked_teacher(args.teacher_v1.read_bytes(), args.training_data.read_bytes(),
+                                                       selector_contract, contract, family)
+                fit_options = {"representation": selector.SelectorRepresentation(selector_contract, contract, family)}
+            elif "datasetDeclaration" in freeze:
                 # Additional immutable input is profile-pinned; no new containment CLI capability.
                 parent = args.run_freeze.parent / "train-teacher-v2.jsonl"
                 if freeze.get("auxiliaryInputSha256") != {parent.name: V2_SHA} or digest_file(parent) != V2_SHA:
@@ -73,12 +91,14 @@ def worker(args):
                 rows, delta = checked_teacher(args.teacher_v1.read_bytes(), args.training_data.read_bytes(), contract, family)
             write_json_once(args.output_dir / "teacher-delta.json", delta)
             result = fit(rows, contract, family, model_path, args.output_dir,
-                         lambda: require_model_boundary(args), write_json_once, phases, dataset_declaration=freeze.get("datasetDeclaration"))
+                         lambda: require_model_boundary(args), write_json_once, phases, **fit_options)
             print(json.dumps({"updates": result["updates"], "fitSeconds": result["fitSeconds"], "gpu": result["gpu"]}), flush=True)
         else:
             manifest = json.loads(args.adapter_manifest.read_bytes())
             proof = json.loads(args.fit_proof.read_bytes())
-            checked_reload_counts(proof, manifest, plan, versioned="datasetDeclaration" in freeze)
+            checked_reload_counts(proof, manifest, plan, versioned=selector is not None or "datasetDeclaration" in freeze)
+            if selector is not None:
+                selector.checked_reload_binding(freeze, proof, manifest)
             if (not proof["fitResourceAccepted"]
                     or proof["adapterManifestSha256"] != digest_file(args.adapter_manifest)
                     or proof["lossImplementation"] != LOSS_POLICY or not proof["lossEquivalencePassed"]
@@ -95,7 +115,13 @@ def worker(args):
                 raise RuntimeError("adapter lacks matching accepted fit receipt")
             batch = json.loads(args.input_batch.read_bytes())
             runner_options = {}
-            if "trainingDiagnostic" in freeze:
+            if selector is not None:
+                from functools import partial
+                from geo.usp_learning.association.selector_baseline import checked_batch, run_selectors
+                checked_batch(batch, freeze["cases"], contract, family)
+                runner_options["inference_runner"] = partial(run_selectors, selector_contract=selector_contract,
+                    cases=freeze["cases"], preserve_preflight=lambda value: write_json_once(args.output_dir / "selector-preflight.json", value))
+            elif "trainingDiagnostic" in freeze:
                 from functools import partial
                 from geo.usp_learning.association.training_generation import checked_batch, run_training
                 diagnostic = freeze["trainingDiagnostic"]
@@ -110,9 +136,11 @@ def worker(args):
                 raise RuntimeError("frozen development input changed")
             raw, result = reload_and_compare(batch["examples"], contract, family, model_path, args.adapter_dir, manifest,
                 lambda: require_model_boundary(args), lambda index, value: write_json_once(args.output_dir / f"raw-{index}.json", value), **runner_options)
-            if runner_options:
+            if "trainingDiagnostic" in freeze:
                 result.update(teacherInputsInReload=True, teacherTargetsInReload=False, fitPerformed=False,
                     teacherOutputsUseScope="prior accepted fit only; diagnostic inference loads no targets")
+            if selector is not None:
+                result["representation"] = selector.representation_metadata()
             write_json_once(args.output_dir / "raw-outputs.json", raw)
             write_json_once(args.output_dir / "result.json", result)
             print(json.dumps({"examples": len(raw), "validRawOutputs": result["modelOutputValidCount"], "gpu": result["runtime"]}), flush=True)
