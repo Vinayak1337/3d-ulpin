@@ -86,12 +86,15 @@ export function assertIFCTools(pins:IFCToolPins|null,deadlineAt?:number){
 // No unknown aggregate, changed non-code pin or missing current runtime qualifies.
 const preDXFReadCodeSha=new Set(['c7d6d9b23fd9334079868b046907cd9bc3d0c3efb2f298552b409e113279aa1a',
   '16ccbbfd5ece82bf8f5fff15799e7cc448df371ed4de67a3cb1e7934c6aa8db8']);
+// KML-02: fd36a4b9 exact Git/LF and captured physical pre-KML constituents.
+const preKMLReadCodeSha=new Set(['a441e6ac5d3947e4f267e63494685fada870384c6850c8c205dc8870ea0b68c8',
+  '3bd4f09e8a4bdfd2963e2e6c0ff735cdb423c3405e06694755f1f017bb585ac0']);
 export function ifcReadToolsCompatible(stored:IFCToolPins,current:IFCToolPins){
   const old=IFCToolPinsSchema.safeParse(stored),live=IFCToolPinsSchema.safeParse(current);
   if(!old.success||!live.success)return false;
   if(fingerprint(old.data)===fingerprint(live.data))return true;
   const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
-  return preDXFReadCodeSha.has(oldCode)&&fingerprint(oldTools)===fingerprint(currentTools);
+  return (preDXFReadCodeSha.has(oldCode)||preKMLReadCodeSha.has(oldCode))&&fingerprint(oldTools)===fingerprint(currentTools);
 }
 /** Verify the complete current inventory before immutable-result read comparison.
  * Returns no process configuration: writers must continue using assertIFCTools. */

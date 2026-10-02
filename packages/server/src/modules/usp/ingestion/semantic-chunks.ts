@@ -30,8 +30,11 @@ const preIFCPublisherReadSha=new Set(['2fc75b285a9b57fffaebad822497a30c59274b6e7
 // Only immutable reads use these; preparation/publication remain exact.
 const preDXFPublisherReadSha=new Set(['d38d11c0c0c9e97339fee2f1adf30fa40f01faa7e6bff0ba87a606940041ae66',
   '4278b5bbf56687af035f87f97b991b7fd240eb9b818c76419d9603adb5c8d9ce']);
+// KML-02: fd36a4b9 exact historical Git/LF and actual physical publisher.
+const preKMLPublisherReadSha=new Set(['aefcce46f18502786d2cc4c15ce0a306ec765045c5039afe78e5500866d19e3e',
+  'c32495d23f7df31384bc0ee83dea1481b34f9d1cbe92b8dbf2f32a99394e67cc']);
 export function semanticPublisherReadCompatible(stored:string,current=semanticPublisherSha()){
-  return stored===current||(preIFCPublisherReadSha.has(stored)||preDXFPublisherReadSha.has(stored))&&current===semanticPublisherSha();
+  return stored===current||(preIFCPublisherReadSha.has(stored)||preDXFPublisherReadSha.has(stored)||preKMLPublisherReadSha.has(stored))&&current===semanticPublisherSha();
 }
 export function semanticPartitions(index:SemanticPreparation['index']):SemanticPartition[]{
   const partitions:SemanticPartition[]=[];let first=0,positions=0,bytes=0;

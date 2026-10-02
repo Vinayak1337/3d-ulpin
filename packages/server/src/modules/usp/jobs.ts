@@ -5,6 +5,7 @@ import {ingestionBinding,assertIngestionBinding} from './ingestion/events';
 import { UspJobProjectionSchema, UspAssetRefSchema, UspScopeSchema,
   type AssetRef, type UspScope } from '@ulpin/contracts/usp';
 import { transaction,type DbDeadline } from '../../infrastructure/db';
+import {KMLInputSchema} from '../../../../contracts/src/usp/kml-ingestion';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx } from './commands';
 import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, StreamingVectorInputSchema,
@@ -62,6 +63,12 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
       ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
       throw new AppError(422,'DXF_INPUT_SCOPE','DXF jobs must pin their unchanged source and exact intake context.');
+  } else if(job.operation==='kml-native'){
+    const input=KMLInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
+      throw new AppError(422,'KML_INPUT_SCOPE','KML jobs must pin their unchanged original, member selection and intake context.');
   } else if(job.operation==='cityjson-validation'){
     const input=RegistryCityJSONValidationInputSchema.parse(job.payload),source=input.candidate.input,
       binding=ingestionBinding(source.caseId),digest=fingerprint(input);

@@ -82,3 +82,18 @@ export function assertDXFTools(pins:DXFToolPins|null,deadlineAt?:number){
   if(!pins)dxfUnavailable();const config=dxfConfig(deadlineAt);
   if(fingerprint(config.pins)!==fingerprint(pins))dxfUnavailable('DXF_TOOL_CHANGED');return config;
 }
+// KML-02 immutable reads only: exact fd36a4b9 Git/LF and physical aggregates.
+const preKMLReadCodeSha=new Set(['6d52384008e5aad896ec16defc76c607c905ca8e644fbb2661fd34c8285efa5c',
+  '1c00e8bbbac697ff41d71ebf6f81f0b4b18ad31aba005c9724d5ce01d2f95388']);
+export function dxfReadToolsCompatible(stored:DXFToolPins,current:DXFToolPins){
+  const old=DXFToolPinsSchema.safeParse(stored),live=DXFToolPinsSchema.safeParse(current);
+  if(!old.success||!live.success)return false;
+  if(fingerprint(old.data)===fingerprint(live.data))return true;
+  const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+  return preKMLReadCodeSha.has(oldCode)&&fingerprint(oldTools)===fingerprint(currentTools);
+}
+/** Full current inventory before immutable result reads; never returns launch configuration. */
+export function assertDXFReadTools(pins:DXFToolPins|null,deadlineAt?:number):void{
+  if(!pins)dxfUnavailable();const current=dxfConfig(deadlineAt);
+  if(!dxfReadToolsCompatible(pins,current.pins))dxfUnavailable('DXF_TOOL_CHANGED');
+}
