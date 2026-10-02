@@ -1,7 +1,8 @@
 import {z} from 'zod';
 import {DocumentAssociationSourceSchema} from './document-association';
 import {DocumentLocatorSchema,DocumentPartSchema,DocumentOcrItemSchema,DocumentOcrSelectionSchema} from './usp/document-ingestion';
-import {SourceFusionRequestSchema,SourceFusionOcrSchema} from './source-fusion';
+import {SourceFusionRequestSchema,SourceFusionOcrSchema,SourceFusionIFCRecordSchema,SourceFusionLiteralObjectSchema} from './source-fusion';
+import {IFC_LIMITS} from './usp/ifc-ingestion';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),revision=z.number().int().positive();
 const citationBase={id:hash,document:DocumentAssociationSourceSchema,
@@ -17,8 +18,17 @@ export const RegistryOcrDocumentCitationSchema=z.strictObject({...citationBase,
   ocrSelection:DocumentOcrSelectionSchema,ocrConfigSha256:hash,
   itemOrdinal:z.number().int().min(0).max(63),itemSha256:hash,
   itemLocator:DocumentOcrItemSchema.omit({text:true}),ocr:SourceFusionOcrSchema.shape.ocr.unwrap()});
+/** The historical `document` envelope identifies the actual IFC original/job,
+ * solely for common source-case collection. No document input/part is created. */
+export const RegistryIFCCitationSchema=z.strictObject({...citationBase,version:z.literal('registry-ifc-citation/1'),
+  resultBytes:z.number().int().positive().max(IFC_LIMITS.resultBytes),
+  ifc:z.strictObject({artifactSha256:hash,artifactBytes:z.number().int().positive().max(IFC_LIMITS.artifactBytes),
+    profile:z.literal('ulpin-native-ifc/1'),stepId:z.number().int().positive(),
+    entityType:z.enum(['IfcBuilding','IfcBuildingStorey','IfcSpace']),recordPointer:z.string().regex(/^\/records\/\d+$/),
+    recordSha256:hash,locator:SourceFusionLiteralObjectSchema,attributeLocators:SourceFusionLiteralObjectSchema,
+    identifierScope:z.literal('source_native_only; not_canonical_registry_ids')})});
 export const RegistryDocumentCitationSchema=z.discriminatedUnion('version',[
-  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema]);
+  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema]);
 export const RegistryDocumentCitationsSchema=z.array(RegistryDocumentCitationSchema).max(25)
   .superRefine((items,ctx)=>{
     if(new Set(items.map(item=>item.id)).size!==items.length)
@@ -33,8 +43,8 @@ export const RegistryDocumentAmendmentSchema=z.strictObject({requestKey:z.uuid()
 }).superRefine((value,ctx)=>{
   if(!value.add&&!value.addFusion&&!value.remove.length&&!value.clearAll)ctx.addIssue({code:'custom',message:'Select citations to add, remove or explicitly clear.'});
   if(value.add&&value.addFusion)ctx.addIssue({code:'custom',message:'Use one explicit addition per amendment.'});
-  if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:false))
-    ctx.addIssue({code:'custom',message:'Select at least one native or OCR document observation to cite.'});
+  if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:s.kind==='ifc'?s.stepIds.length:false))
+    ctx.addIssue({code:'custom',message:'Select at least one native document, OCR observation or IFC record to cite.'});
   if(value.clearAll&&(value.add||value.addFusion||value.remove.length))
     ctx.addIssue({code:'custom',message:'Clear all citations as a separate amendment.'});
   if(value.add && new Set(value.add.partIds).size!==value.add.partIds.length)
@@ -45,7 +55,8 @@ export const RegistryDocumentAmendmentSchema=z.strictObject({requestKey:z.uuid()
 export const RegistryDocumentEvidenceSchema=z.strictObject({draftId:z.uuid(),draftRevision:revision,
   recordId:z.uuid(),recordRevision:revision,
   citations:z.array(z.union([z.strictObject({pin:RegistryNativeDocumentCitationSchema,part:DocumentPartSchema}),
-    z.strictObject({pin:RegistryOcrDocumentCitationSchema,item:DocumentOcrItemSchema})])).max(25),
+    z.strictObject({pin:RegistryOcrDocumentCitationSchema,item:DocumentOcrItemSchema}),
+    z.strictObject({pin:RegistryIFCCitationSchema,record:SourceFusionIFCRecordSchema})])).max(25),
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
 export const RegistryDocumentAmendmentReceiptSchema=z.strictObject({draftId:z.uuid(),draftRevision:revision,
@@ -56,5 +67,6 @@ export const RegistryDocumentReviewContextSchema=z.strictObject({subject:z.strin
 export type RegistryDocumentCitation=z.infer<typeof RegistryDocumentCitationSchema>;
 export type RegistryNativeDocumentCitation=z.infer<typeof RegistryNativeDocumentCitationSchema>;
 export type RegistryOcrDocumentCitation=z.infer<typeof RegistryOcrDocumentCitationSchema>;
+export type RegistryIFCCitation=z.infer<typeof RegistryIFCCitationSchema>;
 export type RegistryDocumentReviewContext=z.infer<typeof RegistryDocumentReviewContextSchema>;
 export type RegistryDocumentAmendment=z.infer<typeof RegistryDocumentAmendmentSchema>;
