@@ -1,0 +1,78 @@
+{
+  "version": "student-selector-stage-correction-acceptance/1",
+  "recordedAt": "2026-10-03",
+  "ownerBase": "ca5b75932b54cd37e33183e584ba1f5d21c44d2b",
+  "ownerCommit": "409bae3baafcebb9ad152a702cef07e3c286815a",
+  "coordinatorIntegrationCommit": "da25f7730bfc3a3dffe0fa40d65a2b8dfa03281d",
+  "primaryStagingHeadObservedReadOnly": "408efe0838d9d5a1d80ab01ccf2b197fdd230dec",
+  "review": "Complete stage/test/handoff delta inspected. Two exact already accepted later protected sources are pinned; six unchanged protected sources retain exact original-profile physical checks. All twelve canonical assignment digests are required before mkdir. Clean HEAD/Git bytes and copy/freeze/profile/command behavior are preserved.",
+  "codePins": {
+    "scripts/usp/learning/association/stage_selector_baseline.py": {
+      "canonicalLfSha256": "70df68a9b8d89a8316f75c3602ac21b8597cfc555ca1b26eed101aae42be0629",
+      "integratedPhysicalSha256": "7f0ff759fc05236c53e451fa9e302a00efc5490e04bb21ccd9c7771857fe7543"
+    },
+    "scripts/usp/learning/association/test_selectors.py": {
+      "canonicalLfSha256": "4a2364ddb658cee0332eea3b25250fc69912ce280763a493868f2c40da1af3fe",
+      "integratedPhysicalSha256": "f4b00f910cf0ae7211f053feb1f051f7e7f61b3a5c4a03cb7639dfbede31fee1"
+    },
+    "docs/evidence/usp/ml-distillation/student/selector-stage-correction.md": {
+      "canonicalLfSha256": "4a64078ed284b8a38ad68e2d165f273b9ad38285cbac74a8943a4771773aec45",
+      "integratedPhysicalSha256": "cdf26ae57f9a1732fcbaa2598fa9244cc8f61f527126863cfd3f801311c87066"
+    }
+  },
+  "otherExecutionSourcePinsAndBaseGitBytesMatched": 11,
+  "compiledOwnedPythonFiles": 2,
+  "integratedBlobsMatched": 3,
+  "copyFreezeProfileCommandSuffixUnchanged": true,
+  "acceptedLaterSourceSha256": {
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87"
+  },
+  "verification": [
+    {
+      "command": "python -B -I -S scripts/usp/learning/association/test_selectors.py SourcePinTests",
+      "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin",
+      "exitCode": 1,
+      "observedError": "selector_protected_source_drift:scripts/usp/learning/model_isolation.py",
+      "interpretation": "Coordinator physical source uses CRLF (c3df6e88bea535789509ca0afc9a998ea2d3ecf909d62da7f117dec56fba8169); its canonical LF bytes match the frozen execution source. This byte refusal is preserved. Execution is assigned only to the learner checkout, not the coordinator physical checkout."
+    },
+    {
+      "command": "python -B -I -S scripts/usp/learning/association/test_selectors.py SourcePinTests",
+      "python": "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+      "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "exitCode": 0,
+      "output": "test_accepted_source_versions_and_assignment_pins_before_mkdir (__main__.SourcePinTests.test_accepted_source_versions_and_assignment_pins_before_mkdir) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.012s\n\nOK\n"
+    },
+    {
+      "command": "python -B -I -S - (owned pins/compile/eleven unchanged sources/suffix/blocked receipt check)",
+      "exitCode": 0
+    },
+    {
+      "command": "python -B -I -S - (integrated blobs, identical code with differing physical line endings, renewed preflight against exact frozen execution bytes)",
+      "exitCode": 0,
+      "assignedSourcesPassed": 12
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "historicalFailureReceiptSha256": "29154bbbab7ddb2730b8a4ff0e5144785eedd4aa34154ded9c9f1a33a69e04ea",
+  "historicalBlockerAndNullMetricsPreserved": true,
+  "runtimeStageCreated": false,
+  "modelDependenciesImported": false,
+  "inferencePerformed": false,
+  "fitPerformed": false,
+  "evaluationOpened": false,
+  "promotionAuthorized": false,
+  "qualification": "CPU correction acceptance for the exact frozen learner checkout only; no tokenizer/runtime/resource or model quality measurement.",
+  "workerSettings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedEffort": "xhigh",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedEffort": null,
+    "observedServiceTier": null,
+    "suppliedPermissions": "never / danger-full-access"
+  }
+}
