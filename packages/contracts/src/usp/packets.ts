@@ -3,7 +3,7 @@ import { CoreIdSchema, CoreSha256Schema, coreText } from '../spatial/core/scalar
 import { UspCreateGuardSchema, UspPinnedUpdateGuardSchema, UspSnapshotScopeSchema,
   UspTargetPinSchema, UspEvidencePointerSchema, UspPrincipalSchema } from './common';
 import { UspPacket0ReceiptSchema } from './packet0';
-import {UspPdfPacketPlanInputSchema,UspPdfPacketPlanSchema,UspPdfPacketPlanExecutionSchema} from './packet-pdf';
+import {UspAnyPdfPacketPlanInputSchema,UspAnyPdfPacketPlanSchema,UspAnyPdfPacketPlanExecutionSchema} from './packet-pdf';
 
 const review = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('direct'), reviewed: z.boolean() }).readonly(),
@@ -27,7 +27,7 @@ export const UspTextPacketPlanInputSchema = z.strictObject({
   format: z.enum(['text', 'csv']), recipe: z.literal('pack0-exact-text-csv/1'),
   expiresAt: z.iso.datetime({ offset: true }), entries,
 }).readonly();
-export const UspPacketPlanInputSchema=z.union([UspTextPacketPlanInputSchema,UspPdfPacketPlanInputSchema]);
+export const UspPacketPlanInputSchema=z.union([UspTextPacketPlanInputSchema,UspAnyPdfPacketPlanInputSchema]);
 export const UspCreatePacketPlanSchema = z.strictObject({
   input: UspPacketPlanInputSchema, guard: UspCreateGuardSchema,
 }).readonly();
@@ -58,7 +58,7 @@ export const UspTextPacketPlanSchema = z.strictObject({
   entries: z.array(UspPacketPlanEntrySchema).min(1).max(20).readonly(),
   requiredContext: z.enum(['available', 'blocked']), createdAt: z.iso.datetime({ offset: true }), planSha256: CoreSha256Schema,
 }).readonly();
-export const UspPacketPlanSchema=z.union([UspTextPacketPlanSchema,UspPdfPacketPlanSchema]);
+export const UspPacketPlanSchema=z.union([UspTextPacketPlanSchema,UspAnyPdfPacketPlanSchema]);
 export const UspPacketPlanConfirmationSchema = z.strictObject({
   confirmationId: z.uuid(), planId: z.uuid(), version: z.number().int().positive(), planSha256: CoreSha256Schema,
   reviewer: UspPrincipalSchema, reviewed: z.literal(true), confirmedAt: z.iso.datetime({ offset: true }),
@@ -68,7 +68,7 @@ export const UspTextPacketPlanExecutionSchema = z.strictObject({
   packet: UspPacket0ReceiptSchema, omissions: z.array(z.strictObject({ entrySha256: CoreSha256Schema,
     reasonCode: CoreIdSchema }).readonly()).max(20).readonly(),
 }).readonly();
-export const UspPacketPlanExecutionSchema=z.union([UspTextPacketPlanExecutionSchema,UspPdfPacketPlanExecutionSchema]);
+export const UspPacketPlanExecutionSchema=z.union([UspTextPacketPlanExecutionSchema,UspAnyPdfPacketPlanExecutionSchema]);
 export const UspPacketPlanViewSchema = z.strictObject({ plan: UspPacketPlanSchema,
   confirmation: UspPacketPlanConfirmationSchema.nullable(), execution: UspPacketPlanExecutionSchema.nullable(),
 }).readonly();

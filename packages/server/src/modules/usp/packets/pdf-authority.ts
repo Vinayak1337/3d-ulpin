@@ -1,7 +1,8 @@
 import type {PoolClient} from 'pg';
 import type {RequestContext} from '@ulpin/contracts/usp';
 import {RegistryDocumentCitationsSchema,type RegistryRegionCitation} from '@ulpin/contracts';
-import {UspPdfPacketPlanEntrySchema,type PdfPacketPlanInput,type PdfPacketPlan} from '../../../../../contracts/src/usp/packet-pdf';
+import {UspPdfPacketPlanEntrySchema,type AnyPdfPacketPlanInput as PdfPacketPlanInput,
+  type AnyPdfPacketPlan as PdfPacketPlan} from '../../../../../contracts/src/usp/packet-pdf';
 import {canonical,fingerprint} from '../../cases/domain';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {assertLocalUsp} from '../snapshots';
@@ -29,12 +30,18 @@ async function targetTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlan
   if(target.id!==input.target.ref.id||target.site_id!==input.scope.scopeId||target.revision!==input.target.revision||
     !['building','floor','space'].includes(target.kind))
     throw new AppError(422,'PACKET_PLAN_TARGET','Use the exact recorded building, floor or space.');
-  const binding=RegistryDocumentCitationsSchema.parse(target.body?.documentCitations??[]).find(p=>
-    p.version==='registry-document-region-citation/1'&&p.id===input.entries[0].bindingId) as RegistryRegionCitation|undefined;
-  if(binding&&(binding.target.recordId!==target.id||binding.target.revision>=target.revision||binding.purpose!==input.purpose))
-    conflict('The exact region has not passed canonical commit for this target and purpose.');
-  if(binding&&binding.id!==regionCitationId(binding))conflict('The exact committed region failed its integrity check.');
-  return {captured,target,binding};
+  const citations=RegistryDocumentCitationsSchema.parse(target.body?.documentCitations??[]);
+  const bindings=input.entries.map(entry=>{
+    const binding=citations.find(p=>p.version==='registry-document-region-citation/1'&&p.id===entry.bindingId) as RegistryRegionCitation|undefined;
+    if(binding&&(binding.target.recordId!==target.id||binding.target.revision>=target.revision||binding.purpose!==input.purpose))
+      conflict('The exact region has not passed canonical commit for this target and purpose.');
+    if(binding&&binding.id!==regionCitationId(binding))conflict('The exact committed region failed its integrity check.');
+    return binding;
+  });
+  const supplied=bindings.filter((binding):binding is RegistryRegionCitation=>Boolean(binding));
+  if(supplied.some(binding=>canonical(binding.document)!==canonical(supplied[0].document)))
+    throw new AppError(422,'PACKET_PDF_ORIGINAL_SCOPE','Select committed regions from one exact unchanged original.');
+  return {captured,target,bindings};
 }
 /** Discovery precedes all source/site/recording locks. Canonical-original only:
  * no parent ancestry is introduced after waiting with destination locks held. */
@@ -43,14 +50,15 @@ export async function protectPdfPlanTx(client:PoolClient,ctx:RequestContext,inpu
 }
 export async function protectPdfPlanInputsTx(client:PoolClient,ctx:RequestContext,inputs:readonly PdfPacketPlanInput[]){
   const before=[];for(const input of inputs)before.push(await targetTx(client,ctx,input));
-  const cases=[...new Set(before.flatMap(item=>item.binding?[item.binding.document.caseId.toLowerCase()]:[]))].sort();
+  const cases=[...new Set(before.flatMap(item=>item.bindings.flatMap(binding=>binding?[binding.document.caseId.toLowerCase()]:[])))].sort();
   await lockRegistryDocumentCasesTx(client,cases,cases);
   const after=[];for(const input of inputs)after.push(await targetTx(client,ctx,input));
   if(canonical(after)!==canonical(before))conflict('The exact region context changed while acquiring protection.');
   await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
   for(const id of [...new Set(inputs.map(input=>input.scope.scopeId))].sort())
     await client.query('SELECT id FROM registry_sites WHERE id=$1 FOR SHARE',[id]);
-  const bindings=before.flatMap(item=>item.binding?[item.binding]:[]).sort((a,b)=>a.document.sourceId.localeCompare(b.document.sourceId));
+  const bindings=before.flatMap(item=>item.bindings.filter((binding):binding is RegistryRegionCitation=>Boolean(binding)))
+    .sort((a,b)=>a.document.sourceId.localeCompare(b.document.sourceId));
   for(const binding of bindings){
     const source=(await client.query('SELECT id,case_id,inspection FROM sources WHERE id=$1 FOR SHARE',[binding.document.sourceId])).rows[0];
     if(!source||source.case_id!==binding.document.caseId||Object.hasOwn(source.inspection??{},'copiedFrom'))
@@ -58,7 +66,7 @@ export async function protectPdfPlanInputsTx(client:PoolClient,ctx:RequestContex
   }
   return after;
 }
-async function committedTargetTx(client:PoolClient,input:PdfPacketPlanInput,captured:Record<string,any>,binding?:RegistryRegionCitation){
+async function committedTargetTx(client:PoolClient,input:PdfPacketPlanInput,captured:Record<string,any>,bindings:(RegistryRegionCitation|undefined)[]){
   const current=(await client.query(`SELECT r.*,c.status AS project_status FROM registry_records r
     LEFT JOIN usp_project_codes c ON c.record_id=r.id WHERE r.id=$1 AND r.site_id=$2 FOR SHARE OF r`,
     [input.target.ref.id,input.scope.scopeId])).rows[0]??notFound('The selected target is unavailable.');
@@ -67,7 +75,7 @@ async function committedTargetTx(client:PoolClient,input:PdfPacketPlanInput,capt
   const stored=current.revision===input.target.revision?current:
     (await client.query('SELECT body FROM registry_revisions WHERE record_id=$1 AND revision=$2',[input.target.ref.id,input.target.revision])).rows[0];
   if(!stored||fingerprint(stored.body)!==fingerprint(captured.body))conflict('The committed target revision is unavailable.');
-  if(binding){
+  for(const binding of bindings)if(binding){
     const history=(await client.query('SELECT body FROM registry_revisions WHERE record_id=$1 AND revision=$2',
       [binding.target.recordId,binding.target.revision])).rows[0];
     if(!history||fingerprint(history.body)!==binding.target.bodySha256)conflict('The original selected target history changed.');
@@ -85,18 +93,18 @@ async function sourceAccessTx(client:PoolClient,ctx:RequestContext,siteId:string
     Number(current.source.bytes)!==original.sourceBytes)conflict('The retained original bytes changed.');
 }
 export async function authorizePdfPlanTx(client:PoolClient,ctx:RequestContext,plan:PdfPacketPlan){
-  assertPdfPlanActor(ctx,plan);const {captured,target,binding}=await targetTx(client,ctx,plan.input);
-  if(captured.body_sha256!==plan.targetBodySha256||canonical(binding??null)!==canonical(plan.entries[0].binding))
+  assertPdfPlanActor(ctx,plan);const {captured,target,bindings}=await targetTx(client,ctx,plan.input);
+  if(captured.body_sha256!==plan.targetBodySha256||canonical(bindings.map(binding=>binding??null))!==canonical(plan.entries.map(entry=>entry.binding)))
     conflict('The immutable PDF plan binding changed.');
-  await committedTargetTx(client,plan.input,target,binding);
-  if(binding)await sourceAccessTx(client,ctx,plan.input.scope.scopeId,binding);
+  await committedTargetTx(client,plan.input,target,bindings);
+  for(const binding of bindings)if(binding)await sourceAccessTx(client,ctx,plan.input.scope.scopeId,binding);
   assertPdfPlanActor(ctx,plan);
 }
 /** New generation is exact-current; disclosure above preserves committed
  * historical target/crop pins while independently checking current access. */
 export async function assessPdfPlanTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput){
-  const {captured,target,binding}=await targetTx(client,ctx,input);
-  const current=await committedTargetTx(client,input,target,binding);
+  const {captured,target,bindings}=await targetTx(client,ctx,input);
+  const current=await committedTargetTx(client,input,target,bindings);
   if(current.revision!==input.target.revision||fingerprint(current.body)!==fingerprint(target.body))
     conflict('The current target changed. Create a fresh selection.');
   // Match the full capture projection, including sourced identity/aliases.
@@ -111,16 +119,20 @@ export async function assessPdfPlanTx(client:PoolClient,ctx:RequestContext,input
   const full={...projected,projectIdentity:projected.project_code?{code:projected.project_code,status:projected.project_status,
     location:projected.project_location,successors}:null,historicalAliases:aliases};
   if(fingerprint(JSON.parse(JSON.stringify(full)))!==captured.body_sha256)conflict('The captured target context changed.');
-  if(binding){
-    await sourceAccessTx(client,ctx,input.scope.scopeId,binding);
-    assertRegionCitation(binding,await registryRegionSourceTx(client,input.scope.scopeId,binding.document,true));
+  const entries=[];
+  for(const [index,selection] of input.entries.entries()){
+    const binding=bindings[index];
+    if(binding){
+      await sourceAccessTx(client,ctx,input.scope.scopeId,binding);
+      assertRegionCitation(binding,await registryRegionSourceTx(client,input.scope.scopeId,binding.document,true));
+    }
+    const body={selection,binding:binding??null,targetPath:[input.target],
+      applicabilitySha256:binding?fingerprint({binding,target:input.target,purpose:input.purpose}):null,
+      state:binding?'included':'blocked_required_context',reasonCode:binding?null:'committed_region_binding_unavailable'};
+    entries.push(UspPdfPacketPlanEntrySchema.parse({...body,entrySha256:fingerprint(body)}));
   }
-  const body={selection:input.entries[0],binding:binding??null,targetPath:[input.target],
-    applicabilitySha256:binding?fingerprint({binding,target:input.target,purpose:input.purpose}):null,
-    state:binding?'included':'blocked_required_context',reasonCode:binding?null:'committed_region_binding_unavailable'};
-  const entry=UspPdfPacketPlanEntrySchema.parse({...body,entrySha256:fingerprint(body)});
   return {targetBodySha256:captured.body_sha256 as string,targetLabel:target.body?.name??target.identifier,
-    entries:[entry] as [typeof entry],requiredContext:binding?'available' as const:'blocked' as const};
+    entries,requiredContext:bindings.every(Boolean)?'available' as const:'blocked' as const};
 }
 export function assertPdfAssessment(plan:PdfPacketPlan,assessment:Awaited<ReturnType<typeof assessPdfPlanTx>>){
   if(assessment.targetBodySha256!==plan.targetBodySha256||assessment.targetLabel!==plan.targetLabel||
