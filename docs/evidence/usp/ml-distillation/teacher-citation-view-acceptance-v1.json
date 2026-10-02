@@ -1,0 +1,66 @@
+{
+  "version": "ml-distillation-teacher-citation-view-acceptance/1",
+  "task": "TEACHER-03",
+  "recordedAt": "2026-10-02",
+  "acceptedScope": "Exact deterministic train-only citation-view augmentation, experimental data/code integrity only. Labels remain provisional and no measured quality gain is established.",
+  "ownerCommit": "89f28e129a92065831b4c751faeccdd45a49fffd",
+  "integratedCommit": "59725fbe6680a298bbf6675ff6bfddc0b4876764",
+  "primaryStagingHeadObservedReadOnly": "aabef72f0792b67c4495b05bed6638f04a9ff4cd",
+  "data": {
+    "version": "ml-distill-teacher-batch/3",
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v3.jsonl",
+    "bytes": 157217,
+    "sha256": "d8ee61f09e474069bf4375ac1cc1b24f574ca18a32b4e49721fa9d415df6d1b4",
+    "parentSha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+    "exactOriginalPrefixBytes": 70333,
+    "originalRows": 11,
+    "variantRows": 11,
+    "totalRows": 22,
+    "augmentationPolicy": "opaque_keys_reverse_evidence/1",
+    "claimAppearances": 124,
+    "parentRowClaims": 62,
+    "conflictAppearances": 4,
+    "abstentionAppearances": 44,
+    "mandatoryNoCanonicalTargets": 22,
+    "sourceFamilies": ["in-haryana-rera-2831", "in-bihar-magnolia-residency"],
+    "newFactualLabels": 0
+  },
+  "artifactPins": {
+    "mappingRawSha256": "5613e167d9de0838089596a9318e0230c624a3b1976c759626ae3293965112ee",
+    "receiptRawSha256": "7ec28054d645185c6c4426b0faccf3c6d199f2ac4b925445c83fcb6b9765c3f3",
+    "assemblerCanonicalLfSha256": "5aaf2f1a999a35e61f814ca7a57034564ad86f36d81839253ef4a257d667a834"
+  },
+  "coordinatorInspection": {
+    "entireAssemblerAndSavedReceiptMappingManifestInspected": true,
+    "newArtifactPinsMatched": 3,
+    "retainedRawArtifactPinsMatched": 9,
+    "historicalManifestsMatched": 2,
+    "canonicalLfPhysicalAndOwnerGitCodePinsMatched": 4,
+    "independentlyReconstructedVariantTransformsAndMetadata": 11,
+    "rowsCheckedWithExistingValidatorAndCurrentFamilyFreeze": 22,
+    "supportedCitationAppearances": 168,
+    "exactParentPrefixChecked": true,
+    "sourceLocatorTextRolesStatesLiteralsUnitsQuotesConflictsAbstentionsAndSupervisionPreserved": true,
+    "workerCorruptionGuardsReused": 5,
+    "allThreeIntegratedChangedGitBlobsMatchOwner": true,
+    "secondAssemblyOrModelRun": false,
+    "commands": [
+      {"command": "python -B -I -S - (read-only inline verifier: artifact/code/assignment pins, exact prefix, independent transform and metadata reconstruction, existing train-only validator)", "exit": 0},
+      {"command": "git cherry-pick 89f28e129a92065831b4c751faeccdd45a49fffd", "exit": 0},
+      {"command": "git diff --exit-code 89f28e129a92065831b4c751faeccdd45a49fffd HEAD -- (three changed teacher paths)", "exit": 0},
+      {"command": "git diff --check", "exit": 0}
+    ]
+  },
+  "nextDependency": "STUDENT-08-PREP admission/count code remains assigned to the existing sole learner. Its return must be inspected before a separate frozen fit assignment. Supplying this exact accepted dataset digest does not authorize a fit or staging a model run.",
+  "unchangedBoundaries": {
+    "baseline": "0/2 valid raw outputs; 0/6 accepted claims",
+    "development": "0/2 valid raw outputs; 0/6 accepted claims",
+    "trainingDiagnostic": "1/7 accepted provisional claims",
+    "evaluationOpened": false,
+    "absentOrNullStateExamplesAdded": false,
+    "nativeIfcExamplesAdded": false,
+    "newFit": false,
+    "promoted": false,
+    "gatewayRegistered": false
+  }
+}
