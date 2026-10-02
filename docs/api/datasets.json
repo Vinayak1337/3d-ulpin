@@ -4749,6 +4749,16 @@
         "correctionReceiptSha256": "a6f15c49129294c4bb10d64a44464065dc769835f8909b08705de3a42aa5c31d",
         "capability": "Local ASCII R2018 tag-linked inspection: 52 LINE, 22 ARC, 9 TEXT entities. The filename does not establish POLYLINE coverage."
       },
+      "canonicalWorkflowEvidence": {
+        "scope": "Actual Windows parser and service-method journey with SQL/storage doubles; current HTTP/PostgreSQL/private storage unqualified",
+        "guide": "docs/evidence/usp/dxf-api-handoff.md",
+        "integratedCodeCommit": "502de89c",
+        "completionReceiptSha256": "952e8f5db2ccdab026cde7a7bfcdea529a0549db20399b6d3c0b944a9d2be709",
+        "nativeArtifactBytes": 249680,
+        "nativeArtifactSha256": "1d26c542913cbd51dd35286fb04a0529acca96677e50f943924c4fd73304e285",
+        "unitsState": "declared",
+        "runtimeProfile": "Fresh checkout-bound profile required before serving"
+      },
       "limitations": [
         "Upstream development drawing, no operational records or property identifiers.",
         "No georeference or geometry/measurement qualification.",
@@ -4802,6 +4812,16 @@
         "acceptedCommit": "950c894",
         "correctionReceiptSha256": "a6f15c49129294c4bb10d64a44464065dc769835f8909b08705de3a42aa5c31d",
         "capability": "Incomplete source-local R12 inspection: 2 LINE and 1 INSERT model-space entities plus 1 block-definition TEXT. Missing units and INSERT scale/rotation remain absent."
+      },
+      "canonicalWorkflowEvidence": {
+        "scope": "Actual Windows parser and service-method journey with SQL/storage doubles; current HTTP/PostgreSQL/private storage unqualified",
+        "guide": "docs/evidence/usp/dxf-api-handoff.md",
+        "integratedCodeCommit": "502de89c",
+        "completionReceiptSha256": "952e8f5db2ccdab026cde7a7bfcdea529a0549db20399b6d3c0b944a9d2be709",
+        "nativeArtifactBytes": 29589,
+        "nativeArtifactSha256": "e926344244e4a73c6f6fcac93991fb8cd6883473ea88ecdca364eb5ac8d76166",
+        "unitsState": "absent",
+        "runtimeProfile": "Fresh checkout-bound profile required before serving"
       },
       "limitations": [
         "No declared $DWGCODEPAGE; decoding uses explicit parser-default cp1252, not a source declaration.",
