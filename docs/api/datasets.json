@@ -2918,6 +2918,15 @@
         },
         {
           "id": "haryana-2831-tower3-plan1.pdf",
+          "privatePdfPacketEvidence": {
+            "guide": "docs/evidence/usp/packet-pdf-plan-download-handoff.md",
+            "scope": "Production service/assembly with memory-only target, SQL, storage and extraction transport; retained crop reused",
+            "integratedCodeCommit": "d094a199",
+            "outputSha256": "452c606114d5d8b7f24694695cfaedb6859225ca7855a57c0a0f2f5462ccc273",
+            "outputBytes": 132479,
+            "authenticApplicability": "not_assessed",
+            "currentHttpSqlStorageVerified": false
+          },
           "privateRegionPreviewEvidence": {
             "guide": "docs/evidence/usp/packet-region-extract-handoff.md",
             "scope": "Retained local source render plus isolated technical controls; current HTTP/SQL/storage unqualified",
