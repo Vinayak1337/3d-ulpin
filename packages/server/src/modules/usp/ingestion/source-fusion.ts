@@ -7,6 +7,7 @@ import {AppError} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {assertLocalUsp} from '../snapshots';
 import {fusionAuthorityBatch,readFusionResult,fusionLive,type FusionBudget} from './source-fusion-authority';
+import {fusionIFCSourceProjection} from './source-fusion-ifc';
 
 type Loaded=Awaited<ReturnType<typeof readFusionResult>>;
 export type SourceFusionDependencies={authority:typeof fusionAuthorityBatch;read:typeof readFusionResult};
@@ -71,6 +72,7 @@ export function fusionSourceProjection(selection:SourceFusionSelection,loaded:Lo
   if(fingerprint(loaded.result.input)!==selection.pin.inputSha256||loaded.result.input.readerSha256!==selection.pin.readerSha256)
     return fail();
   const ns=namespace(selection),base={pin:selection.pin,namespace:ns,sourceSetRole:'operator_selected_fragment' as const};
+  if(selection.kind==='ifc'&&loaded.kind==='ifc')return fusionIFCSourceProjection(selection,loaded);
   if(selection.kind==='document_ocr'&&loaded.kind==='document')return fusionOcrSourceProjection(selection,loaded.result);
   if(selection.kind==='document'&&loaded.kind==='document'){
     const native=loaded.result.native;
