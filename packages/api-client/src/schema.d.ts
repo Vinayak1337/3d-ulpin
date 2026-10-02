@@ -1155,10 +1155,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read exact native/OCR citations through current private source and draft authority */
+        /** Read exact native/OCR/IFC citations through current private source and draft authority */
         get: operations["GET_api_v1_registry_drafts_draftId_document_citations"];
         put?: never;
-        /** Amend exact operator-selected native/OCR fusion citations on one current building or floor correction */
+        /** Amend exact operator-selected native/OCR/IFC citations on one current correction; spaces support IFC only */
         post: operations["POST_api_v1_registry_drafts_draftId_document_citations"];
         delete?: never;
         options?: never;
@@ -9533,6 +9533,63 @@ export interface components {
                             } | null;
                         };
                     };
+                } | {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-ifc-citation/1";
+                    resultBytes: number;
+                    ifc: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "ulpin-native-ifc/1";
+                        stepId: number;
+                        /** @enum {string} */
+                        entityType: "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        locator: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        attributeLocators: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -11470,6 +11527,63 @@ export interface components {
                             } | null;
                         };
                     };
+                } | {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-ifc-citation/1";
+                    resultBytes: number;
+                    ifc: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "ulpin-native-ifc/1";
+                        stepId: number;
+                        /** @enum {string} */
+                        entityType: "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        locator: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        attributeLocators: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -12052,6 +12166,77 @@ export interface components {
                         /** @enum {string} */
                         derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
                     }[];
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-ifc-citation/1";
+                    resultBytes: number;
+                    ifc: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "ulpin-native-ifc/1";
+                        stepId: number;
+                        /** @enum {string} */
+                        entityType: "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        locator: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        attributeLocators: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
+                };
+                record: {
+                    stepId: number;
+                    entityType: string;
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    locator: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    attributes: {
+                        [key: string]: unknown;
+                    };
                 };
             })[];
             /** @enum {string} */

@@ -20,7 +20,9 @@ const ring = array(point);
 
 /** Generated from the exact Zod validator run at the HTTP boundary. */
 export function requestSchema(schema: z.ZodType): JsonSchema {
-  const { $schema: _dialect, ...json } = z.toJSONSchema(schema, { io: 'input', target: 'openapi-3.0' }) as JsonSchema;
+  // IFC literal JSON validators publish their bounded wire shape through metadata,
+  // matching the fusion endpoint; custom runtime checks have no JSON Schema form.
+  const { $schema: _dialect, ...json } = z.toJSONSchema(schema, { io: 'input', target: 'openapi-3.0', unrepresentable: 'any' }) as JsonSchema;
   return json;
 }
 export const consolidatedRegistryReport = requestSchema(ConsolidatedRegistryReportSchema);
