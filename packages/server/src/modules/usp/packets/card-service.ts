@@ -15,7 +15,8 @@ import { readPacket0 } from '../packet0';
 import { readPacketPlan } from './plan-service';
 import { authorizePlanTx, protectPlanDisclosureTx } from './plan-authority';
 import { projectCardFactsTx } from './card-projection';
-import { propertyCardResolverUrl, renderPropertyCard } from './card-render';
+import { propertyCardResolverUrl } from './card-render';
+import { renderPropertyCardProfile, selectPropertyCardProfile } from './card-render-profile';
 
 const MAX_BYTES = 524288;
 type ArtifactRead = (key: string, bytes: number, hash: string) => Promise<Uint8Array>;
@@ -142,14 +143,14 @@ export async function generatePropertyCard(ctx: RequestContext, raw: unknown, io
   if (canonical(packet.receipt) !== canonical(view.execution.packet)) conflict('The exact linked packet is unavailable.');
   const cardId = command.cardId ?? randomUUID(), revision = first.revision!;
   const body = { cardId, revision, previousRevision: revision === 1 ? null : revision - 1,
-    profile: 'property-card-summary-ascii/1' as const, mode: 'local_operator' as const,
+    profile: selectPropertyCardProfile(first.projection!.facts), mode: 'local_operator' as const,
     planId: plan.planId, planVersion: plan.version, planSha256: plan.planSha256,
     confirmationId: view.confirmation.confirmationId, packetId: packet.receipt.packetId, packetSha256: packet.receipt.artifact.sha256,
     target: plan.input.target, scope: plan.input.scope, targetBodySha256: plan.targetBodySha256,
     ...first.projection!, creator: ctx.principal, accessViewId: ctx.accessViewId, policyVersion: ctx.policyVersion,
     evidenceEntrySha256: plan.entries.filter(e => e.state === 'included').map(e => e.entrySha256), omissions: view.execution.omissions,
     resolverUrl: propertyCardResolverUrl(cardId, revision), createdAt: new Date().toISOString(), expiresAt: command.expiresAt };
-  const bytes = renderPropertyCard(body), artifact = { sha256: sha256(bytes), bytes: bytes.length, contentType: 'application/pdf' as const, pages: 1 as const };
+  const bytes = await renderPropertyCardProfile(body), artifact = { sha256: sha256(bytes), bytes: bytes.length, contentType: 'application/pdf' as const, pages: 1 as const };
   const content = { ...body, artifact }, card = UspPropertyCardSchema.parse({ ...content, cardSha256: fingerprint(content) });
   const key = `usp/property-cards/${cardId}/${revision}/${artifact.sha256}`;
   // Object I/O holds no SQL transaction. A rejected final publication may leave
