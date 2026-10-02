@@ -1,0 +1,53 @@
+{
+  "version": "association-selector-stage-correction-assignment/1",
+  "task": "STUDENT-09-STAGE-CORRECTION",
+  "recordedAt": "2026-10-03",
+  "purpose": "Correct the observed pre-stage protected-source version mismatch in the task-owned selector stager, without changing any accepted guard, student, resource, runtime, input or model bytes. Return a reviewed CPU-only code checkpoint for a later separately frozen baseline.",
+  "coordinatorPreparationBase": "812ff85384624edebfd94e1dcd50d5f54562652b",
+  "primaryStagingHeadObservedReadOnly": "fd36a4b964e2c8855c17a9169c5efe43b03f6712",
+  "executionOwner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "studentPreparationBase": "ca5b75932b54cd37e33183e584ba1f5d21c44d2b",
+  "observedFailureReceipt": "docs/evidence/usp/ml-distillation/student/selector-baseline-v1.json",
+  "observedFailureReceiptPhysicalSha256": "29154bbbab7ddb2730b8a4ff0e5144785eedd4aa34154ded9c9f1a33a69e04ea",
+  "parentRuntimeProfileSha256": "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438",
+  "confirmedProtectedSourceVersions": {
+    "scripts/usp/learning/model_isolation.py": {
+      "currentAcceptedSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "retainedOriginalBaselineSha256": "7257b92c4e072f0f9f066ff2721db1eae25e1e90eb2cc0d1e5c0558ba7ae30f3",
+      "scope": "Later adapter-role/fit/reload and completion additions from e952a0b8; association_student run action and all existing boundaries remain."
+    },
+    "services/geo/geo/usp_learning/association/student.py": {
+      "currentAcceptedSha256": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+      "retainedOriginalBaselineSha256": "23108097250b406c867f6759b6dba7cbeb5b0c85d0bdb5b86b6d75da1d28bb4d",
+      "scope": "Later optional model_loader hook from e952a0b8. The selector leaf retains its pretrained loader/seed/settings and does not invoke the hook."
+    }
+  },
+  "acceptedVersionEvidence": "docs/evidence/usp/ml-distillation/student/citation-view-fit-v1.json codePins and student-citation-view-fit-acceptance-v1.json. Coordinator matched both physical/executed hashes and inspected the original e952a0b8 deltas; reuse completed containment review.",
+  "executionAllowance": {
+    "cpuPreparation": true,
+    "stageModelRun": false,
+    "loadModel": false,
+    "inference": false,
+    "fit": false,
+    "evaluation": false,
+    "promotion": false
+  },
+  "implementation": [
+    "Edit only the task-owned stage_selector_baseline.py protected-source preflight. Pin the two exact already accepted later source hashes above explicitly; keep the other six protected sources checked against their unchanged original baseline profile hashes. Do not skip protected-source checks or accept arbitrary current bytes merely because Git is clean.",
+    "Keep exact clean code-commit/Git-byte verification, source-model-input/runtime copies, auxiliary freeze/profile pins, disk bounds and all original resource/containment/run behavior. Existing assignment already includes twelve canonical runtime-code pins; enforce the exact set/digests in the same CPU preflight if needed to avoid differing pin authorities.",
+    "Expose only the small pure source-pin check/preflight needed for CPU verification before mkdir/copy. Add one focused regression check in test_selectors.py: both accepted later files and unchanged other six pass; altered source bytes or unaccepted versions reject before any mkdir/stage/model action. Use real retained/current code as controls, never a model stage or changed historical profile.",
+    "Compile the owned delta and run the small focused selector controls once. Reuse previous codec/teacher interoperability acceptance and completed security/resource checks; no repeated source/teacher/model campaigns."
+  ],
+  "ownership": "Only scripts/usp/learning/association/stage_selector_baseline.py, its focused test in test_selectors.py, and one concise new student/selector-stage-correction.md handoff. All shared guard/student/resource/security/dependency code, old receipts/profiles/assignments, original runs/model/inputs/teacher data, coordinator schema/freeze/status, primary staging and UI/gateway/services remain read-only.",
+  "verification": "CPU-only pins/compile/one focused regression and git diff check. Report actual commands/exits, owned file hashes and final clean HEAD; assert no model dependency imports, stage/profile/copy or model/GPU process was created. Preserve the blocked invocation and null quality metrics.",
+  "settingsRequired": {
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "speed": "default/standard",
+    "observation": "Verify supplied never/danger-full-access; report exposed settings honestly. Tool has no per-turn tier field."
+  },
+  "continuation": "Return exact owned code/handoff commit and clean final HEAD to the ML coordinator, then stop. No staging or baseline rerun is authorized by this correction assignment; the coordinator will inspect the actual code and freeze a new baseline assignment at the returned checkpoint."
+}
