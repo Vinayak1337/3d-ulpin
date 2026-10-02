@@ -20,23 +20,23 @@ const repoFiles=['services/geo/geo/usp_packet_regions.py','scripts/usp/document-
   'scripts/usp/document-models/run_pdf_pages.py','services/geo/geo/usp_document_candidates/granite.py',
   'services/geo/geo/__init__.py','services/geo/geo/usp_document_candidates/__init__.py','packages/contracts/src/packet-region.ts'];
 const observations:any[]=[];
-function run(args:string[]){
-  const result=children.spawnSync(python!,args,{windowsHide:true,encoding:'utf8',timeout:45000});
+function run(args:string[],interpreter=python){
+  const result=children.spawnSync(interpreter!,args,{windowsHide:true,encoding:'utf8',timeout:45000});
   assert.equal(result.status,0,`${result.error??''}\n${result.stdout}\n${result.stderr}`);
   return result.stdout.trim();
 }
 let purelib:string;
-async function fixture(name:string,mutate?:(copy:string)=>Promise<void>){
+async function fixture(name:string,mutate?:(copy:string)=>Promise<void>,interpreter=python){
   const copy=path.join(root!,name,'repo');await fs.mkdir(copy,{recursive:true});
   for(const relative of repoFiles){const target=path.join(copy,relative);await fs.mkdir(path.dirname(target),{recursive:true});
     await fs.copyFile(path.join(repo,relative),target);}
   if(mutate)await mutate(copy);
   const profile=path.join(root!,name,'profile.json');
   const profileSha=run(['-B',path.join(copy,'scripts/usp/document-models/packet_region_loader.py'),
-    '--create-profile',profile,'--repo',copy,'--purelib',purelib]);
+    '--create-profile',profile,'--repo',copy,'--purelib',purelib],interpreter);
   return {copy,profile,profileSha};
 }
-async function runtime(frozen:Awaited<ReturnType<typeof fixture>>,receiptFault=false){
+async function runtime(frozen:Awaited<ReturnType<typeof fixture>>,receiptFault=false,interpreter=python){
   const runtimeFile=path.join(repo,'packages/server/src/modules/usp/packets/region-runtime.ts');
   const source=await fs.readFile(runtimeFile,'utf8');
   const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
@@ -64,7 +64,7 @@ async function runtime(frozen:Awaited<ReturnType<typeof fixture>>,receiptFault=f
     if(name.endsWith('ingestion/document-ocr'))return adapters;
     return require(name);
   };
-  const isolatedProcess={platform:process.platform,env:{...process.env,ULPIN_PACKET_REGIONS_PYTHON:python,
+  const isolatedProcess={platform:process.platform,env:{...process.env,ULPIN_PACKET_REGIONS_PYTHON:interpreter,
     ULPIN_PACKET_REGIONS_SCRATCH:root,ULPIN_PACKET_REGIONS_PROFILE:frozen.profile,
     ULPIN_PACKET_REGIONS_PROFILE_SHA256:frozen.profileSha}};
   vm.runInNewContext(js,{module,exports:module.exports,require:localRequire,process:isolatedProcess,Buffer,
@@ -169,4 +169,54 @@ with Image.open(${JSON.stringify(path.join(root!,'cache-output.png'))}) as image
   observations.push({control:'missing-cleanup-receipt-retained-and-blocked',...missing.counts(),retained:missing.retained});
   await fs.writeFile(path.join(root!,'controls.json'),JSON.stringify({version:'packet-region-corrections/1',observations,
     scope:'Actual leaf source, CLI and service with technical authority dependencies; no HTTP/SQL or intentional orphan.'},null,2));
+});
+
+test('bootstrap ignores newly present valid cache in parent and gated child',
+  {skip:process.platform!=='win32'||!python||!root,timeout:90000},async()=>{
+  // Copy only the previously inventoried runtime and technical inputs. Never
+  // create/remove a cache under the installed interpreter or package directory.
+  const previous=path.resolve(root!,'..','owner-profile-final.json');
+  const profile=JSON.parse(await fs.readFile(previous,'utf8'));
+  const base=path.join(root!,'private-python');await fs.mkdir(base,{recursive:true});
+  for(const entry of profile.files){
+    const relative=path.relative(profile.base,entry.path);
+    if(!relative||relative.startsWith('..')||path.isAbsolute(relative)||entry.path.endsWith('.pyc'))continue;
+    const destination=path.join(base,relative);await fs.mkdir(path.dirname(destination),{recursive:true});
+    await fs.copyFile(entry.path,destination);
+  }
+  const interpreter=path.join(base,'python.exe');
+  const saved=path.resolve(root!,'..','controls-06');
+  purelib=path.join(saved,'purelib');
+  for(const file of ['benign.pdf','active.pdf','selection.json'])await fs.copyFile(path.join(saved,file),path.join(root!,file));
+  const frozen=await fixture('bootstrap',undefined,interpreter);
+  const leaf=await runtime(frozen,false,interpreter);
+  await leaf.extract();assert.equal(leaf.removed.length,1);
+  const marker=path.join(root!,'cache-executed.txt'),source=path.join(base,'Lib','sysconfig.py');
+  const cache=run(['-B','-c',`from pathlib import Path
+import importlib.util,importlib._bootstrap_external as b
+p=Path(${JSON.stringify(source)});raw=p.read_bytes();s=raw.decode('utf-8')
+payload=${JSON.stringify(`open(${JSON.stringify(marker)},'ab').write(b'bootstrap-cache-executed\\n')\n`)}
+# Insert after future imports, if any, so the code is a valid module cache.
+lines=s.splitlines(True);i=0
+for j,line in enumerate(lines):
+ if line.startswith('from __future__ import '): i=j+1
+lines.insert(i,payload);c=compile(''.join(lines),str(p),'exec')
+t=p.stat();cached=Path(importlib.util.cache_from_source(str(p)));cached.parent.mkdir(exist_ok=True)
+cached.write_bytes(b._code_to_timestamp_pyc(c,int(t.st_mtime),t.st_size));print(cached)`]);
+  const frozenJson=JSON.parse(await fs.readFile(frozen.profile,'utf8'));
+  assert(!frozenJson.files.some((entry:any)=>path.resolve(entry.path)===path.resolve(cache)));
+  // The isolated direct import is a positive control for this private cache.
+  run(['-I','-S','-B','-c','import sysconfig'],interpreter);
+  assert.equal((await fs.readFile(marker,'utf8')).trim(),'bootstrap-cache-executed');
+  await fs.rename(marker,path.join(root!,'cache-positive-control.txt'));
+  await leaf.extract();assert.equal(leaf.removed.length,2);
+  await assert.rejects(fs.access(marker));
+  const receipt=JSON.parse(await fs.readFile(path.join(root!,'bootstrap/saved-2/receipt.json'),'utf8'));
+  assert.equal(receipt.cleanup,'confirmed');assert.equal(receipt.worker.exitCode,0);assert.equal(receipt.worker.gatedStart,true);
+  const cacheBytes=await fs.readFile(cache);
+  await fs.writeFile(path.join(root!,'bootstrap-controls.json'),JSON.stringify({version:'packet-region-bootstrap-control/1',
+    profileSha256:frozen.profileSha,cache:{path:cache,sha256:sha(cacheBytes),absentFromFrozenProfile:true,
+      ordinaryPrivateImportExecuted:true},corrected:{parentAndGatedChildExecutedMarker:false,
+      ordinaryLaunch:true,poisonedLaunch:true,receipt,attemptsRemoved:leaf.removed.length,...leaf.counts()},
+    scope:'Private copied CPython/runtime and prior technical PDF. No installed cache change, operational render or intentional orphan.'},null,2));
 });
