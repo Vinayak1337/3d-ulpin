@@ -1,0 +1,118 @@
+{
+  "version": "student-selector-adapter-preparation-acceptance/1",
+  "recordedAt": "2026-10-03",
+  "ownerCodeCommit": "9f3063874834fadf61f169b0ca40beddb76daddb",
+  "ownerFinalCommit": "5f3f7d7fc352e9d5e7677f40d969b92cc815ab1b",
+  "coordinatorIntegratedHead": "23882fca1509a3fe4185940300d14e665d9fb4ef",
+  "primaryStagingHeadObservedReadOnly": "b3c2bb02deeeb15b62b72a621aa8d5747995e9e1",
+  "review": "Complete seven-file code delta and handoff inspected. Exact accepted selector/parent admission preserves train source lineage and semantic validation. Source-only selector messages/raw-pointer targets/EOS masking remain separate from expanded admission strings. Explicit version/action/input dispatch and new representation proof metadata reuse existing fit/reload machinery and preserve legacy defaults.",
+  "codePins": {
+    "scripts/usp/learning/association/association_adapter.py": {
+      "canonicalLfSha256": "3feb77855fc3e101479816224e21346eaa7cbc88e5ffe9476d2e7bee7f31c103",
+      "ownerPhysicalSha256": "3feb77855fc3e101479816224e21346eaa7cbc88e5ffe9476d2e7bee7f31c103"
+    },
+    "scripts/usp/learning/association/stage_adapter.py": {
+      "canonicalLfSha256": "bd620d0568df745bb00a849fbf7ae99c4a527fa3914b4a1964e58eb559c5abb1",
+      "ownerPhysicalSha256": "bd620d0568df745bb00a849fbf7ae99c4a527fa3914b4a1964e58eb559c5abb1"
+    },
+    "scripts/usp/learning/association/stage_selector_adapter.py": {
+      "canonicalLfSha256": "bbd8ffad6150340a71a066a3fc37cd1c0726ab520944966dd56cfd14da24d0b5",
+      "ownerPhysicalSha256": "bbd8ffad6150340a71a066a3fc37cd1c0726ab520944966dd56cfd14da24d0b5"
+    },
+    "scripts/usp/learning/association/test_selector_adapter.py": {
+      "canonicalLfSha256": "a8e452ddd5528356b21b8933c336fc29ea7cc86caa90f7ac595d3bb5adea1e70",
+      "ownerPhysicalSha256": "a8e452ddd5528356b21b8933c336fc29ea7cc86caa90f7ac595d3bb5adea1e70"
+    },
+    "services/geo/geo/usp_learning/association/adapter.py": {
+      "canonicalLfSha256": "ccd509742623b0b13bf02b9a1a5df08599e6cefe573f6db89d76a2056d04080d",
+      "ownerPhysicalSha256": "ccd509742623b0b13bf02b9a1a5df08599e6cefe573f6db89d76a2056d04080d"
+    },
+    "services/geo/geo/usp_learning/association/selector_adapter.py": {
+      "canonicalLfSha256": "4a94f8e61d44699d3dbf884f1747933df57b4977c680f9445ff878def82727e8",
+      "ownerPhysicalSha256": "4a94f8e61d44699d3dbf884f1747933df57b4977c680f9445ff878def82727e8"
+    },
+    "services/geo/geo/usp_learning/association/selector_baseline.py": {
+      "canonicalLfSha256": "c239d432634952909b6508ef018d83d221c156c886076f4fa4a19113f452624a",
+      "ownerPhysicalSha256": "c239d432634952909b6508ef018d83d221c156c886076f4fa4a19113f452624a"
+    },
+    "docs/evidence/usp/ml-distillation/student/selector-adapter-preparation.md": {
+      "canonicalLfSha256": "4759bc5ed8c179620b4dd3726886d5b0d2ac21325ca2addfe97206458a8913b7",
+      "ownerPhysicalSha256": "4759bc5ed8c179620b4dd3726886d5b0d2ac21325ca2addfe97206458a8913b7"
+    }
+  },
+  "protectedDonorPhysicalAndBaseGitSourcesMatched": 13,
+  "compiledPythonFiles": 7,
+  "integratedBlobsMatched": 8,
+  "fitNumericalBodyAstUnchanged": true,
+  "modelArtifactHelperAstsUnchanged": 5,
+  "verification": [
+    {
+      "command": "python -B -I -S scripts/usp/learning/association/test_selector_adapter.py",
+      "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "exitCode": 0,
+      "tests": 6,
+      "seconds": 0.045
+    },
+    {
+      "command": "python -B -I -S - (owned pins/compile/thirteen protected sources/numerical-helper AST/default accepted-fit proof)",
+      "exitCode": 0
+    },
+    {
+      "command": "python -B -I -S - (eight integrated blobs and exact twenty-source fit assignment preflight)",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "legacyAcceptedFitStillPassesAtUpdates": 132,
+  "datasetSha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb",
+  "parentSha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+  "representation": {
+    "version": "association-selector-training/1",
+    "datasetSha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb",
+    "parentSha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+    "promptVersion": "association-selector-prompt/1",
+    "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+    "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+    "lexicalPolicy": {
+      "version": "lossless_lexical_spans/1",
+      "pattern": "\\w+|\\s+|[^\\w\\s]",
+      "flags": "Python re.UNICODE default; no normalization or case folding."
+    },
+    "target": "canonical raw selector JSON plus EOS; expanded strings for admission only",
+    "teacherSupervision": "provisional; not independent truth or operational facts"
+  },
+  "trainingPlan": {
+    "version": "association-training-plan/1",
+    "datasetSha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb",
+    "teacherExamples": 11,
+    "epochs": 6,
+    "plannedUpdates": 66
+  },
+  "admittedCounts": {
+    "rows": 11,
+    "claims": 62,
+    "conflicts": 2,
+    "abstentions": 22,
+    "canonicalAbstentions": 11
+  },
+  "runtimeStageCreated": false,
+  "modelDependenciesImported": false,
+  "modelLoaded": false,
+  "fitPerformed": false,
+  "inferencePerformed": false,
+  "evaluationOpened": false,
+  "promotionAuthorized": false,
+  "qualification": "CPU code/admission/representation acceptance only. Character-token tests do not measure tokenizer lengths/resources or model quality. Historical selector baseline remains 0/2 valid and 0/6 correct accepted.",
+  "settings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedEffort": "xhigh",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedEffort": null,
+    "observedServiceTier": null,
+    "suppliedPermissions": "never / danger-full-access"
+  }
+}
