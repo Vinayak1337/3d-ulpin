@@ -12,7 +12,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
-import {dxfConfig,assertDXFTools} from './dxf-config';
+import {dxfConfig,assertDXFReadTools} from './dxf-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 
@@ -197,14 +197,14 @@ export class DXFIngestionService{
     const bounds=deadline(DXF_LIMITS.readMs);
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
     const row=await transaction(client=>dxfStatusTx(client,caseId,sourceId,jobId),bounds);
-    if(!row.stale&&row.job.status==='succeeded')assertDXFTools(row.input.tools,bounds.deadlineAt);
+    if(!row.stale&&row.job.status==='succeeded')assertDXFReadTools(row.input.tools,bounds.deadlineAt);
     const result=!row.stale&&row.job.status==='succeeded'&&row.job.result_ref
       ?await readDXFResult(row.input,row.job.result_ref.sha256,dxfResultBytes(row.job.result_ref,jobId),bounds.signal):null;
     await transaction(async client=>{const current=await dxfStatusTx(client,caseId,sourceId,jobId);
       if(fingerprint(current.input)!==fingerprint(row.input)||current.stale!==row.stale||
         fingerprint(current.job.result_ref)!==fingerprint(row.job.result_ref)||current.job.status!==row.job.status)
         conflict('DXF job changed while reading its status.');},bounds);
-    if(result)assertDXFTools(row.input.tools,bounds.deadlineAt);
+    if(result)assertDXFReadTools(row.input.tools,bounds.deadlineAt);
     const response=DXFStatusSchema.parse({version:DXF_VERSION,caseId,sourceId,jobId,
       currentCaseRevision:row.ctx.current.revision,sourceRevision:row.ctx.source.revision,sourceSha256:row.ctx.source.sha256,
       status:row.stale?'stale':row.job.status==='succeeded'?'completed':row.job.status,
@@ -220,7 +220,7 @@ export class DXFIngestionService{
     const row=await transaction(client=>dxfStatusTx(client,caseId,sourceId,jobId),bounds);
     if(row.stale||row.job.status!=='succeeded'||!row.job.result_ref)
       throw new AppError(409,'DXF_NOT_ACCEPTED','This selection has no current accepted artifact.');
-    assertDXFTools(row.input.tools,bounds.deadlineAt);
+    assertDXFReadTools(row.input.tools,bounds.deadlineAt);
     const result=await readDXFResult(row.input,row.job.result_ref.sha256,dxfResultBytes(row.job.result_ref,jobId),bounds.signal);
     const bytes=await boundedDXFObject(result.artifact.key,result.artifact.bytes,bounds.signal);
     if(bytes.length!==result.artifact.bytes||sha256(bytes)!==result.artifact.sha256)
@@ -229,7 +229,7 @@ export class DXFIngestionService{
       if(current.stale||fingerprint(current.input)!==fingerprint(row.input)||
         fingerprint(current.job.result_ref)!==fingerprint(row.job.result_ref)||current.job.accepted_fence!==row.job.accepted_fence)
         conflict('The accepted DXF attempt changed during artifact read.');},bounds);
-    assertDXFTools(row.input.tools,bounds.deadlineAt);
+    assertDXFReadTools(row.input.tools,bounds.deadlineAt);
     return {bytes,sha256:result.artifact.sha256};
   }
   async original(caseValue:string,sourceValue:string){

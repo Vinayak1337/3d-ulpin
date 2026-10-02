@@ -18,6 +18,7 @@ import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
 import {runIFCJob} from '../usp/ingestion/ifc-worker';
 import {runDXFJob} from '../usp/ingestion/dxf-worker';
+import {runKMLJob} from '../usp/ingestion/kml-worker';
 import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 import {runCityJSONValidationJob} from '../registry/cityjson-validation-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
@@ -28,6 +29,7 @@ let streamedProfileWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
 let dxfWorker:Promise<void>|undefined;
+let kmlWorker:Promise<void>|undefined;
 let cityjsonWorker:Promise<void>|undefined;
 let cityjsonValidationWorker:Promise<void>|undefined;
 let pointBatchWorker:Promise<void>|undefined;
@@ -229,6 +231,12 @@ export async function dispatchTick(): Promise<number> {
         if(!dxfWorker)dxfWorker=runDXFJob(job.id)
           .catch(()=>{/* Canonical fenced status owns recovery; native retries are explicit. */})
           .finally(()=>{dxfWorker=undefined;});
+        return;
+      }
+      if(job.operation==='kml-native'){
+        if(!kmlWorker)kmlWorker=runKMLJob(job.id)
+          .catch(()=>{/* Canonical fenced state owns recovery; member retries are explicit. */})
+          .finally(()=>{kmlWorker=undefined;});
         return;
       }
       if(job.operation==='cityjson-native'){
