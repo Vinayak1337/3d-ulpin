@@ -4,6 +4,7 @@ import {AppError,conflict} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {documentSourceTx,assertDocumentInputTx} from './document-context';
 import {isIFCProtectedSource} from './ifc';
+import {isDXFProtectedSource} from './dxf';
 
 type SourceRow=Record<string,any>;
 type Mode='original'|'snapshot'|'copy';
@@ -15,6 +16,8 @@ export async function documentAuthorityTx(client:PoolClient,captured:SourceRow,m
   if(typeof captured.id!=='string')denied();
   if(seen.has(captured.id)||seen.size>=8)denied();seen.add(captured.id);
   const current=(await client.query('SELECT * FROM sources WHERE id=$1',[captured.id])).rows[0];
+  if(isDXFProtectedSource(captured)||current&&isDXFProtectedSource(current))
+    throw new AppError(409,'DXF_CANONICAL_SOURCE_REQUIRED','Use the current private DXF original/job authority; legacy snapshot and copy admission are unsupported.');
   if(isIFCProtectedSource(captured)||current&&isIFCProtectedSource(current))
     throw new AppError(409,'IFC_CANONICAL_SOURCE_REQUIRED','Use the current private IFC original/job authority; legacy snapshot and copy admission are unsupported.');
   const marked=Boolean(captured.inspection?.documentOriginal||current?.inspection?.documentOriginal);

@@ -23,5 +23,6 @@ export * from './raster-window';
 export * from './point-batch';
 export * from './cityjson-ingestion';
 export * from './ifc-ingestion';
+export * from './dxf-ingestion';
 export * from './packets';
 export * from './property-card';

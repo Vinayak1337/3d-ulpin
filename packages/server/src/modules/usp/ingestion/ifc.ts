@@ -12,7 +12,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
-import {ifcConfig,assertIFCTools} from './ifc-config';
+import {ifcConfig,assertIFCReadTools} from './ifc-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 
@@ -197,14 +197,14 @@ export class IFCIngestionService{
     const bounds=deadline(IFC_LIMITS.readMs);
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
     const row=await transaction(client=>ifcStatusTx(client,caseId,sourceId,jobId),bounds);
-    if(!row.stale&&row.job.status==='succeeded')assertIFCTools(row.input.tools,bounds.deadlineAt);
+    if(!row.stale&&row.job.status==='succeeded')assertIFCReadTools(row.input.tools,bounds.deadlineAt);
     const result=!row.stale&&row.job.status==='succeeded'&&row.job.result_ref
       ?await readIFCResult(row.input,row.job.result_ref.sha256,ifcResultBytes(row.job.result_ref,jobId),bounds.signal):null;
     await transaction(async client=>{const current=await ifcStatusTx(client,caseId,sourceId,jobId);
       if(fingerprint(current.input)!==fingerprint(row.input)||current.stale!==row.stale||
         fingerprint(current.job.result_ref)!==fingerprint(row.job.result_ref)||current.job.status!==row.job.status)
         conflict('IFC job changed while reading its status.');},bounds);
-    if(result)assertIFCTools(row.input.tools,bounds.deadlineAt);
+    if(result)assertIFCReadTools(row.input.tools,bounds.deadlineAt);
     const response=IFCStatusSchema.parse({version:IFC_VERSION,caseId,sourceId,jobId,
       currentCaseRevision:row.ctx.current.revision,sourceRevision:row.ctx.source.revision,sourceSha256:row.ctx.source.sha256,
       status:row.stale?'stale':row.job.status==='succeeded'?'completed':row.job.status,
@@ -220,7 +220,7 @@ export class IFCIngestionService{
     const row=await transaction(client=>ifcStatusTx(client,caseId,sourceId,jobId),bounds);
     if(row.stale||row.job.status!=='succeeded'||!row.job.result_ref)
       throw new AppError(409,'IFC_NOT_ACCEPTED','This selection has no current accepted artifact.');
-    assertIFCTools(row.input.tools,bounds.deadlineAt);
+    assertIFCReadTools(row.input.tools,bounds.deadlineAt);
     const result=await readIFCResult(row.input,row.job.result_ref.sha256,ifcResultBytes(row.job.result_ref,jobId),bounds.signal);
     const bytes=await boundedIFCObject(result.artifact.key,result.artifact.bytes,bounds.signal);
     if(bytes.length!==result.artifact.bytes||sha256(bytes)!==result.artifact.sha256)
@@ -229,7 +229,7 @@ export class IFCIngestionService{
       if(current.stale||fingerprint(current.input)!==fingerprint(row.input)||
         fingerprint(current.job.result_ref)!==fingerprint(row.job.result_ref)||current.job.accepted_fence!==row.job.accepted_fence)
         conflict('The accepted IFC attempt changed during artifact read.');},bounds);
-    assertIFCTools(row.input.tools,bounds.deadlineAt);
+    assertIFCReadTools(row.input.tools,bounds.deadlineAt);
     return {bytes,sha256:result.artifact.sha256};
   }
   async original(caseValue:string,sourceValue:string){
