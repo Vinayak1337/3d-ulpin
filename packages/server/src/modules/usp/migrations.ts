@@ -39,5 +39,10 @@ export async function migrateUsp() {
       await client.query(sql('usp.packet-plans.schema'));
       await client.query(sql('usp.packet-plans.mark'), [packetPlansName]);
     }
+    const propertyCardsName = 'usp_property_cards_001';
+    if (!(await client.query(sql('usp.property-cards.check'), [propertyCardsName])).rowCount) {
+      await client.query(sql('usp.property-cards.schema'));
+      await client.query(sql('usp.property-cards.mark'), [propertyCardsName]);
+    }
   });
 }
