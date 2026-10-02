@@ -29,6 +29,8 @@ export function exactIdentifier(text:string,value:string){
 export function associationLiterals(context:SourceFusionContext,unsupportedSources:readonly string[]=[]):AssociationLiteral[]{
   const literals:AssociationLiteral[]=[];
   for(const source of context.sources){
+    if(source.kind==='dxf')throw new AppError(422,'SOURCE_FUSION_DXF_CONTEXT_ONLY',
+      'DXF fragments support source context only; property association proposals are unsupported.');
     if(source.kind==='ifc'){
       // Only the schema-defined source identifier is eligible. Names, elevations,
       // STEP numbers and hierarchy remain context, even if they resemble an ID.
@@ -109,6 +111,8 @@ export function associationManualSelection(request:FusionAssociationRequest,cont
   ifcProjection?:AssociationIFCProjection){
   const selected=new Set(keys);
   const candidates=context.sources.flatMap<SourceFusionContext['sources'][number]>(source=>{
+    if(source.kind==='dxf')throw new AppError(422,'SOURCE_FUSION_DXF_CONTEXT_ONLY',
+      'DXF fragments support source context only; reviewed citation attachment is unsupported.');
     if(source.kind==='ifc'){
       const stepIds=source.entities.filter(entry=>selected.has(ifcKey(source,entry.record.stepId))).map(entry=>entry.record.stepId);
       if(!stepIds.length)return [];
