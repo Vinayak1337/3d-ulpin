@@ -2,6 +2,10 @@ import { z } from 'zod';
 import { CoreSha256Schema, coreText } from '../spatial/core/scalars';
 import { UspMutationGuardSchema, UspSnapshotScopeSchema, UspTargetPinSchema, UspPrincipalSchema } from './common';
 
+export const PROPERTY_CARD_ASCII_PROFILE = 'property-card-summary-ascii/1' as const;
+export const PROPERTY_CARD_UNICODE_PROFILE = 'property-card-summary-latin-deva/1' as const;
+export const UspPropertyCardProfileSchema = z.enum([PROPERTY_CARD_ASCII_PROFILE, PROPERTY_CARD_UNICODE_PROFILE]);
+
 export const UspGeneratePropertyCardSchema = z.strictObject({
   planId: z.uuid(), planVersion: z.number().int().positive().max(2147483647),
   cardId: z.uuid().nullable(), expiresAt: z.iso.datetime({ offset: true }), guard: UspMutationGuardSchema,
@@ -21,7 +25,7 @@ export const UspPropertyCardFactSchema = z.strictObject({
 }).readonly();
 export const UspPropertyCardSchema = z.strictObject({
   cardId: z.uuid(), revision: z.number().int().positive().max(2147483647), previousRevision: z.number().int().positive().max(2147483647).nullable(),
-  profile: z.literal('property-card-summary-ascii/1'), mode: z.literal('local_operator'),
+  profile: UspPropertyCardProfileSchema, mode: z.literal('local_operator'),
   planId: z.uuid(), planVersion: z.number().int().positive(), planSha256: CoreSha256Schema,
   confirmationId: z.uuid(), packetId: z.uuid(), packetSha256: CoreSha256Schema,
   target: UspTargetPinSchema, scope: UspSnapshotScopeSchema, targetBodySha256: CoreSha256Schema,
