@@ -1,5 +1,7 @@
 # PACK1-PDF-01 — authority/contracts checkpoint
 
+**Continuation, 3 October:** the prerequisite was accepted and the [confirmed-plan/private-PDF/download increment](packet-pdf-plan-download-handoff.md) is complete in the worker checkout. The checkpoint below is preserved as historical assembly/seam evidence.
+
 2 October 2026. **Assembly leaf implemented; end-to-end immutable PDF packet remains pending the reviewed-binding/shared-contract decision below.** Base/assignment resolved once to `aabef72f0792b67c4495b05bed6638f04a9ff4cd`; new `task/desktop-packet-pdf-one-region` in `C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin`. Completed `task/desktop-packet-region-extract@ce282de1` and receipts are preserved. Staging remains read-only. Code checkpoint **`f437217d07bbaf79e1ebdfae306a17ceea84b299`** owns three new files only; no existing plan/shared writer changed.
 
 ## Concrete authority prerequisite
