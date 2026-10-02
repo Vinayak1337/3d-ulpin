@@ -83,7 +83,13 @@ def accepted_fit(root):
     require(completion["runFreezeSha256"] == isolation.sha(root / "inputs/run-freeze.json"), "fit freeze drift")
     freeze = isolation.read(root / "inputs/run-freeze.json")
     assignment = isolation.read(root / "inputs/assignment.json")
-    plan = checked_freeze(freeze, assignment)
+    selector = None
+    if freeze.get("version") == "association-selector-adapter-freeze/1":
+        from geo.usp_learning.association import selector_adapter as selector
+    elif (str(freeze.get("version", "")).startswith("association-selector") or "representation" in freeze
+          or assignment.get("version") == "association-selector-adapter-execution/1"):
+        raise RuntimeError("explicit selector adapter freeze required")
+    plan = checked_freeze(freeze, assignment) if selector is None else selector.checked_freeze(freeze, assignment)
     updates = plan["plannedUpdates"]
     require(freeze["fitSettings"] == FIT and freeze["numerics"] == NUMERICS
             and freeze["inputSha256"]["training_data"] == plan["datasetSha256"]
@@ -94,8 +100,15 @@ def accepted_fit(root):
             and freeze["lossImplementation"] == LOSS_POLICY, "fit configuration/data drift")
     preflight = isolation.read(output / "token-preflight.json")
     progress = [json.loads(line) for line in (output / "fit-progress.jsonl").read_text().splitlines()]
-    checked_count_receipts(plan, preflight, result, manifest, progress, versioned="datasetDeclaration" in freeze)
-    if "datasetDeclaration" in freeze:
+    checked_count_receipts(plan, preflight, result, manifest, progress, versioned=selector is not None or "datasetDeclaration" in freeze)
+    if selector is not None:
+        schema = selector.checked_inputs(freeze, assignment, root / "inputs")
+        contract, family = isolation.read(root / "inputs/schema-v1.json"), isolation.read(root / "inputs/family-freeze.json")
+        rows, delta = selector.checked_teacher((root / "inputs/train-teacher-v2.jsonl").read_bytes(),
+            (root / "inputs/train-teacher-selectors-v1.jsonl").read_bytes(), schema, contract, family)
+        require(same(isolation.read(output / "teacher-delta.json"), delta), "selector admission receipt drift")
+        selector.checked_fit_metadata(preflight, result, manifest, rows, selector.SelectorRepresentation(schema, contract, family))
+    elif "datasetDeclaration" in freeze:
         require(freeze.get("auxiliaryInputSha256") == {"train-teacher-v2.jsonl": V2_SHA}, "frozen parent pin drift")
         rows, delta = checked_citation_teacher((root / "inputs/train-teacher-v1.jsonl").read_bytes(),
             (root / "inputs/train-teacher-v2.jsonl").read_bytes(), (root / "inputs/train-teacher-v3.jsonl").read_bytes(),
@@ -186,7 +199,8 @@ def accepted_fit(root):
             "attentionImplementation": ATTENTION_POLICY, "attentionControlPassed": True, "attentionControlSha256": attention_sha,
             "attentionScopeRestored": True, "attentionBlockHistoryPassed": True,
             "attentionBlocksSha256": result["attentionBlocksSha256"], "attentionScopeSha256": result["attentionScopeSha256"],
-            "memoryPhasesSha256": result["memoryPhasesSha256"]}
+            "memoryPhasesSha256": result["memoryPhasesSha256"],
+            **({"representation": selector.representation_metadata()} if selector is not None else {})}
 
 
 def stage(action, fit_root=None, *, citation_view_assignment=None):

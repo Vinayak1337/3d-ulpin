@@ -85,7 +85,7 @@ def checked_run_inputs(freeze, inputs):
 
 
 def run_selectors(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, *,
-                  selector_contract, cases, preserve_preflight):
+                  selector_contract, cases, preserve_preflight, model_loader=None):
     require_boundary()  # before dependencies, model bytes or GPU initialization
     for example in examples:
         validate_input(example, contract, family_freeze, ("development",))
@@ -142,8 +142,9 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
                         "lexicalPythonVersion": sys.version, "unicodeVersion": unicodedata.unidata_version})
     require(all(row["inputTokens"] <= SETTINGS["maxInputTokens"] for row in preflight),
             "selector_input_token_bound_exceeded_no_truncation")
-    model = AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
+    model = (AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
         use_safetensors=True, torch_dtype=torch.float16, attn_implementation=SETTINGS["attention"]).to("cuda").eval()
+        if model_loader is None else model_loader(model_path))
 
     torch.cuda.synchronize()
     loaded_seconds = time.perf_counter() - started
