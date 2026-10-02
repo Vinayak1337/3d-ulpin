@@ -8,6 +8,9 @@ import {canonical,fingerprint} from '../../cases/domain';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {registrySourceTx,registryDocumentSourceAccessTx,registryMetadataEvidence} from '../../registry/registry-metadata';
 import {assertLocalUsp,assertSnapshotDocumentsTx,readManifest,readSnapshotBody,resolveRegistryTarget,storedRevision} from '../snapshots';
+import {assertedIFCCitations,reviewedIFCIdentifiers} from '../../registry/registry-ifc-identifiers';
+import {registryIFCCitationSourceTx} from '../../registry/registry-ifc-citation-source';
+import {ifcCitationFusionSelection} from './source-fusion-citations';
 
 type Row={id:string;site_id:string;kind:string;identifier:string;revision:number;body:Record<string,any>;
   projectIdentity?:{code:string;status:string|null|undefined;location:unknown}|null;project_code?:string|null;
@@ -89,11 +92,13 @@ export async function associationTargetAuthority(ctx:RequestContext,scope:Snapsh
   const limit=()=>{throw new AppError(413,'DOCUMENT_ASSOCIATION_TARGET_LIMIT','Select a smaller evidence context.');};
   if(pins.length>8||citationSourceIds.length>8)limit();
   const targets=await associationTargets(ctx,scope,pins),manifest=await readManifest(ctx,scope);
+  const nativeIdentifiers=new Map<string,ReturnType<typeof reviewedIFCIdentifiers>>();
   await transaction(async client=>{
     const snapshotSources=(await client.query(`SELECT body,body_sha256 FROM usp_snapshot_bodies
       WHERE manifest_id=$1 AND namespace='source_revision' ORDER BY object_id`,[scope.manifestId])).rows;
     if(snapshotSources.length>2000)limit();
     const ordinary=new Set<string>(),seeds=new Set(citationSourceIds),targetBodies=new Map<string,string>();
+    const assertions=new Map<string,ReturnType<typeof assertedIFCCitations>>();
     const capturedSources:Record<string,any>[]=[];
     for(const pin of pins){
       const saved=(await client.query(`SELECT body,body_sha256 FROM usp_snapshot_bodies
@@ -104,6 +109,11 @@ export async function associationTargetAuthority(ctx:RequestContext,scope:Snapsh
       if(!member||member.bodySha256!==saved.body_sha256)conflict('The captured target differs from its manifest.');
       targetBodies.set(pin.ref.id,fingerprint(saved));
       for(const id of sourceIds(saved.body.body)){ordinary.add(id);seeds.add(id);}
+      const asserted=assertedIFCCitations(saved.body.body,saved.body.kind);
+      if(asserted.some(citation=>citation.target.recordId!==pin.ref.id||citation.target.revision>=pin.revision))
+        conflict('The native identifier has no committed correction for this exact target.');
+      assertions.set(pin.ref.id,asserted);
+      for(const citation of asserted)seeds.add(citation.document.sourceId);
     }
     for(const saved of snapshotSources){
       if(fingerprint(saved.body)!==saved.body_sha256)conflict('The exact captured source revision is unavailable.');
@@ -124,7 +134,9 @@ export async function associationTargetAuthority(ctx:RequestContext,scope:Snapsh
       for(const row of rows){sources.set(row.id,row);
         if(row.inspection?.copiedFrom?.sourceRevisionId)pending.push(row.inspection.copiedFrom.sourceRevisionId);}
     }
-    const cases=[...new Set([...sources.values()].map(row=>z.uuid().parse(row.case_id).toLowerCase()))].sort();
+    const confirmed=[...assertions.values()].flat();
+    const cases=[...new Set([...sources.values()].map(row=>z.uuid().parse(row.case_id).toLowerCase())
+      .concat(confirmed.map(pin=>z.uuid().parse(pin.document.caseId).toLowerCase())))].sort();
     for(const caseId of cases)await lockSourceCaseDestinationTx(client,caseId);
     // SHARE blocks archive/context updates and source-family writers' UPDATE
     // locks, but remains compatible with snapshot capture's source-order SHARE.
@@ -151,7 +163,8 @@ export async function associationTargetAuthority(ctx:RequestContext,scope:Snapsh
     // Protect every accepted job consulted by snapshot/ordinary/citation lineage
     // authority, including a retained snapshot's distinct historical receipt.
     const jobs=[...new Set([...capturedSources,...lockedSources].flatMap(row=>
-      row.inspection?.documentAccepted?.jobId?[z.uuid().parse(row.inspection.documentAccepted.jobId).toLowerCase()]:[]))].sort();
+      row.inspection?.documentAccepted?.jobId?[z.uuid().parse(row.inspection.documentAccepted.jobId).toLowerCase()]:[])
+      .concat(confirmed.map(pin=>z.uuid().parse(pin.document.jobId).toLowerCase())))].sort();
     if(jobs.length){
       await client.query('SELECT id FROM jobs WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE',[jobs]);
       await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=ANY($1::uuid[]) ORDER BY job_id FOR SHARE',[jobs]);
@@ -170,9 +183,23 @@ export async function associationTargetAuthority(ctx:RequestContext,scope:Snapsh
     await assertSnapshotDocumentsTx(client,ctx,scope);
     for(const id of [...ordinary].sort())await registrySourceTx(client,scope.scopeId,id);
     for(const id of [...new Set(citationSourceIds)].sort())await registryDocumentSourceAccessTx(client,scope.scopeId,id);
+    // The complete case/source/job set is protected already. Typed IFC access
+    // checks never route a native IFC through generic document authority. No
+    // artifact I/O or provider call occurs in this final disclosure projection.
+    for(const pin of confirmed.sort((a,b)=>a.document.caseId.localeCompare(b.document.caseId)||
+      a.document.sourceId.localeCompare(b.document.sourceId)||a.document.jobId.localeCompare(b.document.jobId))){
+      const current=await registryIFCCitationSourceTx(client,scope.scopeId,ifcCitationFusionSelection(pin).pin);
+      if(pin.identityAssertion!.subject!==ctx.principal.subject||
+        pin.identityAssertion!.accessSha256!==current.authority.input.accessSha256)
+        throw new AppError(403,'REGISTRY_IFC_IDENTITY_DENIED','The reviewed native identifier is unavailable in this access context.');
+    }
+    for(const [id,asserted] of assertions)nativeIdentifiers.set(id,reviewedIFCIdentifiers(asserted));
     assertLocalUsp(ctx);
     if(manifest.accessViewId!==ctx.accessViewId||manifest.policyVersion!==ctx.policyVersion)
       throw new AppError(403,'USP_ACCESS_CHANGED','Access changed. Refresh the selection.');
   },deadline);
-  assertLocalUsp(ctx);return targets;
+  assertLocalUsp(ctx);return targets.map(target=>{
+    const reviewed=nativeIdentifiers.get(target.pin.ref.id)??[];
+    return {...target,identifiers:[...target.identifiers,...reviewed],sourceEvidence:reviewed.length?'available':target.sourceEvidence};
+  });
 }
