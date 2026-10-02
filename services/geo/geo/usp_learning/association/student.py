@@ -31,7 +31,7 @@ def prompt_messages(example):
             {"role": "user", "content": json.dumps(content, ensure_ascii=False, separators=(",", ":"))}]
 
 
-def run_local(examples, contract, family_freeze, model_path, require_boundary, preserve_raw):
+def run_local(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, *, model_loader=None):
     require_boundary()  # before dependencies, model bytes or GPU initialization
     for example in examples:
         validate_input(example, contract, family_freeze, ("development",))
@@ -72,8 +72,9 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
 
     gpu_check()
     tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False)
-    model = AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
+    model = (AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
         use_safetensors=True, torch_dtype=torch.float16, attn_implementation=SETTINGS["attention"]).to("cuda").eval()
+        if model_loader is None else model_loader(model_path))
     torch.cuda.synchronize()
     loaded_seconds = time.perf_counter() - started
     gpu_check()
