@@ -1,0 +1,255 @@
+{
+  "version": "association-selector-baseline-receipt/1",
+  "task": "STUDENT-09-BASELINE",
+  "recordedAt": "2026-10-03",
+  "status": "blocked_before_stage_creation",
+  "codeHead": "113c47e7977eb3c1561f3cd61846369c4456e410",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "coordinatorCheckpoint": "16d82df50d69b095eccd43c535208ffeb83a2582",
+  "primaryStagingHeadObservedReadOnly": "195c502f166272fab49a267fa3ba8ef10626f5aa",
+  "assignment": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-09.selector-baseline.assignment.json",
+    "physicalSha256": "57b77caffc2a0527348b07cda104e08a53afb758acb90468b2467aba8b69c4f9"
+  },
+  "settings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "note": "Model/effort/tier unexposed; no settings change claimed."
+  },
+  "preStagePinChecks": {
+    "exitCode": 0,
+    "cleanExactHead": true,
+    "canonicalRuntimeCodePinsMatched": 12,
+    "preparationAcceptanceMatched": true,
+    "parentProfileMatched": true,
+    "parentInputPinsMatched": 5,
+    "hostExpectationsAndOriginalSummaryHashesMatched": true
+  },
+  "invocation": {
+    "command": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_selector_baseline.py",
+      "--assignment",
+      "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-09.selector-baseline.assignment.json"
+    ],
+    "startedAtUtc": "2026-10-02T21:46:02.844254+00:00",
+    "exitCode": 1,
+    "elapsedSeconds": 0.2039999999997235,
+    "hostEvidenceRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-host-20261003-113c47e7"
+  },
+  "failure": {
+    "type": "InvalidEvidence",
+    "message": "selector_protected_source_drift:scripts/usp/learning/model_isolation.py",
+    "file": "scripts/usp/learning/association/stage_selector_baseline.py",
+    "line": 63,
+    "phase": "protected source physical-byte check before disk check/root mkdir"
+  },
+  "diagnosis": {
+    "path": "scripts/usp/learning/model_isolation.py",
+    "local": {
+      "bytes": 23841,
+      "physicalSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "canonicalLfSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "crlfCount": 0,
+      "lfCount": 404
+    },
+    "retainedBaseline": {
+      "bytes": 22508,
+      "physicalSha256": "7257b92c4e072f0f9f066ff2721db1eae25e1e90eb2cc0d1e5c0558ba7ae30f3",
+      "canonicalLfSha256": "7257b92c4e072f0f9f066ff2721db1eae25e1e90eb2cc0d1e5c0558ba7ae30f3",
+      "crlfCount": 0,
+      "lfCount": 390
+    },
+    "baselineProfileExpectedPhysicalSha256": "7257b92c4e072f0f9f066ff2721db1eae25e1e90eb2cc0d1e5c0558ba7ae30f3",
+    "canonicalLfBytesEqual": false,
+    "gitHead": "113c47e7977eb3c1561f3cd61846369c4456e410",
+    "gitStatusPorcelain": "",
+    "stageDirectories": [
+      "selector-baseline-host-20261003-113c47e7"
+    ],
+    "readOnlyDiagnosis": true
+  },
+  "protectedSourceAudit": [
+    {
+      "path": "scripts/usp/learning/model_isolation.py",
+      "currentPhysicalSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "retainedPhysicalSha256": "7257b92c4e072f0f9f066ff2721db1eae25e1e90eb2cc0d1e5c0558ba7ae30f3",
+      "profilePhysicalSha256": "7257b92c4e072f0f9f066ff2721db1eae25e1e90eb2cc0d1e5c0558ba7ae30f3",
+      "retainedMatchesProfile": true,
+      "currentMatchesRetained": false
+    },
+    {
+      "path": "scripts/usp/security/appcontainer_audit.py",
+      "currentPhysicalSha256": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca",
+      "retainedPhysicalSha256": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca",
+      "profilePhysicalSha256": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca",
+      "retainedMatchesProfile": true,
+      "currentMatchesRetained": true
+    },
+    {
+      "path": "services/geo/geo/__init__.py",
+      "currentPhysicalSha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+      "retainedPhysicalSha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+      "profilePhysicalSha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+      "retainedMatchesProfile": true,
+      "currentMatchesRetained": true
+    },
+    {
+      "path": "services/geo/geo/usp_learning/__init__.py",
+      "currentPhysicalSha256": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335",
+      "retainedPhysicalSha256": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335",
+      "profilePhysicalSha256": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335",
+      "retainedMatchesProfile": true,
+      "currentMatchesRetained": true
+    },
+    {
+      "path": "services/geo/geo/usp_learning/resources.py",
+      "currentPhysicalSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "retainedPhysicalSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "profilePhysicalSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "retainedMatchesProfile": true,
+      "currentMatchesRetained": true
+    },
+    {
+      "path": "services/geo/geo/usp_learning/association/__init__.py",
+      "currentPhysicalSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "retainedPhysicalSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "profilePhysicalSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "retainedMatchesProfile": true,
+      "currentMatchesRetained": true
+    },
+    {
+      "path": "services/geo/geo/usp_learning/association/student.py",
+      "currentPhysicalSha256": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+      "retainedPhysicalSha256": "23108097250b406c867f6759b6dba7cbeb5b0c85d0bdb5b86b6d75da1d28bb4d",
+      "profilePhysicalSha256": "23108097250b406c867f6759b6dba7cbeb5b0c85d0bdb5b86b6d75da1d28bb4d",
+      "retainedMatchesProfile": true,
+      "currentMatchesRetained": false
+    },
+    {
+      "path": "services/geo/geo/usp_learning/association/validation.py",
+      "currentPhysicalSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "retainedPhysicalSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "profilePhysicalSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "retainedMatchesProfile": true,
+      "currentMatchesRetained": true
+    }
+  ],
+  "cause": "The frozen checkout pins the later adapter-capable model_isolation.py and optional-model-loader student.py, while stage_selector_baseline.py requires all eight protected baseline sources to match the older baseline profile physical bytes. Six match; these two do not. Both referenced versions match their respective pins and differ in executable content. No source or freeze was changed.",
+  "artifacts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-host-20261003-113c47e7\\pin-failure-diagnosis.json",
+      "bytes": 947,
+      "sha256": "d997f901bf4ff64d67998adeaa306bb6aa577b8d5e6b54df99a5b4860b7f5609"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-host-20261003-113c47e7\\stage-invocation.json",
+      "bytes": 696,
+      "sha256": "58deb62b62098902bc0216b6a9790b02c1dcf736f17657f537c29ed2a193c393"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-host-20261003-113c47e7\\stage.stderr.log",
+      "bytes": 783,
+      "sha256": "7614f37de7aa82a2d1fa4c61a0c29a6fbaa4fff6b2c15d0779e0c69f1780f132"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-host-20261003-113c47e7\\stage.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "frozenPins": {
+    "runtimeCodeCanonicalLfSha256": {
+      "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+      "scripts/usp/learning/association/association_student.py": "12f55b8e6d4ba5db3f0617381a8c5af744714400fc02b19611d61e169edf7324",
+      "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+      "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+      "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+      "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+      "services/geo/geo/usp_learning/association/selector_baseline.py": "842088a7d5042c29c74a80049601c634288196eafb0fd54d81d737be008c430f",
+      "scripts/usp/learning/association/stage_selector_baseline.py": "17af0472c6eef45b69821e0b0a735764ea1443bec3b236c17b3bfd742b5c8cc1"
+    },
+    "parentProfileSha256": "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438",
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "modelRevision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "modelWeightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+    "promptVersion": "association-selector-prompt/1",
+    "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+    "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+    "inputBatchSha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536",
+    "cases": [
+      {
+        "exampleId": "ifc4-source-native-v1",
+        "inputCanonicalJsonSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4"
+      },
+      {
+        "exampleId": "ifc2x3-source-native-v1",
+        "inputCanonicalJsonSha256": "5cdbd1fec015bc2eecde12ee37dea41eeb0fc7c6eb9e7ac8470af04bd74c3a88"
+      }
+    ],
+    "expectedClaimsSha256": "061b98c57bdb386c8fc4bce38660b18fd16340d739d40f75b60b10f95a6f93ce"
+  },
+  "execution": {
+    "stageAttempts": 1,
+    "modelPhaseAttempts": 0,
+    "privateRuntimeStageCreated": false,
+    "generatedProfileOrFreeze": false,
+    "modelLoaded": false,
+    "gpuInitialized": false,
+    "tokenizerPreflightReached": false,
+    "rawModelOutputs": false,
+    "guardLaunched": false,
+    "cleanupRequired": false,
+    "hostMetadataOnly": true,
+    "fitPerformed": false,
+    "developmentInferencePerformed": false,
+    "evaluationOpened": false,
+    "promotionAuthorized": false,
+    "retryPerformed": false
+  },
+  "metrics": {
+    "rawSelectorValidOutputs": null,
+    "expandedValidOutputs": null,
+    "acceptedClaims": null,
+    "correctExpectedClaims": null,
+    "precision": null,
+    "coverage": null,
+    "modelLatencySeconds": null,
+    "peakJobBytes": null,
+    "peakRssBytes": null,
+    "peakCudaBytes": null,
+    "qualification": "Not measured: blocked before stage creation; no quality or runtime claim."
+  },
+  "return": "Preserve evidence; coordinator must inspect the conflicting pins and separately authorize any narrow correction and new frozen execution. No automatic repair or retry.",
+  "diagnosticCommands": [
+    {
+      "action": "git diff --no-index retained/current model_isolation.py",
+      "exitCode": 1,
+      "interpretation": "Expected differing-file result; read-only."
+    },
+    {
+      "action": "in-memory student.py diff helper, initial",
+      "exitCode": 1,
+      "interpretation": "Unmatched closing parenthesis; Python parsing failed before any read/write or invocation."
+    },
+    {
+      "action": "corrected in-memory student.py diff helper",
+      "exitCode": 0,
+      "interpretation": "Read-only difference: optional model_loader parameter and conditional model loading."
+    }
+  ]
+}
