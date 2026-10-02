@@ -2129,6 +2129,120 @@
         "path": "packages/server/src/modules/usp/migrations.ts",
         "function": "migrateUsp"
       }
+    },
+    {
+      "id": "usp.property-cards.check",
+      "source": {
+        "path": "database/sql/60-usp/17-property-cards-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "CARD-01",
+        "acceptedBase": "031696e35fc39583f91fffc05d2f556260bb22b1"
+      },
+      "file": "sql/60-usp/17-property-cards-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "propertyCardsName",
+          "value": "usp_property_cards_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 44,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.property-cards.schema",
+      "source": {
+        "path": "database/sql/60-usp/18-property-cards-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "CARD-01",
+        "acceptedBase": "031696e35fc39583f91fffc05d2f556260bb22b1"
+      },
+      "file": "sql/60-usp/18-property-cards-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.property-cards.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.property-cards.check",
+      "callMode": "one-query-call",
+      "order": 45,
+      "sha256": "528956a643a71dbbc03953f3daf75a140e384fd07280d02a11f3eb6439f495d6",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "bbe56e362715af7123cac326d51768692c7015e79c58ba8dcdf79c926ad7b341"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "38232f3dc135cb970abd3cad6764b5e4cc95326680360c811a09949d1d22f943"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "28276ebaf8cae6264d8f6f226becab6b653e1266886839d5e0df45de0b63fec1"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "d6e436288cc3eaac5326458f04731c64320ac87972d9a5195afea9c9a86f3aa1"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.property-cards.mark",
+      "source": {
+        "path": "database/sql/60-usp/19-property-cards-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "CARD-01",
+        "acceptedBase": "031696e35fc39583f91fffc05d2f556260bb22b1"
+      },
+      "file": "sql/60-usp/19-property-cards-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.property-cards.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "propertyCardsName",
+          "value": "usp_property_cards_001"
+        }
+      ],
+      "guardedBy": "usp.property-cards.check",
+      "callMode": "one-query-call",
+      "order": 46,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     }
   ],
   "plannedButAbsent": []
