@@ -2,7 +2,8 @@ import type { PoolClient } from 'pg';
 import { UspDeclarationInputSchema, UspReviewDeclarationSchema, type RequestContext, type TargetPin } from '@ulpin/contracts/usp';
 import { normalizeProjectCode, ProjectLocationSchema, verticalLocator } from '../../../../../contracts/src/usp/project-identity';
 import { UspPropertyCardFactSchema, type PropertyCardFact } from '../../../../../contracts/src/usp/property-card';
-import type { PacketPlan } from '../../../../../contracts/src/usp/packets';
+import type { AnyPacketPlan } from '../../../../../contracts/src/usp/packets';
+import { isPdfPlan } from './plan-store';
 import { canonical, fingerprint } from '../../cases/domain';
 import { conflict } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
@@ -11,7 +12,7 @@ import { selectExactPart } from '../packet0';
 
 /** Called only under the existing plan disclosure protection. No current body is
  * substituted for a captured body, and no dependency outside the plan is read. */
-export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext, plan: PacketPlan) {
+export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext, plan: AnyPacketPlan) {
   const manifest = await scopedManifestTx(client, ctx, plan.input.scope);
   async function captured(pin: TargetPin) {
     const member = manifest.members.find(m => canonical(m.pin) === canonical(pin));
@@ -43,7 +44,9 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
     // Print the vertical parts without importing unselected parcel assertions.
     available('vertical_locator', 'Recorded location', verticalLocator({ ...location, anchorState: 'not_supplied', parcels: [] }));
     const represented = [];
-    for (const parcel of location.parcels) {
+    // A reviewed pixel crop carries inclusion authority, not an exact structured
+    // parcel literal. Only the existing text/CSV pointer proof supports these facts.
+    if (!isPdfPlan(plan)) for (const parcel of location.parcels) {
       const entry = plan.entries.find(e => e.state === 'included' && e.selection.pointer.sourceRevision.ref.id === parcel.source.sourceId
         && e.selection.pointer.sourceRevision.revision === parcel.source.revision && e.selection.pointer.locator.kind === 'verbatim'
         && e.selection.pointer.locator.locator === parcel.source.locator);
@@ -63,7 +66,7 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
     missing('parcel_assertions', 'Parent parcel assertions', 'No selected source-backed parcel assertion', 'selected_parcel_evidence_unavailable');
   }
   const shares: string[] = [], visited = new Set<string>();
-  for (const entry of plan.entries) if (entry.state === 'included' && entry.applicabilitySha256 && entry.selection.review.kind === 'shared') {
+  if (!isPdfPlan(plan)) for (const entry of plan.entries) if (entry.state === 'included' && entry.applicabilitySha256 && entry.selection.review.kind === 'shared') {
     const pin = entry.selection.review.declaration, key = canonical(pin);
     if (visited.has(key)) continue;
     visited.add(key);
@@ -77,7 +80,8 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
   }
   if (shares.length) available('declared_share', 'Recorded declared share', shares.join('; '));
   else missing('declared_share', 'Recorded declared share', 'No included accepted applicability for this exact target and purpose', 'selected_declared_share_unavailable');
-  missing('geometry', 'Geometry / frame / datum', 'Not supplied by the executed text/CSV profile', 'geometry_profile_unavailable');
+  missing('geometry', 'Geometry / frame / datum', isPdfPlan(plan)
+    ? 'Not qualified by the executed PDF region profile' : 'Not supplied by the executed text/CSV profile', 'geometry_profile_unavailable');
   missing('measurements', 'Measurements / quantities', 'No qualified measured quantities in this profile', 'measurements_profile_unavailable');
   missing('render', 'Selected-space render', 'Rendering is unavailable in this profile', 'selected_space_render_unavailable');
   missing('rights', 'Rights / title / issuance', 'No ownership, title, legality or official issuance determination', 'rights_not_assessed', 'not_assessed');
