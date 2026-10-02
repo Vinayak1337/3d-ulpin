@@ -96,7 +96,8 @@ r=pathlib.Path(${JSON.stringify(root)}); target=r/'purelib'; target.mkdir()
 p=pathlib.Path(sysconfig.get_paths()['purelib'])
 for name in ('pypdfium2','pypdfium2_raw','pypdfium2_cfg','pymupdf','fitz','PIL','psutil'):
  shutil.copytree(p/name,target/name)
-for name in ('pypdfium2','pymupdf','pillow','psutil'):
+if (p/'defusedxml').is_dir(): shutil.copytree(p/'defusedxml',target/'defusedxml')
+for name in ('pypdfium2','pymupdf','pillow','psutil','defusedxml'):
  for d in p.glob(name+'-*.dist-info'): shutil.copytree(d,target/d.name)
 with fitz.open() as doc:
  page=doc.new_page(width=40,height=40);page.draw_rect(page.rect,color=None,fill=(0,1,0))
