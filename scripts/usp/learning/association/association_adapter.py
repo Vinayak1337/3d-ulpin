@@ -17,6 +17,7 @@ from geo.usp_learning.association.adapter import FIT, NUMERICS, V2_SHA, checked_
 from geo.usp_learning.association.chunked_loss import LOSS_POLICY
 from geo.usp_learning.association.reclamation import RECLAMATION_POLICY
 from geo.usp_learning.association.query_attention import ATTENTION_POLICY, ATTENTION_CONTROL
+from geo.usp_learning.association.citation_view import checked_freeze, checked_citation_teacher, checked_reload_counts
 
 
 def worker(args):
@@ -45,6 +46,7 @@ def worker(args):
         for option, digest in freeze["inputSha256"].items():
             if digest_file(getattr(args, option)) != digest:
                 raise RuntimeError("frozen input drift: " + option)
+        plan = checked_freeze(freeze, assignment)
         family = json.loads(args.family_freeze.read_bytes())
         schema_bytes = args.schema.read_bytes()
         if hashlib.sha256(schema_bytes.replace(b"\r\n", b"\n")).hexdigest() != family["schemaSha256"]:
@@ -60,15 +62,24 @@ def worker(args):
         if args.action == "fit":
             from geo.usp_learning.association.memory_observation import PhaseRecorder
             phases = PhaseRecorder(args.output_dir, lambda: require_model_boundary(args))
-            rows, delta = checked_teacher(args.teacher_v1.read_bytes(), args.training_data.read_bytes(), contract, family)
+            if "datasetDeclaration" in freeze:
+                # Additional immutable input is profile-pinned; no new containment CLI capability.
+                parent = args.run_freeze.parent / "train-teacher-v2.jsonl"
+                if freeze.get("auxiliaryInputSha256") != {parent.name: V2_SHA} or digest_file(parent) != V2_SHA:
+                    raise RuntimeError("citation-view parent input drift")
+                rows, delta = checked_citation_teacher(args.teacher_v1.read_bytes(), parent.read_bytes(),
+                    args.training_data.read_bytes(), freeze["datasetDeclaration"], contract, family)
+            else:
+                rows, delta = checked_teacher(args.teacher_v1.read_bytes(), args.training_data.read_bytes(), contract, family)
             write_json_once(args.output_dir / "teacher-delta.json", delta)
             result = fit(rows, contract, family, model_path, args.output_dir,
-                         lambda: require_model_boundary(args), write_json_once, phases)
+                         lambda: require_model_boundary(args), write_json_once, phases, dataset_declaration=freeze.get("datasetDeclaration"))
             print(json.dumps({"updates": result["updates"], "fitSeconds": result["fitSeconds"], "gpu": result["gpu"]}), flush=True)
         else:
             manifest = json.loads(args.adapter_manifest.read_bytes())
             proof = json.loads(args.fit_proof.read_bytes())
-            if (not proof["fitResourceAccepted"] or proof["updates"] != 66
+            checked_reload_counts(proof, manifest, plan, versioned="datasetDeclaration" in freeze)
+            if (not proof["fitResourceAccepted"]
                     or proof["adapterManifestSha256"] != digest_file(args.adapter_manifest)
                     or proof["lossImplementation"] != LOSS_POLICY or not proof["lossEquivalencePassed"]
                     or manifest["lossImplementation"] != LOSS_POLICY

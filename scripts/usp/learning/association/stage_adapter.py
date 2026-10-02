@@ -20,6 +20,9 @@ from geo.usp_learning.association.chunked_loss import LOSS_POLICY
 from geo.usp_learning.association.reclamation import RECLAMATION_POLICY
 from geo.usp_learning.association.query_attention import ATTENTION_POLICY, ATTENTION_CONTROL, query_blocks
 from geo.usp_learning.association.student import SETTINGS, SYSTEM_PROMPT
+from geo.usp_learning.association.citation_view import (
+    checked_citation_teacher, checked_execution, checked_freeze, checked_count_receipts,
+    checked_reload_counts, training_plan, same)
 from stage_baseline import CODE as BASELINE_CODE, PYTHON_ROOT
 
 BASELINE = isolation.ASSOCIATION_STAGING_PARENT / "baseline-af47550c33ea4dc2a3dc1aebc56363c4"
@@ -35,6 +38,7 @@ DEPENDENCIES = {
 CODE = tuple(p for p in BASELINE_CODE if not p.endswith("association_student.py")) + (
     "scripts/usp/learning/association/association_adapter.py",
     "services/geo/geo/usp_learning/association/adapter.py",
+    "services/geo/geo/usp_learning/association/citation_view.py",
     "services/geo/geo/usp_learning/association/chunked_loss.py",
     "services/geo/geo/usp_learning/association/memory_observation.py",
     "services/geo/geo/usp_learning/association/reclamation.py",
@@ -79,14 +83,28 @@ def accepted_fit(root):
     require(completion["runFreezeSha256"] == isolation.sha(root / "inputs/run-freeze.json"), "fit freeze drift")
     freeze = isolation.read(root / "inputs/run-freeze.json")
     assignment = isolation.read(root / "inputs/assignment.json")
+    plan = checked_freeze(freeze, assignment)
+    updates = plan["plannedUpdates"]
     require(freeze["fitSettings"] == FIT and freeze["numerics"] == NUMERICS
-            and freeze["inputSha256"]["training_data"] == V2_SHA
+            and freeze["inputSha256"]["training_data"] == plan["datasetSha256"]
             and freeze["inputSha256"]["assignment"] == isolation.sha(root / "inputs/assignment.json")
             and freeze["memoryExecutionPolicy"] == assignment["memoryExecutionPolicy"]
             and freeze["previousFailureReceiptSha256"] == assignment["previousFailureReceiptSha256"]
             and freeze["previousFailedFit"] == assignment["previousFailedFit"]
             and freeze["lossImplementation"] == LOSS_POLICY, "fit configuration/data drift")
-    require(result["updates"] == manifest["updates"] == 66 and result["baseUnchanged"]
+    preflight = isolation.read(output / "token-preflight.json")
+    progress = [json.loads(line) for line in (output / "fit-progress.jsonl").read_text().splitlines()]
+    checked_count_receipts(plan, preflight, result, manifest, progress, versioned="datasetDeclaration" in freeze)
+    if "datasetDeclaration" in freeze:
+        require(freeze.get("auxiliaryInputSha256") == {"train-teacher-v2.jsonl": V2_SHA}, "frozen parent pin drift")
+        rows, delta = checked_citation_teacher((root / "inputs/train-teacher-v1.jsonl").read_bytes(),
+            (root / "inputs/train-teacher-v2.jsonl").read_bytes(), (root / "inputs/train-teacher-v3.jsonl").read_bytes(),
+            freeze["datasetDeclaration"], isolation.read(root / "inputs/schema-v1.json"),
+            isolation.read(root / "inputs/family-freeze.json"))
+        require(same(isolation.read(output / "teacher-delta.json"), delta)
+                and [r["exampleId"] for r in preflight["lengths"]] == [r["input"]["exampleId"] for r in rows],
+                "admission receipt or tokenized row identity drift")
+    require(result["updates"] == manifest["updates"] == updates and result["baseUnchanged"]
             and not result["developmentOpened"] and not result["evaluationOpened"], "incomplete or contaminated fit")
     require(manifest["settings"] == FIT and manifest["numerics"] == NUMERICS
             and manifest["savedStateMatchesTrainableAdapter"] and manifest["tensorCount"] == 96
@@ -118,7 +136,7 @@ def accepted_fit(root):
     blocks = [json.loads(line) for line in (output / "attention-blocks.jsonl").read_text().splitlines()]
     for boundary in ("decoder", "backward"):
         selected = [row for row in blocks if row["boundary"] == boundary]
-        require([row["update"] for row in selected] == list(range(1, 67)), "attention block history incomplete")
+        require([row["update"] for row in selected] == list(range(1, updates + 1)), "attention block history incomplete")
         for row in selected:
             sizes = [b - a for a, b in query_blocks(row["tokens"])]
             require(row["blockSizes"] == sizes and row["maxQueryBlockTokens"] == max(sizes)
@@ -139,13 +157,13 @@ def accepted_fit(root):
     require({"before_imports", "after_imports", "before_model_load", "after_lora_load", "first_before_decoder",
              "first_after_decoder", "first_after_loss_before_backward", "first_after_backward", "first_before_optimizer_step",
              "after_save_and_base_verification"} <= {row["phase"] for row in phases}, "required fit phase observations missing")
-    require([row["update"] for row in phases if row["phase"] == "update_completed"] == list(range(1, 67)), "phase update history incomplete")
+    require([row["update"] for row in phases if row["phase"] == "update_completed"] == list(range(1, updates + 1)), "phase update history incomplete")
     for name in ("example_start", "before_decoder", "after_decoder", "after_loss_before_backward", "after_backward",
                  "before_optimizer_step", "before_reclamation", "after_reclamation",
                  "before_backward_reclamation", "after_backward_reclamation"):
-        require([row["update"] for row in phases if row["phase"].removeprefix("first_") == name] == list(range(1, 67)),
+        require([row["update"] for row in phases if row["phase"].removeprefix("first_") == name] == list(range(1, updates + 1)),
                 "per-example phase history incomplete: " + name)
-    for update in range(1, 67):
+    for update in range(1, updates + 1):
         before, after = [next(row for row in phases if row["phase"] == name and row.get("update") == update)
                          for name in ("before_backward_reclamation", "after_backward_reclamation")]
         require(all(before[key] == after[key] for key in ("exampleId", "epoch", "loss", "finite", "supervisedDenominator"))
@@ -158,7 +176,7 @@ def accepted_fit(root):
     for values in ([row["native"]["jobPeakCommittedBytes"] for row in phases],
                    *[[row["gpu"][key] for row in phases if row["gpu"]["measured"]] for key in ("peakAllocatedBytes", "peakReservedBytes")]):
         require(all(new >= old for old, new in zip(values, values[1:])), "cumulative memory peak was reset")
-    return {"fitResourceAccepted": True, "fitRoot": str(root), "updates": 66,
+    return {"fitResourceAccepted": True, "fitRoot": str(root), "updates": updates, "trainingPlan": plan,
             "guardSha256": accepted["guardSha256"], "profileSha256": accepted["profileSha256"],
             "adapterManifestSha256": isolation.sha(output / "adapter-manifest.json"),
             "fitResultSha256": isolation.sha(output / "fit-result.json"), "lossEquivalencePassed": True,
@@ -171,16 +189,20 @@ def accepted_fit(root):
             "memoryPhasesSha256": result["memoryPhasesSha256"]}
 
 
-def stage(action, fit_root=None):
+def stage(action, fit_root=None, *, citation_view_assignment=None):
     require(action in ("fit", "reload"), "unsupported stage action")
+    assignment_path = Path(citation_view_assignment) if citation_view_assignment is not None else ASSIGNMENT
+    assignment_bytes = assignment_path.read_bytes()
+    assignment = json.loads(assignment_bytes)
+    declaration = checked_execution(assignment, action) if citation_view_assignment is not None else None
+    require(declaration is not None or "datasetDeclaration" not in assignment, "explicit citation-view mode required")
+    plan = training_plan(declaration)
     require(isolation.sha(BASELINE / "profile.json") == BASELINE_PROFILE_SHA, "accepted baseline profile drift")
     baseline = isolation.read(BASELINE / "profile.json")
-    assignment_bytes = ASSIGNMENT.read_bytes()
-    assignment = json.loads(assignment_bytes)
     require(assignment["settings"] == FIT and assignment["teacherV1Sha256"] == V1_SHA
             and assignment["teacherV2Sha256"] == V2_SHA and Path(assignment["unchangedBaseline"]) == BASELINE,
             "frozen assignment changed")
-    require(assignment["task"] == "STUDENT-06" and assignment["unchangedRecipe"]
+    require((declaration is not None or assignment["task"] == "STUDENT-06") and assignment["unchangedRecipe"]
             and assignment["attentionControlBeforeFit"] == ATTENTION_CONTROL
             and assignment["memoryExecutionPolicy"]["queryChunkedAttention"]["queryChunkTokens"] == 128
             and assignment["memoryExecutionPolicy"].get("preBackwardReclamation")
@@ -188,15 +210,24 @@ def stage(action, fit_root=None):
     require(isolation.sha(REPO / "docs/evidence/usp/ml-distillation/student/live-graph-reclamation-attempt-v1.json")
             == assignment["previousFailureReceiptSha256"], "historical failure receipt drift")
     fit_proof = accepted_fit(fit_root.resolve()) if action == "reload" else None
-    if action == "fit":
+    if fit_proof is not None:
+        checked_reload_counts(fit_proof, isolation.read(fit_root / "outputs/fit/adapter-manifest.json"),
+                              plan, versioned=declaration is not None)
+    if action == "fit" and declaration is not None:
+        checked_citation_teacher((TEACHER / "train-teacher-v1.jsonl").read_bytes(),
+            (TEACHER / "train-teacher-v2.jsonl").read_bytes(), (TEACHER / "train-teacher-v3.jsonl").read_bytes(),
+            declaration, isolation.read(BASELINE / "inputs/schema-v1.json"), isolation.read(BASELINE / "inputs/family-freeze.json"))
+    elif action == "fit":
         checked_teacher((TEACHER / "train-teacher-v1.jsonl").read_bytes(), (TEACHER / "train-teacher-v2.jsonl").read_bytes(),
             isolation.read(BASELINE / "inputs/schema-v1.json"), isolation.read(BASELINE / "inputs/family-freeze.json"))
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
+    if declaration is not None:
+        require(assignment.get("studentCodeCommit") == commit, "separately frozen student code commit required")
     for relative in (*CODE, "scripts/usp/learning/association/stage_adapter.py"):
         committed = subprocess.check_output(["git", "show", commit + ":" + relative], cwd=REPO)
         require((REPO / relative).read_bytes().replace(b"\r\n", b"\n") == committed, "uncommitted execution source: " + relative)
     require(shutil.disk_usage(BASELINE.parent).free >= 15 * 1024**3, "insufficient private staging disk")
-    root = BASELINE.parent / ("adapter-query-sdpa-" + action + "-" + uuid.uuid4().hex)
+    root = BASELINE.parent / (("adapter-citation-view-" if declaration else "adapter-query-sdpa-") + action + "-" + uuid.uuid4().hex)
     root.mkdir()
     for name in (*isolation.READONLY, "outputs", "scratch", "state", "receipts"):
         (root / name).mkdir()
@@ -247,11 +278,13 @@ def stage(action, fit_root=None):
     for name in (*input_names.values(), "runtime-requirements-resolved.txt"):
         copy(BASELINE / "inputs" / name, "inputs/" + name, baseline["files"]["inputs/" + name])
     input_names["assignment"] = "assignment.json"
-    copy(ASSIGNMENT, "inputs/assignment.json", hashlib.sha256(assignment_bytes).hexdigest())
+    copy(assignment_path, "inputs/assignment.json", hashlib.sha256(assignment_bytes).hexdigest())
     if action == "fit":
-        for option, name, digest in (("teacher_v1", "train-teacher-v1.jsonl", V1_SHA), ("training_data", "train-teacher-v2.jsonl", V2_SHA)):
+        for option, name, digest in (("teacher_v1", "train-teacher-v1.jsonl", V1_SHA), ("training_data", "train-teacher-v3.jsonl" if declaration else "train-teacher-v2.jsonl", plan["datasetSha256"])):
             input_names[option] = name
             copy(TEACHER / name, "inputs/" + name, digest)
+        if declaration is not None:
+            copy(TEACHER / "train-teacher-v2.jsonl", "inputs/train-teacher-v2.jsonl", V2_SHA)
     else:
         input_names.update(input_batch="development.json", adapter_manifest="adapter-manifest.json", fit_proof="fit-proof.json")
         copy(BASELINE / "inputs/development.json", "inputs/development.json", baseline["files"]["inputs/development.json"])
@@ -280,6 +313,10 @@ def stage(action, fit_root=None):
                   "readOnlyQuery": "JobObjectLimitViolationInformation=13, JOBOBJECT_LIMIT_VIOLATION_INFORMATION.JobMemory"},
               "dependencyOrigin": str(WHEELS), "expectedClaimsSha256": EXPECTATIONS_SHA,
               "evaluationAllowed": False, "developmentInputsPresent": action == "reload", "promotionAuthorized": False}
+    if declaration is not None:
+        freeze.update(version="association-citation-view-freeze/1", datasetDeclaration=declaration, trainingPlan=plan)
+        if action == "fit":
+            freeze["auxiliaryInputSha256"] = {"train-teacher-v2.jsonl": V2_SHA}
     isolation.write(root / "inputs/run-freeze.json", freeze)
     files["inputs/run-freeze.json"] = isolation.sha(root / "inputs/run-freeze.json")
     profile = {"schemaVersion": "usp-qwen-containment-v1", "root": str(root), "python": "runtime/python.exe",
@@ -304,7 +341,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("fit", "reload"))
     parser.add_argument("--fit-root", type=Path)
+    parser.add_argument("--citation-view-assignment", type=Path, help="Separate frozen STUDENT-08-FIT assignment; preparation is refused")
     args = parser.parse_args()
     if (args.action == "reload") != (args.fit_root is not None):
         parser.error("--fit-root is required only for reload")
-    stage(args.action, args.fit_root)
+    stage(args.action, args.fit_root, citation_view_assignment=args.citation_view_assignment)
