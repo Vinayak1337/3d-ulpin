@@ -10,8 +10,17 @@ export function registryDocumentCases(caseId:string,records:readonly RegistryRec
     .map(value=>z.uuid().parse(value).toLowerCase()))].sort();
 }
 /** Call before destination rows, document authority rows or recording/receipt locks. */
-export async function lockRegistryDocumentCasesTx(client:PoolClient,cases:readonly string[]){
+export async function lockRegistryDocumentCasesTx(client:PoolClient,cases:readonly string[],regions:readonly string[]=[]){
   for(const caseId of cases)await lockSourceCaseDestinationTx(client,caseId);
+  // Source-only regions have no job authority to protect their case. Acquire
+  // these rows before any destination or recording lock; removal needs only
+  // the identity lookup and remains possible if the case is unavailable.
+  for(const caseId of regions)await client.query('SELECT id FROM cases WHERE id=$1 FOR SHARE',[caseId]);
+}
+export function registryRegionCases(records:readonly RegistryRecord[],extra:readonly string[]=[]){
+  return [...new Set([...records.flatMap(record=>(record.documentCitations??[])
+    .filter(pin=>pin.version==='registry-document-region-citation/1').map(pin=>pin.document.caseId)),...extra]
+    .map(value=>z.uuid().parse(value).toLowerCase()))].sort();
 }
 /** Never discover/acquire an additional gate after waiting with destination rows held. */
 export function assertRegistryDocumentCases(held:readonly string[],current:readonly string[]){
