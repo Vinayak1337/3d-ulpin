@@ -1,6 +1,6 @@
-# STUDENT-08-PREP — citation-view admission and fit counts
+# STUDENT-08-PREP â€” citation-view admission and fit counts
 
-2 October 2026. Code preparation complete; no v3 dataset admission or model execution is claimed.
+2 October 2026. Code preparation complete. After the coordinator supplied accepted v3 bytes, CPU admission passed for all 22 rows. No model execution is claimed.
 
 ## Checkpoint and scope
 
@@ -20,7 +20,7 @@ The original Qwen revision (`Qwen/Qwen2.5-0.5B-Instruct`, `7ae557604adf67be50417
 
 ## Contract for the later coordinator freeze
 
-No production declaration, v3 digest or new execution assignment is created here. The explicit stage option is `--citation-view-assignment` and accepts only a separate `association-citation-view-fit-assignment/1`, task `STUDENT-08-FIT`. The old stage default still uses STUDENT-06.
+No production execution declaration or new execution assignment is created here. Coordinator acceptance supplied the actual v3 digest after the initial code checks. The explicit stage option is `--citation-view-assignment` and accepts only a separate `association-citation-view-fit-assignment/1`, task `STUDENT-08-FIT`. The old stage default still uses STUDENT-06.
 
 The later assignment must retain the existing recipe/model/history/control fields and add:
 
@@ -30,9 +30,15 @@ The later assignment must retain the existing recipe/model/history/control field
 - `provenance`: the exact TEACHER-03 assignment object in `citation_view.PROVENANCE` (task/version, assignment path, coordinator commit, canonical LF assignment hash, teacher base commit).
 - `trainingPlan`: the exact result of `citation_view.training_plan(datasetDeclaration)`, including SHA-256 of its canonical JSON declaration. The plan is copied into the run freeze and fit receipts.
 
-Admission matches the teacher's observed `augment_citation_views_v3.py` metadata layout: `parentDatasetPath`, `parentDatasetSha256`, `parentExampleId`, `parentRowSha256`, `parentRowHashConvention`, ordered `keyBijection` entries, old/new evidence order and `assignment`. Row hash excludes the LF terminator. The source snapshot was inspected read-only, physical SHA-256 `5aaf2f1a999a35e61f814ca7a57034564ad86f36d81839253ef4a257d667a834`; it was not yet committed when inspected. No teacher code was run and no v3 bytes or digest were read. Coordinator must compare the accepted teacher metadata against this contract before freezing the later fit.
+Admission matches the teacher's observed `augment_citation_views_v3.py` metadata layout: `parentDatasetPath`, `parentDatasetSha256`, `parentExampleId`, `parentRowSha256`, `parentRowHashConvention`, ordered `keyBijection` entries, old/new evidence order and `assignment`. Row hash excludes the LF terminator. The source snapshot was inspected read-only, physical SHA-256 `5aaf2f1a999a35e61f814ca7a57034564ad86f36d81839253ef4a257d667a834`; it was not yet committed at the initial inspection. The coordinator subsequently accepted the identical code hash at integration `8381063faec13a2215f8f2e843f50e0b1356fc28` (teacher code `59725fbe6680a298bbf6675ff6bfddc0b4876764`, owner `89f28e129a92065831b4c751faeccdd45a49fffd`) and explicitly authorized using the accepted bytes to finish CPU checks. The real v3 metadata matches this contract; no teacher code was run.
 
 Stage preparation copies the pinned v1/v2/v3 inputs only for fit, using the existing containment argument allowlist. The additional parent input is fixed-name, hash-pinned in freeze and profile; no shared security change. Reload input batches retain their existing model-visible shape without teacher targets or explanations.
+
+## Accepted v3 admission, following coordinator callback
+
+Read the coordinator's `teacher/batch-v3.manifest.json` and `teacher-citation-view-acceptance-v1.json`, then read the accepted private `E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v3.jsonl` once for admission. Size 157,217 bytes; SHA-256 `d8ee61f09e474069bf4375ac1cc1b24f574ca18a32b4e49721fa9d415df6d1b4`. All 70,333 v2 bytes form the exact prefix. `checked_citation_teacher` passed all 22 train-only outputs, all 11 inverse transforms and the 22/124/4/44/22 count checks without a code change. No second teacher batch was assembled.
+
+The in-memory data declaration for that CPU check produces `trainingPlan` with 22 examples, six epochs, 132 planned updates and canonical declaration SHA-256 `906e11cadbd7410d49b0d00edf6e7c003c02cdd8ab9fc2457d638055f28bf7e2`. This is admission evidence, not fit authorization or an execution assignment.
 
 ## Verification and review
 
@@ -41,12 +47,13 @@ All commands ran from the assigned worktree using `C:/Python313/python.exe`, CPU
 | Check | Actual result |
 | --- | --- |
 | `python -B scripts/usp/learning/association/test_citation_view.py` | Exit 0; seven tests, 0.074 seconds. Accepted v1/v2 admission; original retained count receipts; declaration/assignment refusal; bad digest/prefix/count refusal; three individual real-row inverse controls including conflict and unusable approval date; input/output/provenance/citation corruption refusal; 132-update count/reload controls. No second teacher batch assembled. |
+| `python -B -` calling `checked_citation_teacher` on coordinator-accepted v3 | Exit 0; actual size/SHA, exact parent prefix, all 11 inverse transforms, 22 train-only rows and required counts checked. Printed admission/plan; no files written. |
 | `python -B -` calling `stage_adapter.accepted_fit` on the retained STUDENT-06 fit root | Exit 0; existing fit remains accepted at 66 updates with an 11-row/six-epoch plan. Reads receipts and hashes only; no staging, inference or fit. |
 | `python -B -` using `compile(raw, path, 'exec')` on the six owned Python files | Exit 0; all six compile in memory. Test file recompiled after removing its UTF-8 BOM. |
 | Same CPU inspection, comparing ASTs with base HEAD | Exit 0; `checked_teacher`, `encode_training`, adapter config/file checks, `_gpu_runtime`, `FIT`, `NUMERICS`, V1/V2 pins identical. |
 | `git diff --check`, then `git diff --cached --check` | Exit 0. Reviewed all owned changes, count flow, future assignment refusal, metadata layout and historical diagnostic compatibility. |
 
-Both runtime check scripts asserted that `torch`, `transformers`, `peft`, `safetensors` and `accelerate` were absent from `sys.modules`. Positive v3 whole-dataset admission, model staging/loading, fit/reload, development/evaluation and promotion were deliberately not executed. Count-only receipt fixtures are integrity controls, not fit evidence. Historical accuracy results and source qualification remain unchanged. The fixed supervisor's historical `source_native_development_only` completion wording remains unchanged; it is not new quality evidence.
+The CPU checks asserted that `torch`, `transformers`, `peft`, `safetensors` and `accelerate` were absent from `sys.modules`. Model staging/loading, fit/reload, development/evaluation and promotion were deliberately not executed. Count-only receipt fixtures are integrity controls, not fit evidence. Historical accuracy results and source qualification remain unchanged. The fixed supervisor's historical `source_native_development_only` completion wording remains unchanged; it is not new quality evidence.
 
 ## Code pins
 
