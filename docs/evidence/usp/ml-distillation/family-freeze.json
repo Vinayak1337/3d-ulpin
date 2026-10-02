@@ -1,0 +1,207 @@
+{
+  "version": "ml-association-family-freeze/1",
+  "frozenDate": "2026-10-02",
+  "baseCommit": "e3e986c60ebaeb3edb101768ac88098717ccda74",
+  "schemaSha256": "3ba8fab2958ba93b042493bc4e6c0693f2049bdaa07f260c6639110c87a36a42",
+  "splitUnit": "issuer/project/building/source family; all related revisions/sheets/variants stay together",
+  "families": [
+    {
+      "familyId": "in-haryana-rera-2831",
+      "split": "train"
+    },
+    {
+      "familyId": "in-bihar-magnolia-residency",
+      "split": "train"
+    },
+    {
+      "familyId": "buildingsmart-certification-simple-scene",
+      "split": "development"
+    },
+    {
+      "familyId": "ogc-citygml2-building-examples",
+      "split": "evaluation"
+    }
+  ],
+  "sources": [
+    {
+      "familyId": "in-bihar-magnolia-residency",
+      "split": "train",
+      "sourceId": "bihar-magnolia-sanctioned-layout.pdf",
+      "originalPath": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\bihar-magnolia-sanctioned-layout-original.pdf",
+      "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "issuer": "Bihar RERA / project submitter",
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf"
+    },
+    {
+      "familyId": "in-haryana-rera-2831",
+      "split": "train",
+      "sourceId": "haryana-2831-tower3-plan1.pdf",
+      "originalPath": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\haryana-2831-tower3-plan1.pdf",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc="
+    },
+    {
+      "familyId": "in-haryana-rera-2831",
+      "split": "train",
+      "sourceId": "haryana-2831-tower3-section.pdf",
+      "originalPath": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\haryana-2831-tower3-section.pdf",
+      "sourceSha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA="
+    },
+    {
+      "familyId": "in-bihar-magnolia-residency",
+      "split": "train",
+      "sourceId": "bihar-approved-layout.pdf",
+      "originalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-approved-layout.pdf",
+      "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "issuer": "Bihar RERA / project submitter",
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3ApprovedLayoutPlan.pdf"
+    },
+    {
+      "familyId": "in-bihar-magnolia-residency",
+      "split": "train",
+      "sourceId": "bihar-land-location.pdf",
+      "originalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-land-location.pdf",
+      "sourceSha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+      "issuer": "Bihar RERA / project submitter",
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3LanddocumentsLocation.pdf"
+    },
+    {
+      "familyId": "in-bihar-magnolia-residency",
+      "split": "train",
+      "sourceId": "bihar-project.html",
+      "originalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-project.html",
+      "sourceSha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+      "issuer": "Bihar RERA / project submitter",
+      "originalUrl": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3"
+    },
+    {
+      "familyId": "in-haryana-rera-2831",
+      "split": "train",
+      "sourceId": "haryana-2831-project.html",
+      "originalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-project.html",
+      "sourceSha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/view_project/project_preview_open/2831"
+    },
+    {
+      "familyId": "in-haryana-rera-2831",
+      "split": "train",
+      "sourceId": "haryana-2831-site-plan.pdf",
+      "originalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-site-plan.pdf",
+      "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA="
+    },
+    {
+      "familyId": "in-haryana-rera-2831",
+      "split": "train",
+      "sourceId": "haryana-2831-tower3-plan2.pdf",
+      "originalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-tower3-plan2.pdf",
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/b76ed9cb4dNDg2NTg="
+    },
+    {
+      "familyId": "buildingsmart-certification-simple-scene",
+      "split": "development",
+      "sourceId": "IFC 2.3.0.1 (IFC 2x3 TC1)/Simple-Scene/Building-Architecture.ifc",
+      "originalPath": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc2x3-building-architecture.ifc",
+      "sourceSha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885",
+      "issuer": "buildingSMART International Ltd.",
+      "originalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%202.3.0.1%20%28IFC%202x3%20TC1%29/Simple-Scene/Building-Architecture.ifc"
+    },
+    {
+      "familyId": "buildingsmart-certification-simple-scene",
+      "split": "development",
+      "sourceId": "IFC 4.0.2.1 (IFC 4 ADD2 TC1)/Simple-Scene/Building-Architecture.ifc",
+      "originalPath": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc4-building-architecture.ifc",
+      "sourceSha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80",
+      "issuer": "buildingSMART International Ltd.",
+      "originalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%204.0.2.1%20%28IFC%204%20ADD2%20TC1%29/Simple-Scene/Building-Architecture.ifc"
+    },
+    {
+      "familyId": "ogc-citygml2-building-examples",
+      "split": "evaluation",
+      "sourceId": "ogc-citygml-2-building-garage-lod2",
+      "originalPath": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\originals\\Building_and_garage_LOD2-EPSG25832.gml",
+      "sourceSha256": "2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a",
+      "issuer": "Open Geospatial Consortium official schema repository; CityGML example contributors SIG 3D/GDI-DE acknowledged in original XML",
+      "originalUrl": "https://schemas.opengis.net/citygml/examples/2.0/building/Building_and_garage_LOD2-EPSG25832.gml"
+    },
+    {
+      "familyId": "ogc-citygml2-building-examples",
+      "split": "evaluation",
+      "sourceId": "ogc-citygml-2-building-local-engineering-lod1",
+      "originalPath": "E:\\BhuAayam-data\\task-data\\desktop-citygml-native\\originals\\Building_LOD1-LocalEngineeringCRS.gml",
+      "sourceSha256": "7dd55005787996074333a90a6e6a49a66fb43332a988a93be8bfc9804c35813e",
+      "issuer": "Open Geospatial Consortium official schema repository; CityGML example contributors SIG 3D/GDI-DE acknowledged in original XML",
+      "originalUrl": "https://schemas.opengis.net/citygml/examples/2.0/building/Building_LOD1-LocalEngineeringCRS.gml"
+    }
+  ],
+  "originalChecks": [
+    {
+      "sourceId": "bihar-magnolia-sanctioned-layout.pdf",
+      "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "bytes": 2455183
+    },
+    {
+      "sourceId": "haryana-2831-tower3-plan1.pdf",
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "bytes": 1655334
+    },
+    {
+      "sourceId": "haryana-2831-tower3-section.pdf",
+      "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "bytes": 2448909
+    },
+    {
+      "sourceId": "bihar-approved-layout.pdf",
+      "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "bytes": 2455183
+    },
+    {
+      "sourceId": "bihar-land-location.pdf",
+      "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+      "bytes": 1581661
+    },
+    {
+      "sourceId": "bihar-project.html",
+      "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+      "bytes": 132607
+    },
+    {
+      "sourceId": "haryana-2831-project.html",
+      "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+      "bytes": 108086
+    },
+    {
+      "sourceId": "haryana-2831-site-plan.pdf",
+      "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "bytes": 3782332
+    },
+    {
+      "sourceId": "haryana-2831-tower3-plan2.pdf",
+      "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "bytes": 1630108
+    },
+    {
+      "sourceId": "IFC 2.3.0.1 (IFC 2x3 TC1)/Simple-Scene/Building-Architecture.ifc",
+      "sha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885",
+      "bytes": 92542
+    },
+    {
+      "sourceId": "IFC 4.0.2.1 (IFC 4 ADD2 TC1)/Simple-Scene/Building-Architecture.ifc",
+      "sha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80",
+      "bytes": 142325
+    }
+  ],
+  "evaluationContentOpened": false,
+  "oldMappingHeldOutOpened": false,
+  "teacherAccess": "train-only after this freeze; schema and inventory metadata are allowed",
+  "labelPolicy": "Teacher output provisional supervision. Development/evaluation truth is source-supported annotation independent of teacher/student output. Foreign development/evaluation stay test_only in original geography.",
+  "permissionPolicy": "Public local development experiment user-authorized on 30 September and ML-DISTILL-01; source-specific reuse/training/redistribution launch clearance remains unconfirmed where recorded. Sarvam-derived outputs excluded.",
+  "qualification": "tiny-seed experimental source-native feasibility only; canonical matching and broad generalization not_assessed"
+}

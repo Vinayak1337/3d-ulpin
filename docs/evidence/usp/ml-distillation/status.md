@@ -1,0 +1,11 @@
+# ML-DISTILL-01 lane status
+
+2 October 2026. Coordinator base/staging observed `e3e986c60ebaeb3edb101768ac88098717ccda74`; clean exclusive `task/ml-distillation-orchestrator` checkout. Supplied permissions explicitly `never` / `danger-full-access`. Requested coordinator GPT-6.1 Sol/max; configured service tier `default`, actual per-turn tier unexposed. Primary staging remains read-only to this lane.
+
+Initial leaf contract: `scripts/usp/learning/association/schema-v1.json`. Claims preserve source literals, units, states and citations; no canonical links are supported without actual record targets and a reviewed crosswalk. Deterministic checks must bind quotes/literals to the input evidence, check source-family membership and refuse invented IDs. Parser metadata, OCR observations and source-supported annotations retain distinct methods. This contract is an experimental projection of existing evidence/fusion contracts, not a new registry or API authority.
+
+Freeze: Haryana project 2831/Tower-3 and Bihar Magnolia are train-only families; all related sheets, portal aliases, approvals and variants remain in their family. The buildingSMART Simple-Scene/Building-Architecture IFC2x3/IFC4 pair is one development family. Both OGC CityGML 2.0 building examples are conservatively one evaluation family, closed until candidate/criteria freeze. Earlier mapping corpora and evaluations are excluded. This tiny heterogeneous seed cannot qualify generalization, canonical matching or operational data.
+
+Teacher `01a0fbd5-4561-7692-b366-ebd123380593` owns teacher manifests/data only. Sole learner `01a0ede2-c009-7972-ae01-fa4545b54fd9` owns association implementation and GPU/model execution, preserving `task/desktop-model-egress-enforcement@5c536ff8`. Coordinator owns this status, the leaf JSON schema and source-family freeze; workers must not edit them.
+
+Next increment: teacher creates a small cited train-only batch; learner implements a source-to-validated-output baseline through the accepted containment adapter with a fresh code/runtime/model/input profile. One bounded adapter fit/reload/comparison follows usable execution and validated training data. No new model run, fit, promotion, gateway registration, source accuracy or release pass is claimed yet. Completion/blocker callbacks drive continuation; no polling or schedules.
