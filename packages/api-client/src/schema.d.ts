@@ -2026,7 +2026,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Generate a private one-page summary from an executed confirmed text/CSV plan */
+        /** Generate a private one-page summary linked to an executed confirmed text/CSV or one-region PDF plan */
         post: operations["POST_api_v1_usp_property_cards_generate"];
         delete?: never;
         options?: never;
