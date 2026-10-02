@@ -23828,6 +23828,455 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/property-cards/generate": {
+      "post": {
+        "operationId": "POST_api_v1_usp_property_cards_generate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "JSON, maximum 1 MiB of received bytes",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_property_cards_generate_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Private exact-scope USP result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_property_cards_generate_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "USP denial or common loopback Host/Origin guard denial; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Generate a private one-page summary from an executed confirmed text/CSV plan",
+        "tags": [
+          "USP private exact-revision property cards"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/property-card.controller.ts",
+        "x-batch": "CARD-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/usp/property-cards/read": {
+      "post": {
+        "operationId": "POST_api_v1_usp_property_cards_read",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "JSON, maximum 1 MiB of received bytes",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_property_cards_read_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Private exact-scope USP result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_property_cards_read_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "USP denial or common loopback Host/Origin guard denial; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read exact immutable card facts and separate current target revision under current access",
+        "tags": [
+          "USP private exact-revision property cards"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/property-card.controller.ts",
+        "x-batch": "CARD-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/usp/property-cards/{cardId}/revisions/{revision}": {
+      "get": {
+        "operationId": "GET_api_v1_usp_property_cards_cardId_revisions_revision",
+        "parameters": [
+          {
+            "name": "revision",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          },
+          {
+            "name": "cardId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded private one-page PDF, at most 512 KiB",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Current operator/source access or exact-card expiry denied",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Exact revision unavailable; no latest-revision fallback",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Resolve one exact local-operator card revision; the QR is not an access grant",
+        "tags": [
+          "USP private exact-revision property cards"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/property-card.controller.ts",
+        "x-batch": "CARD-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/evidence/document-association/preview": {
       "post": {
         "operationId": "POST_api_v1_usp_evidence_document_association_preview",
@@ -183908,6 +184357,1145 @@
               "confirmationId",
               "packet",
               "omissions"
+            ],
+            "additionalProperties": false
+          },
+          "meta": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "enum": [
+                  "usp/1"
+                ]
+              },
+              "requestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "intake"
+                        ]
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "workspaceId",
+                      "version"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "snapshot"
+                        ]
+                      },
+                      "scopeId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "world": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "manifestId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "snapshotDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "stage": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "recorded",
+                          "retained"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "scopeId",
+                      "world",
+                      "manifestId",
+                      "snapshotDigest",
+                      "stage"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "requestId",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_property_cards_generate_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "planVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 2147483647
+          },
+          "cardId": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "guard": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "create"
+                    ]
+                  },
+                  "requestKey": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "requestKey"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "update"
+                    ]
+                  },
+                  "requestKey": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                  },
+                  "expectedVersion": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "expectedManifestId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "requestKey",
+                  "expectedVersion"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "planId",
+          "planVersion",
+          "cardId",
+          "expiresAt",
+          "guard"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_property_cards_generate_Response_200_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "data": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "cardId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 2147483647
+              },
+              "previousRevision": {
+                "nullable": true,
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 2147483647
+              },
+              "profile": {
+                "type": "string",
+                "enum": [
+                  "property-card-summary-ascii/1"
+                ]
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "local_operator"
+                ]
+              },
+              "planId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "planVersion": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "planSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "confirmationId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "packetId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "packetSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "target": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "namespace": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "namespace",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "ref",
+                  "revision"
+                ],
+                "additionalProperties": false
+              },
+              "scope": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "snapshot"
+                    ]
+                  },
+                  "scopeId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "world": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "namespace": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "namespace",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "manifestId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "snapshotDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                  },
+                  "stage": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "recorded",
+                      "retained"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "scopeId",
+                  "world",
+                  "manifestId",
+                  "snapshotDigest",
+                  "stage"
+                ],
+                "additionalProperties": false
+              },
+              "targetBodySha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "snapshotCapturedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "creator": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]{1,256}(?![\\s\\S])"
+                  },
+                  "roles": {
+                    "readOnly": true,
+                    "maxItems": 32,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,64}(?![\\s\\S])"
+                    }
+                  },
+                  "entitlementVersion": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "local_demo",
+                      "india_private",
+                      "public_interoperability"
+                    ]
+                  }
+                },
+                "required": [
+                  "subject",
+                  "roles",
+                  "entitlementVersion",
+                  "mode"
+                ],
+                "additionalProperties": false
+              },
+              "accessViewId": {
+                "type": "string",
+                "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+              },
+              "policyVersion": {
+                "type": "string",
+                "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+              },
+              "facts": {
+                "readOnly": true,
+                "minItems": 1,
+                "maxItems": 24,
+                "type": "array",
+                "items": {
+                  "readOnly": true,
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,64}(?![\\s\\S])"
+                    },
+                    "label": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "available",
+                        "unavailable",
+                        "not_assessed"
+                      ]
+                    },
+                    "value": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,4096}(?![\\s\\S])"
+                    },
+                    "reasonCode": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "label",
+                    "state",
+                    "value",
+                    "reasonCode"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "evidenceEntrySha256": {
+                "readOnly": true,
+                "minItems": 1,
+                "maxItems": 20,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                }
+              },
+              "omissions": {
+                "readOnly": true,
+                "maxItems": 20,
+                "type": "array",
+                "items": {
+                  "readOnly": true,
+                  "type": "object",
+                  "properties": {
+                    "entrySha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "reasonCode": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                    }
+                  },
+                  "required": [
+                    "entrySha256",
+                    "reasonCode"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "resolverUrl": {
+                "type": "string",
+                "maxLength": 256,
+                "format": "uri"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "artifact": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 524288
+                  },
+                  "contentType": {
+                    "type": "string",
+                    "enum": [
+                      "application/pdf"
+                    ]
+                  },
+                  "pages": {
+                    "type": "number",
+                    "enum": [
+                      1
+                    ]
+                  }
+                },
+                "required": [
+                  "sha256",
+                  "bytes",
+                  "contentType",
+                  "pages"
+                ],
+                "additionalProperties": false
+              },
+              "cardSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "cardId",
+              "revision",
+              "previousRevision",
+              "profile",
+              "mode",
+              "planId",
+              "planVersion",
+              "planSha256",
+              "confirmationId",
+              "packetId",
+              "packetSha256",
+              "target",
+              "scope",
+              "targetBodySha256",
+              "snapshotCapturedAt",
+              "creator",
+              "accessViewId",
+              "policyVersion",
+              "facts",
+              "evidenceEntrySha256",
+              "omissions",
+              "resolverUrl",
+              "createdAt",
+              "expiresAt",
+              "artifact",
+              "cardSha256"
+            ],
+            "additionalProperties": false
+          },
+          "meta": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "enum": [
+                  "usp/1"
+                ]
+              },
+              "requestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "intake"
+                        ]
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "workspaceId",
+                      "version"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "snapshot"
+                        ]
+                      },
+                      "scopeId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "world": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "manifestId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "snapshotDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "stage": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "recorded",
+                          "retained"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "scopeId",
+                      "world",
+                      "manifestId",
+                      "snapshotDigest",
+                      "stage"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "requestId",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_property_cards_read_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "cardId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "cardId",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_property_cards_read_Response_200_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "data": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "card": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "cardId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 2147483647
+                  },
+                  "previousRevision": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 2147483647
+                  },
+                  "profile": {
+                    "type": "string",
+                    "enum": [
+                      "property-card-summary-ascii/1"
+                    ]
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "local_operator"
+                    ]
+                  },
+                  "planId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "planVersion": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "planSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                  },
+                  "confirmationId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "packetId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "packetSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                  },
+                  "target": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "ref": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "ref",
+                      "revision"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "scope": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "snapshot"
+                        ]
+                      },
+                      "scopeId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "world": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "manifestId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "snapshotDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "stage": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "recorded",
+                          "retained"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "scopeId",
+                      "world",
+                      "manifestId",
+                      "snapshotDigest",
+                      "stage"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "targetBodySha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                  },
+                  "snapshotCapturedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "creator": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "pattern": "^[^\\u0000-\\u001f\\u007f]{1,256}(?![\\s\\S])"
+                      },
+                      "roles": {
+                        "readOnly": true,
+                        "maxItems": 32,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]{1,64}(?![\\s\\S])"
+                        }
+                      },
+                      "entitlementVersion": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "local_demo",
+                          "india_private",
+                          "public_interoperability"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "roles",
+                      "entitlementVersion",
+                      "mode"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "accessViewId": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                  },
+                  "policyVersion": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                  },
+                  "facts": {
+                    "readOnly": true,
+                    "minItems": 1,
+                    "maxItems": 24,
+                    "type": "array",
+                    "items": {
+                      "readOnly": true,
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]{1,64}(?![\\s\\S])"
+                        },
+                        "label": {
+                          "type": "string",
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "available",
+                            "unavailable",
+                            "not_assessed"
+                          ]
+                        },
+                        "value": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]{1,4096}(?![\\s\\S])"
+                        },
+                        "reasonCode": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "label",
+                        "state",
+                        "value",
+                        "reasonCode"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "evidenceEntrySha256": {
+                    "readOnly": true,
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    }
+                  },
+                  "omissions": {
+                    "readOnly": true,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "readOnly": true,
+                      "type": "object",
+                      "properties": {
+                        "entrySha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                        },
+                        "reasonCode": {
+                          "type": "string",
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                        }
+                      },
+                      "required": [
+                        "entrySha256",
+                        "reasonCode"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "resolverUrl": {
+                    "type": "string",
+                    "maxLength": 256,
+                    "format": "uri"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "expiresAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "artifact": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "bytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 524288
+                      },
+                      "contentType": {
+                        "type": "string",
+                        "enum": [
+                          "application/pdf"
+                        ]
+                      },
+                      "pages": {
+                        "type": "number",
+                        "enum": [
+                          1
+                        ]
+                      }
+                    },
+                    "required": [
+                      "sha256",
+                      "bytes",
+                      "contentType",
+                      "pages"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "cardSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "cardId",
+                  "revision",
+                  "previousRevision",
+                  "profile",
+                  "mode",
+                  "planId",
+                  "planVersion",
+                  "planSha256",
+                  "confirmationId",
+                  "packetId",
+                  "packetSha256",
+                  "target",
+                  "scope",
+                  "targetBodySha256",
+                  "snapshotCapturedAt",
+                  "creator",
+                  "accessViewId",
+                  "policyVersion",
+                  "facts",
+                  "evidenceEntrySha256",
+                  "omissions",
+                  "resolverUrl",
+                  "createdAt",
+                  "expiresAt",
+                  "artifact",
+                  "cardSha256"
+                ],
+                "additionalProperties": false
+              },
+              "currentTargetRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "snapshotState": {
+                "type": "string",
+                "enum": [
+                  "same_revision",
+                  "changed_revision"
+                ]
+              }
+            },
+            "required": [
+              "card",
+              "currentTargetRevision",
+              "snapshotState"
             ],
             "additionalProperties": false
           },
