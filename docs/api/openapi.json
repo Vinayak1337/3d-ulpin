@@ -184699,7 +184699,8 @@
               "profile": {
                 "type": "string",
                 "enum": [
-                  "property-card-summary-ascii/1"
+                  "property-card-summary-ascii/1",
+                  "property-card-summary-latin-deva/1"
                 ]
               },
               "mode": {
@@ -185226,7 +185227,8 @@
                   "profile": {
                     "type": "string",
                     "enum": [
-                      "property-card-summary-ascii/1"
+                      "property-card-summary-ascii/1",
+                      "property-card-summary-latin-deva/1"
                     ]
                   },
                   "mode": {
