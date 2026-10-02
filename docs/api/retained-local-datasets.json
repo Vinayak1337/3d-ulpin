@@ -1186,7 +1186,16 @@
     },
     "limitations": [
       "External references unresolved; no geometry/CRS transformation, API/job, operational, association, learning or release qualification."
-    ]
+    ],
+    "canonicalWorkflowEvidence": {
+      "guide": "docs/evidence/usp/kml-api-handoff.md",
+      "integratedCodeCommit": "b286b78e",
+      "completionReceiptSha256": "142a5172040d19ba2c34085f26bb8fc34b12f13034b311880859ace9eb49793a",
+      "scope": "Actual bounded Windows parser with memory SQL/storage journey; current HTTP/PostgreSQL/private storage unqualified",
+      "nativeOutputMatchesAcceptedInspection": true,
+      "explicitMemberRetryVerified": false,
+      "runtimeProfile": "Fresh checkout-bound profile required; historical IFC inventory drift is preserved separately"
+    }
   },
   {
     "id": "google-libkml-2-20261001",
@@ -1225,7 +1234,16 @@
     },
     "limitations": [
       "External references unresolved; no geometry/CRS transformation, API/job, operational, association, learning or release qualification."
-    ]
+    ],
+    "canonicalWorkflowEvidence": {
+      "guide": "docs/evidence/usp/kml-api-handoff.md",
+      "integratedCodeCommit": "b286b78e",
+      "completionReceiptSha256": "142a5172040d19ba2c34085f26bb8fc34b12f13034b311880859ace9eb49793a",
+      "scope": "Actual bounded Windows parser with memory SQL/storage journey; current HTTP/PostgreSQL/private storage unqualified",
+      "nativeOutputMatchesAcceptedInspection": true,
+      "explicitMemberRetryVerified": true,
+      "runtimeProfile": "Fresh checkout-bound profile required; historical IFC inventory drift is preserved separately"
+    }
   },
   {
     "id": "ogc-citygml-2-building-garage-lod2",
