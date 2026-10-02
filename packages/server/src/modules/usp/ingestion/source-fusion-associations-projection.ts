@@ -4,6 +4,7 @@ import {FUSION_ASSOCIATION_LIMITS,FusionAssociationModelOutputSchema,
   from '../../../../../contracts/src/source-fusion-associations';
 import type {SourceFusionContext} from '../../../../../contracts/src/source-fusion';
 import {fingerprint} from '../../cases/domain';
+import {AppError} from '../../../infrastructure/errors';
 import {validateExtraction,type AiPart} from '../../ai/officer-ai-validation';
 import {minimizeStructuredText} from '../../model-gateway/redaction';
 import {documentPartEligibleForProposal} from './document-model';
@@ -24,6 +25,7 @@ export function exactIdentifier(text:string,value:string){
 export function associationLiterals(context:SourceFusionContext,unsupportedSources:readonly string[]=[]):AssociationLiteral[]{
   const literals:AssociationLiteral[]=[];
   for(const source of context.sources){
+    if(source.kind==='ifc')throw new AppError(422,'SOURCE_FUSION_IFC_CONTEXT_ONLY','IFC context is not supported by the document association proposal profile.');
     if(source.kind==='cityjson')continue;
     const add=(citation:AssociationLiteral['citation'],text:string,supported:boolean,textCompleteness:AssociationLiteral['textCompleteness'])=>{
       let minimized='';try{minimized=minimizeStructuredText(text);}catch{/* retain local evidence; no unsafe prompt fallback */}
@@ -72,6 +74,7 @@ export function associationPreflight(literals:readonly AssociationLiteral[],targ
 export function associationManualSelection(request:FusionAssociationRequest,context:SourceFusionContext,keys:readonly string[]){
   const selected=new Set(keys);
   const sources=context.sources.map(source=>{
+    if(source.kind==='ifc')throw new AppError(422,'SOURCE_FUSION_IFC_CONTEXT_ONLY','IFC context is not supported by the document association proposal profile.');
     if(source.kind==='cityjson')return source;
     if(source.kind==='document'){
       const parts=source.parts.filter(entry=>selected.has(entry.key));

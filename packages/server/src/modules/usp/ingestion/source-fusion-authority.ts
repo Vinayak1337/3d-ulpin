@@ -1,4 +1,4 @@
-import {DocumentResultSchema,CityJSONResultSchema,type DocumentInput,type CityJSONInput} from '@ulpin/contracts/usp';
+import {DocumentResultSchema,CityJSONResultSchema,IFCResultSchema,IFC_LIMITS,type DocumentInput,type CityJSONInput,type IFCInput} from '@ulpin/contracts/usp';
 import type {RequestContext} from '@ulpin/contracts/usp';
 import {SOURCE_FUSION_LIMITS,type SourceFusionSelection} from '../../../../../contracts/src/source-fusion';
 import {transaction} from '../../../infrastructure/db';
@@ -10,23 +10,27 @@ import {assertLocalUsp} from '../snapshots';
 import {associationDocumentInputTx} from './document-association-authority';
 import {acceptedCityJSONTx,cityjsonResultKey,cityjsonArtifactKey} from './cityjson';
 import {documentResultKey} from './documents';
+import {ifcResultKey,ifcArtifactKey} from './ifc';
+import {ifcSummary} from './ifc-processor';
+import {acceptedFusionIFCTx,verifyFusionIFCTools} from './source-fusion-ifc-authority';
 
 export type FusionAuthority={kind:'document';input:DocumentInput;acceptedFence:number}|
-  {kind:'cityjson';input:CityJSONInput;acceptedFence:number};
+  {kind:'cityjson';input:CityJSONInput;acceptedFence:number}|{kind:'ifc';input:IFCInput;acceptedFence:number};
 export type FusionBudget={deadlineAt:number;signal:AbortSignal;reservedBytes:number};
 export function fusionLive(budget:Pick<FusionBudget,'deadlineAt'|'signal'>){
   if(budget.signal.aborted||Date.now()>=budget.deadlineAt)
     throw new AppError(503,'SOURCE_FUSION_DEADLINE','The bounded source context read expired.');
 }
 type AuthorityDependencies={transaction:typeof transaction;document:typeof associationDocumentInputTx;
-  cityjson:typeof acceptedCityJSONTx;gate:typeof lockSourceCaseDestinationTx};
+  cityjson:typeof acceptedCityJSONTx;gate:typeof lockSourceCaseDestinationTx;
+  ifc?:typeof acceptedFusionIFCTx;ifcTools?:typeof verifyFusionIFCTools};
 const defaults:AuthorityDependencies={transaction,document:associationDocumentInputTx,cityjson:acceptedCityJSONTx,gate:lockSourceCaseDestinationTx};
 
 /** All final rows share one transaction after ALL object I/O. No persistent write. */
 export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceFusionSelection[],
   budget:FusionBudget,expected?:FusionAuthority[],deps:AuthorityDependencies=defaults):Promise<FusionAuthority[]>{
   assertLocalUsp(ctx);fusionLive(budget);
-  return deps.transaction(async client=>{
+  const captured=await deps.transaction(async client=>{
     // Both captures use short owned lock scopes. The deadline-aware transaction
     // runs a SELECT guard before this callback, so SET TRANSACTION isolation is
     // too late here. Canonical mutation locks provide a coherent capture without
@@ -44,7 +48,9 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
       fusionLive(budget);
       const pin=selection.pin;
       let authority:FusionAuthority;
-      if(selection.kind!=='cityjson'){
+      if(selection.kind==='ifc'){
+        authority=await (deps.ifc??acceptedFusionIFCTx)(client,pin,true);
+      }else if(selection.kind!=='cityjson'){
         const prior=expected?.[index];
         const input=await deps.document(client,ctx,pin,prior?.kind==='document'?prior.input:undefined,true);
         const row=(await client.query('SELECT accepted_fence FROM usp_job_metadata WHERE job_id=$1',[pin.jobId])).rows[0];
@@ -61,6 +67,9 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
     }
     fusionLive(budget);assertLocalUsp(ctx);return result;
   },{deadlineAt:budget.deadlineAt,signal:budget.signal});
+  for(const authority of captured)if(authority.kind==='ifc')
+    (deps.ifcTools??verifyFusionIFCTools)(authority.input,budget);
+  fusionLive(budget);assertLocalUsp(ctx);return captured;
 }
 
 export async function readFusionObject(key:string,size:number,hash:string,budget:FusionBudget,open:typeof openObjectStream=openObjectStream){
@@ -112,10 +121,16 @@ export function fusionJson(bytes:Uint8Array,budget:Pick<FusionBudget,'deadlineAt
 export async function readFusionResult(selection:SourceFusionSelection,authority:FusionAuthority,budget:FusionBudget,
   read:typeof readFusionObject=readFusionObject){
   const pin=selection.pin;
-  const key=selection.kind!=='cityjson'?documentResultKey(pin.jobId,pin.resultSha256):cityjsonResultKey(pin.jobId,pin.resultSha256);
+  if((selection.kind==='ifc'&&authority.kind!=='ifc')||(selection.kind==='cityjson'&&authority.kind!=='cityjson')||
+    ((selection.kind==='document'||selection.kind==='document_ocr')&&authority.kind!=='document'))
+    throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
+  if(selection.kind==='ifc'&&pin.resultBytes>IFC_LIMITS.resultBytes)
+    throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted IFC result exceeds its receipt profile.');
+  const key=selection.kind==='ifc'?ifcResultKey(pin.jobId,pin.resultSha256):
+    selection.kind==='cityjson'?cityjsonResultKey(pin.jobId,pin.resultSha256):documentResultKey(pin.jobId,pin.resultSha256);
   const bytes=await read(key,pin.resultBytes,pin.resultSha256,budget);
   const value=fusionJson(bytes,budget);
-  if(selection.kind!=='cityjson'&&authority.kind==='document'){
+  if((selection.kind==='document'||selection.kind==='document_ocr')&&authority.kind==='document'){
     const result=DocumentResultSchema.parse(value);
     if(fingerprint(result.input)!==fingerprint(authority.input)||result.native.readerSha256!==pin.readerSha256)
       throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted document input differs from its pin.');
@@ -145,6 +160,16 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
       throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted native artifact belongs to another input.');
     const artifact=await read(result.artifact.key,result.artifact.bytes,result.artifact.sha256,budget);
     return {kind:'cityjson' as const,result,native:fusionJson(artifact,budget)};
+  }
+  if(selection.kind==='ifc'&&authority.kind==='ifc'){
+    const result=IFCResultSchema.parse(value);
+    if(fingerprint(result.input)!==fingerprint(authority.input)||result.artifact.key!==ifcArtifactKey(pin.jobId,result.artifact.sha256))
+      throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted IFC artifact belongs to another input.');
+    const artifact=await read(result.artifact.key,result.artifact.bytes,result.artifact.sha256,budget);
+    const native=fusionJson(artifact,budget);
+    if(fingerprint(ifcSummary(artifact,authority.input))!==fingerprint(result.summary))
+      throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted IFC metadata differs from its summary.');
+    return {kind:'ifc' as const,result,native};
   }
   throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
 }

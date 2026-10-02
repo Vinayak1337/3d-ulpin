@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {DocumentAssociationSourceSchema} from './document-association';
 import {DocumentPartSchema,DocumentFormatSchema,DocumentOcrItemSchema,DocumentOcrSelectionSchema,DocumentStatusSchema} from './usp/document-ingestion';
+import {IFCSummarySchema,IFC_LIMITS} from './usp/ifc-ingestion';
 
 export const SOURCE_FUSION_VERSION='source-fusion-context/1' as const;
 export const SOURCE_FUSION_LIMITS=Object.freeze({sources:8,selections:25,requestBytes:64*1024,
@@ -52,19 +53,24 @@ export const SourceFusionSelectionSchema=z.discriminatedUnion('kind',[
   z.strictObject({kind:z.literal('cityjson'),pin:SourceFusionPinSchema,
     objectIds:z.array(z.string().min(1).max(512)).min(1).max(25)}),
   z.strictObject({kind:z.literal('document_ocr'),pin:SourceFusionPinSchema,
-    itemOrdinals:z.array(z.number().int().min(0).max(63)).max(25)})]);
+    itemOrdinals:z.array(z.number().int().min(0).max(63)).max(25)}),
+  z.strictObject({kind:z.literal('ifc'),pin:SourceFusionPinSchema,
+    stepIds:z.array(z.number().int().positive()).min(1).max(25)})]);
 export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFusionSelectionSchema).min(2).max(8)})
   .superRefine((value,ctx)=>{
     const keys=value.sources.map(s=>s.pin.sourceId.toLowerCase());
     if(new Set(keys).size!==keys.length)ctx.addIssue({code:'custom',message:'Select each source once.'});
     let count=0;
     for(const source of value.sources){
-      const ids=source.kind==='document'?source.partIds:source.kind==='cityjson'?source.objectIds:source.itemOrdinals;count+=ids.length;
+      const ids=source.kind==='document'?source.partIds:source.kind==='cityjson'?source.objectIds:
+        source.kind==='ifc'?source.stepIds:source.itemOrdinals;count+=ids.length;
       const uniqueIds=source.kind==='document'?source.partIds.map(id=>id.toLowerCase()):ids;
       if(new Set<string|number>(uniqueIds).size!==ids.length)
-        ctx.addIssue({code:'custom',message:'Select each native part, OCR ordinal or object once.'});
+        ctx.addIssue({code:'custom',message:'Select each native part, OCR ordinal, object or IFC STEP ID once.'});
       if(source.kind==='cityjson'&&source.pin.resultBytes>16*1024)
         ctx.addIssue({code:'custom',message:'CityJSON result receipts have a 16 KiB profile.'});
+      if(source.kind==='ifc'&&source.pin.resultBytes>IFC_LIMITS.resultBytes)
+        ctx.addIssue({code:'custom',message:'IFC result receipts have a 16 KiB profile.'});
     }
     if(count>25)ctx.addIssue({code:'custom',message:'Select at most 25 native parts/objects total.'});
   });
@@ -100,8 +106,30 @@ export const SourceFusionOcrSchema=z.strictObject({...base,kind:z.literal('docum
     storedItems:z.number().int().nonnegative().max(64),scope:z.literal('explicit_selection_only'),nativeExtraction:z.literal('separate')}),
   itemHashBasis:z.literal('accepted_result_pin_item_ordinal_and_literal_observation'),
   observations:z.array(z.strictObject({key:z.string(),ordinal:z.number().int().min(0).max(63),itemSha256:hash,item:DocumentOcrItemSchema})).max(25)});
+/** Exact metadata records from the accepted native artifact, including attribute
+ * states, raw literals and original byte spans. STEP IDs/GlobalIds are not registry IDs. */
+export const SourceFusionIFCRecordSchema=z.strictObject({stepId:z.number().int().positive(),entityType:z.string().min(1).max(128),
+  locator:SourceFusionLiteralObjectSchema,attributes:SourceFusionLiteralObjectSchema});
+const ifcRecordReference=z.strictObject({pointer:z.string(),record:SourceFusionIFCRecordSchema});
+export const SourceFusionIFCMetadataSchema=z.strictObject({summary:IFCSummarySchema,artifactSha256:hash,
+  artifactBytes:z.number().int().positive().max(IFC_LIMITS.artifactBytes),
+  nativeIdentifierScope:z.literal('source_native_only; not_canonical_registry_ids'),
+  source:SourceFusionLiteralObjectSchema,parser:SourceFusionLiteralObjectSchema,
+  entities:z.array(ifcRecordReference).min(1).max(25),relations:z.array(ifcRecordReference).max(10000),
+  supportRecords:z.array(ifcRecordReference).max(10000),
+  reference:z.strictObject({projectUnits:z.array(SourceFusionLiteralJsonSchema).max(10000),
+    georeference:SourceFusionLiteralObjectSchema,semantics:SourceFusionLiteralObjectSchema}),
+  findings:z.array(SourceFusionLiteralJsonSchema).max(10000),
+  hierarchy:z.array(z.strictObject({stepId:z.number().int().positive(),
+    parentState:z.enum(['missing','supplied','multiple_parents']),parentStepIds:z.array(z.number().int().positive()).max(10000),
+    relationStepIds:z.array(z.number().int().positive()).max(10000)})).max(25),
+  coverage:z.strictObject({selectedEntities:z.number().int().positive().max(25),availableNativeEntities:z.number().int().nonnegative().max(10000),
+    scope:z.literal('explicit_entities; incident_relation_literals; referenced_placements; source_units_and_reference_metadata'),
+    unselectedEntityMetadata:z.literal('not_expanded'),geometry:z.literal('unsupported'),
+    hierarchyQualification:z.literal('source_edges_only; not_canonical_relationships')})});
+export const SourceFusionIFCSchema=SourceFusionIFCMetadataSchema.extend({...base,kind:z.literal('ifc')});
 export const SourceFusionContextSchema=z.strictObject({version:z.literal(SOURCE_FUSION_VERSION),contextSha256:hash,
-  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema])).min(2).max(8),
+  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema])).min(2).max(8),
   association:z.strictObject({state:z.literal('not_assessed'),membership:z.literal('operator_selection'),
     reason:z.literal('source_set_membership_does_not_establish_relationships'),
     canonicalTargets:z.array(z.never()).max(0),crossSourceFrameAlignment:z.literal('not_assessed'),
