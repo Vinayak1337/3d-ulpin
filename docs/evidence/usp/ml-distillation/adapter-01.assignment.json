@@ -5,11 +5,14 @@
   "model": "Qwen/Qwen2.5-0.5B-Instruct",
   "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
   "unchangedBaseline": "E:/BhuAayam-data/task-data/ml-distillation/student/baseline-af47550c33ea4dc2a3dc1aebc56363c4",
-  "trainingSelection": "The 11 frozen Haryana/Bihar teacher examples. Immutable v2 adds mandatory no_canonical_targets abstention only; v1/input/source originals/rejects remain unchanged. Pin exact final v2 digest before fitting.",
+  "trainingSelection": "The 11 frozen Haryana/Bihar teacher v2 examples, independently checked to append only the mandatory no_canonical_targets abstention and correction provenance. All input/claim/conflict/existing decision sections and v1/rejects are unchanged.",
   "teacherV1Sha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
   "settings": {
     "method": "supervised_causal_LoRA",
-    "targets": ["q_proj", "v_proj"],
+    "targets": [
+      "q_proj",
+      "v_proj"
+    ],
     "rank": 8,
     "alpha": 16,
     "dropout": 0.05,
@@ -52,5 +55,7 @@
   "teacherFeedback": "Training examples/output errors only; never development/evaluation content or predictions.",
   "promotionAuthorized": false,
   "executionOwner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
-  "settingsRequired": "Astra/max latest human override; default/standard required, per-turn tier unexposed"
+  "settingsRequired": "Astra/max latest human override; default/standard required, per-turn tier unexposed",
+  "teacherV2Sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+  "trainingDataset": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v2.jsonl"
 }
