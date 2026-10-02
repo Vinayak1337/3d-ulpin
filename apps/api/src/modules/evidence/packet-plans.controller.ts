@@ -21,7 +21,7 @@ import { EvidenceExceptionFilter, readUspBody, UspJsonPost, uspEnvelope } from '
 @Controller('api/v1/usp/packets')
 export class PacketPlansController {
   @Post('plans/create') @HttpCode(200)
-  @UspJsonPost('POST_api_v1_usp_packets_plans_create', 'Create one immutable selected-target text/CSV or committed-region PDF plan', UspCreatePacketPlanSchema, UspPacketPlanSchema)
+  @UspJsonPost('POST_api_v1_usp_packets_plans_create', 'Create one immutable selected-target text/CSV or ordered required-region PDF plan', UspCreatePacketPlanSchema, UspPacketPlanSchema)
   async create(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     res.setHeader('Cache-Control', 'private, no-store');
     const c = await readUspBody(req, UspCreatePacketPlanSchema);
@@ -37,7 +37,7 @@ export class PacketPlansController {
     return uspEnvelope(req, view.plan.input.scope, view);
   }
   @Post('plans/revise') @HttpCode(200)
-  @UspJsonPost('POST_api_v1_usp_packets_plans_revise', 'Append explicit decisions as a new immutable version', UspRevisePacketPlanSchema, UspPacketPlanSchema)
+  @UspJsonPost('POST_api_v1_usp_packets_plans_revise', 'Append explicit decisions or ordered required regions as a new immutable version', UspRevisePacketPlanSchema, UspPacketPlanSchema)
   async revise(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     res.setHeader('Cache-Control', 'private, no-store');
     const c = await readUspBody(req, UspRevisePacketPlanSchema);
@@ -62,7 +62,7 @@ export class PacketPlansController {
     return uspEnvelope(req, result.packet.scope, result);
   }
   @Get('pdf/:packetId/download') @HttpCode(200)
-  @ApiOperation({operationId:'GET_api_v1_usp_packets_pdf_packetId_download',summary:'Download the exact private generated PDF under current source, target and plan authority'})
+  @ApiOperation({operationId:'GET_api_v1_usp_packets_pdf_packetId_download',summary:'Download the exact private generated PDF of required regions under current source, target and plan authority'})
   @ApiParam({name:'packetId',schema:{type:'string',format:'uuid'}})
   @ApiResponse({status:200,content:{'application/pdf':{schema:{type:'string',format:'binary'}}}})
   async downloadPdf(@Param('packetId') value:string,@Req() req:Request,@Res() res:Response){

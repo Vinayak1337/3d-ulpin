@@ -3040,6 +3040,17 @@
             "workflow_verified": {
               "status": "not_run"
             }
+          },
+          "privateMultiRegionPdfPacketEvidence": {
+            "guide": "docs/evidence/usp/packet-pdf-multiregion-handoff.md",
+            "integratedCodeCommit": "c5b47c09",
+            "completionReceiptSha256": "be76174a7d95ead77e9ca7122dd36d6085d39e2e3cecdb4e0cb2416fe18043dc",
+            "scope": "Two-page assembly with reused first-crop pixels and controlled second locator, binding, SQL, storage and extraction transport",
+            "outputSha256": "40e2e2b7c3f863dc0bc3994925b75c222aa565a6f76a84b276b483d440a77239",
+            "outputBytes": 132759,
+            "genuineSecondCropVerified": false,
+            "authenticApplicability": "not_assessed",
+            "currentHttpSqlStorageVerified": false
           }
         },
         {
@@ -5092,6 +5103,14 @@
         "nativeOutputMatchesAcceptedInspection": true,
         "explicitMemberRetryVerified": false,
         "runtimeProfile": "Fresh checkout-bound profile required; historical IFC inventory drift is preserved separately"
+      },
+      "sourceFusionEvidence": {
+        "guide": "docs/evidence/usp/source-fusion-kml-handoff.md",
+        "integratedCodeCommit": "df166f5f",
+        "completionReceiptSha256": "999f621c51443290b6e753193f06af6e9684213f2c18630c7f9b8cfc6e2bdfb2",
+        "scope": "Retained accepted native records with memory authority/storage controls; no parser rerun or current HTTP/persistence qualification",
+        "propertyMatching": "unsupported",
+        "learningLabels": false
       }
     },
     {
@@ -5140,6 +5159,14 @@
         "nativeOutputMatchesAcceptedInspection": true,
         "explicitMemberRetryVerified": true,
         "runtimeProfile": "Fresh checkout-bound profile required; historical IFC inventory drift is preserved separately"
+      },
+      "sourceFusionEvidence": {
+        "guide": "docs/evidence/usp/source-fusion-kml-handoff.md",
+        "integratedCodeCommit": "df166f5f",
+        "completionReceiptSha256": "999f621c51443290b6e753193f06af6e9684213f2c18630c7f9b8cfc6e2bdfb2",
+        "scope": "Retained accepted native records with memory authority/storage controls; no parser rerun or current HTTP/persistence qualification",
+        "propertyMatching": "unsupported",
+        "learningLabels": false
       }
     },
     {
