@@ -2931,7 +2931,10 @@
             "guide": "docs/evidence/usp/packet-region-extract-handoff.md",
             "scope": "Retained local source render plus isolated technical controls; current HTTP/SQL/storage unqualified",
             "outputSha256": "b9b6b487ac309582dc79fa03b2651e0698c5f68f8b6eb4fb27f632b658266d7c",
-            "outputPixels": [795, 405],
+            "outputPixels": [
+              795,
+              405
+            ],
             "outputBytes": 123120,
             "bootstrapCorrectionCommit": "23aeeb22",
             "propertyApplicability": "not_assessed",
@@ -4784,7 +4787,15 @@
         "No Indian official-source CAD profile or operational-record qualification.",
         "Native inspection is not source/job/API admission or legal/geometric validation.",
         "No analytical geometry, operational truth, learning labels or release qualification."
-      ]
+      ],
+      "sourceFusionEvidence": {
+        "guide": "docs/evidence/usp/source-fusion-dxf-handoff.md",
+        "integratedCodeCommit": "fbd405f2",
+        "completionReceiptSha256": "ef444b221bdad6d26f5cf8da1f4de8c1f8baf826076426b99aeb654df5b4e15c",
+        "scope": "Retained native literals plus controlled combined context; no parser rerun or current HTTP/persistence qualification",
+        "propertyMatching": "unsupported",
+        "learningLabels": false
+      }
     },
     {
       "id": "ezdxf-ascii-r12-20261001",
@@ -4849,7 +4860,15 @@
         "No Indian official-source CAD profile or operational-record qualification.",
         "Native inspection is not source/job/API admission or legal/geometric validation.",
         "No analytical geometry, operational truth, learning labels or release qualification."
-      ]
+      ],
+      "sourceFusionEvidence": {
+        "guide": "docs/evidence/usp/source-fusion-dxf-handoff.md",
+        "integratedCodeCommit": "fbd405f2",
+        "completionReceiptSha256": "ef444b221bdad6d26f5cf8da1f4de8c1f8baf826076426b99aeb654df5b4e15c",
+        "scope": "Retained native literals plus controlled combined context; no parser rerun or current HTTP/persistence qualification",
+        "propertyMatching": "unsupported",
+        "learningLabels": false
+      }
     },
     {
       "id": "khronos-cesium-box-glb-20261001",

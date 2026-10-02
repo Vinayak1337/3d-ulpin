@@ -1,5 +1,7 @@
 # FUSION-DXF-01 — accepted drawing fragments in combined context
 
+Lead integration, 3 October: code/handoff `fbd405f2` / `a0afc4f2`. Receipt, eight physical/Git code pins and 19 source/evidence pins matched; all 16 focused integrated fusion checks, backend/client typechecks and API validation passed. Existing context summary and five additive schemas published at 239 operations/280 schemas, with no removed route/schema. All prior catalogue fields are preserved; DXF canonical-workflow evidence is also restored to the retained catalogue input so regeneration retains it. An initial catalogue rebuild omitted manually added historical PDF/DXF metadata and was corrected before publication. No native/model/current-service rerun or new quality qualification. KML-02 still owns any shared immutable-read helper change; lead will reconcile it on that lane's return.
+
 3 October 2026. Code **`9eb6664d14d80c3407df6882d57969ababae58a5`**, base **`fd36a4b964e2c8855c17a9169c5efe43b03f6712`**, branch `task/desktop-fusion-dxf-context`, assigned checkout `C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin`. [Assignment](../../orchestration/PARALLEL_20261003.md) at `8668a2f2`; primary staging was read-only, observed at `408efe0838d9d5a1d80ab01ccf2b197fdd230dec`. Completed CARD-PDF branch is preserved.
 
 ## Delivered

@@ -2179,7 +2179,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC fragments without establishing an association */
+        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF fragments without establishing an association */
         post: operations["POST_api_v1_usp_evidence_source_fusion_context"];
         delete?: never;
         options?: never;
@@ -12299,6 +12299,26 @@ export interface components {
                             resultBytes: number;
                         };
                         stepIds: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "dxf";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        entityOrdinals: number[];
                     })[];
                 };
             };
@@ -32887,6 +32907,26 @@ export interface components {
                     resultBytes: number;
                 };
                 stepIds: number[];
+            } | {
+                /** @enum {string} */
+                kind: "dxf";
+                pin: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    readerSha256: string;
+                    inputSha256: string;
+                    acceptedFence: number;
+                    resultBytes: number;
+                };
+                entityOrdinals: number[];
             })[];
         };
         POST_usp_evidence_source_fusion_context_Response_200_application_json: {
@@ -33334,6 +33374,123 @@ export interface components {
                     sourceSetRole: "operator_selected_fragment";
                     /** @enum {string} */
                     kind: "ifc";
+                } | {
+                    summary: {
+                        /** @enum {string} */
+                        schemaVersion: "dxf-native-inspection/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        dxfVersion: "AC1009" | "AC1012" | "AC1014" | "AC1015" | "AC1018" | "AC1021" | "AC1024" | "AC1027" | "AC1032";
+                        recordCount: number;
+                        projectedEntityCount: number;
+                        pointCount: number;
+                        unsupportedFindingCount: number;
+                        units: {
+                            /** @enum {string} */
+                            state: "absent" | "unitless" | "declared" | "unsupported";
+                            code: number | null;
+                            name: string | null;
+                        };
+                        /** @enum {string} */
+                        inspectionFrame: "source_local";
+                        /** @enum {string} */
+                        geometryValidity: "not_assessed";
+                        /** @enum {string} */
+                        globalPlacement: "not_assessed";
+                        /** @enum {boolean} */
+                        unitConversionApplied: false;
+                        /** @enum {string} */
+                        blockExpansion: "not_performed";
+                        /** @enum {boolean} */
+                        analyticEligible: false;
+                        /** @enum {boolean} */
+                        operationalRecords: false;
+                        /** @enum {boolean} */
+                        trainingLabels: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_artifact_source_and_sorted_entity_ordinals";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    parser: {
+                        [key: string]: unknown;
+                    };
+                    entities: {
+                        ordinal: number;
+                        pointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    reference: {
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        encoding: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        units: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        headerVariables: {
+                            [key: string]: unknown;
+                        };
+                        layers: {
+                            [key: string]: unknown;
+                        }[];
+                        blocks: {
+                            [key: string]: unknown;
+                        }[];
+                    };
+                    findings: (string | number | boolean | (null) | unknown[] | {
+                        [key: string]: unknown;
+                    })[];
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    qualification: {
+                        [key: string]: unknown;
+                    };
+                    limitations: string[];
+                    coverage: {
+                        selectedEntities: number;
+                        availableNativeEntities: number;
+                        /** @enum {string} */
+                        scope: "explicit_entity_records; source_reference_metadata; referenced_block_definitions_only";
+                        /** @enum {string} */
+                        unselectedEntities: "not_expanded";
+                        /** @enum {string} */
+                        blockExpansion: "not_performed";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                    pin: {
+                        caseId: unknown;
+                        caseRevision: number;
+                        sourceId: unknown;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        jobId: unknown;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    kind: "dxf";
                 })[];
                 association: {
                     /** @enum {string} */
@@ -33471,6 +33628,26 @@ export interface components {
                             resultBytes: number;
                         };
                         stepIds: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "dxf";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        entityOrdinals: number[];
                     })[];
                 };
             };
@@ -33945,6 +34122,123 @@ export interface components {
                         sourceSetRole: "operator_selected_fragment";
                         /** @enum {string} */
                         kind: "ifc";
+                    } | {
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "dxf-native-inspection/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            dxfVersion: "AC1009" | "AC1012" | "AC1014" | "AC1015" | "AC1018" | "AC1021" | "AC1024" | "AC1027" | "AC1032";
+                            recordCount: number;
+                            projectedEntityCount: number;
+                            pointCount: number;
+                            unsupportedFindingCount: number;
+                            units: {
+                                /** @enum {string} */
+                                state: "absent" | "unitless" | "declared" | "unsupported";
+                                code: number | null;
+                                name: string | null;
+                            };
+                            /** @enum {string} */
+                            inspectionFrame: "source_local";
+                            /** @enum {string} */
+                            geometryValidity: "not_assessed";
+                            /** @enum {string} */
+                            globalPlacement: "not_assessed";
+                            /** @enum {boolean} */
+                            unitConversionApplied: false;
+                            /** @enum {string} */
+                            blockExpansion: "not_performed";
+                            /** @enum {boolean} */
+                            analyticEligible: false;
+                            /** @enum {boolean} */
+                            operationalRecords: false;
+                            /** @enum {boolean} */
+                            trainingLabels: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        };
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        selectionSha256: string;
+                        /** @enum {string} */
+                        selectionHashBasis: "accepted_artifact_source_and_sorted_entity_ordinals";
+                        /** @enum {string} */
+                        nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        parser: {
+                            [key: string]: unknown;
+                        };
+                        entities: {
+                            ordinal: number;
+                            pointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        reference: {
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            encoding: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            units: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            headerVariables: {
+                                [key: string]: unknown;
+                            };
+                            layers: {
+                                [key: string]: unknown;
+                            }[];
+                            blocks: {
+                                [key: string]: unknown;
+                            }[];
+                        };
+                        findings: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        qualification: {
+                            [key: string]: unknown;
+                        };
+                        limitations: string[];
+                        coverage: {
+                            selectedEntities: number;
+                            availableNativeEntities: number;
+                            /** @enum {string} */
+                            scope: "explicit_entity_records; source_reference_metadata; referenced_block_definitions_only";
+                            /** @enum {string} */
+                            unselectedEntities: "not_expanded";
+                            /** @enum {string} */
+                            blockExpansion: "not_performed";
+                            /** @enum {string} */
+                            geometryQualification: "not_assessed";
+                            /** @enum {string} */
+                            propertyMatching: "unsupported";
+                        };
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        namespace: string;
+                        /** @enum {string} */
+                        sourceSetRole: "operator_selected_fragment";
+                        /** @enum {string} */
+                        kind: "dxf";
                     })[];
                     association: {
                         /** @enum {string} */
@@ -34245,6 +34539,23 @@ export interface components {
                                     resultBytes: number;
                                 };
                                 stepIds: number[];
+                            } | {
+                                /** @enum {string} */
+                                kind: "dxf";
+                                pin: {
+                                    caseId: unknown;
+                                    caseRevision: number;
+                                    sourceId: unknown;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    jobId: unknown;
+                                    resultSha256: string;
+                                    readerSha256: string;
+                                    inputSha256: string;
+                                    acceptedFence: number;
+                                    resultBytes: number;
+                                };
+                                entityOrdinals: number[];
                             })[];
                         };
                     };
@@ -34331,6 +34642,23 @@ export interface components {
                                 resultBytes: number;
                             };
                             stepIds: number[];
+                        } | {
+                            /** @enum {string} */
+                            kind: "dxf";
+                            pin: {
+                                caseId: unknown;
+                                caseRevision: number;
+                                sourceId: unknown;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                jobId: unknown;
+                                resultSha256: string;
+                                readerSha256: string;
+                                inputSha256: string;
+                                acceptedFence: number;
+                                resultBytes: number;
+                            };
+                            entityOrdinals: number[];
                         })[];
                     };
                 };

@@ -329,6 +329,8 @@ The bounded profile covers the existing GeoJSON polygon mapping: a complete lite
 
 AI-01B is integrated at `f7d89d3` (worker `f299010`). Build, source-based proposal controls, existing manual-ingestion/gateway checks and offline inventory/oracle mechanics passed. No HTTP/provider runtime or model accuracy was qualified, and the standing API has not been restarted with this change. Live calls require separately approved gateway funding/egress. See the [execution plan](../orchestration/ADAPTIVE_INGESTION_EXECUTION.md) and [official source index](real-sources.md); NYC samples exercise foreign building-field mappings, not Indian deed association or ownership.
 
+[DXF drawing context](../evidence/usp/source-fusion-dxf-handoff.md) extends the existing source-fusion context endpoint with `kind: dxf` and 1–25 explicit `entityOrdinals`, within the existing aggregate limit. Exact tags, text, handles, source locators, units and referenced block definitions remain source-local observations. Existing document/OCR/CityJSON/IFC variants remain compatible. DXF is context-only: association proposals and reviewed citation attachment explicitly reject it with `SOURCE_FUSION_DXF_CONTEXT_ONLY`. Retained real drawings and controlled authority/storage checks pass; current HTTP/persistence and property matching remain unqualified.
+
 ## Regenerate after backend changes
 
 ```sh
