@@ -1,0 +1,99 @@
+{
+  "version": "association-selector-adapter-preparation-assignment/1",
+  "task": "STUDENT-10-SELECTOR-PREP",
+  "recordedAt": "2026-10-03",
+  "purpose": "Prepare one explicit selector-output adaptation mode using the existing accepted LoRA fit/reload components. The measured pretrained selector baseline does not follow the output format; test whether supervised selector targets can teach that separate representation, without repeating full-JSON fitting or repairing old responses.",
+  "coordinatorPreparationBase": "7fd3bb6f067099590981258cdd7f6c45b01043c7",
+  "primaryStagingHeadObservedReadOnly": "2940105fe62e38bdbfec9e2784fcd0a82ecb7a02",
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "studentPreparationBase": "c2773a4ca5054a851b611945db7ac6dab3d9f24b",
+  "executionOwner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "measuredSelectorBaseline": {
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69",
+    "profileSha256": "083145a4da0e41143e7adee67ca0e9b779ac9fa352cff0139c23791db08075a7",
+    "receipt": "docs/evidence/usp/ml-distillation/student/selector-baseline-v2.json",
+    "receiptPhysicalSha256": "0936eadc73365ac5813ece30f14ce224161651432452017543ea3b6bd741c90d",
+    "hostSummarySha256": "30d0f2422c34a58e8213874d86fcbb65ab8d174c494c111531d2126c8e22e7af",
+    "validOutputs": 0,
+    "correctExpectedClaims": 0,
+    "expectedClaims": 6
+  },
+  "trainingDataset": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-selectors-v1.jsonl",
+    "sha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb",
+    "bytes": 78908,
+    "rows": 11,
+    "claims": 62,
+    "conflicts": 2,
+    "abstentions": 22,
+    "augmentation": false,
+    "parentPath": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v2.jsonl",
+    "parentSha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+    "qualification": "Accepted original train-only teacher supervision; provisional labels, never independent truth or operational facts. No new IFC/absent/null-state coverage or extra factual examples."
+  },
+  "promptVersion": "association-selector-prompt/1",
+  "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+  "selectorSchema": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\scripts\\usp\\learning\\association\\selector-schema-v1.json",
+  "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+  "legacySchema": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69/inputs/schema-v1.json",
+  "legacySchemaPhysicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+  "familyFreeze": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69/inputs/family-freeze.json",
+  "familyFreezePhysicalSha256": "93c243f28895ac084c3f1853cba80b9e0b5286f881aba44d6cb7ab6e3a164730",
+  "lexicalPolicy": {
+    "flags": "Python re.UNICODE default; no normalization or case folding.",
+    "pattern": "\\w+|\\s+|[^\\w\\s]",
+    "version": "lossless_lexical_spans/1"
+  },
+  "futureFitIntent": {
+    "method": "Reuse unchanged accepted q_proj/v_proj LoRA rank8/alpha16/dropout0.05, original AdamW/numerics/seed17/assistant-plus-EOS masked objective and accepted loss/attention/reclamation/resource machinery.",
+    "rows": 11,
+    "epochs": 6,
+    "plannedUpdates": 66,
+    "base": "Fresh original Qwen/Qwen2.5-0.5B-Instruct revision7ae557604adf67be50417f59c2c2f167def9a775, not a historical adapter.",
+    "representation": "Model source-only selector prompt plus exact serialized selector target. Original expanded outputs are for unchanged validation/admission only, never accidentally the training target.",
+    "laterComparison": "Only after full count/base/save/resource/cleanup acceptance, exact saved adapter reload once on the same two frozen development inputs with the same selector prompt/greedy settings/host expectations/whole-response projection. Independent fit and reload freezes/profiles required.",
+    "bounds": "Original 4096 fit sequence bound; 2048 inference input/768 generated output; 6-GiB cumulative Job/CUDA caps, 1.5-GiB free GPU floor and 600-second child phase. No truncation, dropped targets, weakened caps, reset peaks or parameter sweep."
+  },
+  "executionAllowance": {
+    "cpuPreparation": true,
+    "stageModelRun": false,
+    "loadModel": false,
+    "inference": false,
+    "fit": false,
+    "evaluation": false,
+    "promotion": false
+  },
+  "implementation": [
+    "Build a new leaf selector_adapter.py admission/representation layer and strict versioned future assignment contract. Pin accepted selector bytes and v2 parent, exact original eleven inputs/roles/states/nulls/source lineage; decode every target, run unchanged legacy validation and retain selector targets separately. Refuse split/source/schema/pointer/parent/count drift. Do not reassemble teacher data or create another training dataset.",
+    "Reuse accepted adapter.fit/encode/reload and count/base/save/proof components. Add only explicit optional selector representation hooks where needed for admission, source-only messages, selector-target serialization, actual prompt/representation metadata and reload runner; keep historical defaults/legacy outputs and all numerical/model/loss/attention/resource primitives unchanged. No global prompt swapping, monkey-patching or duplicate training loop.",
+    "Route future selector fit/reload by one exact freeze version through the existing association_adapter.py fit/reload role and unchanged allowed CLI arguments. Use new leaf stage_selector_adapter.py or narrow existing staging/proof hooks as needed; pin every auxiliary selector schema/parent/representation input. PREP must refuse before mkdir/copy/runtime inspection. Fit prompts exclude teacher explanations and development/evaluation/expected contents; later inference excludes all teacher targets.",
+    "Reuse the reviewed runtime/model/dependency locks and source protection conventions, including actual physical versus canonical source bytes. Future fit must stage training inputs only; development remains in a later separate reload. No shared guard/resource/dependency edits and no new containment action/flag or model acquisition.",
+    "Use a small CPU admission/encoder/dispatch check focused on the real accepted data and target isolation: raw selector target instead of expanded strings, prompt mask plus EOS boundary, unchanged source lexical view/metadata, strict rejected-source/split/null/pointer behavior, historical default path preservation and no stage permission for PREP. Stub tokenization only for CPU interface checks; real tokenizer/length/resource measurements are deferred to a separately frozen contained phase. Do not repeat completed codec/teacher/security campaigns."
+  ],
+  "ownership": {
+    "newLeafPaths": [
+      "services/geo/geo/usp_learning/association/selector_adapter.py",
+      "scripts/usp/learning/association/stage_selector_adapter.py",
+      "scripts/usp/learning/association/test_selector_adapter.py",
+      "docs/evidence/usp/ml-distillation/student/selector-adapter-preparation.md"
+    ],
+    "narrowExistingSeams": [
+      "services/geo/geo/usp_learning/association/adapter.py (explicit representation encoder/metadata hooks only)",
+      "scripts/usp/learning/association/association_adapter.py (exact selector freeze dispatch only)",
+      "services/geo/geo/usp_learning/association/selector_baseline.py (optional verified adapter loader/runner hook; original pretrained default unchanged)",
+      "scripts/usp/learning/association/stage_adapter.py (minimal reusable accepted-fit/proof/representation hooks if needed; historical defaults unchanged)"
+    ],
+    "readOnly": "All other old runtimes/fit algorithms, chunked_loss/query_attention/reclamation/memory/security/resource/dependency/model/teacher files and original runs, coordinator schema/assignments/family/status, staging/frontend/gateway/services/catalogue."
+  },
+  "verification": "Compile and inspect only owned delta; run the small source/admission/target-mask/default-dispatch controls. Return exact code/handoff pins and final clean HEAD plus future fit/reload schema/prompt/target/count/proof contract. No model dependency imports, runtime copy/stage, tokenizer/model/GPU process or execution.",
+  "settingsRequired": {
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "speed": "default/standard",
+    "observation": "Verify supplied never/danger-full-access; tool has no per-turn tier field. Report exposed settings honestly."
+  },
+  "teacherFeedback": "Teacher stays idle and receives no development/evaluation contents, expected labels or predictions.",
+  "continuation": "CPU preparation only. Return actual owned code/handoff commit and clean final HEAD to coordinator, then stop. Any actual fit/reload must be separately inspected and frozen; no automatic training, diagnostic, prompt sweep, evaluation or promotion."
+}
