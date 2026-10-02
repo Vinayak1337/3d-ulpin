@@ -2162,7 +2162,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Propose private exact-identifier building/floor associations for explicit review; no automatic recording */
+        /** Propose private exact-identifier native/OCR/IFC building/floor associations for review; IFC requires a sourced GlobalId crosswalk */
         post: operations["POST_api_v1_usp_evidence_source_fusion_association_proposals"];
         delete?: never;
         options?: never;
@@ -32856,6 +32856,52 @@ export interface components {
                         };
                         itemOrdinal: number;
                         itemSha256: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "ifc";
+                        key: string;
+                        quote: string;
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "ulpin-native-ifc/1";
+                        stepId: number;
+                        /** @enum {string} */
+                        entityType: "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @enum {string} */
+                        attribute: "GlobalId";
+                        attributePointer: string;
+                        attributeSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        locator: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        attributeLocator: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScheme: "ifc-globalid";
+                        identifierNamespace: string;
+                        /** @enum {string} */
+                        quoteBasis: "native_attribute_decoded_value";
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
                     })[];
                     rationale: string;
                     /** @enum {string} */
@@ -33026,7 +33072,7 @@ export interface components {
                     /** @enum {string} */
                     method: "not_run" | "governed_model_gateway";
                     /** @enum {string} */
-                    promptVersion: "source-fusion-exact-associations/1";
+                    promptVersion: "source-fusion-exact-associations/2";
                     promptSha256: string;
                     inputSha256: string;
                     gatewayPolicySha256: string | null;
