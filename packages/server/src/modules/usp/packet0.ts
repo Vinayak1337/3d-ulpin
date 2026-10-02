@@ -142,6 +142,8 @@ export async function readPacket0(ctx: RequestContext, packetId: string, read: t
   assertLocalUsp(ctx);
   const row = (await query('SELECT body,object_key,artifact_hash FROM usp_packets WHERE id=$1', [packetId])).rows[0];
   if (!row) throw new AppError(404, 'USP_PACKET_NOT_FOUND', 'The packet is unavailable.');
+  if(row.body?.format==='pdf')throw new AppError(422,'USP_PACKET_PDF_READER_REQUIRED',
+    'Use the dedicated private PDF packet download for this exact packet.');
   const receipt = UspPacket0ReceiptSchema.parse(row.body);
   const execution = (await query('SELECT body FROM usp_packet_plan_executions WHERE packet_id=$1', [packetId])).rows[0]?.body;
   if (execution) {

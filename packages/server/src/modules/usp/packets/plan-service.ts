@@ -2,8 +2,9 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import type { RequestContext } from '@ulpin/contracts/usp';
 import { UspCreatePacketPlanSchema, UspRevisePacketPlanSchema, UspReadPacketPlanSchema,
-  UspConfirmPacketPlanSchema, UspExecutePacketPlanSchema, UspPacketPlanSchema,
-  UspPacketPlanConfirmationSchema, UspPacketPlanExecutionSchema, UspPacketPlanViewSchema,
+  UspConfirmPacketPlanSchema, UspExecutePacketPlanSchema,
+  UspPacketPlanConfirmationSchema, UspPacketPlanViewSchema,
+  UspTextPacketPlanExecutionSchema,UspTextPacketPlanSchema,
   type PacketPlan, type PacketPlanInput } from '../../../../../contracts/src/usp/packets';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -16,9 +17,13 @@ import { appendUspOutboxTx } from '../outbox';
 import { preparePacket0Artifact, registerPacket0Tx } from '../packet0';
 import { assessPlanTx, assertAssessment, authorizePlanTx, protectPlanDisclosureTx } from './plan-authority';
 import { prepareSharedAuthority, SharedAuthorityNeeded, type SharedAuthority } from './plan-shared';
+import {loadPlanTx,isPdfPlan,textPlan,validatePlan as validateAnyPlan,validateConfirmation,
+  validateExecution as validateAnyExecution,livePlanTx as liveTx,planHeadTx as headTx,savePlanReceiptTx as saveReceiptTx} from './plan-store';
+import {createPdfPacketPlan,revisePdfPacketPlan,readPdfPacketPlan,confirmPdfPacketPlan,executePdfPacketPlan,
+  type PdfPacketIo} from './pdf-service';
 
 /** Test I/O transport is explicit and never accepted from HTTP input. */
-export type PacketPlanIo = { read: typeof readObject; put: typeof putOriginal };
+export type PacketPlanIo = { read: typeof readObject; put: typeof putOriginal;pdf?:PdfPacketIo };
 const storage: PacketPlanIo = { read: readObject, put: putOriginal };
 async function withPlanAuthority<T>(ctx: RequestContext, action: (client: PoolClient, shared?: SharedAuthority) => Promise<T>) {
   try { return await transaction(client => action(client)); }
@@ -29,54 +34,17 @@ async function withPlanAuthority<T>(ctx: RequestContext, action: (client: PoolCl
   }
 }
 function validatePlan(raw: unknown) {
-  const plan = UspPacketPlanSchema.parse(raw), { planSha256, ...body } = plan;
-  if (fingerprint(body) !== planSha256) conflict('The immutable plan failed its integrity check.');
-  for (const entry of plan.entries) {
-    const { entrySha256, ...body } = entry;
-    if (fingerprint(body) !== entrySha256) conflict('The immutable entry failed its integrity check.');
-  }
-  return plan;
-}
-function validateConfirmation(plan: PacketPlan, raw: unknown) {
-  const confirmation = UspPacketPlanConfirmationSchema.parse(raw);
-  if (confirmation.planId !== plan.planId || confirmation.version !== plan.version || confirmation.planSha256 !== plan.planSha256
-    || canonical(confirmation.reviewer) !== canonical(plan.creator)) conflict('The confirmation does not match its immutable plan.');
-  return confirmation;
+  return textPlan(validateAnyPlan(raw));
 }
 function validateExecution(plan: PacketPlan, raw: unknown) {
-  const execution = UspPacketPlanExecutionSchema.parse(raw), packet = execution.packet;
-  const included = plan.entries.filter(e => e.state === 'included').map(e => e.selection.pointer);
-  const omissions = plan.entries.filter(e => e.state === 'omitted_optional').map(e => ({ entrySha256: e.entrySha256, reasonCode: e.reasonCode! }));
-  if (execution.planId !== plan.planId || execution.version !== plan.version
-    || canonical(packet.target) !== canonical(plan.input.target) || canonical(packet.scope) !== canonical(plan.input.scope)
-    || packet.format !== plan.input.format || packet.status !== 'complete' || packet.unavailable.length
-    || canonical(packet.included) !== canonical(included) || canonical(execution.omissions) !== canonical(omissions))
-    conflict('The execution does not match its immutable selection.');
-  return execution;
+  return UspTextPacketPlanExecutionSchema.parse(validateAnyExecution(plan,raw));
 }
 async function loadTx(client: PoolClient, planId: string, version: number) {
-  const row = (await client.query('SELECT body FROM usp_packet_plans WHERE id=$1 AND version=$2', [planId, version])).rows[0]
-    ?? notFound('The exact packet plan version is unavailable.');
-  const plan = validatePlan(row.body);
-  if (plan.planId !== planId || plan.version !== version) conflict('The stored plan version changed.');
-  return plan;
+  return textPlan(await loadPlanTx(client,planId,version));
 }
 async function locksTx(client: PoolClient, siteId: string, planId?: string) {
   await lockDeclarationSiteTx(client, siteId);
   if (planId) await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`packet-plan:${planId}`]);
-}
-async function liveTx(client: PoolClient, expiresAt: string) {
-  if (!(await client.query('SELECT clock_timestamp() < $1::timestamptz AS live', [expiresAt])).rows[0]?.live)
-    conflict('The unexecuted packet plan expired.');
-}
-async function headTx(client: PoolClient, plan: PacketPlan) {
-  const row = (await client.query('SELECT max(version) AS version FROM usp_packet_plans WHERE id=$1', [plan.planId])).rows[0];
-  if (Number(row?.version) !== plan.version) conflict('A newer immutable plan version exists.');
-}
-async function saveReceiptTx(client: PoolClient, ctx: RequestContext, siteId: string,
-  operation: string, requestKey: string, hash: string, body: object) {
-  await client.query(`INSERT INTO usp_command_receipts(id,subject,scope_key,operation,request_key,command_sha256,body)
-    VALUES($1,$2,$3,$4,$5,$6,$7)`, [randomUUID(), ctx.principal.subject, siteId, operation, requestKey, hash, body]);
 }
 async function planVersionTx(client: PoolClient, ctx: RequestContext, input: PacketPlanInput,
   planId: string, version: number, io: PacketPlanIo, shared?: SharedAuthority) {
@@ -88,7 +56,7 @@ async function planVersionTx(client: PoolClient, ctx: RequestContext, input: Pac
     creator: ctx.principal, accessViewId: ctx.accessViewId, policyVersion: ctx.policyVersion,
     targetBodySha256: assessment.targetBodySha256, targetLabel: assessment.targetLabel,
     entries: assessment.entries, requiredContext: assessment.requiredContext, createdAt: new Date().toISOString() };
-  const plan = UspPacketPlanSchema.parse({ ...body, planSha256: fingerprint(body) });
+  const plan = UspTextPacketPlanSchema.parse({ ...body, planSha256: fingerprint(body) });
   await authorizePlanTx(client, ctx, plan);
   await liveTx(client, input.expiresAt);
   await client.query(`INSERT INTO usp_packet_plans(id,version,site_id,manifest_id,subject,body)
@@ -98,11 +66,13 @@ async function planVersionTx(client: PoolClient, ctx: RequestContext, input: Pac
 export async function createPacketPlan(ctx: RequestContext, raw: unknown, io: PacketPlanIo = storage) {
   assertLocalUsp(ctx);
   const command = UspCreatePacketPlanSchema.parse(raw), hash = fingerprint(command), operation = 'packet_plan_create';
+  if(command.input.format==='pdf')return createPdfPacketPlan(ctx,command,io.pdf);
+  const input=command.input;
   return withPlanAuthority(ctx, async (client, shared) => {
     await locksTx(client, command.input.scope.scopeId);
     const replay = await requestReceiptTx(client, ctx, command.input.scope.scopeId, operation, command.guard.requestKey, hash);
     if (replay) { const plan = validatePlan(replay); await authorizePlanTx(client, ctx, plan); return plan; }
-    const plan = await planVersionTx(client, ctx, command.input, randomUUID(), 1, io, shared);
+    const plan = await planVersionTx(client, ctx, input, randomUUID(), 1, io, shared);
     await saveReceiptTx(client, ctx, command.input.scope.scopeId, operation, command.guard.requestKey, hash, plan);
     await appendUspOutboxTx(client, `packet-plan:${plan.planId}`, { type: 'packet.plan.created', scope: plan.input.scope,
       planId: plan.planId, version: plan.version, planSha256: plan.planSha256, correlationId: ctx.requestId });
@@ -112,9 +82,13 @@ export async function createPacketPlan(ctx: RequestContext, raw: unknown, io: Pa
 export async function revisePacketPlan(ctx: RequestContext, raw: unknown, io: PacketPlanIo = storage) {
   assertLocalUsp(ctx);
   const command = UspRevisePacketPlanSchema.parse(raw), hash = fingerprint(command), operation = 'packet_plan_revise';
+  const stored=await transaction(client=>loadPlanTx(client,command.planId,command.guard.expectedVersion));
+  if(isPdfPlan(stored))return revisePdfPacketPlan(ctx,command,io.pdf);
+  if(command.input.format==='pdf')throw new AppError(422,'PACKET_PLAN_KIND','Create a separate PDF plan.');
+  const input=command.input;
   return withPlanAuthority(ctx, async (client, shared) => {
     const old = await loadTx(client, command.planId, command.guard.expectedVersion);
-    if (!equalTarget(old, command.input) || old.input.scope.scopeId !== command.input.scope.scopeId)
+    if (!equalTarget(old, input) || old.input.scope.scopeId !== input.scope.scopeId)
       throw new AppError(422, 'PACKET_PLAN_RETARGET', 'Create a separate plan for another exact target.');
     await locksTx(client, old.input.scope.scopeId, old.planId);
     const replay = await requestReceiptTx(client, ctx, old.input.scope.scopeId, operation, command.guard.requestKey, hash);
@@ -122,7 +96,7 @@ export async function revisePacketPlan(ctx: RequestContext, raw: unknown, io: Pa
     await authorizePlanTx(client, ctx, old);
     if (command.guard.expectedManifestId !== old.input.scope.manifestId) conflict('The revision guard names another snapshot.');
     await headTx(client, old);
-    const plan = await planVersionTx(client, ctx, command.input, old.planId, old.version + 1, io, shared);
+    const plan = await planVersionTx(client, ctx, input, old.planId, old.version + 1, io, shared);
     await saveReceiptTx(client, ctx, old.input.scope.scopeId, operation, command.guard.requestKey, hash, plan);
     await appendUspOutboxTx(client, `packet-plan:${plan.planId}`, { type: 'packet.plan.revised', scope: plan.input.scope,
       planId: plan.planId, version: plan.version, planSha256: plan.planSha256, correlationId: ctx.requestId });
@@ -133,6 +107,8 @@ function equalTarget(plan: PacketPlan, input: PacketPlanInput) { return canonica
 export async function readPacketPlan(ctx: RequestContext, raw: unknown) {
   assertLocalUsp(ctx);
   const command = UspReadPacketPlanSchema.parse(raw);
+  const stored=await transaction(client=>loadPlanTx(client,command.planId,command.version));
+  if(isPdfPlan(stored))return readPdfPacketPlan(ctx,command);
   return transaction(async client => {
     const plan = await loadTx(client, command.planId, command.version);
     await protectPlanDisclosureTx(client, ctx, plan);
@@ -151,6 +127,8 @@ export async function readPacketPlan(ctx: RequestContext, raw: unknown) {
 export async function confirmPacketPlan(ctx: RequestContext, raw: unknown, io: PacketPlanIo = storage) {
   assertLocalUsp(ctx);
   const command = UspConfirmPacketPlanSchema.parse(raw), hash = fingerprint(command), operation = 'packet_plan_confirm';
+  const stored=await transaction(client=>loadPlanTx(client,command.planId,command.version));
+  if(isPdfPlan(stored))return confirmPdfPacketPlan(ctx,command);
   return withPlanAuthority(ctx, async (client, shared) => {
     const plan = await loadTx(client, command.planId, command.version);
     await locksTx(client, plan.input.scope.scopeId, plan.planId);
@@ -181,6 +159,8 @@ export async function confirmPacketPlan(ctx: RequestContext, raw: unknown, io: P
 export async function executePacketPlan(ctx: RequestContext, raw: unknown, io: PacketPlanIo = storage) {
   assertLocalUsp(ctx);
   const command = UspExecutePacketPlanSchema.parse(raw), hash = fingerprint(command), operation = 'packet_plan_execute';
+  const stored=await transaction(client=>loadPlanTx(client,command.planId,command.version));
+  if(isPdfPlan(stored))return executePdfPacketPlan(ctx,command,io.pdf);
   return withPlanAuthority(ctx, async (client, shared) => {
     const plan = await loadTx(client, command.planId, command.version);
     await locksTx(client, plan.input.scope.scopeId, plan.planId);
@@ -209,7 +189,7 @@ export async function executePacketPlan(ctx: RequestContext, raw: unknown, io: P
     await authorizePlanTx(client, ctx, plan); await liveTx(client, plan.input.expiresAt);
     const packet = await registerPacket0Tx(client, ctx, { scope: plan.input.scope, target: plan.input.target,
       evidence: final.lines.map(l => l.pointer), format: plan.input.format, guard: command.guard }, final.lines, artifact, hash);
-    const result = UspPacketPlanExecutionSchema.parse({ planId: plan.planId, version: plan.version,
+    const result = UspTextPacketPlanExecutionSchema.parse({ planId: plan.planId, version: plan.version,
       confirmationId: confirmation.confirmationId, packet, omissions: plan.entries.filter(e => e.state === 'omitted_optional')
         .map(e => ({ entrySha256: e.entrySha256, reasonCode: e.reasonCode! })) });
     await client.query(`INSERT INTO usp_packet_plan_executions(plan_id,version,confirmation_id,packet_id,body) VALUES($1,$2,$3,$4,$5)`,
