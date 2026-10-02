@@ -203,5 +203,10 @@
   "teacherAccess": "train-only after this freeze; schema and inventory metadata are allowed",
   "labelPolicy": "Teacher output provisional supervision. Development/evaluation truth is source-supported annotation independent of teacher/student output. Foreign development/evaluation stay test_only in original geography.",
   "permissionPolicy": "Public local development experiment user-authorized on 30 September and ML-DISTILL-01; source-specific reuse/training/redistribution launch clearance remains unconfirmed where recorded. Sarvam-derived outputs excluded.",
-  "qualification": "tiny-seed experimental source-native feasibility only; canonical matching and broad generalization not_assessed"
+  "qualification": "tiny-seed experimental source-native feasibility only; canonical matching and broad generalization not_assessed",
+  "hashConvention": {
+    "schemaSha256": "SHA-256 of canonical LF bytes (Git blob); checkout CRLF is normalized only for this code/schema pin",
+    "sourceSha256": "SHA-256 of unchanged original bytes, no normalization",
+    "freezeDigest": "Recipients pin exact immutable Git blob or copied bytes and record which; do not rewrite historical receipts"
+  }
 }
