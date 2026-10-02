@@ -24047,7 +24047,7 @@
             }
           }
         },
-        "summary": "Generate a private one-page summary from an executed confirmed text/CSV plan",
+        "summary": "Generate a private one-page summary linked to an executed confirmed text/CSV or one-region PDF plan",
         "tags": [
           "USP private exact-revision property cards"
         ],
