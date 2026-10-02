@@ -24277,6 +24277,76 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/packets/sources/{sourceId}/pages/{page}/region": {
+      "post": {
+        "operationId": "POST_api_v1_usp_packets_sources_sourceId_pages_page_region",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_packets_sources_sourceId_pages_page_region_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "description": "Canonical result",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Extract one acknowledged private source crop; property applicability remains unassessed",
+        "tags": [
+          "Private packet region prerequisite"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/packet-region.controller.ts",
+        "x-batch": "PACK1-CROP-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/evidence/document-association/preview": {
       "post": {
         "operationId": "POST_api_v1_usp_evidence_document_association_preview",
@@ -187742,6 +187812,187 @@
         "required": [
           "data",
           "meta"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_packets_sources_sourceId_pages_page_region_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "string",
+            "pattern": "^(0|[1-9]\\d*)$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "private_source_preview"
+            ]
+          },
+          "selection": {
+            "type": "object",
+            "properties": {
+              "frame": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "pdf_display_page_top_left_points"
+                    ]
+                  },
+                  "rotation": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 359
+                  },
+                  "width": {
+                    "type": "number",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 10000000
+                  },
+                  "height": {
+                    "type": "number",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 10000000
+                  }
+                },
+                "required": [
+                  "kind",
+                  "rotation",
+                  "width",
+                  "height"
+                ],
+                "additionalProperties": false
+              },
+              "mediaBox": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": -10000000,
+                      "maximum": 10000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -10000000,
+                      "maximum": 10000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -10000000,
+                      "maximum": 10000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -10000000,
+                      "maximum": 10000000
+                    }
+                  ]
+                },
+                "minItems": 4,
+                "maxItems": 4
+              },
+              "cropBox": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": -10000000,
+                      "maximum": 10000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -10000000,
+                      "maximum": 10000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -10000000,
+                      "maximum": 10000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -10000000,
+                      "maximum": 10000000
+                    }
+                  ]
+                },
+                "minItems": 4,
+                "maxItems": 4
+              },
+              "boxConvention": {
+                "type": "string",
+                "enum": [
+                  "pymupdf_page_rectangles/1"
+                ]
+              },
+              "coordinates": {
+                "type": "string",
+                "enum": [
+                  "displayed_cropbox_normalized_top_left/1"
+                ]
+              },
+              "region": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  ]
+                },
+                "minItems": 4,
+                "maxItems": 4
+              },
+              "selectionAcknowledged": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              }
+            },
+            "required": [
+              "frame",
+              "mediaBox",
+              "cropBox",
+              "boxConvention",
+              "coordinates",
+              "region",
+              "selectionAcknowledged"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "revision",
+          "sha256",
+          "purpose",
+          "selection"
         ],
         "additionalProperties": false
       },
