@@ -14251,7 +14251,7 @@
             }
           }
         },
-        "summary": "Amend native/OCR/IFC citations or explicitly confirm an IFC building/floor identity; spaces support citation attachment only",
+        "summary": "Amend native/OCR/IFC or validated original-region citations; region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity",
         "tags": [
           "registry"
         ],
@@ -14447,7 +14447,7 @@
             }
           }
         },
-        "summary": "Read exact native/OCR/IFC citations through current private source and draft authority",
+        "summary": "Read exact native/OCR/IFC and original-region citations through current private source and draft authority",
         "tags": [
           "registry"
         ],
@@ -76457,6 +76457,758 @@
                         "ifc"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-document-region-citation/1"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "sourceBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 8
+                        },
+                        "region": {
+                          "type": "object",
+                          "properties": {
+                            "frame": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pdf_display_page_top_left_points"
+                                  ]
+                                },
+                                "rotation": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 359
+                                },
+                                "width": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                },
+                                "height": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "rotation",
+                                "width",
+                                "height"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "mediaBox": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "cropBox": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "boxConvention": {
+                              "type": "string",
+                              "enum": [
+                                "pymupdf_page_rectangles/1"
+                              ]
+                            },
+                            "coordinates": {
+                              "type": "string",
+                              "enum": [
+                                "displayed_cropbox_normalized_top_left/1"
+                              ]
+                            },
+                            "region": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "selectionAcknowledged": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            }
+                          },
+                          "required": [
+                            "frame",
+                            "mediaBox",
+                            "cropBox",
+                            "boxConvention",
+                            "coordinates",
+                            "region",
+                            "selectionAcknowledged"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "purpose": {
+                          "type": "string",
+                          "enum": [
+                            "record_evidence"
+                          ]
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "authoritySha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "validation": {
+                          "type": "object",
+                          "properties": {
+                            "version": {
+                              "type": "string",
+                              "enum": [
+                                "packet-region-local/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "page": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 8
+                            },
+                            "selection": {
+                              "type": "object",
+                              "properties": {
+                                "frame": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "pdf_display_page_top_left_points"
+                                      ]
+                                    },
+                                    "rotation": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 359
+                                    },
+                                    "width": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 10000000
+                                    },
+                                    "height": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 10000000
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "rotation",
+                                    "width",
+                                    "height"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "mediaBox": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "cropBox": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "boxConvention": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pymupdf_page_rectangles/1"
+                                  ]
+                                },
+                                "coordinates": {
+                                  "type": "string",
+                                  "enum": [
+                                    "displayed_cropbox_normalized_top_left/1"
+                                  ]
+                                },
+                                "region": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "selectionAcknowledged": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    true
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "frame",
+                                "mediaBox",
+                                "cropBox",
+                                "boxConvention",
+                                "coordinates",
+                                "region",
+                                "selectionAcknowledged"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "recipeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "renderer": {
+                              "type": "object",
+                              "properties": {
+                                "pypdfium2": {
+                                  "type": "string",
+                                  "enum": [
+                                    "5.13.0"
+                                  ]
+                                },
+                                "pdfium": {
+                                  "type": "string",
+                                  "enum": [
+                                    "153.0.7999.0"
+                                  ]
+                                },
+                                "pymupdf": {
+                                  "type": "string",
+                                  "enum": [
+                                    "1.25.5"
+                                  ]
+                                },
+                                "pillow": {
+                                  "type": "string",
+                                  "enum": [
+                                    "12.3.0"
+                                  ]
+                                },
+                                "pdfiumSha256": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "pypdfium2",
+                                "pdfium",
+                                "pymupdf",
+                                "pillow",
+                                "pdfiumSha256"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "transform": {
+                              "type": "object",
+                              "properties": {
+                                "canvasPixels": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 43200
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 43200
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "pixelRegion": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "pixelToDisplay": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "includedNormalizedRegion": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "rounding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inward_complete_pixels/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "canvasPixels",
+                                "pixelRegion",
+                                "pixelToDisplay",
+                                "includedNormalizedRegion",
+                                "rounding"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "output": {
+                              "type": "object",
+                              "properties": {
+                                "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "bytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 8388608
+                                },
+                                "pixels": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "png"
+                                  ]
+                                },
+                                "metadataPolicy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fresh_rgb_pixels_only/1"
+                                  ]
+                                },
+                                "annotations": {
+                                  "type": "string",
+                                  "enum": [
+                                    "excluded"
+                                  ]
+                                },
+                                "applicability": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "sha256",
+                                "bytes",
+                                "pixels",
+                                "format",
+                                "metadataPolicy",
+                                "annotations",
+                                "applicability"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "version",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "page",
+                            "selection",
+                            "recipeSha256",
+                            "renderer",
+                            "transform",
+                            "output"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "applicability": {
+                          "type": "string",
+                          "enum": [
+                            "explicit_officer_inclusion; effective_after_canonical_commit"
+                          ]
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "id",
+                        "document",
+                        "page",
+                        "region",
+                        "purpose",
+                        "target",
+                        "selection",
+                        "authoritySha256",
+                        "validation",
+                        "applicability",
+                        "associationState",
+                        "qualification"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -86525,6 +87277,758 @@
                         "ifc"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-document-region-citation/1"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "sourceBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 8
+                        },
+                        "region": {
+                          "type": "object",
+                          "properties": {
+                            "frame": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pdf_display_page_top_left_points"
+                                  ]
+                                },
+                                "rotation": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 359
+                                },
+                                "width": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                },
+                                "height": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "rotation",
+                                "width",
+                                "height"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "mediaBox": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "cropBox": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "boxConvention": {
+                              "type": "string",
+                              "enum": [
+                                "pymupdf_page_rectangles/1"
+                              ]
+                            },
+                            "coordinates": {
+                              "type": "string",
+                              "enum": [
+                                "displayed_cropbox_normalized_top_left/1"
+                              ]
+                            },
+                            "region": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "selectionAcknowledged": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            }
+                          },
+                          "required": [
+                            "frame",
+                            "mediaBox",
+                            "cropBox",
+                            "boxConvention",
+                            "coordinates",
+                            "region",
+                            "selectionAcknowledged"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "purpose": {
+                          "type": "string",
+                          "enum": [
+                            "record_evidence"
+                          ]
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "authoritySha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "validation": {
+                          "type": "object",
+                          "properties": {
+                            "version": {
+                              "type": "string",
+                              "enum": [
+                                "packet-region-local/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "page": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 8
+                            },
+                            "selection": {
+                              "type": "object",
+                              "properties": {
+                                "frame": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "pdf_display_page_top_left_points"
+                                      ]
+                                    },
+                                    "rotation": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 359
+                                    },
+                                    "width": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 10000000
+                                    },
+                                    "height": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 10000000
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "rotation",
+                                    "width",
+                                    "height"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "mediaBox": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "cropBox": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "boxConvention": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pymupdf_page_rectangles/1"
+                                  ]
+                                },
+                                "coordinates": {
+                                  "type": "string",
+                                  "enum": [
+                                    "displayed_cropbox_normalized_top_left/1"
+                                  ]
+                                },
+                                "region": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "selectionAcknowledged": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    true
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "frame",
+                                "mediaBox",
+                                "cropBox",
+                                "boxConvention",
+                                "coordinates",
+                                "region",
+                                "selectionAcknowledged"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "recipeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "renderer": {
+                              "type": "object",
+                              "properties": {
+                                "pypdfium2": {
+                                  "type": "string",
+                                  "enum": [
+                                    "5.13.0"
+                                  ]
+                                },
+                                "pdfium": {
+                                  "type": "string",
+                                  "enum": [
+                                    "153.0.7999.0"
+                                  ]
+                                },
+                                "pymupdf": {
+                                  "type": "string",
+                                  "enum": [
+                                    "1.25.5"
+                                  ]
+                                },
+                                "pillow": {
+                                  "type": "string",
+                                  "enum": [
+                                    "12.3.0"
+                                  ]
+                                },
+                                "pdfiumSha256": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "pypdfium2",
+                                "pdfium",
+                                "pymupdf",
+                                "pillow",
+                                "pdfiumSha256"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "transform": {
+                              "type": "object",
+                              "properties": {
+                                "canvasPixels": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 43200
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 43200
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "pixelRegion": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "pixelToDisplay": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "includedNormalizedRegion": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "rounding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inward_complete_pixels/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "canvasPixels",
+                                "pixelRegion",
+                                "pixelToDisplay",
+                                "includedNormalizedRegion",
+                                "rounding"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "output": {
+                              "type": "object",
+                              "properties": {
+                                "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "bytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 8388608
+                                },
+                                "pixels": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "png"
+                                  ]
+                                },
+                                "metadataPolicy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fresh_rgb_pixels_only/1"
+                                  ]
+                                },
+                                "annotations": {
+                                  "type": "string",
+                                  "enum": [
+                                    "excluded"
+                                  ]
+                                },
+                                "applicability": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "sha256",
+                                "bytes",
+                                "pixels",
+                                "format",
+                                "metadataPolicy",
+                                "annotations",
+                                "applicability"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "version",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "page",
+                            "selection",
+                            "recipeSha256",
+                            "renderer",
+                            "transform",
+                            "output"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "applicability": {
+                          "type": "string",
+                          "enum": [
+                            "explicit_officer_inclusion; effective_after_canonical_commit"
+                          ]
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "id",
+                        "document",
+                        "page",
+                        "region",
+                        "purpose",
+                        "target",
+                        "selection",
+                        "authoritySha256",
+                        "validation",
+                        "applicability",
+                        "associationState",
+                        "qualification"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -88340,6 +89844,229 @@
             ],
             "additionalProperties": false
           },
+          "addRegion": {
+            "type": "object",
+            "properties": {
+              "document": {
+                "type": "object",
+                "properties": {
+                  "caseId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "caseRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "sourceBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 16777216
+                  }
+                },
+                "required": [
+                  "caseId",
+                  "caseRevision",
+                  "sourceId",
+                  "sourceRevision",
+                  "sourceSha256",
+                  "sourceBytes"
+                ],
+                "additionalProperties": false
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8
+              },
+              "region": {
+                "type": "object",
+                "properties": {
+                  "frame": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "pdf_display_page_top_left_points"
+                        ]
+                      },
+                      "rotation": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 359
+                      },
+                      "width": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      },
+                      "height": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "rotation",
+                      "width",
+                      "height"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "mediaBox": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": -10000000,
+                          "maximum": 10000000
+                        },
+                        {
+                          "type": "number",
+                          "minimum": -10000000,
+                          "maximum": 10000000
+                        },
+                        {
+                          "type": "number",
+                          "minimum": -10000000,
+                          "maximum": 10000000
+                        },
+                        {
+                          "type": "number",
+                          "minimum": -10000000,
+                          "maximum": 10000000
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "cropBox": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": -10000000,
+                          "maximum": 10000000
+                        },
+                        {
+                          "type": "number",
+                          "minimum": -10000000,
+                          "maximum": 10000000
+                        },
+                        {
+                          "type": "number",
+                          "minimum": -10000000,
+                          "maximum": 10000000
+                        },
+                        {
+                          "type": "number",
+                          "minimum": -10000000,
+                          "maximum": 10000000
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "boxConvention": {
+                    "type": "string",
+                    "enum": [
+                      "pymupdf_page_rectangles/1"
+                    ]
+                  },
+                  "coordinates": {
+                    "type": "string",
+                    "enum": [
+                      "displayed_cropbox_normalized_top_left/1"
+                    ]
+                  },
+                  "region": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "selectionAcknowledged": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                },
+                "required": [
+                  "frame",
+                  "mediaBox",
+                  "cropBox",
+                  "boxConvention",
+                  "coordinates",
+                  "region",
+                  "selectionAcknowledged"
+                ],
+                "additionalProperties": false
+              },
+              "purpose": {
+                "type": "string",
+                "enum": [
+                  "record_evidence"
+                ]
+              }
+            },
+            "required": [
+              "document",
+              "page",
+              "region",
+              "purpose"
+            ],
+            "additionalProperties": false
+          },
           "assertIFCIdentity": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
@@ -89847,6 +91574,767 @@
                   "required": [
                     "pin",
                     "record"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "pin": {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-document-region-citation/1"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "sourceBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 8
+                        },
+                        "region": {
+                          "type": "object",
+                          "properties": {
+                            "frame": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pdf_display_page_top_left_points"
+                                  ]
+                                },
+                                "rotation": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 359
+                                },
+                                "width": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                },
+                                "height": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "rotation",
+                                "width",
+                                "height"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "mediaBox": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "cropBox": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": -10000000,
+                                    "maximum": 10000000
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "boxConvention": {
+                              "type": "string",
+                              "enum": [
+                                "pymupdf_page_rectangles/1"
+                              ]
+                            },
+                            "coordinates": {
+                              "type": "string",
+                              "enum": [
+                                "displayed_cropbox_normalized_top_left/1"
+                              ]
+                            },
+                            "region": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "selectionAcknowledged": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            }
+                          },
+                          "required": [
+                            "frame",
+                            "mediaBox",
+                            "cropBox",
+                            "boxConvention",
+                            "coordinates",
+                            "region",
+                            "selectionAcknowledged"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "purpose": {
+                          "type": "string",
+                          "enum": [
+                            "record_evidence"
+                          ]
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "authoritySha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "validation": {
+                          "type": "object",
+                          "properties": {
+                            "version": {
+                              "type": "string",
+                              "enum": [
+                                "packet-region-local/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "page": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 8
+                            },
+                            "selection": {
+                              "type": "object",
+                              "properties": {
+                                "frame": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "pdf_display_page_top_left_points"
+                                      ]
+                                    },
+                                    "rotation": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 359
+                                    },
+                                    "width": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 10000000
+                                    },
+                                    "height": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 10000000
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "rotation",
+                                    "width",
+                                    "height"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "mediaBox": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "cropBox": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": -10000000,
+                                        "maximum": 10000000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "boxConvention": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pymupdf_page_rectangles/1"
+                                  ]
+                                },
+                                "coordinates": {
+                                  "type": "string",
+                                  "enum": [
+                                    "displayed_cropbox_normalized_top_left/1"
+                                  ]
+                                },
+                                "region": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "selectionAcknowledged": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    true
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "frame",
+                                "mediaBox",
+                                "cropBox",
+                                "boxConvention",
+                                "coordinates",
+                                "region",
+                                "selectionAcknowledged"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "recipeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "renderer": {
+                              "type": "object",
+                              "properties": {
+                                "pypdfium2": {
+                                  "type": "string",
+                                  "enum": [
+                                    "5.13.0"
+                                  ]
+                                },
+                                "pdfium": {
+                                  "type": "string",
+                                  "enum": [
+                                    "153.0.7999.0"
+                                  ]
+                                },
+                                "pymupdf": {
+                                  "type": "string",
+                                  "enum": [
+                                    "1.25.5"
+                                  ]
+                                },
+                                "pillow": {
+                                  "type": "string",
+                                  "enum": [
+                                    "12.3.0"
+                                  ]
+                                },
+                                "pdfiumSha256": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "pypdfium2",
+                                "pdfium",
+                                "pymupdf",
+                                "pillow",
+                                "pdfiumSha256"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "transform": {
+                              "type": "object",
+                              "properties": {
+                                "canvasPixels": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 43200
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 43200
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "pixelRegion": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "pixelToDisplay": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "includedNormalizedRegion": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "rounding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inward_complete_pixels/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "canvasPixels",
+                                "pixelRegion",
+                                "pixelToDisplay",
+                                "includedNormalizedRegion",
+                                "rounding"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "output": {
+                              "type": "object",
+                              "properties": {
+                                "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "bytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 8388608
+                                },
+                                "pixels": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "png"
+                                  ]
+                                },
+                                "metadataPolicy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fresh_rgb_pixels_only/1"
+                                  ]
+                                },
+                                "annotations": {
+                                  "type": "string",
+                                  "enum": [
+                                    "excluded"
+                                  ]
+                                },
+                                "applicability": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "sha256",
+                                "bytes",
+                                "pixels",
+                                "format",
+                                "metadataPolicy",
+                                "annotations",
+                                "applicability"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "version",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "page",
+                            "selection",
+                            "recipeSha256",
+                            "renderer",
+                            "transform",
+                            "output"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "applicability": {
+                          "type": "string",
+                          "enum": [
+                            "explicit_officer_inclusion; effective_after_canonical_commit"
+                          ]
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "id",
+                        "document",
+                        "page",
+                        "region",
+                        "purpose",
+                        "target",
+                        "selection",
+                        "authoritySha256",
+                        "validation",
+                        "applicability",
+                        "associationState",
+                        "qualification"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "pin"
                   ],
                   "additionalProperties": false
                 }

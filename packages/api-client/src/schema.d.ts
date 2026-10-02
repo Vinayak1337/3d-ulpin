@@ -1155,10 +1155,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read exact native/OCR/IFC citations through current private source and draft authority */
+        /** Read exact native/OCR/IFC and original-region citations through current private source and draft authority */
         get: operations["GET_api_v1_registry_drafts_draftId_document_citations"];
         put?: never;
-        /** Amend native/OCR/IFC citations or explicitly confirm an IFC building/floor identity; spaces support citation attachment only */
+        /** Amend native/OCR/IFC or validated original-region citations; region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity */
         post: operations["POST_api_v1_registry_drafts_draftId_document_citations"];
         delete?: never;
         options?: never;
@@ -9704,6 +9704,119 @@ export interface components {
                         /** @enum {string} */
                         identifierScope: "source_native_only; not_canonical_registry_ids";
                     };
+                } | {
+                    /** @enum {string} */
+                    version: "registry-document-region-citation/1";
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        sourceBytes: number;
+                    };
+                    page: number;
+                    region: {
+                        frame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            rotation: number;
+                            width: number;
+                            height: number;
+                        };
+                        mediaBox: (number)[];
+                        cropBox: (number)[];
+                        /** @enum {string} */
+                        boxConvention: "pymupdf_page_rectangles/1";
+                        /** @enum {string} */
+                        coordinates: "displayed_cropbox_normalized_top_left/1";
+                        region: (number)[];
+                        /** @enum {boolean} */
+                        selectionAcknowledged: true;
+                    };
+                    /** @enum {string} */
+                    purpose: "record_evidence";
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    authoritySha256: string;
+                    validation: {
+                        /** @enum {string} */
+                        version: "packet-region-local/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        page: number;
+                        selection: {
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            mediaBox: (number)[];
+                            cropBox: (number)[];
+                            /** @enum {string} */
+                            boxConvention: "pymupdf_page_rectangles/1";
+                            /** @enum {string} */
+                            coordinates: "displayed_cropbox_normalized_top_left/1";
+                            region: (number)[];
+                            /** @enum {boolean} */
+                            selectionAcknowledged: true;
+                        };
+                        recipeSha256: string;
+                        renderer: {
+                            /** @enum {string} */
+                            pypdfium2: "5.13.0";
+                            /** @enum {string} */
+                            pdfium: "153.0.7999.0";
+                            /** @enum {string} */
+                            pymupdf: "1.25.5";
+                            /** @enum {string} */
+                            pillow: "12.3.0";
+                            /** @enum {string} */
+                            pdfiumSha256: "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e";
+                        };
+                        transform: {
+                            canvasPixels: (number)[];
+                            pixelRegion: (number)[];
+                            pixelToDisplay: (number)[];
+                            includedNormalizedRegion: (number)[];
+                            /** @enum {string} */
+                            rounding: "inward_complete_pixels/1";
+                        };
+                        output: {
+                            sha256: string;
+                            bytes: number;
+                            pixels: (number)[];
+                            /** @enum {string} */
+                            format: "png";
+                            /** @enum {string} */
+                            metadataPolicy: "fresh_rgb_pixels_only/1";
+                            /** @enum {string} */
+                            annotations: "excluded";
+                            /** @enum {string} */
+                            applicability: "not_assessed";
+                        };
+                    };
+                    /** @enum {string} */
+                    applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -11710,6 +11823,119 @@ export interface components {
                         /** @enum {string} */
                         identifierScope: "source_native_only; not_canonical_registry_ids";
                     };
+                } | {
+                    /** @enum {string} */
+                    version: "registry-document-region-citation/1";
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        sourceBytes: number;
+                    };
+                    page: number;
+                    region: {
+                        frame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            rotation: number;
+                            width: number;
+                            height: number;
+                        };
+                        mediaBox: (number)[];
+                        cropBox: (number)[];
+                        /** @enum {string} */
+                        boxConvention: "pymupdf_page_rectangles/1";
+                        /** @enum {string} */
+                        coordinates: "displayed_cropbox_normalized_top_left/1";
+                        region: (number)[];
+                        /** @enum {boolean} */
+                        selectionAcknowledged: true;
+                    };
+                    /** @enum {string} */
+                    purpose: "record_evidence";
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    authoritySha256: string;
+                    validation: {
+                        /** @enum {string} */
+                        version: "packet-region-local/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        page: number;
+                        selection: {
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            mediaBox: (number)[];
+                            cropBox: (number)[];
+                            /** @enum {string} */
+                            boxConvention: "pymupdf_page_rectangles/1";
+                            /** @enum {string} */
+                            coordinates: "displayed_cropbox_normalized_top_left/1";
+                            region: (number)[];
+                            /** @enum {boolean} */
+                            selectionAcknowledged: true;
+                        };
+                        recipeSha256: string;
+                        renderer: {
+                            /** @enum {string} */
+                            pypdfium2: "5.13.0";
+                            /** @enum {string} */
+                            pdfium: "153.0.7999.0";
+                            /** @enum {string} */
+                            pymupdf: "1.25.5";
+                            /** @enum {string} */
+                            pillow: "12.3.0";
+                            /** @enum {string} */
+                            pdfiumSha256: "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e";
+                        };
+                        transform: {
+                            canvasPixels: (number)[];
+                            pixelRegion: (number)[];
+                            pixelToDisplay: (number)[];
+                            includedNormalizedRegion: (number)[];
+                            /** @enum {string} */
+                            rounding: "inward_complete_pixels/1";
+                        };
+                        output: {
+                            sha256: string;
+                            bytes: number;
+                            pixels: (number)[];
+                            /** @enum {string} */
+                            format: "png";
+                            /** @enum {string} */
+                            metadataPolicy: "fresh_rgb_pixels_only/1";
+                            /** @enum {string} */
+                            annotations: "excluded";
+                            /** @enum {string} */
+                            applicability: "not_assessed";
+                        };
+                    };
+                    /** @enum {string} */
+                    applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -12059,6 +12285,39 @@ export interface components {
                     })[];
                 };
             };
+            addRegion?: {
+                document: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    sourceBytes: number;
+                };
+                page: number;
+                region: {
+                    frame: {
+                        /** @enum {string} */
+                        kind: "pdf_display_page_top_left_points";
+                        rotation: number;
+                        width: number;
+                        height: number;
+                    };
+                    mediaBox: (number)[];
+                    cropBox: (number)[];
+                    /** @enum {string} */
+                    boxConvention: "pymupdf_page_rectangles/1";
+                    /** @enum {string} */
+                    coordinates: "displayed_cropbox_normalized_top_left/1";
+                    region: (number)[];
+                    /** @enum {boolean} */
+                    selectionAcknowledged: true;
+                };
+                /** @enum {string} */
+                purpose: "record_evidence";
+            };
             assertIFCIdentity?: string;
             /** @default [] */
             remove: string[];
@@ -12376,6 +12635,121 @@ export interface components {
                     attributes: {
                         [key: string]: unknown;
                     };
+                };
+            } | {
+                pin: {
+                    /** @enum {string} */
+                    version: "registry-document-region-citation/1";
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        sourceBytes: number;
+                    };
+                    page: number;
+                    region: {
+                        frame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            rotation: number;
+                            width: number;
+                            height: number;
+                        };
+                        mediaBox: (number)[];
+                        cropBox: (number)[];
+                        /** @enum {string} */
+                        boxConvention: "pymupdf_page_rectangles/1";
+                        /** @enum {string} */
+                        coordinates: "displayed_cropbox_normalized_top_left/1";
+                        region: (number)[];
+                        /** @enum {boolean} */
+                        selectionAcknowledged: true;
+                    };
+                    /** @enum {string} */
+                    purpose: "record_evidence";
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    authoritySha256: string;
+                    validation: {
+                        /** @enum {string} */
+                        version: "packet-region-local/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        page: number;
+                        selection: {
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            mediaBox: (number)[];
+                            cropBox: (number)[];
+                            /** @enum {string} */
+                            boxConvention: "pymupdf_page_rectangles/1";
+                            /** @enum {string} */
+                            coordinates: "displayed_cropbox_normalized_top_left/1";
+                            region: (number)[];
+                            /** @enum {boolean} */
+                            selectionAcknowledged: true;
+                        };
+                        recipeSha256: string;
+                        renderer: {
+                            /** @enum {string} */
+                            pypdfium2: "5.13.0";
+                            /** @enum {string} */
+                            pdfium: "153.0.7999.0";
+                            /** @enum {string} */
+                            pymupdf: "1.25.5";
+                            /** @enum {string} */
+                            pillow: "12.3.0";
+                            /** @enum {string} */
+                            pdfiumSha256: "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e";
+                        };
+                        transform: {
+                            canvasPixels: (number)[];
+                            pixelRegion: (number)[];
+                            pixelToDisplay: (number)[];
+                            includedNormalizedRegion: (number)[];
+                            /** @enum {string} */
+                            rounding: "inward_complete_pixels/1";
+                        };
+                        output: {
+                            sha256: string;
+                            bytes: number;
+                            pixels: (number)[];
+                            /** @enum {string} */
+                            format: "png";
+                            /** @enum {string} */
+                            metadataPolicy: "fresh_rgb_pixels_only/1";
+                            /** @enum {string} */
+                            annotations: "excluded";
+                            /** @enum {string} */
+                            applicability: "not_assessed";
+                        };
+                    };
+                    /** @enum {string} */
+                    applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
                 };
             })[];
             /** @enum {string} */
