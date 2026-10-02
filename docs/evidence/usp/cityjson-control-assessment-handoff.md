@@ -1,5 +1,7 @@
 # REF-CONTROL-01 — native point-control comparison
 
+Lead integration, 2 October: code/handoff cherry-picked as `49b9249b` / `88b429ed`, service/controller registered and root contract exported. OpenAPI/client publication adds one operation/two schemas, totals 229/272; all previous paths and schemas unchanged. Integrated service tests (2), controller test (1), backend/client typechecks and `python scripts/api/check.py` exited 0. Receipt hash and nine Git code/authority/eight source-artifact pins matched. No listener, migration, authentic survey qualification or release pass was added; candidate/unregistered wording below describes the original handoff.
+
 2 October 2026. Code **`bee941b224d65bcbe0b01f63cb9cc0d6cb766f34`** adds a private read-only comparison producer. It returns source-backed point residuals and aggregate metrics, or explicit missing/incompatible reasons. Accuracy, admission, geometry qualification and learning remain `not_assessed`/`unavailable`. No recording or second geometry store is added.
 
 Branch `task/desktop-reference-control-assessment`, worktree `C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin`, accepted base `031696e35fc39583f91fffc05d2f556260bb22b1`. Completed fusion branch remains at `5081c9d0`. Supplied permissions: never/danger-full-access. Requested Sol6.1/xhigh/default-standard; actual model/effort/per-turn tier unexposed. Staging and all shared writers remain read-only.
