@@ -2145,7 +2145,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Assemble private explicitly selected accepted native document/OCR/CityJSON fragments without establishing an association */
+        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC fragments without establishing an association */
         post: operations["POST_api_v1_usp_evidence_source_fusion_context"];
         delete?: never;
         options?: never;
@@ -11796,6 +11796,26 @@ export interface components {
                             resultBytes: number;
                         };
                         itemOrdinals: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "ifc";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        stepIds: number[];
                     })[];
                 };
             };
@@ -31396,6 +31416,26 @@ export interface components {
                     resultBytes: number;
                 };
                 itemOrdinals: number[];
+            } | {
+                /** @enum {string} */
+                kind: "ifc";
+                pin: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    readerSha256: string;
+                    inputSha256: string;
+                    acceptedFence: number;
+                    resultBytes: number;
+                };
+                stepIds: number[];
             })[];
         };
         POST_usp_evidence_source_fusion_context_Response_200_application_json: {
@@ -31703,6 +31743,146 @@ export interface components {
                             }[];
                         };
                     }[];
+                } | {
+                    summary: {
+                        /** @enum {string} */
+                        schemaVersion: "ulpin-native-ifc/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        schema: "IFC2X3" | "IFC4";
+                        entityCount: number;
+                        recordCount: number;
+                        buildingCount: number;
+                        storeyCount: number;
+                        spaceCount: number;
+                        /** @enum {string} */
+                        georeferenceState: "supplied_unqualified" | "missing_or_unqualified";
+                        /** @enum {string} */
+                        inspectionFrame: "source_local";
+                        /** @enum {boolean} */
+                        metadataOnly: true;
+                        /** @enum {string} */
+                        geometry: "unsupported";
+                        /** @enum {string} */
+                        globalPlacement: "not_qualified";
+                        /** @enum {boolean} */
+                        unitConversionApplied: false;
+                        /** @enum {boolean} */
+                        storeysAreLegalUnits: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    source: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    parser: {
+                        [key: string]: unknown;
+                    };
+                    entities: {
+                        pointer: string;
+                        record: {
+                            stepId: number;
+                            entityType: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            locator: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            attributes: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    }[];
+                    relations: {
+                        pointer: string;
+                        record: {
+                            stepId: number;
+                            entityType: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            locator: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            attributes: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    }[];
+                    supportRecords: {
+                        pointer: string;
+                        record: {
+                            stepId: number;
+                            entityType: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            locator: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            attributes: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    }[];
+                    reference: {
+                        projectUnits: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        georeference: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        semantics: {
+                            [key: string]: unknown;
+                        };
+                    };
+                    findings: (string | number | boolean | (null) | unknown[] | {
+                        [key: string]: unknown;
+                    })[];
+                    hierarchy: {
+                        stepId: number;
+                        /** @enum {string} */
+                        parentState: "missing" | "supplied" | "multiple_parents";
+                        parentStepIds: number[];
+                        relationStepIds: number[];
+                    }[];
+                    coverage: {
+                        selectedEntities: number;
+                        availableNativeEntities: number;
+                        /** @enum {string} */
+                        scope: "explicit_entities; incident_relation_literals; referenced_placements; source_units_and_reference_metadata";
+                        /** @enum {string} */
+                        unselectedEntityMetadata: "not_expanded";
+                        /** @enum {string} */
+                        geometry: "unsupported";
+                        /** @enum {string} */
+                        hierarchyQualification: "source_edges_only; not_canonical_relationships";
+                    };
+                    pin: {
+                        caseId: unknown;
+                        caseRevision: number;
+                        sourceId: unknown;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        jobId: unknown;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    kind: "ifc";
                 })[];
                 association: {
                     /** @enum {string} */
@@ -31820,6 +32000,26 @@ export interface components {
                             resultBytes: number;
                         };
                         itemOrdinals: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "ifc";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        stepIds: number[];
                     })[];
                 };
             };
@@ -32154,6 +32354,146 @@ export interface components {
                                 }[];
                             };
                         }[];
+                    } | {
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "ulpin-native-ifc/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            schema: "IFC2X3" | "IFC4";
+                            entityCount: number;
+                            recordCount: number;
+                            buildingCount: number;
+                            storeyCount: number;
+                            spaceCount: number;
+                            /** @enum {string} */
+                            georeferenceState: "supplied_unqualified" | "missing_or_unqualified";
+                            /** @enum {string} */
+                            inspectionFrame: "source_local";
+                            /** @enum {boolean} */
+                            metadataOnly: true;
+                            /** @enum {string} */
+                            geometry: "unsupported";
+                            /** @enum {string} */
+                            globalPlacement: "not_qualified";
+                            /** @enum {boolean} */
+                            unitConversionApplied: false;
+                            /** @enum {boolean} */
+                            storeysAreLegalUnits: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        };
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        source: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        parser: {
+                            [key: string]: unknown;
+                        };
+                        entities: {
+                            pointer: string;
+                            record: {
+                                stepId: number;
+                                entityType: string;
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                locator: {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                attributes: {
+                                    [key: string]: unknown;
+                                };
+                            };
+                        }[];
+                        relations: {
+                            pointer: string;
+                            record: {
+                                stepId: number;
+                                entityType: string;
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                locator: {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                attributes: {
+                                    [key: string]: unknown;
+                                };
+                            };
+                        }[];
+                        supportRecords: {
+                            pointer: string;
+                            record: {
+                                stepId: number;
+                                entityType: string;
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                locator: {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                                attributes: {
+                                    [key: string]: unknown;
+                                };
+                            };
+                        }[];
+                        reference: {
+                            projectUnits: (string | number | boolean | (null) | unknown[] | {
+                                [key: string]: unknown;
+                            })[];
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            georeference: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            semantics: {
+                                [key: string]: unknown;
+                            };
+                        };
+                        findings: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                        hierarchy: {
+                            stepId: number;
+                            /** @enum {string} */
+                            parentState: "missing" | "supplied" | "multiple_parents";
+                            parentStepIds: number[];
+                            relationStepIds: number[];
+                        }[];
+                        coverage: {
+                            selectedEntities: number;
+                            availableNativeEntities: number;
+                            /** @enum {string} */
+                            scope: "explicit_entities; incident_relation_literals; referenced_placements; source_units_and_reference_metadata";
+                            /** @enum {string} */
+                            unselectedEntityMetadata: "not_expanded";
+                            /** @enum {string} */
+                            geometry: "unsupported";
+                            /** @enum {string} */
+                            hierarchyQualification: "source_edges_only; not_canonical_relationships";
+                        };
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        namespace: string;
+                        /** @enum {string} */
+                        sourceSetRole: "operator_selected_fragment";
+                        /** @enum {string} */
+                        kind: "ifc";
                     })[];
                     association: {
                         /** @enum {string} */
@@ -32391,6 +32731,23 @@ export interface components {
                                     resultBytes: number;
                                 };
                                 itemOrdinals: number[];
+                            } | {
+                                /** @enum {string} */
+                                kind: "ifc";
+                                pin: {
+                                    caseId: unknown;
+                                    caseRevision: number;
+                                    sourceId: unknown;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    jobId: unknown;
+                                    resultSha256: string;
+                                    readerSha256: string;
+                                    inputSha256: string;
+                                    acceptedFence: number;
+                                    resultBytes: number;
+                                };
+                                stepIds: number[];
                             })[];
                         };
                     };
@@ -32460,6 +32817,23 @@ export interface components {
                                 resultBytes: number;
                             };
                             itemOrdinals: number[];
+                        } | {
+                            /** @enum {string} */
+                            kind: "ifc";
+                            pin: {
+                                caseId: unknown;
+                                caseRevision: number;
+                                sourceId: unknown;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                jobId: unknown;
+                                resultSha256: string;
+                                readerSha256: string;
+                                inputSha256: string;
+                                acceptedFence: number;
+                                resultBytes: number;
+                            };
+                            stepIds: number[];
                         })[];
                     };
                 };

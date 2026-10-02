@@ -1,5 +1,7 @@
 # FUSION-IFC-01 — selected native IFC context
 
+Lead integration, 2 October: code/handoff cherry-picked as `54f3764a` / `3b339388`. Lead inspected changed projection/authority/consumer boundaries and matched receipt/eight Git code/seven retained source-output pins. Integrated two IFC checks, one existing native/OCR proposal compatibility check, backend/client typechecks and API checker exited 0. Existing endpoint wording and five shared context-containing schemas are updated; counts remain 232 operations/276 schemas. No runtime parser/model/database run or learning/property match is implied. Publication checklist below describes the original handoff, now fulfilled.
+
 2 October 2026. Code **`c7431f8781626602fc70e0a1871846f43dc2b236`**, branch `task/desktop-fusion-ifc-context`, worktree `C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin`, accepted base `d7f0e50828d7e1c9d4d375d22eb358214a8f0310`. Assignment: [PARALLEL_20261002C](../../orchestration/PARALLEL_20261002C.md#fusion-ifc-01--accepted-ifc-metadata-in-combined-context). Prior reference-control branch remains at `cb0f9daa8f76ef799a86d3f5d78fb654320dfbea`. Staging stayed read-only; its later observed head was `81f3c050c3d47d0f4cb02bef0ba7803c7ea7d368`.
 
 ## Delivered

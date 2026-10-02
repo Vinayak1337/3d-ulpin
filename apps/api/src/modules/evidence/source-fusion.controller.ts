@@ -22,7 +22,7 @@ export class SourceFusionController{
   @Post('context')
   @HttpCode(200)
   @ApiOperation({operationId:'POST_api_v1_usp_evidence_source_fusion_context',
-    summary:'Assemble private explicitly selected accepted native document/OCR/CityJSON fragments without establishing an association'})
+    summary:'Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC fragments without establishing an association'})
   @ApiBody({required:true,description:'JSON; maximum 64 KiB of received bytes; 2–8 exact sources and 25 selections total',
     schema:requestApiSchema(SourceFusionRequestSchema)})
   @ApiResponse({status:200,description:'Private bounded context; association remains not_assessed',schema:envelopeSchema(SourceFusionContextSchema),
