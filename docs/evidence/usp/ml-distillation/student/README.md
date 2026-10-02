@@ -1,6 +1,8 @@
 # STUDENT-01 — cited association baseline
 
-Latest checkpoint: [STUDENT-03's loss-memory repair](memory-repair-attempt-v1.md) passed contained loss/gradient equivalence and the original first backward/update. The run was rejected after optimizer step 3 for a recorded Job committed-memory peak above 6 GiB. No adapter, reload or new quality result was accepted.
+Latest checkpoint: [STUDENT-04's unused-cache reclamation](reclamation-attempt-v1.md) passed the state/RNG/next-step control, released unused reserve and completed six updates within bounds. The longest seventh example failed during backward with a CUDA allocation error and recorded Job committed-memory peak above 6 GiB. The fit was rejected; no adapter, reload or new quality result exists. Containment cleanup passed.
+
+Previous checkpoint: [STUDENT-03's loss-memory repair](memory-repair-attempt-v1.md) passed contained loss/gradient equivalence and the original first backward/update. The run was rejected after optimizer step 3 for a recorded Job committed-memory peak above 6 GiB. No adapter, reload or new quality result was accepted.
 
 Subsequent checkpoint: [STUDENT-02's single frozen adapter attempt](adapter-attempt-v1.md) passed teacher/token preflight but failed native allocation during its first backward, with recorded Job committed memory above the 6 GiB cap. Zero updates completed; no adapter/reload or new quality result exists. The baseline record below remains its original historical checkpoint.
 
