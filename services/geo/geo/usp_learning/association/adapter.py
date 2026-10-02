@@ -11,6 +11,7 @@ import time
 
 from .student import SETTINGS, SYSTEM_PROMPT, prompt_messages, run_local
 from .validation import require, strict_json, validate_output
+from .chunked_loss import LOSS_POLICY, checkpointed_head_loss, run_equivalence, supervised_positions
 
 V1_SHA = "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec"
 V2_SHA = "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c"
@@ -161,14 +162,17 @@ def _gpu_runtime(output_dir):
     return torch, check, report
 
 
-def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write):
+def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write, phases):
     require_boundary()
     for row in rows:
         validate_output(row["output"], row["input"], contract, family_freeze, ("train",))
+    phases.sample("before_imports")
     import importlib.metadata as metadata
+    import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from peft import LoraConfig, get_peft_model, get_peft_model_state_dict
     from safetensors.torch import load_file
+    phases.sample("after_imports", torch)
 
     started = time.perf_counter()
     require(metadata.version("peft") == "0.17.1" and metadata.version("accelerate") == "1.10.1", "isolated_dependency_version_drift")
@@ -179,31 +183,47 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
         order = list(range(11)); rng.shuffle(order); orders.append(order)
     proof = {"lengths": lengths, "maximumCombinedTokens": max(row["combinedTokens"] for row in lengths),
              "sequenceLimit": 4096, "truncation": False, "excludedRows": [], "epochOrder": orders,
-             "plannedUpdates": 66, "settings": FIT, "numerics": NUMERICS,
+             "plannedUpdates": 66, "settings": FIT, "numerics": NUMERICS, "lossImplementation": LOSS_POLICY,
              "systemPromptSha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest(), "tokenizationSeconds": time.perf_counter() - started}
     write(output_dir / "token-preflight.json", proof)
     require(proof["maximumCombinedTokens"] <= 4096, "teacher_sequence_exceeds_frozen_4096_bound")
     torch, gpu_check, gpu_report = _gpu_runtime(output_dir)
+    phases.sample("after_cuda_initialization", torch)
+    run_equivalence(torch, output_dir, write, phases)
+    phases.sample("before_model_load", torch)
     load_started = time.perf_counter()
     base = AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
         use_safetensors=True, torch_dtype=torch.float16, attn_implementation="sdpa").to("cuda")
+    phases.sample("after_base_load", torch)
     model = get_peft_model(base, LoraConfig(task_type="CAUSAL_LM", r=8, lora_alpha=16, lora_dropout=0.05,
                                           target_modules=["q_proj", "v_proj"], bias="none"))
     model.config.use_cache = False
     model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
     model.enable_input_require_grads()
+    causal = model.get_base_model()
+    from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM, Qwen2Model
+    require(isinstance(causal, Qwen2ForCausalLM) and isinstance(causal.model, Qwen2Model)
+            and causal is base and not model.active_peft_config.is_prompt_learning, "unexpected_PEFT_Qwen_decoder_route")
+    decoder, head = causal.model, causal.lm_head
+    require(head is causal.get_output_embeddings() and not any(p.requires_grad for p in head.parameters()), "original_lm_head_not_frozen")
+    require(decoder.gradient_checkpointing and all(layer.gradient_checkpointing for layer in decoder.layers),
+            "decoder_gradient_checkpointing_changed")
     trainable = [(name, p) for name, p in model.named_parameters() if p.requires_grad]
     expected = {f"base_model.model.model.layers.{layer}.self_attn.{projection}.lora_{part}.default.weight"
                 for layer in range(24) for projection in ("q_proj", "v_proj") for part in ("A", "B")}
     require({name for name, _ in trainable} == expected and sum(p.numel() for _, p in trainable) == 540672, "unexpected_trainable_parameters")
     require(all(p.dtype == torch.float32 for _, p in trainable), "adapter_master_parameters_must_be_float32")
     frozen = [(name, p) for name, p in model.named_parameters() if not p.requires_grad]
+    phases.sample("after_lora_load", torch, trainableTensors=len(trainable), trainableParameters=sum(p.numel() for _, p in trainable),
+                  originalHeadFrozen=True, decoderRoute="PeftModel.get_base_model().model", decoderCheckpointing=decoder.gradient_checkpointing)
     base_before = _tensor_digest(frozen)
+    write(output_dir / "base-before.json", base_before)
     gpu_check()
     load_seconds = time.perf_counter() - load_started
     optimizer = torch.optim.AdamW([p for _, p in trainable], lr=0.0002, weight_decay=0, betas=(0.9, 0.999), eps=1e-8)
     scaler = torch.amp.GradScaler("cuda", init_scale=128.0, growth_interval=2000)
     model.train()
+    phases.sample("after_optimizer_initialization", torch)
     updates, supervised_tokens, losses = 0, 0, []
     fit_started = time.perf_counter()
     with (output_dir / "fit-progress.jsonl").open("x", encoding="utf-8", newline="\n") as progress:
@@ -212,32 +232,53 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 row, before = encoded[index], time.perf_counter()
                 ids = torch.tensor([row["inputIds"]], dtype=torch.long, device="cuda")
                 labels = torch.tensor([row["labels"]], dtype=torch.long, device="cuda")
-                selected = torch.arange(row["promptTokens"] - 1, ids.shape[1] - 1, device="cuda")
+                positions = supervised_positions(ids.shape[1], row["promptTokens"])
+                selected = torch.tensor(list(positions), dtype=torch.long, device="cuda")
                 target = labels[:, row["promptTokens"]:]
                 require(bool((labels[:, :row["promptTokens"]] == -100).all()) and bool((target >= 0).all()), "assistant_mask_changed")
                 optimizer.zero_grad(set_to_none=True)
+                if updates == 0:
+                    write(output_dir / "first-step-targets.json", {"exampleId": row["exampleId"], "epoch": epoch + 1,
+                        "hiddenPositions": list(positions), "targetTokenPositions": list(range(row["promptTokens"], ids.shape[1])),
+                        "targetTokenIds": row["inputIds"][row["promptTokens"]:], "supervisedDenominator": target.numel(),
+                        "includesEos": row["inputIds"][-1] == tokenizer.eos_token_id,
+                        "chunkSizes": [min(64, len(positions) - start) for start in range(0, len(positions), 64)]})
+                    phases.sample("first_before_decoder", torch, exampleId=row["exampleId"], supervisedTokens=target.numel())
                 with torch.autocast("cuda", dtype=torch.float16):
-                    logits = model(input_ids=ids, attention_mask=torch.ones_like(ids), use_cache=False,
-                                   logits_to_keep=selected).logits
-                    loss = torch.nn.functional.cross_entropy(logits.float().reshape(-1, logits.shape[-1]), target.reshape(-1))
+                    # Pinned PEFT 0.17.1 LORA hooks are a no-op without adapter_names;
+                    # the same Qwen2Model instance retains all q/v adapters and RNG behavior.
+                    with model._enable_peft_forward_hooks(use_cache=False):
+                        hidden = decoder(input_ids=ids, attention_mask=torch.ones_like(ids), use_cache=False).last_hidden_state
+                    if updates == 0:
+                        phases.sample("first_after_decoder", torch)
+                    loss = checkpointed_head_loss(hidden[:, selected, :], target, head)
                 require(bool(torch.isfinite(loss)), "nonfinite_training_loss")
+                numeric_loss = float(loss.detach())
+                if updates == 0:
+                    phases.sample("first_after_loss_before_backward", torch, loss=numeric_loss, finite=True,
+                                  supervisedDenominator=target.numel(), headChunkTokens=64)
                 gpu_check()
                 scaler.scale(loss).backward()
+                if updates == 0:
+                    phases.sample("first_after_backward", torch, loss=numeric_loss)
                 scaler.unscale_(optimizer)
                 require(all(p.grad is not None and bool(torch.isfinite(p.grad).all()) for _, p in trainable), "missing_or_nonfinite_adapter_gradient")
                 require(any(bool(torch.count_nonzero(p.grad)) for _, p in trainable), "all_adapter_gradients_zero")
                 require(all(p.grad is None for _, p in frozen), "frozen_base_received_gradient")
                 norm = torch.nn.utils.clip_grad_norm_([p for _, p in trainable], 1.0, error_if_nonfinite=True)
                 scale_before = scaler.get_scale()
+                if updates == 0:
+                    phases.sample("first_before_optimizer_step", torch, gradientNormBeforeClip=float(norm), frozenGradientsAbsent=True)
                 scaler.step(optimizer); scaler.update()
                 require(scaler.get_scale() >= scale_before, "optimizer_step_was_skipped")
                 torch.cuda.synchronize()
-                updates += 1; supervised_tokens += target.numel(); losses.append(float(loss.detach()))
+                updates += 1; supervised_tokens += target.numel(); losses.append(numeric_loss)
+                phases.sample("update_completed", torch, update=updates, loss=numeric_loss, epoch=epoch + 1)
                 facts = {"update": updates, "epoch": epoch + 1, "exampleId": row["exampleId"], "loss": losses[-1],
                          "supervisedTokens": target.numel(), "combinedTokens": ids.shape[1], "gradientNormBeforeClip": float(norm),
                          "gradientScale": scaler.get_scale(), "seconds": time.perf_counter() - before, "gpu": gpu_check()}
                 progress.write(json.dumps(facts, sort_keys=True) + "\n"); progress.flush()
-                del ids, labels, target, selected, logits, loss
+                del ids, labels, target, selected, hidden, loss
     require(updates == 66, "incomplete_frozen_fit")
     fit_seconds = time.perf_counter() - fit_started
     optimizer.zero_grad(set_to_none=True)
@@ -251,16 +292,20 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     require(set(saved) == set(state) and all(torch.equal(saved[k], state[k].detach().cpu()) for k in saved), "saved_adapter_state_mismatch")
     manifest = {"files": {p.name: digest_file(p) for p in adapter_dir.iterdir()}, "trainableParameters": 540672,
                 "tensorCount": len(saved), "baseParametersBefore": base_before, "baseParametersAfter": base_after,
-                "savedStateMatchesTrainableAdapter": True, "updates": updates, "settings": FIT, "numerics": NUMERICS}
+                "savedStateMatchesTrainableAdapter": True, "updates": updates, "settings": FIT, "numerics": NUMERICS,
+                "lossImplementation": LOSS_POLICY, "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json")}
     verify_adapter_files(adapter_dir, manifest)
     write(output_dir / "adapter-manifest.json", manifest)
     gpu_check()
+    phases.sample("after_save_and_base_verification", torch, baseUnchanged=True, savedTensorsExact=True)
     result = {"version": "association-adapter-fit/1", "updates": updates, "supervisedTokens": supervised_tokens,
               "epochMeanLoss": [sum(losses[i:i + 11]) / 11 for i in range(0, 66, 11)], "stepLosses": losses,
               "modelAndBaseVerificationSeconds": load_seconds, "fitSeconds": fit_seconds,
               "elapsedSeconds": time.perf_counter() - started, "gpu": gpu_report(), "teacherExamples": 11,
               "baseUnchanged": base_before == base_after, "adapterManifestSha256": digest_file(output_dir / "adapter-manifest.json"),
               "runtime": {name: metadata.version(name) for name in ("torch", "transformers", "peft", "accelerate", "safetensors")},
+              "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json"), "lossImplementation": LOSS_POLICY,
+              "memoryPhasesSha256": digest_file(output_dir / "memory-phases.jsonl"),
               "evaluationOpened": False, "developmentOpened": False, "fitPerformed": True}
     write(output_dir / "fit-result.json", result)
     return result

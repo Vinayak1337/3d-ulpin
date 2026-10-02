@@ -16,6 +16,7 @@ REPO = Path(__file__).resolve().parents[4]
 sys.path[:0] = [str(REPO / "scripts/usp/learning"), str(REPO / "services/geo"), str(Path(__file__).resolve().parent)]
 import model_isolation as isolation
 from geo.usp_learning.association.adapter import FIT, NUMERICS, V1_SHA, V2_SHA, checked_teacher, verify_adapter_files
+from geo.usp_learning.association.chunked_loss import LOSS_POLICY
 from geo.usp_learning.association.student import SETTINGS, SYSTEM_PROMPT
 from stage_baseline import CODE as BASELINE_CODE, PYTHON_ROOT
 
@@ -23,7 +24,7 @@ BASELINE = isolation.ASSOCIATION_STAGING_PARENT / "baseline-af47550c33ea4dc2a3dc
 BASELINE_PROFILE_SHA = "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438"
 EXPECTATIONS_SHA = "061b98c57bdb386c8fc4bce38660b18fd16340d739d40f75b60b10f95a6f93ce"
 COORDINATOR = Path("C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin")
-ASSIGNMENT = COORDINATOR / "docs/evidence/usp/ml-distillation/adapter-01.assignment.json"
+ASSIGNMENT = COORDINATOR / "docs/evidence/usp/ml-distillation/adapter-02.memory-repair.assignment.json"
 TEACHER = Path("E:/BhuAayam-data/task-data/ml-distillation/teacher")
 WHEELS = Path("E:/BhuAayam-model-evaluation/20260929/v8-lora-dependencies")
 DEPENDENCIES = {
@@ -31,7 +32,9 @@ DEPENDENCIES = {
     "accelerate-1.10.1-py3-none-any.whl": "3621cff60b9a27ce798857ece05e2b9f56fcc71631cfb31ccf71f0359c311f11"}
 CODE = tuple(p for p in BASELINE_CODE if not p.endswith("association_student.py")) + (
     "scripts/usp/learning/association/association_adapter.py",
-    "services/geo/geo/usp_learning/association/adapter.py")
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "services/geo/geo/usp_learning/association/chunked_loss.py",
+    "services/geo/geo/usp_learning/association/memory_observation.py")
 
 
 def require(value, message):
@@ -72,7 +75,8 @@ def accepted_fit(root):
     require(completion["runFreezeSha256"] == isolation.sha(root / "inputs/run-freeze.json"), "fit freeze drift")
     freeze = isolation.read(root / "inputs/run-freeze.json")
     require(freeze["fitSettings"] == FIT and freeze["numerics"] == NUMERICS
-            and freeze["inputSha256"]["training_data"] == V2_SHA, "fit configuration/data drift")
+            and freeze["inputSha256"]["training_data"] == V2_SHA
+            and freeze["lossImplementation"] == LOSS_POLICY, "fit configuration/data drift")
     require(result["updates"] == manifest["updates"] == 66 and result["baseUnchanged"]
             and not result["developmentOpened"] and not result["evaluationOpened"], "incomplete or contaminated fit")
     require(manifest["settings"] == FIT and manifest["numerics"] == NUMERICS
@@ -84,10 +88,27 @@ def accepted_fit(root):
             and gpu["minimumSampledFreeCudaBytes"] >= 1536 * 1024**2, "GPU bound failed")
     verify_adapter_files(output / "adapter", manifest)
     require(result["adapterManifestSha256"] == isolation.sha(output / "adapter-manifest.json"), "manifest result drift")
+    require(result["lossImplementation"] == manifest["lossImplementation"] == LOSS_POLICY, "loss implementation drift")
+    equivalence = isolation.read(output / "loss-equivalence.json")
+    equivalent_sha = isolation.sha(output / "loss-equivalence.json")
+    require(result["lossEquivalenceSha256"] == manifest["lossEquivalenceSha256"] == equivalent_sha
+            and equivalence["policy"] == LOSS_POLICY and equivalence["passed"] and equivalence["rngUnchanged"]
+            and len(equivalence["cases"]) == 2 and all(case["passed"] for case in equivalence["cases"]), "loss equivalence not proven")
+    require(result["memoryPhasesSha256"] == isolation.sha(output / "memory-phases.jsonl"), "phase observations drift")
+    phases = [json.loads(line) for line in (output / "memory-phases.jsonl").read_text().splitlines()]
+    require({"before_imports", "after_imports", "before_model_load", "after_lora_load", "first_before_decoder",
+             "first_after_decoder", "first_after_loss_before_backward", "first_after_backward", "first_before_optimizer_step",
+             "after_save_and_base_verification"} <= {row["phase"] for row in phases}, "required fit phase observations missing")
+    require([row["update"] for row in phases if row["phase"] == "update_completed"] == list(range(1, 67)), "phase update history incomplete")
+    require(all("native" in row and "nativeObservationError" not in row and "gpuObservationError" not in row
+                and 0 < row["native"]["jobCurrentCommittedBytes"] <= 6 * 1024**3
+                and 0 < row["native"]["jobPeakCommittedBytes"] <= 6 * 1024**3 for row in phases), "native fit observations failed")
     return {"fitResourceAccepted": True, "fitRoot": str(root), "updates": 66,
             "guardSha256": accepted["guardSha256"], "profileSha256": accepted["profileSha256"],
             "adapterManifestSha256": isolation.sha(output / "adapter-manifest.json"),
-            "fitResultSha256": isolation.sha(output / "fit-result.json")}
+            "fitResultSha256": isolation.sha(output / "fit-result.json"), "lossEquivalencePassed": True,
+            "lossEquivalenceSha256": equivalent_sha, "lossImplementation": LOSS_POLICY,
+            "memoryPhasesSha256": result["memoryPhasesSha256"]}
 
 
 def stage(action, fit_root=None):
@@ -99,6 +120,10 @@ def stage(action, fit_root=None):
     require(assignment["settings"] == FIT and assignment["teacherV1Sha256"] == V1_SHA
             and assignment["teacherV2Sha256"] == V2_SHA and Path(assignment["unchangedBaseline"]) == BASELINE,
             "frozen assignment changed")
+    require(assignment["task"] == "STUDENT-03" and assignment["unchangedRecipe"]
+            and assignment["memoryExecutionPolicy"]["headChunkTokens"] == LOSS_POLICY["headChunkTokens"], "memory repair assignment drift")
+    require(isolation.sha(REPO / "docs/evidence/usp/ml-distillation/student/adapter-attempt-v1.json")
+            == assignment["previousFailureReceiptSha256"], "historical failure receipt drift")
     fit_proof = accepted_fit(fit_root.resolve()) if action == "reload" else None
     if action == "fit":
         checked_teacher((TEACHER / "train-teacher-v1.jsonl").read_bytes(), (TEACHER / "train-teacher-v2.jsonl").read_bytes(),
@@ -108,7 +133,7 @@ def stage(action, fit_root=None):
         committed = subprocess.check_output(["git", "show", commit + ":" + relative], cwd=REPO)
         require((REPO / relative).read_bytes().replace(b"\r\n", b"\n") == committed, "uncommitted execution source: " + relative)
     require(shutil.disk_usage(BASELINE.parent).free >= 15 * 1024**3, "insufficient private staging disk")
-    root = BASELINE.parent / ("adapter-" + action + "-" + uuid.uuid4().hex)
+    root = BASELINE.parent / ("adapter-memory-" + action + "-" + uuid.uuid4().hex)
     root.mkdir()
     for name in (*isolation.READONLY, "outputs", "scratch", "state", "receipts"):
         (root / name).mkdir()
@@ -169,11 +194,19 @@ def stage(action, fit_root=None):
             copy(fit_root / "outputs/fit/adapter" / name, "inputs/adapter/" + name, digest)
         isolation.write(root / "inputs/fit-proof.json", fit_proof)
         files["inputs/fit-proof.json"] = isolation.sha(root / "inputs/fit-proof.json")
-    freeze = {"version": "association-adapter-freeze/1", "action": action, "fitSettings": FIT, "numerics": NUMERICS,
+    freeze = {"version": "association-adapter-freeze/2", "action": action, "fitSettings": FIT, "numerics": NUMERICS,
+              "memoryExecutionPolicy": assignment["memoryExecutionPolicy"], "lossImplementation": LOSS_POLICY,
+              "previousFailedFit": assignment["previousFailedFit"], "previousFailureReceiptSha256": assignment["previousFailureReceiptSha256"],
               "inferenceSettings": SETTINGS, "systemPromptSha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest(),
               "inputSha256": {key: files["inputs/" + name] for key, name in input_names.items()},
               "sourceCommit": commit, "coordinatorHead": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=COORDINATOR, text=True).strip(),
               "baselineProfileSha256": BASELINE_PROFILE_SHA, "dependencyWheels": DEPENDENCIES,
+              "inspectedRuntimeSources": {name: files[name] for name in (
+                  "runtime/packages/transformers/models/qwen2/modeling_qwen2.py", "runtime/packages/peft/peft_model.py",
+                  "runtime/packages/peft/tuners/lora/model.py", "runtime/packages/torch/utils/checkpoint.py")},
+              "nativeJobObservationSource": {"url": "https://raw.githubusercontent.com/microsoft/win32metadata/main/generation/WinSDK/RecompiledIdlHeaders/um/winnt.h",
+                  "observedSha256": "404019933323ca25f5db8ce14437483e1054398ce454d5c75df2e187cec2ae40",
+                  "readOnlyQuery": "JobObjectLimitViolationInformation=13, JOBOBJECT_LIMIT_VIOLATION_INFORMATION.JobMemory"},
               "dependencyOrigin": str(WHEELS), "expectedClaimsSha256": EXPECTATIONS_SHA,
               "evaluationAllowed": False, "developmentInputsPresent": action == "reload", "promotionAuthorized": False}
     isolation.write(root / "inputs/run-freeze.json", freeze)
