@@ -1,0 +1,230 @@
+{
+  "version": "association-citation-view-fit-assignment/1",
+  "task": "STUDENT-08-FIT",
+  "purpose": "One fixed fresh-base fit on accepted train-only citation-key/evidence-order views, followed by conditional fresh exact adapter reload and the unchanged development comparison. Test the concrete citation-binding repair hypothesis without altering labels or inference.",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "unchangedBaseline": "E:/BhuAayam-data/task-data/ml-distillation/student/baseline-af47550c33ea4dc2a3dc1aebc56363c4",
+  "trainingSelection": "Exactly the accepted v3 dataset: the complete 11-row v2 original prefix plus one labelled opaque-key/reversed-evidence view per parent, 22 rows and 124 claim appearances from the same 62 parent-row claims. No new source facts, absent/null-state examples or native IFC inputs.",
+  "teacherV1Sha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+  "settings": {
+    "method": "supervised_causal_LoRA",
+    "targets": [
+      "q_proj",
+      "v_proj"
+    ],
+    "rank": 8,
+    "alpha": 16,
+    "dropout": 0.05,
+    "epochs": 6,
+    "batchSize": 1,
+    "gradientAccumulation": 1,
+    "optimizer": "AdamW",
+    "learningRate": 0.0002,
+    "weightDecay": 0,
+    "warmupSteps": 0,
+    "gradientClipNorm": 1,
+    "seed": 17,
+    "maxSequenceTokens": 4096,
+    "loss": "assistant JSON target plus EOS only; all prompt tokens masked",
+    "gradientCheckpointing": true,
+    "cacheDuringFit": false,
+    "cpuThreads": 2
+  },
+  "lengthPolicy": "Measure all22 exact compact prompt/target/combined token counts under the contained pinned runtime before fitting. Preserve complete targets including EOS; no truncation, dropping rows or silently reducing epochs. Return exact token/resource failure and stop rather than alter this freeze.",
+  "comparison": "After all 132 updates, unchanged base/exact adapter save and cumulative resource/cleanup checks pass, use one fresh contained reload for the same two frozen development inputs, original prompt/chat template/greedy settings and original expectations. Compare both original baseline and previous 66-update candidate from retained outputs without rerunning either. Preserve raw responses and strict whole-output rejection; teacher targets/explanations never enter inference prompts.",
+  "developmentCriteriaBeforeEvaluation": {
+    "validRawOutputs": "2/2",
+    "correctExpectedClaims": "6/6",
+    "acceptedPrecision": 1,
+    "exactCitationFraction": 1,
+    "nullAndAbsentStates": "both preserved distinctly",
+    "noCanonicalTargetsAbstentions": "2/2",
+    "canonicalLinks": "empty in both",
+    "resourcesAndCleanup": "all existing measured bounds and containment/cleanup checks pass",
+    "interpretation": "Tiny source-native development acceptance only. No promotion or generalization qualification; evaluation is a later separately frozen candidate task. A failed fit remains useful recorded evidence."
+  },
+  "bounds": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600
+  },
+  "evaluationContentAccess": false,
+  "teacherFeedback": "Teacher remains idle. Only future concrete train-case predictions/errors may be provided to it; no development/evaluation contents, expectations or predictions.",
+  "promotionAuthorized": false,
+  "executionOwner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "settingsRequired": "Astra/xhigh, default/standard required; actual per-turn model/effort/tier is unexposed unless independently supplied. Historical Astra/max receipts remain unchanged.",
+  "teacherV2Sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+  "trainingDataset": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v3.jsonl",
+  "previousFailedFit": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-live-reclaim-fit-4912a44fb0cd46ecaf967af8bf785dbf",
+  "previousFailureReceiptSha256": "34f6b6a4b5438b77f95c4d5ed98a317af272aeca36beee324f509b6ebda180c5",
+  "memoryExecutionPolicy": {
+    "implementation": "One decoder forward; select the same assistant-predicting hidden positions; frozen lm_head projection and float32 summed cross-entropy in 64-token checkpointed chunks; sum chunk losses and divide by exact total supervised tokens including EOS. Avoid storing full vocabulary logits/float copy/backward buffers.",
+    "headChunkTokens": 64,
+    "checkpointing": "Non-reentrant recomputation for deterministic frozen projection/loss; preserve stochastic decoder/LoRA RNG behavior. No target truncation, per-chunk reweighting or independent example splitting.",
+    "equivalence": "Retain the accepted 64-token head-loss and reclamation controls. One small contained attention fixture compares the original pinned full causal SDPA output and Q/K/V gradients with the 128-query implementation, including the offset second block and 7-query final block. Use the predeclared attentionControlBeforeFit tolerances; preserve/restore RNG and persistent state. Failure returns the control evidence before any fit; no relaxed tolerance or retry.",
+    "instrumentation": "Retain accepted finite-loss, before/after cache, per-example and cumulative native/GPU observations. Record the bound attention implementation/control hash, block count and maximum query block length for actual examples, with truthful executed-update/progress counts and original exceptions. No peak resets or acceptance of a transient cap breach.",
+    "continuation": "ONE fresh fixed fit from the original pretrained base/seed if existing technical controls pass. Include all accepted v3 rows in the fixed seed17 epoch permutations: 22 rows times six epochs, exactly132 updates. If cumulative resource bounds, unchanged base, complete count/attention/memory histories and exact saved adapter checks pass, one fresh-process reload and the unchanged two-example development comparison follows. Stop and callback on any consequential failure; no second fit, parameter/data/prompt change, sweep, diagnostic or evaluation access.",
+    "causeQualification": "The earlier longest-row memory failure motivated the accepted checkpointed 128-query/full-KV SDPA schedule. STUDENT-06 controls passed and all66 updates completed within caps. Reuse that same proven technical implementation; the new 132-update candidate has no measured resource/runtime/quality result yet.",
+    "interUpdateReclamation": "After each completed scaler/optimizer update and scalar progress capture, set adapter gradients to None, release all finished-step tensor/graph references including the norm scalar, collect unreachable Python cycles, synchronize as necessary and empty only unused CUDA allocator cache before the next example. Apply the same unused-cache reclamation after model/base-digest setup before the first example. Keep the model, trainable parameters, Adam moments, scaler, encoded examples, epoch order and RNG states alive and unchanged. Never free live storage, reset peaks or recreate/move the optimizer/model between examples.",
+    "preBackwardReclamation": "After the existing finite loss and cumulative bound observation and before scaler.scale(loss).backward(), synchronize and release only unused cache using the existing leaf release_unused_cache routine. Keep ids/labels/target/selected/hidden/loss and all saved autograd/checkpoint state live and connected; do not detach, zero gradients, run the decoder again, or delete graph references here. Preserve the existing post-setup and post-update reclamation.",
+    "queryChunkedAttention": {
+      "queryChunkTokens": 128,
+      "primitive": "Existing pinned torch.nn.functional.scaled_dot_product_attention, math backend with unchanged float32 math intermediates for float16 inputs; no new attention algorithm, kernel dependency, precision option or parameter.",
+      "schedule": "Compute original complete Q/K/V and RoPE through the original Qwen attention forward; process only the query axis in contiguous blocks, retaining all original K/V positions and grouped-query semantics. Non-reentrant RNG-preserving checkpoint each SDPA block, then concatenate in original query order and use the original output projection. Keep the existing decoder checkpointing and one logical decoder forward.",
+      "causalMask": "For block start s, allowed key k satisfies k <= s + localQueryIndex. Use explicit absolute-position boolean causal mask with is_causal=False for each rectangular SDPA call. Never use a fresh is_causal=True triangle per block, drop earlier context, split source examples or reweight loss.",
+      "scope": "Fit-only, exact loaded Qwen2 attention instances, batch1 equal full query/key lengths, 14 query heads/2 KV heads/head dimension64, no past cache or sliding window, zero attention dropout and no output_attentions. Fail unsupported masks/shapes/kwargs honestly instead of silently falling back. Preserve model configuration/weights and all q/v adapters/dropout/RNG.",
+      "installation": "Use a fit-scoped Qwen-local attention-interface override and restore it in finally; do not alter the global shared registry, third-party source bytes, baseline or reload/generation path.",
+      "gradients": "Keep Q/K/V connected, include all query outputs, aggregate K/V and adapter gradients through autograd; no detach or manual approximate gradient. Persistent optimizer/scaler state and masks/denominators unchanged."
+    }
+  },
+  "unchangedRecipe": true,
+  "workerCodeBase": "00b235199b716b426680e452c79649f2afb5d18f",
+  "coordinatorIntegrationHead": "201b874c3a271d76bd4a57885bb48f96a35de872",
+  "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "verificationScope": "Accepted CPU admission/count checks are reused. Execute only mandatory run preflight and existing contained loss/reclamation/attention controls required by the exact fit chain, then one frozen fit and conditional reload/comparison. No extra review/source campaign, new benchmark, diagnostic, retry or configuration change. Return the exact observed failure and stop if any control, token, phase, resource, code/data pin or cleanup gate fails.",
+  "ownership": "Existing sole learner owns GPU/model execution in its exact clean checkpoint, fresh private fit/reload runs and a concise new student handoff. Execute the accepted code without changing owned Python files before staging; a necessary code fix must return for a new exact freeze. Coordinator assignment/schema/family-freeze/status, teacher artifacts, original/historical runs, shared security/resource/dependencies, primary staging, frontend, services/catalogue and gateway/API publication remain read-only.",
+  "attentionControlBeforeFit": {
+    "qualification": "Technical objective-preservation fixture only, never source truth or model quality.",
+    "sequenceTokens": 263,
+    "queryHeads": 14,
+    "keyValueHeads": 2,
+    "headDimension": 64,
+    "queryChunkSizes": [
+      128,
+      128,
+      7
+    ],
+    "attentionDropout": 0,
+    "causal": true,
+    "scale": 0.125,
+    "scaledGradientMultiplier": 128.0,
+    "reference": "Original pinned Transformers SDPA causal route, same Q/K/V and scalar objective, no candidate-derived reference.",
+    "cpuFloat64": {
+      "outputAtol": 1e-10,
+      "outputRtol": 1e-10,
+      "lossAtol": 1e-10,
+      "lossRtol": 1e-10,
+      "gradientAtol": 1e-10,
+      "gradientRtol": 1e-09
+    },
+    "cudaFloat16Float32": {
+      "outputAtol": 0.0005,
+      "outputRtol": 0.005,
+      "lossAtol": 5e-05,
+      "lossRtol": 0.0005,
+      "gradientAtol": 2e-05,
+      "gradientRtol": 0.005
+    },
+    "toleranceReason": "Tight double-precision algebra check; CUDA permits fp16 GEMM/reduction and grouped K/V gradient-accumulation rounding with unchanged float32 math/loss. No bitwise equality claim for the full fit.",
+    "requirements": [
+      "all Q/K/V gradients finite and within tolerances",
+      "all query outputs preserved in order",
+      "absolute causal offsets and final short block covered",
+      "RNG unchanged/restored",
+      "no model parameter or optimizer/precision changes",
+      "no cumulative resource breach"
+    ]
+  },
+  "inspectedAttentionSources": {
+    "origin": "Unchanged runtime copied from the accepted local baseline and pinned in the failed-run profile; sources inspected read-only, no dependency acquisition.",
+    "runtime/packages/transformers/models/qwen2/modeling_qwen2.py": "a59fa06524227361fb401baf4d177124a27aec146bc01ec931235a9abbab17cb",
+    "runtime/packages/transformers/integrations/sdpa_attention.py": "dc5abe49a98dec3b9026739dfbf2e9a8f3e5272b2916b3c2d404727ac931a013",
+    "runtime/packages/torch/nn/functional.py": "fc13e05f04b956964dcdf7ddb89d4cd5560c9e791492f8b52fc4e80a9052cf7f",
+    "runtime/packages/torch/utils/checkpoint.py": "81db22bcdf8b4a34eb09e520f927cdc489598f7978e061542caabc18a5e97d2b"
+  },
+  "recordedAt": "2026-10-02",
+  "datasetDeclaration": {
+    "version": "association-citation-view-dataset/1",
+    "frozen": true,
+    "datasetSha256": "d8ee61f09e474069bf4375ac1cc1b24f574ca18a32b4e49721fa9d415df6d1b4",
+    "rows": 22,
+    "parent": {
+      "sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+      "rows": 11
+    },
+    "transform": "opaque_keys_reverse_evidence/1",
+    "provenance": {
+      "task": "TEACHER-03",
+      "assignmentVersion": "ml-distillation-citation-view-preparation/1",
+      "path": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/teacher-03.citation-view.assignment.json",
+      "gitCommit": "334467e30cd648a83aec3bec84140bf974b0a5f4",
+      "canonicalLfSha256": "e5cfa3cadb6b547ec14d03b24513963e28259f9c3b8efa1a3caa0aa9d1232244",
+      "workerBaseCommit": "59afe9b78b06f6452abbeeba27a73b46653b64d3"
+    }
+  },
+  "trainingPlan": {
+    "version": "association-training-plan/1",
+    "datasetSha256": "d8ee61f09e474069bf4375ac1cc1b24f574ca18a32b4e49721fa9d415df6d1b4",
+    "teacherExamples": 22,
+    "epochs": 6,
+    "plannedUpdates": 132,
+    "declarationSha256": "906e11cadbd7410d49b0d00edf6e7c003c02cdd8ab9fc2457d638055f28bf7e2"
+  },
+  "studentCodeCommit": "00b235199b716b426680e452c79649f2afb5d18f",
+  "primaryStagingHeadObservedReadOnly": "ed8a773ed6985373fd1b558422077c6136a46847",
+  "workerWorktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "requestedWorkerModel": "gpt-6-astra",
+  "requestedWorkerReasoning": "xhigh",
+  "reasoningChoice": "Preserve the sole learner owner; exact frozen-data, 132-step execution/resource history and raw-quality comparison merit xhigh.",
+  "unchangedRecipeDefinition": "The existing guard uses this field for the unchanged base/LoRA/optimizer/seed/six-epoch/assistant-JSON+EOS objective/numerics/inference recipe. The dataset and total exposures explicitly change from 11 rows/66 updates to 22 rows/132 updates; this is a new candidate, not a replay of the old fit.",
+  "numerics": {
+    "baseDtype": "float16",
+    "adapterDtype": "float32",
+    "lossDtype": "float32",
+    "initialGradientScale": 128.0,
+    "scaleGrowthInterval": 2000,
+    "adamBetas": [
+      0.9,
+      0.999
+    ],
+    "adamEpsilon": 1e-08,
+    "attention": "sdpa",
+    "checkpointing": "non-reentrant",
+    "shuffle": "Random(17), one permutation per epoch",
+    "logits": "only positions predicting supervised assistant JSON plus EOS; prompt labels masked"
+  },
+  "executionAllowance": {
+    "stageModelRun": true,
+    "fit": true,
+    "inference": true,
+    "freshFitPhases": 1,
+    "freshDevelopmentReloadPhases": 1,
+    "generationsPerDevelopmentExample": 1,
+    "resumePriorAdapter": false,
+    "baselineRerun": false,
+    "trainingDiagnostic": false,
+    "evaluation": false,
+    "automaticRetry": false,
+    "sweep": false,
+    "outputRepair": false,
+    "promotion": false
+  },
+  "fitInitialization": "Start from the same pinned pretrained base and original seed17, with fresh LoRA and optimizer/scaler state. Do not continue the existing 66-update adapter or replace its bytes.",
+  "hypothesisQualification": "Opaque keys/reversed evidence remove stable key/position cues while preserving evidence and labels. Six epochs over the larger dataset also double training exposures. Any observed change is a candidate comparison, not proof that key/order shortcutting caused the earlier errors; no new source/state/IFC coverage or generalization claim.",
+  "acceptedPreparation": {
+    "teacherAcceptance": "teacher-citation-view-acceptance-v1.json",
+    "teacherIntegratedCommit": "59725fbe6680a298bbf6675ff6bfddc0b4876764",
+    "studentOwnerCommits": [
+      "d4de04b5169a841563fe123a3de556f53319146d",
+      "22bcb7771318f2870b0b93fec504c0e830700e67",
+      "00b235199b716b426680e452c79649f2afb5d18f"
+    ],
+    "studentIntegratedCommits": [
+      "701203fdd22b6fe9c146b3d7b09bd041a375b43f",
+      "38ea6429ac0fd280d95759fbaded0b4a1ddb881c",
+      "201b874c3a271d76bd4a57885bb48f96a35de872"
+    ]
+  },
+  "previousAcceptedCandidate": {
+    "fitRoot": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-query-sdpa-fit-f90a65c82dde45ae9c2e0ce4a60dddcd",
+    "adapterSafetensorsSha256": "4456b00aba8591c751ecfef8ac78f1272eabd3f56e0212266f8b5fc2c508b485",
+    "development": "0/2 valid raw responses; 0/6 accepted claims",
+    "trainingDiagnostic": "1/2 fully valid train responses; 1/7 accepted provisional claims; no independent truth"
+  },
+  "historicalFailureGuard": "previousFailedFit and previousFailureReceiptSha256 are retained legacy containment/control provenance dependencies. STUDENT-06 subsequently completed all 66 updates within bounds; their presence does not describe this new candidate as already failed.",
+  "continuation": "Return exact code/results commits, dataset/assignment/runtime/model/adapter/raw artifact pins, commands/exits, measured cumulative Job/RSS/CUDA/timing and honest quality denominators to coordinator, then end the turn. Teacher remains idle. No evaluation opening, promotion, gateway registration, push/deploy, provider call or automatic follow-on."
+}

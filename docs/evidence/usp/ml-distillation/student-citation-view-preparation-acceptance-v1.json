@@ -1,0 +1,45 @@
+{
+  "version": "ml-distillation-citation-view-preparation-acceptance/1",
+  "task": "STUDENT-08-PREP",
+  "recordedAt": "2026-10-02",
+  "acceptedScope": "Experimental strict citation-view admission/count code, CPU integrity checks and historical reader compatibility. New 132-update runtime, resource and quality qualification remains unrun.",
+  "ownerCommits": ["d4de04b5169a841563fe123a3de556f53319146d", "22bcb7771318f2870b0b93fec504c0e830700e67", "00b235199b716b426680e452c79649f2afb5d18f"],
+  "integratedCommits": ["701203fdd22b6fe9c146b3d7b09bd041a375b43f", "38ea6429ac0fd280d95759fbaded0b4a1ddb881c", "201b874c3a271d76bd4a57885bb48f96a35de872"],
+  "primaryStagingHeadObservedReadOnly": "ed8a773ed6985373fd1b558422077c6136a46847",
+  "coordinatorInspection": {
+    "allSixOwnedCodeFilesAndHandoffReviewed": true,
+    "ownedCanonicalLfPhysicalAndGitPinsMatched": 6,
+    "sourcesCompiledInMemory": 6,
+    "protectedSourceFilesByteIdentical": 8,
+    "protectedAdapterAstNodesIdentical": 10,
+    "actualAcceptedV3RowsAdmitted": 22,
+    "admittedCounts": {"rows": 22, "claims": 124, "conflicts": 4, "abstentions": 44, "canonicalAbstentions": 22},
+    "newDeclarationSha256": "906e11cadbd7410d49b0d00edf6e7c003c02cdd8ab9fc2457d638055f28bf7e2",
+    "newPlannedUpdates": 132,
+    "historicalAcceptedFitReaderUpdates": 66,
+    "allSevenIntegratedChangedGitBlobsMatchOwner": true,
+    "integratedFocusedTestsPassed": 7,
+    "modelDependenciesImported": false,
+    "modelStagedOrExecuted": false,
+    "commands": [
+      {"command": "python -B -I -S - (initial inline review probe)", "exit": 1, "reason": "Review script requested nonexistent AST node adapter_config; corrected node name to check_adapter_config. No model or dataset mutation."},
+      {"command": "python -B -I -S - (corrected read-only verifier: six code pins/compiles, eight protected files, ten AST nodes, actual accepted-v3 admission and historical accepted_fit)", "exit": 0},
+      {"command": "git cherry-pick d4de04b5169a841563fe123a3de556f53319146d 22bcb7771318f2870b0b93fec504c0e830700e67 00b235199b716b426680e452c79649f2afb5d18f", "exit": 0},
+      {"command": "git diff --exit-code 00b235199b716b426680e452c79649f2afb5d18f HEAD -- (seven owned changed paths)", "exit": 0},
+      {"command": "python -B -I -S scripts/usp/learning/association/test_citation_view.py", "exit": 0, "tests": 7, "seconds": 0.035},
+      {"command": "git diff --check", "exit": 0},
+      {"command": "python -B -I -S - (create separate exact frozen fit assignment; checked_execution/checked_freeze for fit and reload)", "exit": 0}
+    ]
+  },
+  "acceptedBehavior": "Exact parent prefix and inverse transform/source/target invariants gate the new dataset declaration. One checked row/epoch/update plan governs fit order/progress/token and loss denominators/save/count/attention/memory histories and reload. Historical v1/v2 admission and 11/66 behavior are preserved; preparation assignments cannot stage a model run.",
+  "nextAssignment": "student-08.citation-view-fit.assignment.json",
+  "nextScope": "One fresh-base fixed132-update fit on the exact accepted v3 digest, conditional exact adapter save/fresh reload and unchanged two-example development comparison; same sole learner, immutable old runs, unchanged controls/caps. No retries, sweep, train diagnostic, evaluation or promotion.",
+  "unchangedQuality": {
+    "baseline": "0/2 valid outputs; 0/6 accepted claims",
+    "previousCandidateDevelopment": "0/2 valid outputs; 0/6 accepted claims",
+    "previousCandidateTrainingDiagnostic": "1/7 accepted provisional claims",
+    "newRuntimeOrQualityResult": false,
+    "evaluationOpened": false,
+    "gatewayRegistered": false
+  }
+}
