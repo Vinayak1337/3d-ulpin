@@ -15,6 +15,7 @@ from geo.usp_learning.resources import guarded_run, write_json_once
 from geo.usp_learning.association.student import SETTINGS, SYSTEM_PROMPT
 from geo.usp_learning.association.adapter import FIT, NUMERICS, V2_SHA, checked_teacher, digest_file, fit, reload_and_compare
 from geo.usp_learning.association.chunked_loss import LOSS_POLICY
+from geo.usp_learning.association.reclamation import RECLAMATION_POLICY
 
 
 def worker(args):
@@ -30,6 +31,8 @@ def worker(args):
                 or freeze["memoryExecutionPolicy"] != assignment["memoryExecutionPolicy"]
                 or assignment["memoryExecutionPolicy"]["headChunkTokens"] != 64
                 or freeze["lossImplementation"] != LOSS_POLICY
+                or freeze["reclamationImplementation"] != RECLAMATION_POLICY
+                or not assignment["memoryExecutionPolicy"].get("interUpdateReclamation")
                 or freeze["systemPromptSha256"] != hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest()):
             raise RuntimeError("frozen assignment/settings/prompt drift")
         for option, digest in freeze["inputSha256"].items():
@@ -62,6 +65,9 @@ def worker(args):
                     or proof["adapterManifestSha256"] != digest_file(args.adapter_manifest)
                     or proof["lossImplementation"] != LOSS_POLICY or not proof["lossEquivalencePassed"]
                     or manifest["lossImplementation"] != LOSS_POLICY
+                    or proof["reclamationImplementation"] != manifest["reclamationImplementation"]
+                    or proof["reclamationImplementation"] != RECLAMATION_POLICY or not proof["reclamationControlPassed"]
+                    or proof["reclamationControlSha256"] != manifest["reclamationControlSha256"]
                     or proof["lossEquivalenceSha256"] != manifest["lossEquivalenceSha256"]):
                 raise RuntimeError("adapter lacks matching accepted fit receipt")
             batch = json.loads(args.input_batch.read_bytes())

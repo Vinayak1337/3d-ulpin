@@ -69,6 +69,7 @@ class PhaseRecorder:
                 row["gpu"] = {"initialized": True, "measured": True, "allocatedBytes": torch.cuda.memory_allocated(),
                     "reservedBytes": torch.cuda.memory_reserved(), "peakAllocatedBytes": torch.cuda.max_memory_allocated(),
                     "peakReservedBytes": torch.cuda.max_memory_reserved(), "freeBytes": free, "totalBytes": total}
+                row["gpu"]["reservedMinusAllocatedBytes"] = row["gpu"]["reservedBytes"] - row["gpu"]["allocatedBytes"]
         except Exception as error:
             row["gpuObservationError"] = str(error); errors.append(error)
         with self.path.open("a", encoding="utf-8", newline="\n") as stream:

@@ -17,6 +17,7 @@ sys.path[:0] = [str(REPO / "scripts/usp/learning"), str(REPO / "services/geo"), 
 import model_isolation as isolation
 from geo.usp_learning.association.adapter import FIT, NUMERICS, V1_SHA, V2_SHA, checked_teacher, verify_adapter_files
 from geo.usp_learning.association.chunked_loss import LOSS_POLICY
+from geo.usp_learning.association.reclamation import RECLAMATION_POLICY
 from geo.usp_learning.association.student import SETTINGS, SYSTEM_PROMPT
 from stage_baseline import CODE as BASELINE_CODE, PYTHON_ROOT
 
@@ -24,7 +25,7 @@ BASELINE = isolation.ASSOCIATION_STAGING_PARENT / "baseline-af47550c33ea4dc2a3dc
 BASELINE_PROFILE_SHA = "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438"
 EXPECTATIONS_SHA = "061b98c57bdb386c8fc4bce38660b18fd16340d739d40f75b60b10f95a6f93ce"
 COORDINATOR = Path("C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin")
-ASSIGNMENT = COORDINATOR / "docs/evidence/usp/ml-distillation/adapter-02.memory-repair.assignment.json"
+ASSIGNMENT = COORDINATOR / "docs/evidence/usp/ml-distillation/adapter-03.memory-reclamation.assignment.json"
 TEACHER = Path("E:/BhuAayam-data/task-data/ml-distillation/teacher")
 WHEELS = Path("E:/BhuAayam-model-evaluation/20260929/v8-lora-dependencies")
 DEPENDENCIES = {
@@ -34,7 +35,8 @@ CODE = tuple(p for p in BASELINE_CODE if not p.endswith("association_student.py"
     "scripts/usp/learning/association/association_adapter.py",
     "services/geo/geo/usp_learning/association/adapter.py",
     "services/geo/geo/usp_learning/association/chunked_loss.py",
-    "services/geo/geo/usp_learning/association/memory_observation.py")
+    "services/geo/geo/usp_learning/association/memory_observation.py",
+    "services/geo/geo/usp_learning/association/reclamation.py")
 
 
 def require(value, message):
@@ -95,19 +97,33 @@ def accepted_fit(root):
             and equivalence["policy"] == LOSS_POLICY and equivalence["passed"] and equivalence["rngUnchanged"]
             and len(equivalence["cases"]) == 2 and all(case["passed"] for case in equivalence["cases"]), "loss equivalence not proven")
     require(result["memoryPhasesSha256"] == isolation.sha(output / "memory-phases.jsonl"), "phase observations drift")
+    reclaim_proof = isolation.read(output / "reclamation-control.json")
+    reclaim_sha = isolation.sha(output / "reclamation-control.json")
+    require(freeze["reclamationImplementation"] == result["reclamationImplementation"] == manifest["reclamationImplementation"] == RECLAMATION_POLICY
+            and reclaim_proof["policy"] == RECLAMATION_POLICY and reclaim_proof["passed"] and reclaim_proof["trainingRngRestored"]
+            and result["reclamationControlSha256"] == manifest["reclamationControlSha256"] == reclaim_sha, "reclamation control not proven")
     phases = [json.loads(line) for line in (output / "memory-phases.jsonl").read_text().splitlines()]
     require({"before_imports", "after_imports", "before_model_load", "after_lora_load", "first_before_decoder",
              "first_after_decoder", "first_after_loss_before_backward", "first_after_backward", "first_before_optimizer_step",
              "after_save_and_base_verification"} <= {row["phase"] for row in phases}, "required fit phase observations missing")
     require([row["update"] for row in phases if row["phase"] == "update_completed"] == list(range(1, 67)), "phase update history incomplete")
+    for name in ("example_start", "before_decoder", "after_decoder", "after_loss_before_backward", "after_backward",
+                 "before_optimizer_step", "before_reclamation", "after_reclamation"):
+        require([row["update"] for row in phases if row["phase"].removeprefix("first_") == name] == list(range(1, 67)),
+                "per-example phase history incomplete: " + name)
+    require({"setup_before_reclamation", "setup_after_reclamation"} <= {row["phase"] for row in phases}, "setup reclamation proof missing")
     require(all("native" in row and "nativeObservationError" not in row and "gpuObservationError" not in row
                 and 0 < row["native"]["jobCurrentCommittedBytes"] <= 6 * 1024**3
                 and 0 < row["native"]["jobPeakCommittedBytes"] <= 6 * 1024**3 for row in phases), "native fit observations failed")
+    for values in ([row["native"]["jobPeakCommittedBytes"] for row in phases],
+                   *[[row["gpu"][key] for row in phases if row["gpu"]["measured"]] for key in ("peakAllocatedBytes", "peakReservedBytes")]):
+        require(all(new >= old for old, new in zip(values, values[1:])), "cumulative memory peak was reset")
     return {"fitResourceAccepted": True, "fitRoot": str(root), "updates": 66,
             "guardSha256": accepted["guardSha256"], "profileSha256": accepted["profileSha256"],
             "adapterManifestSha256": isolation.sha(output / "adapter-manifest.json"),
             "fitResultSha256": isolation.sha(output / "fit-result.json"), "lossEquivalencePassed": True,
             "lossEquivalenceSha256": equivalent_sha, "lossImplementation": LOSS_POLICY,
+            "reclamationImplementation": RECLAMATION_POLICY, "reclamationControlPassed": True, "reclamationControlSha256": reclaim_sha,
             "memoryPhasesSha256": result["memoryPhasesSha256"]}
 
 
@@ -120,9 +136,9 @@ def stage(action, fit_root=None):
     require(assignment["settings"] == FIT and assignment["teacherV1Sha256"] == V1_SHA
             and assignment["teacherV2Sha256"] == V2_SHA and Path(assignment["unchangedBaseline"]) == BASELINE,
             "frozen assignment changed")
-    require(assignment["task"] == "STUDENT-03" and assignment["unchangedRecipe"]
+    require(assignment["task"] == "STUDENT-04" and assignment["unchangedRecipe"]
             and assignment["memoryExecutionPolicy"]["headChunkTokens"] == LOSS_POLICY["headChunkTokens"], "memory repair assignment drift")
-    require(isolation.sha(REPO / "docs/evidence/usp/ml-distillation/student/adapter-attempt-v1.json")
+    require(isolation.sha(REPO / "docs/evidence/usp/ml-distillation/student/memory-repair-attempt-v1.json")
             == assignment["previousFailureReceiptSha256"], "historical failure receipt drift")
     fit_proof = accepted_fit(fit_root.resolve()) if action == "reload" else None
     if action == "fit":
@@ -133,7 +149,7 @@ def stage(action, fit_root=None):
         committed = subprocess.check_output(["git", "show", commit + ":" + relative], cwd=REPO)
         require((REPO / relative).read_bytes().replace(b"\r\n", b"\n") == committed, "uncommitted execution source: " + relative)
     require(shutil.disk_usage(BASELINE.parent).free >= 15 * 1024**3, "insufficient private staging disk")
-    root = BASELINE.parent / ("adapter-memory-" + action + "-" + uuid.uuid4().hex)
+    root = BASELINE.parent / ("adapter-reclaim-" + action + "-" + uuid.uuid4().hex)
     root.mkdir()
     for name in (*isolation.READONLY, "outputs", "scratch", "state", "receipts"):
         (root / name).mkdir()
@@ -194,8 +210,9 @@ def stage(action, fit_root=None):
             copy(fit_root / "outputs/fit/adapter" / name, "inputs/adapter/" + name, digest)
         isolation.write(root / "inputs/fit-proof.json", fit_proof)
         files["inputs/fit-proof.json"] = isolation.sha(root / "inputs/fit-proof.json")
-    freeze = {"version": "association-adapter-freeze/2", "action": action, "fitSettings": FIT, "numerics": NUMERICS,
+    freeze = {"version": "association-adapter-freeze/3", "action": action, "fitSettings": FIT, "numerics": NUMERICS,
               "memoryExecutionPolicy": assignment["memoryExecutionPolicy"], "lossImplementation": LOSS_POLICY,
+              "reclamationImplementation": RECLAMATION_POLICY,
               "previousFailedFit": assignment["previousFailedFit"], "previousFailureReceiptSha256": assignment["previousFailureReceiptSha256"],
               "inferenceSettings": SETTINGS, "systemPromptSha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest(),
               "inputSha256": {key: files["inputs/" + name] for key, name in input_names.items()},
