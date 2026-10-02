@@ -16,6 +16,7 @@ from geo.usp_learning.association.student import SETTINGS, SYSTEM_PROMPT
 from geo.usp_learning.association.adapter import FIT, NUMERICS, V2_SHA, checked_teacher, digest_file, fit, reload_and_compare
 from geo.usp_learning.association.chunked_loss import LOSS_POLICY
 from geo.usp_learning.association.reclamation import RECLAMATION_POLICY
+from geo.usp_learning.association.query_attention import ATTENTION_POLICY, ATTENTION_CONTROL
 
 
 def worker(args):
@@ -32,6 +33,9 @@ def worker(args):
                 or assignment["memoryExecutionPolicy"]["headChunkTokens"] != 64
                 or freeze["lossImplementation"] != LOSS_POLICY
                 or freeze["reclamationImplementation"] != RECLAMATION_POLICY
+                or freeze["attentionImplementation"] != ATTENTION_POLICY
+                or assignment["attentionControlBeforeFit"] != ATTENTION_CONTROL
+                or assignment["memoryExecutionPolicy"]["queryChunkedAttention"]["queryChunkTokens"] != 128
                 or not assignment["memoryExecutionPolicy"].get("interUpdateReclamation")
                 or not assignment["memoryExecutionPolicy"].get("preBackwardReclamation")
                 or freeze["previousFailureReceiptSha256"] != assignment["previousFailureReceiptSha256"]
@@ -71,6 +75,10 @@ def worker(args):
                     or proof["reclamationImplementation"] != manifest["reclamationImplementation"]
                     or proof["reclamationImplementation"] != RECLAMATION_POLICY or not proof["reclamationControlPassed"]
                     or not proof["liveGraphControlPassed"] or not proof["preBackwardReclamationHistoryPassed"]
+                    or proof["attentionImplementation"] != manifest["attentionImplementation"]
+                    or proof["attentionImplementation"] != ATTENTION_POLICY or not proof["attentionControlPassed"]
+                    or not proof["attentionScopeRestored"] or not proof["attentionBlockHistoryPassed"]
+                    or proof["attentionControlSha256"] != manifest["attentionControlSha256"]
                     or proof["reclamationControlSha256"] != manifest["reclamationControlSha256"]
                     or proof["lossEquivalenceSha256"] != manifest["lossEquivalenceSha256"]):
                 raise RuntimeError("adapter lacks matching accepted fit receipt")
