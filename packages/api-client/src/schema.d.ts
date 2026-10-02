@@ -1158,7 +1158,7 @@ export interface paths {
         /** Read exact native/OCR/IFC citations through current private source and draft authority */
         get: operations["GET_api_v1_registry_drafts_draftId_document_citations"];
         put?: never;
-        /** Amend exact operator-selected native/OCR/IFC citations on one current correction; spaces support IFC only */
+        /** Amend native/OCR/IFC citations or explicitly confirm an IFC building/floor identity; spaces support citation attachment only */
         post: operations["POST_api_v1_registry_drafts_draftId_document_citations"];
         delete?: never;
         options?: never;
@@ -9568,6 +9568,18 @@ export interface components {
                     qualification: "not_assessed";
                     /** @enum {string} */
                     version: "registry-ifc-citation/1";
+                    identityAssertion?: {
+                        globalId: string;
+                        attributeSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        attributeLocator: {
+                            [key: string]: unknown;
+                        };
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        confirmedAt: string;
+                    };
                     resultBytes: number;
                     ifc: {
                         artifactSha256: string;
@@ -11562,6 +11574,18 @@ export interface components {
                     qualification: "not_assessed";
                     /** @enum {string} */
                     version: "registry-ifc-citation/1";
+                    identityAssertion?: {
+                        globalId: string;
+                        attributeSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        attributeLocator: {
+                            [key: string]: unknown;
+                        };
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        confirmedAt: string;
+                    };
                     resultBytes: number;
                     ifc: {
                         artifactSha256: string;
@@ -11933,6 +11957,7 @@ export interface components {
                     })[];
                 };
             };
+            assertIFCIdentity?: string;
             /** @default [] */
             remove: string[];
             /** @enum {boolean} */
@@ -12203,6 +12228,18 @@ export interface components {
                     qualification: "not_assessed";
                     /** @enum {string} */
                     version: "registry-ifc-citation/1";
+                    identityAssertion?: {
+                        globalId: string;
+                        attributeSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        attributeLocator: {
+                            [key: string]: unknown;
+                        };
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        confirmedAt: string;
+                    };
                     resultBytes: number;
                     ifc: {
                         artifactSha256: string;
