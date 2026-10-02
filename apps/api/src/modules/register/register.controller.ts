@@ -230,7 +230,7 @@ export class RegisterController {
 
   @Post('registry-drafts/:draftId/document-citations') @HttpCode(200)
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
-  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_document_citations',summary:'Amend exact operator-selected native/OCR fusion citations on one current building or floor correction'})
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_document_citations',summary:'Amend exact operator-selected native/OCR/IFC citations on one current correction; spaces support IFC only'})
   @doc.ApiContract(200,doc.requestSchema(RegistryDocumentAmendmentReceiptSchema),RegistryDocumentAmendmentSchema)
   async amendDocumentCitations(@Param('draftId') draftId:string,@Req() req:Request){
     if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
@@ -241,7 +241,7 @@ export class RegisterController {
 
   @Get('registry-drafts/:draftId/document-citations')
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
-  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_document_citations',summary:'Read exact native/OCR citations through current private source and draft authority'})
+  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_document_citations',summary:'Read exact native/OCR/IFC citations through current private source and draft authority'})
   @doc.ApiContract(200,doc.requestSchema(RegistryDocumentEvidenceSchema))
   documentCitations(@Param('draftId') draftId:string,@Req() req:Request){
     if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
