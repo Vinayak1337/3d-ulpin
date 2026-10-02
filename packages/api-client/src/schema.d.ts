@@ -30771,7 +30771,7 @@ export interface components {
                 revision: number;
                 previousRevision: number | null;
                 /** @enum {string} */
-                profile: "property-card-summary-ascii/1";
+                profile: "property-card-summary-ascii/1" | "property-card-summary-latin-deva/1";
                 /** @enum {string} */
                 mode: "local_operator";
                 /** Format: uuid */
@@ -30881,7 +30881,7 @@ export interface components {
                     revision: number;
                     previousRevision: number | null;
                     /** @enum {string} */
-                    profile: "property-card-summary-ascii/1";
+                    profile: "property-card-summary-ascii/1" | "property-card-summary-latin-deva/1";
                     /** @enum {string} */
                     mode: "local_operator";
                     /** Format: uuid */
