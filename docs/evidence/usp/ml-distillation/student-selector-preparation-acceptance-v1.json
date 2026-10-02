@@ -1,0 +1,97 @@
+{
+  "version": "student-selector-preparation-acceptance/1",
+  "recordedAt": "2026-10-03",
+  "ownerBase": "47b01a5c3d280333352bdbca7eb066f486445a07",
+  "ownerCodeCommit": "07af479fe58521b6447758a913c255a41102be10",
+  "ownerFinalCommit": "113c47e7977eb3c1561f3cd61846369c4456e410",
+  "integratedCodeCommit": "c139c8c3",
+  "coordinatorIntegratedHead": "6dee0947c3b781caccaeb02e85d7250235b4ad12",
+  "primaryStagingHeadObservedReadOnly": "7d57b677e6e9d8f30af2564517180f79964e10bf",
+  "review": "Complete five-file code delta and handoff inspected. Strict syntax/schema/int/range checks, lossless expansion, own-citation binding, unchanged semantic validator, whole-response rejection and source-only prompt accepted. Old student/fit/security/resource/dependency files preserved; no new execution capability. Future selector baseline is gated on a separate exact assignment.",
+  "codePins": {
+    "scripts/usp/learning/association/association_student.py": {
+      "physicalSha256": "fcc4f78c88d04e4578a5577221ef99c42aff89aaa9b28c0c20b12b4a3733e294",
+      "canonicalLfSha256": "12f55b8e6d4ba5db3f0617381a8c5af744714400fc02b19611d61e169edf7324"
+    },
+    "scripts/usp/learning/association/stage_selector_baseline.py": {
+      "physicalSha256": "72aa6ee57f966c35131333bac100ed1396be15916500261578705b5637bb0fb3",
+      "canonicalLfSha256": "17af0472c6eef45b69821e0b0a735764ea1443bec3b236c17b3bfd742b5c8cc1"
+    },
+    "scripts/usp/learning/association/test_selectors.py": {
+      "physicalSha256": "6e31ddebe416b95d499550a37b2945de942ec55beda4a08d9da69c544dd387c8",
+      "canonicalLfSha256": "172e7d9cfd7259d9a9c753658da19d47bc4614fa28b007f8000b8eed2271ff90"
+    },
+    "services/geo/geo/usp_learning/association/selector_baseline.py": {
+      "physicalSha256": "741e8a2bb1b7bf9692d53d283ae359f3047dbfa36fcf475e1deaadb0fc7509ce",
+      "canonicalLfSha256": "842088a7d5042c29c74a80049601c634288196eafb0fd54d81d737be008c430f"
+    },
+    "services/geo/geo/usp_learning/association/selectors.py": {
+      "physicalSha256": "29c1f9c49727ffb606335bb73f88ad825227f000e93a1f7909cc00ba49d0d92e",
+      "canonicalLfSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e"
+    },
+    "docs/evidence/usp/ml-distillation/student/selector-preparation.md": {
+      "physicalSha256": "8747a526a8c4f9e41cedf4d0f443fdc96cb2ca6ef1b47e2924df83e3df0fd86f",
+      "canonicalLfSha256": "2ed81dce8007276fc7b34b71f709428b071bee18e949611280935faec2af0e81"
+    }
+  },
+  "protectedFilesMatchedBeforeIntegration": 11,
+  "compiledFilesBeforeIntegration": 5,
+  "verification": [
+    {
+      "command": "python -B -I -S scripts/usp/learning/association/test_selectors.py",
+      "python": "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+      "exitCode": 0,
+      "output": "test_citation_binding_and_semantics_are_separate_from_valid_pointers (__main__.SelectorTests.test_citation_binding_and_semantics_are_separate_from_valid_pointers) ... ok\ntest_lossless_unicode_whitespace_punctuation_and_codepoint_offsets (__main__.SelectorTests.test_lossless_unicode_whitespace_punctuation_and_codepoint_offsets) ... ok\ntest_no_model_dependency_imports (__main__.SelectorTests.test_no_model_dependency_imports) ... ok\ntest_preparation_cannot_stage_and_future_freeze_pins_prompt_and_inputs (__main__.SelectorTests.test_preparation_cannot_stage_and_future_freeze_pins_prompt_and_inputs) ... ok\ntest_raw_types_ranges_and_old_free_text_reject_whole_output (__main__.SelectorTests.test_raw_types_ranges_and_old_free_text_reject_whole_output) ... ok\ntest_real_train_targets_round_trip_without_changes (__main__.SelectorTests.test_real_train_targets_round_trip_without_changes) ... ok\ntest_source_snapshot_pin_family_and_prompt_isolation (__main__.SelectorTests.test_source_snapshot_pin_family_and_prompt_isolation) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.013s\n\nOK\n"
+    },
+    {
+      "command": "python -B -I -S - (in-memory pin/compile/protected-source check)",
+      "exitCode": 0
+    },
+    {
+      "command": "python -B -I -S - (integrated blob/teacher interoperability/source-only prompt check)",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "promptVersion": "association-selector-prompt/1",
+  "promptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+  "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+  "lexicalPolicy": {
+    "version": "lossless_lexical_spans/1",
+    "pattern": "\\w+|\\s+|[^\\w\\s]",
+    "flags": "Python re.UNICODE default; no normalization or case folding."
+  },
+  "teacherPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\train-teacher-selectors-v1.jsonl",
+  "teacherSha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb",
+  "parentTeacherSha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+  "interoperability": {
+    "rows": 11,
+    "claims": 62,
+    "conflicts": 2,
+    "abstentions": 22,
+    "quoteSelectors": 84,
+    "literalUnitSelectors": 58,
+    "selectorsDecoded": 142,
+    "exactExpandedParentOutputs": 11,
+    "sourceOnlyPromptsChecked": 11
+  },
+  "noSecondTeacherDataset": true,
+  "runtimeExecuted": false,
+  "modelDependenciesImported": false,
+  "fitPerformed": false,
+  "evaluationOpened": false,
+  "promotionAuthorized": false,
+  "qualification": "CPU code and representation integrity only; exact spans and validator acceptance do not establish semantic role/state truth or independent model accuracy.",
+  "permissions": "supplied never / danger-full-access",
+  "workerSettings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedEffort": "xhigh",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedEffort": null,
+    "observedServiceTier": null
+  }
+}
