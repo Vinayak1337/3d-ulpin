@@ -7,7 +7,7 @@ import {createRequire} from 'node:module';
 import {spawnSync} from 'node:child_process';
 import {RegistryRegionCitationSchema} from '../packages/contracts/src';
 import {UspSnapshotManifestSchema,type RequestContext} from '../packages/contracts/src/usp';
-import {UspPdfPacketPlanInputSchema,UspPacketPdfReceiptSchema} from '../packages/contracts/src/usp/packet-pdf';
+import {UspPdfPacketPlanInputSchema,UspPacketPdfReceiptSchema,UspPdfMultiPacketPlanInputSchema,UspPacketPdfMultiReceiptSchema} from '../packages/contracts/src/usp/packet-pdf';
 import {PacketRegionWorkerSchema} from '../packages/contracts/src/packet-region';
 import {createPacketPlan,revisePacketPlan,confirmPacketPlan,executePacketPlan,readPacketPlan} from '../packages/server/src/modules/usp/packets/plan-service';
 import {readPacketPdf,type PdfPacketIo} from '../packages/server/src/modules/usp/packets/pdf-service';
@@ -20,12 +20,15 @@ import {fingerprint,canonical} from '../packages/server/src/modules/cases/domain
 import {sha256} from '../packages/server/src/infrastructure/storage';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';
+import {packetRegionTransform} from '../packages/server/src/modules/usp/packets/region-extract';
 
 // Adapted from existing packet-plan memory SQL/transport control. All identities,
 // committed target/history and snapshot rows are technical doubles. Unchanged
 // retained crop bytes/proof are reused; no native execution or original I/O.
 const root='E:/BhuAayam-data/task-data/desktop-packet-region-extract-20261002/real-crop-02';
 const present=existsSync(root+'/result.json')&&existsSync(root+'/region.png'),subject='packet-pdf-protocol-control';
+const secondRoot=process.env.ULPIN_PACKET_MULTI_SECOND_ROOT??'E:/BhuAayam-data/task-data/desktop-packet-pdf-multiregion-20261003/second-region';
+const actualSecond=existsSync(secondRoot+'/result.json')&&existsSync(secondRoot+'/region.png');
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const siteId=id(1),sourceId=id(2),caseId=id(3),targetId=id(4),manifestId=id(5),digest='a'.repeat(64);
 type State={plans:any[];confirmations:any[];executions:any[];receipts:any[];packets:any[];cards:any[];streams:any[];events:any[]};
@@ -42,6 +45,7 @@ class ControlDb{
       bytes:this.region.sourceBytes,receivedAt:'2026-10-02T00:00:00Z'}}};
   sourceCase:any={id:caseId,site_id:siteId,revision:1,archived:false,context:null,frame:null};
   citation:any;record:any;captured:any;history=new Map<number,any>();
+  secondRegion:any;secondPng?:Buffer;secondCitation:any;extractOrder:string[]=[];
   scope={kind:'snapshot' as const,scopeId:siteId,world:{namespace:'world',id:`registry-site/${siteId}`},manifestId,
     snapshotDigest:digest,stage:'recorded' as const};
   target={ref:{namespace:'registry_record' as const,id:targetId},revision:2};
@@ -58,6 +62,26 @@ class ControlDb{
     this.record={id:targetId,site_id:siteId,kind:'building',revision:2,identifier:'technical-pdf-target',
       body:{...this.oldBody,documentCitations:[this.citation]}};
     this.capture();this.history.set(1,structuredClone(this.oldBody));this.history.set(2,structuredClone(this.record.body));this.queries=[];
+  }
+  enableMulti(){
+    if(actualSecond){
+      this.secondRegion=PacketRegionWorkerSchema.parse(JSON.parse(readFileSync(secondRoot+'/result.json','utf8')));
+      this.secondPng=readFileSync(secondRoot+'/region.png');
+    }else{
+      // Native retry is held after unresolved cleanup. This second locator/proof
+      // is an explicit extractor control reusing the FIRST crop's pixels. It is
+      // never saved or represented as a genuine second source extraction.
+      const selection={...this.region.selection,region:[2265/2586,1400/1695,2530/2586,1535/1695]};
+      this.secondRegion=PacketRegionWorkerSchema.parse({...this.region,selection,transform:packetRegionTransform(selection as any)});
+      this.secondPng=this.png;
+    }
+    assert.equal(sha256(this.secondPng!),this.secondRegion.output.sha256);
+    assert.equal(this.secondRegion.sourceSha256,this.region.sourceSha256);assert.equal(this.secondRegion.sourceBytes,this.region.sourceBytes);
+    this.secondCitation=RegistryRegionCitationSchema.parse({...this.citation,page:this.secondRegion.page,
+      region:this.secondRegion.selection,validation:this.secondRegion});
+    this.secondCitation.id=regionCitationId(this.secondCitation);
+    assert.notEqual(this.secondCitation.id,this.citation.id);
+    this.record.body.documentCitations=[this.citation,this.secondCitation];this.capture();this.history.set(2,structuredClone(this.record.body));
   }
   capture(){this.captured={...structuredClone(this.record),project_code:this.identity?.code??null,project_status:this.identity?.status??null,
     project_location:this.identity?.location??null,projectIdentity:this.identity,historicalAliases:[]};}
@@ -117,8 +141,11 @@ class ControlDb{
     assert.equal(this.active,0);assert.equal(this.transactionActive,0);assert.equal(this.heldCases.size,0);
     this.extracts++;if(this.extractFail)throw new Error('CONTROL renderer failed');
     assert.equal(source,sourceId);assert.equal(page,1);assert.equal(raw.sha256,this.region.sourceSha256);
-    assert.equal(canonical(raw.selection),canonical(this.citation.region));this.afterExtract?.();
-    return {bytes:this.png,provenance:{...this.region,version:'packet-region/1',caseId,caseRevision:1,sourceId,sourceRevision:1,purpose:'private_source_preview'}};
+    const second=this.secondCitation&&canonical(raw.selection)===canonical(this.secondCitation.region);
+    assert.equal(canonical(raw.selection),canonical(second?this.secondCitation.region:this.citation.region));
+    this.extractOrder.push(second?this.secondCitation.id:this.citation.id);this.afterExtract?.();
+    return {bytes:second?this.secondPng!:this.png,provenance:{...(second?this.secondRegion:this.region),
+      version:'packet-region/1',caseId,caseRevision:1,sourceId,sourceRevision:1,purpose:'private_source_preview'}};
   },put:async(key,bytes,type)=>{assert.equal(this.active,0);assert.equal(type,'application/pdf');assert(!this.objects.has(key));
     this.puts++;this.objects.set(key,Buffer.from(bytes));this.afterPut?.();},
     read:async(key,bytes,hash)=>{assert.equal(this.active,0);this.reads++;const value=this.objects.get(key);assert(value);
@@ -130,6 +157,9 @@ class ControlDb{
   input(bindingId=this.citation.id){return UspPdfPacketPlanInputSchema.parse({target:this.target,scope:this.scope,purpose:'record_evidence',
     format:'pdf',recipe:'pack1-single-region-image/1',expiresAt:new Date(Date.now()+3600000).toISOString(),
     entries:[{bindingId,required:true,inclusionReason:'Explicit technical exact committed region selection'}]});}
+  multiInput(bindingIds=[this.secondCitation.id,this.citation.id]){return UspPdfMultiPacketPlanInputSchema.parse({...this.input(),
+    recipe:'pack1-multi-region-image/1',entries:bindingIds.map(bindingId=>({bindingId,required:true,
+      inclusionReason:'Explicit controlled committed inclusion; actual retained source pixels, applicability unqualified'}))});}
 }
 async function withDb(action:(db:ControlDb,ctx:RequestContext)=>Promise<void>){
   const globals=globalThis as unknown as {ulpinPool?:Pool},prior=globals.ulpinPool,oldSubject=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
@@ -281,4 +311,59 @@ test('draft-only, wrong target/purpose, unconfirmed/stale plans and changed boun
     await assert.rejects(()=>executePacketPlan(ctx,command,db.io),/bound crop or renderer recipe changed/);
     assert.equal(db.puts,0);assert.equal(db.state.executions.length,0);
     await assert.rejects(()=>readPacketPlan({...ctx,policyVersion:'wrong-policy'},{planId:plan.planId,version:plan.version}),(e:any)=>e.status===403);
+  }));
+
+test('two required region controls preserve operator order through revision/confirmation/PDF/read/replay and exact card linkage',
+  {skip:!present},()=>withDb(async(db,ctx)=>{
+    db.enableMulti();
+    const blocked=await createPacketPlan(ctx,{input:db.multiInput([db.secondCitation.id,digest]),guard:{mode:'create',requestKey:randomUUID()}},db.io);
+    assert.equal(blocked.requiredContext,'blocked');assert.equal(blocked.entries[1].state,'blocked_required_context');
+    await assert.rejects(()=>confirmPacketPlan(ctx,confirm(blocked),db.io),(e:any)=>e.code==='PACKET_PLAN_BLOCKED');
+    const plan=await revisePacketPlan(ctx,{planId:blocked.planId,input:db.multiInput(),
+      guard:{mode:'update',requestKey:randomUUID(),expectedVersion:1,expectedManifestId:manifestId}},db.io);
+    assert.equal(plan.version,2);assert.equal(plan.requiredContext,'available');
+    const confirmation=await confirmPacketPlan(ctx,confirm(plan),db.io),command={planId:plan.planId,version:plan.version,
+      confirmationId:confirmation.confirmationId,guard:{mode:'create',requestKey:randomUUID()}};
+    const execution=await executePacketPlan(ctx,command,db.io),receipt=UspPacketPdfMultiReceiptSchema.parse(execution.packet);
+    assert.deepEqual(db.extractOrder,[db.secondCitation.id,db.citation.id]);assert.equal(db.extracts,2);assert.equal(db.puts,1);
+    assert.equal(receipt.assembly.output.pages,2);assert.deepEqual(receipt.assembly.regions,[db.secondRegion,db.region]);
+    assert.deepEqual(receipt.entries,plan.entries.map((entry,index)=>({bindingId:entry.selection.bindingId,
+      entrySha256:entry.entrySha256,outputPage:index+1})));
+    assert.deepEqual(execution.omissions,[]);assert.equal(db.state.packets.length,1);assert.equal(db.state.executions.length,1);
+    const output=await readPacketPdf(ctx,receipt.packetId,db.pdf);assert.deepEqual(output.receipt,receipt);
+    assert.equal(sha256(output.bytes),receipt.artifact.sha256);
+    assert.deepEqual(await executePacketPlan(ctx,command,db.io),execution);assert.equal(db.extracts,2);assert.equal(db.puts,1);
+    const card=await generatePropertyCard(ctx,cardCommand(plan),db.cardIo);
+    assert.deepEqual(card.evidenceEntrySha256,plan.entries.map(entry=>entry.entrySha256));assert.equal(card.packetId,receipt.packetId);
+    assert.equal((await resolvePropertyCard(ctx,{cardId:card.cardId,revision:1},db.cardIo)).card.packetSha256,receipt.artifact.sha256);
+    const saved=process.env.ULPIN_PACKET_MULTI_FLOW_ROOT;
+    if(saved){mkdirSync(saved,{recursive:true});writeFileSync(saved+'/packet.pdf',output.bytes,{flag:'wx'});
+      writeFileSync(saved+'/flow.json',JSON.stringify({scope:actualSecond?'Actual two region byte inputs; controlled applicability/target/snapshot/SQL/storage/extraction':
+        'Retained FIRST crop pixels reused at two controlled region locators; controlled applicability/target/snapshot/SQL/storage/extractor; genuine second source extraction unavailable',
+        plan,confirmation,execution,card,output:{bytes:output.bytes.length,sha256:sha256(output.bytes)},
+        extracts:db.extracts,extractOrder:db.extractOrder,packetPuts:1},null,2)+'\n',{flag:'wx'});}
+  }));
+
+test('multi-region duplicate/optional selections refuse; required second crop drift or deadline prevents every ready row',
+  {skip:!present},()=>withDb(async(db,ctx)=>{
+    db.enableMulti();const input=db.multiInput();
+    assert(!UspPdfMultiPacketPlanInputSchema.safeParse({...input,entries:[input.entries[0],input.entries[0]]}).success);
+    assert(!UspPdfMultiPacketPlanInputSchema.safeParse({...input,entries:[{...input.entries[0],required:false},input.entries[1]]}).success);
+    const plan=await createPacketPlan(ctx,{input,guard:{mode:'create',requestKey:randomUUID()}},db.io);
+    const confirmation=await confirmPacketPlan(ctx,confirm(plan),db.io);
+    // Put the second actual crop last for this required-entry drift control.
+    const revised=await revisePacketPlan(ctx,{planId:plan.planId,input:db.multiInput([db.citation.id,db.secondCitation.id]),
+      guard:{mode:'update',requestKey:randomUUID(),expectedVersion:plan.version,expectedManifestId:manifestId}},db.io);
+    const accepted=await confirmPacketPlan(ctx,confirm(revised),db.io);
+    const prior=db.secondRegion;db.afterExtract=()=>{if(db.extracts===2)db.secondRegion={...prior,recipeSha256:'b'.repeat(64)};};
+    await assert.rejects(()=>executePacketPlan(ctx,{planId:revised.planId,version:revised.version,confirmationId:accepted.confirmationId,
+      guard:{mode:'create',requestKey:randomUUID()}},db.io),/bound crop or renderer recipe changed/);
+    assert.equal(db.extracts,2);assert.equal(db.puts,0);assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);
+    assert(!db.state.receipts.some(receipt=>receipt.operation==='packet_plan_execute'));
+    assert(!db.state.events.some(event=>event.type==='packet.plan.executed'));assert(confirmation);
+    db.secondRegion=prior;const now=Date.now;
+    db.afterExtract=()=>{if(db.extracts===4)Date.now=()=>now()+35001;};
+    try{await assert.rejects(()=>executePacketPlan(ctx,{planId:revised.planId,version:revised.version,confirmationId:accepted.confirmationId,
+      guard:{mode:'create',requestKey:randomUUID()}},db.io),(e:any)=>e.code==='PACKET_PDF_DEADLINE');}finally{Date.now=now;}
+    assert.equal(db.puts,0);assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);
   }));

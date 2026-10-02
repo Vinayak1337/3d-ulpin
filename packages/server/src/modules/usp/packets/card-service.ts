@@ -5,7 +5,7 @@ import { UspGeneratePropertyCardSchema, UspReadPropertyCardSchema, UspPropertyCa
   UspPropertyCardViewSchema, type PropertyCard } from '../../../../../contracts/src/usp/property-card';
 import { UspPacketPlanViewSchema, type AnyPacketPlan, type PacketPlanConfirmation,
   type PacketPlanExecution } from '../../../../../contracts/src/usp/packets';
-import type { PdfPacketPlanExecution } from '../../../../../contracts/src/usp/packet-pdf';
+import type { AnyPdfPacketPlanExecution as PdfPacketPlanExecution } from '../../../../../contracts/src/usp/packet-pdf';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { readObject, openObjectStream, putOriginal, sha256 } from '../../../infrastructure/storage';

@@ -3,7 +3,8 @@ import type {PoolClient} from 'pg';
 import type {RequestContext} from '@ulpin/contracts/usp';
 import {UspPacketPlanSchema,UspPacketPlanConfirmationSchema,UspPacketPlanExecutionSchema,
   UspTextPacketPlanSchema,type AnyPacketPlan,type PacketPlan} from '../../../../../contracts/src/usp/packets';
-import {UspPdfPacketPlanSchema,UspPdfPacketPlanExecutionSchema,type PdfPacketPlan} from '../../../../../contracts/src/usp/packet-pdf';
+import {UspAnyPdfPacketPlanSchema,UspAnyPdfPacketPlanExecutionSchema,
+  type AnyPdfPacketPlan as PdfPacketPlan} from '../../../../../contracts/src/usp/packet-pdf';
 import {canonical,fingerprint} from '../../cases/domain';
 import {conflict,notFound} from '../../../infrastructure/errors';
 
@@ -29,13 +30,22 @@ export function validateExecution(plan:AnyPacketPlan,raw:unknown){
     canonical(packet.scope)!==canonical(plan.input.scope)||packet.format!==plan.input.format||packet.status!=='complete')
     conflict('The execution does not match its immutable selection.');
   if(isPdfPlan(plan)){
-    const pdf=UspPdfPacketPlanExecutionSchema.parse(execution),entry=plan.entries[0],p=pdf.packet;
-    if(!entry.binding||entry.state!=='included'||plan.requiredContext!=='available'||
+    const pdf=UspAnyPdfPacketPlanExecutionSchema.parse(execution),p=pdf.packet;
+    if(plan.entries.some(entry=>!entry.binding||entry.state!=='included')||plan.requiredContext!=='available'||
       p.planId!==plan.planId||p.planVersion!==plan.version||p.planSha256!==plan.planSha256||
-      p.confirmationId!==pdf.confirmationId||p.bindingId!==entry.binding.id||p.entrySha256!==entry.entrySha256||
-      canonical(p.assembly.region)!==canonical(entry.binding.validation)||p.artifact.assetId!==p.packetId||
+      p.confirmationId!==pdf.confirmationId||p.artifact.assetId!==p.packetId||
       p.artifact.version!==1||p.artifact.sha256!==p.assembly.output.sha256)
       conflict('The PDF execution does not match its exact committed region and assembly.');
+    if(plan.input.recipe!==p.assembly.recipe)conflict('The PDF recipe differs from its confirmed plan.');
+    if(p.version==='packet-pdf/1'){
+      const entry=plan.entries[0];
+      if(plan.entries.length!==1||p.bindingId!==entry.binding!.id||p.entrySha256!==entry.entrySha256||
+        canonical(p.assembly.region)!==canonical(entry.binding!.validation))
+        conflict('The PDF execution does not match its exact committed region and assembly.');
+    }else if(p.entries.length!==plan.entries.length||canonical(p.entries)!==canonical(plan.entries.map((entry,index)=>({
+      bindingId:entry.binding!.id,entrySha256:entry.entrySha256,outputPage:index+1})))||
+      canonical(p.assembly.regions)!==canonical(plan.entries.map(entry=>entry.binding!.validation)))
+      conflict('The PDF execution does not match every ordered required region.');
     return pdf;
   }
   if(packet.format==='pdf')conflict('The PDF execution belongs to another plan kind.');
@@ -51,7 +61,7 @@ export async function loadPlanTx(client:PoolClient,planId:string,version:number)
   const plan=validatePlan(row.body);
   if(plan.planId!==planId||plan.version!==version)conflict('The stored plan version changed.');return plan;
 }
-export async function loadPdfPlanTx(client:PoolClient,id:string,version:number){return UspPdfPacketPlanSchema.parse(await loadPlanTx(client,id,version));}
+export async function loadPdfPlanTx(client:PoolClient,id:string,version:number){return UspAnyPdfPacketPlanSchema.parse(await loadPlanTx(client,id,version));}
 export async function livePlanTx(client:PoolClient,expiresAt:string){
   if(!(await client.query('SELECT clock_timestamp() < $1::timestamptz AS live',[expiresAt])).rows[0]?.live)
     conflict('The unexecuted packet plan expired.');
