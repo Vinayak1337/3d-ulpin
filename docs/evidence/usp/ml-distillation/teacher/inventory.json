@@ -1,0 +1,256 @@
+{
+  "version": "ml-distill-teacher-inventory/1",
+  "createdDate": "2026-10-02",
+  "assignmentBase": "e3e986c60ebaeb3edb101768ac88098717ccda74",
+  "stagingObservedReadOnly": "523c85b17c4f37a0e0343877ce67c50cbd418b4f",
+  "scope": "Retained public-source inventory; no demonstrations or evaluation access.",
+  "sources": [
+    {
+      "assetId": "bihar-magnolia-sanctioned-layout.pdf",
+      "family": "bihar-magnolia",
+      "path": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\bihar-magnolia-sanctioned-layout-original.pdf",
+      "expected": {
+        "bytes": 2455183,
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3"
+      },
+      "issuer": "Bihar RERA / project submitter",
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+      "acquiredAt": "2026-09-25T00:38:59.574536Z",
+      "sourceVersion": "drawings V5-01 and V5-02 dated 08.06.21",
+      "geography": "Begusarai, Bihar, India",
+      "permissions": {
+        "sourceSpecificReuse": "unconfirmed",
+        "redistribution": "unconfirmed",
+        "mlTraining": "unconfirmed",
+        "evidence": "D5 manifest and DATA-05 acquisition record report no verified source-specific reuse or training licence; public PDF access is not a grant"
+      },
+      "originManifest": "docs/evidence/usp/association-sources/manifest.json",
+      "observed": {
+        "bytes": 2455183,
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3"
+      },
+      "canonicalMatchState": "not_assessed",
+      "trainingSelection": "awaiting_orchestrator_freeze"
+    },
+    {
+      "assetId": "haryana-2831-tower3-plan1.pdf",
+      "family": "haryana-2831",
+      "path": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\haryana-2831-tower3-plan1.pdf",
+      "expected": {
+        "bytes": 1655334,
+        "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+      },
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc=",
+      "acquiredAt": "2026-09-25T00:41:16.696207Z",
+      "sourceVersion": "portal upload 29-08-2024; drawing Jan-2024",
+      "geography": "Gurugram, Haryana, India",
+      "permissions": {
+        "sourceSpecificReuse": "unconfirmed",
+        "redistribution": "unconfirmed",
+        "mlTraining": "unconfirmed",
+        "evidence": "D5 manifest and DATA-05 acquisition record report no verified source-specific reuse or training licence; public attachment access is not a grant"
+      },
+      "originManifest": "docs/evidence/usp/association-sources/manifest.json",
+      "observed": {
+        "bytes": 1655334,
+        "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+      },
+      "canonicalMatchState": "not_assessed",
+      "trainingSelection": "awaiting_orchestrator_freeze"
+    },
+    {
+      "assetId": "haryana-2831-tower3-section.pdf",
+      "family": "haryana-2831",
+      "path": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\haryana-2831-tower3-section.pdf",
+      "expected": {
+        "bytes": 2448909,
+        "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b"
+      },
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA=",
+      "acquiredAt": "2026-09-25T00:43:08.042067Z",
+      "sourceVersion": "sheet Jan-2024; portal upload 29-08-2024",
+      "geography": "Gurugram, Haryana, India",
+      "permissions": {
+        "sourceSpecificReuse": "unconfirmed",
+        "redistribution": "unconfirmed",
+        "mlTraining": "unconfirmed",
+        "evidence": "D5 manifest and DATA-05 acquisition record report no verified source-specific reuse or training licence; public attachment access is not a grant"
+      },
+      "originManifest": "docs/evidence/usp/association-sources/manifest.json",
+      "observed": {
+        "bytes": 2448909,
+        "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b"
+      },
+      "canonicalMatchState": "not_assessed",
+      "trainingSelection": "awaiting_orchestrator_freeze"
+    },
+    {
+      "assetId": "bihar-approved-layout.pdf",
+      "family": "bihar-magnolia",
+      "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-approved-layout.pdf",
+      "expected": {
+        "bytes": 2455183,
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3"
+      },
+      "issuer": "Bihar RERA / project submitter",
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3ApprovedLayoutPlan.pdf",
+      "acquiredAt": "2026-09-30T12:56:27.312736+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "geography": "Begusarai, Bihar, India",
+      "permissions": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "originManifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+      "observed": {
+        "bytes": 2455183,
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3"
+      },
+      "canonicalMatchState": "not_assessed",
+      "trainingSelection": "awaiting_orchestrator_freeze"
+    },
+    {
+      "assetId": "bihar-land-location.pdf",
+      "family": "bihar-magnolia",
+      "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-land-location.pdf",
+      "expected": {
+        "bytes": 1581661,
+        "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a"
+      },
+      "issuer": "Bihar RERA / project submitter",
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3LanddocumentsLocation.pdf",
+      "acquiredAt": "2026-09-30T12:56:26.991908+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "geography": "Begusarai, Bihar, India",
+      "permissions": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "originManifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+      "observed": {
+        "bytes": 1581661,
+        "sha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a"
+      },
+      "canonicalMatchState": "not_assessed",
+      "trainingSelection": "awaiting_orchestrator_freeze"
+    },
+    {
+      "assetId": "bihar-project.html",
+      "family": "bihar-magnolia",
+      "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-project.html",
+      "expected": {
+        "bytes": 132607,
+        "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e"
+      },
+      "issuer": "Bihar RERA / project submitter",
+      "originalUrl": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+      "acquiredAt": "2026-09-30T12:55:36.807272+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "geography": "Begusarai, Bihar, India",
+      "permissions": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "originManifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+      "observed": {
+        "bytes": 132607,
+        "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e"
+      },
+      "canonicalMatchState": "not_assessed",
+      "trainingSelection": "awaiting_orchestrator_freeze"
+    },
+    {
+      "assetId": "haryana-2831-project.html",
+      "family": "haryana-2831",
+      "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-project.html",
+      "expected": {
+        "bytes": 108086,
+        "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8"
+      },
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/view_project/project_preview_open/2831",
+      "acquiredAt": "2026-09-30T12:55:17.366887+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "geography": "Haryana, India; project 2831",
+      "permissions": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "originManifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+      "observed": {
+        "bytes": 108086,
+        "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8"
+      },
+      "canonicalMatchState": "not_assessed",
+      "trainingSelection": "awaiting_orchestrator_freeze"
+    },
+    {
+      "assetId": "haryana-2831-site-plan.pdf",
+      "family": "haryana-2831",
+      "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-site-plan.pdf",
+      "expected": {
+        "bytes": 3782332,
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9"
+      },
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+      "acquiredAt": "2026-09-30T12:56:26.540725+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "geography": "Haryana, India; project 2831",
+      "permissions": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "originManifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+      "observed": {
+        "bytes": 3782332,
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9"
+      },
+      "canonicalMatchState": "not_assessed",
+      "trainingSelection": "awaiting_orchestrator_freeze"
+    },
+    {
+      "assetId": "haryana-2831-tower3-plan2.pdf",
+      "family": "haryana-2831",
+      "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-tower3-plan2.pdf",
+      "expected": {
+        "bytes": 1630108,
+        "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+      },
+      "issuer": "Haryana RERA / project submitter",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/b76ed9cb4dNDg2NTg=",
+      "acquiredAt": "2026-09-30T12:56:26.681798+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "geography": "Haryana, India; project 2831",
+      "permissions": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      },
+      "originManifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+      "observed": {
+        "bytes": 1630108,
+        "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+      },
+      "canonicalMatchState": "not_assessed",
+      "trainingSelection": "awaiting_orchestrator_freeze"
+    }
+  ],
+  "familyGrouping": "All project drawings, portal pages, land/licence context and byte-identical URLs stay together.",
+  "sourceIntegrity": "Original bytes unchanged; no new acquisition or canonical identifiers.",
+  "teacher": {
+    "role": "ML-DISTILL-01 teacher",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedEffort": "high",
+    "requestedSpeed": "default/standard",
+    "observedModelEffortTier": "unexposed",
+    "suppliedPermissions": "never/danger-full-access"
+  },
+  "limits": [
+    "Haryana planned T3 context only; G+41/G+42 and current approved revision unresolved.",
+    "Bihar blank villa number and Jamabandi 333/330 conflict; grouped Khata context is not a crosswalk.",
+    "Public local development authorized; source-specific training/redistribution launch clearance unconfirmed.",
+    "No Sarvam-derived material, operational records, fit, GPU, or qualified learning truth."
+  ]
+}
