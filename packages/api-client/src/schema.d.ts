@@ -2051,6 +2051,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/packets/sources/{sourceId}/pages/{page}/region": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extract one acknowledged private source crop; property applicability remains unassessed */
+        post: operations["POST_api_v1_usp_packets_sources_sourceId_pages_page_region"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/evidence/document-association/preview": {
         parameters: {
             query?: never;
@@ -31289,6 +31306,30 @@ export interface components {
                 };
             };
         };
+        POST_usp_packets_sources_sourceId_pages_page_region_Request_application_json: {
+            revision: string;
+            sha256: string;
+            /** @enum {string} */
+            purpose: "private_source_preview";
+            selection: {
+                frame: {
+                    /** @enum {string} */
+                    kind: "pdf_display_page_top_left_points";
+                    rotation: number;
+                    width: number;
+                    height: number;
+                };
+                mediaBox: (number)[];
+                cropBox: (number)[];
+                /** @enum {string} */
+                boxConvention: "pymupdf_page_rectangles/1";
+                /** @enum {string} */
+                coordinates: "displayed_cropbox_normalized_top_left/1";
+                region: (number)[];
+                /** @enum {boolean} */
+                selectionAcknowledged: true;
+            };
+        };
         POST_usp_evidence_document_association_preview_Request_application_json: {
             document: {
                 /** Format: uuid */
@@ -56578,6 +56619,35 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    POST_api_v1_usp_packets_sources_sourceId_pages_page_region: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                page: number;
+                sourceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_packets_sources_sourceId_pages_page_region_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
             };
         };
     };

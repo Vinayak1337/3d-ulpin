@@ -2918,6 +2918,16 @@
         },
         {
           "id": "haryana-2831-tower3-plan1.pdf",
+          "privateRegionPreviewEvidence": {
+            "guide": "docs/evidence/usp/packet-region-extract-handoff.md",
+            "scope": "Retained local source render plus isolated technical controls; current HTTP/SQL/storage unqualified",
+            "outputSha256": "b9b6b487ac309582dc79fa03b2651e0698c5f68f8b6eb4fb27f632b658266d7c",
+            "outputPixels": [795, 405],
+            "outputBytes": 123120,
+            "bootstrapCorrectionCommit": "23aeeb22",
+            "propertyApplicability": "not_assessed",
+            "runtimeProfile": "Fresh integrated-checkout profile required before rendering"
+          },
           "mediaType": "application/pdf",
           "classification": "planned",
           "origin": {
