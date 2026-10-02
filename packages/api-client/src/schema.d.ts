@@ -1592,6 +1592,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/registry-drafts/{draftId}/native-exterior/control-assessment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compare exact source-backed control points with selected native vertices; no accuracy or admission pass */
+        post: operations["POST_api_v1_registry_drafts_draftId_native_exterior_control_assessment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/snapshots": {
         parameters: {
             query?: never;
@@ -24692,6 +24709,154 @@ export interface components {
                 reason: string;
             };
             missing: string[];
+        };
+        POST_registry_drafts_draftId_native_exterior_control_assessment_Request_application_json: {
+            expectedDraftRevision: number;
+            candidateSha256: string;
+            selectionSha256: string;
+            referencesSha256: string;
+            correspondences: {
+                referenceId: string;
+                nativeVertexIndex: number;
+                review: {
+                    /** @enum {string} */
+                    correspondence: "reviewed";
+                    /** @enum {string} */
+                    independentAcquisition: "reviewed";
+                    basis: string;
+                };
+            }[];
+        };
+        POST_registry_drafts_draftId_native_exterior_control_assessment_Response_200_application_json: {
+            /** @enum {string} */
+            version: "registry-cityjson-control-assessment/1";
+            /** @enum {string} */
+            state: "comparison_computed" | "needs_input";
+            assessmentSha256: string;
+            draft: {
+                /** Format: uuid */
+                id: string;
+                draftRevision: number;
+                /** Format: uuid */
+                recordId: string;
+                candidateSha256: string;
+                selectionSha256: string;
+                referencesSha256: string;
+            };
+            source: {
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                sourceSha256: string;
+                nativeArtifactSha256: string;
+                verticesSha256: string;
+                transformSha256: string;
+            };
+            frame: {
+                id: string;
+                axes: (string)[];
+                unit: string;
+                vertical: string;
+            };
+            points: {
+                referenceId: string;
+                nativeVertexIndex: number;
+                nativeVertexPointer: string;
+                reviewSha256: string;
+                evidence: {
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    /** Format: uuid */
+                    partId: string;
+                    partSha256: string;
+                    locator: {
+                        label: string;
+                        page?: number;
+                        row?: number;
+                        line?: number;
+                        lineEnd?: number;
+                        paragraph?: number;
+                        table?: number;
+                        column?: number;
+                        headerRow?: number;
+                        sheet?: string;
+                        sheetIndex?: number;
+                        sheetId?: number;
+                        cell?: string;
+                        /** @enum {string} */
+                        cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                        cellType?: string;
+                        /** Format: uuid */
+                        unitId?: string;
+                        unitSha256?: string;
+                        segmentIndex?: number;
+                        segmentCount?: number;
+                        characterStart: number;
+                        characterEnd: number;
+                    };
+                    /** @enum {string} */
+                    coordinatePointer: "/coordinates";
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                };
+                controlId: string | null;
+                /** @enum {string} */
+                state: "comparison_computed" | "needs_input";
+                reasonCode: string | null;
+                nativePosition: (number)[] | null;
+                controlPosition: (number)[] | null;
+                residual: (number)[] | null;
+                horizontalMetres: number | null;
+                verticalMetres: number | null;
+                distanceMetres: number | null;
+            }[];
+            metrics: {
+                count: number;
+                meanResidual: (number)[];
+                rmseHorizontalMetres: number;
+                rmseVerticalMetres: number;
+                rmse3DMetres: number;
+                maximum3DMetres: number;
+            } | null;
+            missing: {
+                referenceId: string | null;
+                reasonCode: string;
+            }[];
+            provenance: {
+                /** @enum {string} */
+                method: "same_named_frame_point_residuals";
+                /** @enum {string} */
+                nativeDecode: "cityjson_scale_translate_once";
+                /** @enum {string} */
+                controlProfile: "native-point-control/1";
+                /** @enum {string} */
+                reviewAttribution: "local_process";
+                contextSha256: string;
+                inputSha256: string;
+                /** @enum {string} */
+                independence: "source_declared_and_operator_reviewed";
+            };
+            /** @enum {string} */
+            accuracy: "not_assessed";
+            /** @enum {string} */
+            admission: "unavailable";
+            /** @enum {string} */
+            qualification: "not_assessed";
+            /** @enum {string} */
+            learningQualification: "not_assessed";
         };
         POST_usp_snapshots_Request_application_json: {
             scopeId: string;
@@ -52558,6 +52723,111 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GET_buildings_buildingId_ledger_Response_200_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_registry_drafts_draftId_native_exterior_control_assessment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_control_assessment_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_control_assessment_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
                 };
             };
         };
