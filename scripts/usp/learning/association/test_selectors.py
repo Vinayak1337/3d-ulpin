@@ -222,5 +222,50 @@ class SelectorTests(unittest.TestCase):
         self.assertFalse({"torch", "transformers", "peft", "accelerate", "safetensors"} & set(sys.modules))
 
 
+class SourcePinTests(unittest.TestCase):
+    def test_accepted_source_versions_and_assignment_pins_before_mkdir(self):
+        self.assertEqual(staging.isolation.sha(staging.BASELINE / "profile.json"), staging.BASELINE_PROFILE_SHA)
+        profile = json.loads((staging.BASELINE / "profile.json").read_bytes())
+        assignment_path = COORDINATOR / "docs/evidence/usp/ml-distillation/student-09.selector-baseline.assignment.json"
+        assignment_raw = assignment_path.read_bytes()
+        self.assertEqual(hashlib.sha256(assignment_raw).hexdigest(),
+                         "57b77caffc2a0527348b07cda104e08a53afb758acb90468b2467aba8b69c4f9")
+        assigned = json.loads(assignment_raw)["runtimeCodeCanonicalLfSha256"]
+        sources = {name: (REPO / name).read_bytes() for name in staging.SOURCE_PATHS}
+        # In-memory future pin fixture for this owned correction; no assignment is rewritten.
+        leaf = "scripts/usp/learning/association/stage_selector_baseline.py"
+        assigned[leaf] = hashlib.sha256(sources[leaf].replace(b"\r\n", b"\n")).hexdigest()
+        with patch.object(Path, "mkdir") as mkdir:
+            pins = staging.checked_source_pins(sources, profile["files"], assigned)
+            self.assertEqual(len(pins), 12)
+            for name in staging.BASELINE_CODE:
+                if name.endswith("association_student.py"):
+                    continue
+                expected = staging.ACCEPTED_LATER_SOURCE_SHA256.get(name, profile["files"]["code/" + name])
+                self.assertEqual(pins[name], expected)
+            # A matching assignment cannot authorize older or altered protected code.
+            for name in staging.ACCEPTED_LATER_SOURCE_SHA256:
+                old = (staging.BASELINE / "code" / name).read_bytes()
+                self.assertEqual(hashlib.sha256(old).hexdigest(), profile["files"]["code/" + name])
+                for unaccepted in (old, sources[name] + b"\n# changed\n"):
+                    with self.subTest(source=name, retained=unaccepted == old):
+                        changed = {**sources, name: unaccepted}
+                        matching = {**assigned, name: hashlib.sha256(unaccepted.replace(b"\r\n", b"\n")).hexdigest()}
+                        with self.assertRaisesRegex(InvalidEvidence, "selector_protected_source_drift"):
+                            staging.checked_source_pins(changed, profile["files"], matching)
+            name = "services/geo/geo/usp_learning/resources.py"
+            changed = {**sources, name: sources[name] + b"\n# changed\n"}
+            matching = {**assigned, name: hashlib.sha256(changed[name].replace(b"\r\n", b"\n")).hexdigest()}
+            with self.assertRaisesRegex(InvalidEvidence, "selector_protected_source_drift"):
+                staging.checked_source_pins(changed, profile["files"], matching)
+            for bad_pins in ({k: v for k, v in assigned.items() if k != leaf}, {**assigned, "extra.py": "0" * 64}):
+                with self.assertRaisesRegex(InvalidEvidence, "selector_assignment_code_pin_set_drift"):
+                    staging.checked_source_pins(sources, profile["files"], bad_pins)
+            with self.assertRaisesRegex(InvalidEvidence, "selector_assignment_code_pin_drift"):
+                staging.checked_source_pins({**sources, leaf: sources[leaf] + b"\n"}, profile["files"], assigned)
+            mkdir.assert_not_called()
+        self.assertFalse({"torch", "transformers", "peft", "accelerate", "safetensors"} & set(sys.modules))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

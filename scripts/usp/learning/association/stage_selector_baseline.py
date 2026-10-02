@@ -28,6 +28,30 @@ BASELINE = isolation.ASSOCIATION_STAGING_PARENT / "baseline-af47550c33ea4dc2a3dc
 BASELINE_PROFILE_SHA = "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438"
 CODE = (*BASELINE_CODE, "services/geo/geo/usp_learning/association/selectors.py",
         "services/geo/geo/usp_learning/association/selector_baseline.py")
+SOURCE_PATHS = (*CODE, "scripts/usp/learning/association/stage_selector_baseline.py")
+# Exact later versions already accepted/executed by STUDENT-08; other protected
+# sources still require their unchanged original baseline profile bytes.
+ACCEPTED_LATER_SOURCE_SHA256 = {
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+}
+
+
+def checked_source_pins(source_bytes, baseline_files, assigned_canonical_pins):
+    """Pure pre-mkdir check of both assignment and protected-source authorities."""
+    require(set(source_bytes) == set(SOURCE_PATHS) and type(assigned_canonical_pins) is dict
+            and set(assigned_canonical_pins) == set(SOURCE_PATHS), "selector_assignment_code_pin_set_drift")
+    pins = {}
+    for relative in SOURCE_PATHS:
+        raw = source_bytes[relative]
+        require(hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest() == assigned_canonical_pins[relative],
+                "selector_assignment_code_pin_drift:" + relative)
+        pins[relative] = hashlib.sha256(raw).hexdigest()
+        if relative in BASELINE_CODE and not relative.endswith("association_student.py"):
+            expected = (ACCEPTED_LATER_SOURCE_SHA256[relative] if relative in ACCEPTED_LATER_SOURCE_SHA256
+                        else baseline_files["code/" + relative])
+            require(pins[relative] == expected, "selector_protected_source_drift:" + relative)
+    return pins
 
 
 def stage(assignment_path):
@@ -53,14 +77,13 @@ def stage(assignment_path):
     require(commit == assignment["studentCodeCommit"], "selector_baseline_frozen_code_head_drift")
     require(not subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO, text=True).strip(),
             "selector_baseline_clean_checkout_required")
-    code_pins = {}
-    for relative in (*CODE, "scripts/usp/learning/association/stage_selector_baseline.py"):
+    source_bytes = {}
+    for relative in SOURCE_PATHS:
         raw = (REPO / relative).read_bytes()
         require(raw.replace(b"\r\n", b"\n") == subprocess.check_output(["git", "show", commit + ":" + relative], cwd=REPO),
                 "selector_uncommitted_execution_source:" + relative)
-        code_pins[relative] = hashlib.sha256(raw).hexdigest()
-        if relative in BASELINE_CODE and not relative.endswith("association_student.py"):
-            require(hashlib.sha256(raw).hexdigest() == baseline["files"]["code/" + relative], "selector_protected_source_drift:" + relative)
+        source_bytes[relative] = raw
+    code_pins = checked_source_pins(source_bytes, baseline["files"], assignment.get("runtimeCodeCanonicalLfSha256"))
     require(shutil.disk_usage(BASELINE.parent).free >= 15 * 1024**3, "selector_staging_disk_headroom")
     root = BASELINE.parent / ("selector-baseline-" + uuid.uuid4().hex)
     root.mkdir()
