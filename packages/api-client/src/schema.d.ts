@@ -1924,7 +1924,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create one immutable selected-target text/CSV or committed-region PDF plan */
+        /** Create one immutable selected-target text/CSV or ordered required-region PDF plan */
         post: operations["POST_api_v1_usp_packets_plans_create"];
         delete?: never;
         options?: never;
@@ -1958,7 +1958,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Append explicit decisions as a new immutable version */
+        /** Append explicit decisions or ordered required regions as a new immutable version */
         post: operations["POST_api_v1_usp_packets_plans_revise"];
         delete?: never;
         options?: never;
@@ -2007,7 +2007,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Download the exact private generated PDF under current source, target and plan authority */
+        /** Download the exact private generated PDF of required regions under current source, target and plan authority */
         get: operations["GET_api_v1_usp_packets_pdf_packetId_download"];
         put?: never;
         post?: never;
@@ -2026,7 +2026,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Generate a private one-page summary linked to an executed confirmed text/CSV or one-region PDF plan */
+        /** Generate a private one-page summary linked to an executed confirmed text/CSV or required-region PDF plan */
         post: operations["POST_api_v1_usp_property_cards_generate"];
         delete?: never;
         options?: never;
@@ -2179,7 +2179,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF fragments without establishing an association */
+        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF/KML fragments without establishing an association */
         post: operations["POST_api_v1_usp_evidence_source_fusion_context"];
         delete?: never;
         options?: never;
@@ -12404,6 +12404,26 @@ export interface components {
                             resultBytes: number;
                         };
                         entityOrdinals: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "kml";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        featureOrdinals: number[];
                     })[];
                 };
             };
@@ -30151,7 +30171,7 @@ export interface components {
                         validAt: string | null;
                     };
                 }[];
-            } | {
+            } | ({
                 target: {
                     ref: {
                         namespace: string;
@@ -30186,7 +30206,42 @@ export interface components {
                     required: true;
                     inclusionReason: string;
                 }[];
-            };
+            } | {
+                target: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+                /** @enum {string} */
+                purpose: "record_evidence";
+                /** @enum {string} */
+                format: "pdf";
+                /** @enum {string} */
+                recipe: "pack1-multi-region-image/1";
+                /** Format: date-time */
+                expiresAt: string;
+                entries: {
+                    bindingId: string;
+                    /** @enum {boolean} */
+                    required: true;
+                    inclusionReason: string;
+                }[];
+            });
             guard: {
                 /** @enum {string} */
                 mode: "create";
@@ -30494,7 +30549,7 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
                 planSha256: string;
-            } | {
+            } | ({
                 /** Format: uuid */
                 planId: string;
                 version: number;
@@ -30685,7 +30740,198 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
                 planSha256: string;
-            };
+            } | {
+                /** Format: uuid */
+                planId: string;
+                version: number;
+                previousVersion: number | null;
+                readonly input: {
+                    readonly target: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    readonly scope: {
+                        /** @enum {string} */
+                        kind: "snapshot";
+                        scopeId: string;
+                        readonly world: {
+                            namespace: string;
+                            id: string;
+                        };
+                        manifestId: string;
+                        snapshotDigest: string;
+                        /** @enum {string} */
+                        stage: "draft" | "recorded" | "retained";
+                    };
+                    /** @enum {string} */
+                    purpose: "record_evidence";
+                    /** @enum {string} */
+                    format: "pdf";
+                    /** @enum {string} */
+                    recipe: "pack1-multi-region-image/1";
+                    /** Format: date-time */
+                    expiresAt: string;
+                    readonly entries: {
+                        bindingId: string;
+                        /** @enum {boolean} */
+                        required: true;
+                        inclusionReason: string;
+                    }[];
+                };
+                readonly creator: {
+                    subject: string;
+                    readonly roles: string[];
+                    entitlementVersion: string;
+                    /** @enum {string} */
+                    mode: "local_demo" | "india_private" | "public_interoperability";
+                };
+                accessViewId: string;
+                policyVersion: string;
+                targetBodySha256: string;
+                targetLabel: string;
+                readonly entries: {
+                    readonly selection: {
+                        bindingId: string;
+                        /** @enum {boolean} */
+                        required: true;
+                        inclusionReason: string;
+                    };
+                    binding: {
+                        /** @enum {string} */
+                        version: "registry-document-region-citation/1";
+                        id: string;
+                        document: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            sourceBytes: number;
+                        };
+                        page: number;
+                        region: {
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            mediaBox: (number)[];
+                            cropBox: (number)[];
+                            /** @enum {string} */
+                            boxConvention: "pymupdf_page_rectangles/1";
+                            /** @enum {string} */
+                            coordinates: "displayed_cropbox_normalized_top_left/1";
+                            region: (number)[];
+                            /** @enum {boolean} */
+                            selectionAcknowledged: true;
+                        };
+                        /** @enum {string} */
+                        purpose: "record_evidence";
+                        target: {
+                            /** Format: uuid */
+                            recordId: string;
+                            revision: number;
+                            bodySha256: string;
+                        };
+                        selection: {
+                            subject: string;
+                            accessSha256: string;
+                            /** Format: date-time */
+                            selectedAt: string;
+                        };
+                        authoritySha256: string;
+                        validation: {
+                            /** @enum {string} */
+                            version: "packet-region-local/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            page: number;
+                            selection: {
+                                frame: {
+                                    /** @enum {string} */
+                                    kind: "pdf_display_page_top_left_points";
+                                    rotation: number;
+                                    width: number;
+                                    height: number;
+                                };
+                                mediaBox: (number)[];
+                                cropBox: (number)[];
+                                /** @enum {string} */
+                                boxConvention: "pymupdf_page_rectangles/1";
+                                /** @enum {string} */
+                                coordinates: "displayed_cropbox_normalized_top_left/1";
+                                region: (number)[];
+                                /** @enum {boolean} */
+                                selectionAcknowledged: true;
+                            };
+                            recipeSha256: string;
+                            renderer: {
+                                /** @enum {string} */
+                                pypdfium2: "5.13.0";
+                                /** @enum {string} */
+                                pdfium: "153.0.7999.0";
+                                /** @enum {string} */
+                                pymupdf: "1.25.5";
+                                /** @enum {string} */
+                                pillow: "12.3.0";
+                                /** @enum {string} */
+                                pdfiumSha256: "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e";
+                            };
+                            transform: {
+                                canvasPixels: (number)[];
+                                pixelRegion: (number)[];
+                                pixelToDisplay: (number)[];
+                                includedNormalizedRegion: (number)[];
+                                /** @enum {string} */
+                                rounding: "inward_complete_pixels/1";
+                            };
+                            output: {
+                                sha256: string;
+                                bytes: number;
+                                pixels: (number)[];
+                                /** @enum {string} */
+                                format: "png";
+                                /** @enum {string} */
+                                metadataPolicy: "fresh_rgb_pixels_only/1";
+                                /** @enum {string} */
+                                annotations: "excluded";
+                                /** @enum {string} */
+                                applicability: "not_assessed";
+                            };
+                        };
+                        /** @enum {string} */
+                        applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                        /** @enum {string} */
+                        associationState: "operator_selected";
+                        /** @enum {string} */
+                        qualification: "not_assessed";
+                    } | null;
+                    readonly targetPath: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    }[];
+                    applicabilitySha256: string | null;
+                    /** @enum {string} */
+                    state: "included" | "blocked_required_context";
+                    reasonCode: string | null;
+                    entrySha256: string;
+                }[];
+                /** @enum {string} */
+                requiredContext: "available" | "blocked";
+                /** Format: date-time */
+                createdAt: string;
+                planSha256: string;
+            });
             readonly meta: {
                 /** @enum {string} */
                 schemaVersion: "usp/1";
@@ -31017,7 +31263,7 @@ export interface components {
                     /** Format: date-time */
                     createdAt: string;
                     planSha256: string;
-                } | {
+                } | ({
                     /** Format: uuid */
                     planId: string;
                     version: number;
@@ -31208,7 +31454,198 @@ export interface components {
                     /** Format: date-time */
                     createdAt: string;
                     planSha256: string;
-                };
+                } | {
+                    /** Format: uuid */
+                    planId: string;
+                    version: number;
+                    previousVersion: number | null;
+                    readonly input: {
+                        readonly target: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        readonly scope: {
+                            /** @enum {string} */
+                            kind: "snapshot";
+                            scopeId: string;
+                            readonly world: {
+                                namespace: string;
+                                id: string;
+                            };
+                            manifestId: string;
+                            snapshotDigest: string;
+                            /** @enum {string} */
+                            stage: "draft" | "recorded" | "retained";
+                        };
+                        /** @enum {string} */
+                        purpose: "record_evidence";
+                        /** @enum {string} */
+                        format: "pdf";
+                        /** @enum {string} */
+                        recipe: "pack1-multi-region-image/1";
+                        /** Format: date-time */
+                        expiresAt: string;
+                        readonly entries: {
+                            bindingId: string;
+                            /** @enum {boolean} */
+                            required: true;
+                            inclusionReason: string;
+                        }[];
+                    };
+                    readonly creator: {
+                        subject: string;
+                        readonly roles: string[];
+                        entitlementVersion: string;
+                        /** @enum {string} */
+                        mode: "local_demo" | "india_private" | "public_interoperability";
+                    };
+                    accessViewId: string;
+                    policyVersion: string;
+                    targetBodySha256: string;
+                    targetLabel: string;
+                    readonly entries: {
+                        readonly selection: {
+                            bindingId: string;
+                            /** @enum {boolean} */
+                            required: true;
+                            inclusionReason: string;
+                        };
+                        binding: {
+                            /** @enum {string} */
+                            version: "registry-document-region-citation/1";
+                            id: string;
+                            document: {
+                                /** Format: uuid */
+                                caseId: string;
+                                caseRevision: number;
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                sourceBytes: number;
+                            };
+                            page: number;
+                            region: {
+                                frame: {
+                                    /** @enum {string} */
+                                    kind: "pdf_display_page_top_left_points";
+                                    rotation: number;
+                                    width: number;
+                                    height: number;
+                                };
+                                mediaBox: (number)[];
+                                cropBox: (number)[];
+                                /** @enum {string} */
+                                boxConvention: "pymupdf_page_rectangles/1";
+                                /** @enum {string} */
+                                coordinates: "displayed_cropbox_normalized_top_left/1";
+                                region: (number)[];
+                                /** @enum {boolean} */
+                                selectionAcknowledged: true;
+                            };
+                            /** @enum {string} */
+                            purpose: "record_evidence";
+                            target: {
+                                /** Format: uuid */
+                                recordId: string;
+                                revision: number;
+                                bodySha256: string;
+                            };
+                            selection: {
+                                subject: string;
+                                accessSha256: string;
+                                /** Format: date-time */
+                                selectedAt: string;
+                            };
+                            authoritySha256: string;
+                            validation: {
+                                /** @enum {string} */
+                                version: "packet-region-local/1";
+                                sourceSha256: string;
+                                sourceBytes: number;
+                                page: number;
+                                selection: {
+                                    frame: {
+                                        /** @enum {string} */
+                                        kind: "pdf_display_page_top_left_points";
+                                        rotation: number;
+                                        width: number;
+                                        height: number;
+                                    };
+                                    mediaBox: (number)[];
+                                    cropBox: (number)[];
+                                    /** @enum {string} */
+                                    boxConvention: "pymupdf_page_rectangles/1";
+                                    /** @enum {string} */
+                                    coordinates: "displayed_cropbox_normalized_top_left/1";
+                                    region: (number)[];
+                                    /** @enum {boolean} */
+                                    selectionAcknowledged: true;
+                                };
+                                recipeSha256: string;
+                                renderer: {
+                                    /** @enum {string} */
+                                    pypdfium2: "5.13.0";
+                                    /** @enum {string} */
+                                    pdfium: "153.0.7999.0";
+                                    /** @enum {string} */
+                                    pymupdf: "1.25.5";
+                                    /** @enum {string} */
+                                    pillow: "12.3.0";
+                                    /** @enum {string} */
+                                    pdfiumSha256: "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e";
+                                };
+                                transform: {
+                                    canvasPixels: (number)[];
+                                    pixelRegion: (number)[];
+                                    pixelToDisplay: (number)[];
+                                    includedNormalizedRegion: (number)[];
+                                    /** @enum {string} */
+                                    rounding: "inward_complete_pixels/1";
+                                };
+                                output: {
+                                    sha256: string;
+                                    bytes: number;
+                                    pixels: (number)[];
+                                    /** @enum {string} */
+                                    format: "png";
+                                    /** @enum {string} */
+                                    metadataPolicy: "fresh_rgb_pixels_only/1";
+                                    /** @enum {string} */
+                                    annotations: "excluded";
+                                    /** @enum {string} */
+                                    applicability: "not_assessed";
+                                };
+                            };
+                            /** @enum {string} */
+                            applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                            /** @enum {string} */
+                            associationState: "operator_selected";
+                            /** @enum {string} */
+                            qualification: "not_assessed";
+                        } | null;
+                        readonly targetPath: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        }[];
+                        applicabilitySha256: string | null;
+                        /** @enum {string} */
+                        state: "included" | "blocked_required_context";
+                        reasonCode: string | null;
+                        entrySha256: string;
+                    }[];
+                    /** @enum {string} */
+                    requiredContext: "available" | "blocked";
+                    /** Format: date-time */
+                    createdAt: string;
+                    planSha256: string;
+                });
                 readonly confirmation: {
                     /** Format: uuid */
                     confirmationId: string;
@@ -31465,7 +31902,7 @@ export interface components {
                         entrySha256: string;
                         reasonCode: string;
                     }[];
-                } | {
+                } | ({
                     /** Format: uuid */
                     planId: string;
                     version: number;
@@ -31595,7 +32032,140 @@ export interface components {
                         commandSha256: string;
                     };
                     readonly omissions: unknown[];
-                }) | null;
+                } | {
+                    /** Format: uuid */
+                    planId: string;
+                    version: number;
+                    /** Format: uuid */
+                    confirmationId: string;
+                    readonly packet: {
+                        /** @enum {string} */
+                        version: "packet-pdf/2";
+                        /** Format: uuid */
+                        packetId: string;
+                        readonly target: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        readonly scope: {
+                            /** @enum {string} */
+                            kind: "snapshot";
+                            scopeId: string;
+                            readonly world: {
+                                namespace: string;
+                                id: string;
+                            };
+                            manifestId: string;
+                            snapshotDigest: string;
+                            /** @enum {string} */
+                            stage: "draft" | "recorded" | "retained";
+                        };
+                        /** @enum {string} */
+                        format: "pdf";
+                        readonly artifact: {
+                            assetId: string;
+                            version: number;
+                            sha256: string;
+                        };
+                        /** Format: uuid */
+                        planId: string;
+                        planVersion: number;
+                        planSha256: string;
+                        /** Format: uuid */
+                        confirmationId: string;
+                        assembly: {
+                            /** @enum {string} */
+                            version: "packet-pdf-assembly/2";
+                            /** @enum {string} */
+                            recipe: "pack1-multi-region-image/1";
+                            regions: {
+                                /** @enum {string} */
+                                version: "packet-region-local/1";
+                                sourceSha256: string;
+                                sourceBytes: number;
+                                page: number;
+                                selection: {
+                                    frame: {
+                                        /** @enum {string} */
+                                        kind: "pdf_display_page_top_left_points";
+                                        rotation: number;
+                                        width: number;
+                                        height: number;
+                                    };
+                                    mediaBox: (number)[];
+                                    cropBox: (number)[];
+                                    /** @enum {string} */
+                                    boxConvention: "pymupdf_page_rectangles/1";
+                                    /** @enum {string} */
+                                    coordinates: "displayed_cropbox_normalized_top_left/1";
+                                    region: (number)[];
+                                    /** @enum {boolean} */
+                                    selectionAcknowledged: true;
+                                };
+                                recipeSha256: string;
+                                renderer: {
+                                    /** @enum {string} */
+                                    pypdfium2: "5.13.0";
+                                    /** @enum {string} */
+                                    pdfium: "153.0.7999.0";
+                                    /** @enum {string} */
+                                    pymupdf: "1.25.5";
+                                    /** @enum {string} */
+                                    pillow: "12.3.0";
+                                    /** @enum {string} */
+                                    pdfiumSha256: "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e";
+                                };
+                                transform: {
+                                    canvasPixels: (number)[];
+                                    pixelRegion: (number)[];
+                                    pixelToDisplay: (number)[];
+                                    includedNormalizedRegion: (number)[];
+                                    /** @enum {string} */
+                                    rounding: "inward_complete_pixels/1";
+                                };
+                                output: {
+                                    sha256: string;
+                                    bytes: number;
+                                    pixels: (number)[];
+                                    /** @enum {string} */
+                                    format: "png";
+                                    /** @enum {string} */
+                                    metadataPolicy: "fresh_rgb_pixels_only/1";
+                                    /** @enum {string} */
+                                    annotations: "excluded";
+                                    /** @enum {string} */
+                                    applicability: "not_assessed";
+                                };
+                            }[];
+                            output: {
+                                sha256: string;
+                                bytes: number;
+                                /** @enum {string} */
+                                contentType: "application/pdf";
+                                pages: number;
+                                processedPixels: number;
+                                /** @enum {string} */
+                                policy: "fresh_rgb_image_only; no_source_pdf_objects/1";
+                            };
+                        };
+                        /** @enum {string} */
+                        contentType: "application/pdf";
+                        /** @enum {string} */
+                        status: "complete";
+                        /** Format: date-time */
+                        createdAt: string;
+                        commandSha256: string;
+                        readonly entries: {
+                            bindingId: string;
+                            entrySha256: string;
+                            outputPage: number;
+                        }[];
+                    };
+                    readonly omissions: unknown[];
+                })) | null;
             };
             readonly meta: {
                 /** @enum {string} */
@@ -31768,7 +32338,7 @@ export interface components {
                         validAt: string | null;
                     };
                 }[];
-            } | {
+            } | ({
                 target: {
                     ref: {
                         namespace: string;
@@ -31803,7 +32373,42 @@ export interface components {
                     required: true;
                     inclusionReason: string;
                 }[];
-            };
+            } | {
+                target: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+                /** @enum {string} */
+                purpose: "record_evidence";
+                /** @enum {string} */
+                format: "pdf";
+                /** @enum {string} */
+                recipe: "pack1-multi-region-image/1";
+                /** Format: date-time */
+                expiresAt: string;
+                entries: {
+                    bindingId: string;
+                    /** @enum {boolean} */
+                    required: true;
+                    inclusionReason: string;
+                }[];
+            });
             guard: {
                 /** @enum {string} */
                 mode: "update";
@@ -32121,7 +32726,7 @@ export interface components {
                     entrySha256: string;
                     reasonCode: string;
                 }[];
-            } | {
+            } | ({
                 /** Format: uuid */
                 planId: string;
                 version: number;
@@ -32251,7 +32856,140 @@ export interface components {
                     commandSha256: string;
                 };
                 readonly omissions: unknown[];
-            };
+            } | {
+                /** Format: uuid */
+                planId: string;
+                version: number;
+                /** Format: uuid */
+                confirmationId: string;
+                readonly packet: {
+                    /** @enum {string} */
+                    version: "packet-pdf/2";
+                    /** Format: uuid */
+                    packetId: string;
+                    readonly target: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    readonly scope: {
+                        /** @enum {string} */
+                        kind: "snapshot";
+                        scopeId: string;
+                        readonly world: {
+                            namespace: string;
+                            id: string;
+                        };
+                        manifestId: string;
+                        snapshotDigest: string;
+                        /** @enum {string} */
+                        stage: "draft" | "recorded" | "retained";
+                    };
+                    /** @enum {string} */
+                    format: "pdf";
+                    readonly artifact: {
+                        assetId: string;
+                        version: number;
+                        sha256: string;
+                    };
+                    /** Format: uuid */
+                    planId: string;
+                    planVersion: number;
+                    planSha256: string;
+                    /** Format: uuid */
+                    confirmationId: string;
+                    assembly: {
+                        /** @enum {string} */
+                        version: "packet-pdf-assembly/2";
+                        /** @enum {string} */
+                        recipe: "pack1-multi-region-image/1";
+                        regions: {
+                            /** @enum {string} */
+                            version: "packet-region-local/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            page: number;
+                            selection: {
+                                frame: {
+                                    /** @enum {string} */
+                                    kind: "pdf_display_page_top_left_points";
+                                    rotation: number;
+                                    width: number;
+                                    height: number;
+                                };
+                                mediaBox: (number)[];
+                                cropBox: (number)[];
+                                /** @enum {string} */
+                                boxConvention: "pymupdf_page_rectangles/1";
+                                /** @enum {string} */
+                                coordinates: "displayed_cropbox_normalized_top_left/1";
+                                region: (number)[];
+                                /** @enum {boolean} */
+                                selectionAcknowledged: true;
+                            };
+                            recipeSha256: string;
+                            renderer: {
+                                /** @enum {string} */
+                                pypdfium2: "5.13.0";
+                                /** @enum {string} */
+                                pdfium: "153.0.7999.0";
+                                /** @enum {string} */
+                                pymupdf: "1.25.5";
+                                /** @enum {string} */
+                                pillow: "12.3.0";
+                                /** @enum {string} */
+                                pdfiumSha256: "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e";
+                            };
+                            transform: {
+                                canvasPixels: (number)[];
+                                pixelRegion: (number)[];
+                                pixelToDisplay: (number)[];
+                                includedNormalizedRegion: (number)[];
+                                /** @enum {string} */
+                                rounding: "inward_complete_pixels/1";
+                            };
+                            output: {
+                                sha256: string;
+                                bytes: number;
+                                pixels: (number)[];
+                                /** @enum {string} */
+                                format: "png";
+                                /** @enum {string} */
+                                metadataPolicy: "fresh_rgb_pixels_only/1";
+                                /** @enum {string} */
+                                annotations: "excluded";
+                                /** @enum {string} */
+                                applicability: "not_assessed";
+                            };
+                        }[];
+                        output: {
+                            sha256: string;
+                            bytes: number;
+                            /** @enum {string} */
+                            contentType: "application/pdf";
+                            pages: number;
+                            processedPixels: number;
+                            /** @enum {string} */
+                            policy: "fresh_rgb_image_only; no_source_pdf_objects/1";
+                        };
+                    };
+                    /** @enum {string} */
+                    contentType: "application/pdf";
+                    /** @enum {string} */
+                    status: "complete";
+                    /** Format: date-time */
+                    createdAt: string;
+                    commandSha256: string;
+                    readonly entries: {
+                        bindingId: string;
+                        entrySha256: string;
+                        outputPage: number;
+                    }[];
+                };
+                readonly omissions: unknown[];
+            });
             readonly meta: {
                 /** @enum {string} */
                 schemaVersion: "usp/1";
@@ -33012,6 +33750,26 @@ export interface components {
                     resultBytes: number;
                 };
                 entityOrdinals: number[];
+            } | {
+                /** @enum {string} */
+                kind: "kml";
+                pin: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    readerSha256: string;
+                    inputSha256: string;
+                    acceptedFence: number;
+                    resultBytes: number;
+                };
+                featureOrdinals: number[];
             })[];
         };
         POST_usp_evidence_source_fusion_context_Response_200_application_json: {
@@ -33576,6 +34334,117 @@ export interface components {
                     sourceSetRole: "operator_selected_fragment";
                     /** @enum {string} */
                     kind: "dxf";
+                } | {
+                    summary: {
+                        /** @enum {string} */
+                        schemaVersion: "kml-native-inspection/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        container: "kml" | "kmz";
+                        /** @enum {string} */
+                        status: "inspected" | "partial" | "needs_input";
+                        xmlSha256: string | null;
+                        member: {
+                            path: string;
+                            ordinal: number;
+                            sha256: string;
+                            bytes: number;
+                        } | null;
+                        members: {
+                            path: string;
+                            ordinal: number;
+                            sha256: string;
+                            bytes: number;
+                        }[];
+                        /** @enum {string|null} */
+                        selectionCode: "KML_MEMBER_SELECTION_REQUIRED" | "NO_KML_MEMBER" | null;
+                        /** @enum {string|null} */
+                        documentProfile: "kml_2_2" | "unnamespaced_feature_fragment" | null;
+                        /** @enum {string} */
+                        horizontalReference: "kml_specification" | "unknown";
+                        featureCount: number;
+                        coordinateCount: number;
+                        unsupportedCount: number;
+                        unresolvedReferenceCount: number;
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {boolean} */
+                        analyticEligible: false;
+                        /** @enum {boolean} */
+                        registryAdmission: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "original_member_xml_artifact_and_sorted_feature_ordinals";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    document: {
+                        [key: string]: unknown;
+                    };
+                    memberInventory: {
+                        [key: string]: unknown;
+                    }[];
+                    features: {
+                        ordinal: number;
+                        pointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    findings: {
+                        unsupported: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                        references: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    qualification: {
+                        [key: string]: unknown;
+                    };
+                    coverage: {
+                        selectedFeatures: number;
+                        availableNativeFeatures: number;
+                        /** @enum {string} */
+                        scope: "explicit_feature_records; source_document_member_metadata_and_findings";
+                        /** @enum {string} */
+                        unselectedFeatures: "not_expanded";
+                        /** @enum {string} */
+                        referenceResolution: "not_performed";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                    pin: {
+                        caseId: unknown;
+                        caseRevision: number;
+                        sourceId: unknown;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        jobId: unknown;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    kind: "kml";
                 })[];
                 association: {
                     /** @enum {string} */
@@ -33733,6 +34602,26 @@ export interface components {
                             resultBytes: number;
                         };
                         entityOrdinals: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "kml";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        featureOrdinals: number[];
                     })[];
                 };
             };
@@ -34324,6 +35213,117 @@ export interface components {
                         sourceSetRole: "operator_selected_fragment";
                         /** @enum {string} */
                         kind: "dxf";
+                    } | {
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "kml-native-inspection/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            container: "kml" | "kmz";
+                            /** @enum {string} */
+                            status: "inspected" | "partial" | "needs_input";
+                            xmlSha256: string | null;
+                            member: {
+                                path: string;
+                                ordinal: number;
+                                sha256: string;
+                                bytes: number;
+                            } | null;
+                            members: {
+                                path: string;
+                                ordinal: number;
+                                sha256: string;
+                                bytes: number;
+                            }[];
+                            /** @enum {string|null} */
+                            selectionCode: "KML_MEMBER_SELECTION_REQUIRED" | "NO_KML_MEMBER" | null;
+                            /** @enum {string|null} */
+                            documentProfile: "kml_2_2" | "unnamespaced_feature_fragment" | null;
+                            /** @enum {string} */
+                            horizontalReference: "kml_specification" | "unknown";
+                            featureCount: number;
+                            coordinateCount: number;
+                            unsupportedCount: number;
+                            unresolvedReferenceCount: number;
+                            /** @enum {string} */
+                            accuracy: "not_assessed";
+                            /** @enum {boolean} */
+                            analyticEligible: false;
+                            /** @enum {boolean} */
+                            registryAdmission: false;
+                            /** @enum {boolean} */
+                            learningLabels: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        };
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        selectionSha256: string;
+                        /** @enum {string} */
+                        selectionHashBasis: "original_member_xml_artifact_and_sorted_feature_ordinals";
+                        /** @enum {string} */
+                        nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        document: {
+                            [key: string]: unknown;
+                        };
+                        memberInventory: {
+                            [key: string]: unknown;
+                        }[];
+                        features: {
+                            ordinal: number;
+                            pointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        findings: {
+                            unsupported: (string | number | boolean | (null) | unknown[] | {
+                                [key: string]: unknown;
+                            })[];
+                            references: (string | number | boolean | (null) | unknown[] | {
+                                [key: string]: unknown;
+                            })[];
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        qualification: {
+                            [key: string]: unknown;
+                        };
+                        coverage: {
+                            selectedFeatures: number;
+                            availableNativeFeatures: number;
+                            /** @enum {string} */
+                            scope: "explicit_feature_records; source_document_member_metadata_and_findings";
+                            /** @enum {string} */
+                            unselectedFeatures: "not_expanded";
+                            /** @enum {string} */
+                            referenceResolution: "not_performed";
+                            /** @enum {string} */
+                            geometryQualification: "not_assessed";
+                            /** @enum {string} */
+                            propertyMatching: "unsupported";
+                        };
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        namespace: string;
+                        /** @enum {string} */
+                        sourceSetRole: "operator_selected_fragment";
+                        /** @enum {string} */
+                        kind: "kml";
                     })[];
                     association: {
                         /** @enum {string} */
@@ -34641,6 +35641,23 @@ export interface components {
                                     resultBytes: number;
                                 };
                                 entityOrdinals: number[];
+                            } | {
+                                /** @enum {string} */
+                                kind: "kml";
+                                pin: {
+                                    caseId: unknown;
+                                    caseRevision: number;
+                                    sourceId: unknown;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    jobId: unknown;
+                                    resultSha256: string;
+                                    readerSha256: string;
+                                    inputSha256: string;
+                                    acceptedFence: number;
+                                    resultBytes: number;
+                                };
+                                featureOrdinals: number[];
                             })[];
                         };
                     };
@@ -34744,6 +35761,23 @@ export interface components {
                                 resultBytes: number;
                             };
                             entityOrdinals: number[];
+                        } | {
+                            /** @enum {string} */
+                            kind: "kml";
+                            pin: {
+                                caseId: unknown;
+                                caseRevision: number;
+                                sourceId: unknown;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                jobId: unknown;
+                                resultSha256: string;
+                                readerSha256: string;
+                                inputSha256: string;
+                                acceptedFence: number;
+                                resultBytes: number;
+                            };
+                            featureOrdinals: number[];
                         })[];
                     };
                 };
