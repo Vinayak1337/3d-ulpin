@@ -3051,6 +3051,20 @@
             "genuineSecondCropVerified": false,
             "authenticApplicability": "not_assessed",
             "currentHttpSqlStorageVerified": false
+          },
+          "privateMultiRegionPdfNativeEvidence": {
+            "guide": "docs/evidence/usp/packet-pdf-native-continuation-handoff.md",
+            "integratedHandoffCommit": "e13c27d0",
+            "completionReceiptSha256": "29a509634f48fa395d33d004c6fed7f553d93d22c193d26204367154a41aa511",
+            "scope": "One genuine bounded second crop plus retained first crop in controlled plan/SQL/storage/extraction-transport journey",
+            "outputSha256": "5d4e10fa66e9ee5f8817b93766b9c179a2e9c7a2e00d8020ef05f608e2f33344",
+            "outputBytes": 325018,
+            "outputPages": 2,
+            "outputOrder": "second_crop_then_retained_first_crop",
+            "secondCropSha256": "231ead887aaa61b51cfd5f1438303c4c9b8cae098fd0477f05e623050579d754",
+            "genuineSecondCropVerified": true,
+            "authenticApplicability": "not_assessed",
+            "currentHttpSqlStorageVerified": false
           }
         },
         {
