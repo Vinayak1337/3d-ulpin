@@ -57,7 +57,8 @@ const executionSchema=z.object({version:z.literal('packet-region-execution/2'),s
     gatedStart:z.literal(true),elapsedSeconds:z.number().finite().nonnegative().max(35),
     peakObservedRssBytes:z.number().int().nonnegative(),peakJobPrivateBytes:z.number().int().nonnegative().nullable()})});
 function bootstrap(loader:string,expected:string){
-  return `import sys\nsys.dont_write_bytecode=True\nimport hashlib,types\np=${JSON.stringify(loader)}\nb=open(p,'rb').read(262145)\n`+
+  return `import sys\nif sys.pycache_prefix!=${JSON.stringify('\\\\.\\NUL')}: raise SystemExit(5)\n`+
+    `sys.dont_write_bytecode=True\nimport hashlib,types\np=${JSON.stringify(loader)}\nb=open(p,'rb').read(262145)\n`+
     `if len(b)>262144 or hashlib.sha256(b).hexdigest()!=${JSON.stringify(expected)}: raise SystemExit(5)\n`+
     "m=types.ModuleType('packet_region_loader');m.__file__=p;sys.modules[m.__name__]=m\n"+
     "exec(compile(b,p,'exec'),m.__dict__)\nm.run_entry(sys.argv[1:])\n";
@@ -102,7 +103,9 @@ export async function inspectPrivatePacketRegion(authority:DocumentPageAuthority
     const seconds=Math.min(limits.workerSeconds,Math.floor((deadline-Date.now()-6000)/1000));
     if(seconds<1)throw new AppError(504,'PACKET_REGION_DEADLINE','Not enough time remains for bounded extraction.');
     let exit:number|null;
-    try{exit=await execute(python,['-I','-S','-B','-c',bootstrap(frozen.loader,frozen.loaderSha256),
+    // Win32 NUL reads return no bytes. Redirect cache lookup before interpreter
+    // initialization, including imports preceding the verified source finder.
+    try{exit=await execute(python,['-I','-S','-B','-X','pycache_prefix=\\\\.\\NUL','-c',bootstrap(frozen.loader,frozen.loaderSha256),
       join(settings.repositoryRoot,'scripts/usp/document-models/run_packet_region.py'),
       '--source',source,'--sha256',authority.sourceSha256,'--page',String(page),'--selection',selected,
       '--output',output,'--seconds',String(seconds),'--profile',frozen.file,'--profile-sha256',frozen.sha256],

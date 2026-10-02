@@ -194,9 +194,9 @@ def supervisor():
     # Adapt only the local loaded gate. The accepted Job/tree/timeout algorithm
     # and shared source file are unchanged; no site/.pth code is initialized.
     module._WINDOWS_GATE = "if __import__('sys').stdin.buffer.read(1)!=b'1': raise SystemExit(3)\n" + bootstrap(loader, expected)
-    # The shared supervisor's isolated launch has no -B. Add it through this
-    # module's private subprocess binding, before interpreter initialization,
-    # so even a missing bootstrap cache cannot cause a global cache write.
+    # Win32 NUL supplies no cache bytes. Redirect reads before interpreter
+    # initialization as well as disabling writes. Keep this binding private;
+    # the shared supervisor and installed caches remain unchanged.
     original_popen = module.subprocess.Popen
     private_subprocess = types.ModuleType("packet_region_subprocess")
     private_subprocess.__dict__.update(module.subprocess.__dict__)
@@ -204,7 +204,7 @@ def supervisor():
     def popen(command, *args, **kwargs):
         if command[:5] != [sys._base_executable, "-I", "-S", "-c", module._WINDOWS_GATE]:
             raise RuntimeError("PACKET_REGION_SUPERVISOR_LAUNCH_DRIFT")
-        return original_popen([*command[:3], "-B", *command[3:]], *args, **kwargs)
+        return original_popen([*command[:3], "-B", "-X", "pycache_prefix=\\\\.\\NUL", *command[3:]], *args, **kwargs)
 
     private_subprocess.Popen = popen
     module.subprocess = private_subprocess
@@ -212,7 +212,8 @@ def supervisor():
 
 
 def bootstrap(loader, expected):
-    return ("import sys\nsys.dont_write_bytecode=True\nimport hashlib,types\n"
+    return ("import sys\nif sys.pycache_prefix!="+repr("\\\\.\\NUL")+": raise SystemExit(5)\n"
+            "sys.dont_write_bytecode=True\nimport hashlib,types\n"
             "p="+repr(loader)+"\nb=open(p,'rb').read(262145)\n"
             "if len(b)>262144 or hashlib.sha256(b).hexdigest()!="+repr(expected)+": raise SystemExit(5)\n"
             "m=types.ModuleType('packet_region_loader');m.__file__=p;sys.modules[m.__name__]=m\n"
