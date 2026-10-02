@@ -64,6 +64,10 @@ export function caseFrom(row: Row): CaseRecord {
 }
 export function sourceFrom(row: Row): SourceRevision {
   let inspection=row.inspection;
+  if(row.profile==='dxf-native-v1'||inspection&&typeof inspection==='object'&&Object.hasOwn(inspection,'dxfOriginal')){
+    const {dxfOriginal:_dxfOriginal,dxfAccepted:_dxfAccepted,referenceParts:_dxfParts,...metadata}=inspection??{};
+    inspection=metadata;
+  }
   if(row.profile==='ifc-native-v1'||inspection&&typeof inspection==='object'&&Object.hasOwn(inspection,'ifcOriginal')){
     const {ifcOriginal:_ifcOriginal,ifcAccepted:_ifcAccepted,referenceParts:_ifcParts,...metadata}=inspection??{};
     inspection=metadata;
@@ -883,6 +887,8 @@ export async function retryJob(jobId: string) {
       throw new AppError(422, "ML_ITEM_RETRY_REQUIRED", "Retry this extraction from its spatial batch item so its source, model and attempt history stay linked.");
     if(original.operation==='ifc-native')
       throw new AppError(422,'IFC_CANONICAL_RETRY_REQUIRED','Retry through the source-bound IFC retry operation with current case/source/access pins; generic job copying is unsupported.');
+    if(original.operation==='dxf-native')
+      throw new AppError(422,'DXF_CANONICAL_RETRY_REQUIRED','Retry through the source-bound DXF retry operation with current case/source/access pins; generic job copying is unsupported.');
     const current = await lockCase(client, original.case_id);
     if(original.operation==='projected-vector')
       throw new AppError(422,'PROJECTED_VECTOR_RETRY_REQUIRED','Retry this retained source through its scoped projected-vector admission operation.');

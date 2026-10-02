@@ -82,3 +82,20 @@ export function assertIFCTools(pins:IFCToolPins|null,deadlineAt?:number){
   if(!pins)ifcUnavailable();const config=ifcConfig(deadlineAt);
   if(fingerprint(config.pins)!==fingerprint(pins))ifcUnavailable('IFC_TOOL_CHANGED');return config;
 }
+// DXF-02 immutable reads only: exact cfc679fd Git/LF and physical aggregates.
+// No unknown aggregate, changed non-code pin or missing current runtime qualifies.
+const preDXFReadCodeSha=new Set(['c7d6d9b23fd9334079868b046907cd9bc3d0c3efb2f298552b409e113279aa1a',
+  '16ccbbfd5ece82bf8f5fff15799e7cc448df371ed4de67a3cb1e7934c6aa8db8']);
+export function ifcReadToolsCompatible(stored:IFCToolPins,current:IFCToolPins){
+  const old=IFCToolPinsSchema.safeParse(stored),live=IFCToolPinsSchema.safeParse(current);
+  if(!old.success||!live.success)return false;
+  if(fingerprint(old.data)===fingerprint(live.data))return true;
+  const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+  return preDXFReadCodeSha.has(oldCode)&&fingerprint(oldTools)===fingerprint(currentTools);
+}
+/** Verify the complete current inventory before immutable-result read comparison.
+ * Returns no process configuration: writers must continue using assertIFCTools. */
+export function assertIFCReadTools(pins:IFCToolPins|null,deadlineAt?:number):void{
+  if(!pins)ifcUnavailable();const current=ifcConfig(deadlineAt);
+  if(!ifcReadToolsCompatible(pins,current.pins))ifcUnavailable('IFC_TOOL_CHANGED');
+}

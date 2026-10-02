@@ -3,7 +3,7 @@ import type {IFCInput} from '@ulpin/contracts/usp';
 import type {SourceFusionPin} from '../../../../../contracts/src/source-fusion';
 import {AppError} from '../../../infrastructure/errors';
 import {ifcStatusTx,assertIFCJobRow,ifcResultBytes} from './ifc';
-import {assertIFCTools} from './ifc-config';
+import {assertIFCReadTools} from './ifc-config';
 
 /** Reuse canonical source/access/latest-family/current-reader and attempt checks
  * on the aggregate fusion transaction; never reinterpret job success as acceptance. */
@@ -24,5 +24,5 @@ export async function acceptedFusionIFCTx(client:PoolClient,pin:SourceFusionPin,
 export function verifyFusionIFCTools(input:IFCInput,budget:{deadlineAt:number;signal:AbortSignal}){
   const live=()=>{if(budget.signal.aborted||Date.now()>=budget.deadlineAt)
     throw new AppError(503,'SOURCE_FUSION_DEADLINE','The bounded source context read expired.');};
-  live();assertIFCTools(input.tools,budget.deadlineAt);live();
+  live();assertIFCReadTools(input.tools,budget.deadlineAt);live();
 }

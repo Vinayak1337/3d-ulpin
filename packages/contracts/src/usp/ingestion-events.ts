@@ -25,6 +25,8 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
     status:z.enum(['queued','running','completed','failed','stale'])}),
   z.strictObject({kind:z.literal('ifc-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','failed','stale'])}),
+  z.strictObject({kind:z.literal('dxf-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','failed','stale'])}),
   z.strictObject({kind:z.literal('cityjson-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','failed','stale'])}),
   z.strictObject({kind:z.literal('point-batch.changed'),sourceId:id,sourceRevision:revision,jobId:id,

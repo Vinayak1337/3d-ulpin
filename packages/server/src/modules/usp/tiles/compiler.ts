@@ -39,12 +39,15 @@ const preDocumentCodeSha='3d060fda17b9cd542c4c8c2ffb29ad5fafb6cd28e34053235885ce
 const prePointCodeSha='20f90748a73f2051f3cabba45bc76432cdcae723381a497ddf81c4d7939ed339';
 const preIFCReadCodeSha=new Set(['37f9c493f48724bc8d9627718a5781d3a3514e91d2055ab57492041729dbcbfc',
   '9a9790012ba12ed203ecde3660406a307f59b178399f704e8e9d3e5246c83c76']);
+// DXF-02: reconstructed cfc679fd Git/LF and retained physical compiler bytes.
+const preDXFReadCodeSha=new Set(['64b5b4f8ae0a0366a15139e3bdd6692e1753c06590073c7c81a8dfa3df34079e',
+  'f44ff28bcf553f35e90950bc8729fde08eac62dee4033d4e86697f43f54df49a']);
 export function mvtReadCompilerCompatible(stored:PrivateMvtInput['compiler'],current:PrivateMvtInput['compiler'],hasSourceChunk=false){
   const valid=(pin:PrivateMvtInput['compiler'])=>{const {sha256,...base}=pin;return fingerprint(base)===sha256;};
   if(!valid(stored)||!valid(current))return false;
   if(fingerprint(stored)===fingerprint(current))return true;
-  // Reviewed pre-IFC bytes only. Current writers never call this predicate.
-  if(preIFCReadCodeSha.has(stored.codeSha256)&&current.codeSha256===mvtCodeSha()){
+  // Reviewed historical bytes only. Current writers never call this predicate.
+  if((preIFCReadCodeSha.has(stored.codeSha256)||preDXFReadCodeSha.has(stored.codeSha256))&&current.codeSha256===mvtCodeSha()){
     const {sha256:_s,codeSha256:_sc,...oldProfile}=stored,{sha256:_c,codeSha256:_cc,...newProfile}=current;
     if(fingerprint(oldProfile)===fingerprint(newProfile))return true;
   }
