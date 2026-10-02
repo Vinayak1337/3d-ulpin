@@ -1,11 +1,14 @@
 import {z} from 'zod';
-import {SourceFusionRequestSchema,SourceFusionContextSchema,SourceFusionPinSchema} from './source-fusion';
+import {SourceFusionRequestSchema,SourceFusionContextSchema,SourceFusionPinSchema,SourceFusionLiteralObjectSchema} from './source-fusion';
 import {DocumentAssociationTargetSchema} from './document-association';
 import {UspSnapshotScopeSchema,UspTargetPinSchema} from './usp/common';
 import {UspModelGatewayResultSchema} from './usp/ports';
 
 export const FUSION_ASSOCIATION_VERSION='source-fusion-associations/1' as const;
-export const FUSION_ASSOCIATION_PROMPT='source-fusion-exact-associations/1' as const;
+export const FUSION_ASSOCIATION_PROMPT='source-fusion-exact-associations/2' as const;
+/** Native IFC identity requires an explicit target assertion in this scheme,
+ * whose source_revision reference matches the selected original revision. */
+export const FUSION_IFC_IDENTIFIER_SCHEME='ifc-globalid' as const;
 export const FUSION_ASSOCIATION_LIMITS=Object.freeze({targets:8,proposals:8,citations:25,requestBytes:64*1024,
   responseBytes:1024*1024,promptBytes:24*1024,excerptCharacters:1000,deadlineMs:30_000});
 const hash=z.string().regex(/^[a-f0-9]{64}$/),key=z.string().min(1).max(1024),quote=z.string().min(1).max(1000);
@@ -32,7 +35,16 @@ export const FusionAssociationModelOutputSchema=z.strictObject({suggestions:z.ar
 export const FusionAssociationCitationSchema=z.discriminatedUnion('kind',[
   z.strictObject({kind:z.literal('document'),key,quote,pin:SourceFusionPinSchema,partId:z.uuid(),partSha256:hash}),
   z.strictObject({kind:z.literal('document_ocr'),key,quote,pin:SourceFusionPinSchema,
-    itemOrdinal:z.number().int().min(0).max(63),itemSha256:hash})]);
+    itemOrdinal:z.number().int().min(0).max(63),itemSha256:hash}),
+  z.strictObject({kind:z.literal('ifc'),key,quote,pin:SourceFusionPinSchema,
+    artifactSha256:hash,artifactBytes:z.number().int().positive().max(16*1024*1024),profile:z.literal('ulpin-native-ifc/1'),
+    stepId:z.number().int().positive(),entityType:z.enum(['IfcBuilding','IfcBuildingStorey','IfcSpace']),
+    recordPointer:z.string().regex(/^\/records\/\d+$/),recordSha256:hash,
+    attribute:z.literal('GlobalId'),attributePointer:z.string().regex(/^\/records\/\d+\/attributes\/GlobalId$/),
+    attributeSha256:hash,locator:SourceFusionLiteralObjectSchema,attributeLocator:SourceFusionLiteralObjectSchema,
+    identifierScheme:z.literal(FUSION_IFC_IDENTIFIER_SCHEME),identifierNamespace:key,
+    quoteBasis:z.literal('native_attribute_decoded_value'),
+    identifierScope:z.literal('source_native_only; not_canonical_registry_ids')})]);
 export const FusionAssociationProposalSchema=z.strictObject({id:hash,state:z.literal('proposed'),
   target:DocumentAssociationTargetSchema,identifier:z.strictObject({scheme:z.string(),value:z.string()}),
   citations:z.array(FusionAssociationCitationSchema).min(1).max(8),rationale:z.string().max(500),
