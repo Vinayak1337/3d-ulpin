@@ -1,6 +1,8 @@
 # STUDENT-01 — cited association baseline
 
-Latest checkpoint: [STUDENT-04's unused-cache reclamation](reclamation-attempt-v1.md) passed the state/RNG/next-step control, released unused reserve and completed six updates within bounds. The longest seventh example failed during backward with a CUDA allocation error and recorded Job committed-memory peak above 6 GiB. The fit was rejected; no adapter, reload or new quality result exists. Containment cleanup passed.
+Latest checkpoint: [STUDENT-05's pre-backward reclamation](live-graph-reclamation-attempt-v1.md) preserved the tested live graph/state/RNG and released 769,654,784 bytes of reserve before the longest example's backward. That backward still failed after six updates, with Job peak above 6 GiB. The fit was rejected; no adapter, reload or new quality result exists. Cleanup passed.
+
+Previous checkpoint: [STUDENT-04's unused-cache reclamation](reclamation-attempt-v1.md) passed the state/RNG/next-step control, released unused reserve and completed six updates within bounds. The longest seventh example failed during backward with a CUDA allocation error and recorded Job committed-memory peak above 6 GiB. The fit was rejected; no adapter, reload or new quality result exists. Containment cleanup passed.
 
 Previous checkpoint: [STUDENT-03's loss-memory repair](memory-repair-attempt-v1.md) passed contained loss/gradient equivalence and the original first backward/update. The run was rejected after optimizer step 3 for a recorded Job committed-memory peak above 6 GiB. No adapter, reload or new quality result was accepted.
 
