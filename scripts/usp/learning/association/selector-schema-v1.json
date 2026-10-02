@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ulpin:ml:evidence-association-selectors:1",
+  "title": "Experimental evidence-span selectors",
+  "description": "Separate experimental model output representation; selects exact spans from unchanged evidence. Expanded output must pass the unchanged evidence-association-output/1 validator. No canonical record writes or retrospective repair of historical model output.",
+  "$defs": {
+    "fragment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "familyId",
+        "sourceSha256",
+        "method",
+        "locator",
+        "text"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "familyId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "method": {
+          "enum": [
+            "native_text",
+            "native_metadata",
+            "ocr_observation",
+            "source_supported_annotation"
+          ]
+        },
+        "locator": {
+          "type": "object",
+          "description": "Original native pointer/entity/span or PDF page/part/region. Preserve exact reader/attempt/item hashes where available. Does not imply a canonical job."
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "state",
+        "literal",
+        "unit",
+        "citations"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "project",
+            "building",
+            "building_type",
+            "floor",
+            "drawing",
+            "revision",
+            "source_identifier",
+            "level",
+            "area",
+            "unit"
+          ]
+        },
+        "state": {
+          "enum": [
+            "declared",
+            "unknown",
+            "absent",
+            "null",
+            "withheld",
+            "conflicting"
+          ]
+        },
+        "literal": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "unit": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "citations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/selector"
+          }
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "citations"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "citations": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/selector"
+          }
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "exampleId",
+        "familyId",
+        "evidence"
+      ],
+      "properties": {
+        "version": {
+          "const": "evidence-association-input/1"
+        },
+        "exampleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Experimental sample key, not an operational ID."
+        },
+        "familyId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 25,
+          "items": {
+            "$ref": "#/$defs/fragment"
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "claims",
+        "conflicts",
+        "abstentions",
+        "canonicalLinks"
+      ],
+      "properties": {
+        "version": {
+          "const": "evidence-association-selectors/1"
+        },
+        "claims": {
+          "type": "array",
+          "maxItems": 25,
+          "items": {
+            "$ref": "#/$defs/claim"
+          }
+        },
+        "conflicts": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "$ref": "#/$defs/decision"
+          }
+        },
+        "abstentions": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "$ref": "#/$defs/decision"
+          }
+        },
+        "canonicalLinks": {
+          "type": "array",
+          "maxItems": 0,
+          "description": "Always empty; source selectors cannot create canonical targets or operational IDs."
+        }
+      }
+    },
+    "selector": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "description": "[fragment ordinal,first lexical-token ordinal,end lexical-token ordinal exclusive]; each must have type int,not bool. Projector checks fragment/range bounds and nonempty exact contiguous source span."
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/input"
+    },
+    {
+      "$ref": "#/$defs/output"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "version": "ml-distillation-citation-view-fit-acceptance/1",
+  "task": "STUDENT-08-FIT",
+  "recordedAt": "2026-10-03",
+  "acceptedScope": "Technical fixed fit/save/reload and retained failed-quality evidence only. The development candidate fails and stays experimental.",
+  "ownerCommit": "47b01a5c3d280333352bdbca7eb066f486445a07",
+  "integratedCommit": "e36089de1252a0bdf56f9163ec4389547cd8539f",
+  "receiptSha256": "0a4f96f411274c5bfaf27ef9e0f4928804d7604cccf7aee8ee06d7e08686b369",
+  "primaryStagingHeadObservedReadOnly": "67b5f85630fa0ffc4094d7d107709d24b1a8c9c5",
+  "coordinatorInspection": {
+    "rawOutputsAndFrozenExecutionInspected": true,
+    "fitArtifactPinsMatched": 39,
+    "reloadArtifactPinsMatched": 27,
+    "executedPhysicalAndOwnerGitCodePinsMatchedPerStage": 15,
+    "retainedBaselineAndPreviousRawSummaryPinsMatched": 4,
+    "acceptedFitProofFieldsMatched": 21,
+    "acceptedFitProofComparison": "Windows fitRoot separators normalized for physical path equality; policy fields omitted by the compact receipt are still checked by accepted_fit. Raw artifact hashes unchanged.",
+    "progressRowsInspected": 132,
+    "memoryPhaseRowsInspected": 1481,
+    "attentionSnapshotsInspected": 265,
+    "allCountResourceControlBaseSaveAndCleanupChecksPass": true,
+    "integratedTwoChangedGitBlobsMatchOwner": true,
+    "coordinatorModelExecution": false,
+    "commands": [
+      {
+        "command": "python -B -I -S - (raw artifacts,15 executed physical/Git pins per stage,retained comparison pins,then full proof equality probe)",
+        "exit": 1,
+        "reason": "Review assumed compact proof equals the complete reader result; artifacts/pins matched before assertion."
+      },
+      {
+        "command": "python -B -I -S - (path-normalized complete proof equality probe)",
+        "exit": 1,
+        "reason": "Compact receipt intentionally omits three policy objects."
+      },
+      {
+        "command": "python -B -I -S - (21 compact proof fields checked against full accepted_fit,132 progress/1481 phases/265 attention histories)",
+        "exit": 0
+      },
+      {
+        "command": "git cherry-pick 47b01a5c3d280333352bdbca7eb066f486445a07",
+        "exit": 0
+      },
+      {
+        "command": "git diff --exit-code 47b01a5c3d280333352bdbca7eb066f486445a07 HEAD -- (two owned evidence paths)",
+        "exit": 0
+      }
+    ]
+  },
+  "fit": {
+    "rows": 22,
+    "completedUpdates": 132,
+    "supervisedTokens": 81432,
+    "fitSeconds": 175.968,
+    "jobPeakCommittedBytes": 5996720128,
+    "jobCapBytes": 6442450944,
+    "separatePeakRssBytes": 4230090752,
+    "cudaPeakAllocatedBytes": 1374529536,
+    "cudaPeakReservedBytes": 1537212416,
+    "minimumSampledCudaFreeBytes": 5814353920,
+    "baseTensorsUnchanged": 290,
+    "exactAdapterTensorsSavedAndReloaded": 96,
+    "trainableParameters": 540672,
+    "adapterSafetensorsSha256": "83d4556301460a141e4c73cc9947fdcbbf9b8c9d0dd8aeb91a12bdd163d82785",
+    "exit": 0,
+    "cleanupPassed": true
+  },
+  "development": {
+    "validRawOutputs": "0/2",
+    "acceptedExpectedClaims": "0/6",
+    "acceptedPrecision": null,
+    "coverage": 0,
+    "correctAbsentClaims": "0/1",
+    "correctNullClaims": "0/1",
+    "exactExtractableCitations": "3/8 in the parseable rejected output only; malformed output excluded and no accepted credit.",
+    "failures": [
+      "IFC4 malformed JSON at character321 with broken quotation/claim structure and repeated keys.",
+      "IFC2X3 quote_not_exact; fabricated instruction-like quotations and unsupported non-null unknown literals."
+    ],
+    "generationSeconds": [
+      22.783,
+      26.236
+    ],
+    "outputTokens": [
+      379,
+      450
+    ],
+    "tokenLimitReached": false,
+    "jobPeakCommittedBytes": 5196668928,
+    "separatePeakRssBytes": 3214704640,
+    "cudaPeakAllocatedBytes": 1078333952,
+    "cudaPeakReservedBytes": 1117782016,
+    "minimumSampledCudaFreeBytes": 6269435904,
+    "exit": 0,
+    "cleanupPassed": true,
+    "teacherReceivedDevelopmentContent": false,
+    "repaired": false
+  },
+  "unchangedBoundaries": {
+    "baseline": "0/2 valid;0/6 accepted",
+    "previousCandidateDevelopment": "0/2 valid;0/6 accepted",
+    "previousCandidateTrainingDiagnostic": "1/7 accepted provisional claims",
+    "baselineOrPreviousCandidateRerun": false,
+    "evaluationOpened": false,
+    "promoted": false,
+    "gatewayRegistered": false
+  },
+  "nextDecision": "Stop additional full-JSON/key-order fitting. Prepare a separate source-span selector representation that copies literals/citations deterministically from unchanged evidence while retaining original semantic validation. CPU-only learner implementation and lossless teacher target projection; no new model run until both are inspected and frozen."
+}
