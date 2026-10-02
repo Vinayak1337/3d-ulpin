@@ -33,6 +33,9 @@ def worker(args):
                 or freeze["lossImplementation"] != LOSS_POLICY
                 or freeze["reclamationImplementation"] != RECLAMATION_POLICY
                 or not assignment["memoryExecutionPolicy"].get("interUpdateReclamation")
+                or not assignment["memoryExecutionPolicy"].get("preBackwardReclamation")
+                or freeze["previousFailureReceiptSha256"] != assignment["previousFailureReceiptSha256"]
+                or freeze["previousFailedFit"] != assignment["previousFailedFit"]
                 or freeze["systemPromptSha256"] != hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest()):
             raise RuntimeError("frozen assignment/settings/prompt drift")
         for option, digest in freeze["inputSha256"].items():
@@ -67,6 +70,7 @@ def worker(args):
                     or manifest["lossImplementation"] != LOSS_POLICY
                     or proof["reclamationImplementation"] != manifest["reclamationImplementation"]
                     or proof["reclamationImplementation"] != RECLAMATION_POLICY or not proof["reclamationControlPassed"]
+                    or not proof["liveGraphControlPassed"] or not proof["preBackwardReclamationHistoryPassed"]
                     or proof["reclamationControlSha256"] != manifest["reclamationControlSha256"]
                     or proof["lossEquivalenceSha256"] != manifest["lossEquivalenceSha256"]):
                 raise RuntimeError("adapter lacks matching accepted fit receipt")

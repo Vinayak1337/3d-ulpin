@@ -265,6 +265,12 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 phases.sample("first_after_loss_before_backward" if updates == 0 else "after_loss_before_backward", torch,
                               **context, loss=numeric_loss, finite=True, supervisedDenominator=target.numel(), headChunkTokens=64)
                 gpu_check()
+                # Only unoccupied cache is released; every tensor needed by backward stays live.
+                phases.sample("before_backward_reclamation", torch, **context, loss=numeric_loss,
+                              finite=True, supervisedDenominator=target.numel())
+                pre_backward_reclamation = release_unused_cache(torch)
+                phases.sample("after_backward_reclamation", torch, **context, loss=numeric_loss,
+                              finite=True, supervisedDenominator=target.numel(), **pre_backward_reclamation)
                 scaler.scale(loss).backward()
                 phases.sample("first_after_backward" if updates == 0 else "after_backward", torch, **context, loss=numeric_loss)
                 scaler.unscale_(optimizer)
