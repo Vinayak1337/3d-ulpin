@@ -2,9 +2,9 @@ import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {RegistryDocumentAmendmentSchema,RegistryDocumentAmendmentReceiptSchema,RegistryDocumentCitationSchema,
   RegistryDocumentCitationsSchema,RegistryDocumentEvidenceSchema,RegistryDocumentReviewContextSchema,
-  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,
+  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,
   type RegistryRecord,type RegistryDocumentCitation,type RegistryNativeDocumentCitation,type RegistryOcrDocumentCitation,
-  type RegistryDocumentReviewContext} from '@ulpin/contracts';
+  type RegistryDocumentReviewContext,type RegistryIFCCitation} from '@ulpin/contracts';
 import {DocumentPartSchema,type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
 import {transaction} from '../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../infrastructure/errors';
@@ -18,9 +18,13 @@ import {registrySourceTx,registryDocumentSourceAccessTx,registryMetadataEvidence
 import {RegistryMetadataSchema} from '@ulpin/contracts';
 import {registryDocumentCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
 import {resolveFusionCitationsTx,ocrCitationFusionSelection,fusionOcrCitationFields,fusionCitationDocumentPin,citationReadBudget,
+  ifcCitationFusionSelection,fusionIFCCitationFields,
   type FusionCitationDependencies} from '../usp/ingestion/source-fusion-citations';
 import {fusionSourceProjection} from '../usp/ingestion/source-fusion';
 import {readFusionResult,fusionLive} from '../usp/ingestion/source-fusion-authority';
+import {registryIFCCitationSourceTx} from './registry-ifc-citation-source';
+import {verifyFusionIFCTools} from '../usp/ingestion/source-fusion-ifc-authority';
+import {SOURCE_FUSION_LIMITS} from '../../../../contracts/src/source-fusion';
 
 export type RegistryDocumentDependencies=FusionCitationDependencies&{result:typeof readDocumentResult;registrySource:typeof registrySourceTx;
   citationSource?:typeof registryDocumentSourceAccessTx};
@@ -28,6 +32,8 @@ type Dependencies=RegistryDocumentDependencies;
 const defaults:Dependencies={source:associationDocumentInputTx,result:readDocumentResult,registrySource:registrySourceTx,
   citationSource:registryDocumentSourceAccessTx};
 const citationSource=(dependencies:Dependencies)=>dependencies.citationSource??dependencies.registrySource;
+const ifcSource=(dependencies:Dependencies)=>dependencies.ifcSource??registryIFCCitationSourceTx;
+const ifcTools=(dependencies:Dependencies)=>dependencies.ifcTools??verifyFusionIFCTools;
 const context=()=>localRequestContext(randomUUID());
 export function documentReviewContext():RegistryDocumentReviewContext{
   const ctx=context();return RegistryDocumentReviewContextSchema.parse({subject:ctx.principal.subject,
@@ -51,8 +57,8 @@ export function publicRegistryReview<T extends {records:RegistryRecord[];before:
   return {...publicRegistryDraft(review),before:review.before.map(publicRegistryBody)};
 }
 function requireCorrection(record:RegistryRecord){
-  if(!['building','floor'].includes(record.kind)||!Number.isSafeInteger(record.revision)||record.revision<1)
-    throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Choose an existing recorded building or floor correction.');
+  if(!['building','floor','space'].includes(record.kind)||!Number.isSafeInteger(record.revision)||record.revision<1)
+    throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Choose an existing recorded building, floor or space correction.');
 }
 export function assertCitationEdit(old:RegistryRecord,body:{documentCitations?:RegistryDocumentCitation[]}){
   if(body.documentCitations!==undefined && fingerprint(body.documentCitations)!==fingerprint(old.documentCitations??[]))
@@ -120,8 +126,12 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   const citations=RegistryDocumentCitationsSchema.parse(record.documentCitations??[]);
   if(!citations.length)return [];
   requireCorrection(record);
+  if(record.kind==='space'&&citations.some(pin=>pin.version!=='registry-ifc-citation/1'))
+    throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Space corrections support explicit IFC citations only.');
   const ctx=context(),entries:ReturnType<typeof RegistryDocumentEvidenceSchema.parse>['citations']=[],budget=citationReadBudget();
   const checked:{pin:RegistryDocumentCitation;input:DocumentInput;source:Awaited<ReturnType<Dependencies['registrySource']>>;fence:number}[]=[];
+  const checkedIFC:{pin:RegistryIFCCitation;selection:ReturnType<typeof ifcCitationFusionSelection>;
+    captured:Awaited<ReturnType<typeof registryIFCCitationSourceTx>>}[]=[];
   const groups=new Map<string,RegistryDocumentCitation[]>();
   for(const pin of citations){
     if(pin.selection.subject!==ctx.principal.subject)
@@ -130,7 +140,28 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
     const key=`${pin.version}:${fingerprint(pin.document)}`;groups.set(key,[...(groups.get(key)??[]),pin]);
   }
   for(const group of groups.values()){
-    const first=group[0],source=await citationSource(dependencies)(client,siteId,first.document.sourceId);
+    const first=group[0];
+    if(first.version==='registry-ifc-citation/1'){
+      const pins=group.map(pin=>RegistryIFCCitationSchema.parse(pin)),selection=ifcCitationFusionSelection(first);
+      if(pins.some(pin=>fingerprint(ifcCitationFusionSelection(pin).pin)!==fingerprint(selection.pin)))
+        conflict('The exact IFC result selection pins differ.');
+      selection.stepIds=[...new Set(pins.map(pin=>pin.ifc.stepId))];
+      const captured=await ifcSource(dependencies)(client,siteId,selection.pin,lock);
+      ifcTools(dependencies)(captured.authority.input,budget);
+      const loaded=await (dependencies.fusionResult??readFusionResult)(selection,captured.authority,budget),projected=fusionSourceProjection(selection,loaded);
+      if(projected.kind!=='ifc')conflict('The accepted IFC record is unavailable.');
+      for(const pin of pins){
+        const {version:_,id:__,target:___,selection:attribution,associationState:____,qualification:_____,...fields}=pin;
+        if(pin.id!==citationId(pin)||attribution.accessSha256!==captured.authority.input.accessSha256||
+          fingerprint(fields)!==fingerprint(fusionIFCCitationFields(projected,pin.ifc.stepId)))
+          conflict('The exact IFC artifact, record, locator, attempt or access pin changed.');
+        entries.push({pin,record:projected.entities.find(entry=>entry.record.stepId===pin.ifc.stepId)!.record});
+      }
+      const current=await ifcSource(dependencies)(client,siteId,selection.pin,lock);
+      if(fingerprint(current)!==fingerprint(captured))conflict('The IFC source changed during its private read.');
+      checkedIFC.push({pin:first,selection,captured});continue;
+    }
+    const source=await citationSource(dependencies)(client,siteId,first.document.sourceId);
     const input=await dependencies.source(client,ctx,first.document,undefined,lock),fence=await acceptedFenceTx(client,input.jobId);
     if(source.revision!==input.sourceRevision||source.sha256!==input.sourceSha256)conflict('The site document source pins changed.');
     if(first.version==='registry-document-citation/1'){
@@ -144,7 +175,7 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
           conflict('The exact native part, reader, accepted attempt or access pin changed.');
         entries.push({pin,part});
       }
-    }else{
+    }else if(first.version==='registry-document-ocr-citation/1'){
       const ocrPins=group.map(pin=>RegistryOcrDocumentCitationSchema.parse(pin)),selection=ocrCitationFusionSelection(first);
       // All observations in this result share one exact full input/fence/byte pin.
       if(ocrPins.some(pin=>fingerprint(ocrCitationFusionSelection(pin).pin)!==fingerprint(selection.pin)))
@@ -171,23 +202,32 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   // The canonical helper locks the case (including source-family changes) and
   // exact source/job/accepted-attempt rows until the caller's transaction ends.
   // Use stable ordering for the final aggregate lock acquisition.
-  checked.sort((a,b)=>a.input.caseId.localeCompare(b.input.caseId)||
+  const aggregate=[...checked.map(item=>({input:item.input,
+    protect:()=>dependencies.source(client,ctx,item.pin.document,item.input,true),validate:async()=>{
+      await dependencies.source(client,ctx,item.pin.document,item.input);
+      const current=await citationSource(dependencies)(client,siteId,item.pin.document.sourceId);
+      if(fingerprint(current)!==fingerprint(item.source)||await acceptedFenceTx(client,item.input.jobId)!==item.fence)
+        conflict('The aggregate document source or accepted attempt changed during its read.');
+    }})),...checkedIFC.map(item=>({input:item.captured.authority.input,
+    protect:()=>ifcSource(dependencies)(client,siteId,item.selection.pin,true),validate:async()=>{
+      const current=await ifcSource(dependencies)(client,siteId,item.selection.pin);
+      if(fingerprint(current)!==fingerprint(item.captured))conflict('The aggregate IFC source changed during its private read.');
+      ifcTools(dependencies)(current.authority.input,budget);
+    }}))].sort((a,b)=>a.input.caseId.localeCompare(b.input.caseId)||
     a.input.sourceId.localeCompare(b.input.sourceId)||a.input.jobId.localeCompare(b.input.jobId));
   if(lock||protectAggregate)
-    for(const item of checked)await dependencies.source(client,ctx,item.pin.document,item.input,true);
+    for(const item of aggregate)await item.protect();
   // Protected callers validate again only after the complete lock set is held:
   // a source can change during lock acquisition or later groups' result I/O.
-  for(const item of checked){
-    await dependencies.source(client,ctx,item.pin.document,item.input);
-    const current=await citationSource(dependencies)(client,siteId,item.pin.document.sourceId);
-    if(fingerprint(current)!==fingerprint(item.source)||await acceptedFenceTx(client,item.input.jobId)!==item.fence)
-      conflict('The aggregate document source or accepted attempt changed during its read.');
-  }
-  if(citations.some(pin=>pin.version==='registry-document-ocr-citation/1'))fusionLive(budget);
+  for(const item of aggregate)await item.validate();
+  if(checkedIFC.length)for(const pin of citations)await historicalTargetTx(client,siteId,record,pin);
+  if(citations.some(pin=>pin.version!=='registry-document-citation/1'))fusionLive(budget);
   return entries;
 }
-export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation){
+export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation|RegistryIFCCitation){
   if('partId' in pin)return fingerprint({document:pin.document,partId:pin.partId,target:pin.target});
+  if(pin.version==='registry-ifc-citation/1')return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,
+    readerSha256:pin.readerSha256,acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,ifc:pin.ifc,target:pin.target});
   return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,readerSha256:pin.readerSha256,
     acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,ocrConfigSha256:pin.ocrConfigSha256,
     itemOrdinal:pin.itemOrdinal,itemSha256:pin.itemSha256,target:pin.target});
@@ -213,7 +253,7 @@ async function lockedDraftTx(client:PoolClient,draftId:string,recordId?:string,l
   assertRegistryDocumentCases(cases,registryDocumentCases(draft.case_id,draft.records,extra));
   const records=draft.records as RegistryRecord[];
   if(records.length!==1 || (recordId&&records[0].id!==recordId))
-    throw new AppError(422,'REGISTRY_DOCUMENT_DRAFT_SCOPE','Amend one existing building or floor correction per draft.');
+    throw new AppError(422,'REGISTRY_DOCUMENT_DRAFT_SCOPE','Amend one existing building, floor or space correction per draft.');
   requireCorrection(records[0]);return {draft,record:records[0]};
 }
 /** Verified immutable results may be reused within this one locked amendment;
@@ -221,7 +261,7 @@ async function lockedDraftTx(client:PoolClient,draftId:string,recordId?:string,l
 function fusionValidationDependencies(fusion:Awaited<ReturnType<typeof resolveFusionCitationsTx>>,dependencies:Dependencies):Dependencies{
   return {...dependencies,result:async(input,hash)=>fusion.documents.get(`${input.jobId}/${hash}`)?.loaded.result??dependencies.result(input,hash),
     fusionResult:async(selection,authority,budget)=>{
-      const cached=fusion.documents.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`);
+      const cached=fusion.documents.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`)??fusion.ifcs.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`);
       return cached&&fingerprint(cached.pin)===fingerprint(selection.pin)?cached.loaded:
         (dependencies.fusionResult??readFusionResult)(selection,authority,budget);
     }};
@@ -235,6 +275,9 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     request.add?[request.add.document.caseId]:request.addFusion?request.addFusion.selection.sources.map(source=>source.pin.caseId):[]);
   if(draft.status!=='draft'||record.revision!==request.expectedRecordRevision)conflict('Use the exact active correction and recorded target revision.');
   const target=await currentTargetTx(client,draft.site_id,record,true,dependencies),ctx=context();
+  if(record.kind==='space'&&(request.add||request.addFusion?.selection.sources.some(source=>
+    source.kind==='document'?source.partIds.length:source.kind==='document_ocr'?source.itemOrdinals.length:false)))
+    throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Space corrections support explicit IFC citations only.');
   const operationKey=`registry-document-citations:${draftId}:${request.requestKey}`;
   const digest=fingerprint({request,subject:ctx.principal.subject,reviewContext:documentReviewContext()});
   const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='registry-document-citations'",
@@ -243,9 +286,11 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     const receipt=RegistryDocumentAmendmentReceiptSchema.parse(prior.result);
     if(prior.payload_hash!==digest||draft.revision!==receipt.draftRevision)conflict('This amendment request or its draft changed.');
     if(request.addFusion){
-      for(const selected of request.addFusion.selection.sources)if(selected.kind!=='cityjson')
-        await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
-      const fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies);
+      for(const selected of request.addFusion.selection.sources){
+        if(selected.kind==='ifc')await ifcSource(dependencies)(client,draft.site_id,selected.pin,true);
+        else if(selected.kind!=='cityjson')await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
+      }
+      const fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies,draft.site_id);
       await assertRegistryDocumentCitationsTx(client,draft.site_id,record,true,fusionValidationDependencies(fusion,dependencies));
       await currentTargetTx(client,draft.site_id,record,true,dependencies);await fusion.revalidate();
     }else await assertRegistryDocumentCitationsTx(client,draft.site_id,record,true,dependencies);
@@ -256,13 +301,24 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   let fusion:Awaited<ReturnType<typeof resolveFusionCitationsTx>>|undefined;
   if(request.addFusion){
     // Deny site-ineligible citation sources before reading their private results.
-    for(const selected of request.addFusion.selection.sources)if(selected.kind!=='cityjson')
-      await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
-    fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies);
+    for(const selected of request.addFusion.selection.sources){
+      if(selected.kind==='ifc')await ifcSource(dependencies)(client,draft.site_id,selected.pin,true);
+      else if(selected.kind!=='cityjson')await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
+    }
+    fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies,draft.site_id);
     const targetPin={recordId:record.id,revision:record.revision,bodySha256:fingerprint(target.body)};
-    const attribution=(input:DocumentInput)=>({subject:ctx.principal.subject,accessSha256:input.accessSha256,selectedAt:new Date().toISOString()});
+    const attribution=(input:Pick<DocumentInput,'accessSha256'>)=>({subject:ctx.principal.subject,accessSha256:input.accessSha256,selectedAt:new Date().toISOString()});
     for(const source of fusion.context.sources){
       if(source.kind==='cityjson')continue;
+      if(source.kind==='ifc'){
+        const input=fusion.ifcInputs.get(source.pin.sourceId)!;
+        for(const entry of source.entities){
+          const pin=RegistryIFCCitationSchema.parse({...fusionIFCCitationFields(source,entry.record.stepId),id:'0'.repeat(64),
+            version:'registry-ifc-citation/1',target:targetPin,selection:attribution(input),associationState:'operator_selected',qualification:'not_assessed'});
+          pin.id=citationId(pin);added.push(pin);
+        }
+        continue;
+      }
       const input=fusion.inputs.get(source.pin.sourceId)!;
       if(source.kind==='document'){
         if(source.parts.length&&(source.nativeStatus!=='extracted'||input.archiveSelection))
@@ -320,7 +376,10 @@ export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:
   await currentTargetTx(client,draft.site_id,expected,false,dependencies);
   const current=await lockedDraftTx(client,draftId,undefined,false,[],false);
   if(fingerprint(current)!==fingerprint({draft,record}))conflict('The draft changed during its private evidence read.');
-  return RegistryDocumentEvidenceSchema.parse({draftId,draftRevision:draft.revision,recordId:record.id,
+  const response=RegistryDocumentEvidenceSchema.parse({draftId,draftRevision:draft.revision,recordId:record.id,
     recordRevision:record.revision,citations,associationState:'operator_selected',qualification:'not_assessed'});
+  if(citations.some(entry=>entry.pin.version==='registry-ifc-citation/1')&&Buffer.byteLength(JSON.stringify(response))>SOURCE_FUSION_LIMITS.responseBytes-8192)
+    throw new AppError(413,'REGISTRY_IFC_RESPONSE_LIMIT','Select a smaller explicit IFC evidence context.');
+  return response;
 }
 export const readRegistryDocumentCitations=(draftId:string)=>transaction(client=>readRegistryDocumentCitationsTx(client,draftId));
