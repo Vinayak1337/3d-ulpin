@@ -1,0 +1,595 @@
+{
+  "artifacts": {
+    "adapter-summary.json": "19d49400aac903034c9b667e0db1f4f7623c112ed52b9eca01ae297f2f9832ab",
+    "host-command-result.json": "a87859b5b7eff3483418a30b49b045f2e6514d261582ab4e058b61f0639f040f",
+    "host-stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "host-stdout.log": "31806a3e81f560775d40444631811d982a719fe28d98e7c387aaf321cd3cd055",
+    "inputs/assignment.json": "baa09c760e4b4dbfc2530bf3432f1edbb811e451dcf99e5d7ea1a9ba76c0acfe",
+    "inputs/family-freeze.json": "93c243f28895ac084c3f1853cba80b9e0b5286f881aba44d6cb7ab6e3a164730",
+    "inputs/model-acquisition.json": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2",
+    "inputs/run-freeze.json": "70008602964e20fd87d9ef428de786d3fad3ba67deea3b6428bc08cf3fefb8f0",
+    "inputs/runtime-requirements-resolved.txt": "c27e534e121858d96dfa531e14374642a43bed9544aeef0426b39353280ab4e3",
+    "inputs/schema-v1.json": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+    "inputs/train-teacher-v1.jsonl": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+    "inputs/train-teacher-v2.jsonl": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+    "outputs/fit/base-before.json": "ea2beb9b50924afcae782b149b40e98765ce3dccd2cadd47a4b5b6d74a2c2372",
+    "outputs/fit/failure.json": "575d6f459edf76b4366790173b1925d0ccbf6b2785749044762df73b9390d501",
+    "outputs/fit/first-step-targets.json": "e092ace3e258632519ca3129fe8289b02790feb926c1a3e9ed7ec8ef476d64c4",
+    "outputs/fit/fit-progress.jsonl": "83eaae0c042470bc8b502c9f68c3fdf5c9b54f67820901c8562acc38b3fb7f9a",
+    "outputs/fit/gpu-samples.jsonl": "528c8a11deb4155d6d2f41831b5e34945e10f4db2351a9f94309444630bc599e",
+    "outputs/fit/loss-equivalence.json": "16081a471997889be20b3b2104067205b166d849dd8d218c9b2de872c2439008",
+    "outputs/fit/memory-phases.jsonl": "48fdfd43aea692c12c3931d44f475b80878a50f6a9318765a65b3183be8d9f75",
+    "outputs/fit/objective-control.jsonl": "b4e8f49f562624f85ebe8ae8f04a25f9394a424a37b7bfa98205e8042abb5167",
+    "outputs/fit/teacher-delta.json": "31e05c069174477070e982228ffad30c90a71ef731d9fd8837af0424059af134",
+    "outputs/fit/token-preflight.json": "94095fcfe8a5ea3a8462d444b53c2ff66e69127dd0939302bf45ab3d955c0ced",
+    "profile.json": "4c08771875b8b704e0fc8a0f5e175f741686145b9869eedf2d15875d3e8db4e0",
+    "receipts/association_adapter-fit-guard.json": "4b77056a13e7a8cef360515523e9235bad8e1fccbbad2bf07ad21e8db381cf08",
+    "stage.json": "ae5d0f0d4b6e1d7284f5d3798e364e0aa2f08ef67f5bfa9e25dc541647fda022",
+    "state/association_adapter-fit-attempt.json": "83aefb96cc22338351b1ea2ac3ff6917ed6d054121c8ab4e924fb367fa2a7c3d",
+    "state/association_adapter-fit-session.json": "e08555e4ada6989e6eeb516322b8445270666137beca9df3aee144bb242fb329"
+  },
+  "boundaries": {
+    "baselineClaimsAccepted": 0,
+    "baselineExamples": 2,
+    "baselineExpectedClaims": 6,
+    "baselineRerun": false,
+    "baselineValidOutputs": 0,
+    "developmentInputsAndExpectationsInFit": false,
+    "evaluationOpened": false,
+    "historicalMappingDataOpened": false,
+    "originalsChanged": false,
+    "parameterRetry": false,
+    "promoted": false,
+    "sharedDependenciesOrServicesChanged": false,
+    "teacherCorrectionRequested": false,
+    "trainingInputsOnlyInFit": true
+  },
+  "branch": "task/ml-association-student-20261002",
+  "checks": {
+    "compiledSources": 17,
+    "containedObjectiveCasesPassed": 2,
+    "executedPhysicalCodePinsMatched": 12,
+    "failedRunReceiptAssertionsPassed": true,
+    "focusedTests": 7,
+    "receiptPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\checks-v3-59931b64\\checks.json",
+    "sha256": "f11543772b8fdcab04e2a2bf807cb2a2d68a8d6917dc0c243cd891303657f87a"
+  },
+  "codeCommit": "59931b64a6d048f52b423fa5955f4ae8e2e449a4",
+  "containment": {
+    "capabilityCount": 0,
+    "childExitCode": 1,
+    "cleanupPassed": true,
+    "inheritedHandles": 2,
+    "jobClosed": true,
+    "modelIsolationChangedThisIncrement": false,
+    "outputTruncated": false,
+    "outputsAccepted": false,
+    "preResumeJobPassed": true,
+    "preResumeTokenPassed": true,
+    "resourcesAndSecurityPrimitiveChanged": false
+  },
+  "coordinatorHeadAtFreeze": "120f1c29fc9824519fd69f779d3c3b11eb682a25",
+  "dependencyWheels": {
+    "accelerate-1.10.1-py3-none-any.whl": "3621cff60b9a27ce798857ece05e2b9f56fcc71631cfb31ccf71f0359c311f11",
+    "peft-0.17.1-py3-none-any.whl": "3d129d64def3d74779c32a080d2567e5f7b674e77d546e3585138216d903f99e"
+  },
+  "executedPhysicalCodePins": {
+    "code/scripts/usp/learning/association/association_adapter.py": "0beef918aa2fbab6a41981276b5497bdc768a9fd2a0caabdcf1c637d10844729",
+    "code/scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "code/scripts/usp/security/appcontainer_audit.py": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca",
+    "code/services/geo/geo/__init__.py": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+    "code/services/geo/geo/usp_learning/__init__.py": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335",
+    "code/services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "code/services/geo/geo/usp_learning/association/adapter.py": "00602f9e6b7615e0caaab787634eccff1a3621046c98678bdf411bf1fb47e65e",
+    "code/services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "code/services/geo/geo/usp_learning/association/memory_observation.py": "f05af85ec27eaa8542b623564e916b8fc2a43608d5cf207f2a4fc48eca185feb",
+    "code/services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+    "code/services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "code/services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+  },
+  "execution": {
+    "attempts": 1,
+    "childDeadlineSeconds": 600,
+    "childExactElapsedSeconds": null,
+    "firstImportToFailurePhaseSeconds": 21.14516509999521,
+    "fitCommand": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\association_adapter.py",
+      "fit",
+      "--schema",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68\\inputs\\schema-v1.json",
+      "--family-freeze",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68\\inputs\\family-freeze.json",
+      "--model-receipt",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68\\inputs\\model-acquisition.json",
+      "--assignment",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68\\inputs\\assignment.json",
+      "--teacher-v1",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68\\inputs\\train-teacher-v1.jsonl",
+      "--training-data",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68\\inputs\\train-teacher-v2.jsonl",
+      "--run-freeze",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68\\inputs\\run-freeze.json",
+      "--output-dir",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68\\outputs\\fit",
+      "--containment-profile",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68\\profile.json",
+      "--containment-sha256",
+      "4c08771875b8b704e0fc8a0f5e175f741686145b9869eedf2d15875d3e8db4e0"
+    ],
+    "fitExitCode": 1,
+    "guardSetupChildCleanupSeconds": 223.5,
+    "hostSeconds": 416.2217222000472,
+    "profileFileCount": 19659,
+    "stageCommand": [
+      "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "scripts/usp/learning/association/stage_adapter.py",
+      "fit"
+    ],
+    "stageExitCode": 0,
+    "timedOut": false
+  },
+  "fit": {
+    "acceptedFit": false,
+    "baseEqualityAfterFit": "not measured because the full fit failed",
+    "developmentComparisonAttempted": false,
+    "failedEpoch": 1,
+    "failedExample": "teacher-haryana-floor01",
+    "failedExampleCombinedTokens": 1736,
+    "failedExampleSupervisedTokens": 1240,
+    "failedOperation": "post-optimizer phase observation for update 3",
+    "firstBackwardAndUpdateWithinBounds": true,
+    "firstFiniteLoss": 0.31136763095855713,
+    "firstUpdateJobPeakBytes": 5824798720,
+    "frozenBaseGradients": "required absent through all three executed updates; first-step observation saved",
+    "initialFrozenBaseDigest": {
+      "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+      "tensorCount": 290
+    },
+    "lossByExecutedStep": [
+      0.31136763095855713,
+      0.6989952325820923,
+      0.08505097031593323
+    ],
+    "optimizerStepsExecuted": 3,
+    "plannedUpdates": 66,
+    "primaryException": "RuntimeError",
+    "primaryMessage": "native phase Job committed/RSS memory bound exceeded",
+    "progressDiscrepancyExplanation": "Optimizer/scaler step and synchronization completed, update counter incremented to3, then phase recorder flushed update3 and raised on its Job peak. Normal fit-progress append for step3 was therefore not reached.",
+    "progressRecordsWritten": 2,
+    "reloadAttempted": false,
+    "savedAdapter": false,
+    "stepsWithPassedPostUpdatePhaseBounds": 2
+  },
+  "inspectedRuntimeSources": {
+    "runtime/packages/peft/peft_model.py": "2307ebeb101baff53b19ce5a0f109885d99b64ab147d67cba19719b6097c3e10",
+    "runtime/packages/peft/tuners/lora/model.py": "9eec396e506134e50afa41ff21b2608a3307f8f07207f460506d2da33d7bc2f7",
+    "runtime/packages/torch/utils/checkpoint.py": "81db22bcdf8b4a34eb09e520f927cdc489598f7978e061542caabc18a5e97d2b",
+    "runtime/packages/transformers/models/qwen2/modeling_qwen2.py": "a59fa06524227361fb401baf4d177124a27aec146bc01ec931235a9abbab17cb"
+  },
+  "lossImplementation": {
+    "checkpointPreserveRngState": true,
+    "checkpointUseReentrant": false,
+    "control": {
+      "cpuFloat64": {
+        "gradientAtol": 1e-12,
+        "gradientRtol": 1e-11,
+        "lossAtol": 1e-12,
+        "lossRtol": 1e-12
+      },
+      "cudaFloat16Float32": {
+        "gradientAtol": 2e-06,
+        "gradientRtol": 0.003,
+        "gradientScale": 128.0,
+        "lossAtol": 5e-05,
+        "lossRtol": 5e-05
+      },
+      "hiddenSize": 32,
+      "lastChunkTokens": 7,
+      "promptTokens": 12,
+      "sequenceTokens": 147,
+      "supervisedTokens": 135,
+      "toleranceReason": "CPU double checks algebra tightly; CUDA permits fp16 GEMM/reduction rounding while loss remains float32.",
+      "vocabularySize": 257
+    },
+    "decoderForwardsPerExample": 1,
+    "headChunkTokens": 64,
+    "headRequiresGrad": false,
+    "hiddenDetached": false,
+    "hiddenSelection": "promptTokens-1 through sequenceTokens-2 inclusive",
+    "productionLossDtype": "float32",
+    "reduction": "sum all chunk cross-entropies / exact supervised token count including EOS",
+    "version": "association-checkpointed-head-loss/1"
+  },
+  "memoryExecutionPolicy": {
+    "causeQualification": "Full logits/float loss tensors are a code-inspected avoidable allocation. Recorded Job over-cap disqualifies prior fit; precise native allocator/CUDA failure cause remains unresolved.",
+    "checkpointing": "Non-reentrant recomputation for deterministic frozen projection/loss; preserve stochastic decoder/LoRA RNG behavior. No target truncation, per-chunk reweighting or independent example splitting.",
+    "continuation": "One freshly pinned execution. If the original failing first update completes under bounds, finish the unchanged 66-step fit in that bounded phase, save/check adapter, then fresh-process reload and original development comparison. Any consequential failure returns exact artifacts; do not change cap/attention/model/rank/epochs/data/prompt or launch a search.",
+    "equivalence": "One contained small tensor control compares full versus chunked loss and hidden gradients, including a short last chunk, under predefined dtype-appropriate tolerances. This is an objective-preservation check, not a training/corpus campaign.",
+    "headChunkTokens": 64,
+    "implementation": "One decoder forward; select the same assistant-predicting hidden positions; frozen lm_head projection and float32 summed cross-entropy in 64-token checkpointed chunks; sum chunk losses and divide by exact total supervised tokens including EOS. Avoid storing full vocabulary logits/float copy/backward buffers.",
+    "instrumentation": "Flush numeric finite loss and first-step phase native Job committed/peak, RSS and GPU allocation/reservation/free observations before/after load, forward/loss, backward and optimizer. Preserve original exception and report last observed samples honestly if CUDA becomes unhealthy."
+  },
+  "model": {
+    "licence": "Apache-2.0",
+    "name": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "safetensorsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+  },
+  "modelSettings": {
+    "actualWorkerModelAndTier": "not exposed by this tool session; no configuration change claimed",
+    "assignmentRequired": "Astra/max latest human override; default/standard required, per-turn tier unexposed",
+    "standardSpeedRequired": true
+  },
+  "nativeJobObservationSource": {
+    "observedSha256": "404019933323ca25f5db8ce14437483e1054398ce454d5c75df2e187cec2ae40",
+    "readOnlyQuery": "JobObjectLimitViolationInformation=13, JOBOBJECT_LIMIT_VIOLATION_INFORMATION.JobMemory",
+    "url": "https://raw.githubusercontent.com/microsoft/win32metadata/main/generation/WinSDK/RecompiledIdlHeaders/um/winnt.h"
+  },
+  "nextObservedIssue": "Preserve the successful exact-objective/first-backward evidence. A separately assigned repair must bound the committed-memory peak across the longer third example while retaining all11 rows/66 updates and the existing6GiB cap; no follow-up candidate was launched.",
+  "numerics": {
+    "adamBetas": [
+      0.9,
+      0.999
+    ],
+    "adamEpsilon": 1e-08,
+    "adapterDtype": "float32",
+    "attention": "sdpa",
+    "baseDtype": "float16",
+    "checkpointing": "non-reentrant",
+    "initialGradientScale": 128.0,
+    "logits": "only positions predicting supervised assistant JSON plus EOS; prompt labels masked",
+    "lossDtype": "float32",
+    "scaleGrowthInterval": 2000,
+    "shuffle": "Random(17), one permutation per epoch"
+  },
+  "objectiveEquivalence": {
+    "cases": [
+      {
+        "chunkLoss": 5.555440190280462,
+        "dtype": "cpuFloat64",
+        "finite": true,
+        "frozenHeadUnchanged": true,
+        "fullLoss": 5.555440190280463,
+        "hiddenGradientWithinTolerance": true,
+        "lossAbsoluteDifference": 8.881784197001252e-16,
+        "lossWithinTolerance": true,
+        "maxHiddenGradientAbsoluteDifference": 1.1926223897340549e-18,
+        "maxReferenceHiddenGradientMagnitude": 0.00144909978324915,
+        "passed": true,
+        "unselectedHiddenGradientsZero": true
+      },
+      {
+        "chunkLoss": 5.5554399490356445,
+        "dtype": "cudaFloat16Float32",
+        "finite": true,
+        "frozenHeadUnchanged": true,
+        "fullLoss": 5.555440425872803,
+        "hiddenGradientWithinTolerance": true,
+        "lossAbsoluteDifference": 4.76837158203125e-07,
+        "lossWithinTolerance": true,
+        "maxHiddenGradientAbsoluteDifference": 0.0,
+        "maxReferenceHiddenGradientMagnitude": 0.0014495849609375,
+        "passed": true,
+        "unselectedHiddenGradientsZero": true
+      }
+    ],
+    "chunkSizes": [
+      64,
+      64,
+      7
+    ],
+    "denominator": 135,
+    "fullPositionAndTargetVectorsArtifact": "outputs/fit/loss-equivalence.json",
+    "hiddenPositionRangeInclusive": [
+      11,
+      145
+    ],
+    "lastTechnicalTarget": 2,
+    "passed": true,
+    "predeclaredTolerances": {
+      "cpuFloat64": {
+        "gradientAtol": 1e-12,
+        "gradientRtol": 1e-11,
+        "lossAtol": 1e-12,
+        "lossRtol": 1e-12
+      },
+      "cudaFloat16Float32": {
+        "gradientAtol": 2e-06,
+        "gradientRtol": 0.003,
+        "gradientScale": 128.0,
+        "lossAtol": 5e-05,
+        "lossRtol": 5e-05
+      },
+      "hiddenSize": 32,
+      "lastChunkTokens": 7,
+      "promptTokens": 12,
+      "sequenceTokens": 147,
+      "supervisedTokens": 135,
+      "toleranceReason": "CPU double checks algebra tightly; CUDA permits fp16 GEMM/reduction rounding while loss remains float32.",
+      "vocabularySize": 257
+    },
+    "qualification": "technical tensor objective-preservation control only",
+    "rngUnchanged": true,
+    "targetTokenPositionRangeInclusive": [
+      12,
+      146
+    ],
+    "version": "association-loss-equivalence/1"
+  },
+  "permissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access",
+    "source": "supplied environment"
+  },
+  "previousFailedFit": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-fit-ccad3d0c51fb478493b0c4765ea04d6a",
+  "previousFailureReceiptSha256": "7569b6a77268ab85f761a8e135c87b952a63d34d5a70b8aea5136d89596ee8d6",
+  "primaryStagingHeadObservedBeforeWork": "a4b51f02f51ab428fdb3dc4d4d056e99ee56800f",
+  "recordedAt": "2026-10-02T11:23:05.737222+00:00",
+  "resourceObservation": {
+    "causeQualification": "Recorded Job peak exceeded6GiB during third update; detected after optimizer/synchronize. Current committed and RSS were below cap at detection. No CUDA error occurred; precise allocator/subphase attribution remains unresolved. This does not demonstrate GPU capacity exhaustion.",
+    "cudaPeakAllocatedThroughFailureBytes": 1867337216,
+    "cudaPeakReservedThroughFailureBytes": 2101346304,
+    "firstStepPhases": [
+      {
+        "elapsedSeconds": 19.133226500009187,
+        "gpu": {
+          "allocatedBytes": 1065619968,
+          "freeBytes": 6246367232,
+          "initialized": true,
+          "measured": true,
+          "peakAllocatedBytes": 1065621504,
+          "peakReservedBytes": 1109393408,
+          "reservedBytes": 1109393408,
+          "totalBytes": 8589410304
+        },
+        "native": {
+          "jobCapBytes": 6442450944,
+          "jobCurrentCommittedBytes": 4803338240,
+          "jobCurrentMethod": "QueryInformationJobObject JobObjectLimitViolationInformation.JobMemory",
+          "jobPeakCommittedBytes": 4901195776,
+          "processPeakRssBytes": 3880374272,
+          "processPrivateCommittedBytes": 4803338240,
+          "processRssBytes": 2785587200
+        },
+        "phase": "first_before_decoder"
+      },
+      {
+        "elapsedSeconds": 19.386508999974467,
+        "gpu": {
+          "allocatedBytes": 1128783360,
+          "freeBytes": 5973737472,
+          "initialized": true,
+          "measured": true,
+          "peakAllocatedBytes": 1357004288,
+          "peakReservedBytes": 1382023168,
+          "reservedBytes": 1382023168,
+          "totalBytes": 8589410304
+        },
+        "native": {
+          "jobCapBytes": 6442450944,
+          "jobCurrentCommittedBytes": 5384970240,
+          "jobCurrentMethod": "QueryInformationJobObject JobObjectLimitViolationInformation.JobMemory",
+          "jobPeakCommittedBytes": 5384970240,
+          "processPeakRssBytes": 3880374272,
+          "processPrivateCommittedBytes": 5384970240,
+          "processRssBytes": 3052462080
+        },
+        "phase": "first_after_decoder"
+      },
+      {
+        "elapsedSeconds": 19.448298900038935,
+        "gpu": {
+          "allocatedBytes": 1129967616,
+          "freeBytes": 5973737472,
+          "initialized": true,
+          "measured": true,
+          "peakAllocatedBytes": 1357004288,
+          "peakReservedBytes": 1382023168,
+          "reservedBytes": 1382023168,
+          "totalBytes": 8589410304
+        },
+        "native": {
+          "jobCapBytes": 6442450944,
+          "jobCurrentCommittedBytes": 5385170944,
+          "jobCurrentMethod": "QueryInformationJobObject JobObjectLimitViolationInformation.JobMemory",
+          "jobPeakCommittedBytes": 5385170944,
+          "processPeakRssBytes": 3880374272,
+          "processPrivateCommittedBytes": 5385170944,
+          "processRssBytes": 3052756992
+        },
+        "phase": "first_after_loss_before_backward"
+      },
+      {
+        "elapsedSeconds": 19.753257200005464,
+        "gpu": {
+          "allocatedBytes": 1075165184,
+          "freeBytes": 5768216576,
+          "initialized": true,
+          "measured": true,
+          "peakAllocatedBytes": 1512019968,
+          "peakReservedBytes": 1585446912,
+          "reservedBytes": 1585446912,
+          "totalBytes": 8589410304
+        },
+        "native": {
+          "jobCapBytes": 6442450944,
+          "jobCurrentCommittedBytes": 5622444032,
+          "jobCurrentMethod": "QueryInformationJobObject JobObjectLimitViolationInformation.JobMemory",
+          "jobPeakCommittedBytes": 5622444032,
+          "processPeakRssBytes": 3880374272,
+          "processPrivateCommittedBytes": 5622444032,
+          "processRssBytes": 3075055616
+        },
+        "phase": "first_after_backward"
+      },
+      {
+        "elapsedSeconds": 19.8714001000626,
+        "gpu": {
+          "allocatedBytes": 1075166208,
+          "freeBytes": 5768216576,
+          "initialized": true,
+          "measured": true,
+          "peakAllocatedBytes": 1512019968,
+          "peakReservedBytes": 1585446912,
+          "reservedBytes": 1585446912,
+          "totalBytes": 8589410304
+        },
+        "native": {
+          "jobCapBytes": 6442450944,
+          "jobCurrentCommittedBytes": 5735387136,
+          "jobCurrentMethod": "QueryInformationJobObject JobObjectLimitViolationInformation.JobMemory",
+          "jobPeakCommittedBytes": 5735387136,
+          "processPeakRssBytes": 3880374272,
+          "processPrivateCommittedBytes": 5735387136,
+          "processRssBytes": 3167256576
+        },
+        "phase": "first_before_optimizer_step"
+      }
+    ],
+    "jobCapBytes": 6442450944,
+    "jobCapExcessBytes": 32661504,
+    "jobCurrentAtFailureBytes": 6407479296,
+    "minimumSampledCudaFreeBytes": 5352980480,
+    "nativeAndCudaObservationErrors": 0,
+    "peakJobCommittedBytes": 6475112448,
+    "phaseRecords": 20,
+    "resourceAccepted": false,
+    "sampledPeakProcessRssBytes": 3880374272
+  },
+  "runRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-memory-fit-dfd393a451dd489e94089487cec3ad68",
+  "settings": {
+    "alpha": 16,
+    "batchSize": 1,
+    "cacheDuringFit": false,
+    "cpuThreads": 2,
+    "dropout": 0.05,
+    "epochs": 6,
+    "gradientAccumulation": 1,
+    "gradientCheckpointing": true,
+    "gradientClipNorm": 1,
+    "learningRate": 0.0002,
+    "loss": "assistant JSON target plus EOS only; all prompt tokens masked",
+    "maxSequenceTokens": 4096,
+    "method": "supervised_causal_LoRA",
+    "optimizer": "AdamW",
+    "rank": 8,
+    "seed": 17,
+    "targets": [
+      "q_proj",
+      "v_proj"
+    ],
+    "warmupSteps": 0,
+    "weightDecay": 0
+  },
+  "status": "first_backward_repaired_but_step3_job_peak_failed",
+  "task": "STUDENT-03",
+  "teacher": {
+    "addedCanonicalAbstentions": 11,
+    "claimsUnchanged": 62,
+    "conflictsUnchanged": 2,
+    "deltaPassed": true,
+    "examples": 11,
+    "feedbackSentThisAttempt": false,
+    "qualification": "provisional teacher supervision, not official or independent truth",
+    "v1Sha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+    "v2Sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c"
+  },
+  "tokenPreflight": {
+    "epochOrder": [
+      [
+        7,
+        3,
+        0,
+        9,
+        10,
+        1,
+        2,
+        5,
+        4,
+        6,
+        8
+      ],
+      [
+        1,
+        5,
+        0,
+        10,
+        2,
+        7,
+        8,
+        4,
+        9,
+        6,
+        3
+      ],
+      [
+        7,
+        6,
+        1,
+        5,
+        0,
+        4,
+        8,
+        9,
+        10,
+        3,
+        2
+      ],
+      [
+        6,
+        10,
+        0,
+        9,
+        4,
+        3,
+        5,
+        2,
+        7,
+        8,
+        1
+      ],
+      [
+        4,
+        7,
+        1,
+        6,
+        2,
+        3,
+        8,
+        10,
+        0,
+        9,
+        5
+      ],
+      [
+        7,
+        10,
+        6,
+        5,
+        0,
+        2,
+        4,
+        9,
+        3,
+        8,
+        1
+      ]
+    ],
+    "examples": 11,
+    "excludedRows": [],
+    "limit": 4096,
+    "maximumCombinedTokens": 2333,
+    "minimumCombinedTokens": 490,
+    "truncation": false,
+    "unchangedFirstRow": "teacher-bihar-identifier-conflict"
+  },
+  "version": "association-student-memory-repair-attempt/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
