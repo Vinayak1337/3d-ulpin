@@ -414,8 +414,10 @@ class Vocabulary:
 
 class Controller:
     """Batch-one greedy callback compatible with PrefixConstrainedLogitsProcessor."""
-    def __init__(self, vocabulary, source, schema, prompt_ids):
-        self.vocabulary, self.grammar = vocabulary, Grammar(source, schema)
+    def __init__(self, vocabulary, source, schema, prompt_ids, *, grammar=None):
+        self.vocabulary = vocabulary
+        self.grammar = Grammar(source, schema) if grammar is None else grammar
+        require(self.grammar.source_sha256 == source.input_sha256, "selector_constraint_grammar_source_drift")
         self.prompt_ids, self.generated = tuple(prompt_ids), ()
         self.state = self.grammar.initial()
         self.raw_bytes = bytearray()
@@ -464,7 +466,7 @@ class Controller:
         # tokenizer replacement output and mark incomplete; never close/repair it.
         expected = bytes(self.raw_bytes).decode('utf-8', 'replace')
         require(raw_text == expected, "selector_constraint_final_decode_mismatch")
-        return {"policyVersion": VERSION, "sourceInputSha256": self.grammar.source_sha256,
+        return {"policyVersion": getattr(self.grammar, "version", VERSION), "sourceInputSha256": self.grammar.source_sha256,
                 "grammarComplete": not self.state.ops, "eosEmitted": self.eos,
                 "generatedBytesSha256": hashlib.sha256(self.raw_bytes).hexdigest(),
                 "maskCalls": self.calls, "trieNodeVisits": self.visits,

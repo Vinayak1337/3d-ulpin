@@ -21,6 +21,7 @@ AUXILIARY_NAMES = {"selector-assignment.json", "selector-schema-v1.json", "selec
 
 
 def checked_assignment(assignment):
+    require("candidateRoute" not in assignment, "separate_candidate_execution_required")
     require(assignment.get("version") == ASSIGNMENT_VERSION and assignment.get("task") == "STUDENT-09-BASELINE",
             "separate_selector_baseline_assignment_required")
     allowance = assignment.get("executionAllowance", {})
@@ -60,6 +61,7 @@ def checked_batch(batch, cases, contract, family, allowed_splits=("development",
 
 
 def checked_run_inputs(freeze, inputs):
+    require("candidateRoute" not in freeze, "separate_candidate_execution_required")
     require(freeze["version"] == FREEZE_VERSION
             and set(freeze.get("inputSha256", {})) == {"input_batch", "schema", "family_freeze", "model_receipt"}
             and set(freeze.get("auxiliaryInputSha256", {})) == AUXILIARY_NAMES,
@@ -85,12 +87,22 @@ def checked_run_inputs(freeze, inputs):
 
 
 def run_selectors(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, *,
-                  selector_contract, cases, preserve_preflight, model_loader=None, generation_constraints=None):
+                  selector_contract, cases, preserve_preflight, model_loader=None, generation_constraints=None,
+                  candidate_route=None):
     require_boundary()  # before dependencies, model bytes or GPU initialization
     for example in examples:
         validate_input(example, contract, family_freeze, ("development",))
     batch = {"version": "association-development/1", "examples": examples}
     sources = checked_batch(batch, cases, contract, family_freeze)
+    prompt_version, prompt_sha, schema_sha, source_policy = PROMPT_VERSION, PROMPT_SHA, SCHEMA_SHA, POLICY
+    representation, project_output = "evidence-association-selectors/1", project
+    candidate_mode = candidate_route is not None
+    if candidate_mode:
+        from . import candidate_selection as candidate
+        require(generation_constraints is None, "candidate_mixed_constraints_refused")
+        sources = candidate.checked_route(candidate_route, examples, contract, family_freeze, selector_contract)
+        prompt_version, prompt_sha, schema_sha, source_policy = candidate.PROMPT_VERSION, candidate.PROMPT_SHA, candidate.SCHEMA_SHA, candidate.POLICY
+        representation, project_output = candidate.VERSION, candidate.project
     import torch
     import transformers
     from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteria, StoppingCriteriaList
@@ -136,16 +148,19 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
         preflight.append({"exampleId": example["exampleId"], "inputCanonicalJsonSha256": source.input_sha256,
                           "promptSha256": hashlib.sha256(prompt.encode()).hexdigest(), "inputTokens": tokens,
                           "privateLexicalView": source.private_view()})
-    preserve_preflight({"version": FREEZE_VERSION, "promptVersion": PROMPT_VERSION, "systemPromptSha256": PROMPT_SHA,
-                        "selectorSchemaCanonicalLfSha256": SCHEMA_SHA, "lexicalPolicy": POLICY,
+    preserve_preflight({"version": "association-candidate-preflight/1" if candidate_mode else FREEZE_VERSION,
+                        "promptVersion": prompt_version, "systemPromptSha256": prompt_sha,
+                        ("candidateSchemaCanonicalLfSha256" if candidate_mode else "selectorSchemaCanonicalLfSha256"): schema_sha,
+                        ("candidatePolicy" if candidate_mode else "lexicalPolicy"): source_policy,
                         "examples": preflight, "truncation": False, "teacherTargetsInPrompt": False,
                         "lexicalPythonVersion": sys.version, "unicodeVersion": unicodedata.unidata_version})
     require(all(row["inputTokens"] <= SETTINGS["maxInputTokens"] for row in preflight),
             "selector_input_token_bound_exceeded_no_truncation")
     vocabulary, constraint_reports = None, []
-    if generation_constraints is not None:
+    if generation_constraints is not None or candidate_mode:
         from .selector_constraints import checked_metadata, Vocabulary, Controller, checked_generation_config
-        checked_metadata(generation_constraints)
+        if not candidate_mode:
+            checked_metadata(generation_constraints)
         vocabulary = Vocabulary(model_path)
         vocabulary.verify_runtime(tokenizer)
     model = (AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
@@ -167,7 +182,8 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
         encoded = {key: value.to("cuda") for key, value in encoded.items()}
         generation_options = {}
         if vocabulary is not None:
-            controller = Controller(vocabulary, source, selector_contract, encoded["input_ids"][0].tolist())
+            controller = Controller(vocabulary, source, selector_contract, encoded["input_ids"][0].tolist(),
+                **({"grammar": candidate.Grammar(source, selector_contract)} if candidate_mode else {}))
             generation_options["prefix_allowed_tokens_fn"] = controller
         before = time.perf_counter()
         with torch.inference_mode():
@@ -178,7 +194,7 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
         seconds = time.perf_counter() - before
         output_ids = generated[0, input_tokens:]
         raw = tokenizer.decode(output_ids, skip_special_tokens=True)
-        raw_record = {"exampleId": example["exampleId"], "rawText": raw, "representation": "evidence-association-selectors/1",
+        raw_record = {"exampleId": example["exampleId"], "rawText": raw, "representation": representation,
                       "inputCanonicalJsonSha256": source.input_sha256,
                       "promptSha256": hashlib.sha256(prompt.encode()).hexdigest(),
                       "inputTokens": input_tokens, "outputTokens": len(output_ids),
@@ -186,20 +202,24 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
         preserve_raw(len(raw_outputs), raw_record)
         if vocabulary is not None:
             constraint_reports.append({"exampleId": example["exampleId"], **controller.finish(output_ids.tolist(), raw)})
-        checked = project(raw, source, selector_contract, contract, family_freeze, ("development",))
+        checked = (project_output(raw, source, selector_contract, contract, family_freeze) if candidate_mode
+                   else project_output(raw, source, selector_contract, contract, family_freeze, ("development",)))
         raw_outputs.append(raw_record)
         results.append({"exampleId": example["exampleId"], **checked})
         del generated, output_ids, encoded
         gpu_check()
-    result = {"version": "association-selector-baseline-result/1", "results": results,
+    result = {"version": "association-candidate-result/1" if candidate_mode else "association-selector-baseline-result/1", "results": results,
         "jsonSyntaxValidCount": sum(row["jsonSyntaxValid"] for row in results),
-        "selectorSchemaValidCount": sum(row["selectorSchemaValid"] for row in results),
-        "rawSelectorValidCount": sum(row["rawSelectorValid"] for row in results),
+        **({"candidateSchemaValidCount": sum(row["candidateSchemaValid"] for row in results),
+            "selectionValidCount": sum(row["selectionValid"] for row in results)} if candidate_mode else
+           {"selectorSchemaValidCount": sum(row["selectorSchemaValid"] for row in results),
+            "rawSelectorValidCount": sum(row["rawSelectorValid"] for row in results)}),
         "expandedOutputValidCount": sum(row["expandedOutputValid"] for row in results),
         "acceptedClaimCount": sum(row["acceptedClaimCount"] for row in results),
         "correctExpectedClaims": None, "expectedClaimsEvaluated": False,
-        "promptVersion": PROMPT_VERSION, "systemPromptSha256": PROMPT_SHA, "lexicalPolicy": POLICY,
-        "selectorSchemaCanonicalLfSha256": SCHEMA_SHA,
+        "promptVersion": prompt_version, "systemPromptSha256": prompt_sha,
+        ("candidatePolicy" if candidate_mode else "lexicalPolicy"): source_policy,
+        ("candidateSchemaCanonicalLfSha256" if candidate_mode else "selectorSchemaCanonicalLfSha256"): schema_sha,
         "modelOutputValidCount": sum(row["modelOutputValid"] for row in results), "exampleCount": len(results),
         "settings": SETTINGS, "loadSeconds": loaded_seconds, "elapsedSeconds": time.perf_counter() - started,
         "runtime": {"torch": torch.__version__, "transformers": transformers.__version__, "cuda": torch.version.cuda,
@@ -207,8 +227,9 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
                     "maxCudaAllocatedBytes": torch.cuda.max_memory_allocated(), "maxCudaReservedBytes": torch.cuda.max_memory_reserved(),
                     "minimumSampledFreeCudaBytes": min(s["freeBytes"] for s in samples)},
         "evaluationOpened": False, "teacherOutputsUsed": False, "fitPerformed": False,
-        "teacherTargetsInPrompt": False, "qualification": "span copying is source-exact, not semantic correctness; two related development examples, no canonical association or generalization qualification"}
+        "teacherTargetsInPrompt": False, "qualification": ("deterministic native candidates and forced facts are not learned selection accuracy; no canonical association or generalization qualification" if candidate_mode else
+            "span copying is source-exact, not semantic correctness; two related development examples, no canonical association or generalization qualification")}
     if vocabulary is not None:
-        result["generationConstraints"] = {**generation_constraints, "examples": constraint_reports,
+        result["generationConstraints"] = {**(candidate.metadata() if candidate_mode else generation_constraints), "examples": constraint_reports,
             "trieNodes": len(vocabulary.first), "nativeTransportChecked": True}
     return raw_outputs, result
