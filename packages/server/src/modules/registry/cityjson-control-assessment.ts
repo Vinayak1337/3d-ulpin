@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import type {PoolClient} from 'pg';
 import {CITYJSON_CONTROL_VERSION,CITYJSON_CONTROL_LIMITS,NativePointControlSchema,RegistryCityJSONControlRequestSchema,
   RegistryCityJSONControlAssessmentSchema,type RegistryCityJSONControlRequest,type RegistryCityJSONControlAssessment}
   from '../../../../contracts/src/registry-cityjson-control-assessment';
@@ -118,14 +119,17 @@ export function cityjsonControlProjection(request:RegistryCityJSONControlRequest
 /** Read-only consumer of existing complete reference/native authority. Each
  * reference reader rechecks its whole input set after private document I/O.
  * Repeat it after native I/O and suppress any stale/revoked aggregate. */
-export async function assessCityJSONControls(draftValue:string,raw:unknown,deps:CityJSONControlDependencies=defaults){
+export async function cityjsonControlSourcesTx(client:PoolClient,aggregate:Aggregate,request:RegistryCityJSONControlRequest){
+  const ids=[...new Set(request.correspondences.map(match=>
+    aggregate.references.references.find(entry=>entry.pin.id===match.referenceId)?.pin.document.sourceId??notFound()))].sort();
+  return (await client.query('SELECT id,family_id,sha256,inspection FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE',[ids])).rows as Source[];
+}
+export async function prepareCityJSONControls(draftValue:string,raw:unknown,deps:CityJSONControlDependencies=defaults){
   const draftId=z.uuid().parse(draftValue).toLowerCase(),request=RegistryCityJSONControlRequestSchema.parse(raw),context=documentReviewContext();
   bounded(request,CITYJSON_CONTROL_LIMITS.requestBytes);
   const resolve=(readNative=false)=>deps.transaction(async client=>{
     const aggregate=await deps.references(client,draftId,request.expectedDraftRevision);
-    const ids=[...new Set(request.correspondences.map(match=>
-      aggregate.references.references.find(entry=>entry.pin.id===match.referenceId)?.pin.document.sourceId??notFound()))].sort();
-    const sources=(await client.query('SELECT id,family_id,sha256,inspection FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE',[ids])).rows as Source[];
+    const sources=await cityjsonControlSourcesTx(client,aggregate,request);
     const native=readNative?await deps.native(client,draftId):null;
     if(fingerprint(context)!==fingerprint(documentReviewContext()))throw new AppError(403,'CITYJSON_CONTROL_DENIED','The comparison access changed.');
     return {aggregate,sources,native};
@@ -134,8 +138,12 @@ export async function assessCityJSONControls(draftValue:string,raw:unknown,deps:
     const before=await resolve(true),after=await resolve();
     if(fingerprint({aggregate:before.aggregate,sources:before.sources})!==fingerprint({aggregate:after.aggregate,sources:after.sources}))
       conflict('Native/reference/control authority changed during private I/O. Refresh the comparison.');
-    return cityjsonControlProjection(request,after.aggregate,before.native!,after.sources,context);
+    return {draftId,request,context,aggregate:after.aggregate,sources:after.sources,
+      assessment:cityjsonControlProjection(request,after.aggregate,before.native!,after.sources,context)};
   }catch(error){if(error instanceof AppError&&[403,404].includes(error.status))
     throw new AppError(404,'CITYJSON_CONTROL_UNAVAILABLE','The selected private native/control evidence is unavailable.');throw error;}
+}
+export async function assessCityJSONControls(draftValue:string,raw:unknown,deps:CityJSONControlDependencies=defaults){
+  return (await prepareCityJSONControls(draftValue,raw,deps)).assessment;
 }
 export class CityJSONControlAssessmentService{assess(draftId:string,raw:unknown){return assessCityJSONControls(draftId,raw);}}
