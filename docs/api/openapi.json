@@ -110,8 +110,19 @@
         "x-batch": "NEST-00",
         "x-disposition": "retained",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "API/database/storage readiness; overall false because processing stopped; independent Redis PONG distinct from processor-derived flag",
+          "sourceManifests": [],
+          "evidencePointers": [
+            "/health",
+            "/migration"
+          ],
+          "receipt": "docs/evidence/usp/current-runtime-20261003.json",
+          "servedCodeCommit": "f642cf4ed81bf9509d108a6b48f64591c77941f7",
+          "environment": "Populated retained isolated prefix profile; API-only loopback3192 and storage stopped after observation; Docker remains available.",
+          "limitation": "Current isolated API source read and additive metadata migration only; no processing/queue/recovery/geometry/learning/scale/release pass."
+        },
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
@@ -823,6 +834,20 @@
                 "url": "http://127.0.0.1:3192/api/v1"
               },
               "limitation": "Two source-only reference document enrollments, exact native literal text parts, replay and original reads; earlier geometry/registry/validation history preserved."
+            },
+            {
+              "scope": "Private original LGD CSV, 89622 bytes/hash identical to retained original",
+              "sourceManifests": [
+                "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/sourceRead",
+                "/cleanup"
+              ],
+              "receipt": "docs/evidence/usp/current-runtime-20261003.json",
+              "servedCodeCommit": "f642cf4ed81bf9509d108a6b48f64591c77941f7",
+              "environment": "Populated retained isolated prefix profile; API-only loopback3192 and storage stopped after observation; Docker remains available.",
+              "limitation": "Current isolated API source read and additive metadata migration only; no processing/queue/recovery/geometry/learning/scale/release pass."
             }
           ]
         },
@@ -1659,7 +1684,23 @@
           "receipt": "docs/evidence/usp/nest-migration/runtime-source/phase-2b-2026-09-26.json",
           "servedCodeCommit": "5d80dd869c62dfed1bf39c2594cd1e080c9045fb",
           "environment": "Stopped isolated local run; volumes preserved. Returned IDs belong only to that run.",
-          "limitation": "Only the listed input/profile/behavior was observed at the served commit; not every branch or dataset accepted by an operation."
+          "limitation": "Only the listed input/profile/behavior was observed at the served commit; not every branch or dataset accepted by an operation.",
+          "additionalReceipts": [
+            {
+              "scope": "One existing LGD CSV source metadata read; unchanged rows",
+              "sourceManifests": [
+                "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/sourceRead",
+                "/preservation"
+              ],
+              "receipt": "docs/evidence/usp/current-runtime-20261003.json",
+              "servedCodeCommit": "f642cf4ed81bf9509d108a6b48f64591c77941f7",
+              "environment": "Populated retained isolated prefix profile; API-only loopback3192 and storage stopped after observation; Docker remains available.",
+              "limitation": "Current isolated API source read and additive metadata migration only; no processing/queue/recovery/geometry/learning/scale/release pass."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/intake/operation-manifest.json",
         "x-transport-profile": "none",

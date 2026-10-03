@@ -1,0 +1,229 @@
+{
+  "schemaVersion": "current-runtime-observation/1",
+  "servedCodeCommit": "f642cf4ed81bf9509d108a6b48f64591c77941f7",
+  "workerCommit": "307f29f65970db025f32ff22d32bb3c193a90fcb",
+  "privateReceipt": "E:/BhuAayam-data/task-data/current-runtime-20261003-run01/verification.json",
+  "privateReceiptSha256": "e8a812b19cf32b6d8d1d0ad44ff33eedc8da1b655a8950e0336e76e7c1bdaf11",
+  "observationWindow": {
+    "from": "2026-10-03T16:05:22.664Z",
+    "to": "2026-10-03T16:19:49.574Z"
+  },
+  "sourceRead": {
+    "caseId": "2c5ca5cc-d98a-48e9-9be0-16f2c590d0a3",
+    "sourceId": "59b3f4b2-0a3a-4acd-9c99-60b989dda5f8",
+    "metadataUrl": "http://127.0.0.1:3192/api/v1/cases/2c5ca5cc-d98a-48e9-9be0-16f2c590d0a3",
+    "metadataStatus": 200,
+    "originalUrl": "http://127.0.0.1:3192/api/v1/sources/59b3f4b2-0a3a-4acd-9c99-60b989dda5f8/file",
+    "originalStatus": 200,
+    "downloaded": {
+      "bytes": 89622,
+      "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59"
+    },
+    "issuer": "Ministry of Panchayati Raj, LGD via data.gov.in; GODL-India",
+    "issuingUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts"
+  },
+  "health": {
+    "httpStatus": 200,
+    "ok": false,
+    "services": {
+      "database": true,
+      "storage": true,
+      "processor": false,
+      "redis": false,
+      "worker": false
+    },
+    "databaseReadiness": "structurally_ready",
+    "schemaReady": true,
+    "historicalUnvalidatedConstraints": [
+      {
+        "name": "usp_feature_history_no_illustrative",
+        "table": "physical_feature_revisions"
+      },
+      {
+        "name": "usp_features_no_illustrative",
+        "table": "physical_features"
+      },
+      {
+        "name": "usp_registry_history_no_illustrative",
+        "table": "registry_revisions"
+      },
+      {
+        "name": "usp_registry_no_illustrative",
+        "table": "registry_records"
+      },
+      {
+        "name": "usp_unit_history_no_illustrative",
+        "table": "unit_revisions"
+      },
+      {
+        "name": "usp_units_no_illustrative",
+        "table": "units"
+      }
+    ],
+    "independentRedisPing": {
+      "at": "2026-10-03T16:17:08.924Z",
+      "containerId": "06d88638fa535e14659c7f59ea39185bbde66c7f5bcc023555bfcf1ff7db7e03",
+      "command": "docker exec exact owned Redis container redis-cli PING",
+      "exit": 0,
+      "response": "PONG",
+      "apiHealthRedisFlag": "false because it is derived from stopped processor readiness; not an independent Redis ping"
+    },
+    "qualification": "Partial health: processor/worker intentionally stopped. API Redis flag depends on processor readiness."
+  },
+  "migration": {
+    "invocation": "canonical migrateUsp()",
+    "addedMarkers": [
+      "usp_declarations_001",
+      "usp_packet_pdf_entry_checkpoints_001",
+      "usp_packet_plans_001",
+      "usp_property_cards_001"
+    ],
+    "pendingAfter": 0,
+    "checkpoint": {
+      "rows": 0,
+      "constraints": [
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_accepted_attempt_check",
+          "contype": "c",
+          "convalidated": true,
+          "definition": "CHECK ((accepted_attempt > 0))"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_accepted_fence_check",
+          "contype": "c",
+          "convalidated": true,
+          "definition": "CHECK ((accepted_fence > 0))"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_artifact_bytes_check",
+          "contype": "c",
+          "convalidated": true,
+          "definition": "CHECK (((artifact_bytes > 0) AND (artifact_bytes <= 8388608)))"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_artifact_sha256_check",
+          "contype": "c",
+          "convalidated": true,
+          "definition": "CHECK ((artifact_sha256 ~ '^[a-f0-9]{64}$'::text))"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_body_check",
+          "contype": "c",
+          "convalidated": true,
+          "definition": "CHECK (((jsonb_typeof(body) = 'object'::text) AND (octet_length((body)::text) <= 65536)))"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_body_sha256_check",
+          "contype": "c",
+          "convalidated": true,
+          "definition": "CHECK ((body_sha256 ~ '^[a-f0-9]{64}$'::text))"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_entry_index_check",
+          "contype": "c",
+          "convalidated": true,
+          "definition": "CHECK (((entry_index >= 0) AND (entry_index < 4)))"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_identity_sha256_check",
+          "contype": "c",
+          "convalidated": true,
+          "definition": "CHECK ((identity_sha256 ~ '^[a-f0-9]{64}$'::text))"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_job_id_accepted_attempt_fkey",
+          "contype": "f",
+          "convalidated": true,
+          "definition": "FOREIGN KEY (job_id, accepted_attempt) REFERENCES usp_job_attempts(job_id, number)"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_job_id_accepted_fence_fkey",
+          "contype": "f",
+          "convalidated": true,
+          "definition": "FOREIGN KEY (job_id, accepted_fence) REFERENCES usp_job_attempts(job_id, fence)"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_job_id_entry_index_key",
+          "contype": "u",
+          "convalidated": true,
+          "definition": "UNIQUE (job_id, entry_index)"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_job_id_fkey",
+          "contype": "f",
+          "convalidated": true,
+          "definition": "FOREIGN KEY (job_id) REFERENCES jobs(id)"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_object_key_key",
+          "contype": "u",
+          "convalidated": true,
+          "definition": "UNIQUE (object_key)"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_pkey",
+          "contype": "p",
+          "convalidated": true,
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_plan_id_plan_version_fkey",
+          "contype": "f",
+          "convalidated": true,
+          "definition": "FOREIGN KEY (plan_id, plan_version) REFERENCES usp_packet_plans(id, version)"
+        },
+        {
+          "conname": "usp_packet_pdf_entry_checkpoints_plan_version_check",
+          "contype": "c",
+          "convalidated": true,
+          "definition": "CHECK ((plan_version > 0))"
+        }
+      ],
+      "triggers": [
+        {
+          "tgname": "usp_packet_pdf_entry_checkpoints_immutable",
+          "tgenabled": "O",
+          "definition": "CREATE TRIGGER usp_packet_pdf_entry_checkpoints_immutable BEFORE DELETE OR UPDATE ON public.usp_packet_pdf_entry_checkpoints FOR EACH ROW EXECUTE FUNCTION usp_packet_pdf_entry_checkpoint_immutable()"
+        }
+      ]
+    }
+  },
+  "preservation": {
+    "countsBefore": {
+      "cases": 39,
+      "sources": 36,
+      "jobs": 73,
+      "registry_records": 1,
+      "registry_sites": 1,
+      "usp_packets": 0,
+      "usp_packet_plans": null,
+      "usp_property_cards": null,
+      "usp_job_attempts": 73,
+      "usp_packet_pdf_entry_checkpoints": null
+    },
+    "countsAfter": {
+      "cases": 39,
+      "sources": 36,
+      "jobs": 73,
+      "registry_records": 1,
+      "registry_sites": 1,
+      "usp_packets": 0,
+      "usp_packet_plans": 0,
+      "usp_property_cards": 0,
+      "usp_job_attempts": 73,
+      "usp_packet_pdf_entry_checkpoints": 0
+    },
+    "sourceRowsSha256": "acef2d7769e31fc0de8a4ca2594ee905d2e0c1bceb1bf5490154b35b15a3c9ef",
+    "jobsRowsSha256": "38c5f6318ae6c9e29ad7da8911b7073b0a99bcbba0e943d9a0b6af6495980a99",
+    "configurationAndStaleProcessRecordsUnchanged": true
+  },
+  "cleanup": {
+    "apiStopped": true,
+    "port3192Listeners": 0,
+    "all24OriginalContainersRetained": true,
+    "runningContainers": 0,
+    "all14VolumesRetained": true,
+    "dockerEngine": "29.8.0; left available"
+  },
+  "qualification": "Current isolated API source read and additive metadata migration only; no processing/queue/recovery/geometry/learning/scale/release pass."
+}
