@@ -237,5 +237,93 @@ class FragmentSupportTests(unittest.TestCase):
                 proof_stage.accepted_fit(REPO / "__fake_fit_never_created__")
 
 
+class ReloadStagerBoundaryTests(unittest.TestCase):
+    def test_positive_reload_stager_reaches_first_mkdir(self):
+        """Retained metadata drives real admission; no stage/copy/native effects."""
+        fit_root = shared.RUNTIME.parent / "adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5"
+        proof_path = shared.RUNTIME.parent / "fragment-support-v2-fit-return-da5db5ea7abc459ebbd893498ee1ebf9/accepted-fit-proof.json"
+        proof_raw = proof_path.read_bytes()
+        manifest_path = fit_root / "outputs/fit/adapter-manifest.json"
+        manifest_raw = manifest_path.read_bytes()
+        self.assertEqual(f.sha(proof_raw), "8836b437ef8bb4147ec6f482f87e7197f7280821c555390ccb147daa5955b4fe")
+        self.assertEqual(f.sha(manifest_raw), "a6b0020f9ad50a9b38371b233cc63198a02adec2a2df69979dffd563dc6dd55c")
+        proof, manifest = json.loads(proof_raw), json.loads(manifest_raw)
+        source_bytes = {p: (REPO / p).read_bytes() for p in f.SOURCE_PATHS}
+        physical = {p: f.sha(raw) for p, raw in source_bytes.items()}
+        assignment = staging.phase_template("reload")["assignment"]
+        assignment.update(executable=True, executionAllowance=f.allowance("reload"), studentCodeCommit="1" * 40,
+            runtimeCodeCanonicalLfSha256={p: f.sha(raw.replace(b"\r\n", b"\n")) for p, raw in source_bytes.items()})
+        assignment["acceptedFit"] = {k: proof[k] for k in f.ACCEPTED_FIT_KEYS - {"root", "adapterWeightsSha256", "fitProofSha256"}}
+        assignment["acceptedFit"].update(root=str(fit_root), fitProofSha256=f.sha(proof_raw),
+            adapterWeightsSha256=manifest["files"]["adapter_model.safetensors"])
+        assignment_path = REPO / "__cpu_reload_assignment_never_created__.json"
+        assignment_raw = f.serialized(assignment)
+        real_read, real_open = Path.read_bytes, Path.open
+        real_sha, real_freeze = shared.isolation.sha, f.make_freeze
+        admitted, observed = {}, {}
+
+        def read(path):
+            return assignment_raw if path == assignment_path else real_read(path)
+
+        def readonly_open(path, mode="r", *args, **kwargs):
+            self.assertIn(mode, ("r", "rb"), "unexpected write/copy")
+            for protected in (shared.RUNTIME / "runtime", shared.BASELINE / "model", fit_root / "outputs/fit/adapter"):
+                self.assertFalse(path.is_relative_to(protected), "runtime/model/adapter contents opened")
+            return real_open(path, mode, *args, **kwargs)
+
+        def metadata_sha(path):
+            path = Path(path)
+            if path == assignment_path:
+                value = f.sha(assignment_raw)
+            elif path == shared.RUNTIME / "inputs/runtime-requirements-resolved.txt":
+                value = f.REQUIREMENTS_SHA
+            elif path.parent == fit_root / "outputs/fit/adapter":
+                value = manifest["files"][path.name]
+            else:
+                value = real_sha(path)
+            admitted[path] = value
+            return value
+
+        def freeze(*args, **kwargs):
+            observed["freeze"] = real_freeze(*args, **kwargs)
+            return observed["freeze"]
+
+        def stop_mkdir(path, *args, **kwargs):
+            self.assertEqual(path.parent, shared.RUNTIME.parent)
+            self.assertTrue(path.name.startswith(f.STAGE_PREFIX + "reload-"))
+            self.assertFalse(path.exists())
+            observed["root"] = path
+            raise BoundaryReached("first root.mkdir intercepted; no directory created")
+
+        with patch.object(Path, "read_bytes", read), patch.object(Path, "open", readonly_open), \
+                patch.object(shared, "checked_sources", return_value=physical), \
+                patch.object(shared, "donor_metadata", return_value=({}, {})), \
+                patch.object(shared, "accepted_fit", return_value=proof), \
+                patch.object(shared.isolation, "sha", metadata_sha), \
+                patch.object(f, "checked_reload_binding", wraps=f.checked_reload_binding) as binding, \
+                patch.object(f, "checked_development", wraps=f.checked_development) as development, \
+                patch.object(f, "make_freeze", side_effect=freeze) as make_freeze, \
+                patch.object(Path, "mkdir", stop_mkdir), \
+                patch.object(shared.isolation, "write", side_effect=AssertionError("stage write forbidden")) as write, \
+                patch.object(shared.isolation, "safe_path", side_effect=AssertionError("copy forbidden")) as copy_path:
+            with self.assertRaisesRegex(BoundaryReached, "first root.mkdir"):
+                staging.stage("reload", assignment_path, fit_root)
+            binding.assert_called_once()
+            development.assert_called_once()
+            make_freeze.assert_called_once()
+            write.assert_not_called(); copy_path.assert_not_called()
+        self.assertEqual(f.BATCH_SHA, v1.BATCH_SHA)
+        self.assertEqual(admitted[shared.BASELINE / "inputs/development.json"], v1.BATCH_SHA)
+        self.assertEqual(len(admitted), 16)  # all copied inputs; generated proof/freeze follow mkdir
+        self.assertEqual(observed["freeze"]["inputSha256"]["input_batch"], v1.BATCH_SHA)
+        self.assertEqual(observed["freeze"]["acceptedFit"], assignment["acceptedFit"])
+        self.assertEqual(observed["freeze"]["representation"], f.representation_metadata())
+        self.assertFalse(observed["freeze"]["trainingInputsPresent"])
+        self.assertFalse(observed["freeze"]["hostTargetsPresent"])
+        self.assertFalse(observed["root"].exists())
+        self.assertFalse(assignment_path.exists())
+        self.assertFalse(NATIVE & {n.split(".")[0] for n in sys.modules})
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

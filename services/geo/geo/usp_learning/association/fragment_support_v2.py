@@ -8,7 +8,7 @@ import sys
 from . import fragment_adapter as v1
 from .fragment_adapter import (
     IS_FRAGMENT, SYSTEM_PROMPT, FIT, NUMERICS, SETTINGS, MODEL, REVISION, WEIGHTS_SHA,
-    RUNTIME_SHA, MODEL_PROFILE_SHA, REQUIREMENTS_SHA, COMMON_PINS, CASES,
+    RUNTIME_SHA, MODEL_PROFILE_SHA, REQUIREMENTS_SHA, COMMON_PINS, BATCH_SHA, CASES,
     ACCEPTED_FIT_KEYS, ATTENTION_CONTROL, codec, sha, same, serialized, allowance,
     memory_policy, checked_development, checked_fit_metadata, require, strict_json)
 
