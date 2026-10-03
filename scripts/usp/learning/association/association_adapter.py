@@ -21,6 +21,13 @@ from geo.usp_learning.association.citation_view import checked_freeze, checked_c
 
 
 def representation_module(freeze, assignment):
+    if freeze.get("version") in ("association-fragment-fit-freeze/1", "association-fragment-reload-freeze/1"):
+        from geo.usp_learning.association import fragment_adapter
+        fragment_adapter.checked_freeze(freeze, assignment)
+        return fragment_adapter
+    if ("fragment" in str(freeze.get("version", "")) or "fragment" in str(assignment.get("version", ""))
+            or "fragment" in str(freeze.get("representation", {}).get("version", ""))):
+        raise RuntimeError("explicit fragment adapter freeze required")
     if freeze.get("version") in ("association-selector-adapter-freeze/1", "association-selector-constrained-freeze/1"):
         from geo.usp_learning.association import selector_adapter
         return selector_adapter
@@ -32,6 +39,13 @@ def representation_module(freeze, assignment):
 
 def worker(args):
     require_model_boundary(args)
+    freeze = json.loads(args.run_freeze.read_bytes())
+    assignment = json.loads(args.assignment.read_bytes())
+    selector = representation_module(freeze, assignment)
+    fragment_mode = bool(selector and getattr(selector, "IS_FRAGMENT", False))
+    if fragment_mode:
+        selector.checked_cli(args, freeze)
+        selector.checked_inputs(freeze, assignment, args.run_freeze.parent)
     args.output_dir.mkdir(exist_ok=False)
     phases = None
     try:
@@ -39,7 +53,7 @@ def worker(args):
         assignment = json.loads(args.assignment.read_bytes())
         selector = representation_module(freeze, assignment)
         actual_prompt = SYSTEM_PROMPT if selector is None else selector.SYSTEM_PROMPT
-        if (assignment["settings"] != FIT or assignment["teacherV2Sha256"] != V2_SHA
+        if not fragment_mode and (assignment["settings"] != FIT or assignment["teacherV2Sha256"] != V2_SHA
                 or freeze["fitSettings"] != FIT or freeze["numerics"] != NUMERICS
                 or freeze["inferenceSettings"] != SETTINGS or freeze["action"] != args.action
                 or freeze["memoryExecutionPolicy"] != assignment["memoryExecutionPolicy"]
@@ -76,7 +90,10 @@ def worker(args):
             from geo.usp_learning.association.memory_observation import PhaseRecorder
             phases = PhaseRecorder(args.output_dir, lambda: require_model_boundary(args))
             fit_options = {"dataset_declaration": freeze.get("datasetDeclaration")}
-            if selector is not None:
+            if fragment_mode:
+                rows, delta = selector.checked_teacher(args.training_data.read_bytes(), selector_contract, contract, family)
+                fit_options = {"representation": selector.FragmentRepresentation(selector_contract, contract, family)}
+            elif selector is not None:
                 rows, delta = selector.checked_teacher(args.teacher_v1.read_bytes(), args.training_data.read_bytes(),
                                                        selector_contract, contract, family)
                 fit_options = {"representation": selector.SelectorRepresentation(selector_contract, contract, family)}
@@ -115,7 +132,10 @@ def worker(args):
                 raise RuntimeError("adapter lacks matching accepted fit receipt")
             batch = json.loads(args.input_batch.read_bytes())
             runner_options = {}
-            if selector is not None:
+            if fragment_mode:
+                runner_options["inference_runner"] = selector.reload_runner(freeze, assignment, args.run_freeze.parent,
+                    selector_contract, lambda value: write_json_once(args.output_dir / "fragment-preflight.json", value))
+            elif selector is not None:
                 from functools import partial
                 from geo.usp_learning.association.selector_baseline import checked_batch, run_selectors
                 checked_batch(batch, freeze["cases"], contract, family)
@@ -173,6 +193,13 @@ def main():
     if args._worker:
         worker(args)
     else:
+        # New fragment PREP/unknown/mixed inputs fail before guard/native effects.
+        freeze = json.loads(args.run_freeze.read_bytes())
+        assignment = json.loads(args.assignment.read_bytes())
+        representation = representation_module(freeze, assignment)
+        if representation is not None and getattr(representation, "IS_FRAGMENT", False):
+            representation.checked_cli(args, freeze)
+            representation.checked_inputs(freeze, assignment, args.run_freeze.parent)
         report = guarded_run([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]], args.containment_profile.parent / "receipts", SETTINGS,
             containment_profile=args.containment_profile, containment_sha256=args.containment_sha256)
         print(json.dumps({"exitCode": report["exitCode"], "failure": report["failure"],

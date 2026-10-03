@@ -174,7 +174,11 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     require(len(rows) == plan["teacherExamples"], "admitted_training_row_count_drift")
     require_boundary()
     for row in rows:
-        validate_output(row["output"], row["input"], contract, family_freeze, ("train",))
+        row_validator = getattr(representation, "validate_row", None)
+        if row_validator is None:
+            validate_output(row["output"], row["input"], contract, family_freeze, ("train",))
+        else:
+            row_validator(row)
     phases.sample("before_imports")
     import importlib.metadata as metadata
     import torch
