@@ -14251,7 +14251,7 @@
             }
           }
         },
-        "summary": "Amend native/OCR/IFC/DXF/KML/CityGML/GeoParquet or validated original-region citations (DXF/KML/CityGML/GeoParquet: building/floor); region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity",
+        "summary": "Amend native/OCR/IFC/DXF/KML/CityGML/GeoParquet or validated PDF/PNG/JPEG original-region citations (PNG/JPEG and DXF/KML/CityGML/GeoParquet: building/floor); region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity",
         "tags": [
           "registry"
         ],
@@ -14447,7 +14447,7 @@
             }
           }
         },
-        "summary": "Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet and original-region citations through current private source and draft authority",
+        "summary": "Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet and PDF/PNG/JPEG original-region citations through current private source and draft authority",
         "tags": [
           "registry"
         ],
@@ -81169,6 +81169,1008 @@
                     {
                       "type": "object",
                       "properties": {
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-image-region-citation/1"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "sourceBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "region": {
+                          "type": "object",
+                          "properties": {
+                            "frame": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "image_oriented_top_left_pixels"
+                                  ]
+                                },
+                                "width": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 25000
+                                },
+                                "height": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 25000
+                                },
+                                "orientation": {
+                                  "type": "object",
+                                  "properties": {
+                                    "exifValue": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "applied": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "provenance": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_exif",
+                                        "specification_default"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "exifValue",
+                                    "applied",
+                                    "provenance"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "width",
+                                "height",
+                                "orientation"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "coordinates": {
+                              "type": "string",
+                              "enum": [
+                                "oriented_original_pixel_edges/1"
+                              ]
+                            },
+                            "region": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "selectionAcknowledged": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            }
+                          },
+                          "required": [
+                            "frame",
+                            "coordinates",
+                            "region",
+                            "selectionAcknowledged"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "purpose": {
+                          "type": "string",
+                          "enum": [
+                            "record_evidence"
+                          ]
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "authoritySha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "validation": {
+                          "type": "object",
+                          "properties": {
+                            "version": {
+                              "type": "string",
+                              "enum": [
+                                "packet-image-region-local/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "sourceImage": {
+                              "type": "object",
+                              "properties": {
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "png",
+                                    "jpeg"
+                                  ]
+                                },
+                                "mode": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 32
+                                },
+                                "frame": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "image_source_top_left_pixels"
+                                      ]
+                                    },
+                                    "width": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    },
+                                    "height": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "width",
+                                    "height"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "frameCount": {
+                                  "type": "number",
+                                  "enum": [
+                                    1
+                                  ]
+                                },
+                                "orientation": {
+                                  "type": "object",
+                                  "properties": {
+                                    "exifValue": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "applied": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "provenance": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_exif",
+                                        "specification_default"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "exifValue",
+                                    "applied",
+                                    "provenance"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "densityDeclarations": {
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "png_phys",
+                                          "jpeg_jfif",
+                                          "exif_resolution"
+                                        ]
+                                      },
+                                      "unitCode": {
+                                        "nullable": true,
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 4294967295
+                                      },
+                                      "x": {
+                                        "nullable": true,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            },
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            }
+                                          ]
+                                        },
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                      },
+                                      "y": {
+                                        "nullable": true,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            },
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            }
+                                          ]
+                                        },
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                      },
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "supplied",
+                                          "unsupported"
+                                        ]
+                                      },
+                                      "qualification": {
+                                        "type": "string",
+                                        "enum": [
+                                          "not_calibrated"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "unitCode",
+                                      "x",
+                                      "y",
+                                      "status",
+                                      "qualification"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "color": {
+                                  "type": "object",
+                                  "properties": {
+                                    "embeddedIcc": {
+                                      "type": "boolean"
+                                    },
+                                    "declaredSrgb": {
+                                      "nullable": true,
+                                      "type": "boolean"
+                                    },
+                                    "transparency": {
+                                      "type": "string",
+                                      "enum": [
+                                        "absent",
+                                        "supplied"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "embeddedIcc",
+                                    "declaredSrgb",
+                                    "transparency"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "unsupportedReason": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "enum": [
+                                    null
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "format",
+                                "mode",
+                                "frame",
+                                "frameCount",
+                                "orientation",
+                                "densityDeclarations",
+                                "color",
+                                "unsupportedReason"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "selection": {
+                              "type": "object",
+                              "properties": {
+                                "frame": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "image_oriented_top_left_pixels"
+                                      ]
+                                    },
+                                    "width": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    },
+                                    "height": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    },
+                                    "orientation": {
+                                      "type": "object",
+                                      "properties": {
+                                        "exifValue": {
+                                          "nullable": true,
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 8
+                                        },
+                                        "applied": {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 8
+                                        },
+                                        "provenance": {
+                                          "type": "string",
+                                          "enum": [
+                                            "source_exif",
+                                            "specification_default"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "exifValue",
+                                        "applied",
+                                        "provenance"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "width",
+                                    "height",
+                                    "orientation"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "coordinates": {
+                                  "type": "string",
+                                  "enum": [
+                                    "oriented_original_pixel_edges/1"
+                                  ]
+                                },
+                                "region": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "selectionAcknowledged": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    true
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "frame",
+                                "coordinates",
+                                "region",
+                                "selectionAcknowledged"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "recipe": {
+                              "type": "object",
+                              "properties": {
+                                "version": {
+                                  "type": "string",
+                                  "enum": [
+                                    "packet-image-region-recipe/1"
+                                  ]
+                                },
+                                "workerSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "decoderSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "supervisorSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "crop": {
+                                  "type": "string",
+                                  "enum": [
+                                    "oriented_original_before_resampling/1"
+                                  ]
+                                },
+                                "rounding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inward_complete_pixels/1"
+                                  ]
+                                },
+                                "metadataPolicy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fresh_rgb_or_rgba_pixels_only/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "version",
+                                "workerSha256",
+                                "decoderSha256",
+                                "supervisorSha256",
+                                "crop",
+                                "rounding",
+                                "metadataPolicy"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "runtime": {
+                              "type": "object",
+                              "properties": {
+                                "python": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 32
+                                },
+                                "pillow": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 32
+                                },
+                                "jpegCodec": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 32
+                                },
+                                "libjpegTurbo": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 32
+                                },
+                                "zlibCodec": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 32
+                                },
+                                "pythonSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "launcherSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "pillowImageSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "imagingSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                }
+                              },
+                              "required": [
+                                "python",
+                                "pillow",
+                                "jpegCodec",
+                                "libjpegTurbo",
+                                "zlibCodec",
+                                "pythonSha256",
+                                "launcherSha256",
+                                "pillowImageSha256",
+                                "imagingSha256"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "transform": {
+                              "type": "object",
+                              "properties": {
+                                "includedPixelBounds": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "includedOrientedRegion": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "sourceToOriented": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "orientedToOutput": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "sourceToOutput": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "outputToOriented": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "coordinateConvention": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pixel_edges/1"
+                                  ]
+                                },
+                                "rounding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inward_complete_pixels/1"
+                                  ]
+                                },
+                                "resampling": {
+                                  "type": "string",
+                                  "enum": [
+                                    "none",
+                                    "lanczos"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "includedPixelBounds",
+                                "includedOrientedRegion",
+                                "sourceToOriented",
+                                "orientedToOutput",
+                                "sourceToOutput",
+                                "outputToOriented",
+                                "coordinateConvention",
+                                "rounding",
+                                "resampling"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "output": {
+                              "type": "object",
+                              "properties": {
+                                "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "bytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 8388608
+                                },
+                                "pixels": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "png"
+                                  ]
+                                },
+                                "mode": {
+                                  "type": "string",
+                                  "enum": [
+                                    "RGB",
+                                    "RGBA"
+                                  ]
+                                },
+                                "colorInterpretation": {
+                                  "type": "string",
+                                  "enum": [
+                                    "encoded_samples_unmanaged"
+                                  ]
+                                },
+                                "metadataPolicy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fresh_rgb_or_rgba_pixels_only/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "sha256",
+                                "bytes",
+                                "pixels",
+                                "format",
+                                "mode",
+                                "colorInterpretation",
+                                "metadataPolicy"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "version",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "sourceImage",
+                            "selection",
+                            "recipe",
+                            "runtime",
+                            "transform",
+                            "output"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "applicability": {
+                          "type": "string",
+                          "enum": [
+                            "explicit_officer_inclusion; effective_after_canonical_commit"
+                          ]
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "id",
+                        "document",
+                        "region",
+                        "purpose",
+                        "target",
+                        "selection",
+                        "authoritySha256",
+                        "validation",
+                        "applicability",
+                        "associationState",
+                        "qualification"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
                         "id": {
                           "type": "string",
                           "pattern": "^[a-f0-9]{64}$"
@@ -93807,6 +94809,1008 @@
                     {
                       "type": "object",
                       "properties": {
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-image-region-citation/1"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "sourceBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "region": {
+                          "type": "object",
+                          "properties": {
+                            "frame": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "image_oriented_top_left_pixels"
+                                  ]
+                                },
+                                "width": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 25000
+                                },
+                                "height": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 25000
+                                },
+                                "orientation": {
+                                  "type": "object",
+                                  "properties": {
+                                    "exifValue": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "applied": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "provenance": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_exif",
+                                        "specification_default"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "exifValue",
+                                    "applied",
+                                    "provenance"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "width",
+                                "height",
+                                "orientation"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "coordinates": {
+                              "type": "string",
+                              "enum": [
+                                "oriented_original_pixel_edges/1"
+                              ]
+                            },
+                            "region": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "selectionAcknowledged": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            }
+                          },
+                          "required": [
+                            "frame",
+                            "coordinates",
+                            "region",
+                            "selectionAcknowledged"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "purpose": {
+                          "type": "string",
+                          "enum": [
+                            "record_evidence"
+                          ]
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "authoritySha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "validation": {
+                          "type": "object",
+                          "properties": {
+                            "version": {
+                              "type": "string",
+                              "enum": [
+                                "packet-image-region-local/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "sourceImage": {
+                              "type": "object",
+                              "properties": {
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "png",
+                                    "jpeg"
+                                  ]
+                                },
+                                "mode": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 32
+                                },
+                                "frame": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "image_source_top_left_pixels"
+                                      ]
+                                    },
+                                    "width": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    },
+                                    "height": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "width",
+                                    "height"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "frameCount": {
+                                  "type": "number",
+                                  "enum": [
+                                    1
+                                  ]
+                                },
+                                "orientation": {
+                                  "type": "object",
+                                  "properties": {
+                                    "exifValue": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "applied": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "provenance": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_exif",
+                                        "specification_default"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "exifValue",
+                                    "applied",
+                                    "provenance"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "densityDeclarations": {
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "png_phys",
+                                          "jpeg_jfif",
+                                          "exif_resolution"
+                                        ]
+                                      },
+                                      "unitCode": {
+                                        "nullable": true,
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 4294967295
+                                      },
+                                      "x": {
+                                        "nullable": true,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            },
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            }
+                                          ]
+                                        },
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                      },
+                                      "y": {
+                                        "nullable": true,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            },
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            }
+                                          ]
+                                        },
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                      },
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "supplied",
+                                          "unsupported"
+                                        ]
+                                      },
+                                      "qualification": {
+                                        "type": "string",
+                                        "enum": [
+                                          "not_calibrated"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "unitCode",
+                                      "x",
+                                      "y",
+                                      "status",
+                                      "qualification"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "color": {
+                                  "type": "object",
+                                  "properties": {
+                                    "embeddedIcc": {
+                                      "type": "boolean"
+                                    },
+                                    "declaredSrgb": {
+                                      "nullable": true,
+                                      "type": "boolean"
+                                    },
+                                    "transparency": {
+                                      "type": "string",
+                                      "enum": [
+                                        "absent",
+                                        "supplied"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "embeddedIcc",
+                                    "declaredSrgb",
+                                    "transparency"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "unsupportedReason": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "enum": [
+                                    null
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "format",
+                                "mode",
+                                "frame",
+                                "frameCount",
+                                "orientation",
+                                "densityDeclarations",
+                                "color",
+                                "unsupportedReason"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "selection": {
+                              "type": "object",
+                              "properties": {
+                                "frame": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "image_oriented_top_left_pixels"
+                                      ]
+                                    },
+                                    "width": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    },
+                                    "height": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    },
+                                    "orientation": {
+                                      "type": "object",
+                                      "properties": {
+                                        "exifValue": {
+                                          "nullable": true,
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 8
+                                        },
+                                        "applied": {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 8
+                                        },
+                                        "provenance": {
+                                          "type": "string",
+                                          "enum": [
+                                            "source_exif",
+                                            "specification_default"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "exifValue",
+                                        "applied",
+                                        "provenance"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "width",
+                                    "height",
+                                    "orientation"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "coordinates": {
+                                  "type": "string",
+                                  "enum": [
+                                    "oriented_original_pixel_edges/1"
+                                  ]
+                                },
+                                "region": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "selectionAcknowledged": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    true
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "frame",
+                                "coordinates",
+                                "region",
+                                "selectionAcknowledged"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "recipe": {
+                              "type": "object",
+                              "properties": {
+                                "version": {
+                                  "type": "string",
+                                  "enum": [
+                                    "packet-image-region-recipe/1"
+                                  ]
+                                },
+                                "workerSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "decoderSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "supervisorSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "crop": {
+                                  "type": "string",
+                                  "enum": [
+                                    "oriented_original_before_resampling/1"
+                                  ]
+                                },
+                                "rounding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inward_complete_pixels/1"
+                                  ]
+                                },
+                                "metadataPolicy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fresh_rgb_or_rgba_pixels_only/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "version",
+                                "workerSha256",
+                                "decoderSha256",
+                                "supervisorSha256",
+                                "crop",
+                                "rounding",
+                                "metadataPolicy"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "runtime": {
+                              "type": "object",
+                              "properties": {
+                                "python": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 32
+                                },
+                                "pillow": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 32
+                                },
+                                "jpegCodec": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 32
+                                },
+                                "libjpegTurbo": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 32
+                                },
+                                "zlibCodec": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 32
+                                },
+                                "pythonSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "launcherSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "pillowImageSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "imagingSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                }
+                              },
+                              "required": [
+                                "python",
+                                "pillow",
+                                "jpegCodec",
+                                "libjpegTurbo",
+                                "zlibCodec",
+                                "pythonSha256",
+                                "launcherSha256",
+                                "pillowImageSha256",
+                                "imagingSha256"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "transform": {
+                              "type": "object",
+                              "properties": {
+                                "includedPixelBounds": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "includedOrientedRegion": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "sourceToOriented": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "orientedToOutput": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "sourceToOutput": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "outputToOriented": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "coordinateConvention": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pixel_edges/1"
+                                  ]
+                                },
+                                "rounding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inward_complete_pixels/1"
+                                  ]
+                                },
+                                "resampling": {
+                                  "type": "string",
+                                  "enum": [
+                                    "none",
+                                    "lanczos"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "includedPixelBounds",
+                                "includedOrientedRegion",
+                                "sourceToOriented",
+                                "orientedToOutput",
+                                "sourceToOutput",
+                                "outputToOriented",
+                                "coordinateConvention",
+                                "rounding",
+                                "resampling"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "output": {
+                              "type": "object",
+                              "properties": {
+                                "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "bytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 8388608
+                                },
+                                "pixels": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "png"
+                                  ]
+                                },
+                                "mode": {
+                                  "type": "string",
+                                  "enum": [
+                                    "RGB",
+                                    "RGBA"
+                                  ]
+                                },
+                                "colorInterpretation": {
+                                  "type": "string",
+                                  "enum": [
+                                    "encoded_samples_unmanaged"
+                                  ]
+                                },
+                                "metadataPolicy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fresh_rgb_or_rgba_pixels_only/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "sha256",
+                                "bytes",
+                                "pixels",
+                                "format",
+                                "mode",
+                                "colorInterpretation",
+                                "metadataPolicy"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "version",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "sourceImage",
+                            "selection",
+                            "recipe",
+                            "runtime",
+                            "transform",
+                            "output"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "applicability": {
+                          "type": "string",
+                          "enum": [
+                            "explicit_officer_inclusion; effective_after_canonical_commit"
+                          ]
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "id",
+                        "document",
+                        "region",
+                        "purpose",
+                        "target",
+                        "selection",
+                        "authoritySha256",
+                        "validation",
+                        "applicability",
+                        "associationState",
+                        "qualification"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
                         "id": {
                           "type": "string",
                           "pattern": "^[a-f0-9]{64}$"
@@ -98314,6 +100318,180 @@
             "required": [
               "document",
               "page",
+              "region",
+              "purpose"
+            ],
+            "additionalProperties": false
+          },
+          "addImageRegion": {
+            "type": "object",
+            "properties": {
+              "document": {
+                "type": "object",
+                "properties": {
+                  "caseId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "caseRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "sourceBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 16777216
+                  }
+                },
+                "required": [
+                  "caseId",
+                  "caseRevision",
+                  "sourceId",
+                  "sourceRevision",
+                  "sourceSha256",
+                  "sourceBytes"
+                ],
+                "additionalProperties": false
+              },
+              "region": {
+                "type": "object",
+                "properties": {
+                  "frame": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "image_oriented_top_left_pixels"
+                        ]
+                      },
+                      "width": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 25000
+                      },
+                      "height": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 25000
+                      },
+                      "orientation": {
+                        "type": "object",
+                        "properties": {
+                          "exifValue": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 8
+                          },
+                          "applied": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 8
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "source_exif",
+                              "specification_default"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "exifValue",
+                          "applied",
+                          "provenance"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "width",
+                      "height",
+                      "orientation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "coordinates": {
+                    "type": "string",
+                    "enum": [
+                      "oriented_original_pixel_edges/1"
+                    ]
+                  },
+                  "region": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 25000
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 25000
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 25000
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 25000
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "selectionAcknowledged": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                },
+                "required": [
+                  "frame",
+                  "coordinates",
+                  "region",
+                  "selectionAcknowledged"
+                ],
+                "additionalProperties": false
+              },
+              "purpose": {
+                "type": "string",
+                "enum": [
+                  "record_evidence"
+                ]
+              }
+            },
+            "required": [
+              "document",
               "region",
               "purpose"
             ],
@@ -104436,6 +106614,1017 @@
                         "id",
                         "document",
                         "page",
+                        "region",
+                        "purpose",
+                        "target",
+                        "selection",
+                        "authoritySha256",
+                        "validation",
+                        "applicability",
+                        "associationState",
+                        "qualification"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "pin"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "pin": {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-image-region-citation/1"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "sourceBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "region": {
+                          "type": "object",
+                          "properties": {
+                            "frame": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "image_oriented_top_left_pixels"
+                                  ]
+                                },
+                                "width": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 25000
+                                },
+                                "height": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 25000
+                                },
+                                "orientation": {
+                                  "type": "object",
+                                  "properties": {
+                                    "exifValue": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "applied": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "provenance": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_exif",
+                                        "specification_default"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "exifValue",
+                                    "applied",
+                                    "provenance"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "width",
+                                "height",
+                                "orientation"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "coordinates": {
+                              "type": "string",
+                              "enum": [
+                                "oriented_original_pixel_edges/1"
+                              ]
+                            },
+                            "region": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 25000
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "selectionAcknowledged": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            }
+                          },
+                          "required": [
+                            "frame",
+                            "coordinates",
+                            "region",
+                            "selectionAcknowledged"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "purpose": {
+                          "type": "string",
+                          "enum": [
+                            "record_evidence"
+                          ]
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "authoritySha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "validation": {
+                          "type": "object",
+                          "properties": {
+                            "version": {
+                              "type": "string",
+                              "enum": [
+                                "packet-image-region-local/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "sourceImage": {
+                              "type": "object",
+                              "properties": {
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "png",
+                                    "jpeg"
+                                  ]
+                                },
+                                "mode": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 32
+                                },
+                                "frame": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "image_source_top_left_pixels"
+                                      ]
+                                    },
+                                    "width": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    },
+                                    "height": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "width",
+                                    "height"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "frameCount": {
+                                  "type": "number",
+                                  "enum": [
+                                    1
+                                  ]
+                                },
+                                "orientation": {
+                                  "type": "object",
+                                  "properties": {
+                                    "exifValue": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "applied": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 8
+                                    },
+                                    "provenance": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_exif",
+                                        "specification_default"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "exifValue",
+                                    "applied",
+                                    "provenance"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "densityDeclarations": {
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "png_phys",
+                                          "jpeg_jfif",
+                                          "exif_resolution"
+                                        ]
+                                      },
+                                      "unitCode": {
+                                        "nullable": true,
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 4294967295
+                                      },
+                                      "x": {
+                                        "nullable": true,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            },
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            }
+                                          ]
+                                        },
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                      },
+                                      "y": {
+                                        "nullable": true,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            },
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4294967295
+                                            }
+                                          ]
+                                        },
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                      },
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "supplied",
+                                          "unsupported"
+                                        ]
+                                      },
+                                      "qualification": {
+                                        "type": "string",
+                                        "enum": [
+                                          "not_calibrated"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "unitCode",
+                                      "x",
+                                      "y",
+                                      "status",
+                                      "qualification"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "color": {
+                                  "type": "object",
+                                  "properties": {
+                                    "embeddedIcc": {
+                                      "type": "boolean"
+                                    },
+                                    "declaredSrgb": {
+                                      "nullable": true,
+                                      "type": "boolean"
+                                    },
+                                    "transparency": {
+                                      "type": "string",
+                                      "enum": [
+                                        "absent",
+                                        "supplied"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "embeddedIcc",
+                                    "declaredSrgb",
+                                    "transparency"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "unsupportedReason": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "enum": [
+                                    null
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "format",
+                                "mode",
+                                "frame",
+                                "frameCount",
+                                "orientation",
+                                "densityDeclarations",
+                                "color",
+                                "unsupportedReason"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "selection": {
+                              "type": "object",
+                              "properties": {
+                                "frame": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "image_oriented_top_left_pixels"
+                                      ]
+                                    },
+                                    "width": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    },
+                                    "height": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 25000
+                                    },
+                                    "orientation": {
+                                      "type": "object",
+                                      "properties": {
+                                        "exifValue": {
+                                          "nullable": true,
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 8
+                                        },
+                                        "applied": {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 8
+                                        },
+                                        "provenance": {
+                                          "type": "string",
+                                          "enum": [
+                                            "source_exif",
+                                            "specification_default"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "exifValue",
+                                        "applied",
+                                        "provenance"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "width",
+                                    "height",
+                                    "orientation"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "coordinates": {
+                                  "type": "string",
+                                  "enum": [
+                                    "oriented_original_pixel_edges/1"
+                                  ]
+                                },
+                                "region": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "selectionAcknowledged": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    true
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "frame",
+                                "coordinates",
+                                "region",
+                                "selectionAcknowledged"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "recipe": {
+                              "type": "object",
+                              "properties": {
+                                "version": {
+                                  "type": "string",
+                                  "enum": [
+                                    "packet-image-region-recipe/1"
+                                  ]
+                                },
+                                "workerSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "decoderSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "supervisorSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "crop": {
+                                  "type": "string",
+                                  "enum": [
+                                    "oriented_original_before_resampling/1"
+                                  ]
+                                },
+                                "rounding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inward_complete_pixels/1"
+                                  ]
+                                },
+                                "metadataPolicy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fresh_rgb_or_rgba_pixels_only/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "version",
+                                "workerSha256",
+                                "decoderSha256",
+                                "supervisorSha256",
+                                "crop",
+                                "rounding",
+                                "metadataPolicy"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "runtime": {
+                              "type": "object",
+                              "properties": {
+                                "python": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 32
+                                },
+                                "pillow": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 32
+                                },
+                                "jpegCodec": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 32
+                                },
+                                "libjpegTurbo": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 32
+                                },
+                                "zlibCodec": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 32
+                                },
+                                "pythonSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "launcherSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "pillowImageSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "imagingSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                }
+                              },
+                              "required": [
+                                "python",
+                                "pillow",
+                                "jpegCodec",
+                                "libjpegTurbo",
+                                "zlibCodec",
+                                "pythonSha256",
+                                "launcherSha256",
+                                "pillowImageSha256",
+                                "imagingSha256"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "transform": {
+                              "type": "object",
+                              "properties": {
+                                "includedPixelBounds": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "includedOrientedRegion": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 25000
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "sourceToOriented": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "orientedToOutput": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "sourceToOutput": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "outputToOriented": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "coordinateConvention": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pixel_edges/1"
+                                  ]
+                                },
+                                "rounding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inward_complete_pixels/1"
+                                  ]
+                                },
+                                "resampling": {
+                                  "type": "string",
+                                  "enum": [
+                                    "none",
+                                    "lanczos"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "includedPixelBounds",
+                                "includedOrientedRegion",
+                                "sourceToOriented",
+                                "orientedToOutput",
+                                "sourceToOutput",
+                                "outputToOriented",
+                                "coordinateConvention",
+                                "rounding",
+                                "resampling"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "output": {
+                              "type": "object",
+                              "properties": {
+                                "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "bytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 8388608
+                                },
+                                "pixels": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 1400
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "png"
+                                  ]
+                                },
+                                "mode": {
+                                  "type": "string",
+                                  "enum": [
+                                    "RGB",
+                                    "RGBA"
+                                  ]
+                                },
+                                "colorInterpretation": {
+                                  "type": "string",
+                                  "enum": [
+                                    "encoded_samples_unmanaged"
+                                  ]
+                                },
+                                "metadataPolicy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fresh_rgb_or_rgba_pixels_only/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "sha256",
+                                "bytes",
+                                "pixels",
+                                "format",
+                                "mode",
+                                "colorInterpretation",
+                                "metadataPolicy"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "version",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "sourceImage",
+                            "selection",
+                            "recipe",
+                            "runtime",
+                            "transform",
+                            "output"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "applicability": {
+                          "type": "string",
+                          "enum": [
+                            "explicit_officer_inclusion; effective_after_canonical_commit"
+                          ]
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "id",
+                        "document",
                         "region",
                         "purpose",
                         "target",
