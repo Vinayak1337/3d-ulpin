@@ -21,7 +21,8 @@ AUXILIARY_NAMES = {"selector-assignment.json", "selector-schema-v1.json", "selec
 
 
 def checked_assignment(assignment):
-    require("candidateRoute" not in assignment, "separate_candidate_execution_required")
+    require(not {"candidateRoute", "acceptedArtifactSha256", "representation", "candidateSetSha256", "artifactRoot"} & set(assignment),
+            "separate_candidate_execution_required")
     require(assignment.get("version") == ASSIGNMENT_VERSION and assignment.get("task") == "STUDENT-09-BASELINE",
             "separate_selector_baseline_assignment_required")
     allowance = assignment.get("executionAllowance", {})
@@ -61,7 +62,8 @@ def checked_batch(batch, cases, contract, family, allowed_splits=("development",
 
 
 def checked_run_inputs(freeze, inputs):
-    require("candidateRoute" not in freeze, "separate_candidate_execution_required")
+    require(not {"candidateRoute", "acceptedArtifactSha256", "representation", "candidateSetSha256", "artifactRoot"} & set(freeze),
+            "separate_candidate_execution_required")
     require(freeze["version"] == FREEZE_VERSION
             and set(freeze.get("inputSha256", {})) == {"input_batch", "schema", "family_freeze", "model_receipt"}
             and set(freeze.get("auxiliaryInputSha256", {})) == AUXILIARY_NAMES,

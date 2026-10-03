@@ -23,22 +23,44 @@ def sha(path):
     return digest.hexdigest()
 
 
+def admitted_runtime(freeze, inputs, preserve_preflight):
+    """Choose only an admitted representation before touching model bytes."""
+    version = freeze.get("version", "")
+    if version == "association-candidate-baseline-freeze/1":
+        from geo.usp_learning.association import candidate_baseline as candidate
+        from geo.usp_learning.association.selector_baseline import run_selectors
+        contract, assignment, route = candidate.checked_run_inputs(freeze, inputs)
+        return run_selectors, {"selector_contract": contract, "cases": assignment["cases"],
+            "candidate_route": route, "preserve_preflight": preserve_preflight}, candidate.candidate.SYSTEM_PROMPT
+    if "candidate" in str(version) or {"candidateRoute", "acceptedArtifactSha256", "representation",
+            "candidateSetSha256", "candidateSchemaCanonicalLfSha256", "artifactRoot"} & set(freeze):
+        raise RuntimeError("explicit candidate baseline freeze required")
+    if str(version).startswith("association-selector-"):
+        from geo.usp_learning.association.selector_baseline import checked_run_inputs, run_selectors
+        from geo.usp_learning.association.selectors import SYSTEM_PROMPT as SELECTOR_PROMPT
+        contract, assignment = checked_run_inputs(freeze, inputs)
+        return run_selectors, {"selector_contract": contract, "cases": assignment["cases"],
+            "preserve_preflight": preserve_preflight}, SELECTOR_PROMPT
+    if "lexicalPolicy" in freeze or "selectorSchemaCanonicalLfSha256" in freeze:
+        raise RuntimeError("explicit selector baseline freeze required")
+    if version != "association-baseline-freeze/1":
+        raise RuntimeError("explicit baseline freeze required")
+    return run_local, {}, SYSTEM_PROMPT
+
+
 def worker(args):
     require_model_boundary(args)
     args.output_dir.mkdir(exist_ok=False)
     try:
         freeze = json.loads(args.run_freeze.read_bytes())
-        selector_mode = str(freeze["version"]).startswith("association-selector-")
-        runner, runner_options, system_prompt = run_local, {}, SYSTEM_PROMPT
-        if selector_mode:
-            from geo.usp_learning.association.selector_baseline import checked_run_inputs, run_selectors
-            from geo.usp_learning.association.selectors import SYSTEM_PROMPT as SELECTOR_PROMPT
-            selector_contract, selector_assignment = checked_run_inputs(freeze, args.run_freeze.parent)
-            runner, system_prompt = run_selectors, SELECTOR_PROMPT
-            runner_options = {"selector_contract": selector_contract, "cases": selector_assignment["cases"],
-                "preserve_preflight": lambda value: write_json_once(args.output_dir / "selector-preflight.json", value)}
-        elif "lexicalPolicy" in freeze or "selectorSchemaCanonicalLfSha256" in freeze:
-            raise RuntimeError("explicit selector baseline freeze required")
+        candidate_mode = freeze.get("version") == "association-candidate-baseline-freeze/1"
+        binding = {}
+        runner, runner_options, system_prompt = admitted_runtime(freeze, args.run_freeze.parent,
+            lambda value: write_json_once(args.output_dir / ("candidate-preflight.json" if candidate_mode else "selector-preflight.json"),
+                {**value, **({"provenance": binding} if candidate_mode else {})}))
+        if candidate_mode:
+            from geo.usp_learning.association.candidate_baseline import provenance
+            binding = provenance(freeze, sha(args.run_freeze))
         if freeze["settings"] != SETTINGS or freeze["systemPromptSha256"] != hashlib.sha256(system_prompt.encode()).hexdigest():
             raise RuntimeError("frozen baseline settings or prompt drift")
         for option, digest in freeze["inputSha256"].items():
@@ -60,9 +82,24 @@ def worker(args):
             raise RuntimeError("requires the frozen compact development baseline")
         raw, result = runner(batch["examples"], json.loads(schema_bytes), family, model_path,
                                 lambda: require_model_boundary(args),
-                                lambda index, value: write_json_once(args.output_dir / f"raw-{index}.json", value), **runner_options)
+                                lambda index, value: write_json_once(args.output_dir / f"{'candidate-' if candidate_mode else ''}raw-{index}.json", value), **runner_options)
+        if candidate_mode:
+            result = {**result, "provenance": binding}
         write_json_once(args.output_dir / "raw-outputs.json", raw)
+        if candidate_mode:
+            write_json_once(args.output_dir / "candidate-raw-outputs.json", raw)
+            result["rawOutputsSha256"] = sha(args.output_dir / "raw-outputs.json")
+            write_json_once(args.output_dir / "candidate-result.json", result)
         write_json_once(args.output_dir / "result.json", result)
+        if candidate_mode:
+            # The protected supervisor still owns completion.json and final
+            # artifact acceptance. This receipt never claims guard acceptance.
+            write_json_once(args.output_dir / "candidate-completion.json", {
+                "version": "association-candidate-worker-completion/1", "status": "worker_complete_awaiting_guard",
+                "supervisorAccepted": False, "authoritativeCompletion": "completion.json", "provenance": binding,
+                "artifacts": {name: sha(args.output_dir / name) for name in
+                    ("candidate-preflight.json", "candidate-raw-outputs.json", "candidate-result.json", "raw-outputs.json", "result.json")},
+                "evaluationOpened": False, "fitPerformed": False, "promoted": False})
         print(json.dumps({"exampleCount": len(raw), "modelOutputValidCount": result["modelOutputValidCount"],
                           "runtime": result["runtime"]}), flush=True)
     except BaseException as error:
