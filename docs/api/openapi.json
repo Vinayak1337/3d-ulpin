@@ -14251,7 +14251,7 @@
             }
           }
         },
-        "summary": "Amend native/OCR/IFC/DXF/KML/CityGML or validated original-region citations (DXF/KML/CityGML: building/floor); region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity",
+        "summary": "Amend native/OCR/IFC/DXF/KML/CityGML/GeoParquet or validated original-region citations (DXF/KML/CityGML/GeoParquet: building/floor); region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity",
         "tags": [
           "registry"
         ],
@@ -14447,7 +14447,7 @@
             }
           }
         },
-        "summary": "Read exact native/OCR/IFC/DXF/KML/CityGML and original-region citations through current private source and draft authority",
+        "summary": "Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet and original-region citations through current private source and draft authority",
         "tags": [
           "registry"
         ],
@@ -81520,6 +81520,421 @@
                         "citygml"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        },
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-geoparquet-citation/1"
+                          ]
+                        },
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 524288
+                        },
+                        "geoparquet": {
+                          "type": "object",
+                          "properties": {
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "artifactBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "profile": {
+                              "type": "string",
+                              "enum": [
+                                "usp-native-geoparquet/1"
+                              ]
+                            },
+                            "selectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceContextSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "fragmentSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "inspectionStatus": {
+                              "type": "string",
+                              "enum": [
+                                "available",
+                                "partial",
+                                "unsupported"
+                              ]
+                            },
+                            "window": {
+                              "type": "object",
+                              "properties": {
+                                "totalRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "requestedStartRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "requestedRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 1000
+                                },
+                                "returnedRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "coordinateValues": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "available",
+                                    "unsupported"
+                                  ]
+                                },
+                                "nextRowIndex": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "truncated": {
+                                  "type": "boolean"
+                                },
+                                "prefixRowsOmitted": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "scannedBatchRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "prefixRowsScannedInSelectedGroups": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "stopReason": {
+                                  "type": "string",
+                                  "enum": [
+                                    "row_window",
+                                    "coordinate_budget",
+                                    "end_of_file"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "totalRows",
+                                "requestedStartRowIndex",
+                                "requestedRows",
+                                "returnedRows",
+                                "coordinateValues",
+                                "status",
+                                "nextRowIndex",
+                                "truncated",
+                                "prefixRowsOmitted"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "enrolledSelection": {
+                              "type": "object",
+                              "properties": {
+                                "startRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "rowCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 1000
+                                }
+                              },
+                              "required": [
+                                "startRowIndex",
+                                "rowCount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "continuation": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "jobId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "resultSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "artifactSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "nextRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "inputSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "acceptedFence": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "jobId",
+                                "resultSha256",
+                                "artifactSha256",
+                                "nextRowIndex",
+                                "inputSha256",
+                                "acceptedFence"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "rowIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254739991
+                            },
+                            "ordinal": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 999
+                            },
+                            "rowGroupIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 127
+                            },
+                            "rowIndexInGroup": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 99999
+                            },
+                            "sourceKey": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 512
+                            },
+                            "recordPointer": {
+                              "type": "string",
+                              "pattern": "^\\/rows\\/\\d+$"
+                            },
+                            "recordSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "columnLocators": {
+                              "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                              "type": "object",
+                              "additionalProperties": true
+                            },
+                            "identifierScope": {
+                              "type": "string",
+                              "enum": [
+                                "source_native_only; not_canonical_registry_ids"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "artifactSha256",
+                            "artifactBytes",
+                            "profile",
+                            "selectionSha256",
+                            "sourceContextSha256",
+                            "fragmentSha256",
+                            "inspectionStatus",
+                            "window",
+                            "enrolledSelection",
+                            "continuation",
+                            "rowIndex",
+                            "ordinal",
+                            "rowGroupIndex",
+                            "rowIndexInGroup",
+                            "sourceKey",
+                            "recordPointer",
+                            "recordSha256",
+                            "columnLocators",
+                            "identifierScope"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "document",
+                        "inputSha256",
+                        "readerSha256",
+                        "acceptedFence",
+                        "target",
+                        "selection",
+                        "associationState",
+                        "qualification",
+                        "version",
+                        "resultBytes",
+                        "geoparquet"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -93148,6 +93563,421 @@
                         "citygml"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        },
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-geoparquet-citation/1"
+                          ]
+                        },
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 524288
+                        },
+                        "geoparquet": {
+                          "type": "object",
+                          "properties": {
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "artifactBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "profile": {
+                              "type": "string",
+                              "enum": [
+                                "usp-native-geoparquet/1"
+                              ]
+                            },
+                            "selectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceContextSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "fragmentSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "inspectionStatus": {
+                              "type": "string",
+                              "enum": [
+                                "available",
+                                "partial",
+                                "unsupported"
+                              ]
+                            },
+                            "window": {
+                              "type": "object",
+                              "properties": {
+                                "totalRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "requestedStartRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "requestedRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 1000
+                                },
+                                "returnedRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "coordinateValues": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "available",
+                                    "unsupported"
+                                  ]
+                                },
+                                "nextRowIndex": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "truncated": {
+                                  "type": "boolean"
+                                },
+                                "prefixRowsOmitted": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "scannedBatchRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "prefixRowsScannedInSelectedGroups": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "stopReason": {
+                                  "type": "string",
+                                  "enum": [
+                                    "row_window",
+                                    "coordinate_budget",
+                                    "end_of_file"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "totalRows",
+                                "requestedStartRowIndex",
+                                "requestedRows",
+                                "returnedRows",
+                                "coordinateValues",
+                                "status",
+                                "nextRowIndex",
+                                "truncated",
+                                "prefixRowsOmitted"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "enrolledSelection": {
+                              "type": "object",
+                              "properties": {
+                                "startRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "rowCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 1000
+                                }
+                              },
+                              "required": [
+                                "startRowIndex",
+                                "rowCount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "continuation": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "jobId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "resultSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "artifactSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "nextRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "inputSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "acceptedFence": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "jobId",
+                                "resultSha256",
+                                "artifactSha256",
+                                "nextRowIndex",
+                                "inputSha256",
+                                "acceptedFence"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "rowIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254739991
+                            },
+                            "ordinal": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 999
+                            },
+                            "rowGroupIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 127
+                            },
+                            "rowIndexInGroup": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 99999
+                            },
+                            "sourceKey": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 512
+                            },
+                            "recordPointer": {
+                              "type": "string",
+                              "pattern": "^\\/rows\\/\\d+$"
+                            },
+                            "recordSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "columnLocators": {
+                              "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                              "type": "object",
+                              "additionalProperties": true
+                            },
+                            "identifierScope": {
+                              "type": "string",
+                              "enum": [
+                                "source_native_only; not_canonical_registry_ids"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "artifactSha256",
+                            "artifactBytes",
+                            "profile",
+                            "selectionSha256",
+                            "sourceContextSha256",
+                            "fragmentSha256",
+                            "inspectionStatus",
+                            "window",
+                            "enrolledSelection",
+                            "continuation",
+                            "rowIndex",
+                            "ordinal",
+                            "rowGroupIndex",
+                            "rowIndexInGroup",
+                            "sourceKey",
+                            "recordPointer",
+                            "recordSha256",
+                            "columnLocators",
+                            "identifierScope"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "document",
+                        "inputSha256",
+                        "readerSha256",
+                        "acceptedFence",
+                        "target",
+                        "selection",
+                        "associationState",
+                        "qualification",
+                        "version",
+                        "resultBytes",
+                        "geoparquet"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -98467,6 +99297,1016 @@
                         "buildings",
                         "findings",
                         "semantics",
+                        "coverage"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "pin",
+                    "fragment"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "pin": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        },
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-geoparquet-citation/1"
+                          ]
+                        },
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 524288
+                        },
+                        "geoparquet": {
+                          "type": "object",
+                          "properties": {
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "artifactBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "profile": {
+                              "type": "string",
+                              "enum": [
+                                "usp-native-geoparquet/1"
+                              ]
+                            },
+                            "selectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceContextSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "fragmentSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "inspectionStatus": {
+                              "type": "string",
+                              "enum": [
+                                "available",
+                                "partial",
+                                "unsupported"
+                              ]
+                            },
+                            "window": {
+                              "type": "object",
+                              "properties": {
+                                "totalRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "requestedStartRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "requestedRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 1000
+                                },
+                                "returnedRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "coordinateValues": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "available",
+                                    "unsupported"
+                                  ]
+                                },
+                                "nextRowIndex": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "truncated": {
+                                  "type": "boolean"
+                                },
+                                "prefixRowsOmitted": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "scannedBatchRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "prefixRowsScannedInSelectedGroups": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "stopReason": {
+                                  "type": "string",
+                                  "enum": [
+                                    "row_window",
+                                    "coordinate_budget",
+                                    "end_of_file"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "totalRows",
+                                "requestedStartRowIndex",
+                                "requestedRows",
+                                "returnedRows",
+                                "coordinateValues",
+                                "status",
+                                "nextRowIndex",
+                                "truncated",
+                                "prefixRowsOmitted"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "enrolledSelection": {
+                              "type": "object",
+                              "properties": {
+                                "startRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "rowCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 1000
+                                }
+                              },
+                              "required": [
+                                "startRowIndex",
+                                "rowCount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "continuation": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "jobId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "resultSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "artifactSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "nextRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "inputSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "acceptedFence": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "jobId",
+                                "resultSha256",
+                                "artifactSha256",
+                                "nextRowIndex",
+                                "inputSha256",
+                                "acceptedFence"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "rowIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254739991
+                            },
+                            "ordinal": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 999
+                            },
+                            "rowGroupIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 127
+                            },
+                            "rowIndexInGroup": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 99999
+                            },
+                            "sourceKey": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 512
+                            },
+                            "recordPointer": {
+                              "type": "string",
+                              "pattern": "^\\/rows\\/\\d+$"
+                            },
+                            "recordSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "columnLocators": {
+                              "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                              "type": "object",
+                              "additionalProperties": true
+                            },
+                            "identifierScope": {
+                              "type": "string",
+                              "enum": [
+                                "source_native_only; not_canonical_registry_ids"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "artifactSha256",
+                            "artifactBytes",
+                            "profile",
+                            "selectionSha256",
+                            "sourceContextSha256",
+                            "fragmentSha256",
+                            "inspectionStatus",
+                            "window",
+                            "enrolledSelection",
+                            "continuation",
+                            "rowIndex",
+                            "ordinal",
+                            "rowGroupIndex",
+                            "rowIndexInGroup",
+                            "sourceKey",
+                            "recordPointer",
+                            "recordSha256",
+                            "columnLocators",
+                            "identifierScope"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "document",
+                        "inputSha256",
+                        "readerSha256",
+                        "acceptedFence",
+                        "target",
+                        "selection",
+                        "associationState",
+                        "qualification",
+                        "version",
+                        "resultBytes",
+                        "geoparquet"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "fragment": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "geoparquet"
+                          ]
+                        },
+                        "pin": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "readerSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "inputSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "acceptedFence": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "resultBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 524288
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256",
+                            "readerSha256",
+                            "inputSha256",
+                            "acceptedFence",
+                            "resultBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "namespace": {
+                          "type": "string"
+                        },
+                        "sourceSetRole": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected_fragment"
+                          ]
+                        },
+                        "summary": {
+                          "type": "object",
+                          "properties": {
+                            "format": {
+                              "type": "string",
+                              "enum": [
+                                "usp-native-geoparquet/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 33554432
+                            },
+                            "scope": {
+                              "type": "string",
+                              "enum": [
+                                "source_native_literal_inventory"
+                              ]
+                            },
+                            "profileStatus": {
+                              "type": "string",
+                              "enum": [
+                                "supported",
+                                "unsupported"
+                              ]
+                            },
+                            "profileReasons": {
+                              "maxItems": 128,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 100
+                              }
+                            },
+                            "geoMetadataState": {
+                              "type": "string",
+                              "enum": [
+                                "absent",
+                                "null",
+                                "declared",
+                                "conflicting",
+                                "unsupported"
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "available",
+                                "partial",
+                                "unsupported"
+                              ]
+                            },
+                            "window": {
+                              "type": "object",
+                              "properties": {
+                                "totalRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "requestedStartRowIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "requestedRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 1000
+                                },
+                                "returnedRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "coordinateValues": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "available",
+                                    "unsupported"
+                                  ]
+                                },
+                                "nextRowIndex": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254739991
+                                },
+                                "truncated": {
+                                  "type": "boolean"
+                                },
+                                "prefixRowsOmitted": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "scannedBatchRows": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "prefixRowsScannedInSelectedGroups": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "stopReason": {
+                                  "type": "string",
+                                  "enum": [
+                                    "row_window",
+                                    "coordinate_budget",
+                                    "end_of_file"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "totalRows",
+                                "requestedStartRowIndex",
+                                "requestedRows",
+                                "returnedRows",
+                                "coordinateValues",
+                                "status",
+                                "nextRowIndex",
+                                "truncated",
+                                "prefixRowsOmitted"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "columnCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 128
+                            },
+                            "rowGroupCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 128
+                            },
+                            "unsupportedGeometryCells": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 128000
+                            },
+                            "accuracy": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "validity": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "canonicalIdentity": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "analyticEligible": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "registryAdmission": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "learningLabels": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "rights": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "format",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "scope",
+                            "profileStatus",
+                            "profileReasons",
+                            "geoMetadataState",
+                            "status",
+                            "window",
+                            "columnCount",
+                            "rowGroupCount",
+                            "unsupportedGeometryCells",
+                            "accuracy",
+                            "validity",
+                            "canonicalIdentity",
+                            "analyticEligible",
+                            "registryAdmission",
+                            "learningLabels",
+                            "rights"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "artifactSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "artifactBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 16777216
+                        },
+                        "selectionSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "selectionHashBasis": {
+                          "type": "string",
+                          "enum": [
+                            "accepted_source_result_input_reader_fence_artifact_window_parent_and_sorted_row_indices"
+                          ]
+                        },
+                        "nativeIdentifierScope": {
+                          "type": "string",
+                          "enum": [
+                            "source_native_only; not_canonical_registry_ids"
+                          ]
+                        },
+                        "enrolledSelection": {
+                          "type": "object",
+                          "properties": {
+                            "startRowIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254739991
+                            },
+                            "rowCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "startRowIndex",
+                            "rowCount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "continuation": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "nextRowIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254739991
+                            },
+                            "inputSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "acceptedFence": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "jobId",
+                            "resultSha256",
+                            "artifactSha256",
+                            "nextRowIndex",
+                            "inputSha256",
+                            "acceptedFence"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "source": {
+                          "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "reader": {
+                          "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "schema": {
+                          "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "geoMetadata": {
+                          "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "profile": {
+                          "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "rowGroups": {
+                          "maxItems": 128,
+                          "type": "array",
+                          "items": {
+                            "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        },
+                        "semantics": {
+                          "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "rows": {
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "rowIndex": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254739991
+                              },
+                              "ordinal": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 999
+                              },
+                              "rowGroupIndex": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 127
+                              },
+                              "rowIndexInGroup": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 99999
+                              },
+                              "key": {
+                                "type": "string"
+                              },
+                              "pointer": {
+                                "type": "string"
+                              },
+                              "recordSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "record": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              }
+                            },
+                            "required": [
+                              "rowIndex",
+                              "ordinal",
+                              "rowGroupIndex",
+                              "rowIndexInGroup",
+                              "key",
+                              "pointer",
+                              "recordSha256",
+                              "record"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "coverage": {
+                          "type": "object",
+                          "properties": {
+                            "selectedRows": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 25
+                            },
+                            "availableNativeRows": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1000
+                            },
+                            "totalSourceRows": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "scope": {
+                              "type": "string",
+                              "enum": [
+                                "explicit_row_records_and_exact_window_metadata"
+                              ]
+                            },
+                            "unselectedRows": {
+                              "type": "string",
+                              "enum": [
+                                "not_expanded"
+                              ]
+                            },
+                            "continuationRowsFetch": {
+                              "type": "string",
+                              "enum": [
+                                "not_performed"
+                              ]
+                            },
+                            "geometryQualification": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "propertyMatching": {
+                              "type": "string",
+                              "enum": [
+                                "unsupported"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "selectedRows",
+                            "availableNativeRows",
+                            "totalSourceRows",
+                            "scope",
+                            "unselectedRows",
+                            "continuationRowsFetch",
+                            "geometryQualification",
+                            "propertyMatching"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "pin",
+                        "namespace",
+                        "sourceSetRole",
+                        "summary",
+                        "artifactSha256",
+                        "artifactBytes",
+                        "selectionSha256",
+                        "selectionHashBasis",
+                        "nativeIdentifierScope",
+                        "enrolledSelection",
+                        "continuation",
+                        "source",
+                        "reader",
+                        "schema",
+                        "geoMetadata",
+                        "profile",
+                        "rowGroups",
+                        "semantics",
+                        "rows",
                         "coverage"
                       ],
                       "additionalProperties": false
