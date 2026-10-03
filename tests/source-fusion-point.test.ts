@@ -128,8 +128,7 @@ test('retained point metadata and EPSG fragment assemble through exact canonical
   const repeat=await assembleSourceFusion(ctx,{sources:[f.doc,f.point]},c.deps);assert.deepEqual(repeat,context);
   await assert.rejects(()=>proposeFusionAssociations(ctx,{requestKey:'00000000-0000-4000-8000-000000000001',
     context:{contextSha256:context.contextSha256,selection},scope:null,targets:[]},{} as any),code('SOURCE_FUSION_POINT_CONTEXT_ONLY'));
-  await assert.rejects(()=>resolveFusionCitationsTx(null as any,ctx,{contextSha256:context.contextSha256,selection},{} as any,
-    '00000000-0000-4000-8000-000000000002'),code('SOURCE_FUSION_POINT_CONTEXT_ONLY'));
+  await assert.rejects(()=>resolveFusionCitationsTx(null as any,ctx,{contextSha256:context.contextSha256,selection},{} as any),code('SOURCE_FUSION_POINT_TARGET_REQUIRED'));
   assert.throws(()=>associationLiterals(context),code('SOURCE_FUSION_POINT_CONTEXT_ONLY'));
   // Count the point fragment toward the existing total; no source/batch expansion.
   const parts=Array.from({length:25},(_,i)=>`00000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`);

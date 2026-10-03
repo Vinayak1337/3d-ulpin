@@ -27,6 +27,9 @@ import {verifyFusionGeoParquetTools} from './source-fusion-geoparquet-authority'
 import {RegistryRasterFragmentSchema,type RegistryRasterCitation} from '../../../../../contracts/src/registry-document-evidence';
 import type {RasterWindowInput} from '@ulpin/contracts/usp';
 import {registryRasterCitationSourceTx} from '../../registry/registry-raster-citation-source';
+import {RegistryPointFragmentSchema,type RegistryPointCitation} from '../../../../../contracts/src/registry-document-evidence';
+import type {PointBatchInput} from '@ulpin/contracts/usp';
+import {registryPointCitationSourceTx} from '../../registry/registry-point-citation-source';
 
 export type FusionCitationDependencies={source:typeof associationDocumentInputTx;
   fusionResult?:typeof readFusionResult;cityjson?:typeof acceptedCityJSONTx;
@@ -35,7 +38,7 @@ export type FusionCitationDependencies={source:typeof associationDocumentInputTx
   kmlSource?:typeof registryKMLCitationSourceTx;kmlTools?:typeof verifyFusionKMLTools;
   citygmlSource?:typeof registryCityGMLCitationSourceTx;citygmlTools?:typeof verifyFusionCityGMLTools;
   geoparquetSource?:typeof registryGeoParquetCitationSourceTx;geoparquetTools?:typeof verifyFusionGeoParquetTools;
-  rasterSource?:typeof registryRasterCitationSourceTx};
+  rasterSource?:typeof registryRasterCitationSourceTx;pointSource?:typeof registryPointCitationSourceTx};
 export function citationReadBudget():FusionBudget{
   return {deadlineAt:Date.now()+SOURCE_FUSION_LIMITS.deadlineMs,signal:new AbortController().signal,reservedBytes:0};
 }
@@ -44,8 +47,8 @@ export function citationReadBudget():FusionBudget{
  * No independent transaction, write or trusted caller-supplied context exists. */
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string){
-  if(request.selection.sources.some(source=>source.kind==='point'))
-    throw new AppError(422,'SOURCE_FUSION_POINT_CONTEXT_ONLY','Point metadata supports source context only; registry citation attachment is unsupported.');
+  if(request.selection.sources.some(source=>source.kind==='point')&&!siteId)
+    throw new AppError(422,'SOURCE_FUSION_POINT_TARGET_REQUIRED','Point metadata citation selection requires its exact canonical building/floor target site.');
   if(request.selection.sources.some(source=>source.kind==='raster')&&!siteId)
     throw new AppError(422,'SOURCE_FUSION_RASTER_TARGET_REQUIRED','Raster metadata citation selection requires its exact canonical building/floor target site.');
   if(request.selection.sources.some(source=>source.kind==='geoparquet')&&!siteId)
@@ -77,7 +80,9 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       (await (dependencies.geoparquetSource??registryGeoParquetCitationSourceTx)(client,siteId!,pin,lock)).authority,
     geoparquetTools:dependencies.geoparquetTools??verifyFusionGeoParquetTools,
     raster:async(client:PoolClient,pin:SourceFusionPin,lock=false)=>
-      (await (dependencies.rasterSource??registryRasterCitationSourceTx)(client,siteId!,pin,lock)).authority};
+      (await (dependencies.rasterSource??registryRasterCitationSourceTx)(client,siteId!,pin,lock)).authority,
+    point:async(client:PoolClient,pin:SourceFusionPin,lock=false)=>
+      (await (dependencies.pointSource??registryPointCitationSourceTx)(client,siteId!,pin,lock)).authority};
   const documents=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'document'}>}>();
   const ifcs=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'ifc'}>}>();
   const dxfs=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'dxf'}>}>();
@@ -85,6 +90,7 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
   const citygmls=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'citygml'}>}>();
   const geoparquets=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'geoparquet'}>}>();
   const rasters=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'raster'}>}>();
+  const points=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'point'}>}>();
   let selected:SourceFusionSelection[]=[],captured:FusionAuthority[]=[],budget:FusionBudget|undefined;
   const assembled=await assembleSourceFusion(ctx,request.selection,{
     authority:async(ctx,selections,current,expected)=>{
@@ -99,15 +105,10 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       if(loaded.kind==='citygml')citygmls.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='geoparquet')geoparquets.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='raster')rasters.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
+      if(loaded.kind==='point')points.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       return loaded;
     }});
-  // Keep the result type as narrow as the explicit admission above. Existing
-  // registry consumers remain exhaustive while point citations stay unsupported.
-  const context={...assembled,sources:assembled.sources.map(source=>{
-    if(source.kind==='point')throw new AppError(422,'SOURCE_FUSION_POINT_CONTEXT_ONLY',
-      'Point metadata supports source context only; registry citation attachment is unsupported.');
-    return source;
-  })};
+  const context=assembled;
   // All supported source variants stay in the exact context hash; no selected
   // fragment is silently dropped before the amendment is accepted.
   if(context.contextSha256!==request.contextSha256)conflict('The explicitly selected fusion context changed.');
@@ -121,6 +122,7 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
   const citygmlInputs=new Map<string,CityGMLInput>();
   const geoparquetInputs=new Map<string,GeoParquetInput>();
   const rasterInputs=new Map<string,RasterWindowInput>();
+  const pointInputs=new Map<string,PointBatchInput>();
   for(const [index,selection] of selected.entries()){
     const authority=captured[index];if(authority.kind==='document')inputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='ifc')ifcInputs.set(selection.pin.sourceId,authority.input);
@@ -129,8 +131,9 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
     if(authority.kind==='citygml')citygmlInputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='geoparquet')geoparquetInputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='raster')rasterInputs.set(selection.pin.sourceId,authority.input);
+    if(authority.kind==='point')pointInputs.set(selection.pin.sourceId,authority.input);
   }
-  return {context,inputs,ifcInputs,dxfInputs,kmlInputs,citygmlInputs,geoparquetInputs,rasterInputs,documents,ifcs,dxfs,kmls,citygmls,geoparquets,rasters,revalidate:async()=>{
+  return {context,inputs,ifcInputs,dxfInputs,kmlInputs,citygmlInputs,geoparquetInputs,rasterInputs,pointInputs,documents,ifcs,dxfs,kmls,citygmls,geoparquets,rasters,points,revalidate:async()=>{
     fusionLive(finalBudget);await fusionAuthorityBatch(ctx,selected,finalBudget,captured,authorityDependencies);
   }};
 }
@@ -151,6 +154,25 @@ export function fusionRasterCitationFields(source:Extract<SourceFusionContext['s
     acceptedFence:source.pin.acceptedFence,resultBytes:source.pin.resultBytes,
     raster:{profile:'raster-window/1' as const,artifactSha256:source.artifactSha256,artifactBytes:source.artifactBytes,
       window:source.metadata.window,metadataSha256:source.metadataSha256,selectionSha256:source.selectionSha256,
+      fragmentSha256:fingerprint(fragment),metadataPointer:'/metadata' as const,coverage:source.coverage}};
+}
+
+export function pointCitationFusionSelection(pin:RegistryPointCitation):Extract<SourceFusionSelection,{kind:'point'}>{
+  return {kind:'point',pin:{...pin.document,inputSha256:pin.inputSha256,readerSha256:pin.readerSha256,
+    acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes},artifactSha256:pin.point.artifactSha256,
+    metadataSha256:pin.point.metadataSha256,batch:pin.point.batch};
+}
+/** The projection already contains exactly one metadata batch and no object
+ * keys. Retain its literal metadata and receipt-only artifact coverage. */
+export function fusionPointCitationFragment(source:Extract<SourceFusionContext['sources'][number],{kind:'point'}>){
+  return RegistryPointFragmentSchema.parse(source);
+}
+export function fusionPointCitationFields(source:Extract<SourceFusionContext['sources'][number],{kind:'point'}>){
+  const fragment=fusionPointCitationFragment(source);
+  return {document:fusionCitationDocumentPin(source.pin),inputSha256:source.pin.inputSha256,readerSha256:source.pin.readerSha256,
+    acceptedFence:source.pin.acceptedFence,resultBytes:source.pin.resultBytes,
+    point:{profile:'point-batch/1' as const,artifactSha256:source.artifactSha256,artifactBytes:source.artifactBytes,
+      batch:source.metadata.batch,metadataSha256:source.metadataSha256,selectionSha256:source.selectionSha256,
       fragmentSha256:fingerprint(fragment),metadataPointer:'/metadata' as const,coverage:source.coverage}};
 }
 
