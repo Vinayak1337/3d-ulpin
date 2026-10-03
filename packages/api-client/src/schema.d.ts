@@ -2179,7 +2179,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF/KML/CityGML/GeoParquet fragments without establishing an association */
+        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF/KML/CityGML/GeoParquet/raster-metadata fragments without establishing an association */
         post: operations["POST_api_v1_usp_evidence_source_fusion_context"];
         delete?: never;
         options?: never;
@@ -13199,6 +13199,33 @@ export interface components {
                         };
                         artifactSha256: string;
                         rowIndices: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "raster";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        artifactSha256: string;
+                        metadataSha256: string;
+                        window: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                        };
                     })[];
                 };
             };
@@ -35905,6 +35932,33 @@ export interface components {
                 };
                 artifactSha256: string;
                 rowIndices: number[];
+            } | {
+                /** @enum {string} */
+                kind: "raster";
+                pin: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    readerSha256: string;
+                    inputSha256: string;
+                    acceptedFence: number;
+                    resultBytes: number;
+                };
+                artifactSha256: string;
+                metadataSha256: string;
+                window: {
+                    x: number;
+                    y: number;
+                    width: number;
+                    height: number;
+                };
             })[];
         };
         POST_usp_evidence_source_fusion_context_Response_200_application_json: {
@@ -36855,6 +36909,81 @@ export interface components {
                         /** @enum {string} */
                         propertyMatching: "unsupported";
                     };
+                } | {
+                    /** @enum {string} */
+                    kind: "raster";
+                    pin: {
+                        caseId: unknown;
+                        caseRevision: number;
+                        sourceId: unknown;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        jobId: unknown;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    key: string;
+                    /** @enum {string} */
+                    pointer: "/metadata";
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    metadataSha256: string;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_window_and_metadata";
+                    metadata: {
+                        sourceWidth: number;
+                        sourceHeight: number;
+                        sourceBands: number;
+                        sourceTransform: (number)[];
+                        windowTransform: (number)[];
+                        sourceCrsWkt: string | null;
+                        sourceCrsAuthority: string | null;
+                        verticalReference: string | null;
+                        /** @enum {string} */
+                        verticalReferenceStatus: "known" | "unknown";
+                        resolution: (number)[];
+                        window: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                        };
+                        nativeBounds: (number)[];
+                        bands: {
+                            index: number;
+                            dtype: string;
+                            nodata: number | null;
+                            /** @enum {string} */
+                            nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
+                            maskedPixels: number;
+                            validPixels: number;
+                        }[];
+                        /** @enum {string} */
+                        globalPlacement: "not_qualified";
+                    };
+                    coverage: {
+                        /** @enum {number} */
+                        selectedWindows: 1;
+                        /** @enum {string} */
+                        scope: "exact_accepted_window_metadata";
+                        /** @enum {string} */
+                        pixelContent: "not_read";
+                        /** @enum {string} */
+                        otherWindows: "not_fetched";
+                        /** @enum {string} */
+                        artifactVerification: "accepted_receipt_reference_only";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
                 })[];
                 association: {
                     /** @enum {string} */
@@ -37073,6 +37202,33 @@ export interface components {
                         };
                         artifactSha256: string;
                         rowIndices: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "raster";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        artifactSha256: string;
+                        metadataSha256: string;
+                        window: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                        };
                     })[];
                 };
             };
@@ -38050,6 +38206,81 @@ export interface components {
                             /** @enum {string} */
                             propertyMatching: "unsupported";
                         };
+                    } | {
+                        /** @enum {string} */
+                        kind: "raster";
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        namespace: string;
+                        /** @enum {string} */
+                        sourceSetRole: "operator_selected_fragment";
+                        key: string;
+                        /** @enum {string} */
+                        pointer: "/metadata";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        metadataSha256: string;
+                        selectionSha256: string;
+                        /** @enum {string} */
+                        selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_window_and_metadata";
+                        metadata: {
+                            sourceWidth: number;
+                            sourceHeight: number;
+                            sourceBands: number;
+                            sourceTransform: (number)[];
+                            windowTransform: (number)[];
+                            sourceCrsWkt: string | null;
+                            sourceCrsAuthority: string | null;
+                            verticalReference: string | null;
+                            /** @enum {string} */
+                            verticalReferenceStatus: "known" | "unknown";
+                            resolution: (number)[];
+                            window: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                            };
+                            nativeBounds: (number)[];
+                            bands: {
+                                index: number;
+                                dtype: string;
+                                nodata: number | null;
+                                /** @enum {string} */
+                                nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
+                                maskedPixels: number;
+                                validPixels: number;
+                            }[];
+                            /** @enum {string} */
+                            globalPlacement: "not_qualified";
+                        };
+                        coverage: {
+                            /** @enum {number} */
+                            selectedWindows: 1;
+                            /** @enum {string} */
+                            scope: "exact_accepted_window_metadata";
+                            /** @enum {string} */
+                            pixelContent: "not_read";
+                            /** @enum {string} */
+                            otherWindows: "not_fetched";
+                            /** @enum {string} */
+                            artifactVerification: "accepted_receipt_reference_only";
+                            /** @enum {string} */
+                            geometryQualification: "not_assessed";
+                            /** @enum {string} */
+                            propertyMatching: "unsupported";
+                        };
                     })[];
                     association: {
                         /** @enum {string} */
@@ -38419,6 +38650,30 @@ export interface components {
                                 };
                                 artifactSha256: string;
                                 rowIndices: number[];
+                            } | {
+                                /** @enum {string} */
+                                kind: "raster";
+                                pin: {
+                                    caseId: unknown;
+                                    caseRevision: number;
+                                    sourceId: unknown;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    jobId: unknown;
+                                    resultSha256: string;
+                                    readerSha256: string;
+                                    inputSha256: string;
+                                    acceptedFence: number;
+                                    resultBytes: number;
+                                };
+                                artifactSha256: string;
+                                metadataSha256: string;
+                                window: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                };
                             })[];
                         };
                     };
@@ -38574,6 +38829,30 @@ export interface components {
                             };
                             artifactSha256: string;
                             rowIndices: number[];
+                        } | {
+                            /** @enum {string} */
+                            kind: "raster";
+                            pin: {
+                                caseId: unknown;
+                                caseRevision: number;
+                                sourceId: unknown;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                jobId: unknown;
+                                resultSha256: string;
+                                readerSha256: string;
+                                inputSha256: string;
+                                acceptedFence: number;
+                                resultBytes: number;
+                            };
+                            artifactSha256: string;
+                            metadataSha256: string;
+                            window: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                            };
                         })[];
                     };
                 };
