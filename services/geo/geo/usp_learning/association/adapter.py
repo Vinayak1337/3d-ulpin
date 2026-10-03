@@ -165,9 +165,33 @@ def _gpu_runtime(output_dir):
     return torch, check, report
 
 
-def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write, phases, *, dataset_declaration=None, representation=None):
+def _optimizer_step(torch, scaler, optimizer, trainable, frozen, phases, context, *, first):
+    scaler.unscale_(optimizer)
+    require(all(p.grad is not None and bool(torch.isfinite(p.grad).all()) for _, p in trainable), "missing_or_nonfinite_adapter_gradient")
+    require(any(bool(torch.count_nonzero(p.grad)) for _, p in trainable), "all_adapter_gradients_zero")
+    require(all(p.grad is None for _, p in frozen), "frozen_base_received_gradient")
+    norm = torch.nn.utils.clip_grad_norm_([p for _, p in trainable], 1.0, error_if_nonfinite=True)
+    scale_before = scaler.get_scale()
+    phases.sample("first_before_optimizer_step" if first else "before_optimizer_step", torch,
+                  **context, gradientNormBeforeClip=float(norm), frozenGradientsAbsent=True)
+    scaler.step(optimizer); scaler.update()
+    require(scaler.get_scale() >= scale_before, "optimizer_step_was_skipped")
+    torch.cuda.synchronize()
+    return float(norm)
+
+
+def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write, phases, *, dataset_declaration=None, representation=None, rank_authority=None):
     from .citation_view import training_plan, epoch_orders, epoch_means
-    require(representation is None or dataset_declaration is None, "conflicting_training_representations")
+    require(sum(value is not None for value in (representation, dataset_declaration, rank_authority)) <= 1,
+            "conflicting_training_representations")
+    require(not getattr(representation, "is_rank_fit", False), "rank_fit_explicit_authority_required")
+    rank_fit = None
+    fit_settings, numerics, loss_policy = FIT, NUMERICS, LOSS_POLICY
+    if rank_authority is not None:
+        from . import fragment_rank_adapter, fragment_rank_fit
+        representation = fragment_rank_adapter.admit_fit(rank_authority, rows, contract, family_freeze)
+        rank_fit = fragment_rank_fit
+        fit_settings, numerics, loss_policy = fragment_rank_adapter.FIT, fragment_rank_adapter.NUMERICS, fragment_rank_adapter.LOSS_POLICY
     plan = training_plan(dataset_declaration) if representation is None else representation.training_plan
     representation_metadata = {} if representation is None else {"representation": representation.metadata}
     actual_prompt = SYSTEM_PROMPT if representation is None else representation.system_prompt
@@ -190,18 +214,22 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     started = time.perf_counter()
     require(metadata.version("peft") == "0.17.1" and metadata.version("accelerate") == "1.10.1", "isolated_dependency_version_drift")
     tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False)
-    encoded, lengths = encode_training(tokenizer, rows, representation=representation)
+    if rank_fit is None:
+        encoded, lengths = encode_training(tokenizer, rows, representation=representation)
+    else:
+        encoded, lengths = rank_fit.encode_training(tokenizer, rows, representation,
+            lambda failed: write(output_dir / "token-preflight.json", failed))
     orders = epoch_orders(plan)
     proof = {"lengths": lengths, "maximumCombinedTokens": max(row["combinedTokens"] for row in lengths),
              "sequenceLimit": 4096, "truncation": False, "excludedRows": [], "epochOrder": orders,
-             "plannedUpdates": plan["plannedUpdates"], "trainingPlan": plan, "settings": FIT, "numerics": NUMERICS, "lossImplementation": LOSS_POLICY,
+             "plannedUpdates": plan["plannedUpdates"], "trainingPlan": plan, "settings": fit_settings, "numerics": numerics, "lossImplementation": loss_policy,
              "systemPromptSha256": hashlib.sha256(actual_prompt.encode()).hexdigest(), "tokenizationSeconds": time.perf_counter() - started,
              **representation_metadata}
     write(output_dir / "token-preflight.json", proof)
     require(proof["maximumCombinedTokens"] <= 4096, "teacher_sequence_exceeds_frozen_4096_bound")
     torch, gpu_check, gpu_report = _gpu_runtime(output_dir)
     phases.sample("after_cuda_initialization", torch)
-    run_equivalence(torch, output_dir, write, phases)
+    (run_equivalence if rank_fit is None else rank_fit.run_equivalence)(torch, output_dir, write, phases)
     run_reclamation_control(torch, output_dir, write, phases)
     run_attention_control(torch, output_dir, write, phases)
     phases.sample("before_model_load", torch)
@@ -248,6 +276,29 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
         for epoch, order in enumerate(orders):
             for index in order:
                 row, before = encoded[index], time.perf_counter()
+                if rank_fit is not None:
+                    parent = row["parent"]
+                    context = {"update": updates + 1, "exampleId": parent["exampleId"], "epoch": epoch + 1}
+                    # Clear only at a parent boundary; candidate graphs release independently.
+                    optimizer.zero_grad(set_to_none=True)
+                    norms = []
+                    def complete_parent(total):
+                        norms.append(_optimizer_step(torch, scaler, optimizer, trainable, frozen, phases, context, first=updates == 0))
+                    numeric_loss = rank_fit.train_parent(row, model=model, decoder=decoder, head=head, torch=torch,
+                        scaler=scaler, attention=attention, phases=phases, gpu_check=gpu_check, context=context, complete=complete_parent)
+                    updates += 1
+                    supervised_tokens += len(parent["candidates"])
+                    losses.append(numeric_loss)
+                    facts = {**context, "loss": numeric_loss, "candidateContributions": len(parent["candidates"]),
+                        "lossScope": "sum of exact weighted candidate NLL for this parent",
+                        "parentEncodingSha256": row["sha256"], "gradientNormBeforeClip": norms[0],
+                        "gradientScale": scaler.get_scale(), "seconds": time.perf_counter() - before, "gpu": gpu_check()}
+                    progress.write(json.dumps(facts, sort_keys=True) + "\n"); progress.flush()
+                    phases.sample("update_completed", torch, **context, loss=numeric_loss, completeParent=True)
+                    optimizer.zero_grad(set_to_none=True)
+                    reclaimed = release_unused_cache(torch)
+                    phases.sample("after_reclamation", torch, **context, **reclaimed)
+                    continue
                 context = {"update": updates + 1, "exampleId": row["exampleId"], "epoch": epoch + 1}
                 attention.begin(context, len(row["inputIds"]))
                 phases.sample("example_start", torch, **context)
@@ -288,17 +339,7 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 scaler.scale(loss).backward()
                 phases.sample("first_after_backward" if updates == 0 else "after_backward", torch, **context, loss=numeric_loss,
                               attentionBlocks=attention.snapshot("backward"))
-                scaler.unscale_(optimizer)
-                require(all(p.grad is not None and bool(torch.isfinite(p.grad).all()) for _, p in trainable), "missing_or_nonfinite_adapter_gradient")
-                require(any(bool(torch.count_nonzero(p.grad)) for _, p in trainable), "all_adapter_gradients_zero")
-                require(all(p.grad is None for _, p in frozen), "frozen_base_received_gradient")
-                norm = torch.nn.utils.clip_grad_norm_([p for _, p in trainable], 1.0, error_if_nonfinite=True)
-                scale_before = scaler.get_scale()
-                phases.sample("first_before_optimizer_step" if updates == 0 else "before_optimizer_step", torch,
-                              **context, gradientNormBeforeClip=float(norm), frozenGradientsAbsent=True)
-                scaler.step(optimizer); scaler.update()
-                require(scaler.get_scale() >= scale_before, "optimizer_step_was_skipped")
-                torch.cuda.synchronize()
+                norm = _optimizer_step(torch, scaler, optimizer, trainable, frozen, phases, context, first=updates == 0)
                 updates += 1; supervised_tokens += target.numel(); losses.append(numeric_loss)
                 phases.sample("update_completed", torch, **context, loss=numeric_loss)
                 facts = {"update": updates, "epoch": epoch + 1, "exampleId": row["exampleId"], "loss": losses[-1],
@@ -311,6 +352,8 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 reclamation = release_unused_cache(torch)
                 phases.sample("after_reclamation", torch, **context, **reclamation)
     require(updates == plan["plannedUpdates"], "incomplete_frozen_fit")
+    if rank_fit is not None:
+        require(supervised_tokens == plan["plannedCandidateContributions"], "incomplete_rank_candidate_contributions")
     require(attention.restored, "fit_attention_scope_not_restored")
     fit_seconds = time.perf_counter() - fit_started
     optimizer.zero_grad(set_to_none=True)
@@ -324,23 +367,26 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     require(set(saved) == set(state) and all(torch.equal(saved[k], state[k].detach().cpu()) for k in saved), "saved_adapter_state_mismatch")
     manifest = {"files": {p.name: digest_file(p) for p in adapter_dir.iterdir()}, "trainableParameters": 540672,
                 "tensorCount": len(saved), "baseParametersBefore": base_before, "baseParametersAfter": base_after,
-                "savedStateMatchesTrainableAdapter": True, "updates": updates, "trainingPlan": plan, "settings": FIT, "numerics": NUMERICS,
+                "savedStateMatchesTrainableAdapter": True, "updates": updates, "trainingPlan": plan, "settings": fit_settings, "numerics": numerics,
                 "reclamationImplementation": RECLAMATION_POLICY,
                 "attentionImplementation": ATTENTION_POLICY, "attentionControlSha256": digest_file(output_dir / "attention-control.json"),
                 "reclamationControlSha256": digest_file(output_dir / "reclamation-control.json"),
-                "lossImplementation": LOSS_POLICY, "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json"),
+                "lossImplementation": loss_policy, "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json"),
                 **representation_metadata}
     verify_adapter_files(adapter_dir, manifest)
     write(output_dir / "adapter-manifest.json", manifest)
     gpu_check()
     phases.sample("after_save_and_base_verification", torch, baseUnchanged=True, savedTensorsExact=True)
     result = {"version": "association-adapter-fit/1", "updates": updates, "supervisedTokens": supervised_tokens,
-              "epochMeanLoss": epoch_means(losses, plan), "stepLosses": losses, "trainingPlan": plan,
+              **({"epochMeanLoss": epoch_means(losses, plan)} if rank_fit is None else {
+                  "epochSumParentContributions": rank_fit.epoch_sums(losses, plan), "candidateContributions": supervised_tokens,
+                  "lossScope": "parent contributions at successive parameter states; epoch sum, not a per-step global objective"}),
+              "stepLosses": losses, "trainingPlan": plan,
               "modelAndBaseVerificationSeconds": load_seconds, "fitSeconds": fit_seconds,
               "elapsedSeconds": time.perf_counter() - started, "gpu": gpu_report(), "teacherExamples": plan["teacherExamples"],
               "baseUnchanged": base_before == base_after, "adapterManifestSha256": digest_file(output_dir / "adapter-manifest.json"),
               "runtime": {name: metadata.version(name) for name in ("torch", "transformers", "peft", "accelerate", "safetensors")},
-              "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json"), "lossImplementation": LOSS_POLICY,
+              "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json"), "lossImplementation": loss_policy,
               "reclamationImplementation": RECLAMATION_POLICY,
               "attentionImplementation": ATTENTION_POLICY, "attentionControlSha256": digest_file(output_dir / "attention-control.json"),
               "attentionBlocksSha256": digest_file(output_dir / "attention-blocks.jsonl"),

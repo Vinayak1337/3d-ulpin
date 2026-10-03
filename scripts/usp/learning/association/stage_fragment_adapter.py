@@ -58,33 +58,37 @@ def stage(action, assignment_path, fit_root=None, *, fragment=fragment, training
     require((action == "reload") == (fit_root is not None), "fragment_adapter_fit_root_scope_drift")
     pins = checked_sources(assignment, fragment=fragment)
     runtime, baseline = donor_metadata()
-    sources = {}
     names = fragment.input_names(action)
-    for key in fragment.COMMON_PINS:
-        origin = "legacy-schema-v1.json" if key == "schema" else names[key]
-        sources[names[key]] = (BASELINE / "inputs" / origin, fragment.COMMON_PINS[key])
-    sources["assignment.json"] = (assignment_path, fragment.sha(assignment_bytes))
-    sources["runtime-requirements-resolved.txt"] = (RUNTIME / "inputs/runtime-requirements-resolved.txt", fragment.REQUIREMENTS_SHA)
-    for name, digest in fragment.auxiliary_pins(action).items():
-        sources[name] = ((training_sources or {}).get(name, BASELINE / "inputs" / name), digest)
-    schema = fragment.codec.checked_schema(sources["fragment-schema-v1.json"][0].read_bytes())
-    contract, family = (isolation.read(sources[names[k]][0]) for k in ("schema", "family_freeze"))
     proof = None
-    if action == "fit":
-        fragment.checked_teacher(training.read_bytes(), schema, contract, family)
-        sources[names["training_data"]] = (training, fragment.DATA_SHA)
+    if getattr(fragment, "IS_RANK_FIT", False):
+        require(training_sources is None and training == TRAINING, "rank_fit_mixed_training_sources")
+        sources = fragment.stage_sources(assignment_path, assignment_bytes, BASELINE, RUNTIME)
     else:
-        fit_root = Path(fit_root).resolve()
-        require(fit_root == Path(assignment["acceptedFit"]["root"]), "fragment_adapter_fit_root_binding_drift")
-        proof = accepted_fit(fit_root)
-        manifest_path = fit_root / "outputs/fit/adapter-manifest.json"
-        manifest = isolation.read(manifest_path)
-        fragment.checked_reload_binding({"acceptedFit": assignment["acceptedFit"]}, proof, manifest)
-        sources["development.json"] = (BASELINE / "inputs/development.json", fragment.BATCH_SHA)
-        sources["adapter-manifest.json"] = (manifest_path, assignment["acceptedFit"]["adapterManifestSha256"])
-        for name, digest in manifest["files"].items():
-            sources["adapter/" + name] = (fit_root / "outputs/fit/adapter" / name, digest)
-        fragment.checked_development(BASELINE / "inputs", schema, contract, family)
+        sources = {}
+        for key in fragment.COMMON_PINS:
+            origin = "legacy-schema-v1.json" if key == "schema" else names[key]
+            sources[names[key]] = (BASELINE / "inputs" / origin, fragment.COMMON_PINS[key])
+        sources["assignment.json"] = (assignment_path, fragment.sha(assignment_bytes))
+        sources["runtime-requirements-resolved.txt"] = (RUNTIME / "inputs/runtime-requirements-resolved.txt", fragment.REQUIREMENTS_SHA)
+        for name, digest in fragment.auxiliary_pins(action).items():
+            sources[name] = ((training_sources or {}).get(name, BASELINE / "inputs" / name), digest)
+        schema = fragment.codec.checked_schema(sources["fragment-schema-v1.json"][0].read_bytes())
+        contract, family = (isolation.read(sources[names[k]][0]) for k in ("schema", "family_freeze"))
+        if action == "fit":
+            fragment.checked_teacher(training.read_bytes(), schema, contract, family)
+            sources[names["training_data"]] = (training, fragment.DATA_SHA)
+        else:
+            fit_root = Path(fit_root).resolve()
+            require(fit_root == Path(assignment["acceptedFit"]["root"]), "fragment_adapter_fit_root_binding_drift")
+            proof = accepted_fit(fit_root)
+            manifest_path = fit_root / "outputs/fit/adapter-manifest.json"
+            manifest = isolation.read(manifest_path)
+            fragment.checked_reload_binding({"acceptedFit": assignment["acceptedFit"]}, proof, manifest)
+            sources["development.json"] = (BASELINE / "inputs/development.json", fragment.BATCH_SHA)
+            sources["adapter-manifest.json"] = (manifest_path, assignment["acceptedFit"]["adapterManifestSha256"])
+            for name, digest in manifest["files"].items():
+                sources["adapter/" + name] = (fit_root / "outputs/fit/adapter" / name, digest)
+            fragment.checked_development(BASELINE / "inputs", schema, contract, family)
     for name, (path, expected) in sources.items():
         require(isolation.sha(path) == expected, "fragment_adapter_source_input_pin_drift:" + name)
     if action == "fit" and training_sources is not None:
