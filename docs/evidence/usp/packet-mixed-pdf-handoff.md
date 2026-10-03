@@ -1,5 +1,7 @@
 # PACK1-MIXED-01 — ordered PDF and original-image evidence packet
 
+Lead integration, 3 October: code/handoff accepted as `a9ba7567` / `a7136921`. Completed focused review and matched completion SHA below plus114 physical references/60 Git pins. Exported mixed contract and published existing-route descriptions, recipe manifest, additive catalogue observations and OpenAPI/client (260 operations/295 named schemas). Eleven focused integrated checks, `pnpm typecheck:backend`, client typecheck, API checker and handoff validator all exit0. Saved native inspection reused, no native/model rerun. The historical unapplied-migration statement below is superseded by separate RUN-CURRENT-01: checkpoint metadata exists in the retained isolated profile; mixed HTTP/PostgreSQL execution there is still unrun.
+
 Code `c788f084d4b0b033d7140e1141ea3f2d50b73191`, base `3b2523fcb9bb41ac2769526eb59fdb77c860bab6`. Exclusive branch `task/desktop-mixed-evidence-pdf` in `C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin`; staging remains read-only. Prior `task/desktop-image-pdf-recovery@cc8449a7` is preserved. Requested GPT-6.1 Sol/xhigh/default-standard; actual per-turn model/effort/tier are unexposed. Supplied permissions are never/danger-full-access.
 
 ## Delivered
