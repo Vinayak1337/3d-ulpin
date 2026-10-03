@@ -2,7 +2,9 @@ import type {PoolClient} from 'pg';
 import type {RequestContext} from '@ulpin/contracts/usp';
 import {PacketPdfJobInputSchema,PACKET_PDF_JOB_OPERATION,type PacketPdfJobInput} from '../../../../../contracts/src/usp/packet-pdf-jobs';
 import {canonical,fingerprint} from '../../cases/domain';
-import {conflict,notFound} from '../../../infrastructure/errors';
+import {AppError,conflict,notFound} from '../../../infrastructure/errors';
+import {PACKET_IMAGE_PDF_RECIPE} from '../../../../../contracts/src/usp/packet-image-pdf';
+import {assertPdfPlanActor} from './pdf-authority';
 import {localRequestContext} from '../principal';
 import {protectPdfExecutionPlanTx,preparePdfExecutionTx} from './pdf-service';
 import {loadPdfPlanTx,validateConfirmation,validateExecution} from './plan-store';
@@ -16,6 +18,9 @@ export function packetPdfJobContext(input:PacketPdfJobInput):RequestContext{
 }
 export async function capturePacketPdfJobTx(client:PoolClient,ctx:RequestContext,input:PacketPdfJobInput){
   const plan=await loadPdfPlanTx(client,input.command.planId,input.command.version);
+  assertPdfPlanActor(ctx,plan);
+  if(plan.input.recipe===PACKET_IMAGE_PDF_RECIPE)throw new AppError(422,'PACKET_IMAGE_PDF_QUEUE_UNSUPPORTED',
+    'Image PDF queue/checkpoint execution is unsupported.');
   await protectPdfExecutionPlanTx(client,ctx,plan);
   const row=(await client.query('SELECT body FROM usp_packet_plan_confirmations WHERE plan_id=$1 AND version=$2',
     [plan.planId,plan.version])).rows[0]??notFound('The confirmed PDF plan is unavailable.');

@@ -37,7 +37,7 @@ export function validateExecution(plan:AnyPacketPlan,raw:unknown){
       p.artifact.version!==1||p.artifact.sha256!==p.assembly.output.sha256)
       conflict('The PDF execution does not match its exact committed region and assembly.');
     if(plan.input.recipe!==p.assembly.recipe)conflict('The PDF recipe differs from its confirmed plan.');
-    if(p.version==='packet-pdf/1'){
+    if(p.version==='packet-pdf/1'||p.version==='packet-image-pdf/1'){
       const entry=plan.entries[0];
       if(plan.entries.length!==1||p.bindingId!==entry.binding!.id||p.entrySha256!==entry.entrySha256||
         canonical(p.assembly.region)!==canonical(entry.binding!.validation))

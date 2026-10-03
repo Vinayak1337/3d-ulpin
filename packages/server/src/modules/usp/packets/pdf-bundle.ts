@@ -22,6 +22,8 @@ export function packetPdfBundleManifest(captured:Capture){
   const parsed=UspAnyPacketPdfReceiptSchema.safeParse(captured.receipt);
   if(!parsed.success)throw new AppError(422,'PACKET_PDF_BUNDLE_UNSUPPORTED','This PDF receipt has no supported bundle representation.');
   const receipt=parsed.data,plan=captured.view.plan;
+  if(receipt.version==='packet-image-pdf/1')throw new AppError(422,'PACKET_IMAGE_PDF_BUNDLE_UNSUPPORTED',
+    'This single-image PDF recipe supports private PDF download only; image ZIP bundles are unsupported.');
   const execution=validateExecution(plan,captured.view.execution);
   if(canonical(execution.packet)!==canonical(receipt))conflict('The bundle differs from the exact accepted PDF execution.');
   const regions=receipt.version==='packet-pdf/1'?[receipt.assembly.region]:receipt.assembly.regions;
