@@ -32,11 +32,19 @@ def prompt_messages(example):
 
 
 def run_local(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, *, model_loader=None,
-              fragment_route=None, fragment_contract=None, preserve_preflight=None, fragment_adapter_reload=None):
+              fragment_route=None, fragment_contract=None, preserve_preflight=None, fragment_adapter_reload=None,
+              rank_authority=None, preserve_technical=None):
     require_boundary()  # before dependencies, model bytes or GPU initialization
     for example in examples:
         validate_input(example, contract, family_freeze, ("development",))
-    sources = None
+    sources, rank_contexts = None, None
+    if rank_authority is not None:
+        from . import fragment_rank_baseline as rank_baseline, fragment_rank_runtime as rank_runtime
+        require(model_loader is None and fragment_route is None and fragment_contract is None and fragment_adapter_reload is None
+                and callable(preserve_preflight) and callable(preserve_technical), "rank_mixed_loader_or_route_refused")
+        rank_schema, rank_contexts = rank_baseline.checked_loader_authority(rank_authority, examples, contract, family_freeze)
+    else:
+        require(preserve_technical is None, "rank_explicit_authority_required")
     if fragment_route is not None:
         from . import fragment_selection as fragment
         require(callable(preserve_preflight), "fragment_baseline_preflight_or_loader_refused")
@@ -50,12 +58,14 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
         else:
             require(fragment_adapter_reload is None, "fragment_reload_loader_required")
         sources = fragment.checked_route(fragment_route, examples, fragment_contract, contract, family_freeze)
-    else:
+    elif rank_authority is None:
         require(fragment_contract is None and preserve_preflight is None and fragment_adapter_reload is None,
                 "explicit_fragment_route_required")
     import torch
     import transformers
     from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteria, StoppingCriteriaList
+    if rank_contexts is not None:
+        require(transformers.__version__ == "4.57.6", "rank_pinned_transformers_required")
 
     started = time.perf_counter()
     torch.set_num_threads(SETTINGS["cpuThreads"])
@@ -90,6 +100,9 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
 
     gpu_check()
     tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False)
+    if rank_contexts is not None:
+        rank_prepared = rank_runtime.prepare(tokenizer, model_path, rank_contexts, rank_schema, contract,
+                                             family_freeze, SETTINGS, preserve_preflight)
     prompts, vocabulary = None, None
     constraint_reports = []
     if sources is not None:
@@ -114,6 +127,15 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
     torch.cuda.synchronize()
     loaded_seconds = time.perf_counter() - started
     gpu_check()
+    if rank_contexts is not None:
+        raw_outputs, result = rank_runtime.run_scores(model, tokenizer, rank_prepared, rank_contexts, rank_schema,
+            contract, family_freeze, torch, gpu_check, preserve_raw, preserve_technical)
+        result.update(settings=SETTINGS, loadSeconds=loaded_seconds, elapsedSeconds=time.perf_counter() - started,
+            runtime={"torch": torch.__version__, "transformers": transformers.__version__, "cuda": torch.version.cuda,
+                     "gpu": torch.cuda.get_device_name(), "gpuSampleCount": len(samples),
+                     "maxCudaAllocatedBytes": torch.cuda.max_memory_allocated(), "maxCudaReservedBytes": torch.cuda.max_memory_reserved(),
+                     "minimumSampledFreeCudaBytes": min(s["freeBytes"] for s in samples)})
+        return raw_outputs, result
     raw_outputs, results = [], []
     for index, example in enumerate(examples):
         prompt = (prompts[index] if prompts is not None else
