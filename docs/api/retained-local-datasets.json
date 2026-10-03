@@ -1358,6 +1358,15 @@
       "scope": "Actual bounded native parser with memory SQL/storage method journey; current HTTP/PostgreSQL/private storage unqualified",
       "nativeOutputMatchesAcceptedInspection": true,
       "runtimeProfile": "Fresh integrated-checkout inventory required before native execution"
+    },
+    "sourceFusionEvidence": {
+      "guide": "docs/evidence/usp/source-fusion-citygml-handoff.md",
+      "integratedCodeCommit": "7c4d2e2e",
+      "completionReceiptSha256": "c896435a1be2723e10239977cba5c6f42476ac3987d0bde3ec00766ef7059e54",
+      "scope": "Selected accepted building literal fragments plus document context; source/fence/SQL/storage/tool controls over unchanged retained bytes, not current HTTP/persistence",
+      "sourceOriginalsUnchanged": true,
+      "nativeExecutionRepeated": false,
+      "associationAndCitationAttachment": "unsupported_context_only"
     }
   },
   {
@@ -1421,6 +1430,15 @@
       "scope": "Actual bounded native parser with memory SQL/storage method journey; current HTTP/PostgreSQL/private storage unqualified",
       "nativeOutputMatchesAcceptedInspection": true,
       "runtimeProfile": "Fresh integrated-checkout inventory required before native execution"
+    },
+    "sourceFusionEvidence": {
+      "guide": "docs/evidence/usp/source-fusion-citygml-handoff.md",
+      "integratedCodeCommit": "7c4d2e2e",
+      "completionReceiptSha256": "c896435a1be2723e10239977cba5c6f42476ac3987d0bde3ec00766ef7059e54",
+      "scope": "Selected accepted building literal fragments plus document context; source/fence/SQL/storage/tool controls over unchanged retained bytes, not current HTTP/persistence",
+      "sourceOriginalsUnchanged": true,
+      "nativeExecutionRepeated": false,
+      "associationAndCitationAttachment": "unsupported_context_only"
     }
   },
   {

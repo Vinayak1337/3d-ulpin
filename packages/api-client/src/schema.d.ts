@@ -2179,7 +2179,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF/KML fragments without establishing an association */
+        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF/KML/CityGML fragments without establishing an association */
         post: operations["POST_api_v1_usp_evidence_source_fusion_context"];
         delete?: never;
         options?: never;
@@ -12852,6 +12852,26 @@ export interface components {
                             resultBytes: number;
                         };
                         featureOrdinals: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "citygml";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        buildingOrdinals: number[];
                     })[];
                 };
             };
@@ -34339,6 +34359,26 @@ export interface components {
                     resultBytes: number;
                 };
                 featureOrdinals: number[];
+            } | {
+                /** @enum {string} */
+                kind: "citygml";
+                pin: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    readerSha256: string;
+                    inputSha256: string;
+                    acceptedFence: number;
+                    resultBytes: number;
+                };
+                buildingOrdinals: number[];
             })[];
         };
         POST_usp_evidence_source_fusion_context_Response_200_application_json: {
@@ -35014,6 +35054,139 @@ export interface components {
                     sourceSetRole: "operator_selected_fragment";
                     /** @enum {string} */
                     kind: "kml";
+                } | {
+                    pin: {
+                        caseId: unknown;
+                        caseRevision: number;
+                        sourceId: unknown;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        jobId: unknown;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    kind: "citygml";
+                    summary: {
+                        /** @enum {string} */
+                        schemaVersion: "ulpin-native-citygml/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        citygmlVersion: "2.0";
+                        /** @enum {string} */
+                        encodingProfile: "XML 1.0 UTF-8";
+                        /** @enum {string} */
+                        scope: "source_native_literal_inventory";
+                        /** @enum {string} */
+                        status: "available" | "partial";
+                        elementCount: number;
+                        buildingAndPartCount: number;
+                        coordinateDeclarationCount: number;
+                        decodedCoordinateValueCount: number;
+                        referenceCount: number;
+                        unsupportedElementCount: number;
+                        unresolvedReferenceCount: number;
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {string} */
+                        validity: "not_assessed";
+                        /** @enum {string} */
+                        canonicalIdentity: "not_assessed";
+                        /** @enum {boolean} */
+                        analyticEligible: false;
+                        /** @enum {boolean} */
+                        registryAdmission: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_and_sorted_building_ordinals";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    source: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    parser: {
+                        [key: string]: unknown;
+                    };
+                    namespaces: {
+                        [key: string]: unknown;
+                    }[];
+                    sourceContext: {
+                        elements: {
+                            [key: string]: unknown;
+                        }[];
+                        coordinates: {
+                            [key: string]: unknown;
+                        }[];
+                        identifiers: {
+                            [key: string]: unknown;
+                        }[];
+                        references: {
+                            [key: string]: unknown;
+                        }[];
+                    };
+                    buildings: {
+                        elements: {
+                            [key: string]: unknown;
+                        }[];
+                        coordinates: {
+                            [key: string]: unknown;
+                        }[];
+                        identifiers: {
+                            [key: string]: unknown;
+                        }[];
+                        references: {
+                            [key: string]: unknown;
+                        }[];
+                        ordinal: number;
+                        key: string;
+                        pointer: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                        recordSha256: string;
+                        fragmentSha256: string;
+                    }[];
+                    findings: {
+                        [key: string]: unknown;
+                    }[];
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    semantics: {
+                        [key: string]: unknown;
+                    };
+                    coverage: {
+                        selectedBuildings: number;
+                        availableNativeBuildings: number;
+                        /** @enum {string} */
+                        scope: "selected_building_literal_subtrees_and_separate_nonbuilding_source_context";
+                        /** @enum {string} */
+                        unselectedBuildings: "not_expanded";
+                        /** @enum {string} */
+                        opaqueContent: "literal_only";
+                        /** @enum {string} */
+                        referenceResolution: "not_performed";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
                 })[];
                 association: {
                     /** @enum {string} */
@@ -35191,6 +35364,26 @@ export interface components {
                             resultBytes: number;
                         };
                         featureOrdinals: number[];
+                    } | {
+                        /** @enum {string} */
+                        kind: "citygml";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        buildingOrdinals: number[];
                     })[];
                 };
             };
@@ -35893,6 +36086,139 @@ export interface components {
                         sourceSetRole: "operator_selected_fragment";
                         /** @enum {string} */
                         kind: "kml";
+                    } | {
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        namespace: string;
+                        /** @enum {string} */
+                        sourceSetRole: "operator_selected_fragment";
+                        /** @enum {string} */
+                        kind: "citygml";
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "ulpin-native-citygml/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            citygmlVersion: "2.0";
+                            /** @enum {string} */
+                            encodingProfile: "XML 1.0 UTF-8";
+                            /** @enum {string} */
+                            scope: "source_native_literal_inventory";
+                            /** @enum {string} */
+                            status: "available" | "partial";
+                            elementCount: number;
+                            buildingAndPartCount: number;
+                            coordinateDeclarationCount: number;
+                            decodedCoordinateValueCount: number;
+                            referenceCount: number;
+                            unsupportedElementCount: number;
+                            unresolvedReferenceCount: number;
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            /** @enum {string} */
+                            accuracy: "not_assessed";
+                            /** @enum {string} */
+                            validity: "not_assessed";
+                            /** @enum {string} */
+                            canonicalIdentity: "not_assessed";
+                            /** @enum {boolean} */
+                            analyticEligible: false;
+                            /** @enum {boolean} */
+                            registryAdmission: false;
+                            /** @enum {boolean} */
+                            learningLabels: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        };
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        selectionSha256: string;
+                        /** @enum {string} */
+                        selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_and_sorted_building_ordinals";
+                        /** @enum {string} */
+                        nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        source: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        parser: {
+                            [key: string]: unknown;
+                        };
+                        namespaces: {
+                            [key: string]: unknown;
+                        }[];
+                        sourceContext: {
+                            elements: {
+                                [key: string]: unknown;
+                            }[];
+                            coordinates: {
+                                [key: string]: unknown;
+                            }[];
+                            identifiers: {
+                                [key: string]: unknown;
+                            }[];
+                            references: {
+                                [key: string]: unknown;
+                            }[];
+                        };
+                        buildings: {
+                            elements: {
+                                [key: string]: unknown;
+                            }[];
+                            coordinates: {
+                                [key: string]: unknown;
+                            }[];
+                            identifiers: {
+                                [key: string]: unknown;
+                            }[];
+                            references: {
+                                [key: string]: unknown;
+                            }[];
+                            ordinal: number;
+                            key: string;
+                            pointer: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                            recordSha256: string;
+                            fragmentSha256: string;
+                        }[];
+                        findings: {
+                            [key: string]: unknown;
+                        }[];
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        semantics: {
+                            [key: string]: unknown;
+                        };
+                        coverage: {
+                            selectedBuildings: number;
+                            availableNativeBuildings: number;
+                            /** @enum {string} */
+                            scope: "selected_building_literal_subtrees_and_separate_nonbuilding_source_context";
+                            /** @enum {string} */
+                            unselectedBuildings: "not_expanded";
+                            /** @enum {string} */
+                            opaqueContent: "literal_only";
+                            /** @enum {string} */
+                            referenceResolution: "not_performed";
+                            /** @enum {string} */
+                            geometryQualification: "not_assessed";
+                            /** @enum {string} */
+                            propertyMatching: "unsupported";
+                        };
                     })[];
                     association: {
                         /** @enum {string} */
@@ -36227,6 +36553,23 @@ export interface components {
                                     resultBytes: number;
                                 };
                                 featureOrdinals: number[];
+                            } | {
+                                /** @enum {string} */
+                                kind: "citygml";
+                                pin: {
+                                    caseId: unknown;
+                                    caseRevision: number;
+                                    sourceId: unknown;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    jobId: unknown;
+                                    resultSha256: string;
+                                    readerSha256: string;
+                                    inputSha256: string;
+                                    acceptedFence: number;
+                                    resultBytes: number;
+                                };
+                                buildingOrdinals: number[];
                             })[];
                         };
                     };
@@ -36347,6 +36690,23 @@ export interface components {
                                 resultBytes: number;
                             };
                             featureOrdinals: number[];
+                        } | {
+                            /** @enum {string} */
+                            kind: "citygml";
+                            pin: {
+                                caseId: unknown;
+                                caseRevision: number;
+                                sourceId: unknown;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                jobId: unknown;
+                                resultSha256: string;
+                                readerSha256: string;
+                                inputSha256: string;
+                                acceptedFence: number;
+                                resultBytes: number;
+                            };
+                            buildingOrdinals: number[];
                         })[];
                     };
                 };
