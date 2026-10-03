@@ -218,20 +218,24 @@ export async function executePdfPacketPlan(ctx:RequestContext,raw:unknown,io:Pdf
   const staged=await stagePdfExecution(first,io,deadlineAt);
   return boundedTx(client=>publishPdfExecutionTx(client,ctx,command,first,staged,deadlineAt),deadlineAt);
 }
+/** Authority-only immutable packet capture. Never performs artifact I/O;
+ * private download representations must recapture before disclosure. */
+export async function capturePacketPdfTx(client:PoolClient,ctx:RequestContext,packetId:string){
+  assertLocalUsp(ctx);z.uuid().parse(packetId);
+  const row=(await client.query('SELECT body,object_key,artifact_hash FROM usp_packets WHERE id=$1',[packetId])).rows[0]
+    ??notFound('The exact private PDF packet is unavailable.');
+  const receipt=UspPacketPdfReceiptSchema.parse(row.body);
+  if(receipt.packetId!==packetId||row.artifact_hash!==receipt.artifact.sha256||
+    row.object_key!==`usp/packets/${packetId}/${receipt.artifact.sha256}`)conflict('The saved PDF linkage changed.');
+  const view=await viewTx(client,ctx,receipt.planId,receipt.planVersion);
+  if(!view.execution||canonical(view.execution.packet)!==canonical(receipt))conflict('The PDF does not match its immutable plan execution.');
+  const execution=(await client.query('SELECT body FROM usp_packet_plan_executions WHERE packet_id=$1',[packetId])).rows[0]?.body;
+  if(canonical(execution)!==canonical(view.execution))conflict('The saved PDF execution linkage changed.');
+  await authorizePdfPlanTx(client,ctx,view.plan);return {receipt,key:row.object_key as string,view};
+}
 export async function readPacketPdf(ctx:RequestContext,packetValue:string,io:PdfPacketIo=storage){
   assertLocalUsp(ctx);const packetId=z.uuid().parse(packetValue);
-  const capture=async(client:PoolClient)=>{
-    const row=(await client.query('SELECT body,object_key,artifact_hash FROM usp_packets WHERE id=$1',[packetId])).rows[0]
-      ??notFound('The exact private PDF packet is unavailable.');
-    const receipt=UspPacketPdfReceiptSchema.parse(row.body);
-    if(receipt.packetId!==packetId||row.artifact_hash!==receipt.artifact.sha256||
-      row.object_key!==`usp/packets/${packetId}/${receipt.artifact.sha256}`)conflict('The saved PDF linkage changed.');
-    const view=await viewTx(client,ctx,receipt.planId,receipt.planVersion);
-    if(!view.execution||canonical(view.execution.packet)!==canonical(receipt))conflict('The PDF does not match its immutable plan execution.');
-    const execution=(await client.query('SELECT body FROM usp_packet_plan_executions WHERE packet_id=$1',[packetId])).rows[0]?.body;
-    if(canonical(execution)!==canonical(view.execution))conflict('The saved PDF execution linkage changed.');
-    await authorizePdfPlanTx(client,ctx,view.plan);return {receipt,key:row.object_key as string,view};
-  };
+  const capture=(client:PoolClient)=>capturePacketPdfTx(client,ctx,packetId);
   const before=await boundedTx(capture),output=before.receipt.assembly.output;
   const bytes=await io.read(before.key,output.bytes,output.sha256);
   const limit=before.receipt.version==='packet-pdf/1'?PACKET_PDF_LIMITS.bytes:PACKET_PDF_MULTI_LIMITS.bytes;
