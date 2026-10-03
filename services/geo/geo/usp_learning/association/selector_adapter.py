@@ -122,9 +122,16 @@ class SelectorRepresentation:
 
 def checked_execution(assignment, action):
     # First check: PREP never inspects runtime files or reaches mkdir/copy.
-    require(assignment.get("version") == EXECUTION_VERSION and assignment.get("task") == "STUDENT-10-SELECTOR-FIT"
+    constrained = assignment.get("version") == "association-selector-constrained-execution/1"
+    require(((assignment.get("version") == EXECUTION_VERSION and assignment.get("task") == "STUDENT-10-SELECTOR-FIT")
+             or (constrained and assignment.get("task") == "STUDENT-11-CONSTRAINED-RELOAD" and action == "reload"))
             and action in ("fit", "reload") and assignment.get("action") == action,
             "separate_selector_adapter_execution_required")
+    if constrained:
+        from .selector_constraints import checked_metadata
+        checked_metadata(assignment.get("generationConstraints"))
+    else:
+        require("generationConstraints" not in assignment, "selector_unversioned_constraints_refused")
     require(same(assignment.get("executionAllowance"), {"stageModelRun": True, "loadModel": True,
         "fit": action == "fit", "inference": action == "reload", "evaluation": False, "promotion": False, "freshPhases": 1}),
         "selector_adapter_execution_not_authorized")
@@ -155,8 +162,14 @@ def checked_execution(assignment, action):
 
 def checked_freeze(freeze, assignment):
     plan = checked_execution(assignment, freeze["action"])
+    constrained = assignment.get("version") == "association-selector-constrained-execution/1"
+    expected_version = "association-selector-constrained-freeze/1" if constrained else FREEZE_VERSION
+    if constrained:
+        require(same(freeze.get("generationConstraints"), assignment["generationConstraints"]), "selector_frozen_constraints_drift")
+    else:
+        require("generationConstraints" not in freeze, "selector_unversioned_constraints_refused")
     require(not any(k in freeze for k in ("datasetDeclaration", "trainingDiagnostic")), "selector_adapter_mixed_mode_refused")
-    require(freeze.get("version") == FREEZE_VERSION and freeze.get("sourceCommit") == assignment["studentCodeCommit"]
+    require(freeze.get("version") == expected_version and freeze.get("sourceCommit") == assignment["studentCodeCommit"]
             and same(freeze.get("representation"), representation_metadata()) and same(freeze.get("trainingPlan"), plan)
             and freeze.get("systemPromptSha256") == PROMPT_SHA
             and freeze.get("evaluationAllowed") is False and freeze.get("promotionAuthorized") is False

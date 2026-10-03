@@ -21,7 +21,7 @@ from geo.usp_learning.association.citation_view import checked_freeze, checked_c
 
 
 def representation_module(freeze, assignment):
-    if freeze.get("version") == "association-selector-adapter-freeze/1":
+    if freeze.get("version") in ("association-selector-adapter-freeze/1", "association-selector-constrained-freeze/1"):
         from geo.usp_learning.association import selector_adapter
         return selector_adapter
     if (str(freeze.get("version", "")).startswith("association-selector") or "representation" in freeze
@@ -120,7 +120,8 @@ def worker(args):
                 from geo.usp_learning.association.selector_baseline import checked_batch, run_selectors
                 checked_batch(batch, freeze["cases"], contract, family)
                 runner_options["inference_runner"] = partial(run_selectors, selector_contract=selector_contract,
-                    cases=freeze["cases"], preserve_preflight=lambda value: write_json_once(args.output_dir / "selector-preflight.json", value))
+                    cases=freeze["cases"], preserve_preflight=lambda value: write_json_once(args.output_dir / "selector-preflight.json", value),
+                    **({"generation_constraints": freeze["generationConstraints"]} if "generationConstraints" in freeze else {}))
             elif "trainingDiagnostic" in freeze:
                 from functools import partial
                 from geo.usp_learning.association.training_generation import checked_batch, run_training

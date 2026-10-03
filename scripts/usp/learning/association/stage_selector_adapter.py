@@ -32,6 +32,7 @@ CODE = (*ADAPTER_CODE, "services/geo/geo/usp_learning/association/selectors.py",
         "services/geo/geo/usp_learning/association/selector_adapter.py")
 SOURCE_PATHS = (*CODE, "scripts/usp/learning/association/stage_adapter.py",
                 "scripts/usp/learning/association/stage_selector_adapter.py")
+CONSTRAINT_SOURCE = "services/geo/geo/usp_learning/association/selector_constraints.py"
 CHANGED_SHARED_SEAMS = {"scripts/usp/learning/association/association_adapter.py",
                         "services/geo/geo/usp_learning/association/adapter.py"}
 
@@ -41,9 +42,10 @@ def source_pins(assignment, donor_files):
     require(commit == assignment["studentCodeCommit"] and not subprocess.check_output(
         ["git", "status", "--porcelain"], cwd=REPO, text=True).strip(), "selector_adapter_clean_frozen_head_required")
     expected = assignment.get("runtimeCodeCanonicalLfSha256", {})
-    require(type(expected) is dict and set(expected) == set(SOURCE_PATHS), "selector_adapter_source_pin_set_drift")
+    paths = (*SOURCE_PATHS, CONSTRAINT_SOURCE) if "generationConstraints" in assignment else SOURCE_PATHS
+    require(type(expected) is dict and set(expected) == set(paths), "selector_adapter_source_pin_set_drift")
     pins = {}
-    for name in SOURCE_PATHS:
+    for name in paths:
         raw = (REPO / name).read_bytes()
         canonical = raw.replace(b"\r\n", b"\n")
         require(canonical == subprocess.check_output(["git", "show", commit + ":" + name], cwd=REPO)
@@ -59,6 +61,7 @@ def stage(action, assignment_path, fit_root=None):
     assignment_bytes = assignment_path.read_bytes()
     assignment = strict_json(assignment_bytes)
     plan = selector.checked_execution(assignment, action)  # before runtime inspection or mkdir
+    constrained = "generationConstraints" in assignment
     require((action == "reload") == (fit_root is not None), "selector_adapter_fit_root_scope_drift")
     require(assignment.get("runtimeProfileSha256") == RUNTIME_SHA
             and isolation.sha(RUNTIME / "profile.json") == RUNTIME_SHA, "selector_adapter_runtime_profile_drift")
@@ -110,7 +113,7 @@ def stage(action, assignment_path, fit_root=None):
     for relative, digest in donor["files"].items():
         if relative.startswith(("runtime/", "model/")):
             copy(isolation.safe_path(RUNTIME, relative), relative, digest)
-    for relative in CODE:
+    for relative in ((*CODE, CONSTRAINT_SOURCE) if constrained else CODE):
         copy(REPO / relative, "code/" + relative, pins[relative])
     for name in (*names.values(), "runtime-requirements-resolved.txt"):
         copy(RUNTIME / "inputs" / name, "inputs/" + name, donor["files"]["inputs/" + name])
@@ -146,6 +149,11 @@ def stage(action, assignment_path, fit_root=None):
         "evaluationAllowed": False, "developmentInputsPresent": action == "reload", "promotionAuthorized": False}
     if action == "reload":
         freeze.update(cases=assignment["cases"], acceptedFit=assignment["acceptedFit"])
+    if constrained:
+        from geo.usp_learning.association.selector_constraints import FREEZE_VERSION, TOKENIZER_PINS
+        for name, expected in TOKENIZER_PINS.items():
+            require(files["model/" + name] == expected, "selector_constraint_staged_tokenizer_drift")
+        freeze.update(version=FREEZE_VERSION, generationConstraints=assignment["generationConstraints"])
     isolation.write(root / "inputs/run-freeze.json", freeze)
     files["inputs/run-freeze.json"] = isolation.sha(root / "inputs/run-freeze.json")
     selector.checked_inputs(freeze, assignment, root / "inputs")
