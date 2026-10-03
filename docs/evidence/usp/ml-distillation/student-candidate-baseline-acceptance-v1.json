@@ -1,0 +1,174 @@
+{
+  "version": "student-candidate-baseline-acceptance/1",
+  "recordedAtUtc": "2026-10-03T10:46:05.231028+00:00",
+  "status": "contained_source_native_development_pipeline_accepted_relevance_association_unqualified",
+  "ownerEvidenceCommit": "a779bd4c8a9c730d871c4a7bd6eebf0a5e061ce6",
+  "integratedEvidenceCommit": "78413e73d43fb93174226c85b059d70733cf8e8c",
+  "executedCommit": "9a8f65ac5af330a901b876bae2f4c514787567c9",
+  "ownerReceiptPhysicalSha256": "984366250a987d4bea1020db695b496330edf1e1ee2f1f2f3f115e67368647ff",
+  "integratedReceiptPhysicalSha256": "a74f16e9f08727fc728dde5bcb25d4001a60c6a447df1602e2edfd12e9a94ba8",
+  "integratedReceiptCanonicalLfSha256": "984366250a987d4bea1020db695b496330edf1e1ee2f1f2f3f115e67368647ff",
+  "verification": {
+    "command": "Pinned Python -B -I -S -; stdlib reference/source/profile/guard checks and two pure accepted candidate projections",
+    "exitCode": 0,
+    "audit": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\candidate-baseline-review-20261003.json",
+      "physicalSha256": "3ceeefdff525a6f81073cd2b74a9baedf819e2d09456e71af3f40901107bf662"
+    },
+    "referencedArtifactsMatched": 20,
+    "acceptedOutputPinsMatched": 9,
+    "executedSourcePinsMatched": 18,
+    "inputModelProfileMetadataPinsMatched": 22,
+    "pureProjectionChecks": 2,
+    "completeRuntimeOrWeightsHashCampaignRepeated": false,
+    "modelOrNativeRunRepeated": false,
+    "expectationsReadByCoordinator": false,
+    "sourceReconstruction": false,
+    "hostExpectationComparison": "Consumed the one pinned owner host comparison; guard/output/cleanup acceptance precedes its expectation read."
+  },
+  "summary": {
+    "exampleCount": 2,
+    "sourceFamilyCount": 1,
+    "validCompleteResponses": 2,
+    "candidateCount": 6,
+    "emittedIdCount": 6,
+    "distinctSelectedIdCount": 6,
+    "selectedIdCoverage": 1.0,
+    "acceptedClaimCount": 6,
+    "uniqueAcceptedSourceSignatures": 6,
+    "correctSourceSignatures": 6,
+    "expectedSourceSignatures": 6,
+    "sourceNativeSignaturePrecision": 1.0,
+    "sourceSignatureCoverage": 1.0,
+    "absent": {
+      "correct": 1,
+      "expected": 1
+    },
+    "null": {
+      "correct": 1,
+      "expected": 1
+    },
+    "canonicalLinksEmptyCount": 2,
+    "noCanonicalTargetsMarkerCount": 2
+  },
+  "resources": {
+    "peakJobCommittedBytes": 5206822912,
+    "peakProcessRssBytes": 3257536512,
+    "rssMethod": "50ms actual Job-member RSS/peak working sets",
+    "maxCudaAllocatedBytes": 1070955008,
+    "maxCudaReservedBytes": 1107296256,
+    "minimumSampledFreeCudaBytes": 6279921664,
+    "gpuSamples": 194,
+    "jobLimitBytes": 6442450944,
+    "cudaAllocatedReservedLimitBytes": 6442450944,
+    "minimumFreeCudaLimitBytes": 1610612736,
+    "childTimeoutSeconds": 600,
+    "cpuThreads": 2,
+    "jobClosed": true,
+    "cleanupPassed": true,
+    "allRecordedBoundsPassed": true
+  },
+  "timing": {
+    "stageHostWallSeconds": 183.4812762,
+    "guardedCommandHostWallSeconds": 286.8893993,
+    "guardSetupChildCleanupSeconds": 126.71800000000076,
+    "childOnlySeconds": null,
+    "childTimeInterpretation": "Not independently timed in the receipt. Successful child and entire 126.718s guard interval establish the 600s bound; do not infer a child duration or cross-policy speedup.",
+    "modelSectionSeconds": 6.854443900003389,
+    "modelLoadAndPreflightSectionSeconds": 1.6724278000037884,
+    "generationSecondsByExample": {
+      "ifc4-source-native-v1": 2.940385400004743,
+      "ifc2x3-source-native-v1": 2.2365656000038143
+    },
+    "maskSecondsByExample": {
+      "ifc4-source-native-v1": 0.01238249997550156,
+      "ifc2x3-source-native-v1": 0.009666500001912937
+    },
+    "note": "Host command includes complete profile verification outside the guard timer. Model-section timing excludes imports and earlier containment/source/model-file checks."
+  },
+  "model": {
+    "name": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "adapter": null,
+    "settings": {
+      "attention": "sdpa",
+      "batchSize": 1,
+      "cpuThreads": 2,
+      "doSample": false,
+      "dtype": "float16",
+      "evaluationAllowed": false,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "maxFitSeconds": 600,
+      "maxInputTokens": 2048,
+      "maxNewTokens": 768,
+      "maxPeakProcessRssBytes": 6442450944,
+      "maxRunSeconds": 600,
+      "minimumFreeCudaBytes": 1610612736,
+      "seed": 17
+    },
+    "runtime": {
+      "cuda": "12.8",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 194,
+      "maxCudaAllocatedBytes": 1070955008,
+      "maxCudaReservedBytes": 1107296256,
+      "minimumSampledFreeCudaBytes": 6279921664,
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    }
+  },
+  "execution": {
+    "stageCount": 1,
+    "inferencePhases": 1,
+    "fitPhases": 0,
+    "stageExit": 0,
+    "runExit": 0,
+    "guardExit": 0,
+    "childExit": 0,
+    "outputsAccepted": true,
+    "retries": 0,
+    "sourceReconstruction": false,
+    "teacherUsed": false,
+    "evaluationOpened": false,
+    "promoted": false,
+    "postAcceptanceStageOutputWrites": false,
+    "hostSignatureComparisons": 1
+  },
+  "contributions": {
+    "model": "Chose all four current IFC4 IDs and both current IFC2x3 IDs; empty/subset choices were permitted.",
+    "controller": "Forced JSON/schema, set identity, current distinct IDs and byte/EOS integrity; not learned validity.",
+    "parserProjection": "Roles, absent/null states, literal values, units and citations were copied unchanged from accepted deterministic candidates.",
+    "canonicalMarkers": "no_canonical_targets and empty canonicalLinks supplied by the deterministic projector.",
+    "learnedRelevanceAccuracy": null,
+    "learnedAssociationAccuracy": null,
+    "generalizationQualified": false
+  },
+  "qualification": "Model selected all six supplied source-supported IDs in two related IFC cases. Controller forces structure/current identity; deterministic parser/projector supplies facts, states, citations and no-target markers. This passes only the frozen tiny development coverage/transport criterion. There are no competing irrelevant candidates or independent relevance, canonical association, operational or generalization claims. Prior constrained-selector policy remains 0/2 usable and 0/6 correct; representation/grammar changed, so this is not adapter gain.",
+  "nextDecision": "CPU-only requested original-fragment retrieval preparation and separate provisional train-only query labels; keep held-out closed. A new requested subset/empty development baseline must be explicitly frozen before any future model run. Adapt only if actual failure justifies it.",
+  "nextLearnerAssignment": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-15.fragment-selection-preparation.assignment.json",
+    "physicalSha256": "bf3b2d7223de54fecdaf6fe6213a47da3bda29a6e863d2712bc5eee5f01c4bd4"
+  },
+  "nextTeacherAssignment": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher-05.fragment-requests.assignment.json",
+    "physicalSha256": "501979901e9f71a114e6fc685caad387ab7876c45e66ea6a3ffc46d78ade34fd"
+  },
+  "contract": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\scripts\\usp\\learning\\association\\fragment-selection-schema-v1.json",
+    "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082"
+  },
+  "primaryStagingReadOnlyObservation": "4025787f3bf614a79348390f5f998d827b37e2d8",
+  "settingsObservation": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "reason": "Existing sole learner retains exact containment/resource and artifact context for the new native BPE candidate route.",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "tierInterpretation": "Tool has no per-turn tier argument; assignment text is not speed configuration."
+  }
+}
