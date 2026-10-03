@@ -1,0 +1,102 @@
+{
+  "alternativeConsidered": "A purpose-trained small reranker is a later reusable option if measured retained-checkpoint limitations justify it. No new checkpoint, dependency, installation or model call is made now.",
+  "boundedComparison": "After native code review, separately freeze one original-base reference on the same two development requests/seven candidates. Fixed margin>0, complete valid vectors2/2, exact sets2/2, precision1, positive recall1, unsupportedFP0; preserve independent host expectations until technical acceptance/cleanup. No teacher or closed evaluation access.",
+  "diagnosticLimit": "Results locate failure in relevance decisions; they do not isolate label completeness, tiny data, objective dilution or model limitations. Pointwise supervision is a testable alternative, not a proven root cause.",
+  "failureSignature": "Completed generative subset SFT/reload over-selects request-unsupported fragments despite accepted source/adapter/transport/resource integrity. Runtime completion is separate from semantic quality.",
+  "hypothesis": "Explicit support/non-support supervision for every candidate, with binary NLL excluding structural JSON/hash/ID tokens, can reduce unsupported selections while preserving positive coverage.",
+  "launchClearance": "No external models/code are installed or copied into implementation. Existing origin/terms and later deployment/data qualification remain separate; no user source material uploaded.",
+  "previousAttempts": [
+    {
+      "approach": "six-row generative fragment adapter v1",
+      "decision": "failed; preserve, no unchanged rerun",
+      "exactRequestSets": "1/2",
+      "precision": "1/3",
+      "unsupportedFalsePositives": 2
+    },
+    {
+      "acceptance": {
+        "bytes": 9608,
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-support-v2-reload-acceptance-v2.json",
+        "physicalSha256": "83d304a542b2b76c912a04dfc06053b0bc5f8e63c98f50ff6fb3f622e8841d39"
+      },
+      "approach": "ten-row v2, accepted single original-base fit and exact reload",
+      "decision": "failed quality, technically accepted; no repeated epochs/prompt sweep",
+      "exactRequestSets": "0/2",
+      "precision": "1/4",
+      "unsupportedFalsePositives": 2
+    },
+    {
+      "approach": "v2 first pre-stage BATCH_SHA omission",
+      "decision": "one-symbol CPU correction accepted; separately frozen attempt2 proved actual staging/reload, preserving both attempts"
+    }
+  ],
+  "principalChange": "Generative subset objective to pointwise binary support objective; coupled generic prompt/0-1 labels/complete score-vector output are explicit and require a new original-base baseline.",
+  "recordedAtUtc": "2026-10-03T21:05:41.643282+00:00",
+  "researchReceipts": [
+    {
+      "bytes": 7070,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-25-review-v1-cb9f4a1f1dfb4d48a5b08f5b31a0a1e9\\research-v1\\receipt.json",
+      "physicalSha256": "d8e07fd685c04048c3a3c0622a36e5377b47eef0a6b9cd204fd8da057375c38a"
+    },
+    {
+      "bytes": 566,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-25-review-v1-cb9f4a1f1dfb4d48a5b08f5b31a0a1e9\\research-v1\\refined-search.json",
+      "physicalSha256": "e657f2708d42a592351c900dbc7fd975f2392aa27b45fd08c222b5e9c7d98792"
+    },
+    {
+      "bytes": 403,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-25-review-v1-cb9f4a1f1dfb4d48a5b08f5b31a0a1e9\\research-v1\\primary-pin.json",
+      "physicalSha256": "364ac5e1684c9a26d7c18361446500d307bcc4116bf90aea7788ec0f4f62f653"
+    },
+    {
+      "bytes": 2755,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-25-review-v1-cb9f4a1f1dfb4d48a5b08f5b31a0a1e9\\research-v1\\cross-encoder-passages.json",
+      "physicalSha256": "4d6d30b0051ed5ed3e3ca9a2f74822aa85c81f90dbbe054fa4dae5b9c72efc8c"
+    },
+    {
+      "bytes": 945,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-25-review-v1-cb9f4a1f1dfb4d48a5b08f5b31a0a1e9\\research-v1\\qwen2-api.json",
+      "physicalSha256": "f4338cbc25e7cb6098a1fbe7a752503a26b6652c69587d1ce89c0d742ba108e7"
+    }
+  ],
+  "sourceAndDependencyBoundary": "Lead shared ingest/redact.ts correction is outside this ML source set. Preserve all frozen originals/extractions/labels/code pins; no new reader import or opportunistic re-extraction. No current canonical-reader or operational qualification is inferred.",
+  "sources": [
+    {
+      "applicability": "Lines128-147 take last-position yes/no logits, apply two-logit log_softmax and score relevance. Supports pointwise causal-LM label scoring as a working design.",
+      "attribution": "Qwen team",
+      "differences": "Purpose-trained Qwen3 0.6B, yes/no labels, query/document template,8192-token/truncation and optional FlashAttention. Our retained Qwen2.5 0.5B,0/1,complete contexts,2048 no-truncation,SDPA and custom equal-parent objective are not that model or recipe. No performance/calibration claim transfers.",
+      "modelRevision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
+      "observedLicense": "Apache-2.0 model metadata",
+      "origin": "Qwen official model card",
+      "sha256": "5bba8c734f6dd3ae48317b4139317e45a7fce48fc55e15670b23a0dd15492ab6",
+      "url": "https://huggingface.co/Qwen/Qwen3-Reranker-0.6B/raw/e61197ed45024b0ed8a2d74b80b4d909f1255473/README.md"
+    },
+    {
+      "applicability": "Recommends direct BinaryCrossEntropyLoss as a strong simple option and warns about hard-negative-only selection/calibration. Positive/negative request-document supervision applies conceptually.",
+      "attribution": "Sentence Transformers maintainers",
+      "differences": "No Sentence Transformers dependency or trainer installed/reused. Existing57 related provisional pairs are not a large calibrated reranker dataset. Fixed margin and per-parent weights remain an experimental choice.",
+      "origin": "Sentence Transformers official training documentation",
+      "sha256": "fa74ef8c255e854e00a8ccc069a7e3c4a8b2e90cefa4b316acbb7155deee9e1b",
+      "url": "https://sbert.net/docs/cross_encoder/training_overview.html",
+      "version": "unversioned live docs, snapshot hash and retrieval receipt retained; current navigation includes v6 migration"
+    },
+    {
+      "applicability": "Qwen2ForCausalLM forward accepts logits_to_keep; lines462-463 project only selected final hidden-state positions. logits_to_keep=1 is the concrete last-position API for this frozen route.",
+      "attribution": "Hugging Face Transformers and Qwen contributors",
+      "differences": "Public source inspection verifies interface support, not actual loaded native behavior or numerical correctness; native shape/byte/score proof remains required.",
+      "origin": "Hugging Face Transformers Qwen2 source",
+      "sha256": "a59fa06524227361fb401baf4d177124a27aec146bc01ec931235a9abbab17cb",
+      "url": "https://raw.githubusercontent.com/huggingface/transformers/v4.57.6/src/transformers/models/qwen2/modeling_qwen2.py",
+      "version": "v4.57.6, matches retained runtime metadata"
+    }
+  ],
+  "stopCondition": "This increment stops at code/evidence callback. Future baseline stops after one authorized phase/comparison or a concrete technical failure. If the new pretrained route already meets the criteria, reassess whether adaptation is useful; otherwise a justified fixed fit/reload must be separately frozen. No unchanged inference or automatic sweeps.",
+  "version": "student-fragment-rank-recovery-research/1",
+  "webSearchOutcome": "Concrete Qwen/false-positive/binary-ranking search attempted. Bing results were unrelated; refined Google response was a non-actionable bootstrap page. No search snippets used as evidence. Useful support is the pinned primary implementation and official documentation.",
+  "workflow": {
+    "appliedBeforeNextDispatch": true,
+    "path": "AGENTS.md",
+    "repositoryCommit": "5bed68976f3fc4de677a7b5969ed099b1865c4c3",
+    "section": "Failure recovery and learning strategy"
+  }
+}

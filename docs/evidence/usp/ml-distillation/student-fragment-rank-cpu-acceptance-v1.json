@@ -1,0 +1,87 @@
+{
+  "counts": {
+    "emptyParents": 3,
+    "families": 2,
+    "negative": 45,
+    "pairs": 57,
+    "parents": 10,
+    "positive": 12
+  },
+  "decision": "accept_cpu_policy_compiler_and_provisional_pair_publication",
+  "failureRecoveryResearch": {
+    "bytes": 8149,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-recovery-research-v1.json",
+    "physicalSha256": "5f99f8d680794847ddf986f442e3082309b4123656564f870d7da75fc5fb319a"
+  },
+  "integratedCodeCommit": "d68f9a122e7accd17ae2fdd4263f70b927eb7727",
+  "integratedEvidenceCommit": "d51f0211bf87c9fd68b59d56d108c6ceb967c973",
+  "integratedReport": {
+    "bytes": 27880,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-cpu-v1.json",
+    "physicalSha256": "ae709b6b1bd178db57f9f0d0d77640db548e349971fcb59a141adb3378cdd1d4"
+  },
+  "lineage": {
+    "bytes": 56203,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\lineage.json",
+    "physicalSha256": "7b2291969484aeccb913704e7d88e295f6d7fd26a6cf0de9aea9c87061fb7026"
+  },
+  "modelQualityOrEvaluationOrPromotionOrRelease": false,
+  "nativeTokenScoreLossProof": "unrun",
+  "next": "STUDENT-26 code-only contained native support-scoring wiring; review final code before separately frozen STUDENT-27 original-base baseline.",
+  "ownerCodeCommit": "ae2ade84b44296d453b5e437c52d93283c8c5f8d",
+  "ownerEvidenceCommit": "67e69991d35c92ac07e1db24b969c69621536549",
+  "ownerFinalCheckpoint": {
+    "bytes": 3037,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-return-93b5bdf4da7a4ef8afd12163f3e6da0e\\final-checkpoint.json",
+    "physicalSha256": "c3c13af1f95f5bb66728cd4bc1156be9b14d50dc88fdb7ed8a2da0c40711ba30"
+  },
+  "ownerReport": {
+    "bytes": 27365,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-cpu-v1.json",
+    "physicalSha256": "8b2f89c05522fdd26608f7695740bf5d57f5f2be5478443a57cd350abad8b9b6"
+  },
+  "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+  "provisionalQualification": "deterministic projection of complete provisional synthetic selected sets; no new source truth, official absence or independent labels; 57 related pairs from 10 parents in 2 train families",
+  "publication": {
+    "bytes": 11699,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\publication.json",
+    "physicalSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82"
+  },
+  "recordedAtUtc": "2026-10-03T21:05:41.663812+00:00",
+  "reviewAudit": {
+    "bytes": 11747,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-25-review-v1-cb9f4a1f1dfb4d48a5b08f5b31a0a1e9\\audit.json",
+    "physicalSha256": "81da2c2731d3b806869751bc1ba767f77a30d43fb960b3a60baac5de228bba7f"
+  },
+  "reviewExecution": {
+    "bytes": 692,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-25-review-v1-cb9f4a1f1dfb4d48a5b08f5b31a0a1e9\\review.execution.json",
+    "physicalSha256": "fa4da48abfe85db7a094c6f5daf49763629621c6e62f68232711931718d6e683"
+  },
+  "reviewHelper": {
+    "bytes": 7451,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-25-review-v1-cb9f4a1f1dfb4d48a5b08f5b31a0a1e9\\review.py",
+    "physicalSha256": "5dcdcd39b63e6a19ef251cb2be055b02c806198df44b33c05a42c9779c3fdfe4"
+  },
+  "sourceOnlyScoringInputs": {
+    "bytes": 271577,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\scoring-inputs.jsonl",
+    "physicalSha256": "753533a1c654274316aed6b2f06641d20ad47d73bfc2375ba1d73d6e05e12696"
+  },
+  "systemPromptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+  "trainingPairs": {
+    "bytes": 72525,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\train-fragment-rank-v1.jsonl",
+    "physicalSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd"
+  },
+  "verification": {
+    "all57SourceOnlyPairsAndWeightsInspected": true,
+    "compilerTestsNativeOrComparisonRerun": false,
+    "existingSourcesUnchanged": 33,
+    "integrationEqualityExit": 0,
+    "matchedReferences": 38,
+    "matchedSources": 36,
+    "ownerFourControlsThreeCompilesOneJourneyConsumed": true
+  },
+  "version": "student-fragment-rank-cpu-acceptance/1"
+}
