@@ -37,7 +37,14 @@ export function validateExecution(plan:AnyPacketPlan,raw:unknown){
       p.artifact.version!==1||p.artifact.sha256!==p.assembly.output.sha256)
       conflict('The PDF execution does not match its exact committed region and assembly.');
     if(plan.input.recipe!==p.assembly.recipe)conflict('The PDF recipe differs from its confirmed plan.');
-    if(p.version==='packet-pdf/1'||p.version==='packet-image-pdf/1'){
+    if(p.version==='packet-mixed-pdf/1'){
+      const expectedEntries=plan.entries.map((entry,index)=>({kind:entry.binding!.version==='registry-image-region-citation/1'?'original_image_region':'pdf_page_region',
+        bindingId:entry.binding!.id,entrySha256:entry.entrySha256,outputPage:index+1}));
+      const expectedAssembly=plan.entries.map(entry=>({kind:entry.binding!.version==='registry-image-region-citation/1'?'original_image_region':'pdf_page_region',
+        original:entry.binding!.document,derivative:entry.binding!.validation}));
+      if(canonical(p.entries)!==canonical(expectedEntries)||canonical(p.assembly.entries)!==canonical(expectedAssembly))
+        conflict('The mixed execution does not match both exact ordered original-region bindings.');
+    }else if(p.version==='packet-pdf/1'||p.version==='packet-image-pdf/1'){
       const entry=plan.entries[0];
       if(plan.entries.length!==1||p.bindingId!==entry.binding!.id||p.entrySha256!==entry.entrySha256||
         canonical(p.assembly.region)!==canonical(entry.binding!.validation))

@@ -4,6 +4,7 @@ import {PacketRegionWorkerSchema,PACKET_REGION_LIMITS} from '../packet-region';
 import {PACKET_PDF_RECIPE,PACKET_PDF_MULTI_RECIPE,PACKET_PDF_ORIGINALS_RECIPE,PACKET_PDF_LIMITS,PACKET_PDF_MULTI_LIMITS} from './packet-pdf';
 import {PACKET_IMAGE_REGION_LIMITS} from '../packet-image-region';
 import {PACKET_IMAGE_PDF_RECIPE,PACKET_IMAGE_PDF_LIMITS,PACKET_IMAGE_PDF_POLICY,PacketImagePdfAssemblySchema} from './packet-image-pdf';
+import {PACKET_MIXED_PDF_RECIPE,PACKET_MIXED_PDF_LIMITS,PACKET_MIXED_PDF_POLICY} from './packet-mixed-pdf';
 
 export const PACKET_PDF_BUNDLE_LIMITS=Object.freeze({manifestBytes:64*1024,archiveBytes:34*1024**2,seconds:30});
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
@@ -66,6 +67,26 @@ export const PacketImagePdfBundleManifestSchema=z.strictObject({
     entry.source.sha256!==entry.derivative.sourceSha256||entry.source.bytes!==entry.derivative.sourceBytes)
     ctx.addIssue({code:'custom',message:'Retain the exact image source and accepted derivative provenance.'});
 });
+const mixedBundleEntry=z.discriminatedUnion('kind',[
+  PacketPdfBundleManifestSchema.shape.entries.element.extend({kind:z.literal('pdf_page_region'),outputPage:z.number().int().min(1).max(2)}),
+  PacketPdfBundleManifestSchema.shape.entries.element.omit({derivative:true}).extend({kind:z.literal('original_image_region'),
+    outputPage:z.number().int().min(1).max(2),derivative:PacketImagePdfAssemblySchema.shape.region,
+    applicability:z.literal('explicit_officer_inclusion; effective_after_canonical_commit'),
+    locator:z.strictObject({kind:z.literal('original_image'),frame:z.literal(0)}),calibration:z.null()}),
+]);
+export const PacketMixedPdfBundleManifestSchema=z.strictObject({version:z.literal('packet-mixed-pdf-bundle-manifest/1'),
+  representation:z.literal('private_accepted_packet_download'),
+  packet:PacketPdfBundleManifestSchema.shape.packet.omit({receiptVersion:true,recipe:true}).extend({
+    receiptVersion:z.literal('packet-mixed-pdf/1'),recipe:z.literal(PACKET_MIXED_PDF_RECIPE)}),
+  pdf:PacketPdfBundleManifestSchema.shape.pdf.extend({pages:z.literal(2),bytes:z.number().int().positive().max(PACKET_MIXED_PDF_LIMITS.bytes),
+    policy:z.literal(PACKET_MIXED_PDF_POLICY)}),entries:z.tuple([mixedBundleEntry,mixedBundleEntry]),
+  qualification:PacketPdfBundleManifestSchema.shape.qualification,
+}).superRefine((v,ctx)=>{
+  if(v.packet.target.ref.namespace!=='registry_record'||v.packet.target.revision<1||
+    new Set(v.entries.map(e=>e.kind)).size!==2||v.entries[0].bindingId===v.entries[1].bindingId||
+    v.entries.some((e,i)=>e.outputPage!==i+1||e.source.sha256!==e.derivative.sourceSha256||e.source.bytes!==e.derivative.sourceBytes))
+    ctx.addIssue({code:'custom',message:'Retain both exact crop kinds and their ordered original/derivative provenance.'});
+});
 export const UspAnyPacketPdfBundleManifestSchema=z.discriminatedUnion('version',[
-  PacketPdfBundleManifestSchema,PacketImagePdfBundleManifestSchema]);
+  PacketPdfBundleManifestSchema,PacketImagePdfBundleManifestSchema,PacketMixedPdfBundleManifestSchema]);
 export type PacketImagePdfBundleManifest=z.infer<typeof PacketImagePdfBundleManifestSchema>;
