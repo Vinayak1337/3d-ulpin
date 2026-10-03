@@ -86,14 +86,14 @@ test('real PID report flows through bounded document transport and final authori
     }),
   });
   assert(SurveyReportContextSchema.safeParse(context).success);assert.equal(reads,1);assert.equal(captures,2);
-  assert.equal(context.table.status,'incomplete');assert.equal(context.table.observedRows,17);
-  assert.equal(context.table.rows.length,11);assert.equal(context.table.unparsedRows.length,6);assert.equal(context.table.parsedDisabledRows,0);
+  assert.equal(context.table.status,'complete');assert.equal(context.table.observedRows,17);
+  assert.equal(context.table.rows.length,17);assert.equal(context.table.unparsedRows.length,0);assert.equal(context.table.parsedDisabledRows,0);
   assert.equal(context.table.header!.citation.line,82);assert.equal(context.table.rows[0].quote.citation.line,83);
-  assert.equal(context.table.unparsedRows.at(-1)!.citation.line,99);assert.equal(context.publishedSummary.withheld,0);
+  assert.equal(context.table.rows.at(-1)!.quote.citation.line,99);assert.equal(context.publishedSummary.withheld,0);
   assert.equal(context.table.rows[1].fields[14].literal,'-0.000');assert(Object.is(context.table.rows[1].fields[14].value,-0));
   assert.equal(context.report.horizontalUnits!.literal.trim(),'Horizontal Units:   meter');
   assert.equal(context.publishedStatistics.length,15);assert.equal(context.qualification.accuracy,'not_assessed');
-  assert.equal(context.state,'needs_input');assert(context.gaps.some(g=>g.code==='table_rows_incomplete'));
+  assert.equal(context.state,'needs_input');assert.equal(context.gaps.length,4);
   const locators=assertLocators(context);assert(Buffer.byteLength(JSON.stringify(context))<SURVEY_REPORT_LIMITS.responseBytes-4096);
   // Every original table line is unchanged even after the real redactor/helper.
   const originalLines=fixture.raw.toString('utf8').split(/\r\n|\n|\r/);
@@ -103,16 +103,16 @@ test('real PID report flows through bounded document transport and final authori
     sourceSha256:sha256(fixture.raw),sourceBytes:fixture.raw.length,readerSha256:fixture.input.readerSha256,
     controlledResultSha256:sha256(fixture.bytes),controlledResultBytes:fixture.bytes.length,
     responseSha256:sha256(JSON.stringify(context)),responseBytes:Buffer.byteLength(JSON.stringify(context)),
-    locatorsChecked:locators,observedRows:17,parsedRows:11,unparsedRows:6,firstLine:83,lastLine:99,sourceCaptures:captures,objectReads:reads,
+    locatorsChecked:locators,observedRows:17,parsedRows:17,unparsedRows:0,firstLine:83,lastLine:99,sourceCaptures:captures,objectReads:reads,
     tableStatus:context.table.status,state:context.state,qualificationStates:context.qualification,
   },null,2));
 });
 
-test('real NVA retains all 166 lines, flags 61 canonical redactions, and preserves unavailable horizontal values and both disabled rows',realOptions,async()=>{
+test('real NVA preserves all 166 typed rows, unavailable horizontal values and both disabled rows',realOptions,async()=>{
   const fixture=await report('nva'),context=surveyReportProjection(fixture.request,fixture.result);
-  assert.equal(context.table.status,'incomplete');assert.equal(context.table.observedRows,166);
-  assert.equal(context.table.rows.length,105);assert.equal(context.table.unparsedRows.length,61);
-  assert.equal(context.table.parsedEnabledRows,103);assert.equal(context.table.parsedDisabledRows,2);
+  assert.equal(context.table.status,'complete');assert.equal(context.table.observedRows,166);
+  assert.equal(context.table.rows.length,166);assert.equal(context.table.unparsedRows.length,0);
+  assert.equal(context.table.parsedEnabledRows,164);assert.equal(context.table.parsedDisabledRows,2);
   assert.deepEqual(context.table.rows.slice(-2).map(r=>[r.ordinal,r.pointIdentifier,r.enabled,r.statusLiteral]),
     [[164,'gs_240',false,'Turned Off'],[165,'gs_241',false,'Turned Off']]);
   assert.equal(context.table.header!.citation.line,337);assert.equal(context.table.rows[0].quote.citation.line,338);
@@ -130,9 +130,12 @@ test('real NVA retains all 166 lines, flags 61 canonical redactions, and preserv
   assert(context.gaps.some(g=>g.code==='horizontal_product_values_unavailable'));
   assert(context.gaps.some(g=>g.code==='source_excluded_rows_present'));
   assertLocators(context);assert(Buffer.byteLength(JSON.stringify(context))<SURVEY_REPORT_LIMITS.responseBytes-4096);
+  const originalLines=fixture.raw.toString('utf8').split(/\r\n|\n|\r/);
+  for(const row of context.table.rows)assert.equal(row.quote.literal,originalLines[row.quote.citation.line-1]);
   if(process.env.ULPIN_SURVEY_RECEIPT_PATH)await writeFile(process.env.ULPIN_SURVEY_RECEIPT_PATH+'.nva.json',JSON.stringify({
     qualification:'Source-literal pure parser over controlled native extraction, not an accepted-job runtime qualification.',
-    sourceSha256:sha256(fixture.raw),sourceBytes:fixture.raw.length,observedRows:166,parsedRows:105,unparsedRows:61,parsedEnabled:103,parsedDisabled:2,
+    sourceSha256:sha256(fixture.raw),sourceBytes:fixture.raw.length,readerSha256:fixture.input.readerSha256,
+    observedRows:166,parsedRows:166,unparsedRows:0,parsedEnabled:164,parsedDisabled:2,
     firstLine:338,lastLine:503,locatorsChecked:assertLocators(context),responseBytes:Buffer.byteLength(JSON.stringify(context)),
     tableStatus:context.table.status,withheld:context.publishedSummary.withheld,gaps:context.gaps,
   },null,2));
@@ -141,11 +144,11 @@ test('real NVA retains all 166 lines, flags 61 canonical redactions, and preserv
 test('incomplete/redacted accepted extraction stays incomplete and ambiguous layout refuses without manufacturing rows',realOptions,async()=>{
   const {request,result}=await report('pid');
   let context=surveyReportProjection(request,alter(result,98,null));
-  assert.equal(context.table.status,'incomplete');assert.equal(context.table.rows.length,10);assert.equal(context.table.observedRows,16);assert.equal(context.table.declaredTotal,17);
+  assert.equal(context.table.status,'incomplete');assert.equal(context.table.rows.length,16);assert.equal(context.table.observedRows,16);assert.equal(context.table.declaredTotal,17);
   assert(context.gaps.some(g=>g.code==='table_population_incomplete'));
   const row=result.native.parts.find(p=>p.locator.line===83)!;
   context=surveyReportProjection(request,alter(result,83,row.text.replace('gs_004','[redacted]')));
-  assert.equal(context.table.status,'incomplete');assert.equal(context.table.rows.length,10);assert.equal(context.table.unparsedRows.length,7);
+  assert.equal(context.table.status,'incomplete');assert.equal(context.table.rows.length,16);assert.equal(context.table.unparsedRows.length,1);
   assert.equal(context.table.unparsedRows[0].citation.line,83);assertLocators(context);
   const end=result.native.parts.at(-1)!;
   context=surveyReportProjection(request,alter(result,end.locator.line!,null));assert.equal(context.table.status,'incomplete');
