@@ -20,6 +20,7 @@ const root=process.env.ULPIN_SURVEY_FIXTURE_ROOT??'E:/BhuAayam-data/task-data/de
 const haveReports=['nva','pid'].every(kind=>existsSync(join(root,`20250722_capemay_${kind}_report.txt`)));
 const realOptions={skip:haveReports?false:'Retained real reports unavailable; set ULPIN_SURVEY_FIXTURE_ROOT. No replacement original is generated.'};
 const subject=localOperatorSubject();
+const nativeTextReviewCaution='Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.';
 
 /** Technical envelopes only: no job enrollment, SQL writes, external extraction,
  * provider/native execution, or claim that these results were actually accepted.
@@ -34,8 +35,9 @@ async function report(kind:'nva'|'pid'){
   const native=await extractSourceDocument(input,raw,async(value:any)=>{
     assert.equal(value.format,'text');const bytes=Buffer.from(value.base64,'base64');assert.deepEqual(bytes,raw);
     const text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
-    return {sourceSha256:sha256(bytes),parts:text.split(/\r\n|\n|\r/).flatMap((text,index)=>text.trim()?
-      [{text,locator:{label:`line ${index+1}`,line:index+1}}]:[])};
+    return {format:'text',status:'ready',sourceSha256:sha256(bytes),warnings:[nativeTextReviewCaution],
+      parts:text.split(/\r\n|\n|\r/).flatMap((text,index)=>text.trim()?
+        [{text,locator:{label:`line ${index+1}`,line:index+1}}]:[])};
   });
   assert.equal(native.status,'extracted');assert.equal(native.format,'text');
   const result=DocumentResultSchema.parse({version:'source-document/1',input,native,
@@ -88,6 +90,7 @@ test('real PID report flows through bounded document transport and final authori
   assert(SurveyReportContextSchema.safeParse(context).success);assert.equal(reads,1);assert.equal(captures,2);
   assert.equal(context.table.status,'complete');assert.equal(context.table.observedRows,17);
   assert.equal(context.table.rows.length,17);assert.equal(context.table.unparsedRows.length,0);assert.equal(context.table.parsedDisabledRows,0);
+  assert.deepEqual(context.warnings,[nativeTextReviewCaution]);
   assert.equal(context.table.header!.citation.line,82);assert.equal(context.table.rows[0].quote.citation.line,83);
   assert.equal(context.table.rows.at(-1)!.quote.citation.line,99);assert.equal(context.publishedSummary.withheld,0);
   assert.equal(context.table.rows[1].fields[14].literal,'-0.000');assert(Object.is(context.table.rows[1].fields[14].value,-0));
@@ -112,6 +115,7 @@ test('real NVA preserves all 166 typed rows, unavailable horizontal values and b
   const fixture=await report('nva'),context=surveyReportProjection(fixture.request,fixture.result);
   assert.equal(context.table.status,'complete');assert.equal(context.table.observedRows,166);
   assert.equal(context.table.rows.length,166);assert.equal(context.table.unparsedRows.length,0);
+  assert.deepEqual(context.warnings,[nativeTextReviewCaution]);
   assert.equal(context.table.parsedEnabledRows,164);assert.equal(context.table.parsedDisabledRows,2);
   assert.deepEqual(context.table.rows.slice(-2).map(r=>[r.ordinal,r.pointIdentifier,r.enabled,r.statusLiteral]),
     [[164,'gs_240',false,'Turned Off'],[165,'gs_241',false,'Turned Off']]);
@@ -139,6 +143,22 @@ test('real NVA preserves all 166 typed rows, unavailable horizontal values and b
     firstLine:338,lastLine:503,locatorsChecked:assertLocators(context),responseBytes:Buffer.byteLength(JSON.stringify(context)),
     tableStatus:context.table.status,withheld:context.publishedSummary.withheld,gaps:context.gaps,
   },null,2));
+});
+
+test('only the exact producer caution is informational; additional unknown warnings and native codes block completeness',realOptions,async()=>{
+  const {request,result}=await report('pid');
+  const producer=await readFile('services/geo/geo/area.py','utf8');
+  assert(producer.includes(`warnings.append("${nativeTextReviewCaution}")`));
+  const unknown='Native text is a source reference only. Extraction coverage is unknown.';
+  const warned=DocumentResultSchema.parse({...result,native:{...result.native,warnings:[nativeTextReviewCaution,unknown]}});
+  const context=surveyReportProjection(request,warned);
+  assert.equal(context.table.status,'incomplete');assert.equal(context.table.parsedRows,17);
+  assert.deepEqual(context.warnings,[nativeTextReviewCaution,unknown]);
+  assert(context.gaps.some(g=>g.code==='native_extraction_warning'));
+  assert.equal(context.state,'needs_input');assert.deepEqual(context.qualification,
+    surveyReportProjection(request,result).qualification);
+  const coded=DocumentResultSchema.parse({...result,native:{...result.native,code:'NATIVE_PARTIAL_TEXT'}});
+  assert.equal(surveyReportProjection(request,coded).table.status,'incomplete');
 });
 
 test('incomplete/redacted accepted extraction stays incomplete and ambiguous layout refuses without manufacturing rows',realOptions,async()=>{

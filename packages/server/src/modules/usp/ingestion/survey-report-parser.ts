@@ -9,6 +9,9 @@ const unsupported=(message:string):never=>{throw new AppError(422,'SURVEY_REPORT
 const redacted=(text:string)=>/\[redacted[^\]]*\]/i.test(text);
 const numeric=/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
 const banner=(text:string,name:string)=>text.trim().replace(/^-+\s*|\s*-+$/g,'')===name;
+// Exact area.py provenance caution, informational only within the native TEXT
+// profile below. Preserve it in the response; all other warnings still block.
+const nativeTextReviewCaution='Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.';
 
 /** A deliberately narrow native TEXT profile. No coordinate/residual arithmetic. */
 export function surveyReportProjection(request:SurveyReportRequest,result:DocumentResult):SurveyReportContext{
@@ -176,7 +179,7 @@ export function surveyReportProjection(request:SurveyReportRequest,result:Docume
       axes:['X','Y','Z','R(XY)','3D(XYZ)'],values:vals as SurveyReportContext['publishedStatistics'][number]['values'],header:activeHeader,quote:quote(line)});
   }
   if(publishedStatistics.length!==15)incomplete('published_statistics_incomplete','Recover complete First/Second Component Error and Product Accuracy sections.');
-  if(result.native.code!==null||result.native.warnings.length)
+  if(result.native.code!==null||result.native.warnings.some(warning=>warning!==nativeTextReviewCaution))
     incomplete('native_extraction_warning','Inspect accepted native extraction warnings and recover affected content before claiming completeness.');
   const titleQuote=quote(title!),versionQuote=quote(version!),headerQuote=header?quote(header):null,endQuote=end?quote(end):null;
   if(used.size>512||statements.length>40||publishedSummary.quotes.length>16)
