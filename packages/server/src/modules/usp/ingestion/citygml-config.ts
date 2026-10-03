@@ -83,7 +83,17 @@ export function assertCityGMLTools(pins:CityGMLToolPins|null,deadlineAt?:number)
   if(fingerprint(config.pins)!==fingerprint(pins))citygmlUnavailable('CITYGML_TOOL_CHANGED');return config;
 }
 
-/** Immutable reads still verify every exact tool and current inventory pin. */
+// GEOPARQUET-02: exact assigned-base immutable code; full inventory and non-code pins remain mandatory.
+const preGeoParquetReadCodeSha=new Set(["e9d559731bfc4a37a4f7388427f80c7c88df40a5286746d1d078f2ffb7fee308", "319041a906b31bca05e1386c992e5a5ca8bad15062930d9b9ab0880e8074408d"]);
+export function citygmlReadToolsCompatible(stored:CityGMLToolPins,current:CityGMLToolPins){
+ const old=CityGMLToolPinsSchema.safeParse(stored),live=CityGMLToolPinsSchema.safeParse(current);
+ if(!old.success||!live.success)return false;
+ if(fingerprint(old.data)===fingerprint(live.data))return true;
+ const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+ return preGeoParquetReadCodeSha.has(oldCode)&&fingerprint(oldTools)===fingerprint(currentTools);
+}
+/** Complete current inventory, immutable comparison only, never launch configuration. */
 export function assertCityGMLReadTools(pins:CityGMLToolPins|null,deadlineAt?:number):void{
-  assertCityGMLTools(pins,deadlineAt);
+ if(!pins)citygmlUnavailable();const config=citygmlConfig(deadlineAt);
+ if(!citygmlReadToolsCompatible(pins,config.pins))citygmlUnavailable('CITYGML_TOOL_CHANGED');
 }

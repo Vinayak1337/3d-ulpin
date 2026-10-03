@@ -7,6 +7,7 @@ import {isIFCProtectedSource} from './ifc';
 import {isDXFProtectedSource} from './dxf';
 import {isKMLProtectedSource} from './kml';
 import {isCityGMLProtectedSource} from './citygml';
+import {isGeoParquetProtectedSource} from './geoparquet';
 
 type SourceRow=Record<string,any>;
 type Mode='original'|'snapshot'|'copy';
@@ -22,6 +23,8 @@ export async function documentAuthorityTx(client:PoolClient,captured:SourceRow,m
     throw new AppError(409,'KML_CANONICAL_SOURCE_REQUIRED','Use private KML original/job authority; legacy snapshot and copy admission are unsupported.');
   if(isCityGMLProtectedSource(captured)||current&&isCityGMLProtectedSource(current))
     throw new AppError(409,'CITYGML_CANONICAL_SOURCE_REQUIRED','Use private CityGML original/job authority; legacy snapshot and copy admission are unsupported.');
+  if(isGeoParquetProtectedSource(captured)||current&&isGeoParquetProtectedSource(current))
+    throw new AppError(409,'GEOPARQUET_CANONICAL_SOURCE_REQUIRED','Use private GeoParquet original/job authority; legacy snapshot and copy admission are unsupported.');
   if(isDXFProtectedSource(captured)||current&&isDXFProtectedSource(current))
     throw new AppError(409,'DXF_CANONICAL_SOURCE_REQUIRED','Use the current private DXF original/job authority; legacy snapshot and copy admission are unsupported.');
   if(isIFCProtectedSource(captured)||current&&isIFCProtectedSource(current))

@@ -3,6 +3,7 @@ import {IFCIngestionService,isIFCProtectedSource} from '../usp/ingestion/ifc';
 import {DXFIngestionService,isDXFProtectedSource} from '../usp/ingestion/dxf';
 import {KMLIngestionService,isKMLProtectedSource} from '../usp/ingestion/kml';
 import {CityGMLIngestionService,isCityGMLProtectedSource} from '../usp/ingestion/citygml';
+import {GeoParquetIngestionService,isGeoParquetProtectedSource} from '../usp/ingestion/geoparquet';
 import { AppError } from '../../infrastructure/errors';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { largeOriginalDownload } from '../usp/ingestion/download';
@@ -37,6 +38,8 @@ export class CaseIntakeService {
       return {...await new KMLIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
     if(isCityGMLProtectedSource(source))
       return {...await new CityGMLIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
+    if(isGeoParquetProtectedSource(source))
+      return {...await new GeoParquetIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
     if(isDXFProtectedSource(source))
       return {...await new DXFIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
     if(isIFCProtectedSource(source))
@@ -56,6 +59,7 @@ export class CaseIntakeService {
     const source=await getSource(id);
     if(isKMLProtectedSource(source))return null;
     if(isCityGMLProtectedSource(source))return null;
+    if(isGeoParquetProtectedSource(source))return null;
     if(isIFCProtectedSource(source))return null;
     if(isDXFProtectedSource(source))return null;
     if(isCityJSONProtectedSource(source))return null;
