@@ -633,6 +633,14 @@
             "workflow_verified": {
               "status": "not_run"
             }
+          },
+          "privateControlReviewEvidence": {
+            "guide": "docs/evidence/usp/cityjson-control-review-handoff.md",
+            "integratedCodeCommit": "6b580c35",
+            "receiptSha256": "c6379f322c1806dc721e8d6acd7a0b615f0b9cdc9a0abae74a362f5598ba433b",
+            "originalUnchanged": true,
+            "scope": "Retained revision-5 D1 and reference-document views through private immutable needs_input comparison save/read/replay and explicit admission summary; controlled source/SQL/native authority. Genuine references contain no independent object controls, metrics null. Separate arithmetic control is technical only.",
+            "qualification": "No current HTTP/PostgreSQL persistence/contention, authentic survey independence/accuracy, native admission/geometry/learning or release qualification."
           }
         },
         {

@@ -1609,6 +1609,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/registry-drafts/{draftId}/native-exterior/control-assessment/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retain an exact recomputed point-control comparison and scoped officer decision; no accuracy or admission pass */
+        post: operations["POST_api_v1_registry_drafts_draftId_native_exterior_control_assessment_reviews"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/registry-drafts/{draftId}/native-exterior/control-assessment/reviews/{reviewId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the exact immutable control-comparison decision under current private authority */
+        get: operations["GET_api_v1_registry_drafts_draftId_native_exterior_control_assessment_reviews_reviewId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/snapshots": {
         parameters: {
             query?: never;
@@ -8363,6 +8397,7 @@ export interface components {
             /** Format: uuid */
             validationJobId?: string;
             referenceReviewId?: string;
+            controlReviewId?: string;
         };
         POST_registry_drafts_draftId_native_exterior_admission_assessment_Response_200_application_json: {
             /** @enum {string} */
@@ -8586,6 +8621,31 @@ export interface components {
                 /** @enum {string} */
                 accuracy: "not_assessed";
             };
+            controlReview?: {
+                id: string;
+                reviewSha256: string;
+                authoritySha256: string;
+                assessmentSha256: string;
+                /**
+                 * @description Scoped officer decision about this exact comparison; no accuracy, control qualification or admission approval.
+                 * @enum {string}
+                 */
+                scope: "selected_point_control_comparison";
+                /** @enum {string} */
+                disposition: "reviewed" | "needs_input" | "rejected";
+                /** @enum {string} */
+                comparisonState: "comparison_computed" | "needs_input";
+                /** @enum {string} */
+                currentness: "current_authority";
+                /** @enum {string} */
+                accuracy: "not_assessed";
+                /** @enum {string} */
+                admission: "unavailable";
+                /** @enum {string} */
+                qualification: "not_assessed";
+                /** @enum {string} */
+                learningQualification: "not_assessed";
+            };
             findings: {
                 sourceIntegrity: {
                     /** @enum {string} */
@@ -8619,7 +8679,7 @@ export interface components {
             }[];
             actions: {
                 /** @enum {string} */
-                kind: "inspect_original" | "inspect_native" | "inspect_validation" | "request_validation" | "inspect_reference_selections" | "bind_reference_evidence" | "request_reference_review" | "inspect_reference_review";
+                kind: "inspect_original" | "inspect_native" | "inspect_validation" | "request_validation" | "inspect_reference_selections" | "bind_reference_evidence" | "request_reference_review" | "inspect_reference_review" | "request_control_review" | "inspect_control_review";
                 /** @enum {string} */
                 method: "GET" | "POST";
                 /** Format: starts_with */
@@ -28407,6 +28467,208 @@ export interface components {
                 /** @enum {string} */
                 independence: "source_declared_and_operator_reviewed";
             };
+            /** @enum {string} */
+            accuracy: "not_assessed";
+            /** @enum {string} */
+            admission: "unavailable";
+            /** @enum {string} */
+            qualification: "not_assessed";
+            /** @enum {string} */
+            learningQualification: "not_assessed";
+        };
+        POST_registry_drafts_draftId_native_exterior_control_assessment_reviews_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            comparison: {
+                expectedDraftRevision: number;
+                candidateSha256: string;
+                selectionSha256: string;
+                referencesSha256: string;
+                correspondences: {
+                    referenceId: string;
+                    nativeVertexIndex: number;
+                    review: {
+                        /** @enum {string} */
+                        correspondence: "reviewed";
+                        /** @enum {string} */
+                        independentAcquisition: "reviewed";
+                        basis: string;
+                    };
+                }[];
+            };
+            expectedAssessmentSha256: string;
+            decision: {
+                /** @enum {string} */
+                disposition: "reviewed" | "needs_input" | "rejected";
+                rationale: string;
+            };
+        };
+        POST_registry_drafts_draftId_native_exterior_control_assessment_reviews_Response_200_application_json: {
+            /** @enum {string} */
+            version: "registry-cityjson-control-review/1";
+            id: string;
+            reviewSha256: string;
+            authority: {
+                /** Format: uuid */
+                draftId: string;
+                draftRevision: number;
+                /** Format: uuid */
+                siteId: string;
+                siteRevision: number;
+                /** Format: uuid */
+                recordId: string;
+                candidateSha256: string;
+                selectionSha256: string;
+                referencesSha256: string;
+                authoritySha256: string;
+            };
+            /**
+             * @description Scoped officer decision about this exact comparison; no accuracy, control qualification or admission approval.
+             * @enum {string}
+             */
+            scope: "selected_point_control_comparison";
+            assessment: {
+                /** @enum {string} */
+                version: "registry-cityjson-control-assessment/1";
+                /** @enum {string} */
+                state: "comparison_computed" | "needs_input";
+                assessmentSha256: string;
+                draft: {
+                    /** Format: uuid */
+                    id: string;
+                    draftRevision: number;
+                    /** Format: uuid */
+                    recordId: string;
+                    candidateSha256: string;
+                    selectionSha256: string;
+                    referencesSha256: string;
+                };
+                source: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceSha256: string;
+                    nativeArtifactSha256: string;
+                    verticesSha256: string;
+                    transformSha256: string;
+                };
+                frame: {
+                    id: string;
+                    axes: (string)[];
+                    unit: string;
+                    vertical: string;
+                };
+                points: {
+                    referenceId: string;
+                    nativeVertexIndex: number;
+                    nativeVertexPointer: string;
+                    reviewSha256: string;
+                    evidence: {
+                        document: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                        };
+                        /** Format: uuid */
+                        partId: string;
+                        partSha256: string;
+                        locator: {
+                            label: string;
+                            page?: number;
+                            row?: number;
+                            line?: number;
+                            lineEnd?: number;
+                            paragraph?: number;
+                            table?: number;
+                            column?: number;
+                            headerRow?: number;
+                            sheet?: string;
+                            sheetIndex?: number;
+                            sheetId?: number;
+                            cell?: string;
+                            /** @enum {string} */
+                            cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                            cellType?: string;
+                            /** Format: uuid */
+                            unitId?: string;
+                            unitSha256?: string;
+                            segmentIndex?: number;
+                            segmentCount?: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                        /** @enum {string} */
+                        coordinatePointer: "/coordinates";
+                        inputSha256: string;
+                        readerSha256: string;
+                        acceptedFence: number;
+                    };
+                    controlId: string | null;
+                    /** @enum {string} */
+                    state: "comparison_computed" | "needs_input";
+                    reasonCode: string | null;
+                    nativePosition: (number)[] | null;
+                    controlPosition: (number)[] | null;
+                    residual: (number)[] | null;
+                    horizontalMetres: number | null;
+                    verticalMetres: number | null;
+                    distanceMetres: number | null;
+                }[];
+                metrics: {
+                    count: number;
+                    meanResidual: (number)[];
+                    rmseHorizontalMetres: number;
+                    rmseVerticalMetres: number;
+                    rmse3DMetres: number;
+                    maximum3DMetres: number;
+                } | null;
+                missing: {
+                    referenceId: string | null;
+                    reasonCode: string;
+                }[];
+                provenance: {
+                    /** @enum {string} */
+                    method: "same_named_frame_point_residuals";
+                    /** @enum {string} */
+                    nativeDecode: "cityjson_scale_translate_once";
+                    /** @enum {string} */
+                    controlProfile: "native-point-control/1";
+                    /** @enum {string} */
+                    reviewAttribution: "local_process";
+                    contextSha256: string;
+                    inputSha256: string;
+                    /** @enum {string} */
+                    independence: "source_declared_and_operator_reviewed";
+                };
+                /** @enum {string} */
+                accuracy: "not_assessed";
+                /** @enum {string} */
+                admission: "unavailable";
+                /** @enum {string} */
+                qualification: "not_assessed";
+                /** @enum {string} */
+                learningQualification: "not_assessed";
+            };
+            decision: {
+                /** @enum {string} */
+                disposition: "reviewed" | "needs_input" | "rejected";
+                rationale: string;
+            };
+            /** Format: date-time */
+            reviewedAt: string;
+            /** @enum {string} */
+            attribution: "local_process";
+            /** @enum {string} */
+            currentness: "current_authority";
             /** @enum {string} */
             accuracy: "not_assessed";
             /** @enum {string} */
@@ -64818,6 +65080,213 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_control_assessment_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_registry_drafts_draftId_native_exterior_control_assessment_reviews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_control_assessment_reviews_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_control_assessment_reviews_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_registry_drafts_draftId_native_exterior_control_assessment_reviews_reviewId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_control_assessment_reviews_Response_200_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
