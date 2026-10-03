@@ -5987,7 +5987,25 @@
         "No same-site native model or reviewed point correspondence; no D1 or Indian operational association.",
         "Source QA-only statement and NVA166/166 versus PID0/17 withholding remain source declarations, not application learning splits or accuracy qualification.",
         "No executable comparison, geometry/admission/learning or release qualification; report comparisons and literal zero accuracy values are not independent ground truth."
-      ]
+      ],
+      "surveyReportContextObservation": {
+        "handoff": "docs/evidence/usp/survey-report-context-handoff.md",
+        "receiptSha256": "3b0b96c8a02b28324d6df7f18ae7a76ff7a25191b0e06348de0ce7e2236a337c",
+        "profile": "lp360-control-point-table19/1",
+        "scope": "Controlled real-source parser/service checks, not enrolled source jobs or live API qualification",
+        "pid": {
+          "observedRows": 17,
+          "parsedRows": 11,
+          "unparsedRows": 6
+        },
+        "nva": {
+          "observedRows": 166,
+          "parsedRows": 105,
+          "unparsedRows": 61
+        },
+        "tableStatus": "incomplete",
+        "limitation": "Canonical personal-field redactor masks some coordinate sequences. Exact cited unparsed rows remain visible; no reconstruction or privacy bypass. Working frames, epoch, object correspondence and learning remain unqualified."
+      }
     }
   ],
   "offlineLearningCorpus": {

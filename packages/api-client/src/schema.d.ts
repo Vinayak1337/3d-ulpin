@@ -1643,6 +1643,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/evidence/survey-report/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Inspect one private accepted native TEXT LP360 survey report as source literals; frames, comparison, accuracy and learning remain unqualified */
+        post: operations["POST_api_v1_usp_evidence_survey_report_context"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/snapshots": {
         parameters: {
             query?: never;
@@ -28678,6 +28695,362 @@ export interface components {
             /** @enum {string} */
             learningQualification: "not_assessed";
         };
+        POST_usp_evidence_survey_report_context_Request_application_json: {
+            document: {
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                /** Format: uuid */
+                jobId: string;
+                resultSha256: string;
+            };
+        };
+        POST_usp_evidence_survey_report_context_Response_200_application_json: {
+            data: {
+                /** @enum {string} */
+                version: "survey-report-context/1";
+                /** @enum {string} */
+                state: "needs_input";
+                document: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                };
+                /** @enum {string} */
+                profile: "lp360-control-point-table19/1";
+                /** @enum {string} */
+                characterOffsets: "part-local-utf16-end-exclusive";
+                report: {
+                    title: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    };
+                    lp360Version: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    };
+                    generatedTime: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    } | null;
+                    surfaceMethod: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    } | null;
+                    horizontalUnits: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    } | null;
+                    verticalUnits: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    } | null;
+                };
+                table: {
+                    /** @enum {string} */
+                    status: "complete" | "incomplete";
+                    header: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    } | null;
+                    end: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    } | null;
+                    declaredTotal: number | null;
+                    observedRows: number;
+                    parsedRows: number;
+                    parsedEnabledRows: number;
+                    parsedDisabledRows: number;
+                    unparsedRows: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    }[];
+                    rows: {
+                        ordinal: number;
+                        pointIdentifier: string;
+                        /** @enum {string} */
+                        pointType: "nva" | "pid";
+                        enabled: boolean;
+                        /** @enum {string|null} */
+                        statusLiteral: "Turned Off" | null;
+                        statusCitation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        } | null;
+                        quote: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        };
+                        fields: {
+                            literal: string;
+                            /** @enum {string} */
+                            state: "stated" | "unavailable";
+                            value: number | string | (null);
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                            /** @enum {string} */
+                            field: "Name" | "Description" | "Type" | "Control X" | "Control Y" | "Control Z" | "H Offset" | "Accuracy X" | "Accuracy Y" | "Accuracy Z" | "Measured X" | "Measured Y" | "Surface Z" | "Z Location" | "Delta X" | "Delta Y" | "Delta XY" | "Delta Z" | "Delta XYZ";
+                            /** @enum {string} */
+                            role: "identity" | "survey_control" | "source_offset" | "published_control_error" | "product_coordinate" | "source_location" | "published_residual";
+                            /** @enum {string} */
+                            unitAxis: "none" | "horizontal" | "vertical" | "combined";
+                        }[];
+                    }[];
+                };
+                publishedSummary: {
+                    horizontalMeasured: number | null;
+                    verticalMeasured: number | null;
+                    withheld: number | null;
+                    total: number | null;
+                    quotes: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    }[];
+                };
+                publishedStatistics: {
+                    /** @enum {string} */
+                    section: "First Component Error" | "Second Component Error" | "Product Accuracy";
+                    /** @enum {string} */
+                    label: "RMSE" | "Max" | "Min" | "Mean" | "Median" | "StdDev" | "#CPs Used";
+                    axes: ("X" | "Y" | "Z" | "R(XY)" | "3D(XYZ)")[];
+                    values: {
+                        literal: string;
+                        /** @enum {string} */
+                        state: "stated" | "unavailable";
+                        value: number | string | (null);
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    }[];
+                    header: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    };
+                    quote: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                    };
+                }[];
+                statements: {
+                    literal: string;
+                    citation: {
+                        /** Format: uuid */
+                        partId: string;
+                        line: number;
+                        characterStart: number;
+                        characterEnd: number;
+                    };
+                    /** @enum {string} */
+                    kind: "disclaimer" | "source_role" | "withholding";
+                }[];
+                gaps: {
+                    code: string;
+                    action: string;
+                }[];
+                qualification: {
+                    /** @enum {string} */
+                    coordinateFrame: "needs_input";
+                    /** @enum {string} */
+                    heightLinkage: "needs_input";
+                    /** @enum {string} */
+                    surveyEpoch: "needs_input";
+                    /** @enum {string} */
+                    objectCorrespondence: "needs_input";
+                    /** @enum {string} */
+                    comparison: "not_assessed";
+                    /** @enum {string} */
+                    accuracy: "not_assessed";
+                    /** @enum {string} */
+                    learningSplit: "not_assessed";
+                };
+                parts: {
+                    /** Format: uuid */
+                    id: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    text: string;
+                    sha256: string;
+                    locator: {
+                        label: string;
+                        page?: number;
+                        row?: number;
+                        line?: number;
+                        lineEnd?: number;
+                        paragraph?: number;
+                        table?: number;
+                        column?: number;
+                        headerRow?: number;
+                        sheet?: string;
+                        sheetIndex?: number;
+                        sheetId?: number;
+                        cell?: string;
+                        /** @enum {string} */
+                        cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                        cellType?: string;
+                        /** Format: uuid */
+                        unitId?: string;
+                        unitSha256?: string;
+                        segmentIndex?: number;
+                        segmentCount?: number;
+                        characterStart: number;
+                        characterEnd: number;
+                    };
+                    /** @enum {string} */
+                    method: "native_text";
+                }[];
+                warnings: string[];
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
+        POST_usp_evidence_survey_report_context_Response_400_application_json: {
+            readonly error: {
+                code: string;
+                message: string;
+                retryable: boolean;
+                requestId: string;
+            };
+        };
+        POST_usp_evidence_survey_report_context_Response_403_application_json: {
+            readonly error: {
+                code: string;
+                message: string;
+                retryable: boolean;
+                requestId: string;
+            };
+        } | {
+            error: {
+                /** @enum {string} */
+                code: "HOST_DENIED" | "ORIGIN_DENIED";
+                message: string;
+                requestId: string;
+            };
+        };
         POST_usp_snapshots_Request_application_json: {
             scopeId: string;
             world: {
@@ -28821,29 +29194,6 @@ export interface components {
                     /** @enum {string} */
                     stage: "draft" | "recorded" | "retained";
                 };
-            };
-        };
-        POST_usp_snapshots_Response_400_application_json: {
-            readonly error: {
-                code: string;
-                message: string;
-                retryable: boolean;
-                requestId: string;
-            };
-        };
-        POST_usp_snapshots_Response_403_application_json: {
-            readonly error: {
-                code: string;
-                message: string;
-                retryable: boolean;
-                requestId: string;
-            };
-        } | {
-            error: {
-                /** @enum {string} */
-                code: "HOST_DENIED" | "ORIGIN_DENIED";
-                message: string;
-                requestId: string;
             };
         };
         POST_usp_snapshots_read_Request_application_json: {
@@ -65368,6 +65718,133 @@ export interface operations {
             };
         };
     };
+    POST_api_v1_usp_evidence_survey_report_context: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Strict JSON exact document pins; at most 4 KiB received bytes; no caller table or URL */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Cited source rows/statistics and actionable gaps; needs_input */
+            200: {
+                headers: {
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_200_application_json"];
+                };
+            };
+            /** @description Invalid strict request */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description Private Host/Origin or current operator access denied */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
+                };
+            };
+            /** @description Exact accepted document unavailable */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description Request body deadline */
+            408: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description Current source/job/reader/access/attempt pins changed */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description Bounded request/result/table/response limit */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description Unsupported or ambiguous layout, or exact result integrity failure */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description Bounded storage read unavailable or expired */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description Current authority database deadline */
+            504: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+        };
+    };
     POST_api_v1_usp_snapshots: {
         parameters: {
             query?: never;
@@ -65401,7 +65878,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -65412,7 +65889,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65423,7 +65900,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65434,7 +65911,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65445,7 +65922,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65456,7 +65933,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65467,7 +65944,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -65505,7 +65982,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -65516,7 +65993,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65527,7 +66004,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65538,7 +66015,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65549,7 +66026,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65560,7 +66037,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65571,7 +66048,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -65609,7 +66086,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -65620,7 +66097,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65631,7 +66108,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65642,7 +66119,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65653,7 +66130,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65664,7 +66141,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65675,7 +66152,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -65713,7 +66190,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -65724,7 +66201,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65735,7 +66212,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65746,7 +66223,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65757,7 +66234,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65768,7 +66245,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65779,7 +66256,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -65817,7 +66294,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -65828,7 +66305,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65839,7 +66316,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65850,7 +66327,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65861,7 +66338,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65872,7 +66349,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65883,7 +66360,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -65924,7 +66401,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -65935,7 +66412,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65946,7 +66423,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65957,7 +66434,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65968,7 +66445,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65979,7 +66456,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -65990,7 +66467,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66028,7 +66505,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66039,7 +66516,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66050,7 +66527,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66061,7 +66538,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66072,7 +66549,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66083,7 +66560,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66094,7 +66571,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66132,7 +66609,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66143,7 +66620,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66154,7 +66631,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66165,7 +66642,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66176,7 +66653,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66187,7 +66664,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66198,7 +66675,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66236,7 +66713,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66247,7 +66724,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66258,7 +66735,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66269,7 +66746,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66280,7 +66757,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66291,7 +66768,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66302,7 +66779,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66340,7 +66817,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66351,7 +66828,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66362,7 +66839,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66373,7 +66850,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66384,7 +66861,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66395,7 +66872,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66406,7 +66883,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66444,7 +66921,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66455,7 +66932,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66466,7 +66943,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66477,7 +66954,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66488,7 +66965,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66499,7 +66976,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66510,7 +66987,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66548,7 +67025,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66559,7 +67036,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66570,7 +67047,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66581,7 +67058,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66592,7 +67069,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66603,7 +67080,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66614,7 +67091,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66652,7 +67129,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66663,7 +67140,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66674,7 +67151,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66685,7 +67162,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66696,7 +67173,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66707,7 +67184,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66718,7 +67195,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66756,7 +67233,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66767,7 +67244,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66778,7 +67255,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66789,7 +67266,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66800,7 +67277,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66811,7 +67288,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66822,7 +67299,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66860,7 +67337,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66871,7 +67348,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66882,7 +67359,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66893,7 +67370,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66904,7 +67381,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66915,7 +67392,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66926,7 +67403,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -66964,7 +67441,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -66975,7 +67452,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66986,7 +67463,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -66997,7 +67474,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67008,7 +67485,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67019,7 +67496,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67030,7 +67507,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -67065,7 +67542,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -67076,7 +67553,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67087,7 +67564,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67098,7 +67575,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67109,7 +67586,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67120,7 +67597,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67131,7 +67608,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -67170,7 +67647,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -67181,7 +67658,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67192,7 +67669,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67203,7 +67680,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67214,7 +67691,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67225,7 +67702,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67236,7 +67713,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -67324,7 +67801,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -67335,7 +67812,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67346,7 +67823,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67357,7 +67834,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67368,7 +67845,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67379,7 +67856,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67390,7 +67867,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -67452,7 +67929,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -67463,7 +67940,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67474,7 +67951,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67485,7 +67962,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67496,7 +67973,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67507,7 +67984,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67518,7 +67995,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -67556,7 +68033,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -67567,7 +68044,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67578,7 +68055,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67589,7 +68066,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67600,7 +68077,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67611,7 +68088,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67622,7 +68099,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -67660,7 +68137,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -67671,7 +68148,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67682,7 +68159,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67693,7 +68170,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67704,7 +68181,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67715,7 +68192,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67726,7 +68203,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -67764,7 +68241,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -67775,7 +68252,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67786,7 +68263,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67797,7 +68274,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67808,7 +68285,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67819,7 +68296,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67830,7 +68307,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -67868,7 +68345,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -67879,7 +68356,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67890,7 +68367,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67901,7 +68378,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67912,7 +68389,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67923,7 +68400,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -67934,7 +68411,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -68020,7 +68497,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -68031,7 +68508,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68042,7 +68519,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68053,7 +68530,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68064,7 +68541,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68075,7 +68552,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68086,7 +68563,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -68124,7 +68601,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -68135,7 +68612,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68146,7 +68623,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68157,7 +68634,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68168,7 +68645,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68179,7 +68656,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68190,7 +68667,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -68331,7 +68808,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -68342,7 +68819,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68353,7 +68830,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68364,7 +68841,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68375,7 +68852,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68386,7 +68863,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68397,7 +68874,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -68547,7 +69024,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Common private Host/Origin or current-access denial */
@@ -68558,7 +69035,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description Requested accepted context unavailable; no partial source details */
@@ -68569,7 +69046,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Bounded request body deadline expired */
@@ -68580,7 +69057,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Accepted source/job/reader/attempt pins changed */
@@ -68591,7 +69068,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Request, artifact or response exceeds the profile */
@@ -68602,7 +69079,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Exact selected evidence or integrity unavailable */
@@ -68613,7 +69090,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Bounded service unavailable or deadline expired */
@@ -68624,7 +69101,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -68663,7 +69140,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Private Host/Origin, site, source, target, access or model-policy denial */
@@ -68674,7 +69151,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description Exact selected context unavailable */
@@ -68685,7 +69162,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Received-body deadline expired */
@@ -68696,7 +69173,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Source, target, snapshot or accepted-result pins changed */
@@ -68707,7 +69184,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Request or response exceeds the bounded profile */
@@ -68718,7 +69195,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Exact selected evidence or integrity unavailable */
@@ -68729,7 +69206,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description Proposal request deadline expired or authority unavailable */
@@ -68740,7 +69217,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -68778,7 +69255,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -68789,7 +69266,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68800,7 +69277,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68811,7 +69288,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68822,7 +69299,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68833,7 +69310,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68844,7 +69321,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -68882,7 +69359,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -68893,7 +69370,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68904,7 +69381,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68915,7 +69392,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68926,7 +69403,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68937,7 +69414,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -68948,7 +69425,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -68986,7 +69463,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -68997,7 +69474,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69008,7 +69485,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69019,7 +69496,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69030,7 +69507,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69041,7 +69518,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69052,7 +69529,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -69090,7 +69567,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -69101,7 +69578,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69112,7 +69589,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69123,7 +69600,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69134,7 +69611,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69145,7 +69622,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69156,7 +69633,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };
@@ -69194,7 +69671,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
@@ -69205,7 +69682,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69216,7 +69693,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69227,7 +69704,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69238,7 +69715,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69249,7 +69726,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */
@@ -69260,7 +69737,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
                 };
             };
         };

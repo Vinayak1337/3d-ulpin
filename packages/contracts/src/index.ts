@@ -238,6 +238,7 @@ export * from './registry-cityjson-reference';
 export * from './registry-cityjson-reference-review';
 export * from './registry-cityjson-control-assessment';
 export * from './registry-cityjson-control-review';
+export * from './survey-report';
 export * from './area';
 
 export * from "./spatial";
