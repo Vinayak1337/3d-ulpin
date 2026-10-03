@@ -21,6 +21,12 @@ from geo.usp_learning.association.citation_view import checked_freeze, checked_c
 
 
 def representation_module(freeze, assignment):
+    if freeze.get("version") == "association-fragment-rank-fit-freeze/1":
+        from geo.usp_learning.association import fragment_rank_adapter
+        fragment_rank_adapter.checked_freeze(freeze, assignment)
+        return fragment_rank_adapter
+    if any("rank" in str(value.get(key, "")).lower() for value in (freeze, assignment) for key in ("version", "task")):
+        raise RuntimeError("explicit rank fit freeze required; no rank reload")
     if freeze.get("version") in ("association-fragment-support-fit-freeze/2", "association-fragment-support-reload-freeze/2"):
         from geo.usp_learning.association import fragment_support_v2
         fragment_support_v2.checked_freeze(freeze, assignment)
@@ -47,6 +53,7 @@ def worker(args):
     assignment = json.loads(args.assignment.read_bytes())
     selector = representation_module(freeze, assignment)
     fragment_mode = bool(selector and getattr(selector, "IS_FRAGMENT", False))
+    rank_mode = bool(selector and getattr(selector, "IS_RANK_FIT", False))
     if fragment_mode:
         selector.checked_cli(args, freeze)
         selector.checked_inputs(freeze, assignment, args.run_freeze.parent)
@@ -94,7 +101,13 @@ def worker(args):
             from geo.usp_learning.association.memory_observation import PhaseRecorder
             phases = PhaseRecorder(args.output_dir, lambda: require_model_boundary(args))
             fit_options = {"dataset_declaration": freeze.get("datasetDeclaration")}
-            if fragment_mode:
+            if rank_mode:
+                _, rank_contract, rank_family, rows = selector_contract
+                if rank_contract != contract or rank_family != family:
+                    raise RuntimeError("rank fit contracts changed")
+                delta = selector.representation_metadata()
+                fit_options = {"rank_authority": {"freeze": freeze, "assignment": assignment, "inputs": args.run_freeze.parent}}
+            elif fragment_mode:
                 rows, delta = selector.checked_teacher(args.training_data.read_bytes(), selector_contract, contract, family)
                 fit_options = {"representation": selector.FragmentRepresentation(selector_contract, contract, family)}
             elif selector is not None:
