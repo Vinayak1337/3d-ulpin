@@ -3975,7 +3975,20 @@
             "receipt": "E:/BhuAayam-data/task-data/desktop-ai05b-point/point-http-final.json",
             "receiptSha256": "1c9f4f94bf3ebbeacae4549dd582d6fc369bda000b864524d3272114213bf4f2",
             "scope": "Two private native 8192-record batches in a stopped isolated run; not global placement, renderer, height or scale qualification",
-            "standingInstallation": false
+            "standingInstallation": false,
+            "mixedMetadataContextEvidence": {
+              "guide": "docs/evidence/usp/source-fusion-point-handoff.md",
+              "integratedCodeCommit": "e74694f0",
+              "verificationSha256": "9d8ccefebb462c38e3df2c62ecf4c870334a35c016d65a11ef2c22a324f81c36",
+              "contextSha256": "9c8565f69b78213e3ea7d71b70c08ca96e0161ec478f33da27eeaf00b6d0545b",
+              "scope": "Exact accepted-batch metadata plus retained EPSG document; exact private read controls with reconstructed input/fence/receipt and memory SQL/storage",
+              "pointRecords": "not_read_by_metadata_adapter",
+              "artifactReadProof": "explicit_non_native_technical_bytes",
+              "historicalNativeArtifactsAndEnvelope": "not_retained",
+              "associationAndCitation": "unsupported",
+              "originalsUnchanged": true,
+              "qualification": "Current HTTP/persistence/native accuracy/alignment/applicability/geometry/learning/scale/release remain unqualified"
+            }
           }
         },
         {
