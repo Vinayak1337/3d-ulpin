@@ -52398,6 +52398,7 @@
         "required": [
           "ok",
           "services",
+          "serviceObservations",
           "dataMode"
         ],
         "properties": {
@@ -52437,6 +52438,82 @@
                 "type": "boolean"
               }
             }
+          },
+          "serviceObservations": {
+            "type": "object",
+            "required": [
+              "redis",
+              "worker"
+            ],
+            "properties": {
+              "redis": {
+                "type": "object",
+                "required": [
+                  "status",
+                  "source",
+                  "reason"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "observed",
+                      "unobserved"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "processor-readiness"
+                    ],
+                    "description": "Reported by the processor readiness endpoint; no independent API probe."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "processor-unavailable",
+                      "invalid-readiness",
+                      null
+                    ]
+                  }
+                }
+              },
+              "worker": {
+                "type": "object",
+                "required": [
+                  "status",
+                  "source",
+                  "reason"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "observed",
+                      "unobserved"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "processor-readiness"
+                    ],
+                    "description": "Reported by the processor readiness endpoint; no independent API probe."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "processor-unavailable",
+                      "invalid-readiness",
+                      null
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Distinguishes reported dependency health from unavailable observations. Unobserved service booleans remain false."
           },
           "databaseReadiness": {
             "type": "object",
