@@ -1853,9 +1853,9 @@
     "manifestHashScope": "Git/LF metadata; original artifacts use exact physical hashes",
     "guide": "docs/evidence/usp/survey-control-source/README.md",
     "declaredLicence": "CC BY 4.0",
-    "apiInstallation": "not-verified",
+    "apiInstallation": "two-txt-reports-verified-in-isolated-runtime",
     "standingInstallation": false,
-    "runtimeVerified": false,
+    "runtimeVerified": true,
     "sourceCount": 5,
     "surveyRows": {
       "nva": 166,
@@ -1914,6 +1914,35 @@
       "readerSha256": "880fd490ac7ce27d57502f38c5c1538d3feb79da623e6aa012498c50fbd6274f",
       "readerHashScope": "Physical staging code bytes after integration",
       "limitation": "Working frames, epoch, object correspondence, accuracy and learning remain unqualified. Historical reader-bound results are stale under this recipe; no historical pins were rewritten."
+    },
+    "surveyContextRuntimeObservation": {
+      "handoff": "docs/evidence/usp/survey-context-runtime-20261004.md",
+      "receiptSha256": "9a06a97fa7e1b9ced5ca06c626b1e53e64ac1d70937e004ce6e77e926d2963ea",
+      "servedCommit": "494d135970a17938b5ddbaaa3e6ac50e02a7b5a6",
+      "environment": "retained isolated prefix profile; API and task-started storage stopped after run",
+      "readerSha256": "ecd90d83f147c60ce9eba0f5c38b12df6531ad42af539ab74e0aabcbe811d183",
+      "scope": "Two enrolled TXT reports only: canonical native_only jobs and private survey-context HTTP 200; direct bounded Python extraction, default HTTP processor not qualified",
+      "pid": {
+        "rows": 17,
+        "citations": 471,
+        "sourceId": "c9d5efbe-a149-4ab9-a678-694d8dcb4456",
+        "jobId": "fb4966b9-9078-41f1-aa10-99142e418e6f"
+      },
+      "nva": {
+        "rows": 166,
+        "enabled": 164,
+        "disabled": 2,
+        "citations": 3453,
+        "sourceId": "1383e6a6-5e68-44fa-971b-6d0099e77a93",
+        "jobId": "d8c2957b-ec64-46e1-be2c-94f596d65fbd"
+      },
+      "tableStatus": "complete",
+      "state": "needs_input",
+      "limitations": [
+        "Working CRS, height linkage, survey epoch and object correspondence unresolved.",
+        "Comparison, accuracy and learning not assessed; foreign test_only family, no Indian/D1/property association.",
+        "Historical reader-bound results retain their own code and runtime identity; no claim that another checkout can reuse these jobs."
+      ]
     }
   }
 ]
