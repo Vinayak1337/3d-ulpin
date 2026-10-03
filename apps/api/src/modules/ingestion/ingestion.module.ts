@@ -32,10 +32,12 @@ import {CityJSONIngestionService} from '@ulpin/server/modules/usp/ingestion/city
 
 import {IFCController} from './ifc.controller';
 import {IFCIngestionService} from '@ulpin/server/modules/usp/ingestion/ifc';
+import {CityGMLController} from './citygml.controller';
+import {CityGMLIngestionService} from '@ulpin/server/modules/usp/ingestion/citygml';
 import {KMLController} from './kml.controller';
 import {KMLIngestionService} from '@ulpin/server/modules/usp/ingestion/kml';
 import {DXFController} from './dxf.controller';
 import {DXFIngestionService} from '@ulpin/server/modules/usp/ingestion/dxf';
 
-@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController,AdaptiveMappingController,StreamingVectorController,ChunkMappingController,StreamedProfileController,RasterWindowController,PointBatchController,CityJSONController,IFCController,DXFController,KMLController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService,AdaptiveMappingService,StreamingVectorService,ChunkMappingService,StreamedProfileService,StreamedMappingService,RasterWindowService,PointBatchService,CityJSONIngestionService,IFCIngestionService,DXFIngestionService,KMLIngestionService]})
+@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,SufficiencyController,AdaptiveMappingController,StreamingVectorController,ChunkMappingController,StreamedProfileController,RasterWindowController,PointBatchController,CityJSONController,IFCController,DXFController,KMLController,CityGMLController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,IngestionSufficiencyService,AdaptiveMappingService,StreamingVectorService,ChunkMappingService,StreamedProfileService,StreamedMappingService,RasterWindowService,PointBatchService,CityJSONIngestionService,IFCIngestionService,DXFIngestionService,KMLIngestionService,CityGMLIngestionService]})
 export class IngestionModule {}

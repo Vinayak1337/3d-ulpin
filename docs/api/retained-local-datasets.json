@@ -898,6 +898,16 @@
       "nativeArtifactSha256": "1d26c542913cbd51dd35286fb04a0529acca96677e50f943924c4fd73304e285",
       "unitsState": "declared",
       "runtimeProfile": "Fresh checkout-bound profile required before serving"
+    },
+    "reviewedCitationEvidence": {
+      "guide": "docs/evidence/usp/reviewed-dxf-citations-handoff.md",
+      "integratedCodeCommit": "3bedfdfe",
+      "completionReceiptSha256": "75ce79d7caf2d843886d797d9894f4dd57f36c25a59555456d467bedc737987b",
+      "scope": "Exact officer-selected building/floor citation, amendment/review/commit/history with retained native records and controlled target/SQL/storage/review/tool authority",
+      "automaticMatching": "unsupported",
+      "authenticApplicability": "not_assessed",
+      "currentHttpSqlStorageVerified": false,
+      "learningLabels": false
     }
   },
   {
@@ -971,6 +981,16 @@
       "nativeArtifactSha256": "e926344244e4a73c6f6fcac93991fb8cd6883473ea88ecdca364eb5ac8d76166",
       "unitsState": "absent",
       "runtimeProfile": "Fresh checkout-bound profile required before serving"
+    },
+    "reviewedCitationEvidence": {
+      "guide": "docs/evidence/usp/reviewed-dxf-citations-handoff.md",
+      "integratedCodeCommit": "3bedfdfe",
+      "completionReceiptSha256": "75ce79d7caf2d843886d797d9894f4dd57f36c25a59555456d467bedc737987b",
+      "scope": "Exact officer-selected building/floor citation, amendment/review/commit/history with retained native records and controlled target/SQL/storage/review/tool authority",
+      "automaticMatching": "unsupported",
+      "authenticApplicability": "not_assessed",
+      "currentHttpSqlStorageVerified": false,
+      "learningLabels": false
     }
   },
   {
@@ -1314,7 +1334,15 @@
       "Relief/TIN, OrientableSurface, MultiPoint, non-building modules/ADE content are unsupported literal inventory",
       "Engineering CRS, anchors, axis order and units not applied or independently qualified",
       "Not API/job/registry admission, official Indian data, learning, performance or release qualification"
-    ]
+    ],
+    "canonicalWorkflowEvidence": {
+      "guide": "docs/evidence/usp/citygml-api-handoff.md",
+      "integratedCodeCommit": "9a1f7433",
+      "completionReceiptSha256": "6b63365a93c34aa966d9c878d013f91d60f46a412482cc43ebd9d0f6133b5524",
+      "scope": "Actual bounded native parser with memory SQL/storage method journey; current HTTP/PostgreSQL/private storage unqualified",
+      "nativeOutputMatchesAcceptedInspection": true,
+      "runtimeProfile": "Fresh integrated-checkout inventory required before native execution"
+    }
   },
   {
     "id": "ogc-citygml-2-building-local-engineering-lod1",
@@ -1369,7 +1397,15 @@
       "Relief/TIN, OrientableSurface, MultiPoint, non-building modules/ADE content are unsupported literal inventory",
       "Engineering CRS, anchors, axis order and units not applied or independently qualified",
       "Not API/job/registry admission, official Indian data, learning, performance or release qualification"
-    ]
+    ],
+    "canonicalWorkflowEvidence": {
+      "guide": "docs/evidence/usp/citygml-api-handoff.md",
+      "integratedCodeCommit": "9a1f7433",
+      "completionReceiptSha256": "6b63365a93c34aa966d9c878d013f91d60f46a412482cc43ebd9d0f6133b5524",
+      "scope": "Actual bounded native parser with memory SQL/storage method journey; current HTTP/PostgreSQL/private storage unqualified",
+      "nativeOutputMatchesAcceptedInspection": true,
+      "runtimeProfile": "Fresh integrated-checkout inventory required before native execution"
+    }
   },
   {
     "id": "upstream-geoparquet-example-1-20261001",

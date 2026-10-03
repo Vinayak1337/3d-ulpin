@@ -3,7 +3,7 @@ import type {KMLInput} from '@ulpin/contracts/usp';
 import type {SourceFusionPin} from '../../../../../contracts/src/source-fusion';
 import {AppError} from '../../../infrastructure/errors';
 import {kmlStatusTx,assertKMLJobRow,kmlResultBytes} from './kml';
-import {assertKMLTools} from './kml-config';
+import {assertKMLReadTools} from './kml-config';
 
 /** Canonical source/current family/reader/access and exact accepted attempt,
  * using fusion's already protected complete-set client. */
@@ -23,5 +23,5 @@ export async function acceptedFusionKMLTx(client:PoolClient,pin:SourceFusionPin,
 export function verifyFusionKMLTools(input:KMLInput,budget:{deadlineAt:number;signal:AbortSignal}){
   const live=()=>{if(budget.signal.aborted||Date.now()>=budget.deadlineAt)
     throw new AppError(503,'SOURCE_FUSION_DEADLINE','The bounded source context read expired.');};
-  live();assertKMLTools(input.tools,budget.deadlineAt);live();
+  live();assertKMLReadTools(input.tools,budget.deadlineAt);live();
 }
