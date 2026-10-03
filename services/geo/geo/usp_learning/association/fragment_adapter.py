@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import sys
 
 from . import fragment_selection as codec
 from .adapter import FIT, NUMERICS, digest_file
@@ -107,10 +108,11 @@ def memory_policy():
             "queryChunkedAttention": copy.deepcopy(ATTENTION_POLICY)}
 
 
-def checked_row(row, schema, contract, family):
+def checked_row(row, schema, contract, family, *, row_pins=None):
+    row_pins = ROW_PINS if row_pins is None else row_pins
     require(type(row) is dict and set(row) == {"context", "input", "output", "supervision"}, "fragment_training_row_fields")
     context = row["context"]
-    require(sha(codec.canonical(row).encode()) == ROW_PINS.get(context.get("exampleId")), "fragment_training_row_pin_drift")
+    require(sha(codec.canonical(row).encode()) == row_pins.get(context.get("exampleId")), "fragment_training_row_pin_drift")
     source_input = codec.checked_context(context, schema, contract, family, ("train",))
     source = codec.Context(codec.canonical(context))
     require(same(row["input"], source.model_input()), "fragment_training_model_input_drift")
@@ -140,19 +142,20 @@ def checked_teacher(data, schema, contract, family):
 class FragmentRepresentation:
     system_prompt = SYSTEM_PROMPT
 
-    def __init__(self, schema, contract, family):
+    def __init__(self, schema, contract, family, *, authority=None):
+        self.authority = sys.modules[__name__] if authority is None else authority
         self.schema, self.contract, self.family = schema, contract, family
 
     @property
     def training_plan(self):
-        return training_plan()
+        return self.authority.training_plan()
 
     @property
     def metadata(self):
-        return representation_metadata()
+        return self.authority.representation_metadata()
 
     def validate_row(self, row):
-        require(same(row, checked_row(row["fragmentTrainingRow"], self.schema, self.contract, self.family)),
+        require(same(row, self.authority.checked_row(row["fragmentTrainingRow"], self.schema, self.contract, self.family)),
                 "fragment_training_wrapper_drift")
 
     def messages(self, row):
@@ -183,9 +186,10 @@ def input_names(action):
         if action == "fit" else {"input_batch": "development.json", "adapter_manifest": "adapter-manifest.json", "fit_proof": "fit-proof.json"})}
 
 
-def checked_execution(assignment, action):
-    require(action in VERSIONS and assignment.get("version") == VERSIONS[action][0]
-            and assignment.get("task") == TASKS[action] and assignment.get("action") == action,
+def checked_execution(assignment, action, *, _authority=None):
+    authority = sys.modules[__name__] if _authority is None else _authority
+    require(action in authority.VERSIONS and assignment.get("version") == authority.VERSIONS[action][0]
+            and assignment.get("task") == authority.TASKS[action] and assignment.get("action") == action,
             "separate_fragment_adapter_execution_required")
     keys = {"version", "task", "action", "executable", "executionAllowance", "studentCodeCommit", "model", "revision",
             "modelWeightsSha256", "runtimeProfileSha256", "modelProfileSha256", "settings", "numerics", "inferenceSettings",
@@ -196,15 +200,15 @@ def checked_execution(assignment, action):
     require(assignment["executable"] is True and same(assignment["executionAllowance"], allowance(action)), "fragment_adapter_execution_disabled")
     expected = {"model": MODEL, "revision": REVISION, "modelWeightsSha256": WEIGHTS_SHA,
         "runtimeProfileSha256": RUNTIME_SHA, "modelProfileSha256": MODEL_PROFILE_SHA, "settings": FIT, "numerics": NUMERICS,
-        "inferenceSettings": SETTINGS, "representation": representation_metadata(), "trainingPlan": training_plan(),
+        "inferenceSettings": SETTINGS, "representation": authority.representation_metadata(), "trainingPlan": authority.training_plan(),
         "memoryExecutionPolicy": memory_policy(), "attentionControlBeforeFit": ATTENTION_CONTROL}
     require(all(same(assignment[k], v) for k, v in expected.items()), "fragment_adapter_recipe_drift")
     require(isinstance(assignment["studentCodeCommit"], str) and re.fullmatch(r"[a-f0-9]{40}", assignment["studentCodeCommit"]),
             "fragment_adapter_final_head_required")
     pins = assignment["runtimeCodeCanonicalLfSha256"]
-    require(type(pins) is dict and set(pins) == set(SOURCE_PATHS)
+    require(type(pins) is dict and set(pins) == set(authority.SOURCE_PATHS)
             and all(isinstance(v, str) and re.fullmatch(r"[a-f0-9]{64}", v) for v in pins.values())
-            and all(pins[p] == v for p, v in PROTECTED_PINS.items()), "fragment_adapter_source_pin_set_drift")
+            and all(pins[p] == v for p, v in authority.PROTECTED_PINS.items()), "fragment_adapter_source_pin_set_drift")
     if action == "reload":
         accepted = assignment["acceptedFit"]
         require(type(accepted) is dict and set(accepted) == ACCEPTED_FIT_KEYS
@@ -213,27 +217,28 @@ def checked_execution(assignment, action):
                 and all(isinstance(v, str) and re.fullmatch(r"[a-f0-9]{64}", v)
                         for k, v in accepted.items() if k not in ("root", "sourceCommit"))
                 and same(assignment["cases"], CASES), "fragment_reload_accepted_fit_required")
-    return training_plan()
+    return authority.training_plan()
 
 
-def make_freeze(assignment, assignment_bytes, physical_pins):
+def make_freeze(assignment, assignment_bytes, physical_pins, *, _authority=None):
+    authority = sys.modules[__name__] if _authority is None else _authority
     action = assignment.get("action")
-    checked_execution(assignment, action)
-    require(same(strict_json(assignment_bytes), assignment) and set(physical_pins) == set(SOURCE_PATHS)
+    authority.checked_execution(assignment, action)
+    require(same(strict_json(assignment_bytes), assignment) and set(physical_pins) == set(authority.SOURCE_PATHS)
             and all(isinstance(v, str) and re.fullmatch(r"[a-f0-9]{64}", v) for v in physical_pins.values()), "fragment_freeze_bindings_drift")
     inputs = {**COMMON_PINS, "assignment": sha(assignment_bytes)}
     if action == "fit":
-        inputs.update(teacher_v1=DATA_SHA, training_data=DATA_SHA)
+        inputs.update(teacher_v1=authority.DATA_SHA, training_data=authority.DATA_SHA)
     else:
         inputs.update(input_batch=BATCH_SHA, adapter_manifest=assignment["acceptedFit"]["adapterManifestSha256"],
                       fit_proof=assignment["acceptedFit"]["fitProofSha256"])
-    result = {"version": VERSIONS[action][1], "action": action, "sourceCommit": assignment["studentCodeCommit"],
+    result = {"version": authority.VERSIONS[action][1], "action": action, "sourceCommit": assignment["studentCodeCommit"],
         "sourcePhysicalSha256": physical_pins, "fitSettings": FIT, "numerics": NUMERICS, "inferenceSettings": SETTINGS,
         "memoryExecutionPolicy": memory_policy(), "lossImplementation": LOSS_POLICY,
         "reclamationImplementation": RECLAMATION_POLICY, "attentionImplementation": ATTENTION_POLICY,
-        "systemPromptSha256": codec.PROMPT_SHA, "representation": representation_metadata(), "trainingPlan": training_plan(),
+        "systemPromptSha256": codec.PROMPT_SHA, "representation": authority.representation_metadata(), "trainingPlan": authority.training_plan(),
         "runtimeParentProfileSha256": RUNTIME_SHA, "modelParentProfileSha256": MODEL_PROFILE_SHA,
-        "inputSha256": inputs, "auxiliaryInputSha256": auxiliary_pins(action), "evaluationAllowed": False,
+        "inputSha256": inputs, "auxiliaryInputSha256": authority.auxiliary_pins(action), "evaluationAllowed": False,
         "developmentInputsPresent": action == "reload", "trainingInputsPresent": action == "fit",
         "hostTargetsPresent": False, "promotionAuthorized": False}
     if action == "reload":
@@ -241,10 +246,11 @@ def make_freeze(assignment, assignment_bytes, physical_pins):
     return result
 
 
-def checked_freeze(freeze, assignment):
-    plan = checked_execution(assignment, freeze.get("action"))
+def checked_freeze(freeze, assignment, *, _authority=None):
+    authority = sys.modules[__name__] if _authority is None else _authority
+    plan = authority.checked_execution(assignment, freeze.get("action"))
     # Assignment physical bytes are separately checked by checked_inputs/CLI.
-    expected = make_freeze(assignment, codec.canonical(assignment).encode(), freeze.get("sourcePhysicalSha256", {}))
+    expected = authority.make_freeze(assignment, codec.canonical(assignment).encode(), freeze.get("sourcePhysicalSha256", {}))
     expected["inputSha256"]["assignment"] = freeze.get("inputSha256", {}).get("assignment")
     require(isinstance(expected["inputSha256"]["assignment"], str)
             and re.fullmatch(r"[a-f0-9]{64}", expected["inputSha256"]["assignment"])
@@ -252,12 +258,13 @@ def checked_freeze(freeze, assignment):
     return plan
 
 
-def checked_inputs(freeze, assignment, inputs, *, source_root=None):
-    checked_freeze(freeze, assignment)
+def checked_inputs(freeze, assignment, inputs, *, source_root=None, _authority=None):
+    authority = sys.modules[__name__] if _authority is None else _authority
+    authority.checked_freeze(freeze, assignment)
     inputs = Path(inputs)
     action = freeze["action"]
-    names = input_names(action)
-    expected_names = {*names.values(), *auxiliary_pins(action), "run-freeze.json", "runtime-requirements-resolved.txt"}
+    names = authority.input_names(action)
+    expected_names = {*names.values(), *authority.auxiliary_pins(action), "run-freeze.json", "runtime-requirements-resolved.txt"}
     if action == "reload":
         expected_names.add("adapter")
     require({p.name for p in inputs.iterdir()} == expected_names, "fragment_adapter_unexpected_input")
@@ -266,7 +273,7 @@ def checked_inputs(freeze, assignment, inputs, *, source_root=None):
     require(same(strict_json((inputs / "assignment.json").read_bytes()), assignment), "fragment_adapter_assignment_drift")
     require(same(strict_json((inputs / "run-freeze.json").read_bytes()), freeze), "fragment_adapter_freeze_file_drift")
     require(digest_file(inputs / "runtime-requirements-resolved.txt") == REQUIREMENTS_SHA, "fragment_runtime_requirements_drift")
-    for name, digest in auxiliary_pins(action).items():
+    for name, digest in authority.auxiliary_pins(action).items():
         require(digest_file(inputs / name) == digest, "fragment_adapter_auxiliary_pin_drift:" + name)
     source_root = Path(__file__).resolve().parents[5] if source_root is None else Path(source_root)
     for name, digest in freeze["sourcePhysicalSha256"].items():
@@ -279,21 +286,22 @@ def checked_inputs(freeze, assignment, inputs, *, source_root=None):
     require(receipt["model"] == MODEL and receipt["revision"] == REVISION
             and {r["file"]: r["sha256"] for r in receipt["files"]}["model.safetensors"] == WEIGHTS_SHA, "fragment_adapter_model_drift")
     if action == "fit":
-        checked_teacher((inputs / names["training_data"]).read_bytes(), schema, contract, family)
+        authority.checked_teacher((inputs / names["training_data"]).read_bytes(), schema, contract, family)
     else:
         checked_development(inputs, schema, contract, family)
         manifest = strict_json((inputs / "adapter-manifest.json").read_bytes())
         proof = strict_json((inputs / "fit-proof.json").read_bytes())
-        checked_reload_binding(freeze, proof, manifest)
+        authority.checked_reload_binding(freeze, proof, manifest)
         from .adapter import verify_adapter_files
         verify_adapter_files(inputs / "adapter", manifest)
     return schema
 
 
-def checked_cli(args, freeze):
+def checked_cli(args, freeze, *, _authority=None):
+    authority = sys.modules[__name__] if _authority is None else _authority
     inputs = args.run_freeze.parent
     require(args.action == freeze["action"], "fragment_cli_action_drift")
-    names = input_names(args.action)
+    names = authority.input_names(args.action)
     for key, name in names.items():
         require(getattr(args, key) == inputs / name, "fragment_cli_input_alias_drift:" + key)
     for key in {"teacher_v1", "training_data", "input_batch", "adapter_manifest", "fit_proof"} - set(names):
@@ -317,42 +325,46 @@ def checked_fit_metadata(preflight, result, manifest, rows, representation):
             "fragment_fit_tokenized_target_drift")
 
 
-def proof_metadata(root, freeze):
-    return {"representation": representation_metadata(), "sourceCommit": freeze["sourceCommit"],
+def proof_metadata(root, freeze, *, _authority=None):
+    authority = sys.modules[__name__] if _authority is None else _authority
+    return {"representation": authority.representation_metadata(), "sourceCommit": freeze["sourceCommit"],
         "fitFreezeSha256": digest_file(root / "inputs/run-freeze.json"),
         "fitAssignmentSha256": digest_file(root / "inputs/assignment.json"),
         "acceptedReceiptSha256": digest_file(root / "receipts/association_adapter-fit-accepted.json")}
 
 
-def checked_reload_binding(freeze, proof, manifest):
+def checked_reload_binding(freeze, proof, manifest, *, _authority=None):
+    authority = sys.modules[__name__] if _authority is None else _authority
     expected = freeze["acceptedFit"]
-    require(same(proof.get("representation"), representation_metadata())
-            and same(manifest.get("representation"), representation_metadata())
+    require(same(proof.get("representation"), authority.representation_metadata())
+            and same(manifest.get("representation"), authority.representation_metadata())
             and Path(proof["fitRoot"]) == Path(expected["root"])
             and all(proof[k] == expected[k] for k in ACCEPTED_FIT_KEYS - {"root", "adapterWeightsSha256", "fitProofSha256"})
             and sha(serialized(proof)) == expected["fitProofSha256"]
             and manifest["files"]["adapter_model.safetensors"] == expected["adapterWeightsSha256"], "fragment_reload_fit_binding_drift")
     from .citation_view import checked_reload_counts
-    checked_reload_counts(proof, manifest, training_plan(), versioned=True)
+    checked_reload_counts(proof, manifest, authority.training_plan(), versioned=True)
     require(proof["fitResourceAccepted"] is True and manifest["tensorCount"] == 96
             and manifest["savedStateMatchesTrainableAdapter"] is True
             and manifest["baseParametersBefore"] == manifest["baseParametersAfter"], "fragment_reload_saved_fit_proof_drift")
 
 
-def checked_loader_authorization(value, route):
+def checked_loader_authorization(value, route, *, _authority=None):
+    authority = sys.modules[__name__] if _authority is None else _authority
     require(type(value) is dict and set(value) == {"freeze", "assignment"}, "fragment_reload_loader_authority_required")
-    checked_freeze(value["freeze"], value["assignment"])
+    authority.checked_freeze(value["freeze"], value["assignment"])
     require(value["freeze"]["action"] == "reload" and [sha(codec.canonical(c["context"]).encode()) for c in route["contexts"]]
             == [c["contextSha256"] for c in CASES], "fragment_reload_loader_scope_drift")
 
 
-def reload_runner(freeze, assignment, inputs, schema, preserve_preflight):
+def reload_runner(freeze, assignment, inputs, schema, preserve_preflight, *, _authority=None):
+    authority = sys.modules[__name__] if _authority is None else _authority
     from functools import partial
     from .student import run_local
-    checked_freeze(freeze, assignment)
+    authority.checked_freeze(freeze, assignment)
     require(freeze["action"] == "reload", "fragment_reload_runner_phase_drift")
     route = strict_json((Path(inputs) / "fragment-route.json").read_bytes())
-    authority = {"freeze": freeze, "assignment": assignment}
-    checked_loader_authorization(authority, route)
+    authorization = {"freeze": freeze, "assignment": assignment}
+    authority.checked_loader_authorization(authorization, route)
     return partial(run_local, fragment_route=route, fragment_contract=schema,
-                   preserve_preflight=preserve_preflight, fragment_adapter_reload=authority)
+                   preserve_preflight=preserve_preflight, fragment_adapter_reload=authorization)
