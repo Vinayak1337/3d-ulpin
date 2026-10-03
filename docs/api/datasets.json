@@ -3065,6 +3065,20 @@
             "genuineSecondCropVerified": true,
             "authenticApplicability": "not_assessed",
             "currentHttpSqlStorageVerified": false
+          },
+          "privateMultipleOriginalPdfPacketEvidence": {
+            "guide": "docs/evidence/usp/packet-pdf-multiple-originals-handoff.md",
+            "integratedCodeCommit": "585a46ef",
+            "completionReceiptSha256": "d67109fad9f27e21c42c97fae9da8e1812db96ed29339483c6ff7c5f58c5710f",
+            "recipe": "pack1-multiple-original-region-image/1",
+            "scope": "Two genuine distinct-original crops through controlled plan/confirmation/SQL/storage/extractor transport and card journey; one newly authorized second-original native extraction succeeded",
+            "outputSha256": "cda69b79c3aeccac153b624bb70cb62add81889e7add54a323e0426feb638172",
+            "outputBytes": 337862,
+            "outputPages": 2,
+            "secondOriginalCropSha256": "4d633411722112b4c003b5d7c67c0a9619210df911f38b9b4ef33a5c8615de3f",
+            "authenticApplicability": "not_assessed",
+            "currentHttpSqlStorageVerified": false,
+            "originalsUnchanged": true
           }
         },
         {
@@ -3169,6 +3183,20 @@
             "workflow_verified": {
               "status": "not_run"
             }
+          },
+          "privateMultipleOriginalPdfPacketEvidence": {
+            "guide": "docs/evidence/usp/packet-pdf-multiple-originals-handoff.md",
+            "integratedCodeCommit": "585a46ef",
+            "completionReceiptSha256": "d67109fad9f27e21c42c97fae9da8e1812db96ed29339483c6ff7c5f58c5710f",
+            "recipe": "pack1-multiple-original-region-image/1",
+            "scope": "Two genuine distinct-original crops through controlled plan/confirmation/SQL/storage/extractor transport and card journey; one newly authorized second-original native extraction succeeded",
+            "outputSha256": "cda69b79c3aeccac153b624bb70cb62add81889e7add54a323e0426feb638172",
+            "outputBytes": 337862,
+            "outputPages": 2,
+            "secondOriginalCropSha256": "4d633411722112b4c003b5d7c67c0a9619210df911f38b9b4ef33a5c8615de3f",
+            "authenticApplicability": "not_assessed",
+            "currentHttpSqlStorageVerified": false,
+            "originalsUnchanged": true
           }
         },
         {
