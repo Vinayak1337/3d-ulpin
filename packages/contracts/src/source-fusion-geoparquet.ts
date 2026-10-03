@@ -1,10 +1,9 @@
 import {z} from 'zod';
-import {SourceFusionPinSchema,SourceFusionLiteralObjectSchema} from './source-fusion';
+import {SourceFusionPinSchema,SourceFusionLiteralObjectSchema} from './source-fusion-common';
 import {GEOPARQUET_LIMITS,GeoParquetSummarySchema,GeoParquetSelectionSchema,GeoParquetContinuationPinSchema} from './usp/geoparquet-ingestion';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),rowIndex=z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER-1000);
-// Lazy common fields allow the shared contract to import these leaves for its
-// unions after integration, without evaluating common schemas in an import cycle.
+// Independent common schemas keep leaf-first and shared-union imports equivalent.
 export const SourceFusionGeoParquetPinSchema=z.lazy(()=>SourceFusionPinSchema.extend({
   resultBytes:z.number().int().positive().max(GEOPARQUET_LIMITS.resultBytes)}));
 const literal=z.lazy(()=>SourceFusionLiteralObjectSchema);

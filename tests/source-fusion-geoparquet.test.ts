@@ -7,7 +7,13 @@ import {SourceFusionGeoParquetSelectionSchema} from '../packages/contracts/src/s
 import {SOURCE_FUSION_LIMITS} from '../packages/contracts/src/source-fusion';
 import {fusionGeoParquetSourceProjection} from '../packages/server/src/modules/usp/ingestion/source-fusion-geoparquet';
 import {acceptedFusionGeoParquetTx,readFusionGeoParquetResult,verifyFusionGeoParquetTools,type FusionGeoParquetAuthority} from '../packages/server/src/modules/usp/ingestion/source-fusion-geoparquet-authority';
-import {readFusionObject,type FusionBudget} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
+import {readFusionObject,readFusionResult,fusionAuthorityBatch,type FusionBudget} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
+import {assembleSourceFusion} from '../packages/server/src/modules/usp/ingestion/source-fusion';
+import {DocumentResultSchema} from '../packages/contracts/src/usp/document-ingestion';
+import {localRequestContext} from '../packages/server/src/modules/usp/principal';
+import {documentResultKey} from '../packages/server/src/modules/usp/ingestion/documents';
+import {resolveFusionCitationsTx} from '../packages/server/src/modules/usp/ingestion/source-fusion-citations';
+import {proposeFusionAssociations} from '../packages/server/src/modules/usp/ingestion/source-fusion-associations';
 import {geoparquetInput,geoparquetSourceTx,geoparquetReaderSha,geoparquetResultKey} from '../packages/server/src/modules/usp/ingestion/geoparquet';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
@@ -68,6 +74,8 @@ function control(f:ReturnType<typeof fixture>){
   const client={query:async(sql:string,args:any[]=[])=>{
     assert(active,'SQL escaped capture');queries.push(sql);assert(!/^(INSERT|UPDATE|DELETE)\b/.test(sql));
     if(sql.includes('pg_advisory_xact_lock'))return {rows:[]};
+    if(sql.startsWith('SELECT id FROM cases')||sql.startsWith('SELECT id FROM sources'))return {rows:[]};
+    if(sql.startsWith('SELECT accepted_fence FROM usp_job_metadata'))return {rows:[{accepted_fence:1}]};
     if(sql.includes('SELECT id,revision,archived,frame,context,site_id FROM cases'))return {rows:[f.current]};
     if(sql.includes('SELECT * FROM sources'))return {rows:[f.source]};
     if(sql.includes('SELECT max(revision)'))return {rows:[{revision:f.source.revision}]};
@@ -92,13 +100,58 @@ function control(f:ReturnType<typeof fixture>){
     assert(!active,'object I/O held SQL locks');reads.push(key);const bytes=f.objects.get(key);assert(bytes,'unexpected key '+key);
     return {body:Readable.from([bytes]),etag:'memory-only'};
   });
-  return {client,capture,read,queries,reads,stats:()=>({active,captures,tools})};
+  const assemblyAuthority=(document:ReturnType<typeof DocumentResultSchema.parse>):typeof fusionAuthorityBatch=>
+    (ctx,selections,bounds,expected)=>fusionAuthorityBatch(ctx,selections,bounds,expected,{
+      transaction:async(work:any)=>{assert(!active);active=true;captures++;try{return await work(client);}finally{active=false;}},
+      gate:async()=>{},document:async(_client,_ctx,pin)=>{assert.equal(pin.inputSha256,fingerprint(document.input));return document.input;},
+      cityjson:async()=>{throw new Error('unexpected CityJSON authority');},
+      geoparquet:(client,pin,lock)=>acceptedFusionGeoParquetTx(client,pin,lock,{source:geoparquetSourceTx,input}),
+      geoparquetTools:()=>{assert(!active,'tool scan held SQL locks');tools++;},
+    });
+  return {client,capture,read,assemblyAuthority,queries,reads,stats:()=>({active,captures,tools})};
 }
 function save(name:string,value:unknown){
   const output=process.env.ULPIN_FUSION_GEOPARQUET_PROOF_DIR;if(!output)return;
   mkdirSync(output,{recursive:true});writeFileSync(output+'/'+name,JSON.stringify(value,null,2)+'\n',{flag:'wx'});
 }
 const errorCode=(code:string)=>(e:any)=>e.code===code;
+
+test('integrated mixed document and GeoParquet context recaptures the accepted parent and refuses unsupported linking',{skip:!present},()=>local(async()=>{
+  const f=fixture(),c=control(f),documentBytes=readFileSync('E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/epsg7415-accepted-result.json'),
+    document=DocumentResultSchema.parse(JSON.parse(documentBytes.toString('utf8'))),
+    entry=JSON.parse(readFileSync(new URL('../docs/evidence/usp/reference-document-enrollment/manifest.json',import.meta.url),'utf8'))
+      .enrollments.find((v:any)=>v.id==='epsg7415');
+  assert.equal(sha256(documentBytes),entry.resultSha256);assert.equal(fingerprint(document.input),entry.inputSha256);assert.equal(entry.acceptedFence,1);
+  const docSelection={kind:'document' as const,pin:{caseId:entry.caseId,caseRevision:entry.caseRevision,sourceId:entry.sourceId,
+    sourceRevision:entry.sourceRevision,sourceSha256:entry.sourceSha256,jobId:entry.jobId,resultSha256:entry.resultSha256,
+    resultBytes:entry.resultBytes,readerSha256:entry.readerSha256,inputSha256:entry.inputSha256,acceptedFence:entry.acceptedFence},
+    partIds:[entry.selectedParts[0].id]};
+  f.objects.set(documentResultKey(document.input.jobId,entry.resultSha256),documentBytes);
+  const ctx=localRequestContext('geoparquet-mixed-control'),selection={sources:[f.selection,docSelection]},
+    deps={authority:c.assemblyAuthority(document),read:((s,a,b)=>readFusionResult(s,a,b,c.read)) as typeof readFusionResult};
+  const context=await assembleSourceFusion(ctx,selection,deps);
+  const geo=context.sources.find(s=>s.kind==='geoparquet'),doc=context.sources.find(s=>s.kind==='document');
+  assert(geo?.kind==='geoparquet'&&doc?.kind==='document');assert.equal(geo.rows.length,1);assert.equal(geo.rows[0].rowIndex,3);
+  assert.equal(geo.continuation?.jobId,f.parent!.input.jobId);assert.equal(geo.summary.window.nextRowIndex,4);
+  assert.equal(doc.parts[0].part.text,document.native.parts.find(p=>p.id===docSelection.partIds[0])!.text);
+  assert.deepEqual(c.stats(),{active:false,captures:2,tools:2});assert.equal(c.reads.length,4);assert(!c.reads.includes(f.parent!.artifact.key));
+  assert.equal(context.association.state,'not_assessed');assert.equal(context.sources.length,2);
+  await assert.rejects(()=>resolveFusionCitationsTx(null as any,ctx,{contextSha256:context.contextSha256,selection},{} as any),
+    errorCode('SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY'));
+  await assert.rejects(()=>proposeFusionAssociations(ctx,{requestKey:'00000000-0000-4000-8000-000000000001',
+    context:{contextSha256:context.contextSha256,selection},scope:null,targets:[]},{} as any),errorCode('SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY'));
+  const parent=f.jobs.get(f.parent!.input.jobId)!;
+  await assert.rejects(()=>assembleSourceFusion(ctx,selection,{...deps,read:async(s,a,b)=>{
+    const loaded=await readFusionResult(s,a,b,c.read);
+    if(s.kind==='geoparquet')parent.accepted_fence=parent.attempt_fence=2;
+    return loaded;
+  }}),errorCode('SOURCE_FUSION_STALE'));
+  parent.accepted_fence=parent.attempt_fence=1;
+  await assert.rejects(()=>assembleSourceFusion(ctx,{sources:[{...f.selection,rowIndices:[1]},docSelection]},deps),
+    errorCode('SOURCE_FUSION_GEOPARQUET_ROW_WINDOW'));
+  save('integrated-mixed-context.json',{qualification:'retained real bytes with memory SQL/document/source/storage/tool controls; no live HTTP admission',
+    selection,context,initialCaptures:2,initialReads:4,parentChangeDenied:true,outOfWindowActionable:true,unsupportedLinkingDenied:true});
+}));
 
 test('retained continuation selects global row 3 at ordinal 1 with exact literal metadata and bounded receipt reads',{skip:!present},()=>local(async()=>{
   const f=fixture(),c=control(f),bounds=budget(),authority=await c.capture(),loaded=await readFusionGeoParquetResult(f.selection,authority,bounds,c.read),

@@ -402,6 +402,8 @@ export type RegistryRegionAmendmentPrepared=RegistryRegionPrepared&{draftSha256:
 export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId:string,raw:unknown,dependencies:Dependencies=defaults,
   prepared?:RegistryRegionAmendmentPrepared){
   const request=RegistryDocumentAmendmentSchema.parse(raw);
+  if(request.addFusion?.selection.sources.some(source=>source.kind==='geoparquet'))
+    throw new AppError(422,'SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY','GeoParquet rows support source context only; citation attachment is unsupported.');
   if(request.addFusion&&Buffer.byteLength(JSON.stringify(request))>32*1024)
     throw new AppError(413,'REGISTRY_DOCUMENT_REQUEST_LIMIT','Select a smaller explicit citation amendment.');
   const {draft,record}=await lockedDraftTx(client,draftId,request.recordId,true,
