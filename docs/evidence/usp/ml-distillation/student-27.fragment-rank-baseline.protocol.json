@@ -1,0 +1,138 @@
+{
+  "assignment": {
+    "bytes": 10509,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-27.fragment-rank-baseline.assignment.json",
+    "physicalSha256": "be96805696afe9a5660e97cbb97eb927bc01fe0a47828007b3822138dd0602a5"
+  },
+  "attempt": 1,
+  "branch": "task/ml-association-student-20261002",
+  "codeAcceptance": {
+    "bytes": 3806,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-native-code-acceptance-v1.json",
+    "physicalSha256": "db55e2d69e47feba4126bf2a4ce94a60e98fc56a5eeaee840065bbf61008a12b"
+  },
+  "developmentCriteria": {
+    "acceptedPositivePrecision": 1,
+    "exactRequestSelectionSets": "2/2",
+    "positiveRecall": 1,
+    "qualification": "One tiny development family only; no source extraction accuracy, official operational qualification, generalization/evaluation, fit gain, canonical linkage, promotion or release. If base route already passes, reconsider adaptation rather than fit automatically; otherwise coordinator separately justifies/freezes one bounded fit/reload.",
+    "resourcesAndCleanup": "All existing bounds and authoritative technical/guard/cleanup acceptance pass.",
+    "unsupportedRequestFalsePositives": 0,
+    "validCompleteVectors": "2/2"
+  },
+  "exclusions": "No executable code edits, training data/labels/teacher, adapter or fit, extra inference, sweeps/evaluation, acquisition/installations/providers, shared gateway/API/catalogue/frontend/dependencies, source refresh/re-extraction, staging/main/other checkout edits, host/credentials/services/Docker/socket/volumes, push/deploy/public activation/promotion.",
+  "exclusiveOwner": {
+    "codeEditsAuthorized": false,
+    "gpuAndModel": true,
+    "learnerThread": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+    "teacherIdleAndBlind": true
+  },
+  "executionHead": "8ae5484d21764777466651e95b184ed10d5c267f",
+  "expectedGeneratedFreeze": {
+    "interpretation": "Pure exact authority result from accepted code and actual final clean learner bytes. Generated native-stage run-freeze.json must match this physical SHA. This metadata is not stage/profile/runtime proof.",
+    "metadata": {
+      "bytes": 10644,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-26-review-v1-fb9a247128184a22ba892710e2e36ac1\\expected-student-27-rank-freeze.json",
+      "physicalSha256": "25173e6ab662ed51dea11152239ce7677bc45dbb815c009e77a53a209fb09f43"
+    }
+  },
+  "hostComparison": {
+    "candidateFocuses": 7,
+    "comparability": "This is the new route original-base reference. Prior generative baseline/v1/v2 remain separate historical failures, not a same-objective baseline or evidence of gain. No adaptation or historical rerun in this task.",
+    "deterministicContributions": "Token identity, complete score vector, threshold and unchanged-fragment citation projection do not establish learned relevance. Empty means no_support_in_supplied_context, never whole-property absence; no canonical association.",
+    "examples": 2,
+    "expectations": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/coordinator/requested-fragment-development-v1-host-expectations.json",
+      "physicalSha256": "71efa01a6e56e35c24a6e9440c01e0e8aeb3be322fedc877343765eae45f943e"
+    },
+    "families": 1,
+    "hostOnlyOutput": "One new immutable fragment-rank-baseline-v1-host UUID directory under the private student parent; preserve originals and every failed attempt.",
+    "metrics": "Report actual complete-vector validity2/2 and chosen IDs/counts per request. Against frozen host sets report exact sets, TP/FP/misses per request and aggregate precision TP/selected (null if zero), positive recall TP/expected (null for an empty expected set), unsupported-request FP and context-limited empty retrieval. Rejected/incomplete vectors get no partial retrieval/exact credit. Keep all request/candidate denominators and raw scores visible.",
+    "timing": "Pin/read once only after authoritative complete output/technical/guard/resource/cleanup acceptance. Never include expectations in stage/code/profile/prompt/input or disclose to teacher. A technical failure leaves expectations unread."
+  },
+  "nativeAcceptance": [
+    "Seven actual rendered prompts preserve full context, unchanged focus order and identical prefix IDs plus one distinct non-special 0/1 token; exact decoded prefix/continuation bytes, tokenizer-file pins and no-truncation input lengths. Record the preflight before scoring.",
+    "Exact pinned original Qwen2.5-0.5B-Instruct, no adapter; existing local-files-only/safetensors/no remote custom code loader, Transformers4.57.6 and original source/family/model receipt. logits_to_keep=1/use_cache=false shape (1,1,vocab_size). Both label logits cast to float32 before margin logit1-logit0; finite native and float32 values recorded.",
+    "Execute the existing isolated synthetic CPU float64 (1e-10) and CUDA float32 (1e-6) two-logit NLL/equal-parent-weight/equal-opposite-gradient proof. No training-label reads, optimizer or model parameter updates; native proof is technical only.",
+    "Preserve seven ordered per-focus raw records before both complete four/three-score vectors and unchanged-fragment projection. Fixed margin>0 selection, ties abstain; no top-k, minimum selections, semantic filter, fallback, forced IDs, partial acceptance, prompt/threshold/model sweep or additional inference.",
+    "Require protected completion.json, complete immutable profile/output/guard, child success, Job closure and ACL/profile/session cleanup plus accepted artifact hashes. fragment-rank-completion.json remains provisional worker evidence; supervisor/accepted receipt is authority. Never modify accepted outputs."
+  ],
+  "outcome": "One comparable original-Qwen support-score reference on the unchanged two development requests/seven candidate focuses. Native technical proof and measured quality remain pending.",
+  "ownedEvidenceOutput": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-baseline-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-baseline-v1.md"
+  ],
+  "plannedInventory": {
+    "canonicalJsonMapSha256": "4df1247121a7f19e79a90ec983be07281148db9daf3bb9d32d22c72ed697c28e",
+    "derivedFrom": "Two pinned donor profile maps, 23 accepted learner source bytes, nine source-only metadata inputs, requirements, assignment and expected freeze. Actual copy/profile must still be observed.",
+    "fileCount": 19674,
+    "inputFiles": [
+      "inputs/context-0.json",
+      "inputs/context-1.json",
+      "inputs/development.json",
+      "inputs/family-freeze.json",
+      "inputs/fragment-rank-assignment.json",
+      "inputs/fragment-route.json",
+      "inputs/fragment-schema-v1.json",
+      "inputs/legacy-schema-v1.json",
+      "inputs/model-acquisition.json",
+      "inputs/preparation.json",
+      "inputs/run-freeze.json",
+      "inputs/runtime-requirements-resolved.txt"
+    ],
+    "modelFiles": 9,
+    "profileRootOrProfileSha256": "Not predetermined; fresh UUID stage only.",
+    "runtimeFiles": 19630,
+    "sourceFiles": 23
+  },
+  "preflight": [
+    "Verify actual supplied full local permissions, exact assignment/protocol/acceptance/freeze pins and clean final branch/HEAD. Keep execution HEAD unchanged until the native phase ends; packet lives in coordinator checkout, no packet cherry-pick to learner before execution.",
+    "Create one fresh stage via existing stage command. Reuse its donor/copy/model receipt/source head/disk checks and existing profile/guard preflight; no separate donor/runtime/weights inventory campaign or existing CPU test rerun. Record stage/profile/command/freeze physical hashes and actual copied file count/bytes.",
+    "Actual generated freeze must match frozen metadata. Compare actual profile file map/count/input set with planned map SHA; no targets/expectations, teacher labels, adapter, historical outputs or generative prompt copied.",
+    "No workarounds or retries on native admission/technical/score/resource/cleanup failure. Preserve failure/checkpoint artifacts; leave host expectations unread and callback. Resume reporting from saved artifacts without restaging or repeating model execution."
+  ],
+  "recordedAtUtc": "2026-10-03T21:49:17.206849+00:00",
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "resourceBounds": {
+    "attention": "sdpa",
+    "batchSize": 1,
+    "cpuThreads": 2,
+    "dtype": "float16",
+    "maxChildPhaseSeconds": 600,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "maxInputTokens": 2048,
+    "maxJobCommittedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "recording": "Job commitment and RSS separate; CUDA allocated/reserved/minimum free, actual host/setup/guard/child/cleanup/model-section and per-focus forward timing where exposed. Preserve existing initialization-only peak reset; no inferred speedup.",
+    "seed": 17,
+    "truncation": false
+  },
+  "return": "Commit only two assigned evidence files after native execution/optional accepted host comparison. Return exact evidence/final/execution heads, dirty paths, actual commands/exits, native pins/raw/proof/score/output/profile/guard/accepted/cleanup and host-comparison receipt or concrete failure with unrun states. One callback to coordinator 01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then stop. No chats/subagents/polls/schedules.",
+  "runCommandAuthority": "Execute exactly once the fresh stage.json command array through the existing guard, after stage/profile/freeze/input authority matches. Save actual command/cwd/timestamps/exits. No command reconstruction or direct/uncontained native execution.",
+  "stageCommand": [
+    "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+    "-B",
+    "-I",
+    "-S",
+    "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_selector_baseline.py",
+    "--assignment",
+    "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-27.fragment-rank-baseline.assignment.json"
+  ],
+  "task": "STUDENT-27-FRAGMENT-RANK-BASELINE",
+  "version": "student-fragment-rank-baseline-protocol/1",
+  "workerSettings": {
+    "interpretation": "Dispatch exposes model/effort but no service tier. Prompt/global preference is not proof of per-turn speed; report only observed settings.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "One consequential native baseline with exact token/score/loss/guard acceptance; sole existing GPU owner.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
