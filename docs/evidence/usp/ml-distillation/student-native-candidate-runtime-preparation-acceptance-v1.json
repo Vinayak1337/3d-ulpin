@@ -1,0 +1,170 @@
+{
+  "version": "student-native-candidate-runtime-preparation-acceptance/1",
+  "recordedAtUtc": "2026-10-03T10:05:28.870845+00:00",
+  "status": "cpu_runtime_admission_preparation_accepted_native_execution_unqualified",
+  "ownerCodeCommit": "9efbf84ab2f821db31d4cf319899fd87bea71e7e",
+  "ownerEvidenceCommit": "9a8f65ac5af330a901b876bae2f4c514787567c9",
+  "integratedCodeCommit": "f580649d23c850097e4f2f27b4c93046ac3fabcd",
+  "integratedEvidenceCommit": "529e761781a1da601337d3a8b5c03a0f44c8c403",
+  "rawOwnerReceiptSha256": "16b00fbe842e22ad154338ab71e91f5da20992457aeb9c834ae389f99a2df48f",
+  "inspection": "Five owned Python deltas reviewed. Exact candidate assignment/freeze admission binds accepted artifact/input/model/policy authorities and all eighteen host/contained source files. Existing stager, worker role, guarded host separation, pretrained loader, controller and single generate loop remain the authorities. Candidate worker completion awaits guard; unchanged supervisor receipt/completion own final acceptance. Defaults and whole-response rejection remain strict.",
+  "verification": {
+    "command": "python -B -I -S - (reference/executed/protected source checks and future inventory inspection; narrow donor-map continuation plus pure candidate payload/source admission)",
+    "audit": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\candidate-runtime-review-20261003.json",
+      "physicalSha256": "6e09f3e0cdc6f0c1d0bf4a585c1148cf8ffb7197163d2b8730f700b521da027c"
+    },
+    "referencePinsMatched": 9,
+    "runtimeSourcePinsMatchedToExecutedGitAndIntegration": 18,
+    "testSourcePinsMatched": 1,
+    "protectedSourcePinsMatched": 31,
+    "inputAuxiliaryProfileReferencesMatched": 11,
+    "donorRuntimeModelMetadataEntriesMatched": 19384,
+    "futureProfileEntries": 19415,
+    "workerFocusedCpuControlsConsumed": 4,
+    "workerInitialSuiteExit": 1,
+    "workerAffectedControlRerunExit": 0,
+    "workerCompileExit": 0,
+    "workerInitialFailure": "Test fixture referenced absent learner-local selector schema; corrected to retained coordinator schema. Only affected historical dispatch control rerun.",
+    "initialCoordinatorAuditExit": 1,
+    "initialCoordinatorAuditFailure": "Audit-only donor inventory assertion compared the 19,384 runtime/model entries to the complete 19,399-entry parent map. All preceding reference/source/protected/input/policy/parent-pin assertions passed. Narrow continuation compares the exact runtime/model projection. No production failure or run.",
+    "coordinatorContinuationExit": 0,
+    "predecessorSuiteRerun": false,
+    "modelStageCreated": false,
+    "modelRun": false,
+    "nativeImports": [],
+    "sourceReconstructionPerformed": false,
+    "expectationsConsumed": false
+  },
+  "privatePlan": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\candidate-runtime-preparation-88451b31b0c6440aa97a5cc0e705aae1\\future-freeze-command-plan.json",
+    "physicalSha256": "db3639c90135b2a5ed430a8d9c1f1ed8e12fcf9c6ba9aacd8f54024a8f210100",
+    "bytes": 38692
+  },
+  "completeSourceFiles": {
+    "scripts/usp/learning/model_isolation.py": {
+      "canonicalLfSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "physicalSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "gitBlobSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "bytes": 23841
+    },
+    "scripts/usp/security/appcontainer_audit.py": {
+      "canonicalLfSha256": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+      "physicalSha256": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca",
+      "gitBlobSha256": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+      "bytes": 38262
+    },
+    "scripts/usp/learning/association/association_student.py": {
+      "canonicalLfSha256": "434d77acf78e6ac146a281eac8c706a971623d084239600a5585cd36ef1e9615",
+      "physicalSha256": "434d77acf78e6ac146a281eac8c706a971623d084239600a5585cd36ef1e9615",
+      "gitBlobSha256": "434d77acf78e6ac146a281eac8c706a971623d084239600a5585cd36ef1e9615",
+      "bytes": 7783
+    },
+    "services/geo/geo/__init__.py": {
+      "canonicalLfSha256": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+      "physicalSha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+      "gitBlobSha256": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+      "bytes": 75
+    },
+    "services/geo/geo/usp_learning/__init__.py": {
+      "canonicalLfSha256": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+      "physicalSha256": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335",
+      "gitBlobSha256": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+      "bytes": 83
+    },
+    "services/geo/geo/usp_learning/resources.py": {
+      "canonicalLfSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "physicalSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "gitBlobSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "bytes": 6198
+    },
+    "services/geo/geo/usp_learning/association/__init__.py": {
+      "canonicalLfSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "physicalSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "gitBlobSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "bytes": 79
+    },
+    "services/geo/geo/usp_learning/association/student.py": {
+      "canonicalLfSha256": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+      "physicalSha256": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+      "gitBlobSha256": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+      "bytes": 7893
+    },
+    "services/geo/geo/usp_learning/association/validation.py": {
+      "canonicalLfSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "physicalSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "gitBlobSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "bytes": 8961
+    },
+    "services/geo/geo/usp_learning/association/selectors.py": {
+      "canonicalLfSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+      "physicalSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+      "gitBlobSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+      "bytes": 10553
+    },
+    "services/geo/geo/usp_learning/association/selector_baseline.py": {
+      "canonicalLfSha256": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+      "physicalSha256": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+      "gitBlobSha256": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+      "bytes": 16013
+    },
+    "services/geo/geo/usp_learning/association/candidate_baseline.py": {
+      "canonicalLfSha256": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+      "physicalSha256": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+      "gitBlobSha256": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+      "bytes": 11462
+    },
+    "services/geo/geo/usp_learning/association/candidate_selection.py": {
+      "canonicalLfSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+      "physicalSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+      "gitBlobSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+      "bytes": 11113
+    },
+    "services/geo/geo/usp_learning/association/native_candidates.py": {
+      "canonicalLfSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+      "physicalSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+      "gitBlobSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+      "bytes": 13544
+    },
+    "services/geo/geo/usp_learning/association/selector_constraints.py": {
+      "canonicalLfSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+      "physicalSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+      "gitBlobSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+      "bytes": 26266
+    },
+    "services/geo/geo/native_ifc.py": {
+      "canonicalLfSha256": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+      "physicalSha256": "6372a5009fe23d6f43decb114883d31c9c4db4345196b59734638249ca5d866e",
+      "gitBlobSha256": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+      "bytes": 18926
+    },
+    "scripts/usp/learning/association/stage_selector_baseline.py": {
+      "canonicalLfSha256": "e6635654160e4858a589870f048b61ec22e860cb4285c07b06fa4e32aca93bc3",
+      "physicalSha256": "e6635654160e4858a589870f048b61ec22e860cb4285c07b06fa4e32aca93bc3",
+      "gitBlobSha256": "e6635654160e4858a589870f048b61ec22e860cb4285c07b06fa4e32aca93bc3",
+      "bytes": 12057
+    },
+    "scripts/usp/learning/association/stage_baseline.py": {
+      "canonicalLfSha256": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93",
+      "physicalSha256": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93",
+      "gitBlobSha256": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93",
+      "bytes": 7005
+    }
+  },
+  "nativeResourceQualification": "Unmeasured in CPU preparation. Actual tokenizer/BPE/config/callback/EOS, stage/profile/Job/CUDA/cleanup and selection must pass in the separately frozen run.",
+  "quality": "Prior model result remains 0/2 usable, 0/6 correct. Candidate facts, forced validity and hand-selected CPU controls are not learned accuracy. Held-out/canonical/operational/generalization qualification stays open.",
+  "nextDecision": "One explicitly frozen original-base/no-adapter candidate baseline against the same two source-only admitted snapshots. No fit, alternative policy, automatic retry, teacher feedback or evaluation opening.",
+  "nextAssignment": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-14.candidate-baseline.assignment.json",
+  "nextProtocol": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-14.candidate-baseline.protocol.json",
+  "settings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "primaryStagingReadOnlyObservation": "1d90fd65e0b1ed71382b1d69be8a5e529d1b57f8"
+}
