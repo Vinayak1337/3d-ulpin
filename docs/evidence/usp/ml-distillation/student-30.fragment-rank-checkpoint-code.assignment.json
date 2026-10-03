@@ -1,0 +1,395 @@
+{
+  "approvedDonors": {
+    "interpretation": "Code task may read profile/acquisition metadata only. No actual runtime/model/tokenizer bytes, copy/profile generation or native phase. Reuse exact existing donors in future frozen stage.",
+    "model": {
+      "approvedSubset": "model/* and exact original model acquisition metadata only",
+      "profileSha256": "86b0f0b19d4e740f2e6e38f7eea8eaccd24b7b3072883f8b7d22421c39b8ef75",
+      "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80"
+    },
+    "modelIdentity": {
+      "model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "weightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+    },
+    "runtime": {
+      "approvedSubset": "runtime/* and exact requirements metadata only",
+      "profileSha256": "a09ee7907b8dc207b01712d84ec33245218773f479cf91301957ee76b32ae503",
+      "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-citation-view-fit-fffafce9835d4f59bef71f4377bb5619"
+    }
+  },
+  "attempt": 1,
+  "branch": "task/ml-association-student-20261002",
+  "callback": {
+    "authorizedBy": "docs/orchestration/ML_DISTILL_01.md",
+    "coordinatorThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759"
+  },
+  "checks": [
+    "One focused -B -I -S native-import-blocked CPU test invocation with real retained train/metadata and disclosed tensor/model/serialization/guard doubles; in-memory compile seven owned sources and git diff --check. No full old test/runtime campaign.",
+    "Actual positive phase stager/worker authority and input/freeze/proof bindings with doubles reach first intercepted mkdir/copy boundary; disabled/mixed/forged preceding acceptance refused before effects. Narrow affected historical/default dispatch check through doubles.",
+    "Focused state roundtrip and uninterrupted-versus-split double control checks cursor/loss/order and modeled optimizer/scaler/RNG fields; malformed/incomplete state and unknown/changed file pins fail closed. Native serialization/numeric equivalence stays unrun; mock proof is not native proof.",
+    "Return disabled prototypes for three phases, checkpoint schema/field/tensor maps, actual future source closure and lean native proof plan. No executable positive assignment, profile copy, native/model/GPU/run or expectation access. Protected code/train authorities exact."
+  ],
+  "exclusions": [
+    "No actual native imports/tokenizer/model/GPU/stage/profile/fit/inference, live providers/services/host changes, code outside seven owned paths, training republish/new labels/teacher/re-extraction, development contexts/requests/expected sets (baseline aggregate failure may guide this fixed objective only), evaluation/retired corpora, source acquisition/installations, dependencies/shared API/catalogue/frontend/staging/main/push/deploy/promotion. Preserve all sources, original publications and failed/successful historical experiments.",
+    "No edits to frozen fragment_rank.py/fragment_rank_runtime.py/fragment_rank_fit.py/fragment_rank_adapter.py, teacher/train labels/publication, development inputs/host expectations/held-out. No model/hyperparameter/threshold sweep or second learner."
+  ],
+  "executionAllowance": {
+    "cpuStdlibControls": true,
+    "dependencyInstall": false,
+    "development": false,
+    "evaluation": false,
+    "fit": false,
+    "inference": false,
+    "loadModel": false,
+    "nativeImports": false,
+    "promotion": false,
+    "readRetainedTrainAndMetadata": true,
+    "stageModelRun": false
+  },
+  "executionHead": "7a42a9e3d70b816612def13dec7125b9215d4dc7",
+  "frozenRecipe": {
+    "assignment": {
+      "bytes": 20321,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-29.fragment-rank-fit.assignment.json",
+      "physicalSha256": "fa4d862899f095d6fe4ceec36a3f953fa7978ad5b7cc5122efd08d68488d2d17"
+    },
+    "lossImplementation": {
+      "accumulation": "complete parent; sequential candidate forward/backward, graph released after each; one unscale/check/clip/step",
+      "epochReporting": "sum of parent contributions at their successive parameter states; not one full-global per-step objective",
+      "logitsToKeep": 1,
+      "lossDtype": "float32",
+      "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+      "proof": {
+        "actualLossAndAccumulationHelpers": true,
+        "atol": 1e-06,
+        "cpuReference": "independent float64 binary NLL and analytic gradient",
+        "fp16GradientAtol": 0.0001,
+        "fp16GradientRtol": 0.001,
+        "gradientScale": 128.0,
+        "nativeDevices": [
+          "cpu",
+          "cuda"
+        ],
+        "nativeLogitsDtypes": [
+          "float32",
+          "float16"
+        ],
+        "nativeLossDtype": "float32",
+        "rtol": 1e-06,
+        "syntheticOnly": true
+      },
+      "version": "association-fragment-rank-weighted-nll/1",
+      "weight": "published numerator/denominator = 1/(10*candidateCount)"
+    },
+    "numerics": {
+      "adamBetas": [
+        0.9,
+        0.999
+      ],
+      "adamEpsilon": 1e-08,
+      "adapterDtype": "float32",
+      "attention": "sdpa",
+      "baseDtype": "float16",
+      "checkpointing": "non-reentrant",
+      "initialGradientScale": 128.0,
+      "logits": "last prompt position, native 0/1 logits cast float32 before two-label NLL",
+      "lossDtype": "float32",
+      "scaleGrowthInterval": 2000,
+      "shuffle": "Random(17), one permutation per epoch"
+    },
+    "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+    "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+    "qualification": "57 related pairs from ten provisional synthetic parents in two train families; needs_independent_review. Sarvam excluded. Loss history is in-sample optimization only, not relevance or generalized learning.",
+    "settings": {
+      "alpha": 16,
+      "batchSize": 1,
+      "cacheDuringFit": false,
+      "cpuThreads": 2,
+      "dropout": 0.05,
+      "epochs": 6,
+      "excludeOverlongRows": false,
+      "gradientAccumulation": "one complete parent with exact published 1/(10*candidateCount) weights",
+      "gradientCheckpointing": true,
+      "gradientClipNorm": 1,
+      "learningRate": 0.0002,
+      "loss": "two next-token label logits only; prompt-only forward; no JSON/ID/hash/EOS target loss",
+      "maxPromptTokens": 4096,
+      "maxSequenceTokens": 4096,
+      "method": "rank-support LoRA, shared original causal model lifecycle",
+      "optimizer": "AdamW",
+      "rank": 8,
+      "seed": 17,
+      "targets": [
+        "q_proj",
+        "v_proj"
+      ],
+      "truncation": false,
+      "warmupSteps": 0,
+      "weightDecay": 0
+    },
+    "trainingPlan": {
+      "counts": {
+        "emptyParents": 3,
+        "families": 2,
+        "negative": 45,
+        "pairs": 57,
+        "parents": 10,
+        "positive": 12
+      },
+      "datasetSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd",
+      "epochs": 6,
+      "pairs": 57,
+      "parentCandidateCounts": {
+        "teacher-fragments-v1-01": 4,
+        "teacher-fragments-v1-02": 7,
+        "teacher-fragments-v1-03": 5,
+        "teacher-fragments-v1-04": 6,
+        "teacher-fragments-v1-05": 7,
+        "teacher-fragments-v1-06": 6,
+        "teacher-fragments-v2-pair01-a": 7,
+        "teacher-fragments-v2-pair01-b": 7,
+        "teacher-fragments-v2-pair02-a": 4,
+        "teacher-fragments-v2-pair02-b": 4
+      },
+      "plannedCandidateContributions": 342,
+      "plannedUpdates": 60,
+      "seed": 17,
+      "teacherExamples": 10,
+      "version": "association-fragment-rank-training-plan/1",
+      "weighting": "exact rational 1/(10*candidateCount); no resampling or positive weighting"
+    }
+  },
+  "futureRuntimeSources": [
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_adapter.py",
+    "scripts/usp/learning/association/stage_baseline.py",
+    "scripts/usp/learning/association/stage_fragment_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_rank_phase.py",
+    "scripts/usp/learning/model_isolation.py",
+    "scripts/usp/security/appcontainer_audit.py",
+    "services/geo/geo/__init__.py",
+    "services/geo/geo/native_ifc.py",
+    "services/geo/geo/usp_learning/__init__.py",
+    "services/geo/geo/usp_learning/association/__init__.py",
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "services/geo/geo/usp_learning/association/candidate_baseline.py",
+    "services/geo/geo/usp_learning/association/candidate_selection.py",
+    "services/geo/geo/usp_learning/association/chunked_loss.py",
+    "services/geo/geo/usp_learning/association/citation_view.py",
+    "services/geo/geo/usp_learning/association/fragment_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_baseline.py",
+    "services/geo/geo/usp_learning/association/fragment_rank.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py",
+    "services/geo/geo/usp_learning/association/fragment_selection.py",
+    "services/geo/geo/usp_learning/association/memory_observation.py",
+    "services/geo/geo/usp_learning/association/native_candidates.py",
+    "services/geo/geo/usp_learning/association/query_attention.py",
+    "services/geo/geo/usp_learning/association/reclamation.py",
+    "services/geo/geo/usp_learning/association/selector_baseline.py",
+    "services/geo/geo/usp_learning/association/selector_constraints.py",
+    "services/geo/geo/usp_learning/association/selectors.py",
+    "services/geo/geo/usp_learning/association/student.py",
+    "services/geo/geo/usp_learning/association/validation.py",
+    "services/geo/geo/usp_learning/resources.py"
+  ],
+  "implementation": [
+    "New phase authority delegates unchanged rank payload/lineage/prompt/recipe helpers. Explicit association-fragment-rank-phase-fit-assignment/1 and association-fragment-rank-phase-fit-freeze/1, future task STUDENT-31-FRAGMENT-RANK-PHASE-FIT. Reject disabled/prototype/mixed/unknown versions and malformed phase/previous-state authority before side effects/native imports. Preserve v1 rank fit, generative/selector paths and rank reload refusal. Do not loosen generic stage_adapter.accepted_fit.",
+    "Fixed three ranges0->20,20->40,40->60 over SAME six seed17 orders and60 updates/342 contributions. Global update/epoch/parent/candidate identities and loss history continue; never restart epoch1 or relabel resumed work as fresh. Each phase20 complete parents/114 contributions. No new scheduler: constant AdamW learning rate unchanged.",
+    "Save only at complete-parent boundaries after shared scaler.step/update, synchronization and zero_grad/reclamation, with no live candidate graph/gradients. Save96 named fp32 adapter masters/540672 params, exact AdamW moments/step and parameter-group name/order/settings, all five GradScaler entries, global cursor/contribution counts/loss prefix/schedule bindings, torch CPU/single-device CUDA RNG and Python RNG. Bind originalbase290-tensor digest and model/data/policy/prompt/recipe/execution-source/experiment/phase-chain identity. Record any other training RNG actually used; do not add NumPy or another harness just to serialize unused state.",
+    "Installed safetensors for tensors and strict bounded JSON for explicit metadata; no pickle or torch.load/save. Enforce exact keys/names/counts/shapes/dtypes/finite values/sizes, cursor/step/contribution/loss-prefix and immutable file hashes before loading; refuse unexpected/reparse/path-alias inputs. Write exclusive files and final manifest only after durable closed writes and roundtrip equality. Partial save is not published/resumable.",
+    "Resume only from an exact independently accepted successful preceding phase, never arbitrary checkpoint directories or failed logs. Host stager uses protected accepted_outputs/completion/guard authority plus explicit phase checks; freeze checkpoint files/proof/accepted map and preceding lineage into next readonly profile inputs. No new containment CLI/path capability. Child sees only pinned readonly copies. Each subsequent phase requires a separate positive coordinator assignment.",
+    "Shared original-model/LoRA/head/numerics/attention/reclamation loader remains. Create fresh model/optimizer/scaler, verify unchangedbase and checkpoint identity, restore masters/moments/scaler/cursor, and restore RNG after initialization/controls/proofs immediately before next training parent. Verify exact restoration and RNG-neutral save/readback. Synthetic controls isolate/restore real training RNG. Local progress20 updates; checkpoint history full prefix; distinguish both. Every phase restores attention scope, verifies unchangedbase/exact checkpoint, then explicit phase result/completion. Phases1/2 cannot claim final fit. Phase3 alone emits full60-update final adapter/result with chain and saved-state proof.",
+    "Implement one tiny future native dropout+AdamW+GradScaler split-versus-uninterrupted control with ACTUAL save/restore helpers and fresh objects. Compare next losses/gradients/masters/optimizer/scaler/CPU-CUDA-Python RNG/cursor exactly. Reuse installed runtime and reclamation.py state-fingerprint approach; retain attribution if adapted. No new dependency/framework. Proof UNRUN now, required inside separately frozen first native phase before model fitting."
+  ],
+  "outcome": "Implement safe full-state checkpoints and a separately versioned bounded20-update rank-fit phase route, preserving the shared original-model fit lifecycle. Return reviewed-ready code, targeted CPU controls and disabled future prototypes; execute no model/native phase.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-checkpoint-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-checkpoint-code-v1.md"
+  ],
+  "ownedExistingSourcePins": {
+    "scripts/usp/learning/association/association_adapter.py": "c834545c06f570f39971fece90d660ff6a8f0f6588ed8534e5fa3f7fc6096d23",
+    "scripts/usp/learning/association/stage_fragment_adapter.py": "9b21d48924f890328f3f881782c92ca04917b8ce0a30a700f7a90829c90f6b27",
+    "services/geo/geo/usp_learning/association/adapter.py": "2781b8d80ad2fa92c30d15445581d2cbbb0810129e115fd500de74bd78be0758"
+  },
+  "ownedExistingSources": [
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_adapter.py"
+  ],
+  "ownedNewSources": [
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py",
+    "scripts/usp/learning/association/stage_fragment_rank_phase.py",
+    "scripts/usp/learning/association/test_fragment_rank_checkpoint.py"
+  ],
+  "privateOutputParent": "E:/BhuAayam-data/task-data/ml-distillation/student",
+  "protectedExistingSourceCount": 40,
+  "protectedExistingSourcePins": {
+    "scripts/usp/learning/association/association_student.py": "31e3a892ee252b108bf8bd8ffd793bd00898ef65c55cb4908e53121513292081",
+    "scripts/usp/learning/association/prepare_fragment_rank.py": "0182b2f48983e61bae11f0fb63ca1a04a3f7c0e2a44b0aad18b186aab40f606d",
+    "scripts/usp/learning/association/stage_adapter.py": "4293ead8a761c5a7fbe8c9300e642e549bae5c0cc2dbe6d96fbe9d671f239fee",
+    "scripts/usp/learning/association/stage_baseline.py": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93",
+    "scripts/usp/learning/association/stage_fragment_rank.py": "bb36758d2a3aab8a7786c32e57329af454435d122bbbdc39517fbe4a98459930",
+    "scripts/usp/learning/association/stage_fragment_support_v2.py": "500d5e1b70b581b5e25e5de6fbfb0bbc727f9bf8c30e02f80fb66f5e313eca1d",
+    "scripts/usp/learning/association/stage_selector_baseline.py": "021a461739ff6f9410004f98de5476dbe2100e355012daf881c79d41b028769b",
+    "scripts/usp/learning/association/test_fragment_rank.py": "ce048537659d67753fd4fb9dd0b491c8838953993da4126ef3b8eda88c6f6e92",
+    "scripts/usp/learning/association/test_fragment_rank_fit.py": "2131af60f355ee142b4b77ea93121f3646fbf399759b5289163e85a108e490a8",
+    "scripts/usp/learning/association/test_fragment_rank_runtime.py": "1238b9621de2bc15f2b328960c7f35ced8885457f8d5d865e7c6afdd87d78746",
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+    "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+    "services/geo/geo/native_ifc.py": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+    "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "services/geo/geo/usp_learning/association/candidate_baseline.py": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+    "services/geo/geo/usp_learning/association/candidate_selection.py": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+    "services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "services/geo/geo/usp_learning/association/citation_view.py": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+    "services/geo/geo/usp_learning/association/fragment_adapter.py": "071b171547017f942432105a32cb5303a175d6ec8243c6bf1dd7df1e49e39b4d",
+    "services/geo/geo/usp_learning/association/fragment_baseline.py": "63c923ed5d32593388852aa2e8b7fe6eb96682796295881c5a634c9fc08a778d",
+    "services/geo/geo/usp_learning/association/fragment_rank.py": "292b9922421b5140f80a615df0cf1f24840c33d9757e58a574d6a7bc46a1af20",
+    "services/geo/geo/usp_learning/association/fragment_rank_adapter.py": "55b8f4d90bc33551fb9ae0776b62a60b4bbda7b69ef66956e79f6395a25669ab",
+    "services/geo/geo/usp_learning/association/fragment_rank_baseline.py": "705617988bcd208656192059e05b973c37cc261875e1ca8996f28122f32d40f1",
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py": "b082400d907e1732d8d674870078e76df92780618763390437a23dc6dd2c847c",
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py": "96d80aeba24d95e8067efb13082d7aa48176fab2a5524fba33693ea496e0f200",
+    "services/geo/geo/usp_learning/association/fragment_selection.py": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0",
+    "services/geo/geo/usp_learning/association/fragment_support_v2.py": "88d327bb359c2491245581c4d3aa569b4c1fdb2e0971a7e6be0bf1a39104c5b9",
+    "services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+    "services/geo/geo/usp_learning/association/native_candidates.py": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+    "services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+    "services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+    "services/geo/geo/usp_learning/association/selector_adapter.py": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+    "services/geo/geo/usp_learning/association/selector_baseline.py": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+    "services/geo/geo/usp_learning/association/selector_constraints.py": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/student.py": "8de7e504c5ca37d54a9a73f05d771e7a344c710086370bfc12fc07f77e8c2798",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+  },
+  "recordedAtUtc": "2026-10-03T23:55:04.243130+00:00",
+  "recovery": {
+    "acceptance": {
+      "bytes": 6077,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-fit-timeout-acceptance-v1.json",
+      "physicalSha256": "f2ac2cd0110e225154c79f814de79ba3755480a0ac8abcf1667945079da632c3"
+    },
+    "changedCondition": "Checkpointing plus bounded20-update phases only; no unchanged60-update rerun or600-second/resource-cap increase.",
+    "lost44Updates": "Cannot resume/count them; no checkpoint exists. Future experiment starts fresh.",
+    "packetConstructionCorrection": {
+      "bytes": 512,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-30-packet-v1-3ba144a6704d4f0f96c4205a28477878\\packet-generation-failure.json",
+      "physicalSha256": "d704bac475cc4f4b9061e9317ba53fa4f1984708a5c0b10b5d12cd47cf3b4b45"
+    },
+    "preserveFailedAttempt": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9",
+    "privateReview": {
+      "bytes": 21298,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-29-review-v1-992b1bca9f7b4bb99ea3c59141618f09\\review.json",
+      "physicalSha256": "4641c49752373ce4e879cd75280e683d414b30cdfae0ee6bb649f013068fbca2"
+    },
+    "research": {
+      "bytes": 8993,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-timeout-recovery-research-v1.json",
+      "physicalSha256": "a043d0427ffcadc56ff6275e5368353fd8e3024ae581b06c4f7fb182831f73d0"
+    }
+  },
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "return": "Commit only owned code and two evidence paths; return code/evidence/finalHEAD, requested-versus-observed settings/permissions, exact commands/exits/doubles/source-state/prototype pins, limitations and clean checkout; one coordinator callback then end. Stop on material dependency/ownership blocker with narrow correction request. No new chats/subagents, polling/schedules, staging/shared API/catalogue/frontend/dependency/service/Docker/host/guard-limit changes, provider/push/main/deploy.",
+  "sourceSetInterpretation": "Only seven owned source paths may change. Keep historical rank authority/loss/helpers, originalhead/LoRA settings, shared loader/optimizer/numerics, query attention, reclamation, isolation/guard and old saved-fit checker. New phase route uses narrow dispatch/lifecycle hooks in three shared files. Future expected runtime set35 is explicit; return actual import/source closure and justify mismatch before execution.",
+  "sourceSnapshot": {
+    "bytes": 12396,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-30-packet-v1-3ba144a6704d4f0f96c4205a28477878\\source-snapshot.json",
+    "physicalSha256": "66ee32064225c2316d08f9b2ec7527de5023735c11f3bff12762afd940dbbbbb"
+  },
+  "stagingReadOnlyHead": "d4c289267c81ba33306d77420e027fbc2b2c11ed",
+  "task": "STUDENT-30-FRAGMENT-RANK-CHECKPOINT-CODE",
+  "trainOnlyAuthorities": {
+    "counts.json": {
+      "bytes": 84,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\counts.json",
+      "physicalSha256": "3e50dc8a3a1bb35d65da810623261981a094660a69b071d59d874e12c0d6109f"
+    },
+    "inputs/family-freeze.json": {
+      "bytes": 10867,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\family-freeze.json",
+      "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+    },
+    "inputs/fragment-schema-v1.json": {
+      "bytes": 4537,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\fragment-schema-v1.json",
+      "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082"
+    },
+    "inputs/rows-v2.receipt.json": {
+      "bytes": 4109,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\rows-v2.receipt.json",
+      "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+    },
+    "inputs/schema-v1.json": {
+      "bytes": 3966,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\schema-v1.json",
+      "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    "inputs/source-support-v2.receipt.json": {
+      "bytes": 33399,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\source-support-v2.receipt.json",
+      "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+    },
+    "inputs/train-teacher-fragments-v1.jsonl": {
+      "bytes": 82626,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v1.jsonl",
+      "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+    },
+    "inputs/train-teacher-fragments-v2.jsonl": {
+      "bytes": 138050,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v2.jsonl",
+      "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+    },
+    "inputs/training-row-pins-v2.json": {
+      "bytes": 6560,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\training-row-pins-v2.json",
+      "physicalSha256": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+    },
+    "lineage.json": {
+      "bytes": 56203,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\lineage.json",
+      "physicalSha256": "7b2291969484aeccb913704e7d88e295f6d7fd26a6cf0de9aea9c87061fb7026"
+    },
+    "policy.json": {
+      "bytes": 3727,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\policy.json",
+      "physicalSha256": "9237baa39a7927e4071054bab4fc080356c4f3123d6ac35717f2da4d3b5a2002"
+    },
+    "scoring-inputs.jsonl": {
+      "bytes": 271577,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\scoring-inputs.jsonl",
+      "physicalSha256": "753533a1c654274316aed6b2f06641d20ad47d73bfc2375ba1d73d6e05e12696"
+    },
+    "system-prompt.txt": {
+      "bytes": 573,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\system-prompt.txt",
+      "physicalSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5"
+    },
+    "train-fragment-rank-v1.jsonl": {
+      "bytes": 72525,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\train-fragment-rank-v1.jsonl",
+      "physicalSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd"
+    }
+  },
+  "version": "association-fragment-rank-checkpoint-code-assignment/1",
+  "workerSettings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Complete optimizer/scaler/RNG and phase-authority continuity is consequential; reuse the existing learner context and single GPU ownership. Dispatch has no tier argument; report supplied settings honestly.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
