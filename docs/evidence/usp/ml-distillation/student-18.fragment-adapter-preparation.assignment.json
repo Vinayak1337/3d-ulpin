@@ -1,0 +1,108 @@
+{
+  "version": "student-fragment-adapter-preparation-assignment/1",
+  "task": "STUDENT-18-FRAGMENT-ADAPTER-PREP",
+  "recordedAtUtc": "2026-10-03T12:53:09.351486+00:00",
+  "outcome": "Implement exact train-only fragment representation/admission and future fit/reload staging through existing accepted machinery. Return executable CPU-checked code and non-executable phase templates; no model phase now.",
+  "baseCommit": "a1f424f7d0496f920388c51c0fc891b3c9a2762e",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "permissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "workerSettings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "reason": "The new training representation must preserve accepted resource/containment, split and reload authority while correcting a measured selection miss.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "tierInterpretation": "Dispatch has no tier argument; prompts and defaults do not prove a running tier."
+  },
+  "executionAllowance": {
+    "cpuImplementation": true,
+    "cpuAdmissionControls": true,
+    "stageModelRun": false,
+    "nativeTokenizerOrModelLoad": false,
+    "inference": false,
+    "fit": false,
+    "reload": false,
+    "evaluation": false,
+    "promotion": false
+  },
+  "authorities": {
+    "baselineAcceptance": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-baseline-acceptance-v1.json",
+      "physicalSha256": "3b4db4ad281410d5213f4dc4f2d472a0fee5d780f5dd958a836fc87a6fbaf119",
+      "bytes": 7839
+    },
+    "teacherAcceptance": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher-fragment-requests-acceptance-v1.json",
+      "physicalSha256": "40d99bf7d0f165d5c1ebbb88aeff40b6e7ba54fcfe22a9be5684ad39a78fcf26",
+      "bytes": 3098
+    },
+    "trainingData": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\train-teacher-fragments-v1.jsonl",
+      "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742",
+      "bytes": 82626
+    },
+    "fragmentCodecAcceptance": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-selection-preparation-acceptance-v1.json",
+      "physicalSha256": "9cc757486f411069182dcd2b2f38e6ea368afcd90ec3277e76ff304ac4f5ca9f",
+      "bytes": 6122
+    },
+    "fragmentRuntimeAcceptance": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-runtime-preparation-acceptance-v1.json",
+      "physicalSha256": "416357c4d4be26d6c79ff5113ed4f0009e150a759030e94a968d63e47431f960",
+      "bytes": 4857
+    },
+    "sourceOnlyBundle": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/coordinator/requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb",
+      "preparationSha256": "eef78431d063df9a2b9e337b74fe6ce7d6b40a63783a9e5eb7b583688bc41bc4"
+    },
+    "donorProfile": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\profile.json",
+      "physicalSha256": "86b0f0b19d4e740f2e6e38f7eea8eaccd24b7b3072883f8b7d22421c39b8ef75",
+      "bytes": 2668470
+    },
+    "authorityUse": "Training consumes only the six frozen Haryana/Bihar requested-fragment rows. Development source bundle is a future reload input, never fit rows. No host expectations/labels are opened or copied in this preparation."
+  },
+  "ownedCodePaths": [
+    "services/geo/geo/usp_learning/association/fragment_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_adapter.py",
+    "scripts/usp/learning/association/test_fragment_adapter.py",
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "services/geo/geo/usp_learning/association/student.py",
+    "scripts/usp/learning/association/association_adapter.py"
+  ],
+  "ownershipInterpretation": "New leaf modules/stager/control plus minimal explicit default-off representation/dispatch/loader hooks in the three existing owned seams. No changes to historical defaults/assignments/admissions or old artifacts. Ask coordinator by callback only if an actual required seam lies outside these paths; do not broaden ownership silently.",
+  "implementation": [
+    "Use the accepted fragment codec and identical prompt/policy/schema/family. Admit the exact original six teacher rows/35 candidate appearances/10 selected fragments, preserving contexts, source fragments/order/provenance, requests, targets and supervision. Verify train family and raw dataset pins, original model input equality and strict target projection. Supervision stays provisional_synthetic_supervision/needs_independent_review, never operational or independent truth; Sarvam remains excluded.",
+    "Provide a FragmentRepresentation through existing adapter.encode_training and adapter.fit. Use source-backed technical input wrappers from checked_context where needed for example identity; do not create dummy legacy claims/abstentions merely to satisfy the old validator. Add a minimal optional row-validation representation seam if required, with the original legacy/selector path unchanged.",
+    "Reuse the accepted fitting loop, optimizer, float32 LoRA parameters, assistant-only loss plus EOS, exact frozen base/tensor/save proof, 64-token checkpointed head, inter-update/pre-backward reclamation and 128-query attention controls. No new training loop/loader/controller/guard. Intended future fixed plan: six accepted rows times six seed17 epochs equals 36 updates; original FIT/NUMERICS, q_proj/v_proj rank8/alpha16/dropout0.05, AdamW lr0.0002 and existing 4096-token combined sequence limit. Native tokenizer lengths and actual resource fit remain later checks; no truncation, exclusion, target-shortening or policy sweep.",
+    "Add distinct exact fit and reload assignment/freeze versions through the existing association_adapter CLI/guard argument capabilities and a leaf stager reusing accepted copy/profile helpers. PREP and mixed/unknown/stale source/input/target versions must fail before mkdir/native work. Complete physical/canonical/Git transitive code and exact source/model/runtime/input/representation/recipe pins are required. Historical admissions remain strict; do not relax fragment_baseline protected-source hashes for the changed hook.",
+    "Fit allowlist contains only training data/contract/family/model/representation authorities; no development examples or host expectations become fit inputs, rows or labels. Future reload uses the exact saved accepted adapter and unchanged complete development requests/contexts, no training rows/targets or host expectations in its profile/prompts. Loader hook must be explicit and default-off for exact admitted fragment adapter reload. Reuse verify_adapter_files and reload_and_compare with immutable base and all 96 saved tensors exactly checked; no raw/unconstrained policy change.",
+    "Leave guard/supervisor completion and output acceptance authoritative. Fit must return actual update/order/supervised-token/base/save/resource/cleanup proof before a separate reload freeze can bind saved adapter hashes. No automatic fit/reload/model experiment is authorized by this preparation. Future task IDs are STUDENT-19-FRAGMENT-FIT and STUDENT-20-FRAGMENT-RELOAD; templates remain executable=false, disabled allowances and unresolved actual final HEAD/phase hashes."
+  ],
+  "resourceBounds": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600,
+    "cpuThreads": 2,
+    "batchSize": 1,
+    "recording": "Job commitment and RSS separate. Preserve original guard/resource controls and model/runtime. Preparation starts no GPU/native phase or process."
+  },
+  "verification": "Compile changed sources once and run a few focused CPU controls for exact six-row fragment target/prompt admission, split/pin/mixed-mode refusal, explicit loader/CLI dispatch and historical defaults, plus fake saved-fit binding as needed. Reuse prior suites/control receipts; do not rerun donor/runtime/model/tokenizer, old mapping/association fits, evaluation or source reconstruction campaigns. Return exact source/profile/input/recipe metadata and non-executable phase commands. Native fit is a later separately frozen run.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-adapter-preparation-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-adapter-preparation-v1.md"
+  ],
+  "privateOutputRoot": "One new uniquely named fragment-adapter-preparation directory under E:/BhuAayam-data/task-data/ml-distillation/student; retain originals and historical artifacts.",
+  "protectedSeams": "model_isolation.py, appcontainer_audit.py, resources.py, chunked_loss.py, reclamation.py, query_attention.py, memory_observation.py, fragment_selection.py, fragment_baseline.py, legacy/selector/candidate admissions/stagers, all schemas/family files and teacher datasets remain read-only. No dependencies, shared API/gateway/catalogue/frontend/staging/main, provider calls, acquisitions/installations, host/services/Docker/volumes, credentials, push/deploy or promotion.",
+  "callback": "Return code/evidence commits, actual commands/exits, exact pins, limits and cleanup to coordinator 01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then stop. One writer/GPU owner; teacher idle. No new chats/subagents/polls/schedules.",
+  "stagingObservedReadOnlyHead": "3a486330cfd568464a715c28cd7e1b7bca788f48",
+  "stagingObservation": "Seven shared integration paths are dirty and belong to the project lead; this lane does not edit or integrate in staging."
+}
