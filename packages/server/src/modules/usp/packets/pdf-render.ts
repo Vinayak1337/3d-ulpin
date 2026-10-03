@@ -2,6 +2,7 @@ import {jsPDF} from 'jspdf';
 import {PacketRegionWorkerSchema} from '../../../../../contracts/src/packet-region';
 import {PacketPdfAssemblySchema,PACKET_PDF_RECIPE,PACKET_PDF_LIMITS} from '../../../../../contracts/src/usp/packet-pdf';
 import {PacketPdfMultiAssemblySchema,PACKET_PDF_MULTI_RECIPE,PACKET_PDF_MULTI_LIMITS} from '../../../../../contracts/src/usp/packet-pdf';
+import {PacketPdfOriginalsAssemblySchema,PacketPdfOriginalSetSchema,PACKET_PDF_ORIGINALS_RECIPE} from '../../../../../contracts/src/usp/packet-pdf';
 import {AppError} from '../../../infrastructure/errors';
 import {sha256} from '../../../infrastructure/storage';
 import {canonical,fingerprint} from '../../cases/domain';
@@ -36,22 +37,32 @@ export function assemblePacketPdf(rawRegion:unknown,png:Buffer){
 /** Fetch/validate/add one crop at a time. jsPDF retains compressed image streams,
  * not a collection of decoded page bitmaps. No original page object is copied. */
 export async function assemblePacketPdfRegions(rawRegions:readonly unknown[],readCrop:(index:number)=>Promise<Buffer>,live=()=>{}){
+  return assembleRegions(rawRegions,readCrop,live);
+}
+export async function assemblePacketPdfOriginals(rawOriginals:unknown,rawRegions:readonly unknown[],readCrop:(index:number)=>Promise<Buffer>,live=()=>{}){
+  return assembleRegions(rawRegions,readCrop,live,PacketPdfOriginalSetSchema.parse(rawOriginals));
+}
+async function assembleRegions(rawRegions:readonly unknown[],readCrop:(index:number)=>Promise<Buffer>,live:()=>void,
+  originals?:ReturnType<typeof PacketPdfOriginalSetSchema.parse>){
   if(rawRegions.length<2||rawRegions.length>PACKET_PDF_MULTI_LIMITS.pages)
     throw new AppError(422,'PACKET_PDF_REGIONS','Select two to four required reviewed regions.');
   const regions=rawRegions.map(raw=>PacketRegionWorkerSchema.parse(raw)),first=regions[0];
+  if(originals&&(originals.length!==regions.length||regions.some((r,i)=>r.sourceSha256!==originals[i]?.sourceSha256||r.sourceBytes!==originals[i]?.sourceBytes)))
+    throw new AppError(422,'PACKET_PDF_CROP_INTEGRITY','Use every ordered crop from its exact canonical original.');
   let processedPixels=0;
   for(const region of regions){
     const [width,height]=region.output.pixels;processedPixels+=width*height;
-    if(region.sourceSha256!==first.sourceSha256||region.sourceBytes!==first.sourceBytes||
+    if((!originals&&(region.sourceSha256!==first.sourceSha256||region.sourceBytes!==first.sourceBytes))||
       width*height>PACKET_PDF_LIMITS.pixels||canonical(region.transform)!==canonical(packetRegionTransform(region.selection)))
-      throw new AppError(422,'PACKET_PDF_CROP_INTEGRITY','Use exact verified crops from one unchanged original.');
+      throw new AppError(422,'PACKET_PDF_CROP_INTEGRITY',originals?'Use exact verified crops and transforms for every selected original.':
+        'Use exact verified crops from one unchanged original.');
   }
   if(processedPixels>PACKET_PDF_MULTI_LIMITS.pixels)
     throw new AppError(413,'PACKET_PDF_PIXEL_LIMIT','The selected regions exceed the cumulative pixel profile.');
   const [width,height]=first.output.pixels;
   const doc=new jsPDF({unit:'pt',format:[width*.75,height*.75],orientation:width>height?'landscape':'portrait',
     compress:true,putOnlyUsedFonts:true});
-  doc.setProperties({title:'Private selected-region packet',subject:PACKET_PDF_MULTI_RECIPE,creator:'3D ULPIN'});
+  doc.setProperties({title:'Private selected-region packet',subject:originals?PACKET_PDF_ORIGINALS_RECIPE:PACKET_PDF_MULTI_RECIPE,creator:'3D ULPIN'});
   doc.setCreationDate('D:20000101000000+00\'00\'');
   doc.setFileId(fingerprint(regions.map(region=>region.output.sha256)).slice(0,32).toUpperCase());
   for(const [index,region] of regions.entries()){
@@ -65,8 +76,10 @@ export async function assemblePacketPdfRegions(rawRegions:readonly unknown[],rea
   const bytes=Buffer.from(doc.output('arraybuffer'));live();
   if(bytes.length>PACKET_PDF_MULTI_LIMITS.bytes)
     throw new AppError(413,'PACKET_PDF_OUTPUT_LIMIT','The selected-region PDF exceeds its bounded output profile.');
-  const manifest=PacketPdfMultiAssemblySchema.parse({version:'packet-pdf-assembly/2',recipe:PACKET_PDF_MULTI_RECIPE,regions,
-    output:{sha256:sha256(bytes),bytes:bytes.length,contentType:'application/pdf',pages:regions.length,processedPixels,
-      policy:'fresh_rgb_image_only; no_source_pdf_objects/1'}});
+  const output={sha256:sha256(bytes),bytes:bytes.length,contentType:'application/pdf',pages:regions.length,processedPixels,
+    policy:'fresh_rgb_image_only; no_source_pdf_objects/1'};
+  const manifest=originals?PacketPdfOriginalsAssemblySchema.parse({version:'packet-pdf-assembly/3',recipe:PACKET_PDF_ORIGINALS_RECIPE,originals,regions,output}):
+    PacketPdfMultiAssemblySchema.parse({version:'packet-pdf-assembly/2',recipe:PACKET_PDF_MULTI_RECIPE,regions,
+      output});
   return {bytes,manifest};
 }

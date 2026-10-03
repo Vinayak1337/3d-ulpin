@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {PacketRegionWorkerSchema,PACKET_REGION_LIMITS} from '../packet-region';
-import {RegistryRegionCitationSchema} from '../registry-document-evidence';
+import {RegistryRegionCitationSchema,RegistryRegionOriginalSchema} from '../registry-document-evidence';
 import {CoreIdSchema,CoreSha256Schema,coreText} from '../spatial/core/scalars';
 import {UspSnapshotScopeSchema,UspTargetPinSchema,UspPrincipalSchema,UspAssetRefSchema} from './common';
 
@@ -80,10 +80,44 @@ export const UspPacketPdfMultiReceiptSchema=UspPacketPdfReceiptSchema.unwrap().o
 }).readonly();
 export const UspPdfMultiPacketPlanExecutionSchema=UspPdfPacketPlanExecutionSchema.unwrap().extend({
   packet:UspPacketPdfMultiReceiptSchema}).readonly();
-export const UspAnyPdfPacketPlanInputSchema=z.union([UspPdfPacketPlanInputSchema,UspPdfMultiPacketPlanInputSchema]);
-export const UspAnyPdfPacketPlanSchema=z.union([UspPdfPacketPlanSchema,UspPdfMultiPacketPlanSchema]);
-export const UspAnyPacketPdfReceiptSchema=z.union([UspPacketPdfReceiptSchema,UspPacketPdfMultiReceiptSchema]);
-export const UspAnyPdfPacketPlanExecutionSchema=z.union([UspPdfPacketPlanExecutionSchema,UspPdfMultiPacketPlanExecutionSchema]);
+/** Separate recipe: existing one-original receipts and hashes stay unchanged. */
+export const PACKET_PDF_ORIGINALS_RECIPE='pack1-multiple-original-region-image/1' as const;
+export const PACKET_PDF_ORIGINALS_LIMITS=Object.freeze({...PACKET_PDF_MULTI_LIMITS,originalBytes:32*1024**2});
+export const UspPdfOriginalsPacketPlanInputSchema=UspPdfMultiPacketPlanInputSchema.unwrap().extend({
+  recipe:z.literal(PACKET_PDF_ORIGINALS_RECIPE)}).readonly();
+export const UspPdfOriginalsPacketPlanSchema=UspPdfMultiPacketPlanSchema.unwrap().extend({
+  input:UspPdfOriginalsPacketPlanInputSchema}).readonly();
+export const PacketPdfOriginalSetSchema=z.array(RegistryRegionOriginalSchema).min(2).max(4).superRefine((originals,ctx)=>{
+  const unique=new Map<string,typeof originals[number]>();
+  for(const original of originals){
+    const prior=unique.get(original.sourceId);
+    if(prior&&JSON.stringify(prior)!==JSON.stringify(original))
+      ctx.addIssue({code:'custom',message:'Each canonical original must retain one exact source and case pin.'});
+    unique.set(original.sourceId,original);
+  }
+  if(unique.size<2||[...unique.values()].reduce((n,o)=>n+o.sourceBytes,0)>PACKET_PDF_ORIGINALS_LIMITS.originalBytes)
+    ctx.addIssue({code:'custom',message:'Select at least two canonical originals within the aggregate 32 MiB source profile.'});
+});
+export const PacketPdfOriginalsAssemblySchema=z.strictObject({version:z.literal('packet-pdf-assembly/3'),
+  recipe:z.literal(PACKET_PDF_ORIGINALS_RECIPE),originals:PacketPdfOriginalSetSchema,
+  regions:z.array(PacketRegionWorkerSchema).min(2).max(4),output:PacketPdfMultiAssemblySchema.shape.output
+}).superRefine((v,ctx)=>{
+  if(v.originals.length!==v.regions.length||v.regions.some((r,i)=>r.sourceSha256!==v.originals[i]?.sourceSha256||r.sourceBytes!==v.originals[i]?.sourceBytes)||
+    v.output.pages!==v.regions.length||v.output.processedPixels!==v.regions.reduce((n,r)=>n+r.output.pixels[0]*r.output.pixels[1],0))
+    ctx.addIssue({code:'custom',message:'Every ordered page must retain its exact original and rendered-pixel count.'});
+});
+export const UspPacketPdfOriginalsReceiptSchema=z.strictObject({...UspPacketPdfMultiReceiptSchema.unwrap().shape,
+  version:z.literal('packet-pdf/3'),assembly:PacketPdfOriginalsAssemblySchema}).superRefine((v,ctx)=>{
+  if(v.entries.length!==v.assembly.regions.length||new Set(v.entries.map(e=>e.bindingId)).size!==v.entries.length||
+    v.entries.some((e,i)=>e.outputPage!==i+1))
+    ctx.addIssue({code:'custom',message:'Every required distinct binding needs its exact ordered output page.'});
+}).readonly();
+export const UspPdfOriginalsPacketPlanExecutionSchema=UspPdfPacketPlanExecutionSchema.unwrap().extend({
+  packet:UspPacketPdfOriginalsReceiptSchema}).readonly();
+export const UspAnyPdfPacketPlanInputSchema=z.union([UspPdfPacketPlanInputSchema,UspPdfMultiPacketPlanInputSchema,UspPdfOriginalsPacketPlanInputSchema]);
+export const UspAnyPdfPacketPlanSchema=z.union([UspPdfPacketPlanSchema,UspPdfMultiPacketPlanSchema,UspPdfOriginalsPacketPlanSchema]);
+export const UspAnyPacketPdfReceiptSchema=z.union([UspPacketPdfReceiptSchema,UspPacketPdfMultiReceiptSchema,UspPacketPdfOriginalsReceiptSchema]);
+export const UspAnyPdfPacketPlanExecutionSchema=z.union([UspPdfPacketPlanExecutionSchema,UspPdfMultiPacketPlanExecutionSchema,UspPdfOriginalsPacketPlanExecutionSchema]);
 export type AnyPdfPacketPlanInput=z.infer<typeof UspAnyPdfPacketPlanInputSchema>;
 export type AnyPdfPacketPlan=z.infer<typeof UspAnyPdfPacketPlanSchema>;
 export type AnyPdfPacketPlanExecution=z.infer<typeof UspAnyPdfPacketPlanExecutionSchema>;
