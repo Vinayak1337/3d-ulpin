@@ -46,10 +46,12 @@ def metadata():
             "projection": codec.metadata(), "nativeExecutable": False, "nativeTokensVerified": False}
 
 
-def checked_source(context, schema, contract, family):
-    # This increment admits only train contexts. Future native/development
-    # admission requires its own separately frozen authority.
-    codec.checked_context(context, schema, contract, family, ("train",))
+def checked_source(context, schema, contract, family, *, allowed_splits=("train",)):
+    # Pure CPU split selection grants no execution authority. The native caller
+    # derives development eligibility from the separate exact baseline freeze.
+    require(type(allowed_splits) is tuple and allowed_splits in (("train",), ("development",)),
+            "rank_explicit_split_required")
+    codec.checked_context(context, schema, contract, family, allowed_splits)
     return codec.Context(codec.canonical(context))
 
 
@@ -65,9 +67,9 @@ class ScoringInput:
         return [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": self.input_json}]
 
 
-def scoring_input(context, focus_id, schema, contract, family):
+def scoring_input(context, focus_id, schema, contract, family, *, allowed_splits=("train",)):
     """Only source context and focus enter the prompt; targets have no argument."""
-    source = checked_source(context, schema, contract, family)
+    source = checked_source(context, schema, contract, family, allowed_splits=allowed_splits)
     snapshot = source.snapshot()
     require(type(focus_id) is str and focus_id in [c["id"] for c in snapshot["candidates"]], "rank_unknown_focus")
     return ScoringInput(codec.canonical({"version": INPUT_VERSION, "candidateSetSha256": source.input_sha256,
@@ -84,9 +86,9 @@ def finite(value):
     return number
 
 
-def project_scores(vector, context, schema, contract, family):
+def project_scores(vector, context, schema, contract, family, *, allowed_splits=("train",)):
     """Reject the whole invalid vector; thresholding is deterministic, not learned proof."""
-    source = checked_source(context, schema, contract, family)
+    source = checked_source(context, schema, contract, family, allowed_splits=allowed_splits)
     require(type(vector) is dict and set(vector) == {"version", "policySha256", "candidateSetSha256", "scores"},
             "rank_score_vector_fields")
     require(vector["version"] == SCORE_VERSION and vector["policySha256"] == codec.canonical_sha(POLICY)
@@ -101,7 +103,7 @@ def project_scores(vector, context, schema, contract, family):
         if finite(score["margin"]) > 0:
             selected.append(candidate["id"])
     output = codec.selection(source, selected)
-    projected = codec.project(codec.canonical(output), source, schema, contract, family, ("train",))
+    projected = codec.project(codec.canonical(output), source, schema, contract, family, allowed_splits)
     require(projected["modelOutputValid"], "rank_projection_rejected")
     return {"selection": output, "projection": projected, "policySha256": codec.canonical_sha(POLICY),
             "qualification": "deterministic threshold/identity/projection only; score origin and learned relevance unqualified"}

@@ -23,9 +23,18 @@ def sha(path):
     return digest.hexdigest()
 
 
-def admitted_runtime(freeze, inputs, preserve_preflight):
+def admitted_runtime(freeze, inputs, preserve_preflight, preserve_technical=None):
     """Choose only an admitted representation before touching model bytes."""
     version = freeze.get("version", "")
+    if version == "association-fragment-rank-baseline-freeze/1":
+        from geo.usp_learning.association import fragment_rank_baseline as rank
+        rank.checked_run_inputs(freeze, inputs)
+        if not callable(preserve_preflight) or not callable(preserve_technical):
+            raise RuntimeError("rank evidence callbacks required")
+        return run_local, {"rank_authority": {"freeze": freeze, "inputs": inputs},
+            "preserve_preflight": preserve_preflight, "preserve_technical": preserve_technical}, rank.rank.SYSTEM_PROMPT
+    if preserve_technical is not None or "rank" in str(version) or {"rank_authority", "rankAuthority", "policySha256", "donors"} & set(freeze):
+        raise RuntimeError("explicit rank baseline freeze required")
     if version == "association-fragment-baseline-freeze/1":
         from geo.usp_learning.association import fragment_baseline as fragment
         contract, _, route = fragment.checked_run_inputs(freeze, inputs)
@@ -57,18 +66,26 @@ def admitted_runtime(freeze, inputs, preserve_preflight):
 
 def worker(args):
     require_model_boundary(args)
+    # Refuse unsupported/drifted rank metadata before output or native effects.
+    freeze = json.loads(args.run_freeze.read_bytes())
+    preadmit_rank(freeze, args.run_freeze.parent)
     args.output_dir.mkdir(exist_ok=False)
     try:
-        freeze = json.loads(args.run_freeze.read_bytes())
         candidate_mode = freeze.get("version") == "association-candidate-baseline-freeze/1"
         fragment_mode = freeze.get("version") == "association-fragment-baseline-freeze/1"
-        structured_mode = candidate_mode or fragment_mode
-        prefix = "fragment" if fragment_mode else "candidate"
+        rank_mode = freeze.get("version") == "association-fragment-rank-baseline-freeze/1"
+        structured_mode = candidate_mode or fragment_mode or rank_mode
+        prefix = "fragment-rank" if rank_mode else "fragment" if fragment_mode else "candidate"
         binding = {}
+        technical = (lambda value: write_json_once(args.output_dir / "fragment-rank-technical-proof.json",
+                     {**value, "provenance": binding})) if rank_mode else None
         runner, runner_options, system_prompt = admitted_runtime(freeze, args.run_freeze.parent,
             lambda value: write_json_once(args.output_dir / (prefix + "-preflight.json" if structured_mode else "selector-preflight.json"),
-                {**value, **({"provenance": binding} if structured_mode else {})}))
-        if fragment_mode:
+                {**value, **({"provenance": binding} if structured_mode else {})}), technical)
+        if rank_mode:
+            from geo.usp_learning.association.fragment_rank_baseline import provenance
+            binding = provenance(freeze, sha(args.run_freeze))
+        elif fragment_mode:
             from geo.usp_learning.association.fragment_baseline import provenance
             binding = provenance(freeze, sha(args.run_freeze))
         elif candidate_mode:
@@ -98,6 +115,8 @@ def worker(args):
                                 lambda index, value: write_json_once(args.output_dir / f"{prefix + '-' if structured_mode else ''}raw-{index}.json", value), **runner_options)
         if structured_mode:
             result = {**result, "provenance": binding}
+            if rank_mode:
+                result["technicalProofSha256"] = sha(args.output_dir / "fragment-rank-technical-proof.json")
         write_json_once(args.output_dir / "raw-outputs.json", raw)
         if structured_mode:
             write_json_once(args.output_dir / (prefix + "-raw-outputs.json"), raw)
@@ -107,18 +126,28 @@ def worker(args):
         if structured_mode:
             # The protected supervisor still owns completion.json and final
             # artifact acceptance. This receipt never claims guard acceptance.
+            artifacts = (prefix + "-preflight.json", prefix + "-raw-outputs.json", prefix + "-result.json", "raw-outputs.json", "result.json")
+            if rank_mode:
+                artifacts += ("fragment-rank-technical-proof.json",)
             write_json_once(args.output_dir / (prefix + "-completion.json"), {
                 "version": "association-" + prefix + "-worker-completion/1", "status": "worker_complete_awaiting_guard",
                 "supervisorAccepted": False, "authoritativeCompletion": "completion.json", "provenance": binding,
-                "artifacts": {name: sha(args.output_dir / name) for name in
-                    (prefix + "-preflight.json", prefix + "-raw-outputs.json", prefix + "-result.json", "raw-outputs.json", "result.json")},
+                "artifacts": {name: sha(args.output_dir / name) for name in artifacts},
                 "evaluationOpened": False, "fitPerformed": False, "promoted": False})
-        print(json.dumps({"exampleCount": len(raw), "modelOutputValidCount": result["modelOutputValidCount"],
+        print(json.dumps({"exampleCount": result["exampleCount"], "modelOutputValidCount": result["modelOutputValidCount"],
                           "runtime": result["runtime"]}), flush=True)
     except BaseException as error:
         write_json_once(args.output_dir / "failure.json", {"type": type(error).__name__, "message": str(error),
             "traceback": traceback.format_exc(), "evaluationOpened": False, "fitPerformed": False})
         raise
+
+
+def preadmit_rank(freeze, inputs):
+    """Host and child reject code-only/mixed authority before their first effects."""
+    # Normal dispatch is pure until its returned runner is invoked. Reuse it so
+    # unknown rank versions cannot fall through to a legacy/default route.
+    return admitted_runtime(freeze, inputs, lambda value: None,
+        (lambda value: None) if freeze.get("version") == "association-fragment-rank-baseline-freeze/1" else None)
 
 
 def main():
@@ -132,6 +161,7 @@ def main():
     if args._worker:
         worker(args)
     else:
+        preadmit_rank(json.loads(args.run_freeze.read_bytes()), args.run_freeze.parent)
         report = guarded_run([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]],
             args.containment_profile.parent / "receipts", SETTINGS,
             containment_profile=args.containment_profile, containment_sha256=args.containment_sha256)
