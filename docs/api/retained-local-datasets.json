@@ -1537,6 +1537,24 @@
       "sourceOriginalsUnchanged": true,
       "nativeExecutionRepeated": false,
       "associationAndCitationAttachment": "unsupported_context_only"
+    },
+    "reviewedCitationEvidence": {
+      "guide": "docs/evidence/usp/reviewed-geoparquet-citations-handoff.md",
+      "integratedCodeCommits": [
+        "7887e267",
+        "415edaff"
+      ],
+      "completionReceiptSha256": "e6b62b583fdbab2e3fb1793e9bff9dd47fbe8964a177d7145d06414fbb50bca3",
+      "scope": "Explicit selected accepted row plus retained document through controlled building/floor amendment, private read, replay, review/commit and history; unchanged originals and native outputs",
+      "citationProfile": "registry-geoparquet-citation/1",
+      "checkedRow": {
+        "globalIndex": 3,
+        "artifactOrdinal": 1,
+        "groupIndex": 0,
+        "groupLocalIndex": 3
+      },
+      "automaticAssociation": "unsupported",
+      "qualification": "Country-scale row and controlled property targets are not an authentic crosswalk; current HTTP/persistence/runtime admission, applicability, geometry, learning, scale and release remain unqualified"
     }
   },
   {

@@ -1155,10 +1155,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read exact native/OCR/IFC/DXF/KML/CityGML and original-region citations through current private source and draft authority */
+        /** Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet and original-region citations through current private source and draft authority */
         get: operations["GET_api_v1_registry_drafts_draftId_document_citations"];
         put?: never;
-        /** Amend native/OCR/IFC/DXF/KML/CityGML or validated original-region citations (DXF/KML/CityGML: building/floor); region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity */
+        /** Amend native/OCR/IFC/DXF/KML/CityGML/GeoParquet or validated original-region citations (DXF/KML/CityGML/GeoParquet: building/floor); region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity */
         post: operations["POST_api_v1_registry_drafts_draftId_document_citations"];
         delete?: never;
         options?: never;
@@ -10282,6 +10282,95 @@ export interface components {
                         /** @enum {string} */
                         identifierScope: "source_native_only; not_canonical_registry_ids";
                     };
+                } | {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-geoparquet-citation/1";
+                    resultBytes: number;
+                    geoparquet: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "usp-native-geoparquet/1";
+                        selectionSha256: string;
+                        sourceContextSha256: string;
+                        fragmentSha256: string;
+                        /** @enum {string} */
+                        inspectionStatus: "available" | "partial" | "unsupported";
+                        window: {
+                            totalRows: number;
+                            requestedStartRowIndex: number;
+                            requestedRows: number;
+                            returnedRows: number;
+                            coordinateValues: number;
+                            /** @enum {string} */
+                            status: "available" | "unsupported";
+                            nextRowIndex: number | null;
+                            truncated: boolean;
+                            prefixRowsOmitted: number;
+                            scannedBatchRows?: number;
+                            prefixRowsScannedInSelectedGroups?: number;
+                            /** @enum {string} */
+                            stopReason?: "row_window" | "coordinate_budget" | "end_of_file";
+                        };
+                        enrolledSelection: {
+                            startRowIndex: number;
+                            rowCount: number;
+                        };
+                        continuation: {
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            artifactSha256: string;
+                            nextRowIndex: number;
+                            inputSha256: string;
+                            acceptedFence: number;
+                        } | null;
+                        rowIndex: number;
+                        ordinal: number;
+                        rowGroupIndex: number;
+                        rowIndexInGroup: number;
+                        sourceKey: string;
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        columnLocators: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -12594,6 +12683,95 @@ export interface components {
                         /** @enum {string} */
                         identifierScope: "source_native_only; not_canonical_registry_ids";
                     };
+                } | {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-geoparquet-citation/1";
+                    resultBytes: number;
+                    geoparquet: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "usp-native-geoparquet/1";
+                        selectionSha256: string;
+                        sourceContextSha256: string;
+                        fragmentSha256: string;
+                        /** @enum {string} */
+                        inspectionStatus: "available" | "partial" | "unsupported";
+                        window: {
+                            totalRows: number;
+                            requestedStartRowIndex: number;
+                            requestedRows: number;
+                            returnedRows: number;
+                            coordinateValues: number;
+                            /** @enum {string} */
+                            status: "available" | "unsupported";
+                            nextRowIndex: number | null;
+                            truncated: boolean;
+                            prefixRowsOmitted: number;
+                            scannedBatchRows?: number;
+                            prefixRowsScannedInSelectedGroups?: number;
+                            /** @enum {string} */
+                            stopReason?: "row_window" | "coordinate_budget" | "end_of_file";
+                        };
+                        enrolledSelection: {
+                            startRowIndex: number;
+                            rowCount: number;
+                        };
+                        continuation: {
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            artifactSha256: string;
+                            nextRowIndex: number;
+                            inputSha256: string;
+                            acceptedFence: number;
+                        } | null;
+                        rowIndex: number;
+                        ordinal: number;
+                        rowGroupIndex: number;
+                        rowIndexInGroup: number;
+                        sourceKey: string;
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        columnLocators: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -13713,6 +13891,243 @@ export interface components {
                         opaqueContent: "literal_only";
                         /** @enum {string} */
                         referenceResolution: "not_performed";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-geoparquet-citation/1";
+                    resultBytes: number;
+                    geoparquet: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "usp-native-geoparquet/1";
+                        selectionSha256: string;
+                        sourceContextSha256: string;
+                        fragmentSha256: string;
+                        /** @enum {string} */
+                        inspectionStatus: "available" | "partial" | "unsupported";
+                        window: {
+                            totalRows: number;
+                            requestedStartRowIndex: number;
+                            requestedRows: number;
+                            returnedRows: number;
+                            coordinateValues: number;
+                            /** @enum {string} */
+                            status: "available" | "unsupported";
+                            nextRowIndex: number | null;
+                            truncated: boolean;
+                            prefixRowsOmitted: number;
+                            scannedBatchRows?: number;
+                            prefixRowsScannedInSelectedGroups?: number;
+                            /** @enum {string} */
+                            stopReason?: "row_window" | "coordinate_budget" | "end_of_file";
+                        };
+                        enrolledSelection: {
+                            startRowIndex: number;
+                            rowCount: number;
+                        };
+                        continuation: {
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            artifactSha256: string;
+                            nextRowIndex: number;
+                            inputSha256: string;
+                            acceptedFence: number;
+                        } | null;
+                        rowIndex: number;
+                        ordinal: number;
+                        rowGroupIndex: number;
+                        rowIndexInGroup: number;
+                        sourceKey: string;
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        columnLocators: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
+                };
+                fragment: {
+                    /** @enum {string} */
+                    kind: "geoparquet";
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    summary: {
+                        /** @enum {string} */
+                        format: "usp-native-geoparquet/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        scope: "source_native_literal_inventory";
+                        /** @enum {string} */
+                        profileStatus: "supported" | "unsupported";
+                        profileReasons: string[];
+                        /** @enum {string} */
+                        geoMetadataState: "absent" | "null" | "declared" | "conflicting" | "unsupported";
+                        /** @enum {string} */
+                        status: "available" | "partial" | "unsupported";
+                        window: {
+                            totalRows: number;
+                            requestedStartRowIndex: number;
+                            requestedRows: number;
+                            returnedRows: number;
+                            coordinateValues: number;
+                            /** @enum {string} */
+                            status: "available" | "unsupported";
+                            nextRowIndex: number | null;
+                            truncated: boolean;
+                            prefixRowsOmitted: number;
+                            scannedBatchRows?: number;
+                            prefixRowsScannedInSelectedGroups?: number;
+                            /** @enum {string} */
+                            stopReason?: "row_window" | "coordinate_budget" | "end_of_file";
+                        };
+                        columnCount: number;
+                        rowGroupCount: number;
+                        unsupportedGeometryCells: number;
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {string} */
+                        validity: "not_assessed";
+                        /** @enum {string} */
+                        canonicalIdentity: "not_assessed";
+                        /** @enum {boolean} */
+                        analyticEligible: false;
+                        /** @enum {boolean} */
+                        registryAdmission: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_window_parent_and_sorted_row_indices";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    enrolledSelection: {
+                        startRowIndex: number;
+                        rowCount: number;
+                    };
+                    continuation: {
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        artifactSha256: string;
+                        nextRowIndex: number;
+                        inputSha256: string;
+                        acceptedFence: number;
+                    } | null;
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    source: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    reader: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    schema: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    geoMetadata: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    profile: {
+                        [key: string]: unknown;
+                    };
+                    rowGroups: {
+                        [key: string]: unknown;
+                    }[];
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    semantics: {
+                        [key: string]: unknown;
+                    };
+                    rows: {
+                        rowIndex: number;
+                        ordinal: number;
+                        rowGroupIndex: number;
+                        rowIndexInGroup: number;
+                        key: string;
+                        pointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    coverage: {
+                        selectedRows: number;
+                        availableNativeRows: number;
+                        totalSourceRows: number;
+                        /** @enum {string} */
+                        scope: "explicit_row_records_and_exact_window_metadata";
+                        /** @enum {string} */
+                        unselectedRows: "not_expanded";
+                        /** @enum {string} */
+                        continuationRowsFetch: "not_performed";
                         /** @enum {string} */
                         geometryQualification: "not_assessed";
                         /** @enum {string} */
