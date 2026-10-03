@@ -1,7 +1,7 @@
 import type {PoolClient} from 'pg';
-import type {DocumentInput,IFCInput,RequestContext} from '@ulpin/contracts/usp';
+import type {DocumentInput,IFCInput,DXFInput,RequestContext} from '@ulpin/contracts/usp';
 import {DocumentAssociationSourceSchema,type RegistryOcrDocumentCitation,type RegistryIFCCitation} from '@ulpin/contracts';
-import {SOURCE_FUSION_LIMITS,type SourceFusionContext,type SourceFusionSelection,type SourceFusionPin} from '../../../../../contracts/src/source-fusion';
+import {SOURCE_FUSION_LIMITS,SourceFusionLiteralObjectSchema,type SourceFusionContext,type SourceFusionSelection,type SourceFusionPin} from '../../../../../contracts/src/source-fusion';
 import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
@@ -12,10 +12,14 @@ import {assembleSourceFusion} from './source-fusion';
 import {fusionAuthorityBatch,fusionLive,readFusionResult,type FusionBudget,type FusionAuthority} from './source-fusion-authority';
 import {registryIFCCitationSourceTx} from '../../registry/registry-ifc-citation-source';
 import {verifyFusionIFCTools} from './source-fusion-ifc-authority';
+import type {RegistryDXFCitation} from '../../../../../contracts/src/registry-document-evidence';
+import {registryDXFCitationSourceTx} from '../../registry/registry-dxf-citation-source';
+import {verifyFusionDXFTools} from './source-fusion-dxf-authority';
 
 export type FusionCitationDependencies={source:typeof associationDocumentInputTx;
   fusionResult?:typeof readFusionResult;cityjson?:typeof acceptedCityJSONTx;
-  ifcSource?:typeof registryIFCCitationSourceTx;ifcTools?:typeof verifyFusionIFCTools};
+  ifcSource?:typeof registryIFCCitationSourceTx;ifcTools?:typeof verifyFusionIFCTools;
+  dxfSource?:typeof registryDXFCitationSourceTx;dxfTools?:typeof verifyFusionDXFTools};
 export function citationReadBudget():FusionBudget{
   return {deadlineAt:Date.now()+SOURCE_FUSION_LIMITS.deadlineMs,signal:new AbortController().signal,reservedBytes:0};
 }
@@ -26,8 +30,8 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string){
   if(request.selection.sources.some(source=>source.kind==='kml'))
     throw new AppError(422,'SOURCE_FUSION_KML_CONTEXT_ONLY','KML fragments support source context only; reviewed citation attachment is unsupported.');
-  if(request.selection.sources.some(source=>source.kind==='dxf'))
-    throw new AppError(422,'SOURCE_FUSION_DXF_CONTEXT_ONLY','DXF fragments support source context only; reviewed citation attachment is unsupported.');
+  if(request.selection.sources.some(source=>source.kind==='dxf')&&!siteId)
+    throw new AppError(422,'SOURCE_FUSION_DXF_CONTEXT_ONLY','DXF citation selection requires its exact canonical building/floor target site.');
   if(request.selection.sources.some(source=>source.kind==='ifc')&&!siteId)
     throw new AppError(422,'SOURCE_FUSION_IFC_CONTEXT_ONLY','IFC citation selection requires its exact canonical target site.');
   const inTransaction:typeof transaction=async action=>action(client);
@@ -35,9 +39,13 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
     cityjson:dependencies.cityjson??acceptedCityJSONTx,gate:lockSourceCaseDestinationTx,
     ifc:async(client:PoolClient,pin:SourceFusionPin,lock=false)=>
       (await (dependencies.ifcSource??registryIFCCitationSourceTx)(client,siteId!,pin,lock)).authority,
-    ifcTools:dependencies.ifcTools??verifyFusionIFCTools};
+    ifcTools:dependencies.ifcTools??verifyFusionIFCTools,
+    dxf:async(client:PoolClient,pin:SourceFusionPin,lock=false)=>
+      (await (dependencies.dxfSource??registryDXFCitationSourceTx)(client,siteId!,pin,lock)).authority,
+    dxfTools:dependencies.dxfTools??verifyFusionDXFTools};
   const documents=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'document'}>}>();
   const ifcs=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'ifc'}>}>();
+  const dxfs=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'dxf'}>}>();
   let selected:SourceFusionSelection[]=[],captured:FusionAuthority[]=[],budget:FusionBudget|undefined;
   const context=await assembleSourceFusion(ctx,request.selection,{
     authority:async(ctx,selections,current,expected)=>{
@@ -47,26 +55,50 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       const loaded=await (dependencies.fusionResult??readFusionResult)(selection,authority,budget);
       if(loaded.kind==='document')documents.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='ifc')ifcs.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
+      if(loaded.kind==='dxf')dxfs.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       return loaded;
     }});
   // Keep registry consumers' citation union exact. The request is refused above;
   // never drop a context-only fragment from a hash and then accept the remainder.
-  const citationSources=context.sources.filter((source):source is Exclude<SourceFusionContext['sources'][number],{kind:'dxf'|'kml'}>=>source.kind!=='dxf'&&source.kind!=='kml');
+  const citationSources=context.sources.filter((source):source is Exclude<SourceFusionContext['sources'][number],{kind:'kml'}>=>source.kind!=='kml');
   if(citationSources.length!==context.sources.length)
-    throw new AppError(422,'SOURCE_FUSION_DXF_CONTEXT_ONLY','DXF fragments support source context only; reviewed citation attachment is unsupported.');
+    throw new AppError(422,'SOURCE_FUSION_KML_CONTEXT_ONLY','KML fragments support source context only; reviewed citation attachment is unsupported.');
   if(context.contextSha256!==request.contextSha256)conflict('The explicitly selected fusion context changed.');
   // assembleSourceFusion closes its own abort signal on completion. The final
   // write check shares its original deadline with a fresh unused read signal.
   const finalBudget={deadlineAt:budget!.deadlineAt,signal:new AbortController().signal,reservedBytes:budget!.reservedBytes};
   const inputs=new Map<string,DocumentInput>();
   const ifcInputs=new Map<string,IFCInput>();
+  const dxfInputs=new Map<string,DXFInput>();
   for(const [index,selection] of selected.entries()){
     const authority=captured[index];if(authority.kind==='document')inputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='ifc')ifcInputs.set(selection.pin.sourceId,authority.input);
+    if(authority.kind==='dxf')dxfInputs.set(selection.pin.sourceId,authority.input);
   }
-  return {context:{...context,sources:citationSources},inputs,ifcInputs,documents,ifcs,revalidate:async()=>{
+  return {context:{...context,sources:citationSources},inputs,ifcInputs,dxfInputs,documents,ifcs,dxfs,revalidate:async()=>{
     fusionLive(finalBudget);await fusionAuthorityBatch(ctx,selected,finalBudget,captured,authorityDependencies);
   }};
+}
+
+export function dxfCitationFusionSelection(pin:RegistryDXFCitation):Extract<SourceFusionSelection,{kind:'dxf'}>{
+  return {kind:'dxf',pin:{...pin.document,inputSha256:pin.inputSha256,readerSha256:pin.readerSha256,
+    acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes},entityOrdinals:[pin.dxf.entityOrdinal]};
+}
+/** Pin a singleton entity selection so later removal of a different citation
+ * does not change this immutable selection hash. Native handle states/tags and
+ * locators are preserved literally, with no canonical identity assertion. */
+export function fusionDXFCitationFields(source:Extract<SourceFusionContext['sources'][number],{kind:'dxf'}>,ordinal:number){
+  const entry=source.entities.find(entry=>entry.ordinal===ordinal);
+  if(!entry)conflict('The exact selected DXF entity is unavailable.');
+  const fields=SourceFusionLiteralObjectSchema.parse(entry.record.fields);
+  return {document:fusionCitationDocumentPin(source.pin),inputSha256:source.pin.inputSha256,readerSha256:source.pin.readerSha256,
+    acceptedFence:source.pin.acceptedFence,resultBytes:source.pin.resultBytes,
+    dxf:{artifactSha256:source.artifactSha256,artifactBytes:source.artifactBytes,profile:'dxf-native-inspection/1' as const,
+      selectionSha256:fingerprint({version:'source-fusion-dxf-selection/1',sourceSha256:source.pin.sourceSha256,
+        artifact:{sha256:source.artifactSha256,bytes:source.artifactBytes},entityOrdinals:[ordinal]}),
+      entityOrdinal:ordinal,entityType:entry.record.type,handle:SourceFusionLiteralObjectSchema.parse(fields.handle),
+      recordPointer:entry.pointer,recordSha256:entry.recordSha256,locator:SourceFusionLiteralObjectSchema.parse(entry.record.locator),
+      identifierScope:source.nativeIdentifierScope}};
 }
 
 export function ifcCitationFusionSelection(pin:RegistryIFCCitation):Extract<SourceFusionSelection,{kind:'ifc'}>{
