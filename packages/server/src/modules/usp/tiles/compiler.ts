@@ -45,12 +45,14 @@ const preDXFReadCodeSha=new Set(['64b5b4f8ae0a0366a15139e3bdd6692e1753c06590073c
 // KML-02: exact fd36a4b9 Git/LF and actual physical compiler constituents.
 const preKMLReadCodeSha=new Set(['3cf0b3859a113d4ba24f708d1fa8fa9aad124ac45fd0d21ec69f953e213fb358',
   '41bcb3aae67bc7b3c88016a8053db7747f469fc8d1c570157f8d6adf7bd06019']);
+// CITYGML-02: exact assigned-base compiler constituents, unchanged non-code pins.
+const preCityGMLReadCodeSha=new Set(["8e50f24dff2f78fe6681b76667dc29ec727c9ac377329886fe29a4807aafd532", "b635803489804a2da5778a3dc3dbbfb31f3bab15dd8baf04c204d5e5f5034654"]);
 export function mvtReadCompilerCompatible(stored:PrivateMvtInput['compiler'],current:PrivateMvtInput['compiler'],hasSourceChunk=false){
   const valid=(pin:PrivateMvtInput['compiler'])=>{const {sha256,...base}=pin;return fingerprint(base)===sha256;};
   if(!valid(stored)||!valid(current))return false;
   if(fingerprint(stored)===fingerprint(current))return true;
   // Reviewed historical bytes only. Current writers never call this predicate.
-  if((preIFCReadCodeSha.has(stored.codeSha256)||preDXFReadCodeSha.has(stored.codeSha256)||preKMLReadCodeSha.has(stored.codeSha256))&&current.codeSha256===mvtCodeSha()){
+  if((preIFCReadCodeSha.has(stored.codeSha256)||preDXFReadCodeSha.has(stored.codeSha256)||(preKMLReadCodeSha.has(stored.codeSha256)||preCityGMLReadCodeSha.has(stored.codeSha256)))&&current.codeSha256===mvtCodeSha()){
     const {sha256:_s,codeSha256:_sc,...oldProfile}=stored,{sha256:_c,codeSha256:_cc,...newProfile}=current;
     if(fingerprint(oldProfile)===fingerprint(newProfile))return true;
   }

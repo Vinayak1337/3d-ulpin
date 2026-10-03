@@ -68,6 +68,10 @@ export function sourceFrom(row: Row): SourceRevision {
     const {kmlOriginal:_kmlOriginal,kmlAccepted:_kmlAccepted,referenceParts:_kmlParts,...metadata}=inspection??{};
     inspection=metadata;
   }
+  if(row.profile==='citygml-native-v1'||inspection&&typeof inspection==='object'&&Object.hasOwn(inspection,'citygmlOriginal')){
+    const {citygmlOriginal:_citygmlOriginal,citygmlAccepted:_citygmlAccepted,referenceParts:_citygmlParts,...metadata}=inspection??{};
+    inspection=metadata;
+  }
   if(row.profile==='dxf-native-v1'||inspection&&typeof inspection==='object'&&Object.hasOwn(inspection,'dxfOriginal')){
     const {dxfOriginal:_dxfOriginal,dxfAccepted:_dxfAccepted,referenceParts:_dxfParts,...metadata}=inspection??{};
     inspection=metadata;
@@ -895,6 +899,8 @@ export async function retryJob(jobId: string) {
       throw new AppError(422,'DXF_CANONICAL_RETRY_REQUIRED','Retry through the source-bound DXF retry operation with current case/source/access pins; generic job copying is unsupported.');
     if(original.operation==='kml-native')
       throw new AppError(422,'KML_CANONICAL_RETRY_REQUIRED','Retry through the source-bound KML operation with current source/access and exact member pins; generic job copying is unsupported.');
+    if(original.operation==='citygml-native')
+      throw new AppError(422,'CITYGML_CANONICAL_RETRY_REQUIRED','Retry through the source-bound CityGML operation with current source/access and unchanged original pins; generic job copying is unsupported.');
     const current = await lockCase(client, original.case_id);
     if(original.operation==='projected-vector')
       throw new AppError(422,'PROJECTED_VECTOR_RETRY_REQUIRED','Retry this retained source through its scoped projected-vector admission operation.');

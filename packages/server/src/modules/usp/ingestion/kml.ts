@@ -12,7 +12,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
-import {kmlConfig,assertKMLTools} from './kml-config';
+import {kmlConfig,assertKMLReadTools} from './kml-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 
@@ -197,14 +197,14 @@ export class KMLIngestionService{
     const bounds=deadline(KML_LIMITS.readMs);
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
     const row=await transaction(client=>kmlStatusTx(client,caseId,sourceId,jobId),bounds);
-    if(!row.stale&&row.job.status==='succeeded')assertKMLTools(row.input.tools,bounds.deadlineAt);
+    if(!row.stale&&row.job.status==='succeeded')assertKMLReadTools(row.input.tools,bounds.deadlineAt);
     const result=!row.stale&&row.job.status==='succeeded'&&row.job.result_ref
       ?await readKMLResult(row.input,row.job.result_ref.sha256,kmlResultBytes(row.job.result_ref,jobId),bounds.signal):null;
     await transaction(async client=>{const current=await kmlStatusTx(client,caseId,sourceId,jobId);
       if(fingerprint(current.input)!==fingerprint(row.input)||current.stale!==row.stale||
         fingerprint(current.job.result_ref)!==fingerprint(row.job.result_ref)||current.job.status!==row.job.status)
         conflict('KML job changed while reading its status.');},bounds);
-    if(result)assertKMLTools(row.input.tools,bounds.deadlineAt);
+    if(result)assertKMLReadTools(row.input.tools,bounds.deadlineAt);
     const response=KMLStatusSchema.parse({version:KML_VERSION,caseId,sourceId,jobId,
       currentCaseRevision:row.ctx.current.revision,sourceRevision:row.ctx.source.revision,sourceSha256:row.ctx.source.sha256,
       status:row.stale?'stale':result?result.summary.status==='inspected'?'completed':result.summary.status:row.job.status,
@@ -220,7 +220,7 @@ export class KMLIngestionService{
     const row=await transaction(client=>kmlStatusTx(client,caseId,sourceId,jobId),bounds);
     if(row.stale||row.job.status!=='succeeded'||!row.job.result_ref)
       throw new AppError(409,'KML_NOT_ACCEPTED','This selection has no current accepted artifact.');
-    assertKMLTools(row.input.tools,bounds.deadlineAt);
+    assertKMLReadTools(row.input.tools,bounds.deadlineAt);
     const result=await readKMLResult(row.input,row.job.result_ref.sha256,kmlResultBytes(row.job.result_ref,jobId),bounds.signal);
     const bytes=await boundedKMLObject(result.artifact.key,result.artifact.bytes,bounds.signal);
     if(bytes.length!==result.artifact.bytes||sha256(bytes)!==result.artifact.sha256)
@@ -229,7 +229,7 @@ export class KMLIngestionService{
       if(current.stale||fingerprint(current.input)!==fingerprint(row.input)||
         fingerprint(current.job.result_ref)!==fingerprint(row.job.result_ref)||current.job.accepted_fence!==row.job.accepted_fence)
         conflict('The accepted KML attempt changed during artifact read.');},bounds);
-    assertKMLTools(row.input.tools,bounds.deadlineAt);
+    assertKMLReadTools(row.input.tools,bounds.deadlineAt);
     return {bytes,sha256:result.artifact.sha256};
   }
   async original(caseValue:string,sourceValue:string){
