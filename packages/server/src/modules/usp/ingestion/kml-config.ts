@@ -82,3 +82,18 @@ export function assertKMLTools(pins:KMLToolPins|null,deadlineAt?:number){
   if(!pins)kmlUnavailable();const config=kmlConfig(deadlineAt);
   if(fingerprint(config.pins)!==fingerprint(pins))kmlUnavailable('KML_TOOL_CHANGED');return config;
 }
+
+// CITYGML-02: exact assigned-base immutable code compatibility; writers stay strict.
+const preCityGMLReadCodeSha=new Set(["fabb23dcf90b0a0f5af81a258538f3202c56260ddc2a92d8a23cb3b6375b885d", "c41f64137609c74fd2f8f04247df9b8d49fa84d34bc2c780b39ba9c72f80cf13"]);
+export function kmlReadToolsCompatible(stored:KMLToolPins,current:KMLToolPins){
+  const old=KMLToolPinsSchema.safeParse(stored),live=KMLToolPinsSchema.safeParse(current);
+  if(!old.success||!live.success)return false;
+  if(fingerprint(old.data)===fingerprint(live.data))return true;
+  const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+  return preCityGMLReadCodeSha.has(oldCode)&&fingerprint(oldTools)===fingerprint(currentTools);
+}
+/** Full inventory remains mandatory; no process configuration is returned. */
+export function assertKMLReadTools(pins:KMLToolPins|null,deadlineAt?:number):void{
+  if(!pins)kmlUnavailable();const current=kmlConfig(deadlineAt);
+  if(!kmlReadToolsCompatible(pins,current.pins))kmlUnavailable('KML_TOOL_CHANGED');
+}

@@ -2,6 +2,7 @@ import {CityJSONIngestionService,isCityJSONProtectedSource} from '../usp/ingesti
 import {IFCIngestionService,isIFCProtectedSource} from '../usp/ingestion/ifc';
 import {DXFIngestionService,isDXFProtectedSource} from '../usp/ingestion/dxf';
 import {KMLIngestionService,isKMLProtectedSource} from '../usp/ingestion/kml';
+import {CityGMLIngestionService,isCityGMLProtectedSource} from '../usp/ingestion/citygml';
 import { AppError } from '../../infrastructure/errors';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { largeOriginalDownload } from '../usp/ingestion/download';
@@ -34,6 +35,8 @@ export class CaseIntakeService {
     const source = await getSource(id);
     if(isKMLProtectedSource(source))
       return {...await new KMLIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
+    if(isCityGMLProtectedSource(source))
+      return {...await new CityGMLIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
     if(isDXFProtectedSource(source))
       return {...await new DXFIngestionService().original(source.case_id,id),cacheControl:'private, no-store'};
     if(isIFCProtectedSource(source))
@@ -52,6 +55,7 @@ export class CaseIntakeService {
   async streamedSourceFile(id:string,signal:AbortSignal){
     const source=await getSource(id);
     if(isKMLProtectedSource(source))return null;
+    if(isCityGMLProtectedSource(source))return null;
     if(isIFCProtectedSource(source))return null;
     if(isDXFProtectedSource(source))return null;
     if(isCityJSONProtectedSource(source))return null;

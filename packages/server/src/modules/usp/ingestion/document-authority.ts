@@ -6,6 +6,7 @@ import {documentSourceTx,assertDocumentInputTx} from './document-context';
 import {isIFCProtectedSource} from './ifc';
 import {isDXFProtectedSource} from './dxf';
 import {isKMLProtectedSource} from './kml';
+import {isCityGMLProtectedSource} from './citygml';
 
 type SourceRow=Record<string,any>;
 type Mode='original'|'snapshot'|'copy';
@@ -19,6 +20,8 @@ export async function documentAuthorityTx(client:PoolClient,captured:SourceRow,m
   const current=(await client.query('SELECT * FROM sources WHERE id=$1',[captured.id])).rows[0];
   if(isKMLProtectedSource(captured)||current&&isKMLProtectedSource(current))
     throw new AppError(409,'KML_CANONICAL_SOURCE_REQUIRED','Use private KML original/job authority; legacy snapshot and copy admission are unsupported.');
+  if(isCityGMLProtectedSource(captured)||current&&isCityGMLProtectedSource(current))
+    throw new AppError(409,'CITYGML_CANONICAL_SOURCE_REQUIRED','Use private CityGML original/job authority; legacy snapshot and copy admission are unsupported.');
   if(isDXFProtectedSource(captured)||current&&isDXFProtectedSource(current))
     throw new AppError(409,'DXF_CANONICAL_SOURCE_REQUIRED','Use the current private DXF original/job authority; legacy snapshot and copy admission are unsupported.');
   if(isIFCProtectedSource(captured)||current&&isIFCProtectedSource(current))

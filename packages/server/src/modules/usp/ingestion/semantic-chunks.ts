@@ -33,8 +33,10 @@ const preDXFPublisherReadSha=new Set(['d38d11c0c0c9e97339fee2f1adf30fa40f01faa7e
 // KML-02: fd36a4b9 exact historical Git/LF and actual physical publisher.
 const preKMLPublisherReadSha=new Set(['aefcce46f18502786d2cc4c15ce0a306ec765045c5039afe78e5500866d19e3e',
   'c32495d23f7df31384bc0ee83dea1481b34f9d1cbe92b8dbf2f32a99394e67cc']);
+// CITYGML-02: exact assigned-base Git/LF and physical publisher for immutable reads.
+const preCityGMLPublisherReadSha=new Set(["35c11ba89f22268f858c11599ac930f88fa3af2c6e5f2d51bf6a2b9dda240d24", "fd4ab52af946b2be387e3619faf7003657ebe666a111ede66f03f5170bf19252"]);
 export function semanticPublisherReadCompatible(stored:string,current=semanticPublisherSha()){
-  return stored===current||(preIFCPublisherReadSha.has(stored)||preDXFPublisherReadSha.has(stored)||preKMLPublisherReadSha.has(stored))&&current===semanticPublisherSha();
+  return stored===current||(preIFCPublisherReadSha.has(stored)||preDXFPublisherReadSha.has(stored)||(preKMLPublisherReadSha.has(stored)||preCityGMLPublisherReadSha.has(stored)))&&current===semanticPublisherSha();
 }
 export function semanticPartitions(index:SemanticPreparation['index']):SemanticPartition[]{
   const partitions:SemanticPartition[]=[];let first=0,positions=0,bytes=0;
