@@ -4256,6 +4256,31 @@ export interface components {
                 redis: boolean;
                 worker: boolean;
             };
+            /** @description Distinguishes reported dependency health from unavailable observations. Unobserved service booleans remain false. */
+            serviceObservations: {
+                redis: {
+                    /** @enum {string} */
+                    status: "observed" | "unobserved";
+                    /**
+                     * @description Reported by the processor readiness endpoint; no independent API probe.
+                     * @enum {string}
+                     */
+                    source: "processor-readiness";
+                    /** @enum {string|null} */
+                    reason: "processor-unavailable" | "invalid-readiness" | null;
+                };
+                worker: {
+                    /** @enum {string} */
+                    status: "observed" | "unobserved";
+                    /**
+                     * @description Reported by the processor readiness endpoint; no independent API probe.
+                     * @enum {string}
+                     */
+                    source: "processor-readiness";
+                    /** @enum {string|null} */
+                    reason: "processor-unavailable" | "invalid-readiness" | null;
+                };
+            };
             databaseReadiness?: {
                 /** @enum {string} */
                 status: "structurally_ready" | "schema_missing" | "unavailable";
