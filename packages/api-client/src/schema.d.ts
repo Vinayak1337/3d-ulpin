@@ -1924,7 +1924,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Durably enqueue an exact confirmed private PDF plan; independent dispatcher owns work */
+        /** Durably enqueue a supported PDF-source plan; original-image recipe uses synchronous execution */
         post: operations["POST_api_v1_usp_packets_plans_enqueue"];
         delete?: never;
         options?: never;
@@ -2075,7 +2075,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Download the exact private generated PDF of ordered required regions from one or multiple originals under current source, target and plan authority */
+        /** Download the exact private generated PDF of reviewed PDF regions or one RGB original-image region under current source, target and plan authority */
         get: operations["GET_api_v1_usp_packets_pdf_packetId_download"];
         put?: never;
         post?: never;
@@ -32998,6 +32998,41 @@ export interface components {
                     required: true;
                     inclusionReason: string;
                 }[];
+            } | {
+                target: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+                /** @enum {string} */
+                purpose: "record_evidence";
+                /** @enum {string} */
+                format: "pdf";
+                /** @enum {string} */
+                recipe: "pack1-single-original-image-region/1";
+                /** Format: date-time */
+                expiresAt: string;
+                entries: {
+                    bindingId: string;
+                    /** @enum {boolean} */
+                    required: true;
+                    inclusionReason: string;
+                }[];
             });
             guard: {
                 /** @enum {string} */
@@ -33852,6 +33887,252 @@ export interface components {
                                 annotations: "excluded";
                                 /** @enum {string} */
                                 applicability: "not_assessed";
+                            };
+                        };
+                        /** @enum {string} */
+                        applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                        /** @enum {string} */
+                        associationState: "operator_selected";
+                        /** @enum {string} */
+                        qualification: "not_assessed";
+                    } | null;
+                    readonly targetPath: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    }[];
+                    applicabilitySha256: string | null;
+                    /** @enum {string} */
+                    state: "included" | "blocked_required_context";
+                    reasonCode: string | null;
+                    entrySha256: string;
+                }[];
+                /** @enum {string} */
+                requiredContext: "available" | "blocked";
+                /** Format: date-time */
+                createdAt: string;
+                planSha256: string;
+            } | {
+                /** Format: uuid */
+                planId: string;
+                version: number;
+                previousVersion: number | null;
+                readonly input: {
+                    readonly target: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    readonly scope: {
+                        /** @enum {string} */
+                        kind: "snapshot";
+                        scopeId: string;
+                        readonly world: {
+                            namespace: string;
+                            id: string;
+                        };
+                        manifestId: string;
+                        snapshotDigest: string;
+                        /** @enum {string} */
+                        stage: "draft" | "recorded" | "retained";
+                    };
+                    /** @enum {string} */
+                    purpose: "record_evidence";
+                    /** @enum {string} */
+                    format: "pdf";
+                    /** @enum {string} */
+                    recipe: "pack1-single-original-image-region/1";
+                    /** Format: date-time */
+                    expiresAt: string;
+                    readonly entries: {
+                        bindingId: string;
+                        /** @enum {boolean} */
+                        required: true;
+                        inclusionReason: string;
+                    }[];
+                };
+                readonly creator: {
+                    subject: string;
+                    readonly roles: string[];
+                    entitlementVersion: string;
+                    /** @enum {string} */
+                    mode: "local_demo" | "india_private" | "public_interoperability";
+                };
+                accessViewId: string;
+                policyVersion: string;
+                targetBodySha256: string;
+                targetLabel: string;
+                readonly entries: {
+                    readonly selection: {
+                        bindingId: string;
+                        /** @enum {boolean} */
+                        required: true;
+                        inclusionReason: string;
+                    };
+                    binding: {
+                        /** @enum {string} */
+                        version: "registry-image-region-citation/1";
+                        id: string;
+                        document: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            sourceBytes: number;
+                        };
+                        region: {
+                            frame: {
+                                /** @enum {string} */
+                                kind: "image_oriented_top_left_pixels";
+                                width: number;
+                                height: number;
+                                orientation: {
+                                    exifValue: number | null;
+                                    applied: number;
+                                    /** @enum {string} */
+                                    provenance: "source_exif" | "specification_default";
+                                };
+                            };
+                            /** @enum {string} */
+                            coordinates: "oriented_original_pixel_edges/1";
+                            region: (number)[];
+                            /** @enum {boolean} */
+                            selectionAcknowledged: true;
+                        };
+                        /** @enum {string} */
+                        purpose: "record_evidence";
+                        target: {
+                            /** Format: uuid */
+                            recordId: string;
+                            revision: number;
+                            bodySha256: string;
+                        };
+                        selection: {
+                            subject: string;
+                            accessSha256: string;
+                            /** Format: date-time */
+                            selectedAt: string;
+                        };
+                        authoritySha256: string;
+                        validation: {
+                            /** @enum {string} */
+                            version: "packet-image-region-local/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            sourceImage: {
+                                /** @enum {string} */
+                                format: "png" | "jpeg";
+                                mode: string;
+                                frame: {
+                                    /** @enum {string} */
+                                    kind: "image_source_top_left_pixels";
+                                    width: number;
+                                    height: number;
+                                };
+                                /** @enum {number} */
+                                frameCount: 1;
+                                orientation: {
+                                    exifValue: number | null;
+                                    applied: number;
+                                    /** @enum {string} */
+                                    provenance: "source_exif" | "specification_default";
+                                };
+                                densityDeclarations: {
+                                    /** @enum {string} */
+                                    kind: "png_phys" | "jpeg_jfif" | "exif_resolution";
+                                    unitCode: number | null;
+                                    x: (number)[] | null;
+                                    y: (number)[] | null;
+                                    /** @enum {string} */
+                                    status: "supplied" | "unsupported";
+                                    /** @enum {string} */
+                                    qualification: "not_calibrated";
+                                }[];
+                                color: {
+                                    embeddedIcc: boolean;
+                                    declaredSrgb: boolean | null;
+                                    /** @enum {string} */
+                                    transparency: "absent" | "supplied";
+                                };
+                                /** @enum {string|null} */
+                                unsupportedReason: null;
+                            };
+                            selection: {
+                                frame: {
+                                    /** @enum {string} */
+                                    kind: "image_oriented_top_left_pixels";
+                                    width: number;
+                                    height: number;
+                                    orientation: {
+                                        exifValue: number | null;
+                                        applied: number;
+                                        /** @enum {string} */
+                                        provenance: "source_exif" | "specification_default";
+                                    };
+                                };
+                                /** @enum {string} */
+                                coordinates: "oriented_original_pixel_edges/1";
+                                region: (number)[];
+                                /** @enum {boolean} */
+                                selectionAcknowledged: true;
+                            };
+                            recipe: {
+                                /** @enum {string} */
+                                version: "packet-image-region-recipe/1";
+                                workerSha256: string;
+                                decoderSha256: string;
+                                supervisorSha256: string;
+                                /** @enum {string} */
+                                crop: "oriented_original_before_resampling/1";
+                                /** @enum {string} */
+                                rounding: "inward_complete_pixels/1";
+                                /** @enum {string} */
+                                metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
+                            };
+                            runtime: {
+                                python: string;
+                                pillow: string;
+                                jpegCodec: string | null;
+                                libjpegTurbo: string | null;
+                                zlibCodec: string | null;
+                                pythonSha256: string;
+                                launcherSha256: string;
+                                pillowImageSha256: string;
+                                imagingSha256: string;
+                            };
+                            transform: {
+                                includedPixelBounds: (number)[];
+                                includedOrientedRegion: (number)[];
+                                sourceToOriented: (number)[];
+                                orientedToOutput: (number)[];
+                                sourceToOutput: (number)[];
+                                outputToOriented: (number)[];
+                                /** @enum {string} */
+                                coordinateConvention: "pixel_edges/1";
+                                /** @enum {string} */
+                                rounding: "inward_complete_pixels/1";
+                                /** @enum {string} */
+                                resampling: "none" | "lanczos";
+                            };
+                            output: {
+                                sha256: string;
+                                bytes: number;
+                                pixels: (number)[];
+                                /** @enum {string} */
+                                format: "png";
+                                /** @enum {string} */
+                                mode: "RGB" | "RGBA";
+                                /** @enum {string} */
+                                colorInterpretation: "encoded_samples_unmanaged";
+                                /** @enum {string} */
+                                metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
                             };
                         };
                         /** @enum {string} */
@@ -34784,6 +35065,252 @@ export interface components {
                     /** Format: date-time */
                     createdAt: string;
                     planSha256: string;
+                } | {
+                    /** Format: uuid */
+                    planId: string;
+                    version: number;
+                    previousVersion: number | null;
+                    readonly input: {
+                        readonly target: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        readonly scope: {
+                            /** @enum {string} */
+                            kind: "snapshot";
+                            scopeId: string;
+                            readonly world: {
+                                namespace: string;
+                                id: string;
+                            };
+                            manifestId: string;
+                            snapshotDigest: string;
+                            /** @enum {string} */
+                            stage: "draft" | "recorded" | "retained";
+                        };
+                        /** @enum {string} */
+                        purpose: "record_evidence";
+                        /** @enum {string} */
+                        format: "pdf";
+                        /** @enum {string} */
+                        recipe: "pack1-single-original-image-region/1";
+                        /** Format: date-time */
+                        expiresAt: string;
+                        readonly entries: {
+                            bindingId: string;
+                            /** @enum {boolean} */
+                            required: true;
+                            inclusionReason: string;
+                        }[];
+                    };
+                    readonly creator: {
+                        subject: string;
+                        readonly roles: string[];
+                        entitlementVersion: string;
+                        /** @enum {string} */
+                        mode: "local_demo" | "india_private" | "public_interoperability";
+                    };
+                    accessViewId: string;
+                    policyVersion: string;
+                    targetBodySha256: string;
+                    targetLabel: string;
+                    readonly entries: {
+                        readonly selection: {
+                            bindingId: string;
+                            /** @enum {boolean} */
+                            required: true;
+                            inclusionReason: string;
+                        };
+                        binding: {
+                            /** @enum {string} */
+                            version: "registry-image-region-citation/1";
+                            id: string;
+                            document: {
+                                /** Format: uuid */
+                                caseId: string;
+                                caseRevision: number;
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                sourceBytes: number;
+                            };
+                            region: {
+                                frame: {
+                                    /** @enum {string} */
+                                    kind: "image_oriented_top_left_pixels";
+                                    width: number;
+                                    height: number;
+                                    orientation: {
+                                        exifValue: number | null;
+                                        applied: number;
+                                        /** @enum {string} */
+                                        provenance: "source_exif" | "specification_default";
+                                    };
+                                };
+                                /** @enum {string} */
+                                coordinates: "oriented_original_pixel_edges/1";
+                                region: (number)[];
+                                /** @enum {boolean} */
+                                selectionAcknowledged: true;
+                            };
+                            /** @enum {string} */
+                            purpose: "record_evidence";
+                            target: {
+                                /** Format: uuid */
+                                recordId: string;
+                                revision: number;
+                                bodySha256: string;
+                            };
+                            selection: {
+                                subject: string;
+                                accessSha256: string;
+                                /** Format: date-time */
+                                selectedAt: string;
+                            };
+                            authoritySha256: string;
+                            validation: {
+                                /** @enum {string} */
+                                version: "packet-image-region-local/1";
+                                sourceSha256: string;
+                                sourceBytes: number;
+                                sourceImage: {
+                                    /** @enum {string} */
+                                    format: "png" | "jpeg";
+                                    mode: string;
+                                    frame: {
+                                        /** @enum {string} */
+                                        kind: "image_source_top_left_pixels";
+                                        width: number;
+                                        height: number;
+                                    };
+                                    /** @enum {number} */
+                                    frameCount: 1;
+                                    orientation: {
+                                        exifValue: number | null;
+                                        applied: number;
+                                        /** @enum {string} */
+                                        provenance: "source_exif" | "specification_default";
+                                    };
+                                    densityDeclarations: {
+                                        /** @enum {string} */
+                                        kind: "png_phys" | "jpeg_jfif" | "exif_resolution";
+                                        unitCode: number | null;
+                                        x: (number)[] | null;
+                                        y: (number)[] | null;
+                                        /** @enum {string} */
+                                        status: "supplied" | "unsupported";
+                                        /** @enum {string} */
+                                        qualification: "not_calibrated";
+                                    }[];
+                                    color: {
+                                        embeddedIcc: boolean;
+                                        declaredSrgb: boolean | null;
+                                        /** @enum {string} */
+                                        transparency: "absent" | "supplied";
+                                    };
+                                    /** @enum {string|null} */
+                                    unsupportedReason: null;
+                                };
+                                selection: {
+                                    frame: {
+                                        /** @enum {string} */
+                                        kind: "image_oriented_top_left_pixels";
+                                        width: number;
+                                        height: number;
+                                        orientation: {
+                                            exifValue: number | null;
+                                            applied: number;
+                                            /** @enum {string} */
+                                            provenance: "source_exif" | "specification_default";
+                                        };
+                                    };
+                                    /** @enum {string} */
+                                    coordinates: "oriented_original_pixel_edges/1";
+                                    region: (number)[];
+                                    /** @enum {boolean} */
+                                    selectionAcknowledged: true;
+                                };
+                                recipe: {
+                                    /** @enum {string} */
+                                    version: "packet-image-region-recipe/1";
+                                    workerSha256: string;
+                                    decoderSha256: string;
+                                    supervisorSha256: string;
+                                    /** @enum {string} */
+                                    crop: "oriented_original_before_resampling/1";
+                                    /** @enum {string} */
+                                    rounding: "inward_complete_pixels/1";
+                                    /** @enum {string} */
+                                    metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
+                                };
+                                runtime: {
+                                    python: string;
+                                    pillow: string;
+                                    jpegCodec: string | null;
+                                    libjpegTurbo: string | null;
+                                    zlibCodec: string | null;
+                                    pythonSha256: string;
+                                    launcherSha256: string;
+                                    pillowImageSha256: string;
+                                    imagingSha256: string;
+                                };
+                                transform: {
+                                    includedPixelBounds: (number)[];
+                                    includedOrientedRegion: (number)[];
+                                    sourceToOriented: (number)[];
+                                    orientedToOutput: (number)[];
+                                    sourceToOutput: (number)[];
+                                    outputToOriented: (number)[];
+                                    /** @enum {string} */
+                                    coordinateConvention: "pixel_edges/1";
+                                    /** @enum {string} */
+                                    rounding: "inward_complete_pixels/1";
+                                    /** @enum {string} */
+                                    resampling: "none" | "lanczos";
+                                };
+                                output: {
+                                    sha256: string;
+                                    bytes: number;
+                                    pixels: (number)[];
+                                    /** @enum {string} */
+                                    format: "png";
+                                    /** @enum {string} */
+                                    mode: "RGB" | "RGBA";
+                                    /** @enum {string} */
+                                    colorInterpretation: "encoded_samples_unmanaged";
+                                    /** @enum {string} */
+                                    metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
+                                };
+                            };
+                            /** @enum {string} */
+                            applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                            /** @enum {string} */
+                            associationState: "operator_selected";
+                            /** @enum {string} */
+                            qualification: "not_assessed";
+                        } | null;
+                        readonly targetPath: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        }[];
+                        applicabilitySha256: string | null;
+                        /** @enum {string} */
+                        state: "included" | "blocked_required_context";
+                        reasonCode: string | null;
+                        entrySha256: string;
+                    }[];
+                    /** @enum {string} */
+                    requiredContext: "available" | "blocked";
+                    /** Format: date-time */
+                    createdAt: string;
+                    planSha256: string;
                 });
                 readonly confirmation: {
                     /** Format: uuid */
@@ -35447,6 +35974,191 @@ export interface components {
                         }[];
                     };
                     readonly omissions: unknown[];
+                } | {
+                    /** Format: uuid */
+                    planId: string;
+                    version: number;
+                    /** Format: uuid */
+                    confirmationId: string;
+                    readonly packet: {
+                        /** @enum {string} */
+                        version: "packet-image-pdf/1";
+                        /** Format: uuid */
+                        packetId: string;
+                        readonly target: {
+                            readonly ref: {
+                                namespace: string;
+                                id: string;
+                            };
+                            revision: number;
+                        };
+                        readonly scope: {
+                            /** @enum {string} */
+                            kind: "snapshot";
+                            scopeId: string;
+                            readonly world: {
+                                namespace: string;
+                                id: string;
+                            };
+                            manifestId: string;
+                            snapshotDigest: string;
+                            /** @enum {string} */
+                            stage: "draft" | "recorded" | "retained";
+                        };
+                        /** @enum {string} */
+                        format: "pdf";
+                        readonly artifact: {
+                            assetId: string;
+                            version: number;
+                            sha256: string;
+                        };
+                        /** Format: uuid */
+                        planId: string;
+                        planVersion: number;
+                        planSha256: string;
+                        /** Format: uuid */
+                        confirmationId: string;
+                        bindingId: string;
+                        entrySha256: string;
+                        assembly: {
+                            /** @enum {string} */
+                            version: "packet-image-pdf-assembly/1";
+                            /** @enum {string} */
+                            recipe: "pack1-single-original-image-region/1";
+                            region: {
+                                /** @enum {string} */
+                                version: "packet-image-region-local/1";
+                                sourceSha256: string;
+                                sourceBytes: number;
+                                sourceImage: {
+                                    /** @enum {string} */
+                                    format: "png" | "jpeg";
+                                    mode: string;
+                                    frame: {
+                                        /** @enum {string} */
+                                        kind: "image_source_top_left_pixels";
+                                        width: number;
+                                        height: number;
+                                    };
+                                    /** @enum {number} */
+                                    frameCount: 1;
+                                    orientation: {
+                                        exifValue: number | null;
+                                        applied: number;
+                                        /** @enum {string} */
+                                        provenance: "source_exif" | "specification_default";
+                                    };
+                                    densityDeclarations: {
+                                        /** @enum {string} */
+                                        kind: "png_phys" | "jpeg_jfif" | "exif_resolution";
+                                        unitCode: number | null;
+                                        x: (number)[] | null;
+                                        y: (number)[] | null;
+                                        /** @enum {string} */
+                                        status: "supplied" | "unsupported";
+                                        /** @enum {string} */
+                                        qualification: "not_calibrated";
+                                    }[];
+                                    color: {
+                                        embeddedIcc: boolean;
+                                        declaredSrgb: boolean | null;
+                                        /** @enum {string} */
+                                        transparency: "absent" | "supplied";
+                                    };
+                                    /** @enum {string|null} */
+                                    unsupportedReason: null;
+                                };
+                                selection: {
+                                    frame: {
+                                        /** @enum {string} */
+                                        kind: "image_oriented_top_left_pixels";
+                                        width: number;
+                                        height: number;
+                                        orientation: {
+                                            exifValue: number | null;
+                                            applied: number;
+                                            /** @enum {string} */
+                                            provenance: "source_exif" | "specification_default";
+                                        };
+                                    };
+                                    /** @enum {string} */
+                                    coordinates: "oriented_original_pixel_edges/1";
+                                    region: (number)[];
+                                    /** @enum {boolean} */
+                                    selectionAcknowledged: true;
+                                };
+                                recipe: {
+                                    /** @enum {string} */
+                                    version: "packet-image-region-recipe/1";
+                                    workerSha256: string;
+                                    decoderSha256: string;
+                                    supervisorSha256: string;
+                                    /** @enum {string} */
+                                    crop: "oriented_original_before_resampling/1";
+                                    /** @enum {string} */
+                                    rounding: "inward_complete_pixels/1";
+                                    /** @enum {string} */
+                                    metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
+                                };
+                                runtime: {
+                                    python: string;
+                                    pillow: string;
+                                    jpegCodec: string | null;
+                                    libjpegTurbo: string | null;
+                                    zlibCodec: string | null;
+                                    pythonSha256: string;
+                                    launcherSha256: string;
+                                    pillowImageSha256: string;
+                                    imagingSha256: string;
+                                };
+                                transform: {
+                                    includedPixelBounds: (number)[];
+                                    includedOrientedRegion: (number)[];
+                                    sourceToOriented: (number)[];
+                                    orientedToOutput: (number)[];
+                                    sourceToOutput: (number)[];
+                                    outputToOriented: (number)[];
+                                    /** @enum {string} */
+                                    coordinateConvention: "pixel_edges/1";
+                                    /** @enum {string} */
+                                    rounding: "inward_complete_pixels/1";
+                                    /** @enum {string} */
+                                    resampling: "none" | "lanczos";
+                                };
+                                output: {
+                                    sha256: string;
+                                    bytes: number;
+                                    pixels: (number)[];
+                                    /** @enum {string} */
+                                    format: "png";
+                                    /** @enum {string} */
+                                    mode: "RGB" | "RGBA";
+                                    /** @enum {string} */
+                                    colorInterpretation: "encoded_samples_unmanaged";
+                                    /** @enum {string} */
+                                    metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
+                                };
+                            };
+                            output: {
+                                sha256: string;
+                                bytes: number;
+                                /** @enum {string} */
+                                contentType: "application/pdf";
+                                /** @enum {number} */
+                                pages: 1;
+                                /** @enum {string} */
+                                policy: "fresh_rgb_image_only; alpha_unsupported; no_original_metadata/1";
+                            };
+                        };
+                        /** @enum {string} */
+                        contentType: "application/pdf";
+                        /** @enum {string} */
+                        status: "complete";
+                        /** Format: date-time */
+                        createdAt: string;
+                        commandSha256: string;
+                    };
+                    readonly omissions: unknown[];
                 })) | null;
             };
             readonly meta: {
@@ -35717,6 +36429,41 @@ export interface components {
                 format: "pdf";
                 /** @enum {string} */
                 recipe: "pack1-multiple-original-region-image/1";
+                /** Format: date-time */
+                expiresAt: string;
+                entries: {
+                    bindingId: string;
+                    /** @enum {boolean} */
+                    required: true;
+                    inclusionReason: string;
+                }[];
+            } | {
+                target: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+                /** @enum {string} */
+                purpose: "record_evidence";
+                /** @enum {string} */
+                format: "pdf";
+                /** @enum {string} */
+                recipe: "pack1-single-original-image-region/1";
                 /** Format: date-time */
                 expiresAt: string;
                 entries: {
@@ -36435,6 +37182,191 @@ export interface components {
                         entrySha256: string;
                         outputPage: number;
                     }[];
+                };
+                readonly omissions: unknown[];
+            } | {
+                /** Format: uuid */
+                planId: string;
+                version: number;
+                /** Format: uuid */
+                confirmationId: string;
+                readonly packet: {
+                    /** @enum {string} */
+                    version: "packet-image-pdf/1";
+                    /** Format: uuid */
+                    packetId: string;
+                    readonly target: {
+                        readonly ref: {
+                            namespace: string;
+                            id: string;
+                        };
+                        revision: number;
+                    };
+                    readonly scope: {
+                        /** @enum {string} */
+                        kind: "snapshot";
+                        scopeId: string;
+                        readonly world: {
+                            namespace: string;
+                            id: string;
+                        };
+                        manifestId: string;
+                        snapshotDigest: string;
+                        /** @enum {string} */
+                        stage: "draft" | "recorded" | "retained";
+                    };
+                    /** @enum {string} */
+                    format: "pdf";
+                    readonly artifact: {
+                        assetId: string;
+                        version: number;
+                        sha256: string;
+                    };
+                    /** Format: uuid */
+                    planId: string;
+                    planVersion: number;
+                    planSha256: string;
+                    /** Format: uuid */
+                    confirmationId: string;
+                    bindingId: string;
+                    entrySha256: string;
+                    assembly: {
+                        /** @enum {string} */
+                        version: "packet-image-pdf-assembly/1";
+                        /** @enum {string} */
+                        recipe: "pack1-single-original-image-region/1";
+                        region: {
+                            /** @enum {string} */
+                            version: "packet-image-region-local/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            sourceImage: {
+                                /** @enum {string} */
+                                format: "png" | "jpeg";
+                                mode: string;
+                                frame: {
+                                    /** @enum {string} */
+                                    kind: "image_source_top_left_pixels";
+                                    width: number;
+                                    height: number;
+                                };
+                                /** @enum {number} */
+                                frameCount: 1;
+                                orientation: {
+                                    exifValue: number | null;
+                                    applied: number;
+                                    /** @enum {string} */
+                                    provenance: "source_exif" | "specification_default";
+                                };
+                                densityDeclarations: {
+                                    /** @enum {string} */
+                                    kind: "png_phys" | "jpeg_jfif" | "exif_resolution";
+                                    unitCode: number | null;
+                                    x: (number)[] | null;
+                                    y: (number)[] | null;
+                                    /** @enum {string} */
+                                    status: "supplied" | "unsupported";
+                                    /** @enum {string} */
+                                    qualification: "not_calibrated";
+                                }[];
+                                color: {
+                                    embeddedIcc: boolean;
+                                    declaredSrgb: boolean | null;
+                                    /** @enum {string} */
+                                    transparency: "absent" | "supplied";
+                                };
+                                /** @enum {string|null} */
+                                unsupportedReason: null;
+                            };
+                            selection: {
+                                frame: {
+                                    /** @enum {string} */
+                                    kind: "image_oriented_top_left_pixels";
+                                    width: number;
+                                    height: number;
+                                    orientation: {
+                                        exifValue: number | null;
+                                        applied: number;
+                                        /** @enum {string} */
+                                        provenance: "source_exif" | "specification_default";
+                                    };
+                                };
+                                /** @enum {string} */
+                                coordinates: "oriented_original_pixel_edges/1";
+                                region: (number)[];
+                                /** @enum {boolean} */
+                                selectionAcknowledged: true;
+                            };
+                            recipe: {
+                                /** @enum {string} */
+                                version: "packet-image-region-recipe/1";
+                                workerSha256: string;
+                                decoderSha256: string;
+                                supervisorSha256: string;
+                                /** @enum {string} */
+                                crop: "oriented_original_before_resampling/1";
+                                /** @enum {string} */
+                                rounding: "inward_complete_pixels/1";
+                                /** @enum {string} */
+                                metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
+                            };
+                            runtime: {
+                                python: string;
+                                pillow: string;
+                                jpegCodec: string | null;
+                                libjpegTurbo: string | null;
+                                zlibCodec: string | null;
+                                pythonSha256: string;
+                                launcherSha256: string;
+                                pillowImageSha256: string;
+                                imagingSha256: string;
+                            };
+                            transform: {
+                                includedPixelBounds: (number)[];
+                                includedOrientedRegion: (number)[];
+                                sourceToOriented: (number)[];
+                                orientedToOutput: (number)[];
+                                sourceToOutput: (number)[];
+                                outputToOriented: (number)[];
+                                /** @enum {string} */
+                                coordinateConvention: "pixel_edges/1";
+                                /** @enum {string} */
+                                rounding: "inward_complete_pixels/1";
+                                /** @enum {string} */
+                                resampling: "none" | "lanczos";
+                            };
+                            output: {
+                                sha256: string;
+                                bytes: number;
+                                pixels: (number)[];
+                                /** @enum {string} */
+                                format: "png";
+                                /** @enum {string} */
+                                mode: "RGB" | "RGBA";
+                                /** @enum {string} */
+                                colorInterpretation: "encoded_samples_unmanaged";
+                                /** @enum {string} */
+                                metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
+                            };
+                        };
+                        output: {
+                            sha256: string;
+                            bytes: number;
+                            /** @enum {string} */
+                            contentType: "application/pdf";
+                            /** @enum {number} */
+                            pages: 1;
+                            /** @enum {string} */
+                            policy: "fresh_rgb_image_only; alpha_unsupported; no_original_metadata/1";
+                        };
+                    };
+                    /** @enum {string} */
+                    contentType: "application/pdf";
+                    /** @enum {string} */
+                    status: "complete";
+                    /** Format: date-time */
+                    createdAt: string;
+                    commandSha256: string;
                 };
                 readonly omissions: unknown[];
             });

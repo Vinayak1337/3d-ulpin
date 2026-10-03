@@ -24,7 +24,7 @@ import { EvidenceExceptionFilter, readUspBody, UspJsonPost, uspEnvelope } from '
 @Controller('api/v1/usp/packets')
 export class PacketPlansController {
   @Post('plans/enqueue') @HttpCode(202)
-  @ApiOperation({operationId:'POST_api_v1_usp_packets_plans_enqueue',summary:'Durably enqueue an exact confirmed private PDF plan; independent dispatcher owns work'})
+  @ApiOperation({operationId:'POST_api_v1_usp_packets_plans_enqueue',summary:'Durably enqueue a supported PDF-source plan; original-image recipe uses synchronous execution'})
   @ApiBody({schema:requestApiSchema(UspEnqueuePacketPdfJobSchema)})
   @ApiResponse({status:202,schema:envelopeSchema(PacketPdfJobStatusSchema)})
   async enqueue(@Req() req:Request,@Res({passthrough:true}) res:Response){
@@ -103,7 +103,7 @@ export class PacketPlansController {
     return uspEnvelope(req, result.packet.scope, result);
   }
   @Get('pdf/:packetId/download') @HttpCode(200)
-  @ApiOperation({operationId:'GET_api_v1_usp_packets_pdf_packetId_download',summary:'Download the exact private generated PDF of ordered required regions from one or multiple originals under current source, target and plan authority'})
+  @ApiOperation({operationId:'GET_api_v1_usp_packets_pdf_packetId_download',summary:'Download the exact private generated PDF of reviewed PDF regions or one RGB original-image region under current source, target and plan authority'})
   @ApiParam({name:'packetId',schema:{type:'string',format:'uuid'}})
   @ApiResponse({status:200,content:{'application/pdf':{schema:{type:'string',format:'binary'}}}})
   async downloadPdf(@Param('packetId') value:string,@Req() req:Request,@Res() res:Response){
