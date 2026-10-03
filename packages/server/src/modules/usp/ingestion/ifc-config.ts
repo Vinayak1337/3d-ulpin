@@ -91,12 +91,14 @@ const preKMLReadCodeSha=new Set(['a441e6ac5d3947e4f267e63494685fada870384c6850c8
   '3bd4f09e8a4bdfd2963e2e6c0ff735cdb423c3405e06694755f1f017bb585ac0']);
 // CITYGML-02: exact 0b209ca3 Git/LF and captured physical code; immutable reads only.
 const preCityGMLReadCodeSha=new Set(["18a0bc3c1f01fffd338e122b3d028f438dd2f7459377e228a9ae1a94c33e93ed", "06bc6b13fcaae405d4d1390a8a13703f716d05ac3aa2f152679f8047927ae519"]);
+// GEOPARQUET-02: exact 409d2641 Git/LF and physical immutable-read code only.
+const preGeoParquetReadCodeSha=new Set(["2d1ec8e223c7124196237b7d33c84be37d5a202cb9b11515f3d510962ba8ff79", "9e5771204c653c37598ac52e3d2e555b1875a7e9bf7ad565c959bde8d0233c6e"]);
 export function ifcReadToolsCompatible(stored:IFCToolPins,current:IFCToolPins){
   const old=IFCToolPinsSchema.safeParse(stored),live=IFCToolPinsSchema.safeParse(current);
   if(!old.success||!live.success)return false;
   if(fingerprint(old.data)===fingerprint(live.data))return true;
   const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
-  return (preDXFReadCodeSha.has(oldCode)||(preKMLReadCodeSha.has(oldCode)||preCityGMLReadCodeSha.has(oldCode)))&&fingerprint(oldTools)===fingerprint(currentTools);
+  return (preDXFReadCodeSha.has(oldCode)||(preKMLReadCodeSha.has(oldCode)||(preCityGMLReadCodeSha.has(oldCode)||preGeoParquetReadCodeSha.has(oldCode))))&&fingerprint(oldTools)===fingerprint(currentTools);
 }
 /** Verify the complete current inventory before immutable-result read comparison.
  * Returns no process configuration: writers must continue using assertIFCTools. */

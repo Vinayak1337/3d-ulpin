@@ -20,6 +20,7 @@ import {runIFCJob} from '../usp/ingestion/ifc-worker';
 import {runDXFJob} from '../usp/ingestion/dxf-worker';
 import {runKMLJob} from '../usp/ingestion/kml-worker';
 import {runCityGMLJob} from '../usp/ingestion/citygml-worker';
+import {runGeoParquetJob} from '../usp/ingestion/geoparquet-worker';
 import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 import {runCityJSONValidationJob} from '../registry/cityjson-validation-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
@@ -32,6 +33,7 @@ let ifcWorker:Promise<void>|undefined;
 let dxfWorker:Promise<void>|undefined;
 let kmlWorker:Promise<void>|undefined;
 let citygmlWorker:Promise<void>|undefined;
+let geoparquetWorker:Promise<void>|undefined;
 let cityjsonWorker:Promise<void>|undefined;
 let cityjsonValidationWorker:Promise<void>|undefined;
 let pointBatchWorker:Promise<void>|undefined;
@@ -245,6 +247,12 @@ export async function dispatchTick(): Promise<number> {
         if(!citygmlWorker)citygmlWorker=runCityGMLJob(job.id)
           .catch(()=>{/* Canonical fenced state owns recovery; native retries are explicit. */})
           .finally(()=>{citygmlWorker=undefined;});
+        return;
+      }
+      if(job.operation==='geoparquet-native'){
+        if(!geoparquetWorker)geoparquetWorker=runGeoParquetJob(job.id)
+          .catch(()=>{/* Canonical fenced state owns recovery; native retries are explicit. */})
+          .finally(()=>{geoparquetWorker=undefined;});
         return;
       }
       if(job.operation==='cityjson-native'){

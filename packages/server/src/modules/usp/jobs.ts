@@ -5,6 +5,7 @@ import {ingestionBinding,assertIngestionBinding} from './ingestion/events';
 import { UspJobProjectionSchema, UspAssetRefSchema, UspScopeSchema,
   type AssetRef, type UspScope } from '@ulpin/contracts/usp';
 import { transaction,type DbDeadline } from '../../infrastructure/db';
+import {GeoParquetInputSchema} from '../../../../contracts/src/usp/geoparquet-ingestion';
 import {CityGMLInputSchema} from '../../../../contracts/src/usp/citygml-ingestion';
 import {KMLInputSchema} from '../../../../contracts/src/usp/kml-ingestion';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
@@ -76,6 +77,12 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
       ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
       throw new AppError(422,'CITYGML_INPUT_SCOPE','CityGML jobs must pin their unchanged original, private access and intake context.');
+  } else if(job.operation==='geoparquet-native'){
+    const input=GeoParquetInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
+      throw new AppError(422,'GEOPARQUET_INPUT_SCOPE','GeoParquet jobs must pin their unchanged original, private access and intake context.');
   } else if(job.operation==='cityjson-validation'){
     const input=RegistryCityJSONValidationInputSchema.parse(job.payload),source=input.candidate.input,
       binding=ingestionBinding(source.caseId),digest=fingerprint(input);
