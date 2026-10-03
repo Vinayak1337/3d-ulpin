@@ -5,7 +5,7 @@ import hashlib
 import json
 import time
 
-from .validation import project_raw, validate_input
+from .validation import project_raw, validate_input, require
 
 SETTINGS = {"seed": 17, "cpuThreads": 2, "maxInputTokens": 2048, "maxNewTokens": 768,
             "batchSize": 1, "doSample": False, "dtype": "float16", "attention": "sdpa",
@@ -31,10 +31,18 @@ def prompt_messages(example):
             {"role": "user", "content": json.dumps(content, ensure_ascii=False, separators=(",", ":"))}]
 
 
-def run_local(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, *, model_loader=None):
+def run_local(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, *, model_loader=None,
+              fragment_route=None, fragment_contract=None, preserve_preflight=None):
     require_boundary()  # before dependencies, model bytes or GPU initialization
     for example in examples:
         validate_input(example, contract, family_freeze, ("development",))
+    sources = None
+    if fragment_route is not None:
+        from . import fragment_selection as fragment
+        require(model_loader is None and callable(preserve_preflight), "fragment_baseline_preflight_or_loader_refused")
+        sources = fragment.checked_route(fragment_route, examples, fragment_contract, contract, family_freeze)
+    else:
+        require(fragment_contract is None and preserve_preflight is None, "explicit_fragment_route_required")
     import torch
     import transformers
     from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteria, StoppingCriteriaList
@@ -72,25 +80,49 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
 
     gpu_check()
     tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False)
+    prompts, vocabulary = None, None
+    constraint_reports = []
+    if sources is not None:
+        from .selector_constraints import Vocabulary, Controller, checked_generation_config
+        prompts, preflight = [], []
+        for example, source in zip(examples, sources):
+            prompt = tokenizer.apply_chat_template(source.messages(), tokenize=False, add_generation_prompt=True)
+            tokens = len(tokenizer.encode(prompt, add_special_tokens=False))
+            prompts.append(prompt)
+            preflight.append({"exampleId": example["exampleId"], "candidateSetSha256": source.input_sha256,
+                "inputTokens": tokens, "promptSha256": hashlib.sha256(prompt.encode()).hexdigest(), "context": source.private_view()})
+        preserve_preflight({"version": "association-fragment-preflight/1", "representation": fragment.metadata(),
+            "examples": preflight, "truncation": False, "teacherTargetsInPrompt": False})
+        require(all(row["inputTokens"] <= SETTINGS["maxInputTokens"] for row in preflight), "fragment_input_bound_no_truncation")
+        vocabulary = Vocabulary(model_path)
+        vocabulary.verify_runtime(tokenizer)
     model = (AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
         use_safetensors=True, torch_dtype=torch.float16, attn_implementation=SETTINGS["attention"]).to("cuda").eval()
         if model_loader is None else model_loader(model_path))
+    if vocabulary is not None:
+        checked_generation_config(model.generation_config)
     torch.cuda.synchronize()
     loaded_seconds = time.perf_counter() - started
     gpu_check()
     raw_outputs, results = [], []
-    for example in examples:
-        prompt = tokenizer.apply_chat_template(prompt_messages(example), tokenize=False, add_generation_prompt=True)
+    for index, example in enumerate(examples):
+        prompt = (prompts[index] if prompts is not None else
+                  tokenizer.apply_chat_template(prompt_messages(example), tokenize=False, add_generation_prompt=True))
         encoded = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
         input_tokens = int(encoded["input_ids"].shape[1])
         if input_tokens > SETTINGS["maxInputTokens"]:
             raise RuntimeError("frozen input token bound exceeded; no truncation")
         encoded = {key: value.to("cuda") for key, value in encoded.items()}
+        generation_options = {}
+        if vocabulary is not None:
+            controller = Controller(vocabulary, sources[index], fragment_contract, encoded["input_ids"][0].tolist(),
+                                    grammar=fragment.Grammar(sources[index], fragment_contract))
+            generation_options["prefix_allowed_tokens_fn"] = controller
         before = time.perf_counter()
         with torch.inference_mode():
             generated = model.generate(**encoded, max_new_tokens=SETTINGS["maxNewTokens"], do_sample=False,
                 use_cache=True, pad_token_id=tokenizer.eos_token_id,
-                stopping_criteria=StoppingCriteriaList([ResourceCheck()]))
+                stopping_criteria=StoppingCriteriaList([ResourceCheck()]), **generation_options)
         torch.cuda.synchronize()
         seconds = time.perf_counter() - before
         output_ids = generated[0, input_tokens:]
@@ -99,13 +131,18 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
                       "promptSha256": hashlib.sha256(prompt.encode()).hexdigest(),
                       "inputTokens": input_tokens, "outputTokens": len(output_ids),
                       "generationSeconds": seconds, "reachedTokenLimit": len(output_ids) == SETTINGS["maxNewTokens"]}
+        if sources is not None:
+            raw_record.update(representation=fragment.VERSION, candidateSetSha256=sources[index].input_sha256)
         preserve_raw(len(raw_outputs), raw_record)
-        checked = project_raw(raw, example, contract, family_freeze, ("development",))
+        if vocabulary is not None:
+            constraint_reports.append({"exampleId": example["exampleId"], **controller.finish(output_ids.tolist(), raw)})
+        checked = (fragment.project(raw, sources[index], fragment_contract, contract, family_freeze, ("development",))
+                   if sources is not None else project_raw(raw, example, contract, family_freeze, ("development",)))
         raw_outputs.append(raw_record)
         results.append({"exampleId": example["exampleId"], **checked})
         del generated, output_ids, encoded
         gpu_check()
-    return raw_outputs, {"version": "association-student-result/1", "results": results,
+    result = {"version": "association-fragment-result/1" if sources is not None else "association-student-result/1", "results": results,
         "modelOutputValidCount": sum(row["modelOutputValid"] for row in results), "exampleCount": len(results),
         "settings": SETTINGS, "loadSeconds": loaded_seconds, "elapsedSeconds": time.perf_counter() - started,
         "runtime": {"torch": torch.__version__, "transformers": transformers.__version__, "cuda": torch.version.cuda,
@@ -113,4 +150,11 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
                     "maxCudaAllocatedBytes": torch.cuda.max_memory_allocated(), "maxCudaReservedBytes": torch.cuda.max_memory_reserved(),
                     "minimumSampledFreeCudaBytes": min(s["freeBytes"] for s in samples)},
         "evaluationOpened": False, "teacherOutputsUsed": False, "fitPerformed": False,
-        "qualification": "two related development examples, one family; no canonical association or generalization qualification"}
+        "qualification": ("retrieved fragments retain original methods/uncertainty; structural validity is enforced, relevance/claims/canonical association unqualified"
+                          if sources is not None else "two related development examples, one family; no canonical association or generalization qualification")}
+    if sources is not None:
+        result.update(representation=fragment.metadata(), retrievedFragmentCount=sum(row["retrievedFragmentCount"] for row in results),
+            expectedSelectionsEvaluated=False, teacherTargetsInPrompt=False,
+            generationConstraints={"representation": fragment.metadata(), "examples": constraint_reports,
+                                  "trieNodes": len(vocabulary.first), "nativeTransportChecked": True})
+    return raw_outputs, result
