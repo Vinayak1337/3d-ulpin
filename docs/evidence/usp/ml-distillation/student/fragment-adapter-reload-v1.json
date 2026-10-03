@@ -1,0 +1,782 @@
+{
+  "version": "student-fragment-adapter-reload-evidence/1",
+  "task": "STUDENT-20-FRAGMENT-RELOAD",
+  "recordedAtUtc": "2026-10-03T15:12:13.012600+00:00",
+  "status": "native_reload_accepted_development_criteria_failed",
+  "executionHead": "671dfa78d7780d5279d8f110682525bf2c109622",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "stageRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077",
+  "privateDirectory": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe",
+  "hostDirectory": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45",
+  "authorities": {
+    "student-20.fragment-reload.assignment.json": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-20.fragment-reload.assignment.json",
+      "physicalSha256": "6fcf2b60e2e3d94d959e30671211a545ef4674ed0aeff09b553a50eb0eaf2560",
+      "bytes": 15093
+    },
+    "student-20.fragment-reload.protocol.json": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-20.fragment-reload.protocol.json",
+      "physicalSha256": "03971ef4cf9821a7322a62fc2c8918f24f9f17b5922a98096dc0d07d2c862ae6",
+      "bytes": 11743
+    },
+    "student-fragment-fit-acceptance-v1.json": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-fit-acceptance-v1.json",
+      "physicalSha256": "5d3580049bcc8663e9ee4f48fa73c5ae931a9ff0b256a128b5a536a48856f289",
+      "bytes": 13207
+    }
+  },
+  "permissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access",
+    "observation": "Supplied turn instructions"
+  },
+  "workerSettings": {
+    "interpretation": "Dispatch exposes model/effort but no tier. Prompt/global preference does not prove actual service tier; report only observed settings.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Verify the exact saved adapter/transport proof and interpret the first frozen trained-versus-pretrained retrieval comparison without changing policy or revealing labels to native inputs.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "attempts": {
+    "freshStages": 1,
+    "containedReloads": 1,
+    "nativeRetries": 0,
+    "fits": 0,
+    "extraInference": 0,
+    "originalHostExpectationReads": 1,
+    "completedHostComparisons": 1,
+    "comparisonHelperAttempts": 2
+  },
+  "commands": {
+    "stage": {
+      "invocation": {
+        "command": [
+          "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+          "-B",
+          "-I",
+          "-S",
+          "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_fragment_adapter.py",
+          "reload",
+          "--assignment",
+          "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-20.fragment-reload.assignment.json",
+          "--fit-root",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-fit-df9b4b53a7e84b0ba3246baeb1221851"
+        ],
+        "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+        "startedAtUtc": "2026-10-03T14:52:13.170449+00:00"
+      },
+      "execution": {
+        "exitCode": 0,
+        "finishedAtUtc": "2026-10-03T14:54:51.485440+00:00",
+        "wallSeconds": 158.31200000000536
+      }
+    },
+    "reload": {
+      "invocation": {
+        "command": [
+          "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+          "-B",
+          "-I",
+          "-S",
+          "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\association_adapter.py",
+          "reload",
+          "--schema",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\schema-v1.json",
+          "--family-freeze",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\family-freeze.json",
+          "--model-receipt",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\model-acquisition.json",
+          "--assignment",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\assignment.json",
+          "--input-batch",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\development.json",
+          "--adapter-manifest",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\adapter-manifest.json",
+          "--fit-proof",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\fit-proof.json",
+          "--adapter-dir",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\adapter",
+          "--run-freeze",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\run-freeze.json",
+          "--output-dir",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\outputs\\reload",
+          "--containment-profile",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\profile.json",
+          "--containment-sha256",
+          "ceab2bac1e8bc77591835c6d66bc7e369af6887208acb357bf471c62c9b38db4"
+        ],
+        "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+        "startedAtUtc": "2026-10-03T14:56:06.625656+00:00",
+        "commandSource": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\stage.json",
+        "unchangedCommandArray": true,
+        "attempt": 1
+      },
+      "execution": {
+        "exitCode": 0,
+        "finishedAtUtc": "2026-10-03T15:01:08.010448+00:00",
+        "wallSeconds": 301.375
+      }
+    },
+    "technical": {
+      "invocation": {
+        "command": [
+          "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+          "-B",
+          "-I",
+          "-S",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\accept_reload.py"
+        ],
+        "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+        "startedAtUtc": "2026-10-03T15:01:39.705734+00:00"
+      },
+      "execution": {
+        "exitCode": 0,
+        "wallSeconds": 0.25,
+        "finishedAtUtc": "2026-10-03T15:01:39.962852+00:00"
+      }
+    },
+    "hostComparison": {
+      "invocation": {
+        "command": [
+          "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+          "-B",
+          "-I",
+          "-S",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\compare_once.py"
+        ],
+        "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+        "startedAtUtc": "2026-10-03T15:08:01.059574+00:00",
+        "comparison": 1,
+        "helperAttempt": 2,
+        "sourceSha256": "39668b7cfbee98a9815f974380c538af31c749cb0a59e634da605cdc9454cef6"
+      },
+      "execution": {
+        "exitCode": 0,
+        "wallSeconds": 0.07800000000861473,
+        "finishedAtUtc": "2026-10-03T15:08:01.141563+00:00"
+      }
+    }
+  },
+  "retainedUnscoredHelperFailure": {
+    "source": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\compare_once.attempt-1.py",
+      "physicalSha256": "9b66b4f290cd4094f93fc191874f48ade826a1713498e1b1b62b7b3541c23375",
+      "bytes": 11769
+    },
+    "execution": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison-execution.json",
+      "physicalSha256": "4d3f26c49fce94a535a12e2705433a8a5aead3dadea526cf204b2cbd4bcd3a12",
+      "bytes": 113
+    },
+    "reason": "Initial helper compared top-level representation objects before scoring. The adapter receipt wraps the same fragment metadata in its training representation; use its fragment field and confirm controller representation equality. No native run, expectation reread, criteria or output changes."
+  },
+  "executionPins": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\execution-pins.json",
+    "physicalSha256": "3de967a90d38718aae895b4115cc80b93ced86581a92403e4d7059d91215df74",
+    "bytes": 14427
+  },
+  "sourceCount": 31,
+  "profileEntries": 19688,
+  "copied": {
+    "bytes": 8607044094,
+    "fileCount": 19686
+  },
+  "acceptedFit": {
+    "acceptedReceiptSha256": "c5d9eb5ab27979774df3d087ed58d6d7cce6110c3172e75369200e7586fdf814",
+    "adapterManifestSha256": "de3388ad8cffe76a2d6a4462373e53d23950f6e1e27d2ac04dcdc7fc1569abfe",
+    "adapterWeightsSha256": "f56683a79a493bd21cd909616f22be83720a3b4721a1ccc3c55e0f93ddf7630b",
+    "fitAssignmentSha256": "a2d9139dadb222a34f270bcd9a5ae152c09731340a6ebe3b194b1e42c4cb7541",
+    "fitFreezeSha256": "48ef397f475601b5b5a7f184cc23e9973738bc8b2c0c1dd087f6a4a0b461464d",
+    "fitProofSha256": "573dff67b4b9a385c047cb3a8bd439ae97e87c280ffb3ec27db71840b234bde9",
+    "fitResultSha256": "7227d04269978f9de1b8f9a4b85e1d7814d68618a597a9ad7dea5ec95acf3a82",
+    "guardSha256": "074c3aa2790ca4cdb81e7bc3f34e113da1eaae476d0f570e2841b238a110bd64",
+    "profileSha256": "62ae8fa1ab76cf458b08685f0d134f30c92fae1adcaed08b7c4c7253e0d63709",
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-fit-df9b4b53a7e84b0ba3246baeb1221851",
+    "sourceCommit": "d47d33999a8ac644a1147180b4e38f434825931c"
+  },
+  "technicalAcceptance": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\technical-acceptance.json",
+    "physicalSha256": "522477fffdf5842a9a0b846aa247b8b690bb808896f441de658f9690836b7712",
+    "bytes": 3655
+  },
+  "adapterReload": {
+    "explicitLocalBase": true,
+    "remoteBaseLookup": false,
+    "savedTensorsExact": true,
+    "tensorCount": 96
+  },
+  "baseEqualityScope": "All pinned original model bytes verified by stage/worker; explicit local base. No new in-memory base-tensor digest is emitted by the existing reload runner.",
+  "originalModelWeightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+  "nativeTransport": {
+    "checked": true,
+    "controllerReports": [
+      {
+        "enforcedValidityIsLearnedAccuracy": false,
+        "eosEmitted": true,
+        "exampleId": "ifc4-source-native-v1",
+        "generatedBytesSha256": "74915218481b7388f8f780f15bbeb8002d1cd682972e538d72a53c86bfdfcee3",
+        "grammarComplete": true,
+        "maskCalls": 85,
+        "maskSeconds": 0.008869299985235557,
+        "maxMaskSeconds": 0.00027129999944008887,
+        "policyVersion": "association-fragment-retrieval-policy/1",
+        "repairApplied": false,
+        "sourceInputSha256": "d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5",
+        "trieNodeVisits": 23559
+      },
+      {
+        "enforcedValidityIsLearnedAccuracy": false,
+        "eosEmitted": true,
+        "exampleId": "ifc2x3-source-native-v1",
+        "generatedBytesSha256": "06ca3754793155d372ab489f167f820b2051669ec4ac79bafc36125e216eec5d",
+        "grammarComplete": true,
+        "maskCalls": 88,
+        "maskSeconds": 0.008652400050777942,
+        "maxMaskSeconds": 0.000228899996727705,
+        "policyVersion": "association-fragment-retrieval-policy/1",
+        "repairApplied": false,
+        "sourceInputSha256": "d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c",
+        "trieNodeVisits": 24435
+      }
+    ],
+    "rawResponsesPreservedBeforeProjection": true,
+    "repairOrFallbackOrForcedChoice": false
+  },
+  "rawResponses": [
+    {
+      "candidateSetSha256": "d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5",
+      "exampleId": "ifc4-source-native-v1",
+      "generationSeconds": 3.1640577999933157,
+      "inputTokens": 1290,
+      "outputTokens": 85,
+      "promptSha256": "bd71860b0cedadc93219a55c2c4ffc4d40a37ded8a6503349e61acae34084077",
+      "rawText": "{\"candidateSetSha256\":\"d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5\",\"selected\":[\"c1\"],\"version\":\"evidence-association-fragment-selection/1\"}",
+      "reachedTokenLimit": false,
+      "representation": "evidence-association-fragment-selection/1"
+    },
+    {
+      "candidateSetSha256": "d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c",
+      "exampleId": "ifc2x3-source-native-v1",
+      "generationSeconds": 2.7849236000038218,
+      "inputTokens": 921,
+      "outputTokens": 88,
+      "promptSha256": "32959871a2df342770a55526509088ff2aa7f6a020de7e7e9a268a5fa3ed3251",
+      "rawText": "{\"candidateSetSha256\":\"d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c\",\"selected\":[\"c0\",\"c1\"],\"version\":\"evidence-association-fragment-selection/1\"}",
+      "reachedTokenLimit": false,
+      "representation": "evidence-association-fragment-selection/1"
+    }
+  ],
+  "cases": [
+    {
+      "exampleId": "ifc4-source-native-v1",
+      "request": "Retrieve the fragment that supplies the IfcBuilding Name.",
+      "candidateCount": 4,
+      "expectedIds": [
+        "c1"
+      ],
+      "baselineSelectedIds": [],
+      "adapterSelectedIds": [
+        "c1"
+      ],
+      "baselineExact": false,
+      "adapterExact": true,
+      "adapterTruePositives": 1,
+      "adapterFalsePositives": 0,
+      "adapterMisses": 0,
+      "adapterPrecision": 1.0,
+      "adapterRecall": 1.0,
+      "baselineWholeResponseAccepted": true,
+      "adapterWholeResponseAccepted": true
+    },
+    {
+      "exampleId": "ifc2x3-source-native-v1",
+      "request": "Retrieve any supplied non-null numerical elevation value for IfcBuilding.",
+      "candidateCount": 3,
+      "expectedIds": [],
+      "baselineSelectedIds": [],
+      "adapterSelectedIds": [
+        "c0",
+        "c1"
+      ],
+      "baselineExact": true,
+      "adapterExact": false,
+      "adapterTruePositives": 0,
+      "adapterFalsePositives": 2,
+      "adapterMisses": 0,
+      "adapterPrecision": 0.0,
+      "adapterRecall": null,
+      "baselineWholeResponseAccepted": true,
+      "adapterWholeResponseAccepted": true
+    }
+  ],
+  "metrics": {
+    "baseline": {
+      "requests": 2,
+      "families": 1,
+      "candidateFragments": 7,
+      "jsonSyntaxValidResponses": 2,
+      "schemaValidResponses": 2,
+      "validWholeResponses": 2,
+      "exactRequestSelectionSets": 1,
+      "selectedCount": 0,
+      "expectedCount": 1,
+      "acceptedTruePositives": 0,
+      "falsePositives": 0,
+      "misses": 1,
+      "precision": null,
+      "positiveRecall": 0.0,
+      "unsupportedRequests": 1,
+      "unsupportedRequestFalsePositives": 0,
+      "correctContextLimitedEmptyRetrievals": 1
+    },
+    "adapter": {
+      "requests": 2,
+      "families": 1,
+      "candidateFragments": 7,
+      "jsonSyntaxValidResponses": 2,
+      "schemaValidResponses": 2,
+      "validWholeResponses": 2,
+      "exactRequestSelectionSets": 1,
+      "selectedCount": 3,
+      "expectedCount": 1,
+      "acceptedTruePositives": 1,
+      "falsePositives": 2,
+      "misses": 0,
+      "precision": 0.3333333333333333,
+      "positiveRecall": 1.0,
+      "unsupportedRequests": 1,
+      "unsupportedRequestFalsePositives": 2,
+      "correctContextLimitedEmptyRetrievals": 0
+    },
+    "deltaAdapterMinusBaseline": {
+      "requests": 0,
+      "families": 0,
+      "candidateFragments": 0,
+      "jsonSyntaxValidResponses": 0,
+      "schemaValidResponses": 0,
+      "validWholeResponses": 0,
+      "exactRequestSelectionSets": 0,
+      "selectedCount": 3,
+      "expectedCount": 0,
+      "acceptedTruePositives": 1,
+      "falsePositives": 2,
+      "misses": -1,
+      "precision": null,
+      "positiveRecall": 1.0,
+      "unsupportedRequests": 0,
+      "unsupportedRequestFalsePositives": 2,
+      "correctContextLimitedEmptyRetrievals": -1
+    }
+  },
+  "developmentCriteria": {
+    "validWholeResponsesPassed": true,
+    "exactRequestSelectionSetsPassed": false,
+    "acceptedPositivePrecisionPassed": false,
+    "positiveRecallPassed": true,
+    "unsupportedRequestFalsePositivesPassed": false,
+    "runtimeResourcesTransportCleanupPassed": true,
+    "allPassed": false
+  },
+  "hostComparison": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\host-comparison.json",
+    "physicalSha256": "8dd735628320ff0e8e89c2bea04bd56c67503caa1d85ebc2e31fd84f1c511ce0",
+    "bytes": 16936
+  },
+  "samePolicy": {
+    "orderedContextHashes": true,
+    "promptHashesAndInputTokenLengths": true,
+    "representationAndGreedySettings": true,
+    "baselineRerun": false,
+    "controllerContributions": "JSON/schema, complete context identity, current distinct candidate IDs and unchanged fragment projection are deterministic controls. They do not establish learned relevance. Empty means no_support_in_supplied_context, never factual absence in the whole original/property. This retrieval route produces no generated claim or canonical association."
+  },
+  "resources": {
+    "baseline": {
+      "peakJobCommittedBytes": 5431214080,
+      "peakProcessRssBytes": 3259510784,
+      "cuda": "12.8",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 170,
+      "maxCudaAllocatedBytes": 1291972608,
+      "maxCudaReservedBytes": 1356857344,
+      "minimumSampledFreeCudaBytes": 6030360576,
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    },
+    "tuned": {
+      "peakJobCommittedBytes": 5461258240,
+      "peakProcessRssBytes": 3264638976,
+      "cuda": "12.8",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 177,
+      "maxCudaAllocatedBytes": 1294135296,
+      "maxCudaReservedBytes": 1358954496,
+      "minimumSampledFreeCudaBytes": 6028263424,
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    },
+    "deltaTunedMinusBaseline": {
+      "peakJobCommittedBytes": 30044160,
+      "peakProcessRssBytes": 5128192,
+      "maxCudaAllocatedBytes": 2162688,
+      "maxCudaReservedBytes": 2097152,
+      "minimumSampledFreeCudaBytes": -2097152
+    }
+  },
+  "timings": {
+    "baseline": {
+      "stageWallSeconds": 158.7348778000014,
+      "guardedCommandWallSeconds": 283.66215619999275,
+      "guardSetupChildCleanupAggregateSeconds": 127.125,
+      "guardSetupSeconds": null,
+      "childOnlySeconds": null,
+      "cleanupSeconds": null,
+      "separatePhaseTimingAvailable": false,
+      "phaseTimingLimitation": "Frozen guard records only setup/child/cleanup aggregate after initial profile verification; separate phase times are not emitted. No child-only time inferred.",
+      "modelLoadSeconds": 1.6905505000031553,
+      "modelSectionSeconds": 6.040705200008233,
+      "perRequestGenerationSeconds": [
+        2.3849428000103217,
+        1.959430600007181
+      ]
+    },
+    "tuned": {
+      "stageWallSeconds": 158.31200000000536,
+      "guardedCommandWallSeconds": 301.375,
+      "guardSetupChildCleanupAggregateSeconds": 129.54700000000594,
+      "guardSetupSeconds": null,
+      "childOnlySeconds": null,
+      "cleanupSeconds": null,
+      "modelLoadSeconds": 1.9955870999983745,
+      "modelSectionSeconds": 7.950448699994013,
+      "perRequestGenerationSeconds": [
+        3.1640577999933157,
+        2.7849236000038218
+      ]
+    },
+    "deltaTunedMinusBaseline": {
+      "stageWallSeconds": -0.42287779999605846,
+      "guardedCommandWallSeconds": 17.71284380000725,
+      "guardSetupChildCleanupAggregateSeconds": 2.422000000005937,
+      "modelLoadSeconds": 0.30503659999521915,
+      "modelSectionSeconds": 1.9097434999857796,
+      "perRequestGenerationSeconds": [
+        0.779114999982994,
+        0.8254929999966407
+      ]
+    },
+    "qualification": "Observed single runs only; no repeated benchmark, normalized cold/warm experiment or generalized speed claim. Separate guard setup/child/cleanup durations are not exposed."
+  },
+  "resourceBounds": {
+    "batchSize": 1,
+    "cpuThreads": 2,
+    "maxChildPhaseSeconds": 600,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "maxJobCommittedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "recording": "Record Job commitment and RSS separately. Preserve existing guard/profile, CUDA headroom and child limits for this one reload."
+  },
+  "supervisor": {
+    "outputsAccepted": true,
+    "exitCode": 0,
+    "failure": null,
+    "pid": 43876,
+    "jobClosed": true,
+    "tokenValidatedBeforeResume": true,
+    "jobValidatedBeforeResume": true,
+    "capabilityCount": 0,
+    "cleanup": {
+      "appcontainerActions": "{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\\\scratch\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\\\outputs\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\\\model\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\\\inputs\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\\\code\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\\\runtime\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\\\state\\\\association_adapter-reload-session.json\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\\\state\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\\\profile.json\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\", \"exitCode\": 0, \"failed\": false}\n{\"sidFreeFailed\": false, \"failed\": false}\n{\"profileDeleteHresult\": \"0x00000000\", \"failed\": false}\n",
+      "errors": [],
+      "ownerScopesAttempted": 2,
+      "passed": true,
+      "profileCreated": true
+    }
+  },
+  "cleanup": {
+    "ownedJobClosed": true,
+    "aclAndOwnerIntegrityCleanupPassed": true,
+    "appContainerProfileDeleted": true,
+    "pendingOwnedProcessOrToolSession": false,
+    "originalsAndOutputsRetained": true,
+    "executableRepositoryChanges": false,
+    "sharedCheckoutChanges": false,
+    "pushDeployOrPromotion": false
+  },
+  "warnings": [
+    "Transformers torch_dtype argument deprecation.",
+    "PEFT could not read the historical fit-root model config; explicit local base and exact saved adapter verification succeeded without remote lookup.",
+    "Sampling flags temperature/top_p/top_k are unused with the frozen greedy do_sample=false generation."
+  ],
+  "conclusion": "Adapter recovers the supplied building-name fragment, but incorrectly selects absent/null elevation fragments for the unsupported numerical request. Exact request sets stay 1/2; positive recall improves 0 to 1, aggregate precision is 1/3 and unsupported false positives rise 0 to 2. Frozen development criteria fail.",
+  "limitations": [
+    "Same frozen two requests in one development family only. A pass establishes this bounded development selection result/difference only; no generalization, source extraction accuracy, conflict completeness, canonical association, operational data, evaluation, promotion or release qualification.",
+    "Observed single runs only; no repeated benchmark, normalized cold/warm experiment or generalized speed claim. Separate guard setup/child/cleanup durations are not exposed.",
+    "All pinned original model bytes verified by stage/worker; explicit local base. No new in-memory base-tensor digest is emitted by the existing reload runner.",
+    "Fit history remains provisional synthetic supervision. No teacher access to development labels/predictions, held-out evaluation, retraining, further inference or promotion occurred.",
+    "Controller validity and unchanged-fragment copying do not establish relevance. Absent and null elevation fragments do not supply the requested non-null numerical value.",
+    "Host helper attempt 1 stopped before scoring on a metadata-wrapper assumption; original helper/logs retained. Corrected field access produced the sole immutable comparison without rereading original expectations or rerunning native work."
+  ],
+  "primaryArtifacts": {
+    "stage.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\stage.json",
+      "physicalSha256": "c54a175712fa02154f3dca1e375dc62298fc0fd3eece3cf402b0eae7f01133c2",
+      "bytes": 6926
+    },
+    "profile.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\profile.json",
+      "physicalSha256": "ceab2bac1e8bc77591835c6d66bc7e369af6887208acb357bf471c62c9b38db4",
+      "bytes": 2701829
+    },
+    "inputs/assignment.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\assignment.json",
+      "physicalSha256": "6fcf2b60e2e3d94d959e30671211a545ef4674ed0aeff09b553a50eb0eaf2560",
+      "bytes": 15093
+    },
+    "inputs/run-freeze.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\run-freeze.json",
+      "physicalSha256": "cd31d0ffdd3121df01d3f3521ef96c4058493f4c7b1cc4a2d578e61e7c7161cc",
+      "bytes": 19744
+    },
+    "inputs/fit-proof.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\fit-proof.json",
+      "physicalSha256": "573dff67b4b9a385c047cb3a8bd439ae97e87c280ffb3ec27db71840b234bde9",
+      "bytes": 9562
+    },
+    "inputs/adapter-manifest.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\inputs\\adapter-manifest.json",
+      "physicalSha256": "de3388ad8cffe76a2d6a4462373e53d23950f6e1e27d2ac04dcdc7fc1569abfe",
+      "bytes": 9883
+    },
+    "receipts/association_adapter-reload-guard.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\receipts\\association_adapter-reload-guard.json",
+      "physicalSha256": "9dcf3f8d1ee107cf5aabbf9c09597a2fdabbfa15859f4f095c29b95d1b5a6fe0",
+      "bytes": 38168
+    },
+    "receipts/association_adapter-reload-accepted.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\receipts\\association_adapter-reload-accepted.json",
+      "physicalSha256": "d31d9f5fa674ec57c9aea11fb1563c65d0ec8457a327cc15ffafa973733bb4b8",
+      "bytes": 779
+    },
+    "state/association_adapter-reload-attempt.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\state\\association_adapter-reload-attempt.json",
+      "physicalSha256": "45cef856ed0d888b99cf72120e54e4934876456e6ce4bfd08341d1efada6cbb1",
+      "bytes": 128
+    },
+    "state/association_adapter-reload-session.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\state\\association_adapter-reload-session.json",
+      "physicalSha256": "f7aded3ad0a71963b561a912defe1dbe67902d1234e2480de048c860fab6602e",
+      "bytes": 2567
+    }
+  },
+  "outputArtifacts": {
+    "reload/completion.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\outputs\\reload\\completion.json",
+      "physicalSha256": "45a9ad8b4e00e3df98d70f2900adc84d5b0bd373d3c4e63115ce7ad7261d2e52",
+      "bytes": 39546
+    },
+    "reload/fragment-preflight.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\outputs\\reload\\fragment-preflight.json",
+      "physicalSha256": "9c89c48541a7557c294e70ff46f6c9afef53e5d86b75e749cac53773d99f9f9a",
+      "bytes": 10806
+    },
+    "reload/raw-0.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\outputs\\reload\\raw-0.json",
+      "physicalSha256": "19e9d823cd5c4fc40ae217caa443d87163d70644dfce3e4f25d08680fcfa8657",
+      "bytes": 594
+    },
+    "reload/raw-1.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\outputs\\reload\\raw-1.json",
+      "physicalSha256": "06a68556c1c155baa6d32d7bdca139b5cb44aef1baaba7c8f7746fb11334b1dc",
+      "bytes": 602
+    },
+    "reload/raw-outputs.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\outputs\\reload\\raw-outputs.json",
+      "physicalSha256": "f13c50574bc8ec0793a7b5f36854e4a22e4472cf589ff567e50c184892d30c9c",
+      "bytes": 1245
+    },
+    "reload/result.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-reload-ee14485e297c4bc2aacd41c67b0c8077\\outputs\\reload\\result.json",
+      "physicalSha256": "c9fbb0097609b93dde4de0e5170c5a4915adf1412aa144681e476f047807fa23",
+      "bytes": 12654
+    }
+  },
+  "privateArtifacts": {
+    "accept_reload.py": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\accept_reload.py",
+      "physicalSha256": "fb4a435a5cd8f638af92e6dbe0b4a99f59d61024ee48ea805988e28cbc17eca5",
+      "bytes": 5659
+    },
+    "admission.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\admission.json",
+      "physicalSha256": "34eb4ef5b7f1efc207c49aed3e4b2f1a12964507baf2ac4e65b8d49fcbc19f44",
+      "bytes": 2206
+    },
+    "execution-pins.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\execution-pins.json",
+      "physicalSha256": "3de967a90d38718aae895b4115cc80b93ced86581a92403e4d7059d91215df74",
+      "bytes": 14427
+    },
+    "host-directory.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\host-directory.json",
+      "physicalSha256": "311c7575cfdd434e2234b3ebd2a8035b12d5752a8df4b21be15387fb449bdbf0",
+      "bytes": 142
+    },
+    "record_reload.py": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\record_reload.py",
+      "physicalSha256": "5f930ad9477ee73ca77e8389116415a31535a9155d0ed5e7b4173fd1820d6d5e",
+      "bytes": 15615
+    },
+    "reload-execution.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\reload-execution.json",
+      "physicalSha256": "7396a7b1e2df9dc2c260f83cd67a8925727a341248611f5c3d98399478ab3feb",
+      "bytes": 101
+    },
+    "reload-invocation.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\reload-invocation.json",
+      "physicalSha256": "7845ec5268605f3d837a5f7fb56a8a5f77e75774b5522a9a6cf070a77c910ab2",
+      "bytes": 2521
+    },
+    "reload.stderr.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\reload.stderr.log",
+      "physicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "reload.stdout.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\reload.stdout.log",
+      "physicalSha256": "931999304585250d7c7d477e9c1c5cc102e9e2d660c9a7db779ff1ccab0b6dbe",
+      "bytes": 82
+    },
+    "stage-execution.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\stage-execution.json",
+      "physicalSha256": "526c6bd6ba045a6869a0f938867cee38df221183207a1aa9e402af722f642770",
+      "bytes": 112
+    },
+    "stage-invocation.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\stage-invocation.json",
+      "physicalSha256": "c504b0ee9834c643c3ab49003ca426afe90aa746ffcf8ea053a57415de3af484",
+      "bytes": 715
+    },
+    "stage-verification.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\stage-verification.json",
+      "physicalSha256": "2debaec2d0666669bd509cb5e5e01a1b8c72b60a4788ceeb879e97532fe2ae8e",
+      "bytes": 666
+    },
+    "stage.stderr.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\stage.stderr.log",
+      "physicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "stage.stdout.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\stage.stdout.log",
+      "physicalSha256": "614ac77c04f3f69afccdf9fa30cbc67e83cdca327c67094c6e57b688c7be48e3",
+      "bytes": 452
+    },
+    "technical-acceptance.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\technical-acceptance.json",
+      "physicalSha256": "522477fffdf5842a9a0b846aa247b8b690bb808896f441de658f9690836b7712",
+      "bytes": 3655
+    },
+    "technical-execution.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\technical-execution.json",
+      "physicalSha256": "1cfc8f12af4a1253a79f256386deddef6c67b5dfeca2a243d35f05daf8ebe18b",
+      "bytes": 98
+    },
+    "technical-invocation.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\technical-invocation.json",
+      "physicalSha256": "79f2586531d3dbe9bd7cfb65d9973ee84f529fe70d45e17c046c420fb6aeef85",
+      "bytes": 399
+    },
+    "technical.stderr.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\technical.stderr.log",
+      "physicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "technical.stdout.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\technical.stdout.log",
+      "physicalSha256": "3c6a9df5964248307de98e3fd13ac5dbdb86dc72988466989c205ffd3e89ab7b",
+      "bytes": 322
+    }
+  },
+  "hostArtifacts": {
+    "baseline-acceptance.original.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\baseline-acceptance.original.json",
+      "physicalSha256": "3b4db4ad281410d5213f4dc4f2d472a0fee5d780f5dd958a836fc87a6fbaf119",
+      "bytes": 7839
+    },
+    "compare_once.attempt-1.py": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\compare_once.attempt-1.py",
+      "physicalSha256": "9b66b4f290cd4094f93fc191874f48ade826a1713498e1b1b62b7b3541c23375",
+      "bytes": 11769
+    },
+    "compare_once.py": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\compare_once.py",
+      "physicalSha256": "39668b7cfbee98a9815f974380c538af31c749cb0a59e634da605cdc9454cef6",
+      "bytes": 12361
+    },
+    "comparison-attempt-2-execution.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison-attempt-2-execution.json",
+      "physicalSha256": "ddd81693bab36dcdac9e04f5ac6ca7fe974bd539431f1a472bf03e28f9dfcf20",
+      "bytes": 113
+    },
+    "comparison-attempt-2-invocation.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison-attempt-2-invocation.json",
+      "physicalSha256": "b21d907b373c8a0a4a2e95aa772ca0681de359e2b04c1c908cf436275b34f2c0",
+      "bytes": 534
+    },
+    "comparison-attempt-2.stderr.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison-attempt-2.stderr.log",
+      "physicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "comparison-attempt-2.stdout.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison-attempt-2.stdout.log",
+      "physicalSha256": "a8edc161c4015f8f1e8c06794cfd1fe5b9358569cd3abc790870e16ab0deadd4",
+      "bytes": 1439
+    },
+    "comparison-execution.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison-execution.json",
+      "physicalSha256": "4d3f26c49fce94a535a12e2705433a8a5aead3dadea526cf204b2cbd4bcd3a12",
+      "bytes": 113
+    },
+    "comparison-invocation.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison-invocation.json",
+      "physicalSha256": "4175f34ced9bc5acd27477390a962875443991a7552f8abd62d3afa711b45581",
+      "bytes": 426
+    },
+    "comparison.stderr.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison.stderr.log",
+      "physicalSha256": "ac1b36bf78a942dc1998a2c86df7d9440b1057499b3ad575b05e83ce77ef5c95",
+      "bytes": 356
+    },
+    "comparison.stdout.log": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison.stdout.log",
+      "physicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "expectations.original.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\expectations.original.json",
+      "physicalSha256": "71efa01a6e56e35c24a6e9440c01e0e8aeb3be322fedc877343765eae45f943e",
+      "bytes": 1833
+    },
+    "host-comparison.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\host-comparison.json",
+      "physicalSha256": "8dd735628320ff0e8e89c2bea04bd56c67503caa1d85ebc2e31fd84f1c511ce0",
+      "bytes": 16936
+    },
+    "host-read-admission.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\host-read-admission.json",
+      "physicalSha256": "50c819cce3757cb1845b0aa72470f89386a2d662f586dec71bf5423f178685cf",
+      "bytes": 1087
+    }
+  },
+  "summaryArtifact": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\reload-summary.json",
+    "physicalSha256": "02973413be7378d4a8aa1da5a10ea122545893bd7f89a9181abeadb8e2615e7e",
+    "bytes": 41612
+  }
+}
