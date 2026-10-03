@@ -10,6 +10,7 @@ import {savePlanReceiptTx} from './plan-store';
 import {pdfPacketStorage,stagePdfExecution,publishPdfExecutionTx,pdfExecutionLive,type PdfPacketIo} from './pdf-service';
 import {packetPdfJobContext,capturePacketPdfJobTx,assertPacketPdfJobRow,preparePacketPdfJobTx} from './pdf-job-authority';
 import {appendPacketPdfJobTx} from './pdf-jobs';
+import {packetPdfCropRecovery} from './pdf-entry-checkpoints';
 
 function failureCode(error:unknown){
   if(error instanceof AppError){
@@ -57,7 +58,7 @@ export async function runPacketPdfJob(jobId:string,io:PdfPacketIo=pdfPacketStora
     const first=await transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);
       const prepared=await preparePacketPdfJobTx(client,ctx,input);await appendPacketPdfJobTx(client,input,'running');return prepared;},bounds);
     // The worker is owned by the independent dispatcher, never an HTTP promise.
-    const staged=first.replay?null:await stagePdfExecution(first,io,deadlineAt);live();
+    const staged=first.replay?null:await stagePdfExecution(first,io,deadlineAt,packetPdfCropRecovery(ctx,input,owned,first,io,bounds));live();
     const asset=first.replay?.packet.artifact??{assetId:staged!.packetId,version:1,sha256:staged!.assembled.manifest.output.sha256};
     await acceptUspJobAttempt(owned,asset,async(client,lockedJob)=>{
       const meta=(await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
