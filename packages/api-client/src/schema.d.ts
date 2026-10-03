@@ -1915,6 +1915,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/packets/plans/enqueue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Durably enqueue an exact confirmed private PDF plan; independent dispatcher owns work */
+        post: operations["POST_api_v1_usp_packets_plans_enqueue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usp/packets/jobs/{jobId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one exact private PDF job under complete source and plan authority */
+        get: operations["GET_api_v1_usp_packets_jobs_jobId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usp/packets/jobs/control": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel or explicitly retry one exact authorized private PDF job */
+        post: operations["POST_api_v1_usp_packets_jobs_control"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usp/packets/jobs/{jobId}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download only the atomically accepted private PDF result of an authorized queued job */
+        get: operations["GET_api_v1_usp_packets_jobs_jobId_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/packets/plans/create": {
         parameters: {
             query?: never;
@@ -31434,6 +31502,91 @@ export interface components {
                 };
             };
         };
+        POST_usp_packets_plans_enqueue_Request_application_json: {
+            /** Format: uuid */
+            planId: string;
+            version: number;
+            /** Format: uuid */
+            confirmationId: string;
+            guard: {
+                /** @enum {string} */
+                mode: "create";
+                requestKey: string;
+            };
+        };
+        POST_usp_packets_plans_enqueue_Response_202_application_json: {
+            readonly data: {
+                /** Format: uuid */
+                jobId: string;
+                version: number;
+                /** Format: uuid */
+                planId: string;
+                planVersion: number;
+                readonly scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+                /** @enum {string} */
+                status: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+                attempt: {
+                    number: number;
+                    fence: number;
+                    /** Format: date-time */
+                    leaseUntil: string | null;
+                };
+                errorCode: string | null;
+                result: {
+                    /** Format: uuid */
+                    packetId: string;
+                    readonly artifact: {
+                        assetId: string;
+                        version: number;
+                        sha256: string;
+                    };
+                } | null;
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
+        POST_usp_packets_jobs_control_Request_application_json: {
+            /** Format: uuid */
+            jobId: string;
+            /** @enum {string} */
+            action: "cancel" | "retry";
+            expectedVersion: number;
+            /** Format: uuid */
+            requestKey: string;
+        };
         POST_usp_packets_plans_create_Request_application_json: {
             input: {
                 target: {
@@ -34477,18 +34630,6 @@ export interface components {
                     /** @enum {string} */
                     stage: "draft" | "recorded" | "retained";
                 };
-            };
-        };
-        POST_usp_packets_plans_execute_Request_application_json: {
-            /** Format: uuid */
-            planId: string;
-            version: number;
-            /** Format: uuid */
-            confirmationId: string;
-            guard: {
-                /** @enum {string} */
-                mode: "create";
-                requestKey: string;
             };
         };
         POST_usp_packets_plans_execute_Response_200_application_json: {
@@ -62086,6 +62227,184 @@ export interface operations {
             };
         };
     };
+    POST_api_v1_usp_packets_plans_enqueue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_packets_plans_enqueue_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_packets_plans_enqueue_Response_202_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_usp_packets_jobs_jobId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_packets_plans_enqueue_Response_202_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_packets_jobs_control: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_packets_jobs_control_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_packets_plans_enqueue_Response_202_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_snapshots_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_usp_packets_jobs_jobId_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+        };
+    };
     POST_api_v1_usp_packets_plans_create: {
         parameters: {
             query?: never;
@@ -62512,7 +62831,7 @@ export interface operations {
         /** @description JSON, maximum 1 MiB of received bytes */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["POST_usp_packets_plans_execute_Request_application_json"];
+                "application/json": components["schemas"]["POST_usp_packets_plans_enqueue_Request_application_json"];
             };
         };
         responses: {

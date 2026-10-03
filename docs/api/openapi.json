@@ -22913,6 +22913,337 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/packets/plans/enqueue": {
+      "post": {
+        "operationId": "POST_api_v1_usp_packets_plans_enqueue",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_packets_plans_enqueue_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_packets_plans_enqueue_Response_202_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Durably enqueue an exact confirmed private PDF plan; independent dispatcher owns work",
+        "tags": [
+          "USP private immutable packet plans"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/packet-plans.controller.ts",
+        "x-batch": "PACK1-PDF-04",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/usp/packets/jobs/{jobId}": {
+      "get": {
+        "operationId": "GET_api_v1_usp_packets_jobs_jobId",
+        "parameters": [
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_packets_plans_enqueue_Response_202_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read one exact private PDF job under complete source and plan authority",
+        "tags": [
+          "USP private immutable packet plans"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/packet-plans.controller.ts",
+        "x-batch": "PACK1-PDF-04",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/usp/packets/jobs/control": {
+      "post": {
+        "operationId": "POST_api_v1_usp_packets_jobs_control",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "JSON, maximum 1 MiB of received bytes",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_packets_jobs_control_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Private exact-scope USP result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_packets_plans_enqueue_Response_202_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "USP denial or common loopback Host/Origin guard denial; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Cancel or explicitly retry one exact authorized private PDF job",
+        "tags": [
+          "USP private immutable packet plans"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/packet-plans.controller.ts",
+        "x-batch": "PACK1-PDF-04",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/usp/packets/jobs/{jobId}/download": {
+      "get": {
+        "operationId": "GET_api_v1_usp_packets_jobs_jobId_download",
+        "parameters": [
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "description": "Canonical result",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Download only the atomically accepted private PDF result of an authorized queued job",
+        "tags": [
+          "USP private immutable packet plans"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/packet-plans.controller.ts",
+        "x-batch": "PACK1-PDF-04",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/packets/plans/create": {
       "post": {
         "operationId": "POST_api_v1_usp_packets_plans_create",
@@ -23655,7 +23986,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/POST_usp_packets_plans_execute_Request_application_json"
+                "$ref": "#/components/schemas/POST_usp_packets_plans_enqueue_Request_application_json"
               }
             }
           }
@@ -190373,6 +190704,396 @@
         ],
         "additionalProperties": false
       },
+      "POST_usp_packets_plans_enqueue_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "confirmationId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "guard": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "create"
+                ]
+              },
+              "requestKey": {
+                "type": "string",
+                "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "mode",
+              "requestKey"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "planId",
+          "version",
+          "confirmationId",
+          "guard"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_packets_plans_enqueue_Response_202_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "data": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "jobId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "planId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "planVersion": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "scope": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "snapshot"
+                    ]
+                  },
+                  "scopeId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "world": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "namespace": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "namespace",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "manifestId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "snapshotDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                  },
+                  "stage": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "recorded",
+                      "retained"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "scopeId",
+                  "world",
+                  "manifestId",
+                  "snapshotDigest",
+                  "stage"
+                ],
+                "additionalProperties": false
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "running",
+                  "succeeded",
+                  "failed",
+                  "cancelled"
+                ]
+              },
+              "attempt": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "fence": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "leaseUntil": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  }
+                },
+                "required": [
+                  "number",
+                  "fence",
+                  "leaseUntil"
+                ],
+                "additionalProperties": false
+              },
+              "errorCode": {
+                "nullable": true,
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "result": {
+                "nullable": true,
+                "type": "object",
+                "properties": {
+                  "packetId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "artifact": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "assetId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "assetId",
+                      "version",
+                      "sha256"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "packetId",
+                  "artifact"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "jobId",
+              "version",
+              "planId",
+              "planVersion",
+              "scope",
+              "status",
+              "attempt",
+              "errorCode",
+              "result"
+            ],
+            "additionalProperties": false
+          },
+          "meta": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "enum": [
+                  "usp/1"
+                ]
+              },
+              "requestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "intake"
+                        ]
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "workspaceId",
+                      "version"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "snapshot"
+                        ]
+                      },
+                      "scopeId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "world": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "manifestId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "snapshotDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "stage": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "recorded",
+                          "retained"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "scopeId",
+                      "world",
+                      "manifestId",
+                      "snapshotDigest",
+                      "stage"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "requestId",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_packets_jobs_control_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "cancel",
+              "retry"
+            ]
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "jobId",
+          "action",
+          "expectedVersion",
+          "requestKey"
+        ],
+        "additionalProperties": false
+      },
       "POST_usp_packets_plans_create_Request_application_json": {
         "type": "object",
         "properties": {
@@ -206993,54 +207714,6 @@
         "required": [
           "data",
           "meta"
-        ],
-        "additionalProperties": false
-      },
-      "POST_usp_packets_plans_execute_Request_application_json": {
-        "type": "object",
-        "properties": {
-          "planId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 0,
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991
-          },
-          "confirmationId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-          },
-          "guard": {
-            "type": "object",
-            "properties": {
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "create"
-                ]
-              },
-              "requestKey": {
-                "type": "string",
-                "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
-              }
-            },
-            "required": [
-              "mode",
-              "requestKey"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "required": [
-          "planId",
-          "version",
-          "confirmationId",
-          "guard"
         ],
         "additionalProperties": false
       },
