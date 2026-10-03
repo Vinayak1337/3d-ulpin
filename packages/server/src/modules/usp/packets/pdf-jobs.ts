@@ -13,12 +13,17 @@ import {appendUspOutboxTx} from '../outbox';
 import {preparePdfExecutionTx,protectPdfExecutionPlanTx,readPacketPdf,type PdfPacketIo} from './pdf-service';
 import {loadPdfPlanTx,validateConfirmation,savePlanReceiptTx} from './plan-store';
 import {enrolledPacketPdfJobTx,acceptedPacketPdfExecutionTx,capturePacketPdfJobTx,assertPacketPdfJobRow} from './pdf-job-authority';
+import {packetPdfEntryProgressTx} from './pdf-entry-checkpoints';
 
 export async function appendPacketPdfJobTx(client:PoolClient,input:PacketPdfJobInput,status:'queued'|'running'|'succeeded'|'failed'|'cancelled',packetId:string|null=null){
   return appendUspOutboxTx(client,`packet-job:${input.jobId}`,PacketPdfJobChangedSchema.parse({type:'packet.pdf.job.changed',
     jobId:input.jobId,scope:input.scope,planId:input.command.planId,planVersion:input.command.version,status,packetId}));
 }
 async function statusTx(client:PoolClient,ctx:RequestContext,jobId:string){
+  // Protect the complete plan/source set before taking the canonical job lock.
+  // Then recapture so status/attempt/entry receipts cannot mix terminal changes.
+  await enrolledPacketPdfJobTx(client,ctx,jobId);
+  await client.query('SELECT id FROM jobs WHERE id=$1 FOR SHARE',[jobId]);
   const {job,input,plan}=await enrolledPacketPdfJobTx(client,ctx,jobId);
   const attempt=(await client.query('SELECT * FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1',[jobId])).rows[0];
   const accepted=job.logical_state==='succeeded'?await acceptedPacketPdfExecutionTx(client,plan,job):null;
@@ -27,7 +32,8 @@ async function statusTx(client:PoolClient,ctx:RequestContext,jobId:string){
     status:job.logical_state,attempt:{number:Number(attempt?.number??0),fence:Number(attempt?.fence??0),
       leaseUntil:attempt?new Date(attempt.lease_until).toISOString():null},
     errorCode:job.error&&/^PACKET_[A-Z_]{1,80}$/.test(job.error)?job.error:job.error?'PACKET_PDF_PROCESSING_FAILED':null,
-    result:accepted?{packetId:accepted.packet.packetId,artifact:accepted.packet.artifact}:null});
+    result:accepted?{packetId:accepted.packet.packetId,artifact:accepted.packet.artifact}:null,
+    entryProgress:await packetPdfEntryProgressTx(client,input,plan)});
 }
 export async function enqueuePacketPdfJob(ctx:RequestContext,raw:unknown){
   const command=UspEnqueuePacketPdfJobSchema.parse(raw),hash=fingerprint(command);

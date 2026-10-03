@@ -16,6 +16,9 @@ import {claimUspJobAttempt,acceptUspJobAttempt,readUspJob,cancelUspJob} from '..
 import {retryJob} from '../packages/server/src/modules/cases/domain';
 import {dispatchTick} from '../packages/server/src/modules/cases/processing';
 import {capturePacketPdfJobTx} from '../packages/server/src/modules/usp/packets/pdf-job-authority';
+import {packetPdfEntryProgressTx} from '../packages/server/src/modules/usp/packets/pdf-entry-checkpoints';
+import {PacketPdfJobInputSchema} from '../packages/contracts/src/usp/packet-pdf-jobs';
+import {UspAnyPdfPacketPlanSchema} from '../packages/contracts/src/usp/packet-pdf';
 import {createPacketPlan,revisePacketPlan,confirmPacketPlan,executePacketPlan,readPacketPlan} from '../packages/server/src/modules/usp/packets/plan-service';
 import {readPacketPdf,type PdfPacketIo} from '../packages/server/src/modules/usp/packets/pdf-service';
 import {readPacket0} from '../packages/server/src/modules/usp/packet0';
@@ -57,7 +60,7 @@ class ControlDb{
   secondRegion:any;secondPng?:Buffer;secondCitation:any;extractOrder:string[]=[];
   secondSource:any;secondSourceCase:any;secondArchived=false;secondLatest=1;
   checkpointAvailable=true;extractFailAt=0;cropPuts=0;recipeChanged=false;afterCropPut?:()=>void|Promise<void>;
-  extractAttempts:string[]=[];
+  extractAttempts:string[]=[];recipeReads=0;
   scope={kind:'snapshot' as const,scopeId:siteId,world:{namespace:'world',id:`registry-site/${siteId}`},manifestId,
     snapshotDigest:digest,stage:'recorded' as const};
   target={ref:{namespace:'registry_record' as const,id:targetId},revision:2};
@@ -135,7 +138,10 @@ class ControlDb{
     if(q==='BEGIN'||q==='COMMIT'||q==='ROLLBACK'||q.includes('pg_advisory_xact_lock'))return result();
     if(q.startsWith('SELECT set_config'))return result([{deadline_live:true}]);
     if(q.startsWith("SELECT to_regclass('usp_packet_pdf_entry_checkpoints')"))return result([{available:this.checkpointAvailable}]);
-    if(q.startsWith('SELECT * FROM usp_packet_pdf_entry_checkpoints'))return result(this.state.checkpoints.filter(c=>c.job_id===v[0]&&c.entry_index===v[1]).map(c=>structuredClone(c)));
+    if(q.includes('FROM usp_packet_pdf_entry_checkpoints')){let rows=this.state.checkpoints.filter(c=>c.job_id===v[0]);
+      if(q.includes('entry_index=$2'))rows=rows.filter(c=>c.entry_index===v[1]);
+      else rows=rows.sort((a,b)=>a.entry_index-b.entry_index).slice(0,5);
+      return result(rows.map(c=>structuredClone(c)));}
     if(q.startsWith('INSERT INTO usp_packet_pdf_entry_checkpoints')){
       assert(!this.state.checkpoints.some(c=>c.job_id===v[1]&&c.entry_index===v[4]));
       this.state.checkpoints.push({id:v[0],job_id:v[1],plan_id:v[2],plan_version:v[3],entry_index:v[4],identity_sha256:v[5],
@@ -217,7 +223,7 @@ class ControlDb{
     else{this.puts++;await this.afterPut?.();}},
     read:async(key,bytes,hash)=>{assert.equal(this.active,0);this.reads++;const value=this.objects.get(key);assert(value);
       assert.equal(bytes,value.length);this.afterRead?.();return Buffer.from(value);},
-    recipe:async source=>this.recipeChanged?'0'.repeat(64):source===this.secondSource?.id?this.secondRegion.recipeSha256:this.region.recipeSha256};
+    recipe:async source=>{this.recipeReads++;return this.recipeChanged?'0'.repeat(64):source===this.secondSource?.id?this.secondRegion.recipeSha256:this.region.recipeSha256;}};
   io={read:async()=>{throw new Error('PDF must not use PACK0 original I/O');},put:async()=>{throw new Error('PDF must not use PACK0 writer');},pdf:this.pdf};
   cardIo:PropertyCardIo={readPacket:async()=>{throw new Error('PDF card must use the dedicated PDF reader');},pdf:this.pdf,put:this.pdf.put,
     readCard:async(key,bytes,hash)=>{assert.equal(this.active,0);this.reads++;const value=this.objects.get(key);assert(value);
@@ -655,3 +661,74 @@ test('PDF entry recovery: missing migration stays actionable; expired acceptance
       assert.deepEqual(db.extractAttempts,[db.secondSource.id,sourceId]);
     });
   });
+
+test('PDF entry progress: authorized queued → partial failure → retry → complete status has no object or recipe I/O',
+  {skip:!present||!actualOtherOriginal},()=>withDb(async(db,ctx)=>{
+    const {queued}=await queuedOriginals(db,ctx);
+    const ioCounts=()=>[db.extracts,db.cropPuts,db.puts,db.reads,db.recipeReads];
+    const status=async()=>{const before=ioCounts(),value=await readPacketPdfJob(ctx,queued.jobId);assert.deepEqual(ioCounts(),before);return value;};
+    const initial=await status();assert.equal(initial.entryProgress.requiredCount,2);assert.equal(initial.entryProgress.acceptedCount,0);
+    assert.deepEqual(initial.entryProgress.entries,[{index:0,required:true,state:'pending'},{index:1,required:true,state:'pending'}]);
+    db.extractFailAt=2;await runPacketPdfJob(queued.jobId,db.pdf);
+    db.recipeChanged=true;const failed=await status(); // Status does not qualify current recipe reuse.
+    assert.equal(failed.status,'failed');assert.equal(failed.result,null);assert.equal(failed.entryProgress.acceptedCount,1);
+    assert.deepEqual(failed.entryProgress.entries,[{index:0,required:true,state:'accepted_checkpoint'},{index:1,required:true,state:'pending'}]);
+    assert.equal(failed.entryProgress.currentReuseEligibility,'not_assessed');assert.equal(db.state.attempts[0].state,'fenced');
+    db.recipeChanged=false;const retry=await controlPacketPdfJob(ctx,{jobId:queued.jobId,action:'retry',expectedVersion:failed.version,requestKey:randomUUID()});
+    assert.equal(retry.status,'queued');assert.equal(retry.entryProgress.acceptedCount,1);assert.equal(retry.result,null);
+    await runPacketPdfJob(queued.jobId,db.pdf);const complete=await status();
+    assert.equal(complete.status,'succeeded');assert(complete.result);assert.equal(complete.entryProgress.acceptedCount,2);
+    assert(complete.entryProgress.entries.every(e=>e.state==='accepted_checkpoint'));assert.equal(db.extracts,3);
+    assert.equal(complete.result.artifact.sha256,'cda69b79c3aeccac153b624bb70cb62add81889e7add54a323e0426feb638172');
+    for(const value of [initial,failed,retry,complete]){
+      assert.equal(value.entryProgress.checkpointCapability,'available');assert.equal(value.entryProgress.currentReuseEligibility,'not_assessed');
+      const encoded=JSON.stringify(value.entryProgress);
+      for(const privateValue of [db.secondSource.id,sourceId,db.secondSource.name,...db.state.checkpoints.map(c=>c.object_key)])assert(!encoded.includes(privateValue));
+    }
+    const saved=process.env.ULPIN_PACKET_PROGRESS_FLOW_ROOT;
+    if(saved){mkdirSync(saved,{recursive:true});writeFileSync(saved+'/statuses.json',JSON.stringify({scope:'Actual status/queue/checkpoint methods with retained genuine crop pixels; SQL/storage/extractor/current-recipe/target authority are controls',
+      initial,failed,retry,complete,statusObjectAndRecipeIo:false,sourceFieldsExposed:false},null,2)+'\n',{flag:'wx'});}
+  }));
+
+test('PDF entry progress: unavailable schema is unknown; corrupt/wrong-target/canonical-attempt and full-set revocation deny disclosure',
+  {skip:!present||!actualOtherOriginal},()=>withDb(async(db,ctx)=>{
+    const {queued}=await queuedOriginals(db,ctx);db.extractFailAt=2;await runPacketPdfJob(queued.jobId,db.pdf);
+    const first=structuredClone(db.state.checkpoints[0]),reads=db.reads,recipes=db.recipeReads;
+    db.checkpointAvailable=false;const unavailable=await readPacketPdfJob(ctx,queued.jobId);
+    assert.equal(unavailable.entryProgress.checkpointCapability,'unavailable');assert.equal(unavailable.entryProgress.acceptedCount,null);
+    assert.equal(unavailable.entryProgress.requiredCount,2);assert(unavailable.entryProgress.entries.every(e=>e.state==='checkpoint_unavailable'));
+    assert.equal(unavailable.result,null);db.checkpointAvailable=true;
+    db.state.checkpoints[0].body_sha256='0'.repeat(64);
+    await assert.rejects(()=>readPacketPdfJob(ctx,queued.jobId),(e:any)=>e.status===409);db.state.checkpoints[0]=structuredClone(first);
+    const wrong=db.state.checkpoints[0];wrong.body.identity.targetSha256='0'.repeat(64);
+    wrong.body.identitySha256=fingerprint(wrong.body.identity);wrong.identity_sha256=wrong.body.identitySha256;wrong.body_sha256=fingerprint(wrong.body);
+    await assert.rejects(()=>readPacketPdfJob(ctx,queued.jobId),(e:any)=>e.status===409);db.state.checkpoints[0]=structuredClone(first);
+    db.state.attempts[0].owner='another-canonical-owner';
+    await assert.rejects(()=>readPacketPdfJob(ctx,queued.jobId),(e:any)=>e.status===409);db.state.attempts[0].owner=first.body.attempt.owner;
+    // Revoke the still-pending original: accepted work does not narrow full-set access.
+    db.archived=true;await assert.rejects(()=>readPacketPdfJob(ctx,queued.jobId),(e:any)=>e.status===403);
+    assert.equal(db.reads,reads);assert.equal(db.recipeReads,recipes);assert.equal(db.extracts,2);assert.equal(db.state.packets.length,0);
+    const saved=process.env.ULPIN_PACKET_PROGRESS_FLOW_ROOT;
+    if(saved)writeFileSync(saved+'/denials.json',JSON.stringify({unavailable,corruptReceiptDenied:true,wrongTargetDenied:true,
+      canonicalAttemptDriftDenied:true,pendingSourceRevocationDenied:true,statusObjectAndRecipeIo:false},null,2)+'\n',{flag:'wx'});
+  }));
+
+test('PDF entry progress: unchanged retained recovery checkpoint rows project completed work from fenced historical attempts',async()=>{
+  const retainedPath='E:/BhuAayam-data/task-data/desktop-packet-pdf-entry-recovery-20261003/complete-flow/flow.json';
+  assert(existsSync(retainedPath),'Retained accepted recovery rows are required; do not reconstruct missing receipts.');
+  const flow=JSON.parse(readFileSync(retainedPath,'utf8')),input=PacketPdfJobInputSchema.parse(flow.job.payload),plan=UspAnyPdfPacketPlanSchema.parse(flow.plan);
+  const controls=(rows:any[])=>({query:async(sql:string,args:any[]=[])=>{
+    if(sql.includes('to_regclass'))return {rows:[{available:true}]};
+    if(sql.includes('FROM usp_packet_pdf_entry_checkpoints')){assert(sql.includes('LIMIT 5'));assert(sql.includes('octet_length(body::text)<=65536'));
+      assert.equal(args[0],input.jobId);return {rows:structuredClone(rows)};}
+    if(sql.includes('FROM usp_job_attempts'))return {rows:flow.attempts.filter((a:any)=>a.job_id===args[0]&&a.number===args[1])};
+    throw new Error('Unexpected retained projection SQL: '+sql);
+  }}) as unknown as PoolClient;
+  const partial=await packetPdfEntryProgressTx(controls([flow.checkpointAfterFailure]),input,plan),
+    complete=await packetPdfEntryProgressTx(controls(flow.checkpoints),input,plan);
+  assert.equal(partial.acceptedCount,1);assert.equal(complete.acceptedCount,2);assert.equal(complete.currentReuseEligibility,'not_assessed');
+  assert.equal(flow.attempts[0].state,'fenced');
+  const saved=process.env.ULPIN_PACKET_PROGRESS_FLOW_ROOT;
+  if(saved)writeFileSync(saved+'/retained-projection.json',JSON.stringify({scope:'Read-only projection over unchanged retained checkpoint/attempt/input/plan rows; caller authorization and SQL transport are controls, not a reconstructed historical status API invocation',
+    retainedPath,retainedSha256:sha256(readFileSync(retainedPath)),partial,complete},null,2)+'\n',{flag:'wx'});
+});
