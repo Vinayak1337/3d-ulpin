@@ -25097,7 +25097,7 @@
             }
           }
         },
-        "summary": "Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF/KML/CityGML/GeoParquet fragments without establishing an association",
+        "summary": "Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF/KML/CityGML/GeoParquet/raster-metadata fragments without establishing an association",
         "tags": [
           "USP combined source context"
         ],
@@ -96179,6 +96179,140 @@
                             "pin",
                             "artifactSha256",
                             "rowIndices"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "raster"
+                              ]
+                            },
+                            "pin": {
+                              "type": "object",
+                              "properties": {
+                                "caseId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "caseRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "sourceId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "sourceSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "jobId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "resultSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "readerSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "inputSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "acceptedFence": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "resultBytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 32768
+                                }
+                              },
+                              "required": [
+                                "caseId",
+                                "caseRevision",
+                                "sourceId",
+                                "sourceRevision",
+                                "sourceSha256",
+                                "jobId",
+                                "resultSha256",
+                                "readerSha256",
+                                "inputSha256",
+                                "acceptedFence",
+                                "resultBytes"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "metadataSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "window": {
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "y": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "width": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 256
+                                },
+                                "height": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 256
+                                }
+                              },
+                              "required": [
+                                "x",
+                                "y",
+                                "width",
+                                "height"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "pin",
+                            "artifactSha256",
+                            "metadataSha256",
+                            "window"
                           ],
                           "additionalProperties": false
                         }
@@ -214581,6 +214715,140 @@
                     "rowIndices"
                   ],
                   "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "raster"
+                      ]
+                    },
+                    "pin": {
+                      "type": "object",
+                      "properties": {
+                        "caseId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "caseRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "sourceRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "jobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "resultSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 32768
+                        }
+                      },
+                      "required": [
+                        "caseId",
+                        "caseRevision",
+                        "sourceId",
+                        "sourceRevision",
+                        "sourceSha256",
+                        "jobId",
+                        "resultSha256",
+                        "readerSha256",
+                        "inputSha256",
+                        "acceptedFence",
+                        "resultBytes"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "artifactSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "metadataSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "window": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100000
+                        },
+                        "y": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100000
+                        },
+                        "width": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 256
+                        },
+                        "height": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 256
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "pin",
+                    "artifactSha256",
+                    "metadataSha256",
+                    "window"
+                  ],
+                  "additionalProperties": false
                 }
               ]
             }
@@ -218880,6 +219148,438 @@
                         "coverage"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "raster"
+                          ]
+                        },
+                        "pin": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {},
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {},
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {},
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "readerSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "inputSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "acceptedFence": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "resultBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 32768
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256",
+                            "readerSha256",
+                            "inputSha256",
+                            "acceptedFence",
+                            "resultBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "namespace": {
+                          "type": "string"
+                        },
+                        "sourceSetRole": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected_fragment"
+                          ]
+                        },
+                        "key": {
+                          "type": "string"
+                        },
+                        "pointer": {
+                          "type": "string",
+                          "enum": [
+                            "/metadata"
+                          ]
+                        },
+                        "artifactSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "artifactBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 4194304
+                        },
+                        "metadataSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "selectionSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "selectionHashBasis": {
+                          "type": "string",
+                          "enum": [
+                            "accepted_source_result_input_reader_fence_artifact_window_and_metadata"
+                          ]
+                        },
+                        "metadata": {
+                          "type": "object",
+                          "properties": {
+                            "sourceWidth": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceHeight": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceBands": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceTransform": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "minItems": 6,
+                              "maxItems": 6
+                            },
+                            "windowTransform": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "minItems": 6,
+                              "maxItems": 6
+                            },
+                            "sourceCrsWkt": {
+                              "nullable": true,
+                              "type": "string",
+                              "maxLength": 8192
+                            },
+                            "sourceCrsAuthority": {
+                              "nullable": true,
+                              "type": "string",
+                              "maxLength": 100
+                            },
+                            "verticalReference": {
+                              "nullable": true,
+                              "type": "string",
+                              "maxLength": 500
+                            },
+                            "verticalReferenceStatus": {
+                              "type": "string",
+                              "enum": [
+                                "known",
+                                "unknown"
+                              ]
+                            },
+                            "resolution": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "minItems": 2,
+                              "maxItems": 2
+                            },
+                            "window": {
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "y": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "width": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 256
+                                },
+                                "height": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 256
+                                }
+                              },
+                              "required": [
+                                "x",
+                                "y",
+                                "width",
+                                "height"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "nativeBounds": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "bands": {
+                              "minItems": 1,
+                              "maxItems": 4,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "index": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "dtype": {
+                                    "type": "string",
+                                    "maxLength": 32
+                                  },
+                                  "nodata": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "nodataKind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "absent",
+                                      "finite",
+                                      "nan",
+                                      "positive_infinity",
+                                      "negative_infinity"
+                                    ]
+                                  },
+                                  "maskedPixels": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "validPixels": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "index",
+                                  "dtype",
+                                  "nodata",
+                                  "nodataKind",
+                                  "maskedPixels",
+                                  "validPixels"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "globalPlacement": {
+                              "type": "string",
+                              "enum": [
+                                "not_qualified"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "sourceWidth",
+                            "sourceHeight",
+                            "sourceBands",
+                            "sourceTransform",
+                            "windowTransform",
+                            "sourceCrsWkt",
+                            "sourceCrsAuthority",
+                            "verticalReference",
+                            "verticalReferenceStatus",
+                            "resolution",
+                            "window",
+                            "nativeBounds",
+                            "bands",
+                            "globalPlacement"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "coverage": {
+                          "type": "object",
+                          "properties": {
+                            "selectedWindows": {
+                              "type": "number",
+                              "enum": [
+                                1
+                              ]
+                            },
+                            "scope": {
+                              "type": "string",
+                              "enum": [
+                                "exact_accepted_window_metadata"
+                              ]
+                            },
+                            "pixelContent": {
+                              "type": "string",
+                              "enum": [
+                                "not_read"
+                              ]
+                            },
+                            "otherWindows": {
+                              "type": "string",
+                              "enum": [
+                                "not_fetched"
+                              ]
+                            },
+                            "artifactVerification": {
+                              "type": "string",
+                              "enum": [
+                                "accepted_receipt_reference_only"
+                              ]
+                            },
+                            "geometryQualification": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "propertyMatching": {
+                              "type": "string",
+                              "enum": [
+                                "unsupported"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "selectedWindows",
+                            "scope",
+                            "pixelContent",
+                            "otherWindows",
+                            "artifactVerification",
+                            "geometryQualification",
+                            "propertyMatching"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "pin",
+                        "namespace",
+                        "sourceSetRole",
+                        "key",
+                        "pointer",
+                        "artifactSha256",
+                        "artifactBytes",
+                        "metadataSha256",
+                        "selectionSha256",
+                        "selectionHashBasis",
+                        "metadata",
+                        "coverage"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -219933,6 +220633,140 @@
                             "pin",
                             "artifactSha256",
                             "rowIndices"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "raster"
+                              ]
+                            },
+                            "pin": {
+                              "type": "object",
+                              "properties": {
+                                "caseId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "caseRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "sourceId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "sourceSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "jobId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "resultSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "readerSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "inputSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "acceptedFence": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "resultBytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 32768
+                                }
+                              },
+                              "required": [
+                                "caseId",
+                                "caseRevision",
+                                "sourceId",
+                                "sourceRevision",
+                                "sourceSha256",
+                                "jobId",
+                                "resultSha256",
+                                "readerSha256",
+                                "inputSha256",
+                                "acceptedFence",
+                                "resultBytes"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "metadataSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "window": {
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "y": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "width": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 256
+                                },
+                                "height": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 256
+                                }
+                              },
+                              "required": [
+                                "x",
+                                "y",
+                                "width",
+                                "height"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "pin",
+                            "artifactSha256",
+                            "metadataSha256",
+                            "window"
                           ],
                           "additionalProperties": false
                         }
@@ -224363,6 +225197,438 @@
                             "coverage"
                           ],
                           "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "raster"
+                              ]
+                            },
+                            "pin": {
+                              "type": "object",
+                              "properties": {
+                                "caseId": {},
+                                "caseRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "sourceId": {},
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "sourceSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "jobId": {},
+                                "resultSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "readerSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "inputSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "acceptedFence": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "resultBytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 32768
+                                }
+                              },
+                              "required": [
+                                "caseId",
+                                "caseRevision",
+                                "sourceId",
+                                "sourceRevision",
+                                "sourceSha256",
+                                "jobId",
+                                "resultSha256",
+                                "readerSha256",
+                                "inputSha256",
+                                "acceptedFence",
+                                "resultBytes"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "namespace": {
+                              "type": "string"
+                            },
+                            "sourceSetRole": {
+                              "type": "string",
+                              "enum": [
+                                "operator_selected_fragment"
+                              ]
+                            },
+                            "key": {
+                              "type": "string"
+                            },
+                            "pointer": {
+                              "type": "string",
+                              "enum": [
+                                "/metadata"
+                              ]
+                            },
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "artifactBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 4194304
+                            },
+                            "metadataSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectionHashBasis": {
+                              "type": "string",
+                              "enum": [
+                                "accepted_source_result_input_reader_fence_artifact_window_and_metadata"
+                              ]
+                            },
+                            "metadata": {
+                              "type": "object",
+                              "properties": {
+                                "sourceWidth": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "sourceHeight": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "sourceBands": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "sourceTransform": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "windowTransform": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 6,
+                                  "maxItems": 6
+                                },
+                                "sourceCrsWkt": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 8192
+                                },
+                                "sourceCrsAuthority": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 100
+                                },
+                                "verticalReference": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 500
+                                },
+                                "verticalReferenceStatus": {
+                                  "type": "string",
+                                  "enum": [
+                                    "known",
+                                    "unknown"
+                                  ]
+                                },
+                                "resolution": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "window": {
+                                  "type": "object",
+                                  "properties": {
+                                    "x": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 100000
+                                    },
+                                    "y": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 100000
+                                    },
+                                    "width": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 256
+                                    },
+                                    "height": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 256
+                                    }
+                                  },
+                                  "required": [
+                                    "x",
+                                    "y",
+                                    "width",
+                                    "height"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "nativeBounds": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4
+                                },
+                                "bands": {
+                                  "minItems": 1,
+                                  "maxItems": 4,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "index": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "dtype": {
+                                        "type": "string",
+                                        "maxLength": 32
+                                      },
+                                      "nodata": {
+                                        "nullable": true,
+                                        "type": "number"
+                                      },
+                                      "nodataKind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "absent",
+                                          "finite",
+                                          "nan",
+                                          "positive_infinity",
+                                          "negative_infinity"
+                                        ]
+                                      },
+                                      "maskedPixels": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "validPixels": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": [
+                                      "index",
+                                      "dtype",
+                                      "nodata",
+                                      "nodataKind",
+                                      "maskedPixels",
+                                      "validPixels"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "globalPlacement": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_qualified"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "sourceWidth",
+                                "sourceHeight",
+                                "sourceBands",
+                                "sourceTransform",
+                                "windowTransform",
+                                "sourceCrsWkt",
+                                "sourceCrsAuthority",
+                                "verticalReference",
+                                "verticalReferenceStatus",
+                                "resolution",
+                                "window",
+                                "nativeBounds",
+                                "bands",
+                                "globalPlacement"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "coverage": {
+                              "type": "object",
+                              "properties": {
+                                "selectedWindows": {
+                                  "type": "number",
+                                  "enum": [
+                                    1
+                                  ]
+                                },
+                                "scope": {
+                                  "type": "string",
+                                  "enum": [
+                                    "exact_accepted_window_metadata"
+                                  ]
+                                },
+                                "pixelContent": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_read"
+                                  ]
+                                },
+                                "otherWindows": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_fetched"
+                                  ]
+                                },
+                                "artifactVerification": {
+                                  "type": "string",
+                                  "enum": [
+                                    "accepted_receipt_reference_only"
+                                  ]
+                                },
+                                "geometryQualification": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                },
+                                "propertyMatching": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unsupported"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "selectedWindows",
+                                "scope",
+                                "pixelContent",
+                                "otherWindows",
+                                "artifactVerification",
+                                "geometryQualification",
+                                "propertyMatching"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "pin",
+                            "namespace",
+                            "sourceSetRole",
+                            "key",
+                            "pointer",
+                            "artifactSha256",
+                            "artifactBytes",
+                            "metadataSha256",
+                            "selectionSha256",
+                            "selectionHashBasis",
+                            "metadata",
+                            "coverage"
+                          ],
+                          "additionalProperties": false
                         }
                       ]
                     }
@@ -226154,6 +227420,128 @@
                                       "rowIndices"
                                     ],
                                     "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "raster"
+                                        ]
+                                      },
+                                      "pin": {
+                                        "type": "object",
+                                        "properties": {
+                                          "caseId": {},
+                                          "caseRevision": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "sourceId": {},
+                                          "sourceRevision": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "sourceSha256": {
+                                            "type": "string",
+                                            "pattern": "^[a-f0-9]{64}$"
+                                          },
+                                          "jobId": {},
+                                          "resultSha256": {
+                                            "type": "string",
+                                            "pattern": "^[a-f0-9]{64}$"
+                                          },
+                                          "readerSha256": {
+                                            "type": "string",
+                                            "pattern": "^[a-f0-9]{64}$"
+                                          },
+                                          "inputSha256": {
+                                            "type": "string",
+                                            "pattern": "^[a-f0-9]{64}$"
+                                          },
+                                          "acceptedFence": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "resultBytes": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 32768
+                                          }
+                                        },
+                                        "required": [
+                                          "caseId",
+                                          "caseRevision",
+                                          "sourceId",
+                                          "sourceRevision",
+                                          "sourceSha256",
+                                          "jobId",
+                                          "resultSha256",
+                                          "readerSha256",
+                                          "inputSha256",
+                                          "acceptedFence",
+                                          "resultBytes"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "artifactSha256": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{64}$"
+                                      },
+                                      "metadataSha256": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{64}$"
+                                      },
+                                      "window": {
+                                        "type": "object",
+                                        "properties": {
+                                          "x": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 100000
+                                          },
+                                          "y": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 100000
+                                          },
+                                          "width": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 256
+                                          },
+                                          "height": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 256
+                                          }
+                                        },
+                                        "required": [
+                                          "x",
+                                          "y",
+                                          "width",
+                                          "height"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "pin",
+                                      "artifactSha256",
+                                      "metadataSha256",
+                                      "window"
+                                    ],
+                                    "additionalProperties": false
                                   }
                                 ]
                               }
@@ -226968,6 +228356,128 @@
                                 "pin",
                                 "artifactSha256",
                                 "rowIndices"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "raster"
+                                  ]
+                                },
+                                "pin": {
+                                  "type": "object",
+                                  "properties": {
+                                    "caseId": {},
+                                    "caseRevision": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "sourceId": {},
+                                    "sourceRevision": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "sourceSha256": {
+                                      "type": "string",
+                                      "pattern": "^[a-f0-9]{64}$"
+                                    },
+                                    "jobId": {},
+                                    "resultSha256": {
+                                      "type": "string",
+                                      "pattern": "^[a-f0-9]{64}$"
+                                    },
+                                    "readerSha256": {
+                                      "type": "string",
+                                      "pattern": "^[a-f0-9]{64}$"
+                                    },
+                                    "inputSha256": {
+                                      "type": "string",
+                                      "pattern": "^[a-f0-9]{64}$"
+                                    },
+                                    "acceptedFence": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "resultBytes": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 32768
+                                    }
+                                  },
+                                  "required": [
+                                    "caseId",
+                                    "caseRevision",
+                                    "sourceId",
+                                    "sourceRevision",
+                                    "sourceSha256",
+                                    "jobId",
+                                    "resultSha256",
+                                    "readerSha256",
+                                    "inputSha256",
+                                    "acceptedFence",
+                                    "resultBytes"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "artifactSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "metadataSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "window": {
+                                  "type": "object",
+                                  "properties": {
+                                    "x": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 100000
+                                    },
+                                    "y": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 100000
+                                    },
+                                    "width": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 256
+                                    },
+                                    "height": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 256
+                                    }
+                                  },
+                                  "required": [
+                                    "x",
+                                    "y",
+                                    "width",
+                                    "height"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "pin",
+                                "artifactSha256",
+                                "metadataSha256",
+                                "window"
                               ],
                               "additionalProperties": false
                             }

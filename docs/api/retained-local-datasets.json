@@ -223,7 +223,19 @@
       "DEM vertical unit/datum not qualified; no LiDAR minus DEM height calculation",
       "Imagery and point-cloud evidence do not create ownership, units or new building geometry",
       "Whole upstream TIFF was not retained; private receipt lineage remains caller_declared."
-    ]
+    ],
+    "mixedMetadataContextEvidence": {
+      "guide": "docs/evidence/usp/source-fusion-raster-handoff.md",
+      "integratedCodeCommit": "c8a97a67",
+      "verificationSha256": "e157d4bc3b18b9140c5f8ce47cc1ceb758af8be55f186f513e6119093de1e8db",
+      "contextSha256": "ef207e0bb12c94cf182d24e0e780e574037ae9d50e933f89b0612a5ad125db2e",
+      "scope": "Exact accepted-window metadata plus retained EPSG document; reconstructed raster authority/receipt and memory SQL/storage controls, not recovered native proof",
+      "pixelContent": "not_read",
+      "associationAndCitation": "unsupported",
+      "historicalWindowTiffAndEnvelope": "not_retained",
+      "originalsUnchanged": true,
+      "qualification": "Current HTTP/persistence/native admission, applicability/alignment/geometry/global placement/pixel accuracy/learning/release remain unqualified"
+    }
   },
   {
     "manifest": "E:/BhuAayam-data/task-data/desktop-ai04d-native-documents/source-check.json",
