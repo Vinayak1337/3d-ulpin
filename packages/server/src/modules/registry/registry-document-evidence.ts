@@ -27,6 +27,10 @@ import {registryIFCCitationSourceTx} from './registry-ifc-citation-source';
 import {verifyFusionIFCTools} from '../usp/ingestion/source-fusion-ifc-authority';
 import {SOURCE_FUSION_LIMITS} from '../../../../contracts/src/source-fusion';
 import {ifcIdentityFields,assertIFCIdentityEvidence} from './registry-ifc-identifiers';
+import {RegistryDXFCitationSchema,type RegistryDXFCitation} from '../../../../contracts/src/registry-document-evidence';
+import {registryDXFCitationSourceTx} from './registry-dxf-citation-source';
+import {verifyFusionDXFTools} from '../usp/ingestion/source-fusion-dxf-authority';
+import {dxfCitationFusionSelection,fusionDXFCitationFields} from '../usp/ingestion/source-fusion-citations';
 
 export type RegistryDocumentDependencies=FusionCitationDependencies&{result:typeof readDocumentResult;registrySource:typeof registrySourceTx;
   citationSource?:typeof registryDocumentSourceAccessTx;regionSource?:typeof registryRegionSourceTx};
@@ -36,6 +40,8 @@ const defaults:Dependencies={source:associationDocumentInputTx,result:readDocume
 const citationSource=(dependencies:Dependencies)=>dependencies.citationSource??dependencies.registrySource;
 const ifcSource=(dependencies:Dependencies)=>dependencies.ifcSource??registryIFCCitationSourceTx;
 const ifcTools=(dependencies:Dependencies)=>dependencies.ifcTools??verifyFusionIFCTools;
+const dxfSource=(dependencies:Dependencies)=>dependencies.dxfSource??registryDXFCitationSourceTx;
+const dxfTools=(dependencies:Dependencies)=>dependencies.dxfTools??verifyFusionDXFTools;
 const regionSource=(dependencies:Dependencies)=>dependencies.regionSource??registryRegionSourceTx;
 async function recheckRegionsTx(client:PoolClient,siteId:string,record:RegistryRecord,dependencies:Dependencies){
   for(const pin of record.documentCitations??[])if(pin.version==='registry-document-region-citation/1')
@@ -140,6 +146,8 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   const checkedRegions:{pin:RegistryRegionCitation;captured:RegistryRegionPrepared['source']}[]=[];
   const checkedIFC:{pin:RegistryIFCCitation;selection:ReturnType<typeof ifcCitationFusionSelection>;
     captured:Awaited<ReturnType<typeof registryIFCCitationSourceTx>>}[]=[];
+  const checkedDXF:{selection:ReturnType<typeof dxfCitationFusionSelection>;
+    captured:Awaited<ReturnType<typeof registryDXFCitationSourceTx>>}[]=[];
   const groups=new Map<string,RegistryDocumentCitation[]>();
   for(const pin of citations){
     if(pin.selection.subject!==ctx.principal.subject)
@@ -155,6 +163,26 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
         const pin=RegistryRegionCitationSchema.parse(raw);assertRegionCitation(pin,captured);entries.push({pin});
       }
       checkedRegions.push({pin:first,captured});continue;
+    }
+    if(first.version==='registry-dxf-citation/1'){
+      const pins=group.map(pin=>RegistryDXFCitationSchema.parse(pin)),selection=dxfCitationFusionSelection(first);
+      if(pins.some(pin=>fingerprint(dxfCitationFusionSelection(pin).pin)!==fingerprint(selection.pin)))
+        conflict('The exact DXF result selection pins differ.');
+      selection.entityOrdinals=[...new Set(pins.map(pin=>pin.dxf.entityOrdinal))];
+      const captured=await dxfSource(dependencies)(client,siteId,selection.pin,lock);
+      dxfTools(dependencies)(captured.authority.input,budget);
+      const loaded=await (dependencies.fusionResult??readFusionResult)(selection,captured.authority,budget),projected=fusionSourceProjection(selection,loaded);
+      if(projected.kind!=='dxf')conflict('The accepted DXF entity is unavailable.');
+      for(const pin of pins){
+        const {version:_,id:__,target:___,selection:attribution,associationState:____,qualification:_____,...fields}=pin;
+        if(pin.id!==citationId(pin)||attribution.accessSha256!==captured.authority.input.accessSha256||
+          fingerprint(fields)!==fingerprint(fusionDXFCitationFields(projected,pin.dxf.entityOrdinal)))
+          conflict('The exact DXF artifact, selection, entity, locator, attempt or access pin changed.');
+        entries.push({pin,entity:projected.entities.find(entry=>entry.ordinal===pin.dxf.entityOrdinal)!.record});
+      }
+      const current=await dxfSource(dependencies)(client,siteId,selection.pin,lock);
+      if(fingerprint(current)!==fingerprint(captured))conflict('The DXF source changed during its private read.');
+      checkedDXF.push({selection,captured});continue;
     }
     if(first.version==='registry-ifc-citation/1'){
       const pins=group.map(pin=>RegistryIFCCitationSchema.parse(pin)),selection=ifcCitationFusionSelection(first);
@@ -230,6 +258,11 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
       const current=await ifcSource(dependencies)(client,siteId,item.selection.pin);
       if(fingerprint(current)!==fingerprint(item.captured))conflict('The aggregate IFC source changed during its private read.');
       ifcTools(dependencies)(current.authority.input,budget);
+    }})),...checkedDXF.map(item=>({input:item.captured.authority.input,
+    protect:()=>dxfSource(dependencies)(client,siteId,item.selection.pin,true),validate:async()=>{
+      const current=await dxfSource(dependencies)(client,siteId,item.selection.pin);
+      if(fingerprint(current)!==fingerprint(item.captured))conflict('The aggregate DXF source changed during its private read.');
+      dxfTools(dependencies)(current.authority.input,budget);
     }})),...checkedRegions.map(item=>({input:{caseId:item.pin.document.caseId,sourceId:item.pin.document.sourceId},
       protect:()=>regionSource(dependencies)(client,siteId,item.pin.document,true),validate:async()=>{
         const current=await regionSource(dependencies)(client,siteId,item.pin.document);
@@ -242,15 +275,17 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   // Protected callers validate again only after the complete lock set is held:
   // a source can change during lock acquisition or later groups' result I/O.
   for(const item of aggregate)await item.validate();
-  if(checkedIFC.length||checkedRegions.length)for(const pin of citations)await historicalTargetTx(client,siteId,record,pin);
+  if(checkedIFC.length||checkedDXF.length||checkedRegions.length)for(const pin of citations)await historicalTargetTx(client,siteId,record,pin);
   if(citations.some(pin=>pin.version!=='registry-document-citation/1'))fusionLive(budget);
   return entries;
 }
-export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation|RegistryIFCCitation|RegistryRegionCitation){
+export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation|RegistryIFCCitation|RegistryRegionCitation|RegistryDXFCitation){
   if('partId' in pin)return fingerprint({document:pin.document,partId:pin.partId,target:pin.target});
   if(pin.version==='registry-document-region-citation/1')return regionCitationId(pin);
   if(pin.version==='registry-ifc-citation/1')return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,
     readerSha256:pin.readerSha256,acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,ifc:pin.ifc,target:pin.target});
+  if(pin.version==='registry-dxf-citation/1')return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,
+    readerSha256:pin.readerSha256,acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,dxf:pin.dxf,target:pin.target});
   return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,readerSha256:pin.readerSha256,
     acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,ocrConfigSha256:pin.ocrConfigSha256,
     itemOrdinal:pin.itemOrdinal,itemSha256:pin.itemSha256,target:pin.target});
@@ -286,7 +321,8 @@ async function lockedDraftTx(client:PoolClient,draftId:string,recordId?:string,l
 function fusionValidationDependencies(fusion:Awaited<ReturnType<typeof resolveFusionCitationsTx>>,dependencies:Dependencies):Dependencies{
   return {...dependencies,result:async(input,hash)=>fusion.documents.get(`${input.jobId}/${hash}`)?.loaded.result??dependencies.result(input,hash),
     fusionResult:async(selection,authority,budget)=>{
-      const cached=fusion.documents.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`)??fusion.ifcs.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`);
+      const cached=fusion.documents.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`)??fusion.ifcs.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`)??
+        fusion.dxfs.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`);
       return cached&&fingerprint(cached.pin)===fingerprint(selection.pin)?cached.loaded:
         (dependencies.fusionResult??readFusionResult)(selection,authority,budget);
     }};
@@ -305,7 +341,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   if(draft.status!=='draft'||record.revision!==request.expectedRecordRevision)conflict('Use the exact active correction and recorded target revision.');
   const target=await currentTargetTx(client,draft.site_id,record,true,dependencies),ctx=context();
   if(record.kind==='space'&&(request.add||request.addFusion?.selection.sources.some(source=>
-    source.kind==='document'?source.partIds.length:source.kind==='document_ocr'?source.itemOrdinals.length:false)))
+    source.kind==='document'?source.partIds.length:source.kind==='document_ocr'?source.itemOrdinals.length:source.kind==='dxf'?source.entityOrdinals.length:false)))
     throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Space corrections support explicit IFC or source-region citations only.');
   const operationKey=`registry-document-citations:${draftId}:${request.requestKey}`;
   const digest=fingerprint({request,subject:ctx.principal.subject,reviewContext:documentReviewContext()});
@@ -317,6 +353,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     if(request.addFusion){
       for(const selected of request.addFusion.selection.sources){
         if(selected.kind==='ifc')await ifcSource(dependencies)(client,draft.site_id,selected.pin,true);
+        else if(selected.kind==='dxf')await dxfSource(dependencies)(client,draft.site_id,selected.pin,true);
         else if(selected.kind!=='cityjson')await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
       }
       const fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies,draft.site_id);
@@ -344,6 +381,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     // Deny site-ineligible citation sources before reading their private results.
     for(const selected of request.addFusion.selection.sources){
       if(selected.kind==='ifc')await ifcSource(dependencies)(client,draft.site_id,selected.pin,true);
+      else if(selected.kind==='dxf')await dxfSource(dependencies)(client,draft.site_id,selected.pin,true);
       else if(selected.kind!=='cityjson')await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
     }
     fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies,draft.site_id);
@@ -351,6 +389,15 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     const attribution=(input:Pick<DocumentInput,'accessSha256'>)=>({subject:ctx.principal.subject,accessSha256:input.accessSha256,selectedAt:new Date().toISOString()});
     for(const source of fusion.context.sources){
       if(source.kind==='cityjson')continue;
+      if(source.kind==='dxf'){
+        const input=fusion.dxfInputs.get(source.pin.sourceId)!;
+        for(const entry of source.entities){
+          const pin=RegistryDXFCitationSchema.parse({...fusionDXFCitationFields(source,entry.ordinal),id:'0'.repeat(64),
+            version:'registry-dxf-citation/1',target:targetPin,selection:attribution(input),associationState:'operator_selected',qualification:'not_assessed'});
+          pin.id=citationId(pin);added.push(pin);
+        }
+        continue;
+      }
       if(source.kind==='ifc'){
         const input=fusion.ifcInputs.get(source.pin.sourceId)!;
         for(const entry of source.entities){
@@ -461,8 +508,9 @@ export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:
   await recheckRegionsTx(client,draft.site_id,record,dependencies);
   const response=RegistryDocumentEvidenceSchema.parse({draftId,draftRevision:draft.revision,recordId:record.id,
     recordRevision:record.revision,citations,associationState:'operator_selected',qualification:'not_assessed'});
-  if(citations.some(entry=>entry.pin.version==='registry-ifc-citation/1')&&Buffer.byteLength(JSON.stringify(response))>SOURCE_FUSION_LIMITS.responseBytes-8192)
-    throw new AppError(413,'REGISTRY_IFC_RESPONSE_LIMIT','Select a smaller explicit IFC evidence context.');
+  const hasDXF=citations.some(entry=>entry.pin.version==='registry-dxf-citation/1');
+  if((hasDXF||citations.some(entry=>entry.pin.version==='registry-ifc-citation/1'))&&Buffer.byteLength(JSON.stringify(response))>SOURCE_FUSION_LIMITS.responseBytes-8192)
+    throw new AppError(413,hasDXF?'REGISTRY_DXF_RESPONSE_LIMIT':'REGISTRY_IFC_RESPONSE_LIMIT','Select a smaller explicit native evidence context.');
   return response;
 }
 export const readRegistryDocumentCitations=(draftId:string)=>transaction(client=>readRegistryDocumentCitationsTx(client,draftId));

@@ -3,6 +3,7 @@ import {DocumentAssociationSourceSchema} from './document-association';
 import {DocumentLocatorSchema,DocumentPartSchema,DocumentOcrItemSchema,DocumentOcrSelectionSchema} from './usp/document-ingestion';
 import {SourceFusionRequestSchema,SourceFusionOcrSchema,SourceFusionIFCRecordSchema,SourceFusionLiteralObjectSchema} from './source-fusion';
 import {IFC_LIMITS} from './usp/ifc-ingestion';
+import {DXF_LIMITS} from './usp/dxf-ingestion';
 import {PacketRegionSelectionSchema,PacketRegionPageSchema,PacketRegionWorkerSchema,PACKET_REGION_LIMITS} from './packet-region';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),revision=z.number().int().positive();
@@ -33,6 +34,15 @@ export const RegistryIFCCitationSchema=z.strictObject({...citationBase,version:z
     entityType:z.enum(['IfcBuilding','IfcBuildingStorey','IfcSpace']),recordPointer:z.string().regex(/^\/records\/\d+$/),
     recordSha256:hash,locator:SourceFusionLiteralObjectSchema,attributeLocators:SourceFusionLiteralObjectSchema,
     identifierScope:z.literal('source_native_only; not_canonical_registry_ids')})});
+/** Exact officer-selected source entity. The common document envelope names
+ * the DXF original/job only; it does not create a document part or native ID. */
+export const RegistryDXFCitationSchema=z.strictObject({...citationBase,version:z.literal('registry-dxf-citation/1'),
+  resultBytes:z.number().int().positive().max(DXF_LIMITS.resultBytes),
+  dxf:z.strictObject({artifactSha256:hash,artifactBytes:z.number().int().positive().max(DXF_LIMITS.artifactBytes),
+    profile:z.literal('dxf-native-inspection/1'),selectionSha256:hash,
+    entityOrdinal:z.number().int().min(0).max(9999),entityType:z.string().min(1).max(128),
+    handle:SourceFusionLiteralObjectSchema,recordPointer:z.string().regex(/^\/entities\/\d+$/),recordSha256:hash,
+    locator:SourceFusionLiteralObjectSchema,identifierScope:z.literal('source_native_only; not_canonical_registry_ids')})});
 /** Source-original selection: no extraction job/result/input/fence is implied. */
 export const RegistryRegionOriginalSchema=z.strictObject({caseId:z.uuid(),caseRevision:z.number().int().nonnegative(),
   sourceId:z.uuid(),sourceRevision:revision,sourceSha256:hash,
@@ -48,7 +58,7 @@ export const RegistryRegionCitationSchema=z.strictObject({
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
 export const RegistryDocumentCitationSchema=z.discriminatedUnion('version',[
-  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema]);
+  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,RegistryDXFCitationSchema]);
 export const RegistryDocumentCitationsSchema=z.array(RegistryDocumentCitationSchema).max(25)
   .superRefine((items,ctx)=>{
     if(new Set(items.map(item=>item.id)).size!==items.length)
@@ -67,8 +77,8 @@ export const RegistryDocumentAmendmentSchema=z.strictObject({requestKey:z.uuid()
   if(value.assertIFCIdentity&&(value.add||value.addFusion||value.addRegion||value.remove.length||value.clearAll))
     ctx.addIssue({code:'custom',message:'Confirm one existing exact IFC citation as a separate amendment. Withdraw it by removing the citation.'});
   if([value.add,value.addFusion,value.addRegion].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Use one explicit addition per amendment.'});
-  if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:s.kind==='ifc'?s.stepIds.length:false))
-    ctx.addIssue({code:'custom',message:'Select at least one native document, OCR observation or IFC record to cite.'});
+  if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:s.kind==='ifc'?s.stepIds.length:s.kind==='dxf'?s.entityOrdinals.length:false))
+    ctx.addIssue({code:'custom',message:'Select at least one native document, OCR observation, IFC record or DXF entity to cite.'});
   if(value.clearAll&&(value.add||value.addFusion||value.addRegion||value.remove.length))
     ctx.addIssue({code:'custom',message:'Clear all citations as a separate amendment.'});
   if(value.add && new Set(value.add.partIds).size!==value.add.partIds.length)
@@ -81,6 +91,7 @@ export const RegistryDocumentEvidenceSchema=z.strictObject({draftId:z.uuid(),dra
   citations:z.array(z.union([z.strictObject({pin:RegistryNativeDocumentCitationSchema,part:DocumentPartSchema}),
     z.strictObject({pin:RegistryOcrDocumentCitationSchema,item:DocumentOcrItemSchema}),
     z.strictObject({pin:RegistryIFCCitationSchema,record:SourceFusionIFCRecordSchema}),
+    z.strictObject({pin:RegistryDXFCitationSchema,entity:SourceFusionLiteralObjectSchema}),
     z.strictObject({pin:RegistryRegionCitationSchema})])).max(25),
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
@@ -93,6 +104,7 @@ export type RegistryDocumentCitation=z.infer<typeof RegistryDocumentCitationSche
 export type RegistryNativeDocumentCitation=z.infer<typeof RegistryNativeDocumentCitationSchema>;
 export type RegistryOcrDocumentCitation=z.infer<typeof RegistryOcrDocumentCitationSchema>;
 export type RegistryIFCCitation=z.infer<typeof RegistryIFCCitationSchema>;
+export type RegistryDXFCitation=z.infer<typeof RegistryDXFCitationSchema>;
 export type RegistryRegionCitation=z.infer<typeof RegistryRegionCitationSchema>;
 export type RegistryRegionOriginal=z.infer<typeof RegistryRegionOriginalSchema>;
 export type RegistryRegionAddition=z.infer<typeof RegistryRegionAdditionSchema>;
