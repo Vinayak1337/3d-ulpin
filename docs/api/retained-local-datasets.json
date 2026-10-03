@@ -1840,5 +1840,42 @@
       "nativeExecutionRepeated": false,
       "associationAndCitationAttachment": "unsupported_context_only"
     }
+  },
+  {
+    "id": "retained-survey-control-capemay-20261004",
+    "classification": "test_only",
+    "sourceFamily": "usace-affiliated-nj-cape-may-2025-test-only",
+    "issuer": "Zenodo research deposit credited to named USACE/ERDC-affiliated authors; not asserted to be an independently authenticated official federal publication or Indian operational source.",
+    "originalUrl": "https://doi.org/10.5281/zenodo.17236055",
+    "geography": "Cape May Campground Confined Disposal Facility / Cape May Canal, New Jersey, USA; separate foreign test_only family.",
+    "manifest": "docs/evidence/usp/survey-control-source/manifest.json",
+    "manifestSha256": "a883a13fa4cfc26cad448865ab9506f8095c5ccc427696e4f1299fe80ef1491f",
+    "manifestHashScope": "Git/LF metadata; original artifacts use exact physical hashes",
+    "guide": "docs/evidence/usp/survey-control-source/README.md",
+    "declaredLicence": "CC BY 4.0",
+    "apiInstallation": "not-verified",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "sourceCount": 5,
+    "surveyRows": {
+      "nva": 166,
+      "nvaEnabled": 164,
+      "nvaDisabled": 2,
+      "pid": 17
+    },
+    "completionSha256": "14beea14b968be742b18f79a240dd9f4146111054e73524ec47f7b41b476939e",
+    "content": {
+      "externalPath": "E:/BhuAayam-data/task-data/desktop-survey-control-source-20261003/originals/accuracy-reports.zip",
+      "bytes": 36256,
+      "sha256": "54ec53234550ca102ca37be5a2e4e0fc130ebe23c04b20c826913f12bb6f0480",
+      "format": "zip",
+      "repositoryBytesVerified": false
+    },
+    "limitations": [
+      "Metre report projected CRS/axes/table-specific height linkage and survey epoch unresolved; final-product US-foot State Plane/NAVD88 cannot substitute.",
+      "No same-site native model or reviewed point correspondence; no D1 or Indian operational association.",
+      "Source QA-only statement and NVA166/166 versus PID0/17 withholding remain source declarations, not application learning splits or accuracy qualification.",
+      "No executable comparison, geometry/admission/learning or release qualification; report comparisons and literal zero accuracy values are not independent ground truth."
+    ]
   }
 ]
