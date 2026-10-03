@@ -85,7 +85,7 @@ def checked_run_inputs(freeze, inputs):
 
 
 def run_selectors(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, *,
-                  selector_contract, cases, preserve_preflight, model_loader=None):
+                  selector_contract, cases, preserve_preflight, model_loader=None, generation_constraints=None):
     require_boundary()  # before dependencies, model bytes or GPU initialization
     for example in examples:
         validate_input(example, contract, family_freeze, ("development",))
@@ -142,9 +142,17 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
                         "lexicalPythonVersion": sys.version, "unicodeVersion": unicodedata.unidata_version})
     require(all(row["inputTokens"] <= SETTINGS["maxInputTokens"] for row in preflight),
             "selector_input_token_bound_exceeded_no_truncation")
+    vocabulary, constraint_reports = None, []
+    if generation_constraints is not None:
+        from .selector_constraints import checked_metadata, Vocabulary, Controller, checked_generation_config
+        checked_metadata(generation_constraints)
+        vocabulary = Vocabulary(model_path)
+        vocabulary.verify_runtime(tokenizer)
     model = (AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
         use_safetensors=True, torch_dtype=torch.float16, attn_implementation=SETTINGS["attention"]).to("cuda").eval()
         if model_loader is None else model_loader(model_path))
+    if vocabulary is not None:
+        checked_generation_config(model.generation_config)
 
     torch.cuda.synchronize()
     loaded_seconds = time.perf_counter() - started
@@ -157,11 +165,15 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
         if input_tokens > SETTINGS["maxInputTokens"]:
             raise RuntimeError("frozen input token bound exceeded; no truncation")
         encoded = {key: value.to("cuda") for key, value in encoded.items()}
+        generation_options = {}
+        if vocabulary is not None:
+            controller = Controller(vocabulary, source, selector_contract, encoded["input_ids"][0].tolist())
+            generation_options["prefix_allowed_tokens_fn"] = controller
         before = time.perf_counter()
         with torch.inference_mode():
             generated = model.generate(**encoded, max_new_tokens=SETTINGS["maxNewTokens"], do_sample=False,
                 use_cache=True, pad_token_id=tokenizer.eos_token_id,
-                stopping_criteria=StoppingCriteriaList([ResourceCheck()]))
+                stopping_criteria=StoppingCriteriaList([ResourceCheck()]), **generation_options)
         torch.cuda.synchronize()
         seconds = time.perf_counter() - before
         output_ids = generated[0, input_tokens:]
@@ -172,12 +184,14 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
                       "inputTokens": input_tokens, "outputTokens": len(output_ids),
                       "generationSeconds": seconds, "reachedTokenLimit": len(output_ids) == SETTINGS["maxNewTokens"]}
         preserve_raw(len(raw_outputs), raw_record)
+        if vocabulary is not None:
+            constraint_reports.append({"exampleId": example["exampleId"], **controller.finish(output_ids.tolist(), raw)})
         checked = project(raw, source, selector_contract, contract, family_freeze, ("development",))
         raw_outputs.append(raw_record)
         results.append({"exampleId": example["exampleId"], **checked})
         del generated, output_ids, encoded
         gpu_check()
-    return raw_outputs, {"version": "association-selector-baseline-result/1", "results": results,
+    result = {"version": "association-selector-baseline-result/1", "results": results,
         "jsonSyntaxValidCount": sum(row["jsonSyntaxValid"] for row in results),
         "selectorSchemaValidCount": sum(row["selectorSchemaValid"] for row in results),
         "rawSelectorValidCount": sum(row["rawSelectorValid"] for row in results),
@@ -194,3 +208,7 @@ def run_selectors(examples, contract, family_freeze, model_path, require_boundar
                     "minimumSampledFreeCudaBytes": min(s["freeBytes"] for s in samples)},
         "evaluationOpened": False, "teacherOutputsUsed": False, "fitPerformed": False,
         "teacherTargetsInPrompt": False, "qualification": "span copying is source-exact, not semantic correctness; two related development examples, no canonical association or generalization qualification"}
+    if vocabulary is not None:
+        result["generationConstraints"] = {**generation_constraints, "examples": constraint_reports,
+            "trieNodes": len(vocabulary.first), "nativeTransportChecked": True}
+    return raw_outputs, result
