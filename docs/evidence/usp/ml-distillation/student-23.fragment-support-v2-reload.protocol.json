@@ -1,0 +1,150 @@
+{
+  "acceptedFit": {
+    "acceptedReceiptSha256": "95c5d72e12a38cd6dd7b949abed18e24d8de46c4a2c4dc1fb24dd669fa3d9afc",
+    "adapterManifestSha256": "a6b0020f9ad50a9b38371b233cc63198a02adec2a2df69979dffd563dc6dd55c",
+    "adapterWeightsSha256": "66598aad3ea6345332eede3234bb5dde8b0b21161fe22680527cc53af70ff36e",
+    "fitAssignmentSha256": "1b720909a6207eb8462366ba9fc0d1bd70ee0192b266287f2a76ef30e661e974",
+    "fitFreezeSha256": "6411c2a8d824617056a8bd5214ac0061a6e6d01522eb19edefb4d95e44ec1fbd",
+    "fitProofSha256": "8836b437ef8bb4147ec6f482f87e7197f7280821c555390ccb147daa5955b4fe",
+    "fitResultSha256": "2b00379c6d1715c3d2a7d26c0a531cda9e8913edd97fd70600f89420d8040bf7",
+    "guardSha256": "40be29c8ebe1445772714083fc2f00f8ba8126cce0703930e657212548b8021d",
+    "profileSha256": "6a40f31c155eda85224f8e82b1b3e91833667632bde38bd8754ede396d93d9e7",
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5",
+    "sourceCommit": "32e661a13e04db23b1cab3f0211b12b372474d38"
+  },
+  "assignment": {
+    "bytes": 15863,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-23.fragment-support-v2-reload.assignment.json",
+    "physicalSha256": "a945c9a9b50ac9374eff2f2ca55285c399e0c8f7daf5acd1107b3587c83f1caa"
+  },
+  "branch": "task/ml-association-student-20261002",
+  "callback": "Return exact evidence commits and primary result/receipt pins to coordinator 01a0fbd1-c2aa-75c0-8a52-4c4f662f3759 once, then stop. No new chats/subagents/polls/schedules.",
+  "developmentCriteria": {
+    "acceptedPositivePrecision": 1,
+    "exactRequestSelectionSets": "2/2 against separate frozen host expectations",
+    "positiveRecall": 1,
+    "qualification": "Same frozen two requests in one development family only. A pass establishes this bounded development selection result/difference only; no generalization, source extraction accuracy, conflict completeness, canonical association, operational data, evaluation, promotion or release qualification.",
+    "resourcesAndCleanup": "All original bounds, native transport and authoritative completion must pass.",
+    "unsupportedRequestFalsePositives": 0,
+    "validWholeResponses": "2/2"
+  },
+  "exclusions": "No executable changes, native fit, baseline rerun, prompt/policy/hyperparameter sweep, additional inference/host reconstruction, data acquisition/install, providers, host/services/Docker/volumes, shared gateway/API/catalogue/frontend/staging/main edits, push/deploy/public activation or promotion.",
+  "exclusiveOwner": {
+    "codeEditsAuthorized": false,
+    "gpuAndModel": true,
+    "learnerThread": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+    "teacherIdle": true
+  },
+  "executionHead": "f25bc4a0f473b9e3fc9d8f13087f971c98e5b310",
+  "expectedGeneratedFreeze": {
+    "interpretation": "Pure exact result for these assignment bytes and unchanged learner physical sources. Newly emitted stage freeze must match; actual fresh stage/profile hashes are obtained from execution, never from planning metadata.",
+    "metadata": {
+      "bytes": 20503,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-22-support-fit-review-v1-8d032b7260c54bc2875e9a6c50fb2aed\\expected-student-23-reload-freeze.json",
+      "physicalSha256": "2b3d78ea6b162e80074c6a7bae78320e14bdaa04dc32226b5351106741d91af6"
+    },
+    "physicalSha256": "2b3d78ea6b162e80074c6a7bae78320e14bdaa04dc32226b5351106741d91af6"
+  },
+  "fitAcceptance": {
+    "bytes": 15365,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-support-v2-fit-acceptance-v1.json",
+    "physicalSha256": "53fdef6edbe77e325bd196ec3744eded5b1d735b4702997189885b07d277f4fc"
+  },
+  "hostComparison": {
+    "baselineAcceptance": {
+      "bytes": 7839,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-baseline-acceptance-v1.json",
+      "physicalSha256": "3b4db4ad281410d5213f4dc4f2d472a0fee5d780f5dd958a836fc87a6fbaf119"
+    },
+    "controllerContributions": "JSON/schema, complete context identity, current distinct candidate IDs and unchanged fragment projection are deterministic controls. They do not establish learned relevance. Empty means no_support_in_supplied_context, never factual absence in the whole original/property. This retrieval route produces no generated claim or canonical association.",
+    "examples": 2,
+    "expectations": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/coordinator/requested-fragment-development-v1-host-expectations.json",
+      "physicalSha256": "71efa01a6e56e35c24a6e9440c01e0e8aeb3be322fedc877343765eae45f943e"
+    },
+    "families": 1,
+    "hostOnlyOutput": "One fresh immutable fragment-support-v2-reload-v1-host UUID directory under the existing private student parent. Retain failures; never overwrite baseline, v1 adapter results or original expectations.",
+    "metrics": "Report raw structural validity, whole-response acceptance, actual chosen IDs and candidate denominators separately. Against host sets report each request expected/selected counts, exact-set match, true positives, false positives and misses. Precision is TP/selected (null if zero); recall is TP/expected (null for an empty expected set). Include unsupported-request selections as false positives in aggregate precision, and report correct context-limited empty retrieval separately. Rejected whole responses receive zero exact/retrieval credit, zero accepted true positives and full expected misses; do not score partial parses or fallback. Keep response usability and all two requests visible alongside any valid-output metric.",
+    "samePolicyComparison": "Compare the exact frozen pretrained baseline versus this adapter on the same ordered requests/contexts/prompt/greedy controller. Report actual metrics and deltas, unchanged controller contributions, tokenizer prompt lengths, per-request generation/model/guard timing and measured resource differences. No rerun baseline or extra experiment. The failed v1 adapter remains separately reported historical evidence; do not rerun or overwrite it.",
+    "timing": "Only after authoritative complete output/guard/cleanup acceptance, pin and read host expectations once for one host-only comparison. Never include them in stage, code, input, prompt, grammar or profile. Technical failure leaves expectations unread."
+  },
+  "inferencePolicy": "Pinned original Qwen base with the exact accepted saved fragment adapter, unchanged seed17/greedy/fp16/SDPA/settings. Keep both requests, all four/three fragments, order, provenance and neutral IDs unchanged. Use accepted fragment prompt/byte grammar with existing single generate. Optional subset/empty choices remain possible. Preserve raw outputs before validation/projection. No forced selections, repair, fence stripping, cap closing, fallback, partial acceptance, retry or second policy.",
+  "inputBoundary": "Fresh reload copies only the approved runtime/*/requirements donor, unchanged original Qwen/model/source authority, same complete development requests/contexts/route/preparation/prompt/schema/family, exact saved adapter/manifest/fit proof, and new assignment/freeze. No training rows/targets, old donor inputs/outputs/code/adapters or host expectations in profile, code, inputs, prompts, grammar/controller. No held-out or retired data.",
+  "nativePreflight": [
+    "Admit only the explicit default-off fragment reload authority; immutable original Qwen base and all 96 exact saved tensors through existing verify_adapter_files/reload_and_compare.",
+    "Verify source-dependent fragment byte-controller/tokenizer route, pinned vocabulary/decoder/callback and final raw byte/text transport. Preserve complete ordered source-only requests/contexts, original prompt/greedy settings and projection; no repair/closing/partial parsing or fallback credit.",
+    "Preserve accepted fit/root/profile/guard/manifest/result/assignment/freeze/receipt/proof/adapter bindings. Report prompt/input/native generation lengths, per-request latency, model/guard/resource snapshots and deterministic controller contributions.",
+    "Authoritative outputs/completion/session/guard/native reload proof and cleanup must pass before any host expectations/comparison. On technical failure preserve exact artifacts, leave expectations unread and return without retry or changes."
+  ],
+  "outcome": "One fresh exact v2 saved-adapter stage and one contained reload on unchanged two source-only development requests, then one immutable host comparison only after authoritative output/guard/cleanup acceptance.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-support-v2-reload-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-support-v2-reload-v1.md"
+  ],
+  "phaseAllowance": {
+    "automaticRetry": false,
+    "containedReloads": 1,
+    "developmentRequests": 2,
+    "evaluation": false,
+    "extraInference": false,
+    "fit": false,
+    "freshStages": 1,
+    "hostComparisonsAfterAcceptedCleanup": 1,
+    "promotion": false
+  },
+  "plannedProfile": {
+    "actualProfileSha256": null,
+    "code": 33,
+    "entries": 19690,
+    "inputs": 18,
+    "model": 9,
+    "runtime": 19630
+  },
+  "recordedAtUtc": "2026-10-03T18:44:56.879758+00:00",
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "resourceBounds": {
+    "batchSize": 1,
+    "cpuThreads": 2,
+    "maxChildPhaseSeconds": 600,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "maxJobCommittedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "recording": "Record Job commitment and RSS separately. Preserve existing guard/profile, CUDA headroom and child limits for this one reload."
+  },
+  "return": [
+    "Raw responses before strict unchanged projection, actual chosen IDs/candidate denominators and complete response acceptance; rejected responses receive no partial retrieval credit.",
+    "Native equality for all96 exact saved tensors, admitted fit bindings and original pinned local base bytes plus accepted fit base invariant. Report a fresh in-memory base digest only if actually emitted. Record output/guard/resource/cleanup pins; Job and RSS separately, durations only where exposed.",
+    "One immutable comparison using frozen host expectations only after accepted cleanup, retaining all two requests and baseline/tuned metrics/deltas. Report this tiny development result separately from in-sample loss and evaluation/generalization.",
+    "Evidence-only commits/primary private receipt hashes, actual commands/exits, exact execution/final HEAD, dirty paths and stopped owned resources/tool sessions; then callback and stop."
+  ],
+  "runCommandAuthority": "Execute once the exact command array in the fresh stage.json through the existing guard. Save exact command/cwd/timestamp/exit/profile/freeze hashes; no altered or reconstructed command.",
+  "stageCommand": [
+    "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+    "-B",
+    "-I",
+    "-S",
+    "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_fragment_support_v2.py",
+    "reload",
+    "--assignment",
+    "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-23.fragment-support-v2-reload.assignment.json",
+    "--fit-root",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5"
+  ],
+  "task": "STUDENT-23-FRAGMENT-SUPPORT-V2-RELOAD",
+  "version": "student-fragment-support-v2-reload-protocol/1",
+  "workerSettings": {
+    "interpretation": "Dispatch exposes model/effort but no tier. Prompt/global preference does not prove actual service tier; report only observed settings.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Verify the exact v2 saved adapter/transport/resource proof and compare its frozen development outputs with the retained pretrained baseline under unchanged criteria.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
