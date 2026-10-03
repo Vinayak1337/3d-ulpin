@@ -1,0 +1,126 @@
+{
+  "decision": "verified_pre_stage_blocker_no_native_reload_or_comparison",
+  "executionHead": "f25bc4a0f473b9e3fc9d8f13087f971c98e5b310",
+  "failure": {
+    "cause": "The shared reload staging branch reads fragment.BATCH_SHA; the explicit v2 leaf omitted that immutable v1 development-batch constant from its re-exports.",
+    "file": "scripts/usp/learning/association/stage_fragment_adapter.py",
+    "line": 83,
+    "message": "module 'geo.usp_learning.association.fragment_support_v2' has no attribute 'BATCH_SHA'",
+    "ordering": "Failure after existing saved-fit host admission and checked_reload_binding, before checked_development, the complete source-input pin loop, make_freeze, disk check, UUID/root.mkdir, any runtime/model copy or native launch.",
+    "type": "AttributeError"
+  },
+  "fitAcceptance": {
+    "bytes": 15365,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-support-v2-fit-acceptance-v1.json",
+    "physicalSha256": "53fdef6edbe77e325bd196ec3744eded5b1d735b4702997189885b07d277f4fc"
+  },
+  "integratedCommit": "ad73e14c789aa6f55d583f2f449ab0cbd40eb8e0",
+  "integratedReport": {
+    "bytes": 9186,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-reload-v1.json",
+    "physicalSha256": "af9e082878570a22e2aa60847d2be64c67d2903b6a41a94d15fb58ed59f0d58a"
+  },
+  "next": "STUDENT-24 CPU-only immutable BATCH_SHA re-export and one positive shared reload staging-boundary regression. Review and a fresh STUDENT-23 attempt2 execution freeze are required before staging/native work.",
+  "ownerEvidenceCommit": "4a12ceb10720b177a646db8d95404cb6d3aab510",
+  "ownerFinalCheckpoint": {
+    "bytes": 2039,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-reload-v1-host-891fdbbc60824e279068f1bbfd1261fd\\final-checkpoint.json",
+    "physicalSha256": "c302c50af00312bf893ebb3b237b4bfe09e014013e6deaceacf6adb566d4ccaa"
+  },
+  "ownerReport": {
+    "bytes": 9026,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-reload-v1.json",
+    "physicalSha256": "8f63ea37b9a980dc9e79374dc188c903161e804d52cbd5cd57e5eb9ca46b8b65"
+  },
+  "qualification": {
+    "developmentCriteriaAssessed": false,
+    "qualityOrGeneralizationOrPromotionOrRelease": false,
+    "v2NativeReload": false
+  },
+  "recordedAtUtc": "2026-10-03T19:03:59.045455+00:00",
+  "reviewAudit": {
+    "bytes": 3854,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-23-stager-blocker-review-v1-15227b23ade94a06971214eb4e29446c\\audit.json",
+    "physicalSha256": "6f43041df2c5f86517e76d0c598428ef47871b17cf9208621eadb49b31b8da5f"
+  },
+  "reviewExecution": {
+    "bytes": 548,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-23-stager-blocker-review-v1-15227b23ade94a06971214eb4e29446c\\review.execution.json",
+    "physicalSha256": "c658e7bad02f2f9acddcc51a86752a28fcaffa97fa5220951528052c9913f7ba"
+  },
+  "reviewHelper": {
+    "bytes": 5259,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-23-stager-blocker-review-v1-15227b23ade94a06971214eb4e29446c\\review_blocker.py",
+    "physicalSha256": "943faced14b90b71daa4fa79ab22e824f76a943cec85520152eda8b2e25f4fb9"
+  },
+  "sourcePins": {
+    "bytes": 11682,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-reload-v1-host-891fdbbc60824e279068f1bbfd1261fd\\execution-source-pins.json",
+    "physicalSha256": "08891aeaccfd5957222acf98b0b147c69d7b58d7a83e78d64dd5a2d8d7eae8e5"
+  },
+  "spentAttempt": "The original STUDENT-23 single stage command is consumed; it exited1 before effects. Its positive assignment/protocol remain immutable historical evidence, not permission to retry.",
+  "stageExecution": {
+    "argv": [
+      "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_fragment_support_v2.py",
+      "reload",
+      "--assignment",
+      "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-23.fragment-support-v2-reload.assignment.json",
+      "--fit-root",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5"
+    ],
+    "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+    "endedAtUtc": "2026-10-03T18:51:16.545987+00:00",
+    "executionHead": "f25bc4a0f473b9e3fc9d8f13087f971c98e5b310",
+    "exitCode": 1,
+    "hostProcessId": 19780,
+    "logPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-reload-v1-host-891fdbbc60824e279068f1bbfd1261fd\\stage.log",
+    "logSha256": "95e16c330aa98487ba81a73275810f76f50f9590034902025d25a3608ced56f4",
+    "startedAtUtc": "2026-10-03T18:51:15.078017+00:00",
+    "suppliedPermissions": {
+      "approvalPolicy": "never",
+      "sandboxMode": "danger-full-access"
+    },
+    "wallSeconds": 1.468304199996055
+  },
+  "stageLog": {
+    "bytes": 1007,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-reload-v1-host-891fdbbc60824e279068f1bbfd1261fd\\stage.log",
+    "physicalSha256": "95e16c330aa98487ba81a73275810f76f50f9590034902025d25a3608ced56f4"
+  },
+  "stagingReadOnlyObservation": {
+    "changedByThisTask": false,
+    "dirty": [],
+    "head": "98b7e3d38fc767e85bc27e9698ceb7018aba8282"
+  },
+  "task": "STUDENT-23-FRAGMENT-SUPPORT-V2-RELOAD",
+  "verification": {
+    "attributeCauseConfirmedWithoutRetry": true,
+    "hostExpectationsRead": false,
+    "integrationEquality": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "4a12ceb10720b177a646db8d95404cb6d3aab510",
+        "ad73e14c789aa6f55d583f2f449ab0cbd40eb8e0",
+        "--",
+        "docs/evidence/usp/ml-distillation/student/fragment-support-v2-reload-v1.json",
+        "docs/evidence/usp/ml-distillation/student/fragment-support-v2-reload-v1.md"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin",
+      "exitCode": 0
+    },
+    "metrics": null,
+    "nativeModelOrJobCreated": false,
+    "noPendingOwnedToolSessions": true,
+    "ownedHostProcessObservedAbsent": 19780,
+    "retainedReferencesMatched": 11,
+    "stageDirectoryOrProfileCreated": false,
+    "unchangedExecutableSources": 33
+  },
+  "version": "student-fragment-support-v2-reload-blocker-review/1"
+}

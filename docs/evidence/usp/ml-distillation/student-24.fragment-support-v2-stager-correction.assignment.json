@@ -1,0 +1,83 @@
+{
+  "acceptedFit": {
+    "acceptedReceiptSha256": "95c5d72e12a38cd6dd7b949abed18e24d8de46c4a2c4dc1fb24dd669fa3d9afc",
+    "adapterManifestSha256": "a6b0020f9ad50a9b38371b233cc63198a02adec2a2df69979dffd563dc6dd55c",
+    "adapterWeightsSha256": "66598aad3ea6345332eede3234bb5dde8b0b21161fe22680527cc53af70ff36e",
+    "fitAssignmentSha256": "1b720909a6207eb8462366ba9fc0d1bd70ee0192b266287f2a76ef30e661e974",
+    "fitFreezeSha256": "6411c2a8d824617056a8bd5214ac0061a6e6d01522eb19edefb4d95e44ec1fbd",
+    "fitProofSha256": "8836b437ef8bb4147ec6f482f87e7197f7280821c555390ccb147daa5955b4fe",
+    "fitResultSha256": "2b00379c6d1715c3d2a7d26c0a531cda9e8913edd97fd70600f89420d8040bf7",
+    "guardSha256": "40be29c8ebe1445772714083fc2f00f8ba8126cce0703930e657212548b8021d",
+    "profileSha256": "6a40f31c155eda85224f8e82b1b3e91833667632bde38bd8754ede396d93d9e7",
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5",
+    "sourceCommit": "32e661a13e04db23b1cab3f0211b12b372474d38"
+  },
+  "baseCommit": "4a12ceb10720b177a646db8d95404cb6d3aab510",
+  "blockerReview": {
+    "bytes": 6723,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-support-v2-reload-blocker-review-v1.json",
+    "physicalSha256": "c119ba2a340da310bce98c82163c5df0bfced5c84e598e5ce30134ab9b26853d"
+  },
+  "branch": "task/ml-association-student-20261002",
+  "callback": "Return one compact result/blocker with exact commits/pins/commands/exits to coordinator01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then stop for review. No new chats/subagents/polls/schedules. Teacher idle/blind; this existing learner remains the sole GPU/model owner.",
+  "executionAllowance": {
+    "cpuCodeAndFocusedControl": true,
+    "evaluation": false,
+    "fit": false,
+    "hostComparison": false,
+    "hostExpectationsRead": false,
+    "inference": false,
+    "nativeTokenizerOrModelLoad": false,
+    "promotion": false,
+    "reload": false,
+    "runtimeOrModelCopyOrInventory": false,
+    "stageModelRun": false
+  },
+  "failedAttempt": {
+    "bytes": 9186,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-reload-v1.json",
+    "physicalSha256": "af9e082878570a22e2aa60847d2be64c67d2903b6a41a94d15fb58ed59f0d58a"
+  },
+  "fitAcceptance": {
+    "bytes": 15365,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-support-v2-fit-acceptance-v1.json",
+    "physicalSha256": "53fdef6edbe77e325bd196ec3744eded5b1d735b4702997189885b07d277f4fc"
+  },
+  "implementation": [
+    "Expose exactly the unchanged fragment_adapter.BATCH_SHA through the explicit v2 leaf; value remains a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536. Do not invent a second constant value, read fallback, version/task change or development-specific behavior.",
+    "Add one focused native-import-blocked positive regression that invokes the actual shared reload staging path via the v2 stager with valid authority, retained accepted-fit proof/manifest bindings and unchanged source-only development inputs. It must pass checked_reload_binding, development/source-input pin admission and make_freeze, then stop at the first root.mkdir boundary without creating any directory or copying runtime/model bytes.",
+    "Check the exported batch pin equals the immutable v1 authority, the produced metadata uses the same development batch, and no mkdir/copy/native phase actually runs. Minimal metadata mocks are allowed for clean source binding and the accepted prior proof; they must not mock away the failed branch, BATCH_SHA lookup, development admission or freeze construction. Record the technical fixture honestly.",
+    "Run only the new focused regression and compile the two changed sources once after stabilization. It should reproduce the missing-export failure before the fix and reach the controlled boundary after it. Preserve both receipts. Reuse completed controls/proofs; do not rerun the previous five-control suite, old guard or model campaigns.",
+    "Return exact code/evidence commits, final clean HEAD, two changed code pins plus all33 transitive source pins and confirmation that the other32 execution sources remain unchanged. Return source/prompt/data/representation/settings/proof compatibility as metadata, preserving original v1 defaults and all saved-fit history.",
+    "Keep all future native permissions disabled. Do not edit the spent STUDENT-23 packet or failure report. A corrected final head/source map must be reviewed before a new separately assigned STUDENT-23 attempt2 freeze; later evidence uses distinct paths to preserve this failure."
+  ],
+  "outcome": "Fix the observed missing immutable development-batch export and cover the successful shared reload staging branch up to its first side-effect boundary, entirely on CPU.",
+  "ownedCodePaths": [
+    "services/geo/geo/usp_learning/association/fragment_support_v2.py",
+    "scripts/usp/learning/association/test_fragment_support_v2.py"
+  ],
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-support-v2-stager-correction-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-support-v2-stager-correction-v1.md"
+  ],
+  "privateOutput": "One fresh CPU-only correction receipt directory under E:/BhuAayam-data/task-data/ml-distillation/student; preserve all originals, accepted fit and failed attempt.",
+  "protected": "All other32 execution sources, common stager/proof/fitter/loader/controller, guard/isolation/resources/loss/attention/reclamation, v1/selector/legacy modules, schema/prompt/data/teacher/family files and historical packets/outputs are read-only. No source acquisition/install, shared API/gateway/catalogue/frontend/staging/main, providers, host/services/volumes, push/deploy/public activation.",
+  "recordedAtUtc": "2026-10-03T19:03:59.054980+00:00",
+  "requestedSettings": {
+    "actualModel": null,
+    "actualReasoning": null,
+    "actualServiceTier": null,
+    "interpretation": "Dispatch exposes model/effort but no tier; report observed settings only, never speed from a prompt.",
+    "model": "gpt-6.1-sol",
+    "reason": "A bounded immutable export and one concrete staging regression need ordinary implementation work; preserve the learner chat and sole GPU ownership.",
+    "reasoning": "high",
+    "requiredSpeed": "default/standard"
+  },
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "task": "STUDENT-24-FRAGMENT-SUPPORT-V2-STAGER-CORRECTION",
+  "version": "student-fragment-support-v2-stager-correction-assignment/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
