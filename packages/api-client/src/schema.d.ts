@@ -10439,6 +10439,75 @@ export interface components {
                         /** @enum {string} */
                         identifierScope: "source_native_only; not_canonical_registry_ids";
                     };
+                } | {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-raster-metadata-citation/1";
+                    resultBytes: number;
+                    raster: {
+                        /** @enum {string} */
+                        profile: "raster-window/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        window: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                        };
+                        metadataSha256: string;
+                        selectionSha256: string;
+                        fragmentSha256: string;
+                        /** @enum {string} */
+                        metadataPointer: "/metadata";
+                        coverage: {
+                            /** @enum {number} */
+                            selectedWindows: 1;
+                            /** @enum {string} */
+                            scope: "exact_accepted_window_metadata";
+                            /** @enum {string} */
+                            pixelContent: "not_read";
+                            /** @enum {string} */
+                            otherWindows: "not_fetched";
+                            /** @enum {string} */
+                            artifactVerification: "accepted_receipt_reference_only";
+                            /** @enum {string} */
+                            geometryQualification: "not_assessed";
+                            /** @enum {string} */
+                            propertyMatching: "unsupported";
+                        };
+                    };
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -12840,6 +12909,75 @@ export interface components {
                         /** @enum {string} */
                         identifierScope: "source_native_only; not_canonical_registry_ids";
                     };
+                } | {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-raster-metadata-citation/1";
+                    resultBytes: number;
+                    raster: {
+                        /** @enum {string} */
+                        profile: "raster-window/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        window: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                        };
+                        metadataSha256: string;
+                        selectionSha256: string;
+                        fragmentSha256: string;
+                        /** @enum {string} */
+                        metadataPointer: "/metadata";
+                        coverage: {
+                            /** @enum {number} */
+                            selectedWindows: 1;
+                            /** @enum {string} */
+                            scope: "exact_accepted_window_metadata";
+                            /** @enum {string} */
+                            pixelContent: "not_read";
+                            /** @enum {string} */
+                            otherWindows: "not_fetched";
+                            /** @enum {string} */
+                            artifactVerification: "accepted_receipt_reference_only";
+                            /** @enum {string} */
+                            geometryQualification: "not_assessed";
+                            /** @enum {string} */
+                            propertyMatching: "unsupported";
+                        };
+                    };
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -14248,6 +14386,156 @@ export interface components {
                         unselectedRows: "not_expanded";
                         /** @enum {string} */
                         continuationRowsFetch: "not_performed";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-raster-metadata-citation/1";
+                    resultBytes: number;
+                    raster: {
+                        /** @enum {string} */
+                        profile: "raster-window/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        window: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                        };
+                        metadataSha256: string;
+                        selectionSha256: string;
+                        fragmentSha256: string;
+                        /** @enum {string} */
+                        metadataPointer: "/metadata";
+                        coverage: {
+                            /** @enum {number} */
+                            selectedWindows: 1;
+                            /** @enum {string} */
+                            scope: "exact_accepted_window_metadata";
+                            /** @enum {string} */
+                            pixelContent: "not_read";
+                            /** @enum {string} */
+                            otherWindows: "not_fetched";
+                            /** @enum {string} */
+                            artifactVerification: "accepted_receipt_reference_only";
+                            /** @enum {string} */
+                            geometryQualification: "not_assessed";
+                            /** @enum {string} */
+                            propertyMatching: "unsupported";
+                        };
+                    };
+                };
+                fragment: {
+                    /** @enum {string} */
+                    kind: "raster";
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    key: string;
+                    /** @enum {string} */
+                    pointer: "/metadata";
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    metadataSha256: string;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_window_and_metadata";
+                    metadata: {
+                        sourceWidth: number;
+                        sourceHeight: number;
+                        sourceBands: number;
+                        sourceTransform: (number)[];
+                        windowTransform: (number)[];
+                        sourceCrsWkt: string | null;
+                        sourceCrsAuthority: string | null;
+                        verticalReference: string | null;
+                        /** @enum {string} */
+                        verticalReferenceStatus: "known" | "unknown";
+                        resolution: (number)[];
+                        window: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                        };
+                        nativeBounds: (number)[];
+                        bands: {
+                            index: number;
+                            dtype: string;
+                            nodata: number | null;
+                            /** @enum {string} */
+                            nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
+                            maskedPixels: number;
+                            validPixels: number;
+                        }[];
+                        /** @enum {string} */
+                        globalPlacement: "not_qualified";
+                    };
+                    coverage: {
+                        /** @enum {number} */
+                        selectedWindows: 1;
+                        /** @enum {string} */
+                        scope: "exact_accepted_window_metadata";
+                        /** @enum {string} */
+                        pixelContent: "not_read";
+                        /** @enum {string} */
+                        otherWindows: "not_fetched";
+                        /** @enum {string} */
+                        artifactVerification: "accepted_receipt_reference_only";
                         /** @enum {string} */
                         geometryQualification: "not_assessed";
                         /** @enum {string} */

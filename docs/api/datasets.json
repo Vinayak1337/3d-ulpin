@@ -4231,6 +4231,20 @@
         "historicalWindowTiffAndEnvelope": "not_retained",
         "originalsUnchanged": true,
         "qualification": "Current HTTP/persistence/native admission, applicability/alignment/geometry/global placement/pixel accuracy/learning/release remain unqualified"
+      },
+      "reviewedMetadataCitationEvidence": {
+        "guide": "docs/evidence/usp/reviewed-raster-citations-handoff.md",
+        "integratedCodeCommit": "1a55b148",
+        "completionSha256": "e67ace67d1ddf5536170c2a529455e5851f6655e8898fc4539f15088fd513dd2",
+        "verificationSha256": "7092b829b7638cab076e6cefcc9be46f871ece9c1cde831a20c4a8bcd46a1ad4",
+        "scope": "Explicit accepted-window metadata plus retained EPSG document through controlled building/floor amendment, review, commit and history",
+        "metadataSha256": "734a6f758cbd996986428e999782d5142fb487896c10bb98417054bb388f57d6",
+        "fragmentSha256": "bbcf6559a0ad79db70f43f48458e33b1f6c7abc41a0b4dfd375c5e9c4d9bb5cf",
+        "pixels": "not_read",
+        "artifactVerification": "accepted_receipt_reference_only",
+        "historicalTiffAndEnvelope": "not_retained",
+        "originalsUnchanged": true,
+        "qualification": "Reconstructed target/site/input/attempt/review/SQL/storage controls; no authentic applicability, current HTTP/persistence/native/pixel/geometry/learning/scale/release qualification"
       }
     },
     {
