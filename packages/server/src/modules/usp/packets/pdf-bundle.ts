@@ -1,8 +1,9 @@
 import {z} from 'zod';
 import {zipSync} from 'fflate';
 import type {RequestContext} from '@ulpin/contracts/usp';
-import {PACKET_PDF_BUNDLE_LIMITS,PacketPdfBundleManifestSchema} from '../../../../../contracts/src/usp/packet-pdf-bundle';
+import {PACKET_PDF_BUNDLE_LIMITS,PacketPdfBundleManifestSchema,PacketImagePdfBundleManifestSchema} from '../../../../../contracts/src/usp/packet-pdf-bundle';
 import {PACKET_PDF_LIMITS,PACKET_PDF_MULTI_LIMITS,UspAnyPacketPdfReceiptSchema} from '../../../../../contracts/src/usp/packet-pdf';
+import {PACKET_IMAGE_PDF_LIMITS,UspImagePdfPacketPlanSchema} from '../../../../../contracts/src/usp/packet-image-pdf';
 import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {sha256} from '../../../infrastructure/storage';
@@ -22,10 +23,24 @@ export function packetPdfBundleManifest(captured:Capture){
   const parsed=UspAnyPacketPdfReceiptSchema.safeParse(captured.receipt);
   if(!parsed.success)throw new AppError(422,'PACKET_PDF_BUNDLE_UNSUPPORTED','This PDF receipt has no supported bundle representation.');
   const receipt=parsed.data,plan=captured.view.plan;
-  if(receipt.version==='packet-image-pdf/1')throw new AppError(422,'PACKET_IMAGE_PDF_BUNDLE_UNSUPPORTED',
-    'This single-image PDF recipe supports private PDF download only; image ZIP bundles are unsupported.');
   const execution=validateExecution(plan,captured.view.execution);
   if(canonical(execution.packet)!==canonical(receipt))conflict('The bundle differs from the exact accepted PDF execution.');
+  if(receipt.version==='packet-image-pdf/1'){
+    const imagePlan=UspImagePdfPacketPlanSchema.parse(plan),entry=imagePlan.entries[0],binding=entry.binding!;
+    return PacketImagePdfBundleManifestSchema.parse({version:'packet-image-pdf-bundle-manifest/1',representation:'private_accepted_packet_download',
+      packet:{packetId:receipt.packetId,receiptVersion:receipt.version,receiptSha256:fingerprint(receipt),createdAt:receipt.createdAt,
+        target:receipt.target,scope:receipt.scope,plan:{planId:receipt.planId,version:receipt.planVersion,sha256:receipt.planSha256},
+        confirmationId:receipt.confirmationId,targetBodySha256:imagePlan.targetBodySha256,recipe:receipt.assembly.recipe},
+      pdf:{filename:'packet.pdf',sha256:receipt.assembly.output.sha256,bytes:receipt.assembly.output.bytes,
+        pages:receipt.assembly.output.pages,contentType:receipt.contentType,policy:receipt.assembly.output.policy},
+      entries:[{outputPage:1,required:true,bindingId:binding.id,entrySha256:entry.entrySha256,
+        applicabilitySha256:entry.applicabilitySha256,associationState:binding.associationState,qualification:binding.qualification,
+        applicability:binding.applicability,
+        source:{sha256:binding.document.sourceSha256,revision:binding.document.sourceRevision,bytes:binding.document.sourceBytes},
+        locator:{kind:'original_image',frame:0},calibration:null,derivative:receipt.assembly.region}],
+      qualification:{documentRole:'generated_compilation',certifiedOriginal:false,titleDetermination:'unsupported',officialIssuance:'unsupported',
+        propertyMatching:'not_assessed',geometry:'not_assessed',sourcePermissions:'not_assessed',learning:'not_assessed'}});
+  }
   const regions=receipt.version==='packet-pdf/1'?[receipt.assembly.region]:receipt.assembly.regions;
   return PacketPdfBundleManifestSchema.parse({version:'packet-pdf-bundle-manifest/1',representation:'private_accepted_packet_download',
     packet:{packetId:receipt.packetId,receiptVersion:receipt.version,receiptSha256:fingerprint(receipt),createdAt:receipt.createdAt,
@@ -49,7 +64,8 @@ export async function readPacketPdfBundle(ctx:RequestContext,packetValue:string,
   const manifest=packetPdfBundleManifest(before),manifestBytes=Buffer.from(canonical(manifest)),output=before.receipt.assembly.output;
   if(manifestBytes.length>PACKET_PDF_BUNDLE_LIMITS.manifestBytes)
     throw new AppError(413,'PACKET_PDF_BUNDLE_MANIFEST_LIMIT','The selected packet provenance exceeds the 64 KiB bundle manifest limit.');
-  const pdfLimit=before.receipt.version==='packet-pdf/1'?PACKET_PDF_LIMITS.bytes:PACKET_PDF_MULTI_LIMITS.bytes;
+  const pdfLimit=before.receipt.version==='packet-image-pdf/1'?PACKET_IMAGE_PDF_LIMITS.bytes:
+    before.receipt.version==='packet-pdf/1'?PACKET_PDF_LIMITS.bytes:PACKET_PDF_MULTI_LIMITS.bytes;
   if(!Number.isSafeInteger(output.bytes)||output.bytes<1||output.bytes>pdfLimit)
     throw new AppError(422,'PACKET_PDF_ARTIFACT_INTEGRITY','The saved PDF exceeds its bounded receipt.');
   // Fixed filenames with no comments/extra fields: local headers + central directory + EOCD.
