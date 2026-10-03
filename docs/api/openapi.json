@@ -24778,6 +24778,78 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/packets/sources/{sourceId}/image-region": {
+      "post": {
+        "operationId": "POST_api_v1_usp_packets_sources_sourceId_image_region",
+        "parameters": [
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_packets_sources_sourceId_image_region_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "headers": {
+              "X-Region-Provenance": {
+                "description": "Base64url JSON matching PacketImageRegionProvenanceSchema",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Region-Sha256": {
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            },
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "description": "Canonical result"
+          }
+        },
+        "summary": "Crop an acknowledged oriented PNG/JPEG original; source-only preview with unassessed applicability",
+        "tags": [
+          "Private packet image region prerequisite"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/packet-image-region.controller.ts",
+        "x-batch": "PACK1-IMAGE-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/evidence/document-association/preview": {
       "post": {
         "operationId": "POST_api_v1_usp_evidence_document_association_preview",
@@ -215537,6 +215609,144 @@
               "mediaBox",
               "cropBox",
               "boxConvention",
+              "coordinates",
+              "region",
+              "selectionAcknowledged"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "revision",
+          "sha256",
+          "purpose",
+          "selection"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_packets_sources_sourceId_image_region_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "string",
+            "pattern": "^[1-9]\\d*$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "private_source_preview"
+            ]
+          },
+          "selection": {
+            "type": "object",
+            "properties": {
+              "frame": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "image_oriented_top_left_pixels"
+                    ]
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 25000
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 25000
+                  },
+                  "orientation": {
+                    "type": "object",
+                    "properties": {
+                      "exifValue": {
+                        "nullable": true,
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 8
+                      },
+                      "applied": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 8
+                      },
+                      "provenance": {
+                        "type": "string",
+                        "enum": [
+                          "source_exif",
+                          "specification_default"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "exifValue",
+                      "applied",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "width",
+                  "height",
+                  "orientation"
+                ],
+                "additionalProperties": false
+              },
+              "coordinates": {
+                "type": "string",
+                "enum": [
+                  "oriented_original_pixel_edges/1"
+                ]
+              },
+              "region": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 25000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 25000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 25000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 25000
+                    }
+                  ]
+                },
+                "minItems": 4,
+                "maxItems": 4
+              },
+              "selectionAcknowledged": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              }
+            },
+            "required": [
+              "frame",
               "coordinates",
               "region",
               "selectionAcknowledged"

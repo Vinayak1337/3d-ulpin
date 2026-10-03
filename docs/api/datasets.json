@@ -5263,7 +5263,24 @@
       "limitations": [
         "Calibration null; no geographic, metric, colorimetric, OCR, association, learning or release qualification.",
         "Fixture package version and actual decoder version are distinct; rights and launch clearance remain as recorded."
-      ]
+      ],
+      "privateImageRegionEvidence": {
+        "guide": "docs/evidence/usp/packet-image-region-handoff.md",
+        "integratedCodeCommit": "ac509938",
+        "completionSha256": "9d09c39180f1f0e37b1c60c5fc8f1628f4a144e137d349ba5a66a322ecb6c85a",
+        "includedOrientedPixelBounds": [
+          38,
+          42,
+          210,
+          220
+        ],
+        "outputBytes": 56840,
+        "outputSha256": "497d5a9ea526f4bb83b5c7106b95c829fc632b8b14d44c73b60bb60a5b723c97",
+        "originalUnchanged": true,
+        "scope": "Guarded native crop of oriented original before resampling; exact approved pixels and metadata-free PNG; controlled source/access/SQL/storage",
+        "effectiveImagingSha256": "2e62b249f2f10405ca9338240d5a8bd00e839031057352461e3e7c95d9c1e488",
+        "qualification": "Source-only preview; current HTTP/persistence, property applicability, calibration/geometry/learning, packet completion and release unqualified; prior runtime inventories retained unchanged"
+      }
     },
     {
       "id": "retained-document-image-jpeg-20261001",
@@ -5307,7 +5324,24 @@
       "limitations": [
         "Calibration null; no geographic, metric, colorimetric, OCR, association, learning or release qualification.",
         "Fixture package version and actual decoder version are distinct; rights and launch clearance remain as recorded."
-      ]
+      ],
+      "privateImageRegionEvidence": {
+        "guide": "docs/evidence/usp/packet-image-region-handoff.md",
+        "integratedCodeCommit": "ac509938",
+        "completionSha256": "9d09c39180f1f0e37b1c60c5fc8f1628f4a144e137d349ba5a66a322ecb6c85a",
+        "includedOrientedPixelBounds": [
+          14,
+          22,
+          211,
+          131
+        ],
+        "outputBytes": 35963,
+        "outputSha256": "841b819998fc427d7c873e89dc13e5994c70afc5a88820f37177ca25525c0140",
+        "originalUnchanged": true,
+        "scope": "Guarded native crop of oriented original before resampling; exact approved pixels and metadata-free PNG; controlled source/access/SQL/storage",
+        "effectiveImagingSha256": "2e62b249f2f10405ca9338240d5a8bd00e839031057352461e3e7c95d9c1e488",
+        "qualification": "Source-only preview; current HTTP/persistence, property applicability, calibration/geometry/learning, packet completion and release unqualified; prior runtime inventories retained unchanged"
+      }
     },
     {
       "id": "google-libkml-1-20261001",
