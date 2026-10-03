@@ -366,6 +366,23 @@ def wkb_guard(raw, limits):
     return count, spans, kind
 
 
+def selected_scan_batch_size(selected, end_row, row_count, limits=DEFAULT_LIMITS):
+    """Admit the aggregate prefix and rounded batches before row decoding.
+
+    Arrow starts each selected group at its first row. Include the final batch's
+    possible overread, clipped to the group's declared rows. Coordinate-budget
+    stopping may scan less; it never enlarges this conservative upper bound.
+    """
+    batch_size, scanned = min(64, row_count), 0
+    for group in selected:
+        needed = min(group["numRows"], end_row-group["startRowIndex"])
+        rounded = ((needed+batch_size-1)//batch_size)*batch_size
+        scanned += min(group["numRows"], rounded)
+        if scanned > limits.group_rows:
+            fail("ROW_SCAN_LIMIT", "Selected-group prefix/batch scan exceeds the aggregate row ceiling.", "limit")
+    return batch_size
+
+
 def extract(raw: bytes, start_row=0, row_count=100, limits=DEFAULT_LIMITS):
     """Must run after external limits attach. No native imports at module load."""
     if type(start_row) is not int or start_row < 0 or type(row_count) is not int or not 1 <= row_count <= limits.rows:
@@ -486,6 +503,7 @@ def extract(raw: bytes, start_row=0, row_count=100, limits=DEFAULT_LIMITS):
         if any(c["compression"] not in ("UNCOMPRESSED", "SNAPPY") for c in g["columns"]):
             result_profile.update(status="unsupported", reasons=["compression_unsupported"])
             return result
+    batch_size = selected_scan_batch_size(selected, end_row, row_count, limits)
     scalar_nodes = 0
 
     def decoded_geometry(geometry):
@@ -531,7 +549,7 @@ def extract(raw: bytes, start_row=0, row_count=100, limits=DEFAULT_LIMITS):
     for group in selected:
         within = 0
         try:
-            batches = parquet.iter_batches(batch_size=min(64, row_count), row_groups=[group["rowGroupIndex"]], use_threads=False)
+            batches = parquet.iter_batches(batch_size=batch_size, row_groups=[group["rowGroupIndex"]], use_threads=False)
             for batch in batches:
                 scanned_rows += batch.num_rows
                 for bi in range(batch.num_rows):

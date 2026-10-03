@@ -221,3 +221,65 @@ test('selected upstream rows and absent-geo inventory pass actual bounded worker
    }finally{S3Client.prototype.send=originalSend;}
  },true,sourceName);
 });
+
+test('accepted parent continuation passes two current native windows with exact source and attempt pins',
+ {skip:process.env.ULPIN_GEOPARQUET_CONTINUATION_PROCESS!=='1'||!present},()=>isolated(async f=>{
+  // Exactly two sequential native runs on the same retained upstream bytes.
+  // SQL/S3 controls establish method authority; they do not prove live services.
+  const originalSend=S3Client.prototype.send,stored=new Map<string,Buffer>();
+  S3Client.prototype.send=async function(command:any){const key=command.input.Key;
+    if(command.constructor.name==='PutObjectCommand'){assert.equal(command.input.IfNoneMatch,'*');stored.set(key,Buffer.from(command.input.Body));return {};}
+    if(command.constructor.name==='GetObjectCommand'){const bytes=stored.get(key)!;return {Body:Readable.from([bytes]),ContentLength:bytes.length,ETag:'memory-etag'};}
+    throw Error('Unexpected storage command');
+  };
+  try{
+    const service=new GeoParquetIngestionService(),config=geoparquetConfig(),request={requestKey:randomUUID(),expectedCaseRevision:1,lineage,selection};
+    const receipt=await service.retain(f.caseId,request,{name:'example.parquet',bytes:f.raw});
+    assert.deepEqual(await service.retain(f.caseId,request,{name:'example.parquet',bytes:f.raw}),receipt);
+    const parent=f.jobs.get(receipt.jobId)!;
+    await runGeoParquetJob(parent.id);assert.equal(parent.status,'succeeded',parent.error);
+    const initialStatus=await service.status(f.caseId,f.source.id,parent.id),initialArtifact=await service.artifact(f.caseId,f.source.id,parent.id);
+    assert.deepEqual(initialArtifact.bytes,readFileSync(root+'/evidence/final-example/projection.json'));
+    assert.equal(initialStatus.status,'partial');assert.equal(initialStatus.continuation!.nextRowIndex,2);
+    const initialAccepted=JSON.parse(stored.get(`geoparquet-native/${parent.id}/${parent.result_ref.sha256}.json`)!.toString('utf8'));
+    assert.equal(initialAccepted.input.readerSha256,config.pins.readerSha256);
+    const retryRequest={requestKey:randomUUID(),expectedCaseRevision:2,expectedSourceRevision:1,sourceSha256:f.hash,
+      selection:{startRowIndex:2,rowCount:2},continuation:initialStatus.continuation};
+    for(const patch of [{jobId:randomUUID()},{resultSha256:'0'.repeat(64)},{artifactSha256:'0'.repeat(64)},{nextRowIndex:3}])
+      await assert.rejects(()=>service.enqueue(f.caseId,f.source.id,{...retryRequest,continuation:{...retryRequest.continuation,...patch}}));
+    const retry=await service.enqueue(f.caseId,f.source.id,retryRequest);
+    assert.deepEqual(await service.enqueue(f.caseId,f.source.id,retryRequest),retry);
+    const child=f.jobs.get(retry.jobId)!,input=child.payload;
+    assert.deepEqual(input.tools,initialAccepted.input.tools);assert.equal(input.readerSha256,config.pins.readerSha256);
+    assert.deepEqual(input.continuation,{...initialStatus.continuation,inputSha256:fingerprint(parent.payload),acceptedFence:parent.accepted_fence});
+    for(const patch of [{inputSha256:'0'.repeat(64)},{acceptedFence:parent.accepted_fence+1}])
+      await assert.rejects(()=>assertGeoParquetInputTx(f.client as any,{...input,continuation:{...input.continuation,...patch}}),(e:any)=>e.status===409);
+    await assert.rejects(()=>assertGeoParquetInputTx(f.client as any,{...input,readerSha256:'0'.repeat(64)}),(e:any)=>e.status===409);
+    await runGeoParquetJob(child.id);assert.equal(child.status,'succeeded',child.error);assert.equal(child.attempt.state,'accepted');
+    const continuedStatus=await service.status(f.caseId,f.source.id,child.id),continuedArtifact=await service.artifact(f.caseId,f.source.id,child.id);
+    const continuedNative=JSON.parse(continuedArtifact.bytes.toString('utf8')),
+      continuedAccepted=JSON.parse(stored.get(`geoparquet-native/${child.id}/${child.result_ref.sha256}.json`)!.toString('utf8'));
+    assert.equal(continuedStatus.status,'partial');assert.equal(continuedStatus.continuation!.nextRowIndex,4);
+    assert.equal(continuedNative.source.sha256,f.hash);assert.equal(continuedNative.source.bytes,f.raw.length);
+    assert.deepEqual(continuedNative.window,{totalRows:5,requestedStartRowIndex:2,requestedRows:2,returnedRows:2,
+      coordinateValues:continuedNative.window.coordinateValues,status:'available',nextRowIndex:4,truncated:true,prefixRowsOmitted:2,
+      scannedBatchRows:4,prefixRowsScannedInSelectedGroups:2,stopReason:'row_window'});
+    assert.deepEqual(continuedNative.rows.map((row:any)=>row.rowIndex),[2,3]);
+    for(const row of continuedNative.rows)for(const [name,cell] of Object.entries(row.columns) as [string,any][]){
+      assert.equal(cell.locator.rowIndex,row.rowIndex);assert.equal(cell.locator.rowIndexInGroup,row.rowIndex);assert.equal(cell.locator.columnName,name);
+      if(cell.wkb){const raw=Buffer.from(cell.wkb.hex,'hex');assert.equal(sha256(raw),cell.wkb.sha256);assert.equal(raw.length,cell.wkb.bytes);}
+    }
+    assert.deepEqual((await service.original(f.caseId,f.source.id)).bytes,f.raw);
+    assert.deepEqual((await service.artifact(f.caseId,f.source.id,parent.id)).bytes,initialArtifact.bytes);
+    assert.equal(stored.size,5);assert.equal(f.jobs.size,2);
+    const proof=process.env.ULPIN_GEOPARQUET_PROOF_DIR;if(proof){mkdirSync(proof,{recursive:true});
+      writeFileSync(proof+'/initial.native.json',initialArtifact.bytes,{flag:'wx'});
+      writeFileSync(proof+'/continued.native.json',continuedArtifact.bytes,{flag:'wx'});
+      writeFileSync(proof+'/continuation.journey.json',JSON.stringify({scope:'two actual sequential native windows over unchanged upstream test_only bytes; memory SQL/S3 controls; current HTTP/persistence unqualified',
+        receipt,initialStatus,initialAccepted,initialResultSha256:parent.result_ref.sha256,initialAcceptedFence:parent.accepted_fence,
+        retryRequest,retry,continuedInput:input,continuedStatus,continuedAccepted,continuedResultSha256:child.result_ref.sha256,continuedAcceptedFence:child.accepted_fence,pins:config.pins},null,2)+'\n',{flag:'wx'});
+    }
+    console.log(JSON.stringify({sourceSha256:f.hash,initial:{sha256:initialArtifact.sha256,bytes:initialArtifact.bytes.length,window:initialAccepted.summary.window,supervision:initialAccepted.supervision},
+      continued:{sha256:continuedArtifact.sha256,bytes:continuedArtifact.bytes.length,window:continuedNative.window,rows:continuedNative.rows.map((row:any)=>({rowIndex:row.rowIndex,name:row.columns.name.value})),supervision:continuedAccepted.supervision},parentPins:input.continuation}));
+  }finally{S3Client.prototype.send=originalSend;}
+},true));
