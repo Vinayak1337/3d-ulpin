@@ -1,5 +1,33 @@
 # FUSION-GEOPARQUET-01 — exact accepted-window leaf adapters
 
+## Lead integration, 3 October
+
+Leaves integrate as `fbf8b356` / `2934b038`; shared endpoint wiring follows the
+accepted CityGML citation return `d5a8c397` / `7a8e3e4f`. Selection/context unions,
+count bounds, complete-set child/parent authority, bounded reader and projection
+dispatch are wired; unsupported association/citation paths explicitly refuse
+before source I/O. Actionable absent-row/out-of-window errors survive assembly.
+An observed leaf-first ESM initialization failure was fixed by extracting the
+unchanged common pin/literal schemas to `source-fusion-common.ts`, re-exported
+through the original paths. No semantics or historical literal hashes changed.
+
+Five GeoParquet checks now pass, including the actual shared assembly of the
+retained Canada row with the EPSG document, four bounded object reads, two
+complete-set captures and denial after the accepted parent changes during I/O.
+Nineteen affected common-literal/association/CityGML-citation checks pass after
+that schema extraction; prior two integrated KML citation checks also passed.
+Backend/client types and OpenAPI validation pass. No native or model run.
+Published route/schema counts remain 254/292, with additive embedded variants.
+
+Saved mixed journey:
+`E:/BhuAayam-data/task-data/lead-geoparquet-fusion-20261003/integrated-mixed-context.json`,
+191966 bytes, SHA256 `5220ec734aa6cd39296a9b24b98949d6219f29af7987ead4b20e5525505107d8`.
+Context SHA256 `8aae2e6a74a8b370dd6cbb81bbbe93079bcee84a9958353511a827e36fc7f90d`.
+The shared method journey uses labelled memory SQL/document/source/storage/tool
+controls over unchanged real bytes. Current HTTP/persistence/runtime admission,
+authentic applicability and all geometry/learning/release claims remain unqualified.
+The original leaf-only handoff below is retained as historical scope.
+
 3 October 2026. Code `f95c74ad70f2344387e0f5a19bc27ac245b5dc8e`, base
 `ffe16d0e54e52e904dc1adef1982602fcd69b08e`, branch
 `task/desktop-fusion-geoparquet-adapter`, exclusive checkout

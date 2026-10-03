@@ -28,6 +28,8 @@ import {associationLiterals,associationPreflight,validateFusionAssociations,type
 type Capture={context:SourceFusionContext;unsupportedCitationSources:string[];revalidate:()=>Promise<void>;ifcProjection?:AssociationIFCProjection};
 /** Capture accepted authority, not a caller context fingerprint or model answer. */
 export async function captureAssociationFusion(ctx:RequestContext,selection:SourceFusionRequest,budget:FusionBudget,siteId?:string):Promise<Capture>{
+  if(selection.sources.some(source=>source.kind==='geoparquet'))
+    throw new AppError(422,'SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY','GeoParquet rows support source context only; association proposals are unsupported.');
   if(selection.sources.some(source=>source.kind==='citygml'))
     throw new AppError(422,'SOURCE_FUSION_CITYGML_CONTEXT_ONLY','CityGML fragments support source context only; association proposals are unsupported.');
   let selected:SourceFusionSelection[]=[],captured:FusionAuthority[]=[];
@@ -78,6 +80,8 @@ function proposalMessages(literals:AssociationLiteral[],targets:DocumentAssociat
 /** Single governed proposal call. No association store or registry mutation. */
 export async function proposeFusionAssociations(ctx:RequestContext,raw:unknown,deps:FusionAssociationDependencies=defaults){
   const request=FusionAssociationRequestSchema.parse(raw);assertLocalUsp(ctx);
+  if(request.context.selection.sources.some(source=>source.kind==='geoparquet'))
+    throw new AppError(422,'SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY','GeoParquet rows support source context only; association proposals are unsupported.');
   if(request.context.selection.sources.some(source=>source.kind==='citygml'))
     throw new AppError(422,'SOURCE_FUSION_CITYGML_CONTEXT_ONLY','CityGML fragments support source context only; association proposals are unsupported.');
   if(Buffer.byteLength(JSON.stringify(request))>FUSION_ASSOCIATION_LIMITS.requestBytes)

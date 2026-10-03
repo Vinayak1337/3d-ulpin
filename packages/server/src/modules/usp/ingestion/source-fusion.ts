@@ -11,6 +11,7 @@ import {fusionIFCSourceProjection} from './source-fusion-ifc';
 import {fusionDXFSourceProjection} from './source-fusion-dxf';
 import {fusionKMLSourceProjection} from './source-fusion-kml';
 import {fusionCityGMLSourceProjection} from './source-fusion-citygml';
+import {fusionGeoParquetSourceProjection} from './source-fusion-geoparquet';
 
 type Loaded=Awaited<ReturnType<typeof readFusionResult>>;
 export type SourceFusionDependencies={authority:typeof fusionAuthorityBatch;read:typeof readFusionResult};
@@ -79,6 +80,7 @@ export function fusionSourceProjection(selection:SourceFusionSelection,loaded:Lo
   if(selection.kind==='dxf'&&loaded.kind==='dxf')return fusionDXFSourceProjection(selection,loaded);
   if(selection.kind==='kml'&&loaded.kind==='kml')return fusionKMLSourceProjection(selection,loaded);
   if(selection.kind==='citygml'&&loaded.kind==='citygml')return fusionCityGMLSourceProjection(selection,loaded);
+  if(selection.kind==='geoparquet'&&loaded.kind==='geoparquet')return fusionGeoParquetSourceProjection(selection,loaded);
   if(selection.kind==='document_ocr'&&loaded.kind==='document')return fusionOcrSourceProjection(selection,loaded.result);
   if(selection.kind==='document'&&loaded.kind==='document'){
     const native=loaded.result.native;
@@ -163,7 +165,7 @@ export async function assembleSourceFusion(ctx:RequestContext,raw:unknown,deps:S
     fusionLive(budget);assertLocalUsp(ctx);return response;
   }catch(error){
     fusionLive(budget);
-    if(error instanceof AppError&&['SOURCE_FUSION_KML_MEMBER_SELECTION_REQUIRED','SOURCE_FUSION_KML_NO_MEMBER'].includes(error.code))throw error;
+    if(error instanceof AppError&&['SOURCE_FUSION_KML_MEMBER_SELECTION_REQUIRED','SOURCE_FUSION_KML_NO_MEMBER','SOURCE_FUSION_GEOPARQUET_NO_ROWS','SOURCE_FUSION_GEOPARQUET_ROW_WINDOW'].includes(error.code))throw error;
     if(error instanceof AppError&&[403,404,409,422].includes(error.status))
       throw new AppError(error.status,error.status===409?'SOURCE_FUSION_STALE':'SOURCE_FUSION_UNAVAILABLE',
         'The requested accepted evidence context is unavailable.');

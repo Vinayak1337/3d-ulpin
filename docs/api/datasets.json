@@ -5289,6 +5289,15 @@
         "sourceOriginalsUnchanged": true,
         "nativeExecutionRepeated": false,
         "associationAndCitationAttachment": "unsupported_context_only"
+      },
+      "reviewedCitationEvidence": {
+        "guide": "docs/evidence/usp/reviewed-citygml-citations-handoff.md",
+        "integratedCodeCommit": "d5a8c397",
+        "completionReceiptSha256": "c4fe6ca68ea9d6d47d63ea86bf110ba96d90a193e464689732f73d5a65ee7ba8",
+        "scope": "Exact selected Building/BuildingPart evidence on building/floor correction through controlled amendment/private read/review/commit/history; live persistence and authentic applicability unqualified",
+        "sourceOriginalsUnchanged": true,
+        "nativeExecutionRepeated": false,
+        "automaticMatching": false
       }
     },
     {
@@ -5361,6 +5370,15 @@
         "sourceOriginalsUnchanged": true,
         "nativeExecutionRepeated": false,
         "associationAndCitationAttachment": "unsupported_context_only"
+      },
+      "reviewedCitationEvidence": {
+        "guide": "docs/evidence/usp/reviewed-citygml-citations-handoff.md",
+        "integratedCodeCommit": "d5a8c397",
+        "completionReceiptSha256": "c4fe6ca68ea9d6d47d63ea86bf110ba96d90a193e464689732f73d5a65ee7ba8",
+        "scope": "Exact selected Building/BuildingPart evidence on building/floor correction through controlled amendment/private read/review/commit/history; live persistence and authentic applicability unqualified",
+        "sourceOriginalsUnchanged": true,
+        "nativeExecutionRepeated": false,
+        "automaticMatching": false
       }
     },
     {
@@ -5432,6 +5450,15 @@
         "continuedArtifactSha256": "78fb245f218091ba7a1e945b86c2b02dc3fd02cff3a2f7bc34c795ea092e3044",
         "sourceOriginalUnchanged": true,
         "nativeMultiGroupQualification": false
+      },
+      "sourceFusionEvidence": {
+        "guide": "docs/evidence/usp/source-fusion-geoparquet-handoff.md",
+        "integratedLeafCommit": "fbf8b356",
+        "leafReceiptSha256": "07891e54826cd7cf66792ab58ac909d56ff9f0ec2d8e246755a202b24d3d87b8",
+        "scope": "Shared combined-context assembly with exact selected accepted window rows plus retained document; controlled complete-set child/parent authorization, bounded reads and final recapture; absent-geo inventory refuses row selection",
+        "sourceOriginalsUnchanged": true,
+        "nativeExecutionRepeated": false,
+        "associationAndCitationAttachment": "unsupported_context_only"
       }
     },
     {
@@ -5486,6 +5513,15 @@
         "nativeOutputMatchesAcceptedInspection": true,
         "runtimeProfile": "Fresh integrated-checkout inventory required before native execution",
         "scanLimit": "Native per-group 100000 rows; aggregate scanned/prefix >100000 refused after output; larger cross-group qualification remains open"
+      },
+      "sourceFusionEvidence": {
+        "guide": "docs/evidence/usp/source-fusion-geoparquet-handoff.md",
+        "integratedLeafCommit": "fbf8b356",
+        "leafReceiptSha256": "07891e54826cd7cf66792ab58ac909d56ff9f0ec2d8e246755a202b24d3d87b8",
+        "scope": "Shared combined-context assembly with exact selected accepted window rows plus retained document; controlled complete-set child/parent authorization, bounded reads and final recapture; absent-geo inventory refuses row selection",
+        "sourceOriginalsUnchanged": true,
+        "nativeExecutionRepeated": false,
+        "associationAndCitationAttachment": "unsupported_context_only"
       }
     }
   ],

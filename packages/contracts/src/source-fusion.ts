@@ -1,5 +1,7 @@
 import {z} from 'zod';
-import {DocumentAssociationSourceSchema} from './document-association';
+import {SourceFusionGeoParquetSelectionSchema,SourceFusionGeoParquetSchema} from './source-fusion-geoparquet';
+import {SourceFusionPinSchema,SourceFusionLiteralJsonSchema,SourceFusionLiteralObjectSchema} from './source-fusion-common';
+export {SourceFusionPinSchema,SourceFusionLiteralJsonSchema,SourceFusionLiteralObjectSchema,type SourceFusionJsonValue} from './source-fusion-common';
 import {DocumentPartSchema,DocumentFormatSchema,DocumentOcrItemSchema,DocumentOcrSelectionSchema,DocumentStatusSchema} from './usp/document-ingestion';
 import {IFCSummarySchema,IFC_LIMITS} from './usp/ifc-ingestion';
 import {DXFSummarySchema,DXF_LIMITS} from './usp/dxf-ingestion';
@@ -11,46 +13,6 @@ export const SOURCE_FUSION_LIMITS=Object.freeze({sources:8,selections:25,request
   responseBytes:1024*1024,aggregateArtifactBytes:64*1024*1024,deadlineMs:30_000});
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
 const id=z.uuid().transform(value=>value.toLowerCase());
-export type SourceFusionJsonValue=string|number|boolean|null|SourceFusionJsonValue[]|{[key:string]:SourceFusionJsonValue};
-/** Validate without rebuilding records: z.json()/z.record() deliberately omit
- * own __proto__ keys. Inspect data descriptors only; never invoke accessors or
- * assign dynamic keys, so literal JSON stays intact without prototype writes. */
-function literalJson(value:unknown):boolean{
-  const stack=[{value,depth:0}];let count=0;
-  while(stack.length){
-    const {value,depth}=stack.pop()!;
-    if(++count>2_000_000)return false;
-    if(value===null||typeof value==='string'||typeof value==='boolean')continue;
-    if(typeof value==='number'){if(!Number.isFinite(value))return false;continue;}
-    if(typeof value!=='object'||depth>=64)return false;
-    const array=Array.isArray(value),prototype=Object.getPrototypeOf(value);
-    if(array?prototype!==Array.prototype:prototype!==Object.prototype&&prototype!==null)return false;
-    const keys=Reflect.ownKeys(value);
-    if(keys.length-(array?1:0)+count+stack.length>2_000_000)return false;
-    // JSON arrays are dense, with no extra properties silently lost on the wire.
-    if(array&&keys.length!==value.length+1)return false;
-    for(const key of keys){
-      if(array&&key==='length')continue;
-      if(typeof key!=='string')return false;
-      if(array&&(!/^(0|[1-9]\d*)$/.test(key)||Number(key)>=value.length))return false;
-      const descriptor=Object.getOwnPropertyDescriptor(value,key)!;
-      if(!descriptor.enumerable||!Object.hasOwn(descriptor,'value'))return false;
-      stack.push({value:descriptor.value,depth:depth+1});
-    }
-  }
-  return true;
-}
-const literalDescription='Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values';
-// OpenAPI's JSON wire universe is recursive implicitly: unconstrained array
-// items/object values can be any JSON value. Runtime checks apply at every depth.
-export const SourceFusionLiteralJsonSchema=z.custom<SourceFusionJsonValue>(literalJson,'A bounded literal JSON value is required.')
-  .meta({description:literalDescription,anyOf:[{type:'string'},{type:'number'},{type:'boolean'},
-    {type:'string',nullable:true,enum:[null]},{type:'array',items:{}},{type:'object',additionalProperties:true}]});
-export const SourceFusionLiteralObjectSchema=z.custom<Record<string,SourceFusionJsonValue>>(
-  value=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&literalJson(value),'A bounded literal JSON object is required.')
-  .meta({description:literalDescription,type:'object',additionalProperties:true});
-export const SourceFusionPinSchema=DocumentAssociationSourceSchema.extend({caseId:id,sourceId:id,jobId:id,readerSha256:hash,inputSha256:hash,
-  acceptedFence:z.number().int().positive(),resultBytes:z.number().int().positive().max(4*1024*1024)});
 export const SourceFusionSelectionSchema=z.discriminatedUnion('kind',[
   z.strictObject({kind:z.literal('document'),pin:SourceFusionPinSchema,partIds:z.array(id).max(25)}),
   z.strictObject({kind:z.literal('cityjson'),pin:SourceFusionPinSchema,
@@ -64,7 +26,7 @@ export const SourceFusionSelectionSchema=z.discriminatedUnion('kind',[
   z.strictObject({kind:z.literal('kml'),pin:SourceFusionPinSchema,
     featureOrdinals:z.array(z.number().int().min(0).max(9999)).min(1).max(25)}),
   z.strictObject({kind:z.literal('citygml'),pin:SourceFusionPinSchema,
-    buildingOrdinals:z.array(z.number().int().min(0).max(24999)).min(1).max(25)})]);
+    buildingOrdinals:z.array(z.number().int().min(0).max(24999)).min(1).max(25)}),SourceFusionGeoParquetSelectionSchema]);
 export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFusionSelectionSchema).min(2).max(8)})
   .superRefine((value,ctx)=>{
     const keys=value.sources.map(s=>s.pin.sourceId.toLowerCase());
@@ -73,10 +35,10 @@ export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFus
     for(const source of value.sources){
       const ids=source.kind==='document'?source.partIds:source.kind==='cityjson'?source.objectIds:
         source.kind==='ifc'?source.stepIds:source.kind==='dxf'?source.entityOrdinals:
-          source.kind==='kml'?source.featureOrdinals:source.kind==='citygml'?source.buildingOrdinals:source.itemOrdinals;count+=ids.length;
+          source.kind==='kml'?source.featureOrdinals:source.kind==='citygml'?source.buildingOrdinals:source.kind==='geoparquet'?source.rowIndices:source.itemOrdinals;count+=ids.length;
       const uniqueIds=source.kind==='document'?source.partIds.map(id=>id.toLowerCase()):ids;
       if(new Set<string|number>(uniqueIds).size!==ids.length)
-        ctx.addIssue({code:'custom',message:'Select each native part, OCR ordinal, object, IFC STEP ID, DXF entity, KML feature or CityGML building ordinal once.'});
+        ctx.addIssue({code:'custom',message:'Select each native part, OCR ordinal, object, IFC STEP ID, DXF entity, KML feature, CityGML building ordinal or GeoParquet row once.'});
       if(source.kind==='cityjson'&&source.pin.resultBytes>16*1024)
         ctx.addIssue({code:'custom',message:'CityJSON result receipts have a 16 KiB profile.'});
       if(source.kind==='ifc'&&source.pin.resultBytes>IFC_LIMITS.resultBytes)
@@ -85,6 +47,8 @@ export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFus
         ctx.addIssue({code:'custom',message:'DXF result receipts have a 16 KiB profile.'});
       if(source.kind==='kml'&&source.pin.resultBytes>KML_LIMITS.resultBytes)
         ctx.addIssue({code:'custom',message:'KML result receipts have a 512 KiB profile.'});
+      if(source.kind==='geoparquet'&&source.pin.resultBytes>512*1024)
+        ctx.addIssue({code:'custom',message:'GeoParquet result receipts have a 512 KiB profile.'});
       if(source.kind==='citygml'&&source.pin.resultBytes>CITYGML_LIMITS.resultBytes)
         ctx.addIssue({code:'custom',message:'CityGML result receipts have a 512 KiB profile.'});
     }
@@ -198,7 +162,7 @@ export const SourceFusionCityGMLSchema=z.strictObject({...base,kind:z.literal('c
     unselectedBuildings:z.literal('not_expanded'),opaqueContent:z.literal('literal_only'),
     referenceResolution:z.literal('not_performed'),geometryQualification:z.literal('not_assessed'),propertyMatching:z.literal('unsupported')})});
 export const SourceFusionContextSchema=z.strictObject({version:z.literal(SOURCE_FUSION_VERSION),contextSha256:hash,
-  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema,SourceFusionDXFSchema,SourceFusionKMLSchema,SourceFusionCityGMLSchema])).min(2).max(8),
+  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema,SourceFusionDXFSchema,SourceFusionKMLSchema,SourceFusionCityGMLSchema,SourceFusionGeoParquetSchema])).min(2).max(8),
   association:z.strictObject({state:z.literal('not_assessed'),membership:z.literal('operator_selection'),
     reason:z.literal('source_set_membership_does_not_establish_relationships'),
     canonicalTargets:z.array(z.never()).max(0),crossSourceFrameAlignment:z.literal('not_assessed'),
