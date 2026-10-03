@@ -35,6 +35,17 @@ test('private source region rechecks authority and returns only pinned bytes/pro
   assert(!JSON.stringify(result.provenance).includes('NEVER_PRIVATE'));
   assert.deepEqual(result.provenance.transform.includedNormalizedRegion,[1/3,1/3,2/3,2/3]);
 });
+test('parent packet deadline rejects expiry before any I/O and reaches every child boundary; old call remains bounded',async()=>{
+  let reads=0;const deadlines:number[]=[];
+  const s=service({authorize:async(_id,_pin,deadline)=>{reads++;deadlines.push(deadline);return authority;},
+    original:async(_authority,deadline)=>{deadlines.push(deadline);return original;},
+    inspect:async(_authority,_bytes,_page,_selection,deadline)=>{deadlines.push(deadline);return {result:worker,png};}});
+  await assert.rejects(s.extract(sourceId,1,request,Date.now()-1),error(504,'PACKET_REGION_DEADLINE'));
+  await assert.rejects(s.extract(sourceId,1,request,Infinity),error(422,'PACKET_REGION_DEADLINE'));assert.equal(reads,0);
+  const parent=Date.now()+10000;await s.extract(sourceId,1,request,parent);assert(deadlines.every(v=>v===parent));
+  deadlines.length=0;const start=Date.now();await s.extract(sourceId,1,request);
+  assert(deadlines.every(v=>v>=start+35000&&v<=Date.now()+35000));
+});
 
 test('stale/revoked sources at either I/O boundary never publish a derivative',async()=>{
   for(const changedAt of [2,3]){let checks=0,rendered=false;

@@ -93,11 +93,19 @@ const preKMLReadCodeSha=new Set(['a441e6ac5d3947e4f267e63494685fada870384c6850c8
 const preCityGMLReadCodeSha=new Set(["18a0bc3c1f01fffd338e122b3d028f438dd2f7459377e228a9ae1a94c33e93ed", "06bc6b13fcaae405d4d1390a8a13703f716d05ac3aa2f152679f8047927ae519"]);
 // GEOPARQUET-02: exact 409d2641 Git/LF and physical immutable-read code only.
 const preGeoParquetReadCodeSha=new Set(["2d1ec8e223c7124196237b7d33c84be37d5a202cb9b11515f3d510962ba8ff79", "9e5771204c653c37598ac52e3d2e555b1875a7e9bf7ad565c959bde8d0233c6e"]);
+// PACK1-PDF-04: exact 1c024959 Git/LF and captured physical code aggregates.
+// Immutable reads only; current full inventory/non-code pins and strict writers remain mandatory.
+const prePacketPdfReadCodeSha=new Set(["08d97a9d01afcca16ad651dd2d854544e5ab97b128cc49521247992178a18ec8","7cef4287ab8cd2c50a4f44e47e07fd115038ff3c2526a38306474d1165828a82"]);
 export function ifcReadToolsCompatible(stored:IFCToolPins,current:IFCToolPins){
   const old=IFCToolPinsSchema.safeParse(stored),live=IFCToolPinsSchema.safeParse(current);
   if(!old.success||!live.success)return false;
   if(fingerprint(old.data)===fingerprint(live.data))return true;
   const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+  if(prePacketPdfReadCodeSha.has(oldCode)){
+    const actualCode=fingerprint(IFC_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
+    return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
+  }
+
   return (preDXFReadCodeSha.has(oldCode)||(preKMLReadCodeSha.has(oldCode)||(preCityGMLReadCodeSha.has(oldCode)||preGeoParquetReadCodeSha.has(oldCode))))&&fingerprint(oldTools)===fingerprint(currentTools);
 }
 /** Verify the complete current inventory before immutable-result read comparison.

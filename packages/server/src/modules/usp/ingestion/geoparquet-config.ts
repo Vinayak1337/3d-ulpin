@@ -83,7 +83,22 @@ export function assertGeoParquetTools(pins:GeoParquetToolPins|null,deadlineAt?:n
   if(fingerprint(config.pins)!==fingerprint(pins))geoparquetUnavailable('GEOPARQUET_TOOL_CHANGED');return config;
 }
 
+// PACK1-PDF-04: exact 1c024959 Git/LF and captured physical code aggregates.
+// Immutable reads only; current full inventory/non-code pins and strict writers remain mandatory.
+const prePacketPdfReadCodeSha=new Set(["a0ab2ac38fcd794177ed6c799515243207e4beeb31b9acc583442a31c6aae0a5","5c8567e7943c564990a28fca34679c23b113806f3f99663ae493fc56375acf58"]);
+export function geoparquetReadToolsCompatible(stored:GeoParquetToolPins,current:GeoParquetToolPins){
+  const old=GeoParquetToolPinsSchema.safeParse(stored),live=GeoParquetToolPinsSchema.safeParse(current);
+  if(!old.success||!live.success)return false;
+  if(fingerprint(old.data)===fingerprint(live.data))return true;
+  const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+  if(prePacketPdfReadCodeSha.has(oldCode)){
+    const actualCode=fingerprint(GEOPARQUET_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
+    return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
+  }
+  return false;
+}
 /** Immutable reads still verify every exact tool and current inventory pin. */
 export function assertGeoParquetReadTools(pins:GeoParquetToolPins|null,deadlineAt?:number):void{
-  assertGeoParquetTools(pins,deadlineAt);
+  if(!pins)geoparquetUnavailable();const current=geoparquetConfig(deadlineAt);
+  if(!geoparquetReadToolsCompatible(pins,current.pins))geoparquetUnavailable('GEOPARQUET_TOOL_CHANGED');
 }

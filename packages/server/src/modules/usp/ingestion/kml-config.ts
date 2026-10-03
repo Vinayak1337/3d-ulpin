@@ -87,11 +87,19 @@ export function assertKMLTools(pins:KMLToolPins|null,deadlineAt?:number){
 const preCityGMLReadCodeSha=new Set(["fabb23dcf90b0a0f5af81a258538f3202c56260ddc2a92d8a23cb3b6375b885d", "c41f64137609c74fd2f8f04247df9b8d49fa84d34bc2c780b39ba9c72f80cf13"]);
 // GEOPARQUET-02: exact 409d2641 Git/LF and physical immutable-read code only.
 const preGeoParquetReadCodeSha=new Set(["5c4d50085d0b16ae656c35b6684f6a81eba6cd83728f9fe7d34562847ff2ec41", "a80fef5011b91c23dfb28bc201a0a1c1432f03b38e01a522d5038672b25d7c61"]);
+// PACK1-PDF-04: exact 1c024959 Git/LF and captured physical code aggregates.
+// Immutable reads only; current full inventory/non-code pins and strict writers remain mandatory.
+const prePacketPdfReadCodeSha=new Set(["6c1573a0a4ad3dc9561064444681121e73a956b10673d5627c9b621c5b3c363e","9c480acf3d7b0dd38f966b228835bbf141b50b7e650e04cbfbc26c1d8a746ab3"]);
 export function kmlReadToolsCompatible(stored:KMLToolPins,current:KMLToolPins){
   const old=KMLToolPinsSchema.safeParse(stored),live=KMLToolPinsSchema.safeParse(current);
   if(!old.success||!live.success)return false;
   if(fingerprint(old.data)===fingerprint(live.data))return true;
   const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+  if(prePacketPdfReadCodeSha.has(oldCode)){
+    const actualCode=fingerprint(KML_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
+    return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
+  }
+
   return (preCityGMLReadCodeSha.has(oldCode)||preGeoParquetReadCodeSha.has(oldCode))&&fingerprint(oldTools)===fingerprint(currentTools);
 }
 /** Full inventory remains mandatory; no process configuration is returned. */

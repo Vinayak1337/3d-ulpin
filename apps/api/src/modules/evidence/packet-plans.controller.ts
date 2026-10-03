@@ -1,5 +1,5 @@
 import { Controller, HttpCode, Post, Get, Param, Req, Res, UseFilters, UseGuards } from '@nestjs/common';
-import { ApiTags,ApiOperation,ApiParam,ApiResponse } from '@nestjs/swagger';
+import { ApiTags,ApiOperation,ApiParam,ApiResponse,ApiBody } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { UspCreatePacketPlanSchema, UspRevisePacketPlanSchema, UspReadPacketPlanSchema,
   UspConfirmPacketPlanSchema, UspExecutePacketPlanSchema, UspPacketPlanSchema,
@@ -8,6 +8,9 @@ import { UspCreatePacketPlanSchema, UspRevisePacketPlanSchema, UspReadPacketPlan
 import { createPacketPlan, revisePacketPlan, readPacketPlan, confirmPacketPlan,
   executePacketPlan } from '@ulpin/server/modules/usp/packets/plan-service';
 import {readPacketPdf} from '@ulpin/server/modules/usp/packets/pdf-service';
+import {enqueuePacketPdfJob,readPacketPdfJob,controlPacketPdfJob,readPacketPdfJobResult} from '@ulpin/server/modules/usp/packets/pdf-jobs';
+import {UspEnqueuePacketPdfJobSchema,PacketPdfJobStatusSchema,PacketPdfJobControlSchema} from '../../../../../packages/contracts/src/usp/packet-pdf-jobs';
+import {envelopeSchema,requestApiSchema} from './evidence.schemas';
 import {AppError} from '@ulpin/server/infrastructure/errors';
 import {z} from 'zod';
 import { localRequestContext } from '@ulpin/server/modules/usp/principal';
@@ -20,6 +23,44 @@ import { EvidenceExceptionFilter, readUspBody, UspJsonPost, uspEnvelope } from '
 @UseGuards(PrivateSpatialGuard)
 @Controller('api/v1/usp/packets')
 export class PacketPlansController {
+  @Post('plans/enqueue') @HttpCode(202)
+  @ApiOperation({operationId:'POST_api_v1_usp_packets_plans_enqueue',summary:'Durably enqueue an exact confirmed private PDF plan; independent dispatcher owns work'})
+  @ApiBody({schema:requestApiSchema(UspEnqueuePacketPdfJobSchema)})
+  @ApiResponse({status:202,schema:envelopeSchema(PacketPdfJobStatusSchema)})
+  async enqueue(@Req() req:Request,@Res({passthrough:true}) res:Response){
+    res.setHeader('Cache-Control','private, no-store');
+    const c=await readUspBody(req,UspEnqueuePacketPdfJobSchema),status=await enqueuePacketPdfJob(localRequestContext(requestId(req)),c);
+    return uspEnvelope(req,status.scope,status);
+  }
+  @Get('jobs/:jobId') @HttpCode(200)
+  @ApiOperation({operationId:'GET_api_v1_usp_packets_jobs_jobId',summary:'Read one exact private PDF job under complete source and plan authority'})
+  @ApiParam({name:'jobId',schema:{type:'string',format:'uuid'}})
+  @ApiResponse({status:200,schema:envelopeSchema(PacketPdfJobStatusSchema)})
+  async job(@Param('jobId') value:string,@Req() req:Request,@Res({passthrough:true}) res:Response){
+    if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
+      throw new AppError(422,'PACKET_PDF_QUERY','Use the exact PDF job without query fields.');
+    res.setHeader('Cache-Control','private, no-store');
+    const status=await readPacketPdfJob(localRequestContext(requestId(req)),z.uuid().parse(value));return uspEnvelope(req,status.scope,status);
+  }
+  @Post('jobs/control') @HttpCode(200)
+  @UspJsonPost('POST_api_v1_usp_packets_jobs_control','Cancel or explicitly retry one exact authorized private PDF job',PacketPdfJobControlSchema,PacketPdfJobStatusSchema)
+  async controlJob(@Req() req:Request,@Res({passthrough:true}) res:Response){
+    res.setHeader('Cache-Control','private, no-store');
+    const c=await readUspBody(req,PacketPdfJobControlSchema),status=await controlPacketPdfJob(localRequestContext(requestId(req)),c);
+    return uspEnvelope(req,status.scope,status);
+  }
+  @Get('jobs/:jobId/download') @HttpCode(200)
+  @ApiOperation({operationId:'GET_api_v1_usp_packets_jobs_jobId_download',summary:'Download only the atomically accepted private PDF result of an authorized queued job'})
+  @ApiParam({name:'jobId',schema:{type:'string',format:'uuid'}})
+  @ApiResponse({status:200,content:{'application/pdf':{schema:{type:'string',format:'binary'}}}})
+  async downloadJob(@Param('jobId') value:string,@Req() req:Request,@Res() res:Response){
+    if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
+      throw new AppError(422,'PACKET_PDF_QUERY','Use the exact PDF job download without query fields.');
+    const result=await readPacketPdfJobResult(localRequestContext(requestId(req)),z.uuid().parse(value));
+    res.setHeader('Cache-Control','private, no-store');res.setHeader('X-Content-Type-Options','nosniff');
+    res.setHeader('Content-Type','application/pdf');res.setHeader('Content-Length',String(result.bytes.length));
+    res.setHeader('Content-Disposition',`attachment; filename="packet-${result.receipt.packetId}.pdf"`);res.end(Buffer.from(result.bytes));
+  }
   @Post('plans/create') @HttpCode(200)
   @UspJsonPost('POST_api_v1_usp_packets_plans_create', 'Create one immutable selected-target text/CSV or ordered required-region PDF plan from one or multiple originals', UspCreatePacketPlanSchema, UspPacketPlanSchema)
   async create(@Req() req: Request, @Res({ passthrough: true }) res: Response) {

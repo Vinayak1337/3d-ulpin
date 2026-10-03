@@ -10,6 +10,12 @@ import {UspSnapshotManifestSchema,type RequestContext} from '../packages/contrac
 import {UspPdfPacketPlanInputSchema,UspPacketPdfReceiptSchema,UspPdfMultiPacketPlanInputSchema,UspPacketPdfMultiReceiptSchema} from '../packages/contracts/src/usp/packet-pdf';
 import {UspPdfOriginalsPacketPlanInputSchema,UspPacketPdfOriginalsReceiptSchema,PacketPdfOriginalSetSchema,PACKET_PDF_ORIGINALS_RECIPE} from '../packages/contracts/src/usp/packet-pdf';
 import {PacketRegionWorkerSchema} from '../packages/contracts/src/packet-region';
+import {enqueuePacketPdfJob,readPacketPdfJob,readPacketPdfJobResult,controlPacketPdfJob} from '../packages/server/src/modules/usp/packets/pdf-jobs';
+import {runPacketPdfJob} from '../packages/server/src/modules/usp/packets/pdf-worker';
+import {claimUspJobAttempt,acceptUspJobAttempt,readUspJob,cancelUspJob} from '../packages/server/src/modules/usp/jobs';
+import {retryJob} from '../packages/server/src/modules/cases/domain';
+import {dispatchTick} from '../packages/server/src/modules/cases/processing';
+import {capturePacketPdfJobTx} from '../packages/server/src/modules/usp/packets/pdf-job-authority';
 import {createPacketPlan,revisePacketPlan,confirmPacketPlan,executePacketPlan,readPacketPlan} from '../packages/server/src/modules/usp/packets/plan-service';
 import {readPacketPdf,type PdfPacketIo} from '../packages/server/src/modules/usp/packets/pdf-service';
 import {readPacket0} from '../packages/server/src/modules/usp/packet0';
@@ -34,11 +40,11 @@ const originalsRoot=process.env.ULPIN_PACKET_ORIGINALS_SECOND_ROOT??'E:/BhuAayam
 const actualOtherOriginal=existsSync(originalsRoot+'/result.json')&&existsSync(originalsRoot+'/region.png');
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const siteId=id(1),sourceId=id(2),caseId=id(3),targetId=id(4),manifestId=id(5),digest='a'.repeat(64);
-type State={plans:any[];confirmations:any[];executions:any[];receipts:any[];packets:any[];cards:any[];streams:any[];events:any[]};
+type State={plans:any[];confirmations:any[];executions:any[];receipts:any[];packets:any[];cards:any[];streams:any[];events:any[];jobs:any[];jobMeta:any[];attempts:any[]};
 class ControlDb{
-  state:State={plans:[],confirmations:[],executions:[],receipts:[],packets:[],cards:[],streams:[],events:[]};
+  state:State={plans:[],confirmations:[],executions:[],receipts:[],packets:[],cards:[],streams:[],events:[],jobs:[],jobMeta:[],attempts:[]};
   queries:{q:string;v:any[]}[]=[];active=0;connects=0;releases=0;transactionActive=0;heldCases=new Set<string>();
-  expired=false;archived=false;latest=1;failEvent=false;extractFail=false;afterExtract?:()=>void;afterPut?:()=>void;afterRead?:()=>void;
+  expired=false;archived=false;latest=1;failEvent=false;extractFail=false;afterExtract?:()=>void;afterPut?:()=>void|Promise<void>;afterRead?:()=>void;commitLost=false;
   ctx!:RequestContext;objects=new Map<string,Uint8Array>();extracts=0;puts=0;reads=0;identity:any=null;afterCardRead?:()=>void;
   region=PacketRegionWorkerSchema.parse(JSON.parse(readFileSync(root+'/result.json','utf8')));png=readFileSync(root+'/region.png');
   oldBody={kind:'building',name:'Technical committed target',alias:'Technical target',footprint:[],links:[],rights:[],evidence:[],synthetic:true};
@@ -118,13 +124,38 @@ class ControlDb{
       if(q==='BEGIN'){baseline=structuredClone(this.state);this.transactionActive++;}
       if(q==='ROLLBACK')this.state=baseline!;
       const result=await this.query(q,v);
-      if(q==='COMMIT'||q==='ROLLBACK'){this.transactionActive--;this.heldCases.clear();}return result;
+      if(q==='COMMIT'||q==='ROLLBACK'){this.transactionActive--;this.heldCases.clear();}
+      if(q==='COMMIT'&&this.commitLost){this.commitLost=false;throw new Error('CONTROL lost COMMIT acknowledgement');}return result;
     }} as unknown as PoolClient;
   }} as unknown as Pool;
   async query(sql:string,v:any[]=[]){
     const q=sql.replace(/\s+/g,' ').trim();this.queries.push({q,v});const result=(rows:any[]=[])=>({rows,rowCount:rows.length});
     if(q==='BEGIN'||q==='COMMIT'||q==='ROLLBACK'||q.includes('pg_advisory_xact_lock'))return result();
     if(q.startsWith('SELECT set_config'))return result([{deadline_live:true}]);
+    if(q.startsWith('INSERT INTO jobs')){this.state.jobs.push({id:v[0],case_id:v[1],source_id:v[2],operation:'packet-pdf',case_revision:v[3],
+      input_fingerprint:v[4],payload:structuredClone(v[5]),status:'queued',attempts:0,error:null,created_at:new Date().toISOString()});return result();}
+    if(q.startsWith('SELECT id FROM jobs WHERE operation='))return result(this.state.jobs.filter(j=>j.payload.command.planId===v[0]&&String(j.payload.command.version)===v[1]));
+    if(q.startsWith('SELECT j.*')&&q.includes('FROM jobs')){const job=this.state.jobs.find(j=>j.id===v[0]),meta=this.state.jobMeta.find(j=>j.job_id===v[0]);return result(job&&meta?[{...structuredClone(job),...structuredClone(meta),id:job.id}]:[]);}
+    if(q.startsWith('SELECT * FROM jobs WHERE status'))return result(this.state.jobs.filter(j=>['queued','running'].includes(j.status)));
+    if(q.includes('FROM jobs')){const jobs=this.state.jobs.filter(j=>j.id===v[0]);return result(jobs.map(j=>structuredClone(j)));}
+    if(q.startsWith('INSERT INTO usp_job_metadata')){this.state.jobMeta.push({job_id:v[0],input_manifest_id:v[1],input_sha256:v[2],scope:structuredClone(v[3]),version:1,logical_state:'queued',result_ref:null,accepted_fence:null});return result();}
+    if(q.includes('FROM usp_job_metadata'))return result(this.state.jobMeta.filter(m=>m.job_id===v[0]).map(m=>structuredClone(m)));
+    if(q.startsWith('INSERT INTO usp_job_attempts')){const lease_until=new Date(Date.now()+180000).toISOString();
+      this.state.attempts.push({job_id:v[0],number:v[1],fence:v[2],owner:v[3],input_sha256:v[4],lease_until,state:'active',completion_sha256:null});return result([{lease_until}]);}
+    if(q.includes('FROM usp_job_attempts')){let rows=this.state.attempts.filter(a=>a.job_id===v[0]);
+      if(q.includes('AND number=$2'))rows=rows.filter(a=>a.number===v[1]);
+      if(q.includes('AND fence=$2'))rows=rows.filter(a=>a.fence===Number(v[1])&&a.state==='accepted');
+      if(q.includes('LIMIT 1'))rows=rows.sort((a,b)=>b.number-a.number).slice(0,1);return result(rows.map(a=>structuredClone(a)));}
+    if(q.startsWith('UPDATE usp_job_attempts')){for(const a of this.state.attempts.filter(a=>a.job_id===v[0])){
+      if(q.includes("state='accepted'")&&a.number===v[2]){a.state='accepted';a.completion_sha256=v[1];}
+      if(q.includes("state='fenced'")&&a.state==='active')a.state='fenced';}return result();}
+    if(q.startsWith('UPDATE usp_job_metadata')){const meta=this.state.jobMeta.find(m=>m.job_id===v[0]);
+      meta.logical_state=q.match(/logical_state='([^']+)'/)![1];meta.version++;
+      if(q.includes('result_ref=$2')){meta.result_ref=structuredClone(v[1]);meta.accepted_fence=v[2];}return result();}
+    if(q.startsWith('UPDATE jobs')){const job=this.state.jobs.find(j=>j.id===v[0]);
+      job.status=q.includes('status=$2')?v[1]:q.match(/status='([^']+)'/)![1];
+      if(q.includes('attempts=$2'))job.attempts=v[1];
+      job.error=q.includes('error=$3')?v[2]:q.includes("error='PACKET_PDF_CANCELLED'")?'PACKET_PDF_CANCELLED':null;return result();}
     if(q.startsWith('SELECT id FROM cases')&&q.includes('FOR SHARE')){this.heldCases.add(v[0]);return result([{id:v[0]}]);}
     if(q.includes('FROM cases'))return result(v[0]===caseId?[{...this.sourceCase,archived:this.archived}]:
       this.secondSourceCase&&v[0]===this.secondSourceCase.id?[{...this.secondSourceCase,archived:this.secondArchived}]:[]);
@@ -172,7 +203,7 @@ class ControlDb{
     return {bytes:second?this.secondPng!:this.png,provenance:{...(second?this.secondRegion:this.region),
       version:'packet-region/1',caseId:original.caseId,caseRevision:original.caseRevision,sourceId:original.sourceId,sourceRevision:original.sourceRevision,purpose:'private_source_preview'}};
   },put:async(key,bytes,type)=>{assert.equal(this.active,0);assert.equal(type,'application/pdf');assert(!this.objects.has(key));
-    this.puts++;this.objects.set(key,Buffer.from(bytes));this.afterPut?.();},
+    this.puts++;this.objects.set(key,Buffer.from(bytes));await this.afterPut?.();},
     read:async(key,bytes,hash)=>{assert.equal(this.active,0);this.reads++;const value=this.objects.get(key);assert(value);
       assert.equal(bytes,value.length);this.afterRead?.();return Buffer.from(value);}};
   io={read:async()=>{throw new Error('PDF must not use PACK0 original I/O');},put:async()=>{throw new Error('PDF must not use PACK0 writer');},pdf:this.pdf};
@@ -457,3 +488,83 @@ test('second original revocation blocks full publication/download/replay; distin
       beforeExtractionDenied:true,afterStagingDenied:true,readyRowsAfterDeniedStage:0,unreferencedDerivativePreserved:true,afterDownloadReadDenied:true,
       revokedReplayDenied:true,sameOriginalNewRecipeDenied:true,aggregateBytesSchemaDenied:true,duplicateSelectionDenied:true},null,2)+'\n',{flag:'wx'});
   }));
+
+async function queuedOriginals(db:ControlDb,ctx:RequestContext){
+  await db.enableMultipleOriginals();const plan=await createPacketPlan(ctx,{input:db.originalsInput(),guard:{mode:'create',requestKey:randomUUID()}},db.io),
+    confirmation=await confirmPacketPlan(ctx,confirm(plan),db.io),command={planId:plan.planId,version:plan.version,
+      confirmationId:confirmation.confirmationId,guard:{mode:'create' as const,requestKey:randomUUID()}};
+  const queued=await enqueuePacketPdfJob(ctx,command);return {plan,command,queued};
+}
+test('queued PDF: durable duplicate enrollment → independent dispatcher → atomic accepted private result without HTTP work',
+  {skip:!present||!actualOtherOriginal},()=>withDb(async(db,ctx)=>{
+    const {plan,command,queued}=await queuedOriginals(db,ctx);
+    assert.equal(queued.status,'queued');assert.equal(db.extracts,0);assert.equal(db.state.packets.length,0);
+    assert.equal((await enqueuePacketPdfJob(ctx,command)).jobId,queued.jobId);
+    assert.equal((await enqueuePacketPdfJob(ctx,{...command,guard:{mode:'create',requestKey:randomUUID()}})).jobId,queued.jobId);
+    assert.equal(db.state.jobs.length,1);assert.equal(db.state.jobMeta.length,1);
+    await assert.rejects(()=>readPacketPdfJobResult(ctx,queued.jobId,db.pdf),(e:any)=>e.code==='PACKET_PDF_NOT_READY');
+    for(const generic of [()=>readUspJob(queued.jobId),()=>cancelUspJob(queued.jobId,1),()=>retryJob(queued.jobId)])
+      await assert.rejects(generic,(e:any)=>e.code==='PACKET_PDF_READER_REQUIRED'||e.code==='PACKET_PDF_CONTROL_REQUIRED');
+    let independentlyOwned:Promise<void>|undefined;
+    assert.equal(await dispatchTick({packetPdf:async jobId=>{independentlyOwned=runPacketPdfJob(jobId,db.pdf);await independentlyOwned;}}),1);
+    assert(independentlyOwned);await independentlyOwned;
+    const accepted=await readPacketPdfJob(ctx,queued.jobId);assert.equal(accepted.status,'succeeded');assert.equal(accepted.attempt.number,1);
+    assert.equal(db.extracts,2);assert.equal(db.state.packets.length,1);assert.equal(db.state.executions.length,1);
+    assert.equal(db.state.attempts[0].state,'accepted');assert.equal(db.state.jobMeta[0].result_ref.sha256,accepted.result!.artifact.sha256);
+    const output=await readPacketPdfJobResult(ctx,queued.jobId,db.pdf);
+    assert.equal(sha256(output.bytes),'cda69b79c3aeccac153b624bb70cb62add81889e7add54a323e0426feb638172');
+    assert.deepEqual(db.extractOrder,[db.secondCitation.id,db.citation.id]);
+    assert.equal((await enqueuePacketPdfJob(ctx,command)).status,'succeeded');await runPacketPdfJob(queued.jobId,db.pdf);assert.equal(db.extracts,2);
+    const saved=process.env.ULPIN_PACKET_QUEUE_FLOW_ROOT;
+    if(saved){mkdirSync(saved,{recursive:true});writeFileSync(saved+'/packet.pdf',output.bytes,{flag:'wx'});
+      writeFileSync(saved+'/flow.json',JSON.stringify({scope:'Actual retained two-original crops through durable canonical job/dispatcher/packet method flow; SQL/storage/extractor and target/applicability are controls',
+        plan,queued,accepted,job:db.state.jobs[0],metadata:db.state.jobMeta[0],attempt:db.state.attempts[0],execution:db.state.executions[0].body,
+        output:{bytes:output.bytes.length,sha256:sha256(output.bytes)},extracts:db.extracts,extractOrder:db.extractOrder,packetPuts:db.puts,
+        independentDispatcher:true,events:db.state.events},null,2)+'\n',{flag:'wx'});}
+    db.secondArchived=true;const reads=db.reads;
+    await assert.rejects(()=>readPacketPdfJob(ctx,queued.jobId),(e:any)=>e.status===403);
+    await assert.rejects(()=>readPacketPdfJobResult(ctx,queued.jobId,db.pdf),(e:any)=>e.status===403);assert.equal(db.reads,reads);
+  }));
+test('queued PDF: expired attempt recovery fences old owner; revoked staged source cannot publish and exact retry remains useful',
+  {skip:!present||!actualOtherOriginal},async()=>{
+    await withDb(async(db,ctx)=>{
+      const {queued}=await queuedOriginals(db,ctx),input=db.state.jobs[0].payload;
+      const interrupted=await claimUspJobAttempt(queued.jobId,'interrupted-control',client=>capturePacketPdfJobTx(client,ctx,input).then(()=>{}));
+      db.state.attempts[0].lease_until=new Date(Date.now()-1).toISOString();
+      await runPacketPdfJob(queued.jobId,db.pdf);
+      const accepted=await readPacketPdfJob(ctx,queued.jobId);assert.equal(accepted.status,'succeeded');assert.equal(accepted.attempt.number,2);
+      let oldValidator=false;await assert.rejects(()=>acceptUspJobAttempt(interrupted,accepted.result!.artifact,async()=>{oldValidator=true;}),(e:any)=>e.status===409);
+      assert.equal(oldValidator,false);assert.equal(db.state.packets.length,1);assert.equal(db.state.jobMeta[0].accepted_fence,2);assert.equal(db.extracts,2);
+    });
+    await withDb(async(db,ctx)=>{
+      const {queued}=await queuedOriginals(db,ctx);db.afterPut=()=>{db.secondSource.inspection.documentOriginal.subject='revoked-after-stage';};
+      await runPacketPdfJob(queued.jobId,db.pdf);
+      assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);assert.equal(db.objects.size,1);
+      assert.equal(db.state.jobMeta[0].logical_state,'failed');assert.equal(db.state.jobs[0].error,'PACKET_PDF_ACCESS_REVOKED');
+      assert(!db.state.events.some(e=>e.type==='job.succeeded'||e.type==='packet.plan.executed'));
+      db.afterPut=undefined;db.secondSource.inspection.documentOriginal.subject=subject;
+      const failed=await readPacketPdfJob(ctx,queued.jobId),retry={jobId:queued.jobId,action:'retry',expectedVersion:failed.version,requestKey:randomUUID()};
+      assert.equal((await controlPacketPdfJob(ctx,retry)).status,'queued');await runPacketPdfJob(queued.jobId,db.pdf);
+      assert.equal((await readPacketPdfJob(ctx,queued.jobId)).status,'succeeded');assert.equal(db.state.packets.length,1);assert.equal(db.objects.size,2);
+    });
+  });
+test('queued PDF: synchronous winner and lost acceptance acknowledgement preserve one result; cancellation blocks staged publication',
+  {skip:!present||!actualOtherOriginal},async()=>{
+    await withDb(async(db,ctx)=>{
+      const {queued,command}=await queuedOriginals(db,ctx);
+      db.afterPut=async()=>{db.afterPut=undefined;await executePacketPlan(ctx,{...command,guard:{mode:'create',requestKey:randomUUID()}},db.io);db.commitLost=true;};
+      await runPacketPdfJob(queued.jobId,db.pdf);
+      const accepted=await readPacketPdfJob(ctx,queued.jobId);assert.equal(accepted.status,'succeeded');
+      assert.equal(db.state.packets.length,1);assert.equal(db.state.executions.length,1);assert.equal(db.objects.size,2);
+      assert.equal(accepted.result!.packetId,db.state.packets[0].id);assert.equal(db.state.attempts[0].completion_sha256,accepted.result!.artifact.sha256);
+      const count=db.extracts;await runPacketPdfJob(queued.jobId,db.pdf);assert.equal(db.extracts,count);
+    });
+    await withDb(async(db,ctx)=>{
+      const {queued}=await queuedOriginals(db,ctx);
+      db.afterPut=async()=>{db.afterPut=undefined;const current=await readPacketPdfJob(ctx,queued.jobId);
+        await controlPacketPdfJob(ctx,{jobId:queued.jobId,action:'cancel',expectedVersion:current.version,requestKey:randomUUID()});};
+      await runPacketPdfJob(queued.jobId,db.pdf);assert.equal((await readPacketPdfJob(ctx,queued.jobId)).status,'cancelled');
+      assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);assert.equal(db.objects.size,1);
+      assert.equal(db.state.attempts[0].state,'fenced');assert(!db.state.events.some(e=>e.type==='job.succeeded'||e.type==='packet.plan.executed'));
+    });
+  });

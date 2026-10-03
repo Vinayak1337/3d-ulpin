@@ -49,10 +49,17 @@ const preKMLReadCodeSha=new Set(['3cf0b3859a113d4ba24f708d1fa8fa9aad124ac45fd0d2
 const preCityGMLReadCodeSha=new Set(["8e50f24dff2f78fe6681b76667dc29ec727c9ac377329886fe29a4807aafd532", "b635803489804a2da5778a3dc3dbbfb31f3bab15dd8baf04c204d5e5f5034654"]);
 // GEOPARQUET-02: exact assigned-base code with unchanged runtime/access/policy.
 const preGeoParquetReadCodeSha=new Set(["4d59027d16b1bacc5a9145ae6b98d9ae4a1e343020aaab9db84cfc11b132dc0b", "5066ec961fdf3e56796fe581c1b8708e11d62b72488f711988b9d40f85b5b788"]);
+// PACK1-PDF-04: exact 1c024959 Git/LF and captured physical code aggregates.
+// Immutable reads only; current full inventory/non-code pins and strict writers remain mandatory.
+const prePacketPdfReadCodeSha=new Set(["5f1d1803ad9fdf8fee43a453e204723b91a3f987cd2832076eb4c36b99a5c3cc","79af89bcef0e32427eb341641673d895b9ef7c1c80d6436b36cdc321c293f6b4"]);
 export function mvtReadCompilerCompatible(stored:PrivateMvtInput['compiler'],current:PrivateMvtInput['compiler'],hasSourceChunk=false){
   const valid=(pin:PrivateMvtInput['compiler'])=>{const {sha256,...base}=pin;return fingerprint(base)===sha256;};
   if(!valid(stored)||!valid(current))return false;
   if(fingerprint(stored)===fingerprint(current))return true;
+  if(prePacketPdfReadCodeSha.has(stored.codeSha256)&&current.codeSha256===mvtCodeSha()){
+    const {sha256:_s,codeSha256:_sc,...oldProfile}=stored,{sha256:_c,codeSha256:_cc,...newProfile}=current;
+    return fingerprint(oldProfile)===fingerprint(newProfile);
+  }
   // Reviewed historical bytes only. Current writers never call this predicate.
   if((preIFCReadCodeSha.has(stored.codeSha256)||preDXFReadCodeSha.has(stored.codeSha256)||(preKMLReadCodeSha.has(stored.codeSha256)||(preCityGMLReadCodeSha.has(stored.codeSha256)||preGeoParquetReadCodeSha.has(stored.codeSha256))))&&current.codeSha256===mvtCodeSha()){
     const {sha256:_s,codeSha256:_sc,...oldProfile}=stored,{sha256:_c,codeSha256:_cc,...newProfile}=current;

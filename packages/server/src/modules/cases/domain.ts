@@ -188,7 +188,7 @@ export async function detailFromClient(
     identity: await readIdentity(client, id),
     sources: sources.rows.map(sourceFrom),
     units: units.rows.map((u) => u.body),
-    jobs: jobs.rows.map(jobFrom),
+    jobs: jobs.rows.filter(job=>job.operation!=='packet-pdf').map(jobFrom),
     model: snapshots.rows[0]?.body ?? null,
     context: row.context,
     history: events.rows.map((event) => ({
@@ -895,6 +895,8 @@ export async function retryJob(jobId: string) {
     const original =
       (await client.query("SELECT * FROM jobs WHERE id=$1", [jobId])).rows[0] ??
       notFound();
+    if(original.operation==='packet-pdf')
+      throw new AppError(422,'PACKET_PDF_CONTROL_REQUIRED','Use the exact authorized PDF job retry operation; copying its payload is unsupported.');
     if (original.operation === "spatial-inference")
       throw new AppError(422, "ML_ITEM_RETRY_REQUIRED", "Retry this extraction from its spatial batch item so its source, model and attempt history stay linked.");
     if(original.operation==='ifc-native')

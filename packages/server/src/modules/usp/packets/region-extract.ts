@@ -2,12 +2,10 @@ import {crc32} from 'node:zlib';
 import {z} from 'zod';
 import {PACKET_REGION_LIMITS as limits,PacketRegionRequestSchema,PacketRegionPageSchema,PacketRegionWorkerSchema,
   PacketRegionProvenanceSchema,type PacketRegionSelection,type PacketRegionWorker} from '../../../../../contracts/src/packet-region';
-import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {openObjectStream,sha256} from '../../../infrastructure/storage';
-import {fingerprint} from '../../cases/domain';
-import {documentPageAuthorityTx,type DocumentPageAuthority} from '../ingestion/document-pages';
-import {inspectPrivatePacketRegion,packetRegionRecipeSha,assertPacketRegionRuntime,type PacketRegionInspection} from './region-runtime';
+import type {DocumentPageAuthority} from '../ingestion/document-pages';
+import type {PacketRegionInspection} from './region-runtime';
 import type {DocumentPagePin} from '../../../../../contracts/src/document-pages';
 
 export type PacketRegionDependencies={authorize:(id:string,pin:DocumentPagePin,deadline:number)=>Promise<DocumentPageAuthority>;
@@ -17,7 +15,11 @@ export type PacketRegionDependencies={authorize:(id:string,pin:DocumentPagePin,d
 function fail(status:number,code:string,message:string):never{throw new AppError(status,code,message);}
 function live(deadline:number){if(Date.now()>=deadline)fail(504,'PACKET_REGION_DEADLINE','Region extraction timed out. Retry the exact selection.');}
 async function authorize(id:string,pin:DocumentPagePin,deadline:number){
-  live(deadline);return transaction(async client=>{
+  live(deadline);
+  const [{transaction},{documentPageAuthorityTx}]=await Promise.all([
+    import('../../../infrastructure/db'),import('../ingestion/document-pages')]);
+  live(deadline);
+  return transaction(async client=>{
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
     return documentPageAuthorityTx(client,id,pin);
   },{deadlineAt:deadline});
@@ -66,16 +68,29 @@ export function assertCleanRegionPng(png:Buffer,pixels:[number,number]){
   }
   if(!header||!data||!end||offset!==png.length)bad();
 }
-const defaults:PacketRegionDependencies={authorize,original,inspect:inspectPrivatePacketRegion,recipe:packetRegionRecipeSha};
+const defaults:PacketRegionDependencies={authorize,original,
+  inspect:async(authority,bytes,page,selection,deadline)=>{
+    live(deadline);const {inspectPrivatePacketRegion}=await import('./region-runtime');live(deadline);
+    return inspectPrivatePacketRegion(authority,bytes,page,selection,deadline);
+  },
+  recipe:async()=>{const {packetRegionRecipeSha}=await import('./region-runtime');return packetRegionRecipeSha();}};
 let busy=false;
 export class PacketRegionService{
   constructor(private readonly dependencies:PacketRegionDependencies=defaults){}
-  async extract(sourceValue:string,pageValue:number,raw:unknown){
+  async extract(sourceValue:string,pageValue:number,raw:unknown,deadlineAt?:number){
+    if(deadlineAt!==undefined&&!Number.isFinite(deadlineAt))
+      fail(422,'PACKET_REGION_DEADLINE','Use a finite server operation deadline.');
+    if(deadlineAt!==undefined)live(deadlineAt);
     const sourceId=z.uuid().transform(v=>v.toLowerCase()).parse(sourceValue),page=PacketRegionPageSchema.parse(pageValue);
     const request=PacketRegionRequestSchema.parse(raw),transform=packetRegionTransform(request.selection);
-    assertPacketRegionRuntime();
+    const deadline=Math.min(Date.now()+limits.seconds*1000,deadlineAt??Infinity);live(deadline);
+    // Load the authority/runtime graph after this leaf is initialized: the
+    // registry may construct its own region service while these modules load.
+    const [{assertPacketRegionRuntime},{fingerprint}]=await Promise.all([
+      import('./region-runtime'),import('../../cases/domain')]);
+    live(deadline);assertPacketRegionRuntime();
     if(busy)fail(429,'PACKET_REGION_BUSY','One region extraction is already running.');
-    busy=true;const deadline=Date.now()+limits.seconds*1000;
+    live(deadline);busy=true;
     try{
       const pin={revision:request.revision,sha256:request.sha256};
       const authority=await this.dependencies.authorize(sourceId,pin,deadline);
@@ -83,7 +98,7 @@ export class PacketRegionService{
         conflict('The retained source differs from the explicit selection.');
       if(!Number.isSafeInteger(authority.sourceBytes)||authority.sourceBytes<1||authority.sourceBytes>limits.sourceBytes)
         fail(413,'PACKET_REGION_SOURCE_LIMIT','The source exceeds the selected-region profile.');
-      const recipe=await this.dependencies.recipe();
+      const recipe=await this.dependencies.recipe();live(deadline);
       const bytes=await this.dependencies.original(authority,deadline);
       if(bytes.length!==authority.sourceBytes||sha256(bytes)!==authority.sourceSha256)
         fail(422,'PACKET_REGION_SOURCE_INTEGRITY','The original failed its exact size or hash check.');
