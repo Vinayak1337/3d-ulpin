@@ -1,0 +1,179 @@
+{
+  "version": "student-fragment-runtime-preparation-assignment/1",
+  "task": "STUDENT-16-FRAGMENT-RUNTIME-PREP",
+  "recordedAtUtc": "2026-10-03T11:33:48.632941+00:00",
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "baseCommit": "0a6c4ce7e9de9594af4744d88cc9172fd5c2a649",
+  "worker": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "reason": "Sole learner owns exact guarded stager/worker and source-profile admission context.",
+    "observedServiceTier": null,
+    "tierInterpretation": "Tool exposes no tier field; text is not per-turn speed configuration."
+  },
+  "permissions": {
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "outcome": "Implement exact CPU-only positive assignment/freeze/source/input/model/policy admission and existing stager/worker CLI wiring for one later requested-fragment baseline. Reuse the accepted codec/default-off single-generation hook and all existing containment/resource/supervisor authorities.",
+  "executionAllowance": {
+    "cpuRuntimeAdmissionPreparation": true,
+    "freshModelStages": 0,
+    "nativeRuntimeOrTokenizer": false,
+    "inference": false,
+    "fit": false,
+    "evaluation": false,
+    "promotion": false
+  },
+  "acceptedPreparation": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-selection-preparation-acceptance-v1.json",
+    "physicalSha256": "9cc757486f411069182dcd2b2f38e6ea368afcd90ec3277e76ff304ac4f5ca9f",
+    "bytes": 6122
+  },
+  "acceptedTrainingData": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher-fragment-requests-acceptance-v1.json",
+    "physicalSha256": "40d99bf7d0f165d5c1ebbb88aeff40b6e7ba54fcfe22a9be5684ad39a78fcf26",
+    "bytes": 3098
+  },
+  "sourceOnlyDevelopment": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\preparation.json",
+    "physicalSha256": "eef78431d063df9a2b9e337b74fe6ce7d6b40a63783a9e5eb7b583688bc41bc4",
+    "bytes": 6023
+  },
+  "sourceRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb",
+  "sourceFiles": {
+    "development.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\development.json",
+      "physicalSha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536",
+      "bytes": 6419
+    },
+    "legacy-schema-v1.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\legacy-schema-v1.json",
+      "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+      "bytes": 3966
+    },
+    "family-freeze.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\family-freeze.json",
+      "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+      "bytes": 10867
+    },
+    "fragment-schema-v1.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\fragment-schema-v1.json",
+      "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+      "bytes": 4537
+    },
+    "fragment-prompt.txt": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\fragment-prompt.txt",
+      "physicalSha256": "d3a93d1323145cf31db765de8647d5f0ce252f653b6b38273fc5a184fd00dbac",
+      "bytes": 673
+    },
+    "fragment-route.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\fragment-route.json",
+      "physicalSha256": "cd2af2b714a4bea4d60ea176454d2c843dcf09c4645b237e5eaabb3dff3f471d",
+      "bytes": 6577
+    },
+    "context-0.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\context-0.json",
+      "physicalSha256": "d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5",
+      "bytes": 2793
+    },
+    "context-1.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\context-1.json",
+      "physicalSha256": "d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c",
+      "bytes": 1933
+    },
+    "model-acquisition.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\model-acquisition.json",
+      "physicalSha256": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2",
+      "bytes": 3987
+    }
+  },
+  "representation": {
+    "version": "evidence-association-fragment-selection/1",
+    "promptVersion": "association-fragment-prompt/1",
+    "systemPromptSha256": "d3a93d1323145cf31db765de8647d5f0ce252f653b6b38273fc5a184fd00dbac",
+    "schemaCanonicalLfSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+    "familyCanonicalLfSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+    "policy": {
+      "bounds": {
+        "contextUtf8Bytes": 600000,
+        "responseUtf8Bytes": 65536
+      },
+      "candidates": "unchanged input.evidence in original order; contiguous c0 through c24; no label-derived selection or ordering",
+      "empty": "no_support_in_supplied_context; never factual absence in a property or whole original",
+      "forced": [
+        "JSON/schema",
+        "context identity",
+        "current unique IDs",
+        "unchanged retrieved fragments"
+      ],
+      "identity": "canonical complete request/context, original fragment order/provenance and frozen family/split",
+      "notEnforced": [
+        "relevance",
+        "conflict completeness",
+        "nonempty or full selection"
+      ],
+      "projection": "unchanged original fragments only; no generated claims or canonical associations",
+      "selection": "optional distinct current IDs; full context identity; whole-response rejection without repair",
+      "transport": "existing ID-choice grammar primitives and ByteLevel Vocabulary/Controller",
+      "version": "association-fragment-retrieval-policy/1"
+    },
+    "policySha256": "a3768b2c51d2e64ce3c75c14bd6c0d7241747092cff37ba2c8f8344c9afba721",
+    "tokenizerFilesSha256": {
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    }
+  },
+  "sourceCases": [
+    {
+      "exampleId": "ifc4-source-native-v1",
+      "contextSha256": "d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5",
+      "candidateCount": 4,
+      "request": "Retrieve the fragment that supplies the IfcBuilding Name."
+    },
+    {
+      "exampleId": "ifc2x3-source-native-v1",
+      "contextSha256": "d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c",
+      "candidateCount": 3,
+      "request": "Retrieve any supplied non-null numerical elevation value for IfcBuilding."
+    }
+  ],
+  "sourceBoundary": "Only exact requested development source files. Host expectations/report/selected targets are excluded from this task and all construction/input/prompt/grammar/contained code/profiles. Do not access coordinator host expectations; no source/reader reconstruction or new labels. Teacher data is accepted train-only supervision for a future separately justified adaptation and is not a baseline input.",
+  "futureModel": {
+    "name": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "adapter": null,
+    "weightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+    "settings": "Unchanged student.SETTINGS, greedy seed17/fp16/SDPA/batch1/CPU2/input2048/new768, original Job/CUDA/free/600s bounds."
+  },
+  "donor": {
+    "root": "E:/BhuAayam-data/task-data/ml-distillation/student/baseline-af47550c33ea4dc2a3dc1aebc56363c4",
+    "profileSha256": "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438",
+    "restriction": "Reuse accepted metadata/model/runtime inventories. No stage/copy/model/runtime content read or repeated inventory/weight hash campaign. Actual native preflight belongs to a later run."
+  },
+  "ownedFiles": [
+    "services/geo/geo/usp_learning/association/fragment_baseline.py",
+    "scripts/usp/learning/association/stage_selector_baseline.py",
+    "scripts/usp/learning/association/association_student.py",
+    "scripts/usp/learning/association/test_fragment_runtime.py",
+    "docs/evidence/usp/ml-distillation/student/fragment-runtime-preparation-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-runtime-preparation-v1.md"
+  ],
+  "architecture": "Strict distinct version/route, exact new positive allowance for one future original-base/no-adapter inference, exact cases/settings/schema/representation/source/input bytes and complete host/contained execution source set. CPU assignment itself never permits stage/inference. Later coordinator must inspect returned code and produce a separate exact positive execution assignment at the clean returned HEAD. Preserve historical assignment/freeze/protected authorities and default dispatch behavior.",
+  "admission": "Explicitly admit the already accepted new student.py hash 22fddd9ac9dbab6bf23f45ab9a1356d21113a66a8d8b3bd5f7caae859d001761 only for the new fragment route; do not weaken old source checks. Bind every transitive host/contained source and accepted file, prevent missing/extra/old/mutated pins before mkdir/copy. Reuse checked source, existing copy/freeze/profile/command/guard helpers and existing association_student role. Existing worker/supervisor complete output acceptance and cleanup remain authoritative; worker completion awaits guard, never asserts independent supervisor success. No new loader/controller/generate loop/runtime/guard framework.",
+  "limits": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600,
+    "cpuThreads": 2,
+    "recordJobAndRssSeparately": true
+  },
+  "acceptance": "One focused CPU admission/control file covers positive exact source payload and altered/missing/stale/wrong-version refusal before stage; one affected historical default dispatch control if touched. Compile only changed sources. Produce a nonexecuted exact future source/input/profile-inventory and guard-command plan using retained metadata, with no model stage/runtime copy or native import. Consume existing codec/source review; no broad predecessor campaigns or new request/model sweep.",
+  "return": "Return owned code/evidence commits, commands/exits, complete actual changed/runtime/protected source pins and precise hypothetical freeze/command/inventory plan plus limitations and clean checkout. Callback once to coordinator 01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then stop; no new chats/subagents/polls/schedules.",
+  "exclusions": "No codec policy/request/source edits, teacher/development expected labels, evaluation/retired inputs, model load/copy/stage/inference/fit, installation/acquisition/parser/OCR, shared API/gateway/catalogue/frontend/dependencies, guard/host/credentials/services/Docker/volumes, staging/main/other worktree edits, provider/push/deploy/promotion.",
+  "primaryStagingReadOnlyObservation": "2201f51f4d5c4e639f45eb288e235fa85bc2ad4d"
+}

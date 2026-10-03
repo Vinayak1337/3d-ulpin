@@ -1,0 +1,67 @@
+{
+  "version": "teacher-fragment-requests-acceptance/1",
+  "recordedAtUtc": "2026-10-03T11:33:48.632941+00:00",
+  "status": "accepted_provisional_train_only_requested_fragment_supervision",
+  "ownerCommit": "2dc90d376343430f9c71d7e3ac614a08ba9e122e",
+  "integratedCommit": "1c6ba0d47cfc09cb57264d9ab17e8372f9962367",
+  "data": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-fragments-v1.jsonl",
+    "bytes": 82626,
+    "sha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+  },
+  "support": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-requests-v1.support.json",
+    "bytes": 24769,
+    "sha256": "cb440f2ddf2ebec3ba2294b3131d6935251f20320d3e93cde2482aeffb91d961"
+  },
+  "receipt": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-requests-v1.receipt.json",
+    "bytes": 3854,
+    "sha256": "d74f95a1a01e0dbd36149063e725944f3ee1469a4a99680c76aa2581887828cf"
+  },
+  "counts": {
+    "examples": 6,
+    "candidateAppearances": 35,
+    "selectedAppearances": 10,
+    "supportQuotes": 10,
+    "supportLocatorChecks": 1,
+    "nonemptyProperSubsets": 5,
+    "emptySelections": 1,
+    "multiFragmentSelections": 3,
+    "multiOriginalSelections": 1,
+    "conflictRequests": 1
+  },
+  "qualification": "New provisional query/selection supervision, not official records or independent evaluation truth",
+  "verification": {
+    "command": "Pinned Python -B -I -S -; independent parent-pool/hash/schema/source/support reconstruction and six-case semantic inspection",
+    "exitCode": 0,
+    "audit": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\teacher-fragment-requests-review-20261003.json",
+      "physicalSha256": "08a116dd3676f5fd3bb13b93f3cbe76ce120104237476e41af1bbdb8516c1c3a",
+      "bytes": 1748
+    },
+    "privateArtifactPinsMatched": 3,
+    "assignmentContractFreezeParentPinsMatched": 4,
+    "historicalHelperPinsConsumed": 2,
+    "parentPoolAndContextChecks": 6,
+    "candidateAppearancesUnchanged": 35,
+    "selectedSupportQuotesMatched": 10,
+    "locatorLabelChecks": 1,
+    "assemblerOrSourceInventoryRepeated": false,
+    "sharedCodecAdmissionChecks": 6,
+    "modelRun": false
+  },
+  "semanticInspection": "All six supplied candidate pools and requests inspected. Original 13rd, all three G+41/G+42 statements, grouped Khesra 1659 and original Carpet Area column/unknown unit remain; ULPIN empty answer concerns only its supplied context. No conflict winner, crosswalk, ownership or official issuance.",
+  "reviewState": "needs_independent_review",
+  "teacherDevelopmentAccess": false,
+  "next": "Teacher idle until a concrete train-only issue; no fit/evaluation authorized by data acceptance.",
+  "settings": {
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "observedModelReasoningTier": "unexposed",
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "primaryStagingReadOnlyObservation": "188bdfd651c3078a6c2d72aa0fa64ae1acbe5cd3"
+}
