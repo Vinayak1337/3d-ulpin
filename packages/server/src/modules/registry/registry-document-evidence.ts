@@ -18,6 +18,9 @@ import {registrySourceTx,registryDocumentSourceAccessTx,registryMetadataEvidence
 import {RegistryMetadataSchema} from '@ulpin/contracts';
 import {registryDocumentCases,registryRegionCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
 import {registryRegionSourceTx,prepareRegistryRegion,regionCitationId,assertRegionCitation,type RegistryRegionPrepared} from './registry-region-evidence';
+import {RegistryImageRegionCitationSchema,type RegistryImageRegionCitation} from '../../../../contracts/src/registry-document-evidence';
+import {registryImageRegionSourceTx,prepareRegistryImageRegion,imageRegionCitationId,assertImageRegionCitation,
+  type RegistryImageRegionPrepared} from './registry-image-region-evidence';
 import {resolveFusionCitationsTx,ocrCitationFusionSelection,fusionOcrCitationFields,fusionCitationDocumentPin,citationReadBudget,
   ifcCitationFusionSelection,fusionIFCCitationFields,
   type FusionCitationDependencies} from '../usp/ingestion/source-fusion-citations';
@@ -50,7 +53,8 @@ import {registryPointCitationSourceTx} from './registry-point-citation-source';
 import {pointCitationFusionSelection,fusionPointCitationFields,fusionPointCitationFragment} from '../usp/ingestion/source-fusion-citations';
 
 export type RegistryDocumentDependencies=FusionCitationDependencies&{result:typeof readDocumentResult;registrySource:typeof registrySourceTx;
-  citationSource?:typeof registryDocumentSourceAccessTx;regionSource?:typeof registryRegionSourceTx};
+  citationSource?:typeof registryDocumentSourceAccessTx;regionSource?:typeof registryRegionSourceTx;
+  imageRegionSource?:typeof registryImageRegionSourceTx};
 type Dependencies=RegistryDocumentDependencies;
 const defaults:Dependencies={source:associationDocumentInputTx,result:readDocumentResult,registrySource:registrySourceTx,
   citationSource:registryDocumentSourceAccessTx};
@@ -68,9 +72,12 @@ const geoparquetTools=(dependencies:Dependencies)=>dependencies.geoparquetTools?
 const rasterSource=(dependencies:Dependencies)=>dependencies.rasterSource??registryRasterCitationSourceTx;
 const pointSource=(dependencies:Dependencies)=>dependencies.pointSource??registryPointCitationSourceTx;
 const regionSource=(dependencies:Dependencies)=>dependencies.regionSource??registryRegionSourceTx;
+const imageRegionSource=(dependencies:Dependencies)=>dependencies.imageRegionSource??registryImageRegionSourceTx;
 async function recheckRegionsTx(client:PoolClient,siteId:string,record:RegistryRecord,dependencies:Dependencies){
-  for(const pin of record.documentCitations??[])if(pin.version==='registry-document-region-citation/1')
-    assertRegionCitation(pin,await regionSource(dependencies)(client,siteId,pin.document));
+  for(const pin of record.documentCitations??[]){
+    if(pin.version==='registry-document-region-citation/1')assertRegionCitation(pin,await regionSource(dependencies)(client,siteId,pin.document));
+    else if(pin.version==='registry-image-region-citation/1')assertImageRegionCitation(pin,await imageRegionSource(dependencies)(client,siteId,pin.document));
+  }
 }
 const context=()=>localRequestContext(randomUUID());
 export function documentReviewContext():RegistryDocumentReviewContext{
@@ -169,6 +176,7 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   const ctx=context(),entries:ReturnType<typeof RegistryDocumentEvidenceSchema.parse>['citations']=[],budget=citationReadBudget();
   const checked:{pin:RegistryNativeDocumentCitation|RegistryOcrDocumentCitation;input:DocumentInput;source:Awaited<ReturnType<Dependencies['registrySource']>>;fence:number}[]=[];
   const checkedRegions:{pin:RegistryRegionCitation;captured:RegistryRegionPrepared['source']}[]=[];
+  const checkedImageRegions:{pin:RegistryImageRegionCitation;captured:RegistryImageRegionPrepared['source']}[]=[];
   const checkedIFC:{pin:RegistryIFCCitation;selection:ReturnType<typeof ifcCitationFusionSelection>;
     captured:Awaited<ReturnType<typeof registryIFCCitationSourceTx>>}[]=[];
   const checkedDXF:{selection:ReturnType<typeof dxfCitationFusionSelection>;
@@ -192,6 +200,13 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   }
   for(const group of groups.values()){
     const first=group[0];
+    if(first.version==='registry-image-region-citation/1'){
+      const captured=await imageRegionSource(dependencies)(client,siteId,first.document,lock);
+      for(const raw of group){
+        const pin=RegistryImageRegionCitationSchema.parse(raw);assertImageRegionCitation(pin,captured);entries.push({pin});
+      }
+      checkedImageRegions.push({pin:first,captured});continue;
+    }
     if(first.version==='registry-document-region-citation/1'){
       const captured=await regionSource(dependencies)(client,siteId,first.document,lock);
       for(const raw of group){
@@ -423,6 +438,11 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
         const current=await regionSource(dependencies)(client,siteId,item.pin.document);
         if(fingerprint(current)!==fingerprint(item.captured))conflict('The aggregate region source changed during its private read.');
         assertRegionCitation(item.pin,current);
+      }})),...checkedImageRegions.map(item=>({input:{caseId:item.pin.document.caseId,sourceId:item.pin.document.sourceId},
+      protect:()=>imageRegionSource(dependencies)(client,siteId,item.pin.document,true),validate:async()=>{
+        const current=await imageRegionSource(dependencies)(client,siteId,item.pin.document);
+        if(fingerprint(current)!==fingerprint(item.captured))conflict('The aggregate image-region source changed during its private read.');
+        assertImageRegionCitation(item.pin,current);
       }}))].sort((a,b)=>a.input.caseId.localeCompare(b.input.caseId)||
     a.input.sourceId.localeCompare(b.input.sourceId)||('jobId' in a.input?a.input.jobId:'').localeCompare('jobId' in b.input?b.input.jobId:''));
   if(lock||protectAggregate)
@@ -430,13 +450,14 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   // Protected callers validate again only after the complete lock set is held:
   // a source can change during lock acquisition or later groups' result I/O.
   for(const item of aggregate)await item.validate();
-  if(checkedIFC.length||checkedDXF.length||checkedKML.length||checkedCityGML.length||checkedGeoParquet.length||checkedRaster.length||checkedPoint.length||checkedRegions.length)for(const pin of citations)await historicalTargetTx(client,siteId,record,pin);
+  if(checkedIFC.length||checkedDXF.length||checkedKML.length||checkedCityGML.length||checkedGeoParquet.length||checkedRaster.length||checkedPoint.length||checkedRegions.length||checkedImageRegions.length)for(const pin of citations)await historicalTargetTx(client,siteId,record,pin);
   if(citations.some(pin=>pin.version!=='registry-document-citation/1'))fusionLive(budget);
   return entries;
 }
-export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation|RegistryIFCCitation|RegistryRegionCitation|RegistryDXFCitation|RegistryKMLCitation|RegistryCityGMLCitation|RegistryGeoParquetCitation|RegistryRasterCitation|RegistryPointCitation){
+export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation|RegistryIFCCitation|RegistryRegionCitation|RegistryImageRegionCitation|RegistryDXFCitation|RegistryKMLCitation|RegistryCityGMLCitation|RegistryGeoParquetCitation|RegistryRasterCitation|RegistryPointCitation){
   if('partId' in pin)return fingerprint({document:pin.document,partId:pin.partId,target:pin.target});
   if(pin.version==='registry-document-region-citation/1')return regionCitationId(pin);
+  if(pin.version==='registry-image-region-citation/1')return imageRegionCitationId(pin);
   if(pin.version==='registry-ifc-citation/1')return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,
     readerSha256:pin.readerSha256,acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,ifc:pin.ifc,target:pin.target});
   if(pin.version==='registry-dxf-citation/1')return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,
@@ -496,18 +517,19 @@ function fusionValidationDependencies(fusion:Awaited<ReturnType<typeof resolveFu
 }
 /** Existing operations holds only the idempotency receipt; citations live solely in registry_drafts/records/history. */
 export type RegistryRegionAmendmentPrepared=RegistryRegionPrepared&{draftSha256:string;targetSha256:string};
+export type RegistryImageRegionAmendmentPrepared=RegistryImageRegionPrepared&{draftSha256:string;targetSha256:string};
 export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId:string,raw:unknown,dependencies:Dependencies=defaults,
-  prepared?:RegistryRegionAmendmentPrepared){
+  prepared?:RegistryRegionAmendmentPrepared|RegistryImageRegionAmendmentPrepared){
   const request=RegistryDocumentAmendmentSchema.parse(raw);
   if(request.addFusion&&Buffer.byteLength(JSON.stringify(request))>32*1024)
     throw new AppError(413,'REGISTRY_DOCUMENT_REQUEST_LIMIT','Select a smaller explicit citation amendment.');
   const {draft,record}=await lockedDraftTx(client,draftId,request.recordId,true,
-    request.add?[request.add.document.caseId]:request.addRegion?[request.addRegion.document.caseId]:
+    request.add?[request.add.document.caseId]:request.addRegion?[request.addRegion.document.caseId]:request.addImageRegion?[request.addImageRegion.document.caseId]:
       request.addFusion?request.addFusion.selection.sources.map(source=>source.pin.caseId):[],true,
-    request.addRegion?[request.addRegion.document.caseId]:[]);
+    request.addRegion?[request.addRegion.document.caseId]:request.addImageRegion?[request.addImageRegion.document.caseId]:[]);
   if(draft.status!=='draft'||record.revision!==request.expectedRecordRevision)conflict('Use the exact active correction and recorded target revision.');
   const target=await currentTargetTx(client,draft.site_id,record,true,dependencies),ctx=context();
-  if(record.kind==='space'&&(request.add||request.addFusion?.selection.sources.some(source=>
+  if(record.kind==='space'&&(request.add||request.addImageRegion||request.addFusion?.selection.sources.some(source=>
     source.kind==='document'?source.partIds.length:source.kind==='document_ocr'?source.itemOrdinals.length:source.kind==='dxf'?source.entityOrdinals.length:source.kind==='kml'?source.featureOrdinals.length:source.kind==='citygml'?source.buildingOrdinals.length:source.kind==='geoparquet'?source.rowIndices.length:source.kind==='raster'||source.kind==='point')))
     throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Space corrections support explicit IFC or source-region citations only.');
   const operationKey=`registry-document-citations:${draftId}:${request.requestKey}`;
@@ -536,8 +558,21 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   }
   if(draft.revision!==request.expectedDraftRevision)conflict('The draft changed. Refresh before amending its exact citations.');
   const added:RegistryDocumentCitation[]=[];
+  if(request.addImageRegion){
+    if(!prepared||prepared.validation.version!=='packet-image-region-local/1'||
+      prepared.requestSha256!==fingerprint(request.addImageRegion)||prepared.draftSha256!==fingerprint(draft)||
+      prepared.targetSha256!==fingerprint(target.body))conflict('The exact image-region amendment changed after crop validation.');
+    const current=await imageRegionSource(dependencies)(client,draft.site_id,request.addImageRegion.document,true);
+    if(fingerprint(current)!==fingerprint(prepared.source))conflict('The original image changed after crop validation.');
+    const pin=RegistryImageRegionCitationSchema.parse({...request.addImageRegion,version:'registry-image-region-citation/1',id:'0'.repeat(64),
+      target:{recordId:record.id,revision:record.revision,bodySha256:fingerprint(target.body)},
+      selection:{subject:ctx.principal.subject,accessSha256:current.accessSha256,selectedAt:new Date().toISOString()},
+      authoritySha256:current.authority.authoritySha256,validation:prepared.validation,
+      applicability:'explicit_officer_inclusion; effective_after_canonical_commit',associationState:'operator_selected',qualification:'not_assessed'});
+    pin.id=imageRegionCitationId(pin);assertImageRegionCitation(pin,current);added.push(pin);
+  }
   if(request.addRegion){
-    if(!prepared||prepared.requestSha256!==fingerprint(request.addRegion)||prepared.draftSha256!==fingerprint(draft)||
+    if(!prepared||prepared.validation.version!=='packet-region-local/1'||prepared.requestSha256!==fingerprint(request.addRegion)||prepared.draftSha256!==fingerprint(draft)||
       prepared.targetSha256!==fingerprint(target.body))conflict('The exact region amendment changed after crop validation.');
     const current=await regionSource(dependencies)(client,draft.site_id,request.addRegion.document,true);
     if(fingerprint(current)!==fingerprint(prepared.source))conflict('The original source changed after crop validation.');
@@ -700,10 +735,32 @@ export async function registryRegionAmendmentPreflightTx(client:PoolClient,draft
   const source=await regionSource(dependencies)(client,draft.site_id,request.addRegion.document);
   return {source,draftSha256:fingerprint(draft),targetSha256:fingerprint(target.body)};
 }
+/** Image-original preparation is read-only and finishes before any source/target mutation locks. */
+export async function registryImageRegionAmendmentPreflightTx(client:PoolClient,draftId:string,request:RegistryDocumentAmendment,
+  dependencies:Dependencies=defaults){
+  if(!request.addImageRegion)return;
+  const draft=(await client.query('SELECT * FROM registry_drafts WHERE id=$1',[draftId])).rows[0]??notFound();
+  const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='registry-document-citations'",
+    [draft.case_id,`registry-document-citations:${draftId}:${request.requestKey}`])).rows[0];
+  if(prior)return;
+  const record=(draft.records as RegistryRecord[])[0];
+  if(draft.records.length!==1||record?.id!==request.recordId||draft.status!=='draft'||draft.revision!==request.expectedDraftRevision||
+    record.revision!==request.expectedRecordRevision)conflict('Use the exact active correction before selecting its image region.');
+  if(record.kind==='space')throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Image regions support building or floor corrections.');
+  const target=await currentTargetTx(client,draft.site_id,record,false,dependencies);
+  const source=await imageRegionSource(dependencies)(client,draft.site_id,request.addImageRegion.document);
+  return {source,draftSha256:fingerprint(draft),targetSha256:fingerprint(target.body)};
+}
 export const amendRegistryDocumentCitations=async(draftId:string,raw:unknown)=>{
   const request=RegistryDocumentAmendmentSchema.parse(raw);
-  let prepared:RegistryRegionAmendmentPrepared|undefined;
-  if(request.addRegion){
+  let prepared:RegistryRegionAmendmentPrepared|RegistryImageRegionAmendmentPrepared|undefined;
+  if(request.addImageRegion){
+    const captured=await transaction(async client=>{
+      await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
+      return registryImageRegionAmendmentPreflightTx(client,draftId,request);
+    },{deadlineAt:Date.now()+30_000});
+    if(captured)prepared={...await prepareRegistryImageRegion(request.addImageRegion,captured.source),...captured};
+  }else if(request.addRegion){
     const captured=await transaction(async client=>{
       await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
       return registryRegionAmendmentPreflightTx(client,draftId,request);
@@ -711,7 +768,7 @@ export const amendRegistryDocumentCitations=async(draftId:string,raw:unknown)=>{
     if(captured)prepared={...await prepareRegistryRegion(request.addRegion,captured.source),...captured};
   }
   return transaction(client=>amendRegistryDocumentCitationsTx(client,draftId,request,defaults,prepared),
-    request.addFusion||request.addRegion||request.assertIFCIdentity?{deadlineAt:Date.now()+30_000}:undefined);
+    request.addFusion||request.addRegion||request.addImageRegion||request.assertIFCIdentity?{deadlineAt:Date.now()+30_000}:undefined);
 };
 export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:string,dependencies:Dependencies=defaults){
   const {draft,record}=await lockedDraftTx(client,draftId);
@@ -729,8 +786,9 @@ export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:
   const hasCityGML=citations.some(entry=>entry.pin.version==='registry-citygml-citation/1');
   const hasGeoParquet=citations.some(entry=>entry.pin.version==='registry-geoparquet-citation/1');
   const hasRaster=citations.some(entry=>entry.pin.version==='registry-raster-metadata-citation/1');
-  if((hasRaster||hasGeoParquet||hasCityGML||hasKML||hasDXF||citations.some(entry=>entry.pin.version==='registry-ifc-citation/1'))&&Buffer.byteLength(JSON.stringify(response))>SOURCE_FUSION_LIMITS.responseBytes-8192)
-    throw new AppError(413,hasRaster?'REGISTRY_RASTER_RESPONSE_LIMIT':hasGeoParquet?'REGISTRY_GEOPARQUET_RESPONSE_LIMIT':hasCityGML?'REGISTRY_CITYGML_RESPONSE_LIMIT':hasKML?'REGISTRY_KML_RESPONSE_LIMIT':hasDXF?'REGISTRY_DXF_RESPONSE_LIMIT':'REGISTRY_IFC_RESPONSE_LIMIT','Select a smaller explicit evidence context.');
+  const hasImageRegion=citations.some(entry=>entry.pin.version==='registry-image-region-citation/1');
+  if((hasImageRegion||hasRaster||hasGeoParquet||hasCityGML||hasKML||hasDXF||citations.some(entry=>entry.pin.version==='registry-ifc-citation/1'))&&Buffer.byteLength(JSON.stringify(response))>SOURCE_FUSION_LIMITS.responseBytes-8192)
+    throw new AppError(413,hasImageRegion?'REGISTRY_IMAGE_REGION_RESPONSE_LIMIT':hasRaster?'REGISTRY_RASTER_RESPONSE_LIMIT':hasGeoParquet?'REGISTRY_GEOPARQUET_RESPONSE_LIMIT':hasCityGML?'REGISTRY_CITYGML_RESPONSE_LIMIT':hasKML?'REGISTRY_KML_RESPONSE_LIMIT':hasDXF?'REGISTRY_DXF_RESPONSE_LIMIT':'REGISTRY_IFC_RESPONSE_LIMIT','Select a smaller explicit evidence context.');
   return response;
 }
 export const readRegistryDocumentCitations=(draftId:string)=>transaction(client=>readRegistryDocumentCitationsTx(client,draftId));
