@@ -8,6 +8,7 @@ import { settings } from '@ulpin/server/infrastructure/config';
 import { workspaceCapabilities } from '@ulpin/server/infrastructure/workspace-capabilities';
 import { assertLocalRequest } from '@ulpin/server/modules/usp/principal';
 import { toWebRequest } from '../common/body';
+import { dependencyObservationSchema, processorHealthObservations } from './health-observations';
 
 @ApiTags('foundation')
 @Controller('api')
@@ -38,12 +39,15 @@ export class FoundationController {
 
   @Get('v1/health')
   @ApiOperation({ operationId: 'GET_api_v1_health', summary: 'Local dependency health' })
-  @ApiOkResponse({ schema: { type: 'object', required: ['ok', 'services', 'dataMode'], properties: {
+  @ApiOkResponse({ schema: { type: 'object', required: ['ok', 'services', 'serviceObservations', 'dataMode'], properties: {
     ok: { type: 'boolean' }, dataMode: { type: 'string', enum: ['repository', 'linked'] },
     services: { type: 'object', required: ['database', 'storage', 'processor', 'redis', 'worker'], properties: {
       database: { type: 'boolean' }, storage: { type: 'boolean' }, processor: { type: 'boolean' },
       redis: { type: 'boolean' }, worker: { type: 'boolean' },
     } },
+    serviceObservations: { type: 'object', required: ['redis', 'worker'], properties: {
+      redis: dependencyObservationSchema, worker: dependencyObservationSchema,
+    }, description: 'Distinguishes reported dependency health from unavailable observations. Unobserved service booleans remain false.' },
     databaseReadiness: { type: 'object', required: ['status','schema'], properties: {
       status: { type: 'string', enum: ['structurally_ready','schema_missing','unavailable'] },
       schema: { type: 'object', required: ['ready'], properties: {
@@ -69,20 +73,18 @@ export class FoundationController {
           signal: AbortSignal.timeout(3000),
         });
         if (!response.ok) throw new Error('Processor unavailable');
-        return response.json() as Promise<{ ok: boolean; redis: boolean; worker: boolean }>;
+        return response.json() as Promise<unknown>;
       }),
       databaseReadiness(),
     ]);
-    const readiness = checks[2].status === 'fulfilled' ? checks[2].value : null;
+    const processor = processorHealthObservations(checks[2]);
     const services = {
       database: checks[0].status === 'fulfilled',
       storage: checks[1].status === 'fulfilled',
-      processor: !!readiness,
-      redis: readiness?.redis === true,
-      worker: readiness?.worker === true,
+      ...processor.services,
     };
     // Dependency liveness remains compatible; consumers must inspect schema admission separately.
-    return { ok: Object.values(services).every(Boolean), services, dataMode: settings.dataMode,
+    return { ok: Object.values(services).every(Boolean), services, serviceObservations: processor.serviceObservations, dataMode: settings.dataMode,
       databaseReadiness: checks[3].status === 'fulfilled' ? checks[3].value : { status: 'unavailable', schema: { ready: false } } };
   }
 }
