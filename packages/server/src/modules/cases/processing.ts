@@ -23,6 +23,7 @@ import {runCityGMLJob} from '../usp/ingestion/citygml-worker';
 import {runGeoParquetJob} from '../usp/ingestion/geoparquet-worker';
 import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 import {runCityJSONValidationJob} from '../registry/cityjson-validation-worker';
+import type {runPacketPdfJob} from '../usp/packets/pdf-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
 let streamingVectorWorker:Promise<void>|undefined;
@@ -37,6 +38,7 @@ let geoparquetWorker:Promise<void>|undefined;
 let cityjsonWorker:Promise<void>|undefined;
 let cityjsonValidationWorker:Promise<void>|undefined;
 let pointBatchWorker:Promise<void>|undefined;
+let packetPdfWorker:Promise<void>|undefined;
 
 type WorkerReply = {
   jobId: string;
@@ -89,6 +91,7 @@ async function failJob(id: string, message: string) {
 
 export async function ingestJob(id: string, result: unknown) {
   const operation = (await query("SELECT operation FROM jobs WHERE id=$1", [id])).rows[0]?.operation;
+  if(operation==='packet-pdf')throw new Error('Queued PDF acceptance requires its registered fenced packet validator.');
   if(operation==='projected-vector')return ingestProjectedResult(id,result);
   if (operation === "dataset-spatial-inference") return ingestDatasetMl(id,result);
   if (operation === "spatial-inference") return ingestSpatialMlJob(id, result);
@@ -194,12 +197,20 @@ export async function ingestJob(id: string, result: unknown) {
   });
 }
 
-export async function dispatchTick(): Promise<number> {
+export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={}): Promise<number> {
   const pending = await query(
     "SELECT * FROM jobs WHERE status IN ('queued','running') AND operation NOT LIKE 'usp:%' AND next_attempt_at<=now() ORDER BY created_at LIMIT 12",
   );
   await Promise.all(
     pending.rows.map(async (job) => {
+      if(job.operation==='packet-pdf'){
+        if(!packetPdfWorker)packetPdfWorker=(async()=>{
+          const run=runners.packetPdf??(await import('../usp/packets/pdf-worker')).runPacketPdfJob;await run(job.id);
+        })()
+          .catch(()=>{/* Canonical attempt/packet publication owns recovery. */})
+          .finally(()=>{packetPdfWorker=undefined;});
+        return;
+      }
       if(job.operation==='large-original-storage'){
         // One bounded storage worker per dispatcher process; the SQL upload lease fences peers and restart.
         if(!largeOriginalWorker)largeOriginalWorker=runLargeOriginalStorageJob(job.id)

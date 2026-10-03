@@ -39,14 +39,16 @@ async function boundedPdfRead(key:string,bytes:number,hash:string,deadlineAt?:nu
   }finally{object.body.destroy();}
 }
 const regionService=new PacketRegionService();
-const storage:PdfPacketIo={extract:regionService.extract.bind(regionService),read:boundedPdfRead,
+export const pdfPacketStorage:PdfPacketIo={extract:regionService.extract.bind(regionService),read:boundedPdfRead,
   put:(key,bytes,type,signal)=>putOriginal(key,bytes,type,signal??AbortSignal.timeout(30_000))};
+const storage=pdfPacketStorage;
 const boundedTx=<T>(work:(client:PoolClient)=>Promise<T>,deadlineAt?:number)=>transaction(work,{deadlineAt:Math.min(Date.now()+30_000,deadlineAt??Infinity)});
 async function protectTx(client:PoolClient,ctx:RequestContext,plan:PdfPacketPlan){
   assertPdfPlanActor(ctx,plan);await protectPdfPlanTx(client,ctx,plan.input);
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`packet-plan:${plan.planId}`]);
   await authorizePdfPlanTx(client,ctx,plan);
 }
+export {protectTx as protectPdfExecutionPlanTx};
 async function versionTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput,id:string,version:number){
   const expiry=Date.parse(input.expiresAt)-Date.now();
   if(expiry<=0||expiry>24*60*60*1000)throw new AppError(422,'PACKET_PLAN_EXPIRY','Use an expiry within the next 24 hours.');
@@ -125,13 +127,16 @@ export async function confirmPdfPacketPlan(ctx:RequestContext,raw:unknown){
       planId:plan.planId,version:plan.version,confirmationId:confirmation.confirmationId,correlationId:ctx.requestId});return confirmation;
   });
 }
-export async function executePdfPacketPlan(ctx:RequestContext,raw:unknown,io:PdfPacketIo=storage){
-  assertLocalUsp(ctx);const startedAt=Date.now(),command=UspExecutePacketPlanSchema.parse(raw),hash=fingerprint(command);
-  const prepare=async(client:PoolClient)=>{
+export async function preparePdfExecutionTx(client:PoolClient,ctx:RequestContext,
+  command:z.output<typeof UspExecutePacketPlanSchema>,reuseExisting=false){
+    const hash=fingerprint(command);
     const plan=await loadPdfPlanTx(client,command.planId,command.version);await protectTx(client,ctx,plan);
     const replay=await requestReceiptTx(client,ctx,plan.input.scope.scopeId,'packet_plan_execute',command.guard.requestKey,hash);
     if(replay)return {replay:UspPdfPacketPlanExecutionSchema.parse(validateExecution(plan,replay))};
-    if((await client.query('SELECT body FROM usp_packet_plan_executions WHERE plan_id=$1 AND version=$2',[plan.planId,plan.version])).rows[0])
+    const existing=(await client.query('SELECT body FROM usp_packet_plan_executions WHERE plan_id=$1 AND version=$2',[plan.planId,plan.version])).rows[0];
+    if(existing&&reuseExisting){const replay=UspPdfPacketPlanExecutionSchema.parse(validateExecution(plan,existing.body));
+      if(replay.confirmationId!==command.confirmationId)conflict('The confirmation does not cover this plan.');return {replay};}
+    if(existing)
       conflict('This version already executed; reuse its original request key.');
     await planHeadTx(client,plan);
     const row=(await client.query('SELECT body FROM usp_packet_plan_confirmations WHERE plan_id=$1 AND version=$2',[plan.planId,plan.version])).rows[0]
@@ -146,18 +151,19 @@ export async function executePdfPacketPlan(ctx:RequestContext,raw:unknown,io:Pdf
     const sources=[];
     for(const binding of bindings)sources.push(await registryRegionSourceTx(client,plan.input.scope.scopeId,binding.document,true));
     return {plan,confirmation,bindings,sources};
-  };
-  const first=await boundedTx(prepare);if(first.replay)return first.replay;
+}
+export type PreparedPdfExecution=Exclude<Awaited<ReturnType<typeof preparePdfExecutionTx>>,{replay:unknown}>;
+export function pdfExecutionLive(deadlineAt?:number){if(deadlineAt!==undefined&&Date.now()>=deadlineAt)
+  throw new AppError(503,'PACKET_PDF_DEADLINE','The bounded PDF operation expired; no packet is published.');}
+export async function stagePdfExecution(first:PreparedPdfExecution,io:PdfPacketIo=storage,deadlineAt?:number){
   // No transaction or mutation lock spans native execution or object I/O.
   const {plan,confirmation,bindings,sources}=first,multi=plan.input.recipe!==PACKET_PDF_RECIPE,
     multipleOriginals=plan.input.recipe===PACKET_PDF_ORIGINALS_RECIPE;
-  const deadlineAt=multi?startedAt+PACKET_PDF_MULTI_LIMITS.seconds*1000:undefined;
-  const live=()=>{if(deadlineAt!==undefined&&Date.now()>=deadlineAt)
-    throw new AppError(503,'PACKET_PDF_DEADLINE','The bounded PDF operation expired; no packet is published.');};
+  const live=()=>pdfExecutionLive(deadlineAt);
   const cropAt=async(index:number)=>{
     live();const binding=bindings[index];
     const crop=await io.extract(binding.document.sourceId,binding.page,{revision:String(binding.document.sourceRevision),
-      sha256:binding.document.sourceSha256,purpose:'private_source_preview',selection:binding.region});live();
+      sha256:binding.document.sourceSha256,purpose:'private_source_preview',selection:binding.region},deadlineAt);live();
     const proof=await prepareRegistryRegion({document:binding.document,page:binding.page,region:binding.region,purpose:binding.purpose},sources[index],async()=>crop);
     if(canonical(proof.validation)!==canonical(binding.validation))conflict('The exact bound crop or renderer recipe changed. Review a fresh binding.');
     live();return crop.bytes;
@@ -170,11 +176,17 @@ export async function executePdfPacketPlan(ctx:RequestContext,raw:unknown,io:Pdf
   const saved=await io.read(key,assembled.bytes.length,assembled.manifest.output.sha256,deadlineAt);live();
   if(saved.length!==assembled.bytes.length||sha256(saved)!==assembled.manifest.output.sha256)
     throw new AppError(422,'PACKET_PDF_ARTIFACT_INTEGRITY','The staged PDF failed byte verification.');
+  return {packetId,key,assembled};
+}
+export async function publishPdfExecutionTx(client:PoolClient,ctx:RequestContext,command:z.output<typeof UspExecutePacketPlanSchema>,
+  first:PreparedPdfExecution,staged:Awaited<ReturnType<typeof stagePdfExecution>>,deadlineAt?:number,reuseExisting=false){
+    const hash=fingerprint(command),{plan,confirmation,bindings}=first,{packetId,key,assembled}=staged,
+      multi=plan.input.recipe!==PACKET_PDF_RECIPE,multipleOriginals=plan.input.recipe===PACKET_PDF_ORIGINALS_RECIPE;
+    const live=()=>pdfExecutionLive(deadlineAt);
   // Final same-client publication is atomic with execution/command/outbox.
   // Failed or uncertain publication retains an unreferenced derivative; never
   // delete a possibly committed object or any original on cancellation.
-  return boundedTx(async client=>{
-    const final=await prepare(client);if(final.replay)return final.replay;
+    const final=await preparePdfExecutionTx(client,ctx,command,reuseExisting);if(final.replay)return final.replay;
     if(canonical(final)!==canonical(first))conflict('The confirmed plan or original authority changed during generation.');
     live();const packet=UspPacketPdfReceiptSchema.parse({version:multipleOriginals?'packet-pdf/3':multi?'packet-pdf/2':'packet-pdf/1',packetId,target:plan.input.target,scope:plan.input.scope,
       format:'pdf',artifact:{assetId:packetId,version:1,sha256:assembled.manifest.output.sha256},planId:plan.planId,planVersion:plan.version,
@@ -192,7 +204,13 @@ export async function executePdfPacketPlan(ctx:RequestContext,raw:unknown,io:Pdf
     await savePlanReceiptTx(client,ctx,plan.input.scope.scopeId,'packet_plan_execute',command.guard.requestKey,hash,result);
     await appendUspOutboxTx(client,`packet-plan:${plan.planId}`,{type:'packet.plan.executed',scope:plan.input.scope,
       planId:plan.planId,version:plan.version,packetId,artifactSha256:packet.artifact.sha256,correlationId:ctx.requestId});return result;
-  },deadlineAt);
+}
+export async function executePdfPacketPlan(ctx:RequestContext,raw:unknown,io:PdfPacketIo=storage){
+  assertLocalUsp(ctx);const startedAt=Date.now(),command=UspExecutePacketPlanSchema.parse(raw);
+  const first=await boundedTx(client=>preparePdfExecutionTx(client,ctx,command));if(first.replay)return first.replay;
+  const deadlineAt=first.plan.input.recipe!==PACKET_PDF_RECIPE?startedAt+PACKET_PDF_MULTI_LIMITS.seconds*1000:undefined;
+  const staged=await stagePdfExecution(first,io,deadlineAt);
+  return boundedTx(client=>publishPdfExecutionTx(client,ctx,command,first,staged,deadlineAt),deadlineAt);
 }
 export async function readPacketPdf(ctx:RequestContext,packetValue:string,io:PdfPacketIo=storage){
   assertLocalUsp(ctx);const packetId=z.uuid().parse(packetValue);

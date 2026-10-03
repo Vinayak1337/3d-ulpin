@@ -85,11 +85,19 @@ export function assertCityGMLTools(pins:CityGMLToolPins|null,deadlineAt?:number)
 
 // GEOPARQUET-02: exact assigned-base immutable code; full inventory and non-code pins remain mandatory.
 const preGeoParquetReadCodeSha=new Set(["e9d559731bfc4a37a4f7388427f80c7c88df40a5286746d1d078f2ffb7fee308", "319041a906b31bca05e1386c992e5a5ca8bad15062930d9b9ab0880e8074408d"]);
+// PACK1-PDF-04: exact 1c024959 Git/LF and captured physical code aggregates.
+// Immutable reads only; current full inventory/non-code pins and strict writers remain mandatory.
+const prePacketPdfReadCodeSha=new Set(["bdc3ae2758db333894aed1c4a664829c7e3f67ad6331982adaef16d7fc66be78","f6533370a70cb15c86b424e334eef6fad20d050ad0572f7c387772d6b5abd14c"]);
 export function citygmlReadToolsCompatible(stored:CityGMLToolPins,current:CityGMLToolPins){
  const old=CityGMLToolPinsSchema.safeParse(stored),live=CityGMLToolPinsSchema.safeParse(current);
  if(!old.success||!live.success)return false;
  if(fingerprint(old.data)===fingerprint(live.data))return true;
  const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+  if(prePacketPdfReadCodeSha.has(oldCode)){
+    const actualCode=fingerprint(CITYGML_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
+    return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
+  }
+
  return preGeoParquetReadCodeSha.has(oldCode)&&fingerprint(oldTools)===fingerprint(currentTools);
 }
 /** Complete current inventory, immutable comparison only, never launch configuration. */
