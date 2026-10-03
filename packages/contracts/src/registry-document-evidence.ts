@@ -1,10 +1,11 @@
 import {z} from 'zod';
 import {DocumentAssociationSourceSchema} from './document-association';
 import {DocumentLocatorSchema,DocumentPartSchema,DocumentOcrItemSchema,DocumentOcrSelectionSchema} from './usp/document-ingestion';
-import {SourceFusionRequestSchema,SourceFusionOcrSchema,SourceFusionIFCRecordSchema,SourceFusionLiteralObjectSchema} from './source-fusion';
+import {SourceFusionRequestSchema,SourceFusionOcrSchema,SourceFusionIFCRecordSchema,SourceFusionLiteralObjectSchema,SourceFusionCityGMLSchema} from './source-fusion';
 import {IFC_LIMITS} from './usp/ifc-ingestion';
 import {DXF_LIMITS} from './usp/dxf-ingestion';
 import {KML_LIMITS,KMLMemberPinSchema,KMLSummarySchema} from './usp/kml-ingestion';
+import {CITYGML_LIMITS,CityGMLSummarySchema} from './usp/citygml-ingestion';
 import {PacketRegionSelectionSchema,PacketRegionPageSchema,PacketRegionWorkerSchema,PACKET_REGION_LIMITS} from './packet-region';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),revision=z.number().int().positive();
@@ -54,6 +55,20 @@ export const RegistryKMLCitationSchema=z.strictObject({...citationBase,version:z
     featureOrdinal:z.number().int().min(0).max(9999),featureType:z.string().min(1).max(128),sourceId:SourceFusionLiteralObjectSchema,
     recordPointer:z.string().regex(/^\/features\/\d+$/),recordSha256:hash,locator:SourceFusionLiteralObjectSchema,
     identifierScope:z.literal('source_native_only; not_canonical_registry_ids')})});
+/** Explicit literal building fragment only; GML IDs/types/parent pointers do
+ * not assert canonical identity, floor semantics or source applicability. */
+export const RegistryCityGMLCitationSchema=z.strictObject({...citationBase,version:z.literal('registry-citygml-citation/1'),
+  resultBytes:z.number().int().positive().max(CITYGML_LIMITS.resultBytes),
+  citygml:z.strictObject({artifactSha256:hash,artifactBytes:z.number().int().positive().max(CITYGML_LIMITS.artifactBytes),
+    profile:z.literal('ulpin-native-citygml/1'),selectionSha256:hash,sourceContextSha256:hash,
+    inspectionStatus:CityGMLSummarySchema.shape.status,buildingOrdinal:z.number().int().min(0).max(24999),
+    elementOrdinal:z.number().int().min(0).max(24999),sourceKey:z.string().min(1).max(512),
+    buildingType:z.enum(['Building','BuildingPart']),nativeId:SourceFusionLiteralObjectSchema,
+    recordPointer:z.string().regex(/^\/buildings\/\d+$/),recordSha256:hash,fragmentSha256:hash,
+    locator:SourceFusionLiteralObjectSchema,identifierScope:z.literal('source_native_only; not_canonical_registry_ids')})});
+export const RegistryCityGMLFragmentSchema=SourceFusionCityGMLSchema.extend({buildings:SourceFusionCityGMLSchema.shape.buildings.length(1)})
+  .superRefine((fragment,ctx)=>{if(fragment.coverage.selectedBuildings!==1)
+    ctx.addIssue({code:'custom',message:'A citation discloses exactly one selected building fragment.'});});
 /** Source-original selection: no extraction job/result/input/fence is implied. */
 export const RegistryRegionOriginalSchema=z.strictObject({caseId:z.uuid(),caseRevision:z.number().int().nonnegative(),
   sourceId:z.uuid(),sourceRevision:revision,sourceSha256:hash,
@@ -69,7 +84,7 @@ export const RegistryRegionCitationSchema=z.strictObject({
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
 export const RegistryDocumentCitationSchema=z.discriminatedUnion('version',[
-  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,RegistryDXFCitationSchema,RegistryKMLCitationSchema]);
+  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,RegistryDXFCitationSchema,RegistryKMLCitationSchema,RegistryCityGMLCitationSchema]);
 export const RegistryDocumentCitationsSchema=z.array(RegistryDocumentCitationSchema).max(25)
   .superRefine((items,ctx)=>{
     if(new Set(items.map(item=>item.id)).size!==items.length)
@@ -88,8 +103,8 @@ export const RegistryDocumentAmendmentSchema=z.strictObject({requestKey:z.uuid()
   if(value.assertIFCIdentity&&(value.add||value.addFusion||value.addRegion||value.remove.length||value.clearAll))
     ctx.addIssue({code:'custom',message:'Confirm one existing exact IFC citation as a separate amendment. Withdraw it by removing the citation.'});
   if([value.add,value.addFusion,value.addRegion].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Use one explicit addition per amendment.'});
-  if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:s.kind==='ifc'?s.stepIds.length:s.kind==='dxf'?s.entityOrdinals.length:s.kind==='kml'?s.featureOrdinals.length:false))
-    ctx.addIssue({code:'custom',message:'Select at least one native document, OCR observation, IFC record, DXF entity or KML feature to cite.'});
+  if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:s.kind==='ifc'?s.stepIds.length:s.kind==='dxf'?s.entityOrdinals.length:s.kind==='kml'?s.featureOrdinals.length:s.kind==='citygml'?s.buildingOrdinals.length:false))
+    ctx.addIssue({code:'custom',message:'Select at least one native document, OCR observation, IFC record, DXF entity, KML feature or CityGML building to cite.'});
   if(value.clearAll&&(value.add||value.addFusion||value.addRegion||value.remove.length))
     ctx.addIssue({code:'custom',message:'Clear all citations as a separate amendment.'});
   if(value.add && new Set(value.add.partIds).size!==value.add.partIds.length)
@@ -104,6 +119,7 @@ export const RegistryDocumentEvidenceSchema=z.strictObject({draftId:z.uuid(),dra
     z.strictObject({pin:RegistryIFCCitationSchema,record:SourceFusionIFCRecordSchema}),
     z.strictObject({pin:RegistryDXFCitationSchema,entity:SourceFusionLiteralObjectSchema}),
     z.strictObject({pin:RegistryKMLCitationSchema,feature:SourceFusionLiteralObjectSchema}),
+    z.strictObject({pin:RegistryCityGMLCitationSchema,fragment:RegistryCityGMLFragmentSchema}),
     z.strictObject({pin:RegistryRegionCitationSchema})])).max(25),
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
@@ -118,6 +134,7 @@ export type RegistryOcrDocumentCitation=z.infer<typeof RegistryOcrDocumentCitati
 export type RegistryIFCCitation=z.infer<typeof RegistryIFCCitationSchema>;
 export type RegistryDXFCitation=z.infer<typeof RegistryDXFCitationSchema>;
 export type RegistryKMLCitation=z.infer<typeof RegistryKMLCitationSchema>;
+export type RegistryCityGMLCitation=z.infer<typeof RegistryCityGMLCitationSchema>;
 export type RegistryRegionCitation=z.infer<typeof RegistryRegionCitationSchema>;
 export type RegistryRegionOriginal=z.infer<typeof RegistryRegionOriginalSchema>;
 export type RegistryRegionAddition=z.infer<typeof RegistryRegionAdditionSchema>;

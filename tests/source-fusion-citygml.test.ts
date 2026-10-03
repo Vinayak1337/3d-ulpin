@@ -128,7 +128,7 @@ test('retained CityGML building plus document preserves exact fragments without 
   await assert.rejects(()=>proposeFusionAssociations(ctx(),{requestKey:f.selection.pin.jobId,context:{contextSha256:context.contextSha256,selection:request},scope:null,targets:[]},
     {capture:()=>assert.fail('no association capture'),gateway:()=>assert.fail('no model')} as any),contextOnly);
   await assert.rejects(()=>resolveFusionCitationsTx({query:()=>assert.fail('no citation I/O')} as any,ctx(),
-    {contextSha256:context.contextSha256,selection:request},{source:()=>assert.fail('no source I/O')} as any,f.selection.pin.caseId),contextOnly);
+    {contextSha256:context.contextSha256,selection:request},{source:()=>assert.fail('no source I/O')} as any),contextOnly);
   const old=JSON.parse(readFileSync('E:/BhuAayam-data/task-data/desktop-source-fusion-ocr/mixed-context.json','utf8'));
   assert.deepEqual(fusionContextProjection(old.sources),old);
   save('lod2-controlled-journey.json',{qualification:'controlled authority/storage/tools; unchanged retained originals/native/document',request,context,part});

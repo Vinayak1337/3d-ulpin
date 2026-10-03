@@ -12,17 +12,21 @@ import {assembleSourceFusion} from './source-fusion';
 import {fusionAuthorityBatch,fusionLive,readFusionResult,type FusionBudget,type FusionAuthority} from './source-fusion-authority';
 import {registryIFCCitationSourceTx} from '../../registry/registry-ifc-citation-source';
 import {verifyFusionIFCTools} from './source-fusion-ifc-authority';
-import type {RegistryDXFCitation,RegistryKMLCitation} from '../../../../../contracts/src/registry-document-evidence';
+import {RegistryCityGMLFragmentSchema,type RegistryDXFCitation,type RegistryKMLCitation,type RegistryCityGMLCitation} from '../../../../../contracts/src/registry-document-evidence';
+import type {CityGMLInput} from '../../../../../contracts/src/usp/citygml-ingestion';
 import {registryDXFCitationSourceTx} from '../../registry/registry-dxf-citation-source';
 import {verifyFusionDXFTools} from './source-fusion-dxf-authority';
 import {registryKMLCitationSourceTx} from '../../registry/registry-kml-citation-source';
 import {verifyFusionKMLTools} from './source-fusion-kml-authority';
+import {registryCityGMLCitationSourceTx} from '../../registry/registry-citygml-citation-source';
+import {verifyFusionCityGMLTools} from './source-fusion-citygml-authority';
 
 export type FusionCitationDependencies={source:typeof associationDocumentInputTx;
   fusionResult?:typeof readFusionResult;cityjson?:typeof acceptedCityJSONTx;
   ifcSource?:typeof registryIFCCitationSourceTx;ifcTools?:typeof verifyFusionIFCTools;
   dxfSource?:typeof registryDXFCitationSourceTx;dxfTools?:typeof verifyFusionDXFTools;
-  kmlSource?:typeof registryKMLCitationSourceTx;kmlTools?:typeof verifyFusionKMLTools};
+  kmlSource?:typeof registryKMLCitationSourceTx;kmlTools?:typeof verifyFusionKMLTools;
+  citygmlSource?:typeof registryCityGMLCitationSourceTx;citygmlTools?:typeof verifyFusionCityGMLTools};
 export function citationReadBudget():FusionBudget{
   return {deadlineAt:Date.now()+SOURCE_FUSION_LIMITS.deadlineMs,signal:new AbortController().signal,reservedBytes:0};
 }
@@ -31,8 +35,8 @@ export function citationReadBudget():FusionBudget{
  * No independent transaction, write or trusted caller-supplied context exists. */
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string){
-  if(request.selection.sources.some(source=>source.kind==='citygml'))
-    throw new AppError(422,'SOURCE_FUSION_CITYGML_CONTEXT_ONLY','CityGML fragments support source context only; citation attachment is unsupported.');
+  if(request.selection.sources.some(source=>source.kind==='citygml')&&!siteId)
+    throw new AppError(422,'SOURCE_FUSION_CITYGML_CONTEXT_ONLY','CityGML citation selection requires its exact canonical building/floor target site.');
   if(request.selection.sources.some(source=>source.kind==='kml')&&!siteId)
     throw new AppError(422,'SOURCE_FUSION_KML_CONTEXT_ONLY','KML citation selection requires its exact canonical building/floor target site.');
   if(request.selection.sources.some(source=>source.kind==='dxf')&&!siteId)
@@ -50,13 +54,17 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
     dxfTools:dependencies.dxfTools??verifyFusionDXFTools,
     kml:async(client:PoolClient,pin:SourceFusionPin,lock=false)=>
       (await (dependencies.kmlSource??registryKMLCitationSourceTx)(client,siteId!,pin,lock)).authority,
-    kmlTools:dependencies.kmlTools??verifyFusionKMLTools};
+    kmlTools:dependencies.kmlTools??verifyFusionKMLTools,
+    citygml:async(client:PoolClient,pin:SourceFusionPin,lock=false)=>
+      (await (dependencies.citygmlSource??registryCityGMLCitationSourceTx)(client,siteId!,pin,lock)).authority,
+    citygmlTools:dependencies.citygmlTools??verifyFusionCityGMLTools};
   const documents=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'document'}>}>();
   const ifcs=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'ifc'}>}>();
   const dxfs=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'dxf'}>}>();
   const kmls=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'kml'}>}>();
+  const citygmls=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'citygml'}>}>();
   let selected:SourceFusionSelection[]=[],captured:FusionAuthority[]=[],budget:FusionBudget|undefined;
-  const assembled=await assembleSourceFusion(ctx,request.selection,{
+  const context=await assembleSourceFusion(ctx,request.selection,{
     authority:async(ctx,selections,current,expected)=>{
       const authorities=await fusionAuthorityBatch(ctx,selections,current,expected,authorityDependencies);
       selected=selections;captured=authorities;budget=current;return authorities;
@@ -66,15 +74,9 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       if(loaded.kind==='ifc')ifcs.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='dxf')dxfs.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='kml')kmls.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
+      if(loaded.kind==='citygml')citygmls.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       return loaded;
     }});
-  // Preserve every supported source and expose a narrowed citation context.
-  // Refuse an unexpected CityGML projection rather than filtering it out.
-  const context={...assembled,sources:assembled.sources.map(source=>{
-    if(source.kind==='citygml')throw new AppError(422,'SOURCE_FUSION_CITYGML_CONTEXT_ONLY',
-      'CityGML fragments support source context only; citation attachment is unsupported.');
-    return source;
-  })};
   // All supported source variants stay in the exact context hash; no selected
   // fragment is silently dropped before the amendment is accepted.
   if(context.contextSha256!==request.contextSha256)conflict('The explicitly selected fusion context changed.');
@@ -85,15 +87,44 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
   const ifcInputs=new Map<string,IFCInput>();
   const dxfInputs=new Map<string,DXFInput>();
   const kmlInputs=new Map<string,KMLInput>();
+  const citygmlInputs=new Map<string,CityGMLInput>();
   for(const [index,selection] of selected.entries()){
     const authority=captured[index];if(authority.kind==='document')inputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='ifc')ifcInputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='dxf')dxfInputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='kml')kmlInputs.set(selection.pin.sourceId,authority.input);
+    if(authority.kind==='citygml')citygmlInputs.set(selection.pin.sourceId,authority.input);
   }
-  return {context,inputs,ifcInputs,dxfInputs,kmlInputs,documents,ifcs,dxfs,kmls,revalidate:async()=>{
+  return {context,inputs,ifcInputs,dxfInputs,kmlInputs,citygmlInputs,documents,ifcs,dxfs,kmls,citygmls,revalidate:async()=>{
     fusionLive(finalBudget);await fusionAuthorityBatch(ctx,selected,finalBudget,captured,authorityDependencies);
   }};
+}
+
+export function citygmlCitationFusionSelection(pin:RegistryCityGMLCitation):Extract<SourceFusionSelection,{kind:'citygml'}>{
+  return {kind:'citygml',pin:{...pin.document,inputSha256:pin.inputSha256,readerSha256:pin.readerSha256,
+    acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes},buildingOrdinals:[pin.citygml.buildingOrdinal]};
+}
+/** A stable singleton fragment; removing another citation never changes its pin. */
+export function fusionCityGMLCitationFragment(source:Extract<SourceFusionContext['sources'][number],{kind:'citygml'}>,ordinal:number){
+  const entry=source.buildings.find(entry=>entry.ordinal===ordinal);
+  if(!entry)conflict('The exact selected CityGML building fragment is unavailable.');
+  return RegistryCityGMLFragmentSchema.parse({...source,buildings:[entry],coverage:{...source.coverage,selectedBuildings:1},
+    selectionSha256:fingerprint({version:'source-fusion-citygml-selection/1',pin:source.pin,
+      artifact:{sha256:source.artifactSha256,bytes:source.artifactBytes},buildingOrdinals:[ordinal]})});
+}
+export function fusionCityGMLCitationFields(source:Extract<SourceFusionContext['sources'][number],{kind:'citygml'}>,ordinal:number){
+  const fragment=fusionCityGMLCitationFragment(source,ordinal),entry=fragment.buildings[0],record=entry.record;
+  const element=entry.elements.find(element=>element.ordinal===record.element);
+  if(!element)conflict('The exact selected CityGML building locator is unavailable.');
+  return {document:fusionCitationDocumentPin(source.pin),inputSha256:source.pin.inputSha256,readerSha256:source.pin.readerSha256,
+    acceptedFence:source.pin.acceptedFence,resultBytes:source.pin.resultBytes,
+    citygml:{artifactSha256:source.artifactSha256,artifactBytes:source.artifactBytes,profile:'ulpin-native-citygml/1' as const,
+      selectionSha256:fragment.selectionSha256,sourceContextSha256:fingerprint({source:fragment.source,parser:fragment.parser,
+        namespaces:fragment.namespaces,sourceContext:fragment.sourceContext,findings:fragment.findings,semantics:fragment.semantics,summary:fragment.summary}),
+      inspectionStatus:source.summary.status,buildingOrdinal:ordinal,elementOrdinal:record.element,sourceKey:entry.key,
+      buildingType:record.type,nativeId:{id:record.id,idState:record.idState},recordPointer:entry.pointer,
+      recordSha256:entry.recordSha256,fragmentSha256:entry.fragmentSha256,locator:SourceFusionLiteralObjectSchema.parse(element.locator),
+      identifierScope:source.nativeIdentifierScope}};
 }
 
 export function kmlCitationFusionSelection(pin:RegistryKMLCitation):Extract<SourceFusionSelection,{kind:'kml'}>{
