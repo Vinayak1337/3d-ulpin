@@ -2,6 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {PacketPdfJobInputSchema} from '../../../../../contracts/src/usp/packet-pdf-jobs';
 import {PACKET_PDF_MULTI_LIMITS} from '../../../../../contracts/src/usp/packet-pdf';
 import {PACKET_IMAGE_PDF_RECIPE,PACKET_IMAGE_PDF_LIMITS} from '../../../../../contracts/src/usp/packet-image-pdf';
+import {PACKET_MIXED_PDF_RECIPE,PACKET_MIXED_PDF_LIMITS} from '../../../../../contracts/src/usp/packet-mixed-pdf';
 import {query,transaction,DbCommitOutcomeUnknown,type DbDeadline} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
@@ -42,9 +43,10 @@ export async function failPacketPdfJob(jobId:string,code:string,attempt?:UspJobA
 export async function runPacketPdfJob(jobId:string,io:PdfPacketIo=pdfPacketStorage,options:{deadlineAt?:number;signal?:AbortSignal}={}){
   if(options.deadlineAt!==undefined&&!Number.isFinite(options.deadlineAt))
     throw new AppError(422,'PACKET_PDF_DEADLINE','Use a finite server operation deadline.');
-  // Discovery must already fit the single-image ceiling. After authorized
-  // recipe capture, PDF-page plans retain their existing longer allowance.
-  const startedAt=Date.now();let deadlineAt=Math.min(startedAt+PACKET_IMAGE_PDF_LIMITS.seconds*1000,options.deadlineAt??Infinity);
+  // Discovery fits the shortest supported ceiling. Authorized recipe capture
+  // then selects its exact existing allowance, measured from this same start.
+  const startedAt=Date.now(),initialSeconds=Math.min(PACKET_IMAGE_PDF_LIMITS.seconds,PACKET_PDF_MULTI_LIMITS.seconds,PACKET_MIXED_PDF_LIMITS.seconds);
+  let deadlineAt=Math.min(startedAt+initialSeconds*1000,options.deadlineAt??Infinity);
   const bounds:DbDeadline={deadlineAt,signal:options.signal};
   const live=()=>{options.signal?.throwIfAborted();pdfExecutionLive(deadlineAt);};
   let attempt:UspJobAttempt|undefined;
@@ -55,7 +57,8 @@ export async function runPacketPdfJob(jobId:string,io:PdfPacketIo=pdfPacketStora
     const input=PacketPdfJobInputSchema.parse(job.payload);assertPacketPdfJobRow(job,input);
     const ctx=packetPdfJobContext(input);
     const enrolled=await transaction(client=>capturePacketPdfJobTx(client,ctx,input),bounds);
-    const seconds=enrolled.plan.input.recipe===PACKET_IMAGE_PDF_RECIPE?PACKET_IMAGE_PDF_LIMITS.seconds:PACKET_PDF_MULTI_LIMITS.seconds;
+    const seconds=enrolled.plan.input.recipe===PACKET_IMAGE_PDF_RECIPE?PACKET_IMAGE_PDF_LIMITS.seconds:
+      enrolled.plan.input.recipe===PACKET_MIXED_PDF_RECIPE?PACKET_MIXED_PDF_LIMITS.seconds:PACKET_PDF_MULTI_LIMITS.seconds;
     deadlineAt=Math.min(startedAt+seconds*1000,options.deadlineAt??Infinity);bounds.deadlineAt=deadlineAt;live();
     const beforeLocks=async(client:Parameters<typeof capturePacketPdfJobTx>[0])=>{live();await capturePacketPdfJobTx(client,ctx,input);};
     attempt=await claimUspJobAttempt(jobId,`packet:${randomUUID()}`,beforeLocks,bounds);

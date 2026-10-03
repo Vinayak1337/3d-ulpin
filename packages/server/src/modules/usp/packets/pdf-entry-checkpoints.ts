@@ -19,6 +19,7 @@ import {PACKET_IMAGE_PDF_RECIPE} from '../../../../../contracts/src/usp/packet-i
 import {PACKET_IMAGE_REGION_LIMITS,PacketImageRegionWorkerSchema} from '../../../../../contracts/src/packet-image-region';
 import {assertCleanImageRegionPng} from './image-region';
 import {assertImagePdfRgb} from './image-pdf-render';
+import {PACKET_MIXED_PDF_RECIPE} from '../../../../../contracts/src/usp/packet-mixed-pdf';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),text=z.string().min(1).max(512);
 /** Private server receipt: no new public job input, recipe or plan hash. */
@@ -42,10 +43,13 @@ type Checkpoint=z.output<typeof checkpointSchema>;
 function expectedIdentity(input:PacketPdfJobInput,plan:AnyPdfPacketPlan,index:number){
   const entry=plan.entries[index],binding=entry?.binding;
   if(!entry||!binding||entry.state!=='included')conflict('The exact required PDF entry is unavailable.');
-  const image=plan.input.recipe===PACKET_IMAGE_PDF_RECIPE;
-  if(image&&(index!==0||plan.entries.length!==1||binding.version!=='registry-image-region-citation/1'))
+  const singleImage=plan.input.recipe===PACKET_IMAGE_PDF_RECIPE,mixed=plan.input.recipe===PACKET_MIXED_PDF_RECIPE;
+  const image=binding.version==='registry-image-region-citation/1';
+  if(singleImage&&(index!==0||plan.entries.length!==1||!image))
     conflict('The exact single-image checkpoint binding is unavailable.');
-  if(!image&&binding.version==='registry-image-region-citation/1')conflict('An image binding cannot enter a PDF-page checkpoint.');
+  if(image&&!singleImage&&!mixed)conflict('An image binding cannot enter a PDF-page checkpoint.');
+  if(mixed&&(!('kind' in entry.selection)||entry.selection.kind!==(image?'original_image_region':'pdf_page_region')))
+    conflict('The mixed checkpoint differs from its exact selected entry kind.');
   return anyIdentitySchema.parse({version:image?'packet-image-pdf-entry/1':'packet-pdf-entry/1',jobId:input.jobId,jobInputSha256:fingerprint(input),
     planId:plan.planId,planVersion:plan.version,planSha256:plan.planSha256,
     confirmationId:input.command.confirmationId,confirmationSha256:input.confirmationSha256,

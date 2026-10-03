@@ -15,6 +15,7 @@ import {registryRegionSourceTx,assertRegionCitation,regionCitationId} from '../.
 import {documentSourceTx} from '../ingestion/document-context';
 import {registryImageRegionSourceTx,assertImageRegionCitation,imageRegionCitationId} from '../../registry/registry-image-region-evidence';
 import {assertImagePdfRgb} from './image-pdf-render';
+import {PACKET_MIXED_PDF_RECIPE,PACKET_MIXED_PDF_LIMITS,UspMixedPdfPacketPlanEntrySchema} from '../../../../../contracts/src/usp/packet-mixed-pdf';
 
 type RegionBinding=RegistryRegionCitation|RegistryImageRegionCitation;
 
@@ -36,12 +37,13 @@ async function targetTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlan
   if(target.id!==input.target.ref.id||target.site_id!==input.scope.scopeId||target.revision!==input.target.revision||
     !['building','floor','space'].includes(target.kind))
     throw new AppError(422,'PACKET_PLAN_TARGET','Use the exact recorded building, floor or space.');
-  const image=input.recipe===PACKET_IMAGE_PDF_RECIPE;
-  if(image&&!['building','floor'].includes(target.kind))
+  const image=input.recipe===PACKET_IMAGE_PDF_RECIPE,mixed=input.recipe===PACKET_MIXED_PDF_RECIPE;
+  if((image||mixed)&&!['building','floor'].includes(target.kind))
     throw new AppError(422,'PACKET_IMAGE_PDF_TARGET','Image packets support exact building or floor targets.');
   const citations=RegistryDocumentCitationsSchema.parse(target.body?.documentCitations??[]);
   const bindings=input.entries.map(entry=>{
-    const binding=citations.find(p=>p.version===(image?'registry-image-region-citation/1':'registry-document-region-citation/1')&&p.id===entry.bindingId) as RegionBinding|undefined;
+    const imageEntry=image||(mixed&&'kind' in entry&&entry.kind==='original_image_region');
+    const binding=citations.find(p=>p.version===(imageEntry?'registry-image-region-citation/1':'registry-document-region-citation/1')&&p.id===entry.bindingId) as RegionBinding|undefined;
     if(binding&&(binding.target.recordId!==target.id||binding.target.revision>=target.revision||binding.purpose!==input.purpose))
       conflict('The exact region has not passed canonical commit for this target and purpose.');
     if(binding&&binding.id!==(binding.version==='registry-image-region-citation/1'?imageRegionCitationId(binding):regionCitationId(binding)))
@@ -49,7 +51,12 @@ async function targetTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlan
     return binding;
   });
   const supplied=bindings.filter((binding):binding is RegionBinding=>Boolean(binding));
-  if(input.recipe===PACKET_PDF_ORIGINALS_RECIPE){
+  if(mixed){
+    if(supplied.reduce((n,b)=>n+b.document.sourceBytes,0)>PACKET_MIXED_PDF_LIMITS.originalBytes)
+      throw new AppError(413,'PACKET_PDF_ORIGINAL_BYTES','Select two exact originals within the aggregate 32 MiB source profile.');
+    if(bindings.every(Boolean)&&new Set(supplied.map(b=>b.document.sourceId)).size!==2)
+      throw new AppError(422,'PACKET_PDF_ORIGINAL_SCOPE','Mixed packets require distinct PDF and image originals.');
+  }else if(input.recipe===PACKET_PDF_ORIGINALS_RECIPE){
     const originals=new Map<string,RegistryRegionCitation['document']>();
     for(const binding of supplied){
       const prior=originals.get(binding.document.sourceId);
@@ -154,7 +161,8 @@ export async function assessPdfPlanTx(client:PoolClient,ctx:RequestContext,input
     const body={selection,binding:binding??null,targetPath:[input.target],
       applicabilitySha256:binding?fingerprint({binding,target:input.target,purpose:input.purpose}):null,
       state:binding?'included':'blocked_required_context',reasonCode:binding?null:'committed_region_binding_unavailable'};
-    entries.push((input.recipe===PACKET_IMAGE_PDF_RECIPE?UspImagePdfPacketPlanEntrySchema:UspPdfPacketPlanEntrySchema)
+    entries.push((input.recipe===PACKET_MIXED_PDF_RECIPE?UspMixedPdfPacketPlanEntrySchema:
+      input.recipe===PACKET_IMAGE_PDF_RECIPE?UspImagePdfPacketPlanEntrySchema:UspPdfPacketPlanEntrySchema)
       .parse({...body,entrySha256:fingerprint(body)}));
   }
   return {targetBodySha256:captured.body_sha256 as string,targetLabel:target.body?.name??target.identifier,

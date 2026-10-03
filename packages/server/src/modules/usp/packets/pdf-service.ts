@@ -26,6 +26,9 @@ import {PacketImageRegionService} from './image-region';
 import {registryImageRegionSourceTx,prepareRegistryImageRegion} from '../../registry/registry-image-region-evidence';
 import {assemblePacketImagePdf,assertImagePdfRgb} from './image-pdf-render';
 import {packetImageCheckpointRuntime,type ImageCheckpointRuntime} from './image-checkpoint-runtime';
+import {PACKET_MIXED_PDF_RECIPE,PACKET_MIXED_PDF_LIMITS} from '../../../../../contracts/src/usp/packet-mixed-pdf';
+import {PACKET_IMAGE_REGION_LIMITS} from '../../../../../contracts/src/packet-image-region';
+import {assemblePacketMixedPdf} from './mixed-pdf-render';
 
 /** Internal I/O seam only. Each byte read is bounded by the immutable receipt. */
 export type PdfPacketIo={extract:PacketRegionService['extract'];put:typeof putOriginal;
@@ -176,15 +179,20 @@ export type PdfCropRecovery=(index:number,extract:()=>Promise<Buffer>)=>Promise<
 export async function stagePdfExecution(first:PreparedPdfExecution,io:PdfPacketIo=storage,deadlineAt?:number,recover?:PdfCropRecovery){
   // No transaction or mutation lock spans native execution or object I/O.
   const {plan,bindings,sources}=first,image=plan.input.recipe===PACKET_IMAGE_PDF_RECIPE,
+    mixed=plan.input.recipe===PACKET_MIXED_PDF_RECIPE,
     multi=!image&&plan.input.recipe!==PACKET_PDF_RECIPE,
     multipleOriginals=plan.input.recipe===PACKET_PDF_ORIGINALS_RECIPE;
   const live=()=>pdfExecutionLive(deadlineAt);
   const extractCrop=async(index:number)=>{
     live();const binding=bindings[index];
     if(binding.version==='registry-image-region-citation/1'){
-      if(!image||index!==0||bindings.length!==1)conflict('The image binding differs from its exact single-image recipe.');
+      if(!mixed&&(!image||index!==0||bindings.length!==1))conflict('The image binding differs from its exact recipe.');
       assertImagePdfRgb(binding.validation);
       if(!io.imageExtract)throw new AppError(503,'PACKET_IMAGE_PDF_EXTRACT_UNAVAILABLE','The private image extractor is unavailable.');
+      // The unchanged image extractor owns a fixed 30-second process/cleanup
+      // bound. Admit it only when that entire allowance fits the mixed deadline.
+      if(mixed&&deadlineAt!==undefined&&deadlineAt-Date.now()<PACKET_IMAGE_REGION_LIMITS.seconds*1000)
+        throw new AppError(503,'PACKET_PDF_DEADLINE','Not enough time remains for bounded image extraction; retry the accepted checkpoints.');
       const crop=await io.imageExtract(binding.document.sourceId,{revision:String(binding.document.sourceRevision),
         sha256:binding.document.sourceSha256,purpose:'private_source_preview',selection:binding.region});live();
       const proof=await prepareRegistryImageRegion({document:binding.document,region:binding.region,purpose:binding.purpose},
@@ -201,7 +209,9 @@ export async function stagePdfExecution(first:PreparedPdfExecution,io:PdfPacketI
     live();return crop.bytes;
   };
   const cropAt=(index:number)=>recover?recover(index,()=>extractCrop(index)):extractCrop(index);
-  const assembled=image?assemblePacketImagePdf(bindings[0].validation,await cropAt(0)):
+  const assembled=mixed?await assemblePacketMixedPdf(bindings.map(binding=>({kind:binding.version==='registry-image-region-citation/1'?'original_image_region':'pdf_page_region',
+      original:binding.document,derivative:binding.validation})),cropAt,live):
+    image?assemblePacketImagePdf(bindings[0].validation,await cropAt(0)):
     multipleOriginals?await assemblePacketPdfOriginals(bindings.map(binding=>binding.document),bindings.map(binding=>binding.validation),cropAt,live):
     multi?await assemblePacketPdfRegions(bindings.map(binding=>binding.validation),cropAt,live):
     assemblePacketPdf(bindings[0].validation,await cropAt(0));
@@ -216,6 +226,7 @@ export async function publishPdfExecutionTx(client:PoolClient,ctx:RequestContext
   first:PreparedPdfExecution,staged:Awaited<ReturnType<typeof stagePdfExecution>>,deadlineAt?:number,reuseExisting=false){
     const hash=fingerprint(command),{plan,confirmation,bindings}=first,{packetId,key,assembled}=staged,
       image=plan.input.recipe===PACKET_IMAGE_PDF_RECIPE,multi=!image&&plan.input.recipe!==PACKET_PDF_RECIPE,
+      mixed=plan.input.recipe===PACKET_MIXED_PDF_RECIPE,
       multipleOriginals=plan.input.recipe===PACKET_PDF_ORIGINALS_RECIPE;
     const live=()=>pdfExecutionLive(deadlineAt);
   // Final same-client publication is atomic with execution/command/outbox.
@@ -223,10 +234,11 @@ export async function publishPdfExecutionTx(client:PoolClient,ctx:RequestContext
   // delete a possibly committed object or any original on cancellation.
     const final=await preparePdfExecutionTx(client,ctx,command,reuseExisting);if(final.replay)return final.replay;
     if(canonical(final)!==canonical(first))conflict('The confirmed plan or original authority changed during generation.');
-    live();const packet=UspPacketPdfReceiptSchema.parse({version:image?'packet-image-pdf/1':multipleOriginals?'packet-pdf/3':multi?'packet-pdf/2':'packet-pdf/1',packetId,target:plan.input.target,scope:plan.input.scope,
+    live();const packet=UspPacketPdfReceiptSchema.parse({version:mixed?'packet-mixed-pdf/1':image?'packet-image-pdf/1':multipleOriginals?'packet-pdf/3':multi?'packet-pdf/2':'packet-pdf/1',packetId,target:plan.input.target,scope:plan.input.scope,
       format:'pdf',artifact:{assetId:packetId,version:1,sha256:assembled.manifest.output.sha256},planId:plan.planId,planVersion:plan.version,
       planSha256:plan.planSha256,confirmationId:confirmation.confirmationId,...(multi?{
-        entries:bindings.map((binding,index)=>({bindingId:binding.id,entrySha256:plan.entries[index].entrySha256,outputPage:index+1}))}:
+        entries:bindings.map((binding,index)=>({... (mixed?{kind:binding.version==='registry-image-region-citation/1'?'original_image_region':'pdf_page_region'}:{}),
+          bindingId:binding.id,entrySha256:plan.entries[index].entrySha256,outputPage:index+1}))}:
         {bindingId:bindings[0].id,entrySha256:plan.entries[0].entrySha256}),
       assembly:assembled.manifest,contentType:'application/pdf',status:'complete',createdAt:new Date().toISOString(),commandSha256:hash});
     const result=UspPdfPacketPlanExecutionSchema.parse({planId:plan.planId,version:plan.version,confirmationId:confirmation.confirmationId,packet,omissions:[]});
@@ -244,6 +256,7 @@ export async function executePdfPacketPlan(ctx:RequestContext,raw:unknown,io:Pdf
   assertLocalUsp(ctx);const startedAt=Date.now(),command=UspExecutePacketPlanSchema.parse(raw);
   const first=await boundedTx(client=>preparePdfExecutionTx(client,ctx,command));if(first.replay)return first.replay;
   const deadlineAt=first.plan.input.recipe===PACKET_IMAGE_PDF_RECIPE?startedAt+PACKET_IMAGE_PDF_LIMITS.seconds*1000:
+    first.plan.input.recipe===PACKET_MIXED_PDF_RECIPE?startedAt+PACKET_MIXED_PDF_LIMITS.seconds*1000:
     first.plan.input.recipe!==PACKET_PDF_RECIPE?startedAt+PACKET_PDF_MULTI_LIMITS.seconds*1000:undefined;
   const staged=await stagePdfExecution(first,io,deadlineAt);
   return boundedTx(client=>publishPdfExecutionTx(client,ctx,command,first,staged,deadlineAt),deadlineAt);
@@ -269,6 +282,7 @@ export async function readPacketPdf(ctx:RequestContext,packetValue:string,io:Pdf
   const before=await boundedTx(capture),output=before.receipt.assembly.output;
   const bytes=await io.read(before.key,output.bytes,output.sha256);
   const limit=before.receipt.version==='packet-image-pdf/1'?PACKET_IMAGE_PDF_LIMITS.bytes:
+    before.receipt.version==='packet-mixed-pdf/1'?PACKET_MIXED_PDF_LIMITS.bytes:
     before.receipt.version==='packet-pdf/1'?PACKET_PDF_LIMITS.bytes:PACKET_PDF_MULTI_LIMITS.bytes;
   if(bytes.length!==output.bytes||bytes.length>limit||sha256(bytes)!==output.sha256)
     throw new AppError(422,'PACKET_PDF_ARTIFACT_INTEGRITY','The saved PDF differs from its exact receipt.');
