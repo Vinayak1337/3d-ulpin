@@ -1,0 +1,71 @@
+{
+  "version": "association-selector-constraints-preparation/1",
+  "task": "STUDENT-11-CONSTRAINED-PREP",
+  "recordedAt": "2026-10-03",
+  "status": "prepared_for_dispatch_after_saved_reload_handoff_acceptance",
+  "authority": "E:/Projects/3d-ulpin/docs/orchestration/PARALLEL_20261003.md at0b209ca31e97fbcbadae9d5bb6dc02524127b1fe, Resume dispatch / ML recovery; explicit continued user authorization of existing ML roles.",
+  "coordinatorBase": "71c70a5ac4268e2503a8b1f9d16e4ef11f268e3a",
+  "primaryStagingHeadObservedReadOnly": "0b209ca31e97fbcbadae9d5bb6dc02524127b1fe",
+  "owner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "codeBaseRule": "Use the unchanged accepted executable95a0df5f plus its evidence-only recovery commit after coordinator acceptance. Record that exact clean HEAD before CPU code edits; do not cherry-pick coordinator documents or change worker branch.",
+  "outcome": "Implement and CPU-check an explicit source-dependent constrained selector generation policy, reusing the installed Transformers generation interface and existing saved-adapter route. Return concrete code and small controls, not an architecture-only plan. No model or tokenizer runtime phase is authorized by PREP.",
+  "hypothesis": "The saved reload now emits schema-valid pointer JSON but selects absent fragment ordinals. During-generation syntax/source-range/citation/state legality can prevent that failure class. This changes the decoding distribution; it cannot establish correct role/field selection, independent truth or IFC transfer. No repeated fitting under the same hypothesis.",
+  "observedSavedOutcomeProvisional": {
+    "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-selector-reload-5c4c5b3f14154294ae01760e60d04b7d",
+    "hostRoot": "E:/BhuAayam-data/task-data/ml-distillation/student/selector-reload-v1-host-20261003-95a0df5f",
+    "jsonAndSchemaValidResponses": 2,
+    "usableResponses": 0,
+    "expectedCorrectClaims": 0,
+    "expectedClaims": 6,
+    "qualification": "Saved artifact observation only; final owner receipt/commit and scoped acceptance still required. Additional unknown/non-null, citation-coverage and role errors exist behind the first range rejection."
+  },
+  "executionAllowance": {
+    "stageModelRun": false,
+    "loadModel": false,
+    "fit": false,
+    "inference": false,
+    "evaluation": false,
+    "promotion": false
+  },
+  "existingComponentAssessment": "No xgrammar/outlines/lm-format-enforcer/jsonformer/guidance package is present in the pinned runtime profile. Inspect and reuse Transformers4.57.6 prefix/logits processor APIs; the source-dependent integer/citation relationships need a small explicit bounded policy. Do not install a framework, duplicate generation/training loops or weaken containment. A concrete inability to preserve tokenizer-prefix correctness must return as a blocker before execution.",
+  "ownedPaths": [
+    "services/geo/geo/usp_learning/association/selector_constraints.py",
+    "scripts/usp/learning/association/test_selector_constraints.py",
+    "docs/evidence/usp/ml-distillation/student/selector-constraints-preparation.json",
+    "docs/evidence/usp/ml-distillation/student/selector-constraints-preparation.md"
+  ],
+  "allowedNarrowSeams": [
+    "services/geo/geo/usp_learning/association/selector_baseline.py",
+    "services/geo/geo/usp_learning/association/selector_adapter.py",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_selector_adapter.py"
+  ],
+  "implementation": [
+    "Keep the existing selector schema, lossless Unicode lexical policy, source-only prompt, frozen model/adapter, greedy settings and unchanged project()/semantic validator. An explicitly versioned constrained mode may add a default-off generation hook and policy/freeze metadata; historical unconstrained dispatch/defaults/output hashes retain their meaning.",
+    "Build allowed choices only from the current input source token positions and public contract. Preserve true integer fragment/first/exclusive-end constraints, nonempty bounded spans, source-local citation coverage and the existing literal/unit state rules. Do not inject expectations, teacher outputs, known correct roles/spans or source-specific semantic templates into decoding.",
+    "Use generation-time token masking before selection, preserving relative allowed logits. No post-hoc numeric clamp, substitution, completed-object repair, prefix rewrite, forced closing after the token cap, beam/sampling/threshold sweep or partial accepted claims. Empty allowed sets and unsupported tokenization fail clearly.",
+    "Handle the pinned tokenizer byte/BPE boundaries, multi-digit integers, token strings containing multiple JSON components, partial UTF-8/escapes and EOS only after a complete grammar-valid response. Prefix checking must operate on generated tokens only and remain consistent with actual decoding. Read pinned tokenizer JSON/vocabulary for CPU inspection; do not import/load a host model or add an uncontained tokenizer phase.",
+    "Keep lazy/bounded ordinal/range logic rather than materializing all possible spans/triples or whole valid-output combinations. Cache reusable vocabulary/prefix structures and measure the representative CPU mask work, with no broad performance campaign.",
+    "If any schema/state/citation/no-canonical-target element is enforced by the controller, identify that explicitly in policy and receipt. Such elements cannot be counted as learned accuracy. Remaining semantic mistakes must still be rejected or honestly scored against host expectations.",
+    "Future execution must be a new separately inspected constrained reload freeze that pins actual final code/policy/adapter/input/prompt/tokenizer hashes and keeps original resource/Job/egress/guard/output/cleanup bounds. PREP cannot stage it automatically. Do not silently reuse the historical STUDENT-10 assignment as constrained authorization."
+  ],
+  "acceptance": [
+    "Inspect the complete owned delta and compile affected CPU sources. Reuse earlier controls; add only targeted prefix/source-integrity controls for the actual absent-fragment failure and critical boundary behaviors.",
+    "Use one unchanged training source view plus one unchanged development view for source bounds only, without expectations or fitting. Show legal complete selector outputs reaching unchanged projection and impossible fragment/range/empty/reversed/cross-citation/state choices being unavailable or rejected. Technical corruption fixtures are not operational records or learning labels.",
+    "Check actual pinned vocabulary metadata plus focused multi-token-digit/JSON-boundary/Unicode/EOS transport fixtures. Establish that a valid generated sequence is preserved byte-for-byte and historical raw rejection remains unchanged. Describe anything requiring the later contained tokenizer/model check as unverified.",
+    "Return exact source/policy/code/model/tokenizer/input hashes, commands/exits, short representative prefix decisions and small CPU timing/memory observations. No exhaustive schema matrix, new harness, repeated security review or quality claim."
+  ],
+  "comparisonRequiredLater": "Unconstrained saved reload and constrained inference remain separate experimental policies. Preserve both raw generated strings. Report schema/range/expanded validity, emitted and unique accepted claims, correct intersection/precision/coverage, enforced-policy elements and resources separately. Improved validity alone does not establish semantics; evaluation remains closed until an independently frozen decision.",
+  "sourceBoundary": "Frozen train Haryana/Tower-3 and Bihar Magnolia; development one related buildingSMART IFC pair; held-out OGC family unopened. No family moves, new factual labels, training on development, teacher feedback containing development/expectations/predictions, Sarvam training, source acquisition or retired corpora.",
+  "ownershipExclusions": "No shared registry/API/gateway/catalogue/staging/frontend/native reader, dependency/runtime/host configuration, services/Docker/volume/provider/deployment or source-original changes. One learner/GPU owner remains, but PREP has no GPU/model phase.",
+  "settingsRequired": {
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "speed": "default/standard",
+    "observation": "Verify supplied never/danger-full-access; actual per-turn model/effort/tier only when exposed, no tool tier field."
+  },
+  "continuation": "Dispatch only after completing and accepting the interrupted saved reload handoff. Finish one CPU code/preparation increment, commit only owned changes and callback to coordinator, then stop. Coordinator inspects the actual code before one new constrained inference freeze; no automatic model continuation or polling."
+}
