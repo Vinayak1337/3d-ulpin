@@ -20,7 +20,7 @@ import {localRequestContext} from '../packages/server/src/modules/usp/principal'
 import {fingerprint,canonical} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
 import {runPacketPdfJob} from '../packages/server/src/modules/usp/packets/pdf-worker';
-import {inspectImageCheckpointRuntime} from '../packages/server/src/modules/usp/packets/image-checkpoint-runtime';
+import {inspectImageCheckpointRuntime,packetImageCheckpointRuntime} from '../packages/server/src/modules/usp/packets/image-checkpoint-runtime';
 
 // Exact retained crop and committed citation are reused. Source/SQL/target/storage
 // remain technical controls, not an authentic property association or live persistence.
@@ -36,7 +36,7 @@ class ImageDb{
   siteId=this.journey.publicCommit.records[0].siteId;
   manifestId=randomUUID();ctx!:RequestContext;active=0;opens=0;releases=0;extracts=0;puts=0;reads=0;
   source:any;sourceCase:any;record:any;captured:any;history=new Map<number,any>();latest=1;
-  checkpointAvailable=true;runtimeReads=0;runtimeChanged=false;cropPuts=0;failPdfPut=false;commitLost=false;afterCropPut?:()=>void;afterPut?:()=>void;afterRead?:()=>void;failEvent=false;
+  checkpointAvailable=true;runtimeReads=0;runtimeChanged=false;recipeChanged=false;cropPuts=0;failPdfPut=false;commitLost=false;afterCropPut?:()=>void;afterPut?:()=>void;afterRead?:()=>void;failEvent=false;
   objects=new Map<string,Uint8Array>();queries:string[]=[];
   state={jobs:[] as any[],jobMeta:[] as any[],attempts:[] as any[],checkpoints:[] as any[],plans:[] as any[],confirmations:[] as any[],executions:[] as any[],receipts:[] as any[],packets:[] as any[],streams:[] as any[],events:[] as any[]};
   scope={kind:'snapshot' as const,scopeId:this.siteId,world:{namespace:'world',id:`registry-site/${this.siteId}`},
@@ -149,7 +149,7 @@ class ImageDb{
     recipe:async()=>{throw new Error('Image recovery must not read a PDF renderer recipe');},
     imageRuntime:async deadline=>{assert.equal(this.active,0);assert(deadline>Date.now()&&deadline<=Date.now()+60_000);this.runtimeReads++;
       const {pythonSha256,launcherSha256,pillowImageSha256,imagingSha256}=this.citation.validation.runtime;
-      return {recipe:this.citation.validation.recipe,runtime:{pythonSha256,launcherSha256,pillowImageSha256,
+      return {recipe:{...this.citation.validation.recipe,...this.recipeChanged?{workerSha256:'0'.repeat(64)}:{}},runtime:{pythonSha256,launcherSha256,pillowImageSha256,
         imagingSha256:this.runtimeChanged?'0'.repeat(64):imagingSha256}};}};
   io={pdf:this.pdf,read:async()=>{throw new Error('No original read');},put:async()=>{throw new Error('No PACK0 write');}};
   input(bindingId=this.citation.id){return UspImagePdfPacketPlanInputSchema.parse({target:this.target,scope:this.scope,
@@ -224,6 +224,13 @@ test('image recovery: current decoder drift and revoked source deny reuse; recei
     readsBefore:reads,readsAfter:db.reads,acceptedCheckpointUnchanged:true,resultPublished:false});
 }));
 
+test('image recovery: changed physical recipe bytes deny before extraction without normalizing hashes',()=>control(async db=>{
+  const {queued:q}=await queued(db);db.recipeChanged=true;
+  await runPacketPdfJob(q.jobId,db.pdf);
+  assert.equal((await status(db,q.jobId)).errorCode,'PACKET_PDF_INPUT_STALE');
+  assert.equal(db.extracts,0);assert.equal(db.reads,0);assert.equal(db.state.checkpoints.length,0);
+}));
+
 test('image recovery: missing schema refuses before crop I/O; synchronous execution and uncertain checkpoint commit remain useful',async()=>{
   await control(async db=>{const {command,queued:q}=await queued(db);db.checkpointAvailable=false;
     await runPacketPdfJob(q.jobId,db.pdf);const failed=await status(db,q.jobId);
@@ -267,12 +274,21 @@ test('retained current image runtime files match the accepted launcher/base/Pill
   const pins=await inspectImageCheckpointRuntime(configured,Date.now()+10_000),expected=provenance.runtime;
   assert.deepEqual(pins,{pythonSha256:expected.pythonSha256,launcherSha256:expected.launcherSha256,
     pillowImageSha256:expected.pillowImageSha256,imagingSha256:expected.imagingSha256});
+  // Runtime binaries are retained; code hashes must describe this checkout's
+  // actual bytes. Git line-ending conversion can differ from the old recipe,
+  // which correctly makes that old binding ineligible for production reuse.
+  const previous=process.env.ULPIN_DOCUMENT_IMAGES_PYTHON;
+  process.env.ULPIN_DOCUMENT_IMAGES_PYTHON=configured;
+  let current;
+  try{current=await packetImageCheckpointRuntime(Date.now()+10_000);}
+  finally{if(previous===undefined)delete process.env.ULPIN_DOCUMENT_IMAGES_PYTHON;else process.env.ULPIN_DOCUMENT_IMAGES_PYTHON=previous;}
+  assert.deepEqual(current.runtime,pins);
   const script='scripts/usp/document-models/';
-  assert.equal(sha256(readFileSync(script+'run_image_region.py')),provenance.recipe.workerSha256);
-  assert.equal(sha256(readFileSync(script+'run_image_inspection.py')),provenance.recipe.decoderSha256);
-  assert.equal(sha256(readFileSync(script+'run_trial.py')),provenance.recipe.supervisorSha256);
+  assert.equal(current.recipe.workerSha256,sha256(readFileSync(script+'run_image_region.py')));
+  assert.equal(current.recipe.decoderSha256,sha256(readFileSync(script+'run_image_inspection.py')));
+  assert.equal(current.recipe.supervisorSha256,sha256(readFileSync(script+'run_trial.py')));
   save('retained-runtime-files.json',{classification:'read-only current file hashes; no interpreter/import/decoder invocation or runtime readiness claim',
     configured,actualBase:'C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe',
     actualImaging:'C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/Lib/site-packages/PIL/_imaging.cp312-win_amd64.pyd',
-    pins,recipe:provenance.recipe,knownStartupHooksVerified:true});
+    pins,recipe:current.recipe,historicalRecipeMatches:canonical(current.recipe)===canonical(provenance.recipe),knownStartupHooksVerified:true});
 });

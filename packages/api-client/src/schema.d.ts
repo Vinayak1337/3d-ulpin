@@ -1924,7 +1924,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Durably enqueue a supported PDF-source plan; original-image recipe uses synchronous execution */
+        /** Durably enqueue a confirmed PDF-region or single original-image plan with accepted-crop recovery */
         post: operations["POST_api_v1_usp_packets_plans_enqueue"];
         delete?: never;
         options?: never;

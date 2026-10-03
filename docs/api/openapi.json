@@ -22948,7 +22948,7 @@
             }
           }
         },
-        "summary": "Durably enqueue a supported PDF-source plan; original-image recipe uses synchronous execution",
+        "summary": "Durably enqueue a confirmed PDF-region or single original-image plan with accepted-crop recovery",
         "tags": [
           "USP private immutable packet plans"
         ],
