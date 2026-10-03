@@ -5280,6 +5280,18 @@
         "scope": "Guarded native crop of oriented original before resampling; exact approved pixels and metadata-free PNG; controlled source/access/SQL/storage",
         "effectiveImagingSha256": "2e62b249f2f10405ca9338240d5a8bd00e839031057352461e3e7c95d9c1e488",
         "qualification": "Source-only preview; current HTTP/persistence, property applicability, calibration/geometry/learning, packet completion and release unqualified; prior runtime inventories retained unchanged"
+      },
+      "reviewedImageRegionCitationEvidence": {
+        "guide": "docs/evidence/usp/reviewed-image-regions-handoff.md",
+        "integratedCodeCommit": "5d74b067",
+        "completionSha256": "eb2d1db68ea7f80056bfd1502118c55b2a3fd1ccb86152167cea87788e02ee5f",
+        "journeySha256": "cc2f496aeafe5e45319b6731022ec244c7df74798c5be02cff80b51c26eb77af",
+        "targetKind": "building",
+        "associationState": "operator_selected",
+        "qualification": "not_assessed",
+        "originalUnchanged": true,
+        "scope": "Saved native crop through canonical amendment/private read/replay/review/commit/history with technical SQL/transport/target controls; no native rerun",
+        "limits": "Current HTTP/persistence, authentic property crosswalk/measurement/learning and image packet completion/release remain unqualified"
       }
     },
     {
@@ -5341,6 +5353,18 @@
         "scope": "Guarded native crop of oriented original before resampling; exact approved pixels and metadata-free PNG; controlled source/access/SQL/storage",
         "effectiveImagingSha256": "2e62b249f2f10405ca9338240d5a8bd00e839031057352461e3e7c95d9c1e488",
         "qualification": "Source-only preview; current HTTP/persistence, property applicability, calibration/geometry/learning, packet completion and release unqualified; prior runtime inventories retained unchanged"
+      },
+      "reviewedImageRegionCitationEvidence": {
+        "guide": "docs/evidence/usp/reviewed-image-regions-handoff.md",
+        "integratedCodeCommit": "5d74b067",
+        "completionSha256": "eb2d1db68ea7f80056bfd1502118c55b2a3fd1ccb86152167cea87788e02ee5f",
+        "journeySha256": "8ae1a36c60b2cd666593f3ad052322a132e834cf239a198e7d5640e9926c0740",
+        "targetKind": "floor",
+        "associationState": "operator_selected",
+        "qualification": "not_assessed",
+        "originalUnchanged": true,
+        "scope": "Saved native crop through canonical amendment/private read/replay/review/commit/history with technical SQL/transport/target controls; no native rerun",
+        "limits": "Current HTTP/persistence, authentic property crosswalk/measurement/learning and image packet completion/release remain unqualified"
       }
     },
     {

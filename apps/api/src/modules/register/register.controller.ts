@@ -230,7 +230,7 @@ export class RegisterController {
 
   @Post('registry-drafts/:draftId/document-citations') @HttpCode(200)
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
-  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_document_citations',summary:'Amend native/OCR/IFC/DXF/KML/CityGML/GeoParquet or validated original-region citations (DXF/KML/CityGML/GeoParquet: building/floor); region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity'})
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_document_citations',summary:'Amend native/OCR/IFC/DXF/KML/CityGML/GeoParquet or validated PDF/PNG/JPEG original-region citations (PNG/JPEG and DXF/KML/CityGML/GeoParquet: building/floor); region inclusion takes effect after canonical review/commit; explicitly confirm IFC building/floor identity'})
   @doc.ApiContract(200,doc.requestSchema(RegistryDocumentAmendmentReceiptSchema),RegistryDocumentAmendmentSchema)
   async amendDocumentCitations(@Param('draftId') draftId:string,@Req() req:Request){
     if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
@@ -241,7 +241,7 @@ export class RegisterController {
 
   @Get('registry-drafts/:draftId/document-citations')
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
-  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_document_citations',summary:'Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet and original-region citations through current private source and draft authority'})
+  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_document_citations',summary:'Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet and PDF/PNG/JPEG original-region citations through current private source and draft authority'})
   @doc.ApiContract(200,doc.requestSchema(RegistryDocumentEvidenceSchema))
   documentCitations(@Param('draftId') draftId:string,@Req() req:Request){
     if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
