@@ -21,10 +21,14 @@ import {KMLResultSchema,KML_LIMITS,type KMLInput} from '@ulpin/contracts/usp';
 import {kmlResultKey,kmlArtifactKey} from './kml';
 import {kmlSummary} from './kml-processor';
 import {acceptedFusionKMLTx,verifyFusionKMLTools} from './source-fusion-kml-authority';
+import {CityGMLResultSchema,CITYGML_LIMITS,type CityGMLInput} from '../../../../../contracts/src/usp/citygml-ingestion';
+import {citygmlResultKey,citygmlArtifactKey} from './citygml';
+import {citygmlSummary} from './citygml-processor';
+import {acceptedFusionCityGMLTx,verifyFusionCityGMLTools} from './source-fusion-citygml-authority';
 
 export type FusionAuthority={kind:'document';input:DocumentInput;acceptedFence:number}|
   {kind:'cityjson';input:CityJSONInput;acceptedFence:number}|{kind:'ifc';input:IFCInput;acceptedFence:number}|
-  {kind:'dxf';input:DXFInput;acceptedFence:number}|{kind:'kml';input:KMLInput;acceptedFence:number};
+  {kind:'dxf';input:DXFInput;acceptedFence:number}|{kind:'kml';input:KMLInput;acceptedFence:number}|{kind:'citygml';input:CityGMLInput;acceptedFence:number};
 export type FusionBudget={deadlineAt:number;signal:AbortSignal;reservedBytes:number};
 export function fusionLive(budget:Pick<FusionBudget,'deadlineAt'|'signal'>){
   if(budget.signal.aborted||Date.now()>=budget.deadlineAt)
@@ -34,7 +38,8 @@ type AuthorityDependencies={transaction:typeof transaction;document:typeof assoc
   cityjson:typeof acceptedCityJSONTx;gate:typeof lockSourceCaseDestinationTx;
   ifc?:typeof acceptedFusionIFCTx;ifcTools?:typeof verifyFusionIFCTools;
   dxf?:typeof acceptedFusionDXFTx;dxfTools?:typeof verifyFusionDXFTools;
-  kml?:typeof acceptedFusionKMLTx;kmlTools?:typeof verifyFusionKMLTools};
+  kml?:typeof acceptedFusionKMLTx;kmlTools?:typeof verifyFusionKMLTools;
+  citygml?:typeof acceptedFusionCityGMLTx;citygmlTools?:typeof verifyFusionCityGMLTools};
 const defaults:AuthorityDependencies={transaction,document:associationDocumentInputTx,cityjson:acceptedCityJSONTx,gate:lockSourceCaseDestinationTx};
 
 /** All final rows share one transaction after ALL object I/O. No persistent write. */
@@ -65,6 +70,8 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
         authority=await (deps.dxf??acceptedFusionDXFTx)(client,pin,true);
       }else if(selection.kind==='kml'){
         authority=await (deps.kml??acceptedFusionKMLTx)(client,pin,true);
+      }else if(selection.kind==='citygml'){
+        authority=await (deps.citygml??acceptedFusionCityGMLTx)(client,pin,true);
       }else if(selection.kind!=='cityjson'){
         const prior=expected?.[index];
         const input=await deps.document(client,ctx,pin,prior?.kind==='document'?prior.input:undefined,true);
@@ -86,6 +93,7 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
     if(authority.kind==='ifc')(deps.ifcTools??verifyFusionIFCTools)(authority.input,budget);
     if(authority.kind==='dxf')(deps.dxfTools??verifyFusionDXFTools)(authority.input,budget);
     if(authority.kind==='kml')(deps.kmlTools??verifyFusionKMLTools)(authority.input,budget);
+    if(authority.kind==='citygml')(deps.citygmlTools??verifyFusionCityGMLTools)(authority.input,budget);
   }
   fusionLive(budget);assertLocalUsp(ctx);return captured;
 }
@@ -141,6 +149,7 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
   const pin=selection.pin;
   if((selection.kind==='ifc'&&authority.kind!=='ifc')||(selection.kind==='dxf'&&authority.kind!=='dxf')||(selection.kind==='cityjson'&&authority.kind!=='cityjson')||
     (selection.kind==='kml'&&authority.kind!=='kml')||
+    (selection.kind==='citygml'&&authority.kind!=='citygml')||
     ((selection.kind==='document'||selection.kind==='document_ocr')&&authority.kind!=='document'))
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
   if(selection.kind==='ifc'&&pin.resultBytes>IFC_LIMITS.resultBytes)
@@ -149,7 +158,9 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted DXF result exceeds its receipt profile.');
   if(selection.kind==='kml'&&pin.resultBytes>KML_LIMITS.resultBytes)
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted KML result exceeds its receipt profile.');
-  const key=selection.kind==='kml'?kmlResultKey(pin.jobId,pin.resultSha256):selection.kind==='dxf'?dxfResultKey(pin.jobId,pin.resultSha256):selection.kind==='ifc'?ifcResultKey(pin.jobId,pin.resultSha256):
+  if(selection.kind==='citygml'&&pin.resultBytes>CITYGML_LIMITS.resultBytes)
+    throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted CityGML result exceeds its receipt profile.');
+  const key=selection.kind==='citygml'?citygmlResultKey(pin.jobId,pin.resultSha256):selection.kind==='kml'?kmlResultKey(pin.jobId,pin.resultSha256):selection.kind==='dxf'?dxfResultKey(pin.jobId,pin.resultSha256):selection.kind==='ifc'?ifcResultKey(pin.jobId,pin.resultSha256):
     selection.kind==='cityjson'?cityjsonResultKey(pin.jobId,pin.resultSha256):documentResultKey(pin.jobId,pin.resultSha256);
   const bytes=await read(key,pin.resultBytes,pin.resultSha256,budget);
   const value=fusionJson(bytes,budget);
@@ -213,6 +224,16 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
     if(fingerprint(kmlSummary(artifact,authority.input))!==fingerprint(result.summary))
       throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted KML metadata differs from its summary.');
     return {kind:'kml' as const,result,native};
+  }
+  if(selection.kind==='citygml'&&authority.kind==='citygml'){
+    const result=CityGMLResultSchema.parse(value);
+    if(fingerprint(result.input)!==fingerprint(authority.input)||result.artifact.key!==citygmlArtifactKey(pin.jobId,result.artifact.sha256))
+      throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted CityGML artifact belongs to another input.');
+    const artifact=await read(result.artifact.key,result.artifact.bytes,result.artifact.sha256,budget);
+    const native=fusionJson(artifact,budget);
+    if(fingerprint(citygmlSummary(artifact,authority.input))!==fingerprint(result.summary))
+      throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted CityGML metadata differs from its summary.');
+    return {kind:'citygml' as const,result,native};
   }
   throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
 }
