@@ -1563,6 +1563,18 @@
             "workflow_verified": {
               "status": "not_run"
             }
+          },
+          "currentPrivateReadEvidence": {
+            "guide": "docs/evidence/usp/current-runtime-20261003.md",
+            "receipt": "docs/evidence/usp/current-runtime-20261003.json",
+            "receiptSha256": "a53d2cf9a0718764db51636a10759b4a2acbc1be6ebc03a3278d10621d6507f9",
+            "servedCodeCommit": "f642cf4ed81bf9509d108a6b48f64591c77941f7",
+            "sourceId": "59b3f4b2-0a3a-4acd-9c99-60b989dda5f8",
+            "caseId": "2c5ca5cc-d98a-48e9-9be0-16f2c590d0a3",
+            "originalBytes": 89622,
+            "originalSha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+            "standingInstallation": false,
+            "qualification": "Stopped current isolated API metadata/private-original read only; no parser/native/property/learning qualification"
           }
         },
         {

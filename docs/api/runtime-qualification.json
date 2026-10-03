@@ -903,6 +903,51 @@
           ]
         }
       }
+    },
+    {
+      "recordedAt": "2026-10-03T16:30:37.730Z",
+      "receipt": "docs/evidence/usp/current-runtime-20261003.json",
+      "receiptSha256": "a53d2cf9a0718764db51636a10759b4a2acbc1be6ebc03a3278d10621d6507f9",
+      "servedCodeCommit": "f642cf4ed81bf9509d108a6b48f64591c77941f7",
+      "environment": "Populated retained isolated prefix profile; API-only loopback3192 and storage stopped after observation; Docker remains available.",
+      "qualification": "Current isolated API source read and additive metadata migration only; no processing/queue/recovery/geometry/learning/scale/release pass.",
+      "unqualified": [
+        "full processor/worker readiness",
+        "queue/checkpoint execution/recovery",
+        "native extraction",
+        "authentic property applicability/measurement/rights",
+        "learning/scale/frontend/release"
+      ],
+      "operations": {
+        "GET /api/v1/health": {
+          "scope": "API/database/storage readiness; overall false because processing stopped; independent Redis PONG distinct from processor-derived flag",
+          "sourceManifests": [],
+          "evidencePointers": [
+            "/health",
+            "/migration"
+          ]
+        },
+        "GET /api/v1/cases/{caseId}": {
+          "scope": "One existing LGD CSV source metadata read; unchanged rows",
+          "sourceManifests": [
+            "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sourceRead",
+            "/preservation"
+          ]
+        },
+        "GET /api/v1/sources/{sourceId}/file": {
+          "scope": "Private original LGD CSV, 89622 bytes/hash identical to retained original",
+          "sourceManifests": [
+            "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sourceRead",
+            "/cleanup"
+          ]
+        }
+      }
     }
   ]
 }
