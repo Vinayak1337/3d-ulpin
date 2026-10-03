@@ -51,6 +51,28 @@
             "historicalArtifactsAndEnvelope": "not_retained",
             "originalsUnchanged": true,
             "qualification": "Memory SQL/storage/HTTP and reconstructed authority; no native accuracy, real durability/current HTTP/persistence, applicability, learning, scale or release qualification"
+          },
+          "reviewedMetadataCitationEvidence": {
+            "guide": "docs/evidence/usp/reviewed-point-citations-handoff.md",
+            "integratedCodeCommit": "6cc97180",
+            "completionSha256": "d3d2816a26302546a10487c00bcfaeccaeaaae9fa1ba1c0e8bfa02bb14abfef3",
+            "verificationSha256": "89d318e41ee07b384d7d48cd1a403d1611bce5be47a137872f51a26757464a93",
+            "scope": "Explicit accepted first/later point batch metadata plus retained EPSG document through controlled building/floor amendment, review, commit and history",
+            "selectedBatches": [
+              {
+                "start": 0,
+                "count": 8192
+              },
+              {
+                "start": 8192,
+                "count": 8192
+              }
+            ],
+            "pointRecords": "not_read",
+            "artifactVerification": "accepted_receipt_reference_only",
+            "historicalNativeBinaryAndEnvelope": "not_retained",
+            "originalsUnchanged": true,
+            "qualification": "Reconstructed target/site/input/attempt/review/SQL/storage controls; no authentic applicability, current HTTP/persistence/native/geometry/height/alignment/learning/scale/release qualification"
           }
         }
       },
