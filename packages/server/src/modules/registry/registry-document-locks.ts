@@ -19,7 +19,7 @@ export async function lockRegistryDocumentCasesTx(client:PoolClient,cases:readon
 }
 export function registryRegionCases(records:readonly RegistryRecord[],extra:readonly string[]=[]){
   return [...new Set([...records.flatMap(record=>(record.documentCitations??[])
-    .filter(pin=>pin.version==='registry-document-region-citation/1').map(pin=>pin.document.caseId)),...extra]
+    .filter(pin=>pin.version==='registry-document-region-citation/1'||pin.version==='registry-image-region-citation/1').map(pin=>pin.document.caseId)),...extra]
     .map(value=>z.uuid().parse(value).toLowerCase()))].sort();
 }
 /** Never discover/acquire an additional gate after waiting with destination rows held. */
