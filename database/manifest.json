@@ -2243,6 +2243,116 @@
         "path": "packages/server/src/modules/usp/migrations.ts",
         "function": "migrateUsp"
       }
+    },
+    {
+      "id": "usp.packet-pdf-entries.check",
+      "source": {
+        "path": "database/sql/60-usp/21-packet-pdf-entry-checkpoints-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "PACK1-PDF-05",
+        "acceptedBase": "2201f51f4d5c4e639f45eb288e235fa85bc2ad4d"
+      },
+      "file": "sql/60-usp/21-packet-pdf-entry-checkpoints-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "packetPdfEntriesName",
+          "value": "usp_packet_pdf_entry_checkpoints_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 47,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.packet-pdf-entries.schema",
+      "source": {
+        "path": "database/sql/60-usp/20-packet-pdf-entry-checkpoints-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "PACK1-PDF-05",
+        "acceptedBase": "2201f51f4d5c4e639f45eb288e235fa85bc2ad4d"
+      },
+      "file": "sql/60-usp/20-packet-pdf-entry-checkpoints-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.packet-pdf-entries.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.packet-pdf-entries.check",
+      "callMode": "one-query-call",
+      "order": 48,
+      "sha256": "c46863dcc975b2a7bafbca972fad7fb6bacd11baa483454b190a5f20c003d31a",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "459171e454686ddb3e836c6219d4664701b8cf3b5e2c68857d0ed7b9bb88106a"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "b29eee29ea474c3476bd599be777f65459475454a9fc46fb9d58a9c4f7bbbbe5"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "6410ebe314ed0ac5b7a67e67ea8d3128a7dcd8a61022a6f1f6aec5641f8f2341"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.packet-pdf-entries.mark",
+      "source": {
+        "path": "database/sql/60-usp/22-packet-pdf-entry-checkpoints-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "PACK1-PDF-05",
+        "acceptedBase": "2201f51f4d5c4e639f45eb288e235fa85bc2ad4d"
+      },
+      "file": "sql/60-usp/22-packet-pdf-entry-checkpoints-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.packet-pdf-entries.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "packetPdfEntriesName",
+          "value": "usp_packet_pdf_entry_checkpoints_001"
+        }
+      ],
+      "guardedBy": "usp.packet-pdf-entries.check",
+      "callMode": "one-query-call",
+      "order": 49,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     }
   ],
   "plannedButAbsent": []
