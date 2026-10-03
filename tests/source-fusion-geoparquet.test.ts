@@ -116,7 +116,7 @@ function save(name:string,value:unknown){
 }
 const errorCode=(code:string)=>(e:any)=>e.code===code;
 
-test('integrated mixed document and GeoParquet context recaptures the accepted parent and refuses unsupported linking',{skip:!present},()=>local(async()=>{
+test('integrated mixed document and GeoParquet context recaptures the accepted parent and requires an exact citation target site',{skip:!present},()=>local(async()=>{
   const f=fixture(),c=control(f),documentBytes=readFileSync('E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/epsg7415-accepted-result.json'),
     document=DocumentResultSchema.parse(JSON.parse(documentBytes.toString('utf8'))),
     entry=JSON.parse(readFileSync(new URL('../docs/evidence/usp/reference-document-enrollment/manifest.json',import.meta.url),'utf8'))
@@ -137,7 +137,7 @@ test('integrated mixed document and GeoParquet context recaptures the accepted p
   assert.deepEqual(c.stats(),{active:false,captures:2,tools:2});assert.equal(c.reads.length,4);assert(!c.reads.includes(f.parent!.artifact.key));
   assert.equal(context.association.state,'not_assessed');assert.equal(context.sources.length,2);
   await assert.rejects(()=>resolveFusionCitationsTx(null as any,ctx,{contextSha256:context.contextSha256,selection},{} as any),
-    errorCode('SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY'));
+    (e:any)=>e.code==='SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY'&&e.message.includes('exact canonical building/floor target site'));
   await assert.rejects(()=>proposeFusionAssociations(ctx,{requestKey:'00000000-0000-4000-8000-000000000001',
     context:{contextSha256:context.contextSha256,selection},scope:null,targets:[]},{} as any),errorCode('SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY'));
   const parent=f.jobs.get(f.parent!.input.jobId)!;
@@ -150,7 +150,7 @@ test('integrated mixed document and GeoParquet context recaptures the accepted p
   await assert.rejects(()=>assembleSourceFusion(ctx,{sources:[{...f.selection,rowIndices:[1]},docSelection]},deps),
     errorCode('SOURCE_FUSION_GEOPARQUET_ROW_WINDOW'));
   save('integrated-mixed-context.json',{qualification:'retained real bytes with memory SQL/document/source/storage/tool controls; no live HTTP admission',
-    selection,context,initialCaptures:2,initialReads:4,parentChangeDenied:true,outOfWindowActionable:true,unsupportedLinkingDenied:true});
+    selection,context,initialCaptures:2,initialReads:4,parentChangeDenied:true,outOfWindowActionable:true,citationTargetSiteRequired:true,automaticAssociationDenied:true});
 }));
 
 test('retained continuation selects global row 3 at ordinal 1 with exact literal metadata and bounded receipt reads',{skip:!present},()=>local(async()=>{
