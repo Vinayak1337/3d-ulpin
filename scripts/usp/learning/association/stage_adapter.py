@@ -86,6 +86,8 @@ def accepted_fit(root):
     selector, fragment = None, None
     if freeze.get("version") == "association-fragment-fit-freeze/1":
         from geo.usp_learning.association import fragment_adapter as fragment
+    elif freeze.get("version") == "association-fragment-support-fit-freeze/2":
+        from geo.usp_learning.association import fragment_support_v2 as fragment
     elif ("fragment" in str(freeze.get("version", "")) or "fragment" in str(assignment.get("version", ""))):
         raise RuntimeError("explicit fragment fit freeze required")
     elif freeze.get("version") == "association-selector-adapter-freeze/1":
@@ -111,7 +113,7 @@ def accepted_fit(root):
     if fragment is not None:
         schema = fragment.checked_inputs(freeze, assignment, root / "inputs", source_root=root / "code")
         contract, family = isolation.read(root / "inputs/schema-v1.json"), isolation.read(root / "inputs/family-freeze.json")
-        rows, delta = fragment.checked_teacher((root / "inputs/train-teacher-fragments-v1.jsonl").read_bytes(), schema, contract, family)
+        rows, delta = fragment.checked_teacher((root / "inputs" / fragment.input_names("fit")["training_data"]).read_bytes(), schema, contract, family)
         require(same(isolation.read(output / "teacher-delta.json"), delta), "fragment admission receipt drift")
         fragment.checked_fit_metadata(preflight, result, manifest, rows, fragment.FragmentRepresentation(schema, contract, family))
     elif selector is not None:

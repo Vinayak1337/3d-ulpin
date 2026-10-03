@@ -21,6 +21,10 @@ from geo.usp_learning.association.citation_view import checked_freeze, checked_c
 
 
 def representation_module(freeze, assignment):
+    if freeze.get("version") in ("association-fragment-support-fit-freeze/2", "association-fragment-support-reload-freeze/2"):
+        from geo.usp_learning.association import fragment_support_v2
+        fragment_support_v2.checked_freeze(freeze, assignment)
+        return fragment_support_v2
     if freeze.get("version") in ("association-fragment-fit-freeze/1", "association-fragment-reload-freeze/1"):
         from geo.usp_learning.association import fragment_adapter
         fragment_adapter.checked_freeze(freeze, assignment)

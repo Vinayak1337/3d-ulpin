@@ -23,7 +23,7 @@ BASELINE = isolation.ASSOCIATION_STAGING_PARENT / "fragment-baseline-6d2a6e03ea6
 TRAINING = Path("E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-fragments-v1.jsonl")
 
 
-def checked_sources(assignment):
+def checked_sources(assignment, *, fragment=fragment):
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
     require(commit == assignment["studentCodeCommit"] and not subprocess.check_output(
         ["git", "status", "--porcelain"], cwd=REPO, text=True).strip(), "fragment_adapter_clean_frozen_head_required")
@@ -50,13 +50,13 @@ def donor_metadata():
     return runtime, baseline
 
 
-def stage(action, assignment_path, fit_root=None):
+def stage(action, assignment_path, fit_root=None, *, fragment=fragment, training=TRAINING, training_sources=None):
     assignment_path = Path(assignment_path)
     assignment_bytes = assignment_path.read_bytes()
     assignment = strict_json(assignment_bytes)
     fragment.checked_execution(assignment, action)  # PREP/mixed/version refusal before effects or donor reads.
     require((action == "reload") == (fit_root is not None), "fragment_adapter_fit_root_scope_drift")
-    pins = checked_sources(assignment)
+    pins = checked_sources(assignment, fragment=fragment)
     runtime, baseline = donor_metadata()
     sources = {}
     names = fragment.input_names(action)
@@ -66,13 +66,13 @@ def stage(action, assignment_path, fit_root=None):
     sources["assignment.json"] = (assignment_path, fragment.sha(assignment_bytes))
     sources["runtime-requirements-resolved.txt"] = (RUNTIME / "inputs/runtime-requirements-resolved.txt", fragment.REQUIREMENTS_SHA)
     for name, digest in fragment.auxiliary_pins(action).items():
-        sources[name] = (BASELINE / "inputs" / name, digest)
+        sources[name] = ((training_sources or {}).get(name, BASELINE / "inputs" / name), digest)
     schema = fragment.codec.checked_schema(sources["fragment-schema-v1.json"][0].read_bytes())
     contract, family = (isolation.read(sources[names[k]][0]) for k in ("schema", "family_freeze"))
     proof = None
     if action == "fit":
-        fragment.checked_teacher(TRAINING.read_bytes(), schema, contract, family)
-        sources[names["training_data"]] = (TRAINING, fragment.DATA_SHA)
+        fragment.checked_teacher(training.read_bytes(), schema, contract, family)
+        sources[names["training_data"]] = (training, fragment.DATA_SHA)
     else:
         fit_root = Path(fit_root).resolve()
         require(fit_root == Path(assignment["acceptedFit"]["root"]), "fragment_adapter_fit_root_binding_drift")
@@ -87,9 +87,11 @@ def stage(action, assignment_path, fit_root=None):
         fragment.checked_development(BASELINE / "inputs", schema, contract, family)
     for name, (path, expected) in sources.items():
         require(isolation.sha(path) == expected, "fragment_adapter_source_input_pin_drift:" + name)
+    if action == "fit" and training_sources is not None:
+        fragment.checked_support_files({name: sources[name][0].read_bytes() for name in fragment.SUPPORT_PINS}, training.read_bytes())
     freeze = fragment.make_freeze(assignment, assignment_bytes, pins)
     require(shutil.disk_usage(RUNTIME.parent).free >= 15 * 1024**3, "fragment_adapter_disk_headroom")
-    root = RUNTIME.parent / ("adapter-fragment-" + action + "-" + uuid.uuid4().hex)
+    root = RUNTIME.parent / (getattr(fragment, "STAGE_PREFIX", "adapter-fragment-") + action + "-" + uuid.uuid4().hex)
     root.mkdir()
     for name in (*isolation.READONLY, "outputs", "scratch", "state", "receipts"):
         (root / name).mkdir()
@@ -143,7 +145,7 @@ def stage(action, assignment_path, fit_root=None):
     return root
 
 
-def phase_template(action):
+def phase_template(action, *, fragment=fragment, entrypoint=None):
     """Planning metadata only. Neither template admits staging or native work."""
     require(action in fragment.VERSIONS, "fragment_template_phase")
     assignment = {"version": fragment.VERSIONS[action][0], "task": fragment.TASKS[action], "action": action,
@@ -157,7 +159,7 @@ def phase_template(action):
     if action == "reload":
         assignment.update(acceptedFit={k: None for k in sorted(fragment.ACCEPTED_FIT_KEYS)}, cases=fragment.CASES)
     return {"executable": False, "assignment": assignment,
-        "stageCommand": [str(PYTHON_ROOT / "python.exe"), "-B", "-I", "-S", str(Path(__file__).resolve()), action,
+        "stageCommand": [str(PYTHON_ROOT / "python.exe"), "-B", "-I", "-S", str(Path(__file__).resolve() if entrypoint is None else entrypoint), action,
                          "--assignment", "<separate-positive-frozen-assignment>",
                          *(["--fit-root", "<accepted-fit-root>"] if action == "reload" else [])],
         "runCommand": None, "runFreezeSha256": None, "phaseProfileSha256": None,

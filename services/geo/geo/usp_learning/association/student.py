@@ -42,6 +42,9 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
         require(callable(preserve_preflight), "fragment_baseline_preflight_or_loader_refused")
         if model_loader is not None:
             from .fragment_adapter import checked_loader_authorization
+            if (isinstance(fragment_adapter_reload, dict)
+                    and fragment_adapter_reload.get("freeze", {}).get("version") == "association-fragment-support-reload-freeze/2"):
+                from .fragment_support_v2 import checked_loader_authorization
             require(callable(model_loader), "fragment_reload_loader_required")
             checked_loader_authorization(fragment_adapter_reload, fragment_route)
         else:
