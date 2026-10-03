@@ -40,6 +40,8 @@ export function citationReadBudget():FusionBudget{
  * No independent transaction, write or trusted caller-supplied context exists. */
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string){
+  if(request.selection.sources.some(source=>source.kind==='point'))
+    throw new AppError(422,'SOURCE_FUSION_POINT_CONTEXT_ONLY','Point metadata supports source context only; registry citation attachment is unsupported.');
   if(request.selection.sources.some(source=>source.kind==='raster'))
     throw new AppError(422,'SOURCE_FUSION_RASTER_CONTEXT_ONLY','Raster metadata supports source context only; registry citation attachment is unsupported.');
   if(request.selection.sources.some(source=>source.kind==='geoparquet')&&!siteId)
@@ -92,8 +94,10 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       return loaded;
     }});
   // Keep the result type as narrow as the explicit admission above. Existing
-  // registry consumers remain exhaustive without adding a raster citation route.
+  // registry consumers remain exhaustive without adding a metadata citation route.
   const context={...assembled,sources:assembled.sources.map(source=>{
+    if(source.kind==='point')throw new AppError(422,'SOURCE_FUSION_POINT_CONTEXT_ONLY',
+      'Point metadata supports source context only; registry citation attachment is unsupported.');
     if(source.kind==='raster')throw new AppError(422,'SOURCE_FUSION_RASTER_CONTEXT_ONLY',
       'Raster metadata supports source context only; registry citation attachment is unsupported.');
     return source;
