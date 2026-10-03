@@ -40,6 +40,17 @@
             "associationAndCitation": "unsupported",
             "originalsUnchanged": true,
             "qualification": "Current HTTP/persistence/native accuracy/alignment/applicability/geometry/learning/scale/release remain unqualified"
+          },
+          "boundedPublicationEvidence": {
+            "guide": "docs/evidence/usp/point-publication-handoff.md",
+            "integratedCodeCommit": "cc8a1fea",
+            "completionSha256": "b6067edcdf0f9c1b49deac82e46455144bfc9a4d78a80d3eca4c939ecadba4fb",
+            "verificationSha256": "fed12938e66d93af4bfd66f326db2ae01d64c5a44ef3ad7481e041533ab917f3",
+            "scope": "Bounded native reply and immutable replay/preflight before exact fenced canonical acceptance; uncertain commit retains outputs",
+            "transportBytes": "explicit_NON_NATIVE_control",
+            "historicalArtifactsAndEnvelope": "not_retained",
+            "originalsUnchanged": true,
+            "qualification": "Memory SQL/storage/HTTP and reconstructed authority; no native accuracy, real durability/current HTTP/persistence, applicability, learning, scale or release qualification"
           }
         }
       },
