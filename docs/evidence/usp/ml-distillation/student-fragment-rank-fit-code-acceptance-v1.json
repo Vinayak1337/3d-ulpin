@@ -1,0 +1,109 @@
+{
+  "compatibilityBoundary": "Generic stage_adapter.accepted_fit intentionally rejects rank versions/settings/loss/phase shapes. Use protected accepted_outputs/completion plus explicit rank checks for this future fit; separate reviewed rank accepted-fit/reload binding required later. No generic guard weakening.",
+  "decision": "accept_shared_fit_wiring_and_cpu_preparation_only",
+  "disabledPrototype": {
+    "bytes": 20673,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\disabled-fit-prototype.json",
+    "physicalSha256": "cf2f1f31ed94f96a87a725cdc1644800001af5253d0d4b6a41961d7a89e159d9"
+  },
+  "executionSources": {
+    "bytes": 10667,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\execution-sources.json",
+    "physicalSha256": "e4b6c42496a591b85b0864baf24c5764a88f670d39c95bb9694a1f0ff5c41b74"
+  },
+  "implementation": "Pure exact fit-only authority and shared stager/worker/adapter lifecycle. Prompt-only final-position two-logit float32 NLL at published1/(10*c) weights; sequential candidate backward/graph release, one shared unscale/finite/frozen/clip/scaler update per complete parent. Original model/PEFT/base-head/attention/reclamation/save/equality/guard remain shared; generative defaults preserved.",
+  "integratedCodeCommit": "7528b827410c94df39e70acd610ed7ba76714e40",
+  "integratedEvidenceCommit": "a94c37565aed6bb21c80cf60995afb967d2e76e1",
+  "integratedReport": {
+    "bytes": 9959,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-fit-code-v1.json",
+    "physicalSha256": "ff6ef84cf9047dade79b74b31a1b4c8eb0492e18933b700d0dd4bedbbf93e645"
+  },
+  "next": "Separate STUDENT-29 exact final-head fit freeze now; no reload/inference or host expectations in fit.",
+  "ownerBaseCommit": "971fa41aae40359e2b36be37897cd3e06d106928",
+  "ownerCodeCommit": "865d2bf6135fd4f3d4a31687054bfc2c026eb4b1",
+  "ownerEvidenceCommit": "8176cd8e74ebe7312a99b9bc3d7e5d336e4bf396",
+  "ownerFinalization": {
+    "bytes": 2489,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\finalization.json",
+    "physicalSha256": "a0283684e190a763438e23c2b9bee4c7dc47af7d952334e71993a29c8d15f18f"
+  },
+  "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+  "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+  "receiptIndex": {
+    "bytes": 4033,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\receipt-index.json",
+    "physicalSha256": "c4b7219756fd6400ab4835fb2f96527430b805d332160b16c214e4a06f8c1e8b"
+  },
+  "recordedAtUtc": "2026-10-03T23:08:17.091335+00:00",
+  "review": {
+    "bytes": 28995,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-28-review-v1-a34670e2f3ec4b4dbd371bddd4da16b0\\review.json",
+    "physicalSha256": "18102f9f9cbbe89a37d9ce5fe4448732bd7a6cd01c08b2d728357b4c0bcb7f78"
+  },
+  "reviewSummary": {
+    "findings": [],
+    "futureNativeTransitiveSources": 33,
+    "matchedReferences": 59,
+    "matchedUniqueReferences": 36,
+    "ownedEvidenceFiles": 2,
+    "ownedSources": 7,
+    "protectedNativeDependencies": 27,
+    "protectedReviewSourcesUnchanged": 36,
+    "retainedTrainAuthorityFilesUnchanged": 14
+  },
+  "stagingReadOnlyHead": "0f6182a7ea00a2b102bf54559455344cf611ff2f",
+  "task": "STUDENT-28-FRAGMENT-RANK-FIT-CODE",
+  "trainingPlan": {
+    "counts": {
+      "emptyParents": 3,
+      "families": 2,
+      "negative": 45,
+      "pairs": 57,
+      "parents": 10,
+      "positive": 12
+    },
+    "datasetSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd",
+    "epochs": 6,
+    "pairs": 57,
+    "parentCandidateCounts": {
+      "teacher-fragments-v1-01": 4,
+      "teacher-fragments-v1-02": 7,
+      "teacher-fragments-v1-03": 5,
+      "teacher-fragments-v1-04": 6,
+      "teacher-fragments-v1-05": 7,
+      "teacher-fragments-v1-06": 6,
+      "teacher-fragments-v2-pair01-a": 7,
+      "teacher-fragments-v2-pair01-b": 7,
+      "teacher-fragments-v2-pair02-a": 4,
+      "teacher-fragments-v2-pair02-b": 4
+    },
+    "plannedCandidateContributions": 342,
+    "plannedUpdates": 60,
+    "seed": 17,
+    "teacherExamples": 10,
+    "version": "association-fragment-rank-training-plan/1",
+    "weighting": "exact rational 1/(10*candidateCount); no resampling or positive weighting"
+  },
+  "unrun": [
+    "actual57 tokenizer label/length proofs",
+    "new native loss/gradient accumulation proof",
+    "original-base60-update/342-contribution fit and exact save",
+    "runtime/resources/cleanup",
+    "adapter reload/development relevance/evaluation/promotion/release"
+  ],
+  "verificationConsumed": {
+    "cause": "Virtual Path.read_bytes assignment double missed streaming Path.open hashing; production admission reached it without runtime effects.",
+    "controlsCompleted": 4,
+    "diffCheckExitCode": 0,
+    "initialControlsPassed": 3,
+    "initialFocusedInvocationExitCode": 1,
+    "initialHarnessErrors": 1,
+    "narrowCorrection": "Only the read-only Path.open double/test changed; affected real stage/host/worker admission control reran with exit0. Earlier failed receipts retained.",
+    "nativeImportsOrStage": false,
+    "rerunByCoordinator": false,
+    "scope": "Real retained train/source/donor metadata and admission; first effects, tokenizer/tensor/decoder/head/scaler/proof/Git/disk are disclosed doubles. Not native qualification.",
+    "sevenSourceInMemoryCompile": "passed, then changed test recompiled"
+  },
+  "version": "student-fragment-rank-fit-code-acceptance/1"
+}
