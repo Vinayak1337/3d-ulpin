@@ -1499,6 +1499,17 @@
       "nativeOutputMatchesAcceptedInspection": true,
       "runtimeProfile": "Fresh integrated-checkout inventory required before native execution",
       "scanLimit": "Native per-group 100000 rows; aggregate scanned/prefix >100000 refused after output; larger cross-group qualification remains open"
+    },
+    "continuationEvidence": {
+      "guide": "docs/evidence/usp/geoparquet-continuation-handoff.md",
+      "integratedCodeCommit": "9f8c128d",
+      "completionReceiptSha256": "a80d01fe4a1340745607ab113b920cdb0d6fb369647e8ebd8f075c8705eac522",
+      "finalPinsSha256": "4f95fe12b76ba68e05624607afd2b98c641425599d0a4740e3d08af44aac4bfc",
+      "scope": "Two sequential native canonical-method windows with memory SQL/storage controls; rows 0-1 then 2-3, next row 4 of 5; current HTTP/persistence unqualified",
+      "aggregateScanAdmission": "Selected-group prefixes and rounded batch overread preflight against existing 100000-row ceiling",
+      "continuedArtifactSha256": "78fb245f218091ba7a1e945b86c2b02dc3fd02cff3a2f7bc34c795ea092e3044",
+      "sourceOriginalUnchanged": true,
+      "nativeMultiGroupQualification": false
     }
   },
   {
