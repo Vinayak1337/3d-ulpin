@@ -29,3 +29,4 @@ export * from './packets';
 export * from './property-card';
 
 export * from './citygml-ingestion';
+export * from './geoparquet-ingestion';

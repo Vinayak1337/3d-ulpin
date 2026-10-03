@@ -5145,6 +5145,14 @@
         "scope": "Retained accepted native records with memory authority/storage controls; no parser rerun or current HTTP/persistence qualification",
         "propertyMatching": "unsupported",
         "learningLabels": false
+      },
+      "reviewedCitationEvidence": {
+        "guide": "docs/evidence/usp/reviewed-kml-citations-handoff.md",
+        "integratedCodeCommit": "e39aa33b",
+        "completionReceiptSha256": "99dda401d40c4aaccfea665489b5673f3e0a3f611b5f369e6d2dcf1b3655244b",
+        "scope": "Officer-selected accepted features through controlled amendment/review/commit/private historical reads; current HTTP/SQL/storage and authentic applicability unqualified",
+        "automaticMatching": false,
+        "sourceOriginalsUnchanged": true
       }
     },
     {
@@ -5201,6 +5209,14 @@
         "scope": "Retained accepted native records with memory authority/storage controls; no parser rerun or current HTTP/persistence qualification",
         "propertyMatching": "unsupported",
         "learningLabels": false
+      },
+      "reviewedCitationEvidence": {
+        "guide": "docs/evidence/usp/reviewed-kml-citations-handoff.md",
+        "integratedCodeCommit": "e39aa33b",
+        "completionReceiptSha256": "99dda401d40c4aaccfea665489b5673f3e0a3f611b5f369e6d2dcf1b3655244b",
+        "scope": "Officer-selected accepted features through controlled amendment/review/commit/private historical reads; current HTTP/SQL/storage and authentic applicability unqualified",
+        "automaticMatching": false,
+        "sourceOriginalsUnchanged": true
       }
     },
     {
@@ -5377,7 +5393,17 @@
         "GeoParquet 1.1.0, XY WKB types 1-7, UNCOMPRESSED/SNAPPY only.",
         "Non-microsecond time64[ns] refuses ROW_DECODE; broad temporal support unqualified.",
         "No geometry/format conformance, global placement, operational accuracy, learning, scale, Linux or release qualification."
-      ]
+      ],
+      "canonicalWorkflowEvidence": {
+        "guide": "docs/evidence/usp/geoparquet-api-handoff.md",
+        "integratedCodeCommit": "a4ae98b3",
+        "completionReceiptSha256": "9f29821f6d3e6f81652983ebadb84890a54f51eca08da6cd18f61946ddfa54fe",
+        "finalPinsSha256": "5fa595f1f9b2c3efd09d4236eda6f65c268af5d2b6ee862d80ba44c3ba6b2ac1",
+        "scope": "Actual bounded native parser with memory SQL/storage method journey; explicit continuation queued/replayed but second parser denied; current HTTP/persistence unqualified",
+        "nativeOutputMatchesAcceptedInspection": true,
+        "runtimeProfile": "Fresh integrated-checkout inventory required before native execution",
+        "scanLimit": "Native per-group 100000 rows; aggregate scanned/prefix >100000 refused after output; larger cross-group qualification remains open"
+      }
     },
     {
       "id": "upstream-geoparquet-example-2-20261001",
@@ -5421,7 +5447,17 @@
         "GeoParquet 1.1.0, XY WKB types 1-7, UNCOMPRESSED/SNAPPY only.",
         "Non-microsecond time64[ns] refuses ROW_DECODE; broad temporal support unqualified.",
         "No geometry/format conformance, global placement, operational accuracy, learning, scale, Linux or release qualification."
-      ]
+      ],
+      "canonicalWorkflowEvidence": {
+        "guide": "docs/evidence/usp/geoparquet-api-handoff.md",
+        "integratedCodeCommit": "a4ae98b3",
+        "completionReceiptSha256": "9f29821f6d3e6f81652983ebadb84890a54f51eca08da6cd18f61946ddfa54fe",
+        "finalPinsSha256": "5fa595f1f9b2c3efd09d4236eda6f65c268af5d2b6ee862d80ba44c3ba6b2ac1",
+        "scope": "Actual bounded native parser with memory SQL/storage method journey; explicit continuation queued/replayed but second parser denied; current HTTP/persistence unqualified",
+        "nativeOutputMatchesAcceptedInspection": true,
+        "runtimeProfile": "Fresh integrated-checkout inventory required before native execution",
+        "scanLimit": "Native per-group 100000 rows; aggregate scanned/prefix >100000 refused after output; larger cross-group qualification remains open"
+      }
     }
   ],
   "offlineLearningCorpus": {
