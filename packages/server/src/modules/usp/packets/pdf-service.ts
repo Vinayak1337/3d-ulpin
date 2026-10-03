@@ -25,13 +25,16 @@ import {PACKET_IMAGE_PDF_RECIPE,PACKET_IMAGE_PDF_LIMITS} from '../../../../../co
 import {PacketImageRegionService} from './image-region';
 import {registryImageRegionSourceTx,prepareRegistryImageRegion} from '../../registry/registry-image-region-evidence';
 import {assemblePacketImagePdf,assertImagePdfRgb} from './image-pdf-render';
+import {packetImageCheckpointRuntime,type ImageCheckpointRuntime} from './image-checkpoint-runtime';
 
 /** Internal I/O seam only. Each byte read is bounded by the immutable receipt. */
 export type PdfPacketIo={extract:PacketRegionService['extract'];put:typeof putOriginal;
   imageExtract?:PacketImageRegionService['extract'];
   read:(key:string,bytes:number,hash:string,deadlineAt?:number)=>Promise<Uint8Array>;
   /** Internal current-recipe authority for queued accepted-crop reuse. */
-  recipe?:(sourceId:string,deadlineAt:number)=>Promise<string>};
+  recipe?:(sourceId:string,deadlineAt:number)=>Promise<string>;
+  /** File inspection of the current image worker and actual gated decoder. */
+  imageRuntime?:(deadlineAt:number)=>Promise<ImageCheckpointRuntime>};
 async function boundedPdfRead(key:string,bytes:number,hash:string,deadlineAt?:number){
   if(!Number.isSafeInteger(bytes)||bytes<1||bytes>PACKET_PDF_MULTI_LIMITS.bytes)
     throw new AppError(422,'PACKET_PDF_ARTIFACT_INTEGRITY','The saved PDF exceeds its bounded receipt.');
@@ -49,6 +52,7 @@ const regionService=new PacketRegionService();
 const imageRegionService=new PacketImageRegionService();
 export const pdfPacketStorage:PdfPacketIo={extract:regionService.extract.bind(regionService),read:boundedPdfRead,
   imageExtract:imageRegionService.extract.bind(imageRegionService),
+  imageRuntime:packetImageCheckpointRuntime,
   put:(key,bytes,type,signal)=>putOriginal(key,bytes,type,signal??AbortSignal.timeout(30_000)),
   recipe:async(_sourceId,deadlineAt)=>{pdfExecutionLive(deadlineAt);const {packetRegionRecipeSha}=await import('./region-runtime');
     pdfExecutionLive(deadlineAt);const recipe=await packetRegionRecipeSha();pdfExecutionLive(deadlineAt);return recipe;}};
@@ -175,7 +179,6 @@ export async function stagePdfExecution(first:PreparedPdfExecution,io:PdfPacketI
     multi=!image&&plan.input.recipe!==PACKET_PDF_RECIPE,
     multipleOriginals=plan.input.recipe===PACKET_PDF_ORIGINALS_RECIPE;
   const live=()=>pdfExecutionLive(deadlineAt);
-  if(image&&recover)throw new AppError(422,'PACKET_IMAGE_PDF_QUEUE_UNSUPPORTED','Image PDF checkpoint recovery is not supported by this recipe.');
   const extractCrop=async(index:number)=>{
     live();const binding=bindings[index];
     if(binding.version==='registry-image-region-citation/1'){

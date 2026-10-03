@@ -14,7 +14,6 @@ import {preparePdfExecutionTx,protectPdfExecutionPlanTx,readPacketPdf,type PdfPa
 import {loadPdfPlanTx,validateConfirmation,savePlanReceiptTx} from './plan-store';
 import {enrolledPacketPdfJobTx,acceptedPacketPdfExecutionTx,capturePacketPdfJobTx,assertPacketPdfJobRow} from './pdf-job-authority';
 import {packetPdfEntryProgressTx} from './pdf-entry-checkpoints';
-import {PACKET_IMAGE_PDF_RECIPE} from '../../../../../contracts/src/usp/packet-image-pdf';
 import {assertPdfPlanActor} from './pdf-authority';
 
 export async function appendPacketPdfJobTx(client:PoolClient,input:PacketPdfJobInput,status:'queued'|'running'|'succeeded'|'failed'|'cancelled',packetId:string|null=null){
@@ -42,8 +41,6 @@ export async function enqueuePacketPdfJob(ctx:RequestContext,raw:unknown){
   return transaction(async client=>{
     const plan=await loadPdfPlanTx(client,command.planId,command.version);
     assertPdfPlanActor(ctx,plan);
-    if(plan.input.recipe===PACKET_IMAGE_PDF_RECIPE)throw new AppError(422,'PACKET_IMAGE_PDF_QUEUE_UNSUPPORTED',
-      'Use confirmed synchronous execution for this single-image PDF recipe. Image queue/checkpoints are unsupported.');
     await protectPdfExecutionPlanTx(client,ctx,plan);
     const replay=await requestReceiptTx(client,ctx,plan.input.scope.scopeId,'packet_pdf_enqueue',command.guard.requestKey,hash);
     if(replay)return statusTx(client,ctx,z.uuid().parse((replay as {jobId:string}).jobId));

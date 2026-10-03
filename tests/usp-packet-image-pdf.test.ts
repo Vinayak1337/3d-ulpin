@@ -10,7 +10,6 @@ import {PACKET_IMAGE_PDF_RECIPE,UspImagePdfPacketPlanInputSchema,UspPacketImageP
 import {UspSnapshotManifestSchema,type RequestContext} from '../packages/contracts/src/usp';
 import {createPacketPlan,confirmPacketPlan,executePacketPlan,readPacketPlan} from '../packages/server/src/modules/usp/packets/plan-service';
 import {readPacketPdf,type PdfPacketIo} from '../packages/server/src/modules/usp/packets/pdf-service';
-import {enqueuePacketPdfJob} from '../packages/server/src/modules/usp/packets/pdf-jobs';
 import {assemblePacketImagePdf} from '../packages/server/src/modules/usp/packets/image-pdf-render';
 import {registryImageRegionSourceTx,imageRegionCitationId} from '../packages/server/src/modules/registry/registry-image-region-evidence';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
@@ -135,9 +134,7 @@ test('saved committed original-image citation -> plan -> confirm -> atomic PDF -
   assert.equal(sha256(downloaded.bytes),receipt.artifact.sha256);assert.deepEqual(downloaded.bytes,assemblePacketImagePdf(db.citation.validation,db.png).bytes);
   assert.deepEqual((await readPacketPlan(db.ctx,{planId:plan.planId,version:1})).execution,execution);
   assert.deepEqual(await executePacketPlan(db.ctx,command,db.io),execution);assert.equal(db.extracts,1);assert.equal(db.puts,1);
-  const before=db.reads;
-  await assert.rejects(()=>enqueuePacketPdfJob(db.ctx,command),code('PACKET_IMAGE_PDF_QUEUE_UNSUPPORTED'));
-  assert.equal(db.reads,before);
+  // Queued image execution is covered by the dedicated recovery journey.
   const root=process.env.ULPIN_PACKET_IMAGE_PDF_EVIDENCE;
   if(root){mkdirSync(root,{recursive:true});writeFileSync(root+'/packet.pdf',downloaded.bytes,{flag:'wx'});
     writeFileSync(root+'/journey.json',JSON.stringify({classification:'retained_crop_and_citation; controlled_source_target_SQL_storage',
