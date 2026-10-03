@@ -1,0 +1,110 @@
+{
+  "batchSha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536",
+  "coordinatorBase": "fd18ffda0c7a4ffb2c127dd717de913bd3cbee0a",
+  "correctedHostReproducedFitProof": {
+    "bytes": 10036,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-24-correction-review-v1-1d7cf3f8ab12428ca9c9f7a04a9c91d8\\reproduced-fit-proof.json",
+    "physicalSha256": "8836b437ef8bb4147ec6f482f87e7197f7280821c555390ccb147daa5955b4fe"
+  },
+  "decision": "accepted_cpu_stager_correction",
+  "focusedRegression": {
+    "afterFix": "Real v2/shared reload branch passes batch lookup, retained fit binding, development/source-input admission and real make_freeze; first root.mkdir raises the controlled boundary exception.",
+    "beforeFix": "Original shared stager AttributeError reproduced before effects.",
+    "metadataMocks": [
+      "Virtual positive assignment bytes/current physical source map with synthetic technical commit binding.",
+      "Donor profile metadata stub; existing retained saved-fit proof returned without recomputing prior proof.",
+      "Requirements and adapter-file digests from pinned metadata. Other source-input hashes and complete development route validation run against unchanged retained inputs."
+    ],
+    "nativeImportsBlocked": true,
+    "priorFiveControlSuiteRun": false,
+    "realAdmissionCalls": [
+      "checked_execution",
+      "checked_reload_binding",
+      "checked_development",
+      "16 source-input digest checks",
+      "make_freeze"
+    ],
+    "sideEffects": "No actual mkdir, copy, write, runtime/model/adapter contents open or native import.",
+    "testsPerRun": 1
+  },
+  "integratedCodeCommit": "4c2f934da1d8c328acd27870ba2bd3ec0641c7b3",
+  "integratedEvidenceCommit": "3b1546d1d9750bd95423c994c6044da593bb8acf",
+  "integratedReport": {
+    "bytes": 19453,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-stager-correction-v1.json",
+    "physicalSha256": "bc4bfc2be50a5537208bab5d75ba77cfb659eeb967bf915150186edf39d7f842"
+  },
+  "limitations": [
+    "The regression is a CPU metadata fixture; root creation/copy/profile/native behavior remains unrun.",
+    "Review and a new STUDENT-23 attempt2 final-head/source/freeze assignment must precede any native phase.",
+    "No reload selection-quality, evaluation, generalization or release qualification."
+  ],
+  "next": "One separately frozen STUDENT-23 attempt2, exact existing adapter, unchanged development requests/criteria; preserve the spent first attempt.",
+  "ownerBase": "4a12ceb10720b177a646db8d95404cb6d3aab510",
+  "ownerCodeCommit": "c275a504f588ed990471c9a4de4ffaf1238a4c9b",
+  "ownerFinalCheckpoint": {
+    "bytes": 3221,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-stager-correction-d02a893913d34251b49b375613cb5d29\\final-checkpoint.json",
+    "physicalSha256": "b691fef88b135824d33540f8c682459462a213f855fd563ee9dfe906f28c648a"
+  },
+  "ownerFinalHead": "856a937b3a8c4c8819cb033ab54362da28b1ef2e",
+  "ownerReport": {
+    "bytes": 19068,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-stager-correction-v1.json",
+    "physicalSha256": "b92eafaab40e59fc5c9a9bfa4ce2be181c7a866585036cde6787661c9ef254e4"
+  },
+  "qualification": {
+    "actualCopyProfileNativeReloadOrQuality": false,
+    "cpuStagingBoundaryCorrection": true,
+    "evaluationOrPromotionOrRelease": false
+  },
+  "recordedAtUtc": "2026-10-03T19:26:29.532801+00:00",
+  "reviewAudit": {
+    "bytes": 4809,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-24-correction-review-v1-1d7cf3f8ab12428ca9c9f7a04a9c91d8\\audit.json",
+    "physicalSha256": "f60ef4b1f85c1271138260b4765d346f3f2d472bfe74eaae3a348ca972c15f44"
+  },
+  "reviewExecution": {
+    "bytes": 532,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-24-correction-review-v1-1d7cf3f8ab12428ca9c9f7a04a9c91d8\\review.execution.json",
+    "physicalSha256": "5004731f6a04ace96044604b1a3856853ed3eba84e6ce42754957f01938da57e"
+  },
+  "reviewHelper": {
+    "bytes": 6401,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-24-correction-review-v1-1d7cf3f8ab12428ca9c9f7a04a9c91d8\\review.py",
+    "physicalSha256": "dfd0c0fc022e76c82983683b6176c522e958d03016d0b4d14763279bc8f0a286"
+  },
+  "stagingReadOnlyObservation": {
+    "changedByThisTask": false,
+    "dirty": [],
+    "head": "84043e2731ccaf7743dbacddb0d559cd8693d1d2"
+  },
+  "task": "STUDENT-24-FRAGMENT-SUPPORT-V2-STAGER-CORRECTION",
+  "verification": {
+    "correctedHostPureSavedFitReadmissionPassed": true,
+    "existingTestAstUnchanged": true,
+    "integrationEquality": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "856a937b3a8c4c8819cb033ab54362da28b1ef2e",
+        "3b1546d1d9750bd95423c994c6044da593bb8acf",
+        "--",
+        "services/geo/geo/usp_learning/association/fragment_support_v2.py",
+        "scripts/usp/learning/association/test_fragment_support_v2.py",
+        "docs/evidence/usp/ml-distillation/student/fragment-support-v2-stager-correction-v1.json",
+        "docs/evidence/usp/ml-distillation/student/fragment-support-v2-stager-correction-v1.md"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin",
+      "exitCode": 0
+    },
+    "matchedReferences": 14,
+    "other32ExecutionSourcesUnchanged": true,
+    "ownerBeforeFailAfterPassAndTwoCompilesConsumed": true,
+    "physicalCanonicalGitSources": 33,
+    "productionOnlyAddsBatchImport": true,
+    "testOrPriorSuiteOrNativeCampaignRerun": false
+  },
+  "version": "student-fragment-support-v2-stager-correction-acceptance/1"
+}
