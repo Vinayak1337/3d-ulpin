@@ -38,6 +38,10 @@ import {RegistryCityGMLCitationSchema,type RegistryCityGMLCitation} from '../../
 import {registryCityGMLCitationSourceTx} from './registry-citygml-citation-source';
 import {verifyFusionCityGMLTools} from '../usp/ingestion/source-fusion-citygml-authority';
 import {citygmlCitationFusionSelection,fusionCityGMLCitationFields,fusionCityGMLCitationFragment} from '../usp/ingestion/source-fusion-citations';
+import {RegistryGeoParquetCitationSchema,type RegistryGeoParquetCitation} from '../../../../contracts/src/registry-document-evidence';
+import {registryGeoParquetCitationSourceTx} from './registry-geoparquet-citation-source';
+import {verifyFusionGeoParquetTools} from '../usp/ingestion/source-fusion-geoparquet-authority';
+import {geoparquetCitationFusionSelection,fusionGeoParquetCitationFields,fusionGeoParquetCitationFragment} from '../usp/ingestion/source-fusion-citations';
 
 export type RegistryDocumentDependencies=FusionCitationDependencies&{result:typeof readDocumentResult;registrySource:typeof registrySourceTx;
   citationSource?:typeof registryDocumentSourceAccessTx;regionSource?:typeof registryRegionSourceTx};
@@ -53,6 +57,8 @@ const kmlSource=(dependencies:Dependencies)=>dependencies.kmlSource??registryKML
 const kmlTools=(dependencies:Dependencies)=>dependencies.kmlTools??verifyFusionKMLTools;
 const citygmlSource=(dependencies:Dependencies)=>dependencies.citygmlSource??registryCityGMLCitationSourceTx;
 const citygmlTools=(dependencies:Dependencies)=>dependencies.citygmlTools??verifyFusionCityGMLTools;
+const geoparquetSource=(dependencies:Dependencies)=>dependencies.geoparquetSource??registryGeoParquetCitationSourceTx;
+const geoparquetTools=(dependencies:Dependencies)=>dependencies.geoparquetTools??verifyFusionGeoParquetTools;
 const regionSource=(dependencies:Dependencies)=>dependencies.regionSource??registryRegionSourceTx;
 async function recheckRegionsTx(client:PoolClient,siteId:string,record:RegistryRecord,dependencies:Dependencies){
   for(const pin of record.documentCitations??[])if(pin.version==='registry-document-region-citation/1')
@@ -163,6 +169,8 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
     captured:Awaited<ReturnType<typeof registryKMLCitationSourceTx>>}[]=[];
   const checkedCityGML:{selection:ReturnType<typeof citygmlCitationFusionSelection>;
     captured:Awaited<ReturnType<typeof registryCityGMLCitationSourceTx>>}[]=[];
+  const checkedGeoParquet:{selection:ReturnType<typeof geoparquetCitationFusionSelection>;
+    captured:Awaited<ReturnType<typeof registryGeoParquetCitationSourceTx>>}[]=[];
   const groups=new Map<string,RegistryDocumentCitation[]>();
   for(const pin of citations){
     if(pin.selection.subject!==ctx.principal.subject)
@@ -238,6 +246,27 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
       const current=await citygmlSource(dependencies)(client,siteId,selection.pin,lock);
       if(fingerprint(current)!==fingerprint(captured))conflict('The CityGML source changed during its private read.');
       checkedCityGML.push({selection,captured});continue;
+    }
+    if(first.version==='registry-geoparquet-citation/1'){
+      const pins=group.map(pin=>RegistryGeoParquetCitationSchema.parse(pin)),selection=geoparquetCitationFusionSelection(first);
+      if(pins.some(pin=>fingerprint(geoparquetCitationFusionSelection(pin).pin)!==fingerprint(selection.pin)||
+        pin.geoparquet.artifactSha256!==selection.artifactSha256))
+        conflict('The exact GeoParquet result and artifact selection pins differ.');
+      selection.rowIndices=[...new Set(pins.map(pin=>pin.geoparquet.rowIndex))];
+      const captured=await geoparquetSource(dependencies)(client,siteId,selection.pin,lock);
+      geoparquetTools(dependencies)(captured.authority.input,budget);
+      const loaded=await (dependencies.fusionResult??readFusionResult)(selection,captured.authority,budget),projected=fusionSourceProjection(selection,loaded);
+      if(projected.kind!=='geoparquet')conflict('The accepted GeoParquet row is unavailable.');
+      for(const pin of pins){
+        const {version:_,id:__,target:___,selection:attribution,associationState:____,qualification:_____,...fields}=pin;
+        if(pin.id!==citationId(pin)||attribution.accessSha256!==captured.authority.input.accessSha256||
+          fingerprint(fields)!==fingerprint(fusionGeoParquetCitationFields(projected,pin.geoparquet.rowIndex)))
+          conflict('The exact GeoParquet original, window, parent, row, columns, locator, attempt or access pin changed.');
+        entries.push({pin,fragment:fusionGeoParquetCitationFragment(projected,pin.geoparquet.rowIndex)});
+      }
+      const current=await geoparquetSource(dependencies)(client,siteId,selection.pin,lock);
+      if(fingerprint(current)!==fingerprint(captured))conflict('The GeoParquet source or accepted parent changed during its private read.');
+      checkedGeoParquet.push({selection,captured});continue;
     }
     if(first.version==='registry-ifc-citation/1'){
       const pins=group.map(pin=>RegistryIFCCitationSchema.parse(pin)),selection=ifcCitationFusionSelection(first);
@@ -328,6 +357,11 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
       const current=await citygmlSource(dependencies)(client,siteId,item.selection.pin);
       if(fingerprint(current)!==fingerprint(item.captured))conflict('The aggregate CityGML source changed during its private read.');
       citygmlTools(dependencies)(current.authority.input,budget);
+    }})),...checkedGeoParquet.map(item=>({input:item.captured.authority.input,
+    protect:()=>geoparquetSource(dependencies)(client,siteId,item.selection.pin,true),validate:async()=>{
+      const current=await geoparquetSource(dependencies)(client,siteId,item.selection.pin);
+      if(fingerprint(current)!==fingerprint(item.captured))conflict('The aggregate GeoParquet source or accepted parent changed during its private read.');
+      geoparquetTools(dependencies)(current.authority.input,budget);
     }})),...checkedRegions.map(item=>({input:{caseId:item.pin.document.caseId,sourceId:item.pin.document.sourceId},
       protect:()=>regionSource(dependencies)(client,siteId,item.pin.document,true),validate:async()=>{
         const current=await regionSource(dependencies)(client,siteId,item.pin.document);
@@ -340,11 +374,11 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   // Protected callers validate again only after the complete lock set is held:
   // a source can change during lock acquisition or later groups' result I/O.
   for(const item of aggregate)await item.validate();
-  if(checkedIFC.length||checkedDXF.length||checkedKML.length||checkedCityGML.length||checkedRegions.length)for(const pin of citations)await historicalTargetTx(client,siteId,record,pin);
+  if(checkedIFC.length||checkedDXF.length||checkedKML.length||checkedCityGML.length||checkedGeoParquet.length||checkedRegions.length)for(const pin of citations)await historicalTargetTx(client,siteId,record,pin);
   if(citations.some(pin=>pin.version!=='registry-document-citation/1'))fusionLive(budget);
   return entries;
 }
-export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation|RegistryIFCCitation|RegistryRegionCitation|RegistryDXFCitation|RegistryKMLCitation|RegistryCityGMLCitation){
+export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation|RegistryIFCCitation|RegistryRegionCitation|RegistryDXFCitation|RegistryKMLCitation|RegistryCityGMLCitation|RegistryGeoParquetCitation){
   if('partId' in pin)return fingerprint({document:pin.document,partId:pin.partId,target:pin.target});
   if(pin.version==='registry-document-region-citation/1')return regionCitationId(pin);
   if(pin.version==='registry-ifc-citation/1')return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,
@@ -355,6 +389,8 @@ export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'p
     readerSha256:pin.readerSha256,acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,kml:pin.kml,target:pin.target});
   if(pin.version==='registry-citygml-citation/1')return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,
     readerSha256:pin.readerSha256,acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,citygml:pin.citygml,target:pin.target});
+  if(pin.version==='registry-geoparquet-citation/1')return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,
+    readerSha256:pin.readerSha256,acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,geoparquet:pin.geoparquet,target:pin.target});
   return fingerprint({version:pin.version,document:pin.document,inputSha256:pin.inputSha256,readerSha256:pin.readerSha256,
     acceptedFence:pin.acceptedFence,resultBytes:pin.resultBytes,ocrConfigSha256:pin.ocrConfigSha256,
     itemOrdinal:pin.itemOrdinal,itemSha256:pin.itemSha256,target:pin.target});
@@ -392,7 +428,7 @@ function fusionValidationDependencies(fusion:Awaited<ReturnType<typeof resolveFu
     fusionResult:async(selection,authority,budget)=>{
       const cached=fusion.documents.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`)??fusion.ifcs.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`)??
         fusion.dxfs.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`)??fusion.kmls.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`)??
-        fusion.citygmls.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`);
+        fusion.citygmls.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`)??fusion.geoparquets.get(`${selection.pin.jobId}/${selection.pin.resultSha256}`);
       return cached&&fingerprint(cached.pin)===fingerprint(selection.pin)?cached.loaded:
         (dependencies.fusionResult??readFusionResult)(selection,authority,budget);
     }};
@@ -402,8 +438,6 @@ export type RegistryRegionAmendmentPrepared=RegistryRegionPrepared&{draftSha256:
 export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId:string,raw:unknown,dependencies:Dependencies=defaults,
   prepared?:RegistryRegionAmendmentPrepared){
   const request=RegistryDocumentAmendmentSchema.parse(raw);
-  if(request.addFusion?.selection.sources.some(source=>source.kind==='geoparquet'))
-    throw new AppError(422,'SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY','GeoParquet rows support source context only; citation attachment is unsupported.');
   if(request.addFusion&&Buffer.byteLength(JSON.stringify(request))>32*1024)
     throw new AppError(413,'REGISTRY_DOCUMENT_REQUEST_LIMIT','Select a smaller explicit citation amendment.');
   const {draft,record}=await lockedDraftTx(client,draftId,request.recordId,true,
@@ -413,7 +447,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   if(draft.status!=='draft'||record.revision!==request.expectedRecordRevision)conflict('Use the exact active correction and recorded target revision.');
   const target=await currentTargetTx(client,draft.site_id,record,true,dependencies),ctx=context();
   if(record.kind==='space'&&(request.add||request.addFusion?.selection.sources.some(source=>
-    source.kind==='document'?source.partIds.length:source.kind==='document_ocr'?source.itemOrdinals.length:source.kind==='dxf'?source.entityOrdinals.length:source.kind==='kml'?source.featureOrdinals.length:source.kind==='citygml'?source.buildingOrdinals.length:false)))
+    source.kind==='document'?source.partIds.length:source.kind==='document_ocr'?source.itemOrdinals.length:source.kind==='dxf'?source.entityOrdinals.length:source.kind==='kml'?source.featureOrdinals.length:source.kind==='citygml'?source.buildingOrdinals.length:source.kind==='geoparquet'?source.rowIndices.length:false)))
     throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Space corrections support explicit IFC or source-region citations only.');
   const operationKey=`registry-document-citations:${draftId}:${request.requestKey}`;
   const digest=fingerprint({request,subject:ctx.principal.subject,reviewContext:documentReviewContext()});
@@ -428,6 +462,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
         else if(selected.kind==='dxf')await dxfSource(dependencies)(client,draft.site_id,selected.pin,true);
         else if(selected.kind==='kml')await kmlSource(dependencies)(client,draft.site_id,selected.pin,true);
         else if(selected.kind==='citygml')await citygmlSource(dependencies)(client,draft.site_id,selected.pin,true);
+        else if(selected.kind==='geoparquet')await geoparquetSource(dependencies)(client,draft.site_id,selected.pin,true);
         else if(selected.kind!=='cityjson')await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
       }
       const fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies,draft.site_id);
@@ -458,6 +493,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
       else if(selected.kind==='dxf')await dxfSource(dependencies)(client,draft.site_id,selected.pin,true);
       else if(selected.kind==='kml')await kmlSource(dependencies)(client,draft.site_id,selected.pin,true);
       else if(selected.kind==='citygml')await citygmlSource(dependencies)(client,draft.site_id,selected.pin,true);
+      else if(selected.kind==='geoparquet')await geoparquetSource(dependencies)(client,draft.site_id,selected.pin,true);
       else if(selected.kind!=='cityjson')await citationSource(dependencies)(client,draft.site_id,selected.pin.sourceId);
     }
     fusion=await resolveFusionCitationsTx(client,ctx,request.addFusion,dependencies,draft.site_id);
@@ -465,6 +501,15 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     const attribution=(input:Pick<DocumentInput,'accessSha256'>)=>({subject:ctx.principal.subject,accessSha256:input.accessSha256,selectedAt:new Date().toISOString()});
     for(const source of fusion.context.sources){
       if(source.kind==='cityjson')continue;
+      if(source.kind==='geoparquet'){
+        const input=fusion.geoparquetInputs.get(source.pin.sourceId)!;
+        for(const entry of source.rows){
+          const pin=RegistryGeoParquetCitationSchema.parse({...fusionGeoParquetCitationFields(source,entry.rowIndex),id:'0'.repeat(64),
+            version:'registry-geoparquet-citation/1',target:targetPin,selection:attribution(input),associationState:'operator_selected',qualification:'not_assessed'});
+          pin.id=citationId(pin);added.push(pin);
+        }
+        continue;
+      }
       if(source.kind==='citygml'){
         const input=fusion.citygmlInputs.get(source.pin.sourceId)!;
         for(const entry of source.buildings){
@@ -605,8 +650,9 @@ export async function readRegistryDocumentCitationsTx(client:PoolClient,draftId:
   const hasDXF=citations.some(entry=>entry.pin.version==='registry-dxf-citation/1');
   const hasKML=citations.some(entry=>entry.pin.version==='registry-kml-citation/1');
   const hasCityGML=citations.some(entry=>entry.pin.version==='registry-citygml-citation/1');
-  if((hasCityGML||hasKML||hasDXF||citations.some(entry=>entry.pin.version==='registry-ifc-citation/1'))&&Buffer.byteLength(JSON.stringify(response))>SOURCE_FUSION_LIMITS.responseBytes-8192)
-    throw new AppError(413,hasCityGML?'REGISTRY_CITYGML_RESPONSE_LIMIT':hasKML?'REGISTRY_KML_RESPONSE_LIMIT':hasDXF?'REGISTRY_DXF_RESPONSE_LIMIT':'REGISTRY_IFC_RESPONSE_LIMIT','Select a smaller explicit native evidence context.');
+  const hasGeoParquet=citations.some(entry=>entry.pin.version==='registry-geoparquet-citation/1');
+  if((hasGeoParquet||hasCityGML||hasKML||hasDXF||citations.some(entry=>entry.pin.version==='registry-ifc-citation/1'))&&Buffer.byteLength(JSON.stringify(response))>SOURCE_FUSION_LIMITS.responseBytes-8192)
+    throw new AppError(413,hasGeoParquet?'REGISTRY_GEOPARQUET_RESPONSE_LIMIT':hasCityGML?'REGISTRY_CITYGML_RESPONSE_LIMIT':hasKML?'REGISTRY_KML_RESPONSE_LIMIT':hasDXF?'REGISTRY_DXF_RESPONSE_LIMIT':'REGISTRY_IFC_RESPONSE_LIMIT','Select a smaller explicit native evidence context.');
   return response;
 }
 export const readRegistryDocumentCitations=(draftId:string)=>transaction(client=>readRegistryDocumentCitationsTx(client,draftId));

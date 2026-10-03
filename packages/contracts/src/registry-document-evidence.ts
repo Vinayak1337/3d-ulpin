@@ -6,6 +6,8 @@ import {IFC_LIMITS} from './usp/ifc-ingestion';
 import {DXF_LIMITS} from './usp/dxf-ingestion';
 import {KML_LIMITS,KMLMemberPinSchema,KMLSummarySchema} from './usp/kml-ingestion';
 import {CITYGML_LIMITS,CityGMLSummarySchema} from './usp/citygml-ingestion';
+import {GEOPARQUET_LIMITS,GeoParquetSummarySchema,GeoParquetSelectionSchema,GeoParquetContinuationPinSchema} from './usp/geoparquet-ingestion';
+import {SourceFusionGeoParquetSchema} from './source-fusion-geoparquet';
 import {PacketRegionSelectionSchema,PacketRegionPageSchema,PacketRegionWorkerSchema,PACKET_REGION_LIMITS} from './packet-region';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),revision=z.number().int().positive();
@@ -69,6 +71,23 @@ export const RegistryCityGMLCitationSchema=z.strictObject({...citationBase,versi
 export const RegistryCityGMLFragmentSchema=SourceFusionCityGMLSchema.extend({buildings:SourceFusionCityGMLSchema.shape.buildings.length(1)})
   .superRefine((fragment,ctx)=>{if(fragment.coverage.selectedBuildings!==1)
     ctx.addIssue({code:'custom',message:'A citation discloses exactly one selected building fragment.'});});
+/** Explicit accepted row evidence. Names, coordinates and source-local IDs do
+ * not establish target applicability or canonical identity. */
+export const RegistryGeoParquetCitationSchema=z.strictObject({...citationBase,version:z.literal('registry-geoparquet-citation/1'),
+  resultBytes:z.number().int().positive().max(GEOPARQUET_LIMITS.resultBytes),
+  geoparquet:z.strictObject({artifactSha256:hash,artifactBytes:z.number().int().positive().max(GEOPARQUET_LIMITS.artifactBytes),
+    profile:z.literal('ulpin-native-geoparquet/1'),selectionSha256:hash,sourceContextSha256:hash,fragmentSha256:hash,
+    inspectionStatus:GeoParquetSummarySchema.shape.status,window:GeoParquetSummarySchema.shape.window,
+    enrolledSelection:GeoParquetSelectionSchema,continuation:GeoParquetContinuationPinSchema.nullable(),
+    rowIndex:SourceFusionGeoParquetSchema.shape.rows.element.shape.rowIndex,
+    ordinal:SourceFusionGeoParquetSchema.shape.rows.element.shape.ordinal,
+    rowGroupIndex:SourceFusionGeoParquetSchema.shape.rows.element.shape.rowGroupIndex,
+    rowIndexInGroup:SourceFusionGeoParquetSchema.shape.rows.element.shape.rowIndexInGroup,
+    sourceKey:z.string().min(1).max(512),recordPointer:z.string().regex(/^\/rows\/\d+$/),recordSha256:hash,
+    columnLocators:SourceFusionLiteralObjectSchema,identifierScope:z.literal('source_native_only; not_canonical_registry_ids')})});
+export const RegistryGeoParquetFragmentSchema=SourceFusionGeoParquetSchema.extend({rows:SourceFusionGeoParquetSchema.shape.rows.length(1)})
+  .superRefine((fragment,ctx)=>{if(fragment.coverage.selectedRows!==1)
+    ctx.addIssue({code:'custom',message:'A citation discloses exactly one selected row.'});});
 /** Source-original selection: no extraction job/result/input/fence is implied. */
 export const RegistryRegionOriginalSchema=z.strictObject({caseId:z.uuid(),caseRevision:z.number().int().nonnegative(),
   sourceId:z.uuid(),sourceRevision:revision,sourceSha256:hash,
@@ -84,7 +103,7 @@ export const RegistryRegionCitationSchema=z.strictObject({
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
 export const RegistryDocumentCitationSchema=z.discriminatedUnion('version',[
-  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,RegistryDXFCitationSchema,RegistryKMLCitationSchema,RegistryCityGMLCitationSchema]);
+  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,RegistryDXFCitationSchema,RegistryKMLCitationSchema,RegistryCityGMLCitationSchema,RegistryGeoParquetCitationSchema]);
 export const RegistryDocumentCitationsSchema=z.array(RegistryDocumentCitationSchema).max(25)
   .superRefine((items,ctx)=>{
     if(new Set(items.map(item=>item.id)).size!==items.length)
@@ -103,8 +122,8 @@ export const RegistryDocumentAmendmentSchema=z.strictObject({requestKey:z.uuid()
   if(value.assertIFCIdentity&&(value.add||value.addFusion||value.addRegion||value.remove.length||value.clearAll))
     ctx.addIssue({code:'custom',message:'Confirm one existing exact IFC citation as a separate amendment. Withdraw it by removing the citation.'});
   if([value.add,value.addFusion,value.addRegion].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Use one explicit addition per amendment.'});
-  if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:s.kind==='ifc'?s.stepIds.length:s.kind==='dxf'?s.entityOrdinals.length:s.kind==='kml'?s.featureOrdinals.length:s.kind==='citygml'?s.buildingOrdinals.length:false))
-    ctx.addIssue({code:'custom',message:'Select at least one native document, OCR observation, IFC record, DXF entity, KML feature or CityGML building to cite.'});
+  if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:s.kind==='ifc'?s.stepIds.length:s.kind==='dxf'?s.entityOrdinals.length:s.kind==='kml'?s.featureOrdinals.length:s.kind==='citygml'?s.buildingOrdinals.length:s.kind==='geoparquet'?s.rowIndices.length:false))
+    ctx.addIssue({code:'custom',message:'Select at least one native document, OCR observation, IFC record, DXF entity, KML feature, CityGML building or GeoParquet row to cite.'});
   if(value.clearAll&&(value.add||value.addFusion||value.addRegion||value.remove.length))
     ctx.addIssue({code:'custom',message:'Clear all citations as a separate amendment.'});
   if(value.add && new Set(value.add.partIds).size!==value.add.partIds.length)
@@ -120,6 +139,7 @@ export const RegistryDocumentEvidenceSchema=z.strictObject({draftId:z.uuid(),dra
     z.strictObject({pin:RegistryDXFCitationSchema,entity:SourceFusionLiteralObjectSchema}),
     z.strictObject({pin:RegistryKMLCitationSchema,feature:SourceFusionLiteralObjectSchema}),
     z.strictObject({pin:RegistryCityGMLCitationSchema,fragment:RegistryCityGMLFragmentSchema}),
+    z.strictObject({pin:RegistryGeoParquetCitationSchema,fragment:RegistryGeoParquetFragmentSchema}),
     z.strictObject({pin:RegistryRegionCitationSchema})])).max(25),
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
@@ -135,6 +155,7 @@ export type RegistryIFCCitation=z.infer<typeof RegistryIFCCitationSchema>;
 export type RegistryDXFCitation=z.infer<typeof RegistryDXFCitationSchema>;
 export type RegistryKMLCitation=z.infer<typeof RegistryKMLCitationSchema>;
 export type RegistryCityGMLCitation=z.infer<typeof RegistryCityGMLCitationSchema>;
+export type RegistryGeoParquetCitation=z.infer<typeof RegistryGeoParquetCitationSchema>;
 export type RegistryRegionCitation=z.infer<typeof RegistryRegionCitationSchema>;
 export type RegistryRegionOriginal=z.infer<typeof RegistryRegionOriginalSchema>;
 export type RegistryRegionAddition=z.infer<typeof RegistryRegionAdditionSchema>;
