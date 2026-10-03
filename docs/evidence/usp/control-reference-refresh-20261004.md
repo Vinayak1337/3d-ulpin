@@ -1,3 +1,40 @@
+# RUN-CONTROL-03 — live reference refresh and comparison review, 4 October 2026
+
+The scoped live flow passes: two fresh canonical document jobs accepted the unchanged reference originals; the same five literal excerpts were reselected; one needs_input comparison review was saved, read and replayed with identical identity/digest; explicit admission exposes its summary. One wrong expected assessment hash returned 409 without adding a review. Metrics remain null, reference accuracy not_assessed and admission unavailable because no independent object controls exist.
+
+Served API/code `5f40673771189e5e65c076333d25398a604caf8d`, exclusive `C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin`, branch `task/desktop-control-reference-runtime`, loopback `http://127.0.0.1:3192/`. Prior `task/desktop-control-reference-refresh@30425c81` is preserved; staging stayed read-only. Only this handoff changed. Supplied never/danger-full-access; requested GPT-6.1 Sol/xhigh/default-standard, actual model/effort/tier unexposed.
+
+Private proof `E:/BhuAayam-data/task-data/control-reference-runtime-20261004-run01/verification.json`: 46,385 bytes, SHA256 `0802b27eb5a75c003c09cebd75c815be79ca60095d1a5d411004ba4658dedad8`. It pins exact physical/Git code, retained source/native evidence, actual Python/HTTP results, baseline/delta preservation and cleanup. Raw originals, result bodies, private context and logs stay outside Git.
+
+## Actual execution and transport
+
+The authorized change from RUN-CONTROL-02 was bounded invocation of the unchanged production `geo.area.extract_document` TEXT branch through `runDocumentJob`'s existing extraction hook and canonical `extractSourceDocument` result construction. The host environments lack pyproj; the existing retained geo image supplied Python 3.12.14, pyproj 3.6.1 and Shapely 2.0.7. Image ID `sha256:e71d87961be773c18685622eb570c034cf664bfa206e21f6fa3691d629b440c9`; current production code was mounted read-only and its area.py hash checked before import. Preflight confirmed processor/model modules were absent.
+
+Each owned TEXT invocation had networking disabled, read-only mounts/root, 1 CPU, 512 MiB, 32 PIDs, no capabilities and a 30-second deadline; measured complete invocation times were 1,210 and 1,170 ms. Existing 10 MiB source, 250,000-character, 10,000-part and 4 MiB result bounds remain. Python stdout/stderr are separate retained files. This direct Python transport qualifies these current canonical jobs; the default HTTP processor transport and generic dispatcher remain untested. No processor server, Celery worker, OCR/model/provider or native geometry execution ran. No dependencies were installed or changed.
+
+| Unchanged source | New accepted job / result SHA256 | Native parts / exact historical selections |
+| --- | --- | --- |
+| `0bb1289a-a087-4b33-9590-4e693ddaa23b` | `4140a8ba-51c8-4703-afdb-cf984bc52b20` / `9354b4b28a219fa49cf897115f2d46b29ef2232a7e057467cf4724715470e2d2` | 31 / 3 |
+| `d37030cf-0c46-4268-ae0b-18097aa30858` | `4cefd8c3-08ba-4f8e-b2bc-687dfb80157c` / `d56d666e0f3d123c63e94e32ad81c2933b63f016805d4fd280434b4ce5dcd77f` | 687 / 2 |
+
+Both jobs were enqueued by supported retry POSTs with current case/source pins and native_only mode, then executed only by their exact owned IDs. Status GETs return completed/extracted with model not_requested and zero calls. Accepted input/result/attempt authority was rechecked before and after private result reads. Both jobs bind current reader `b901accbcd0e7d555774fd0962950ff816d410cbce24e7a200bf2b2e8516ad0c` and the original hashes recorded below. Retained original/historical evidence was reused; no repeated source audit or stopped-endpoint probe occurred.
+
+All five new selected parts match the same original source, exact text/hash and line/character spans. Supported removal of the five old pins moved draft `bacc6fee-3156-438b-9720-8e7a531f9a47` from revision 5 to 6; the two fresh selections moved it to 7 and 8. Current reference GET returns those five selections under complete current authority. No native candidate, geometry, applicability conclusion or control correspondence changed. Historical pins/results remain in saved proof and canonical operation history.
+
+## Immutable review and preservation
+
+Empty correspondences produce needs_input/null metrics with independent_point_controls_missing. Saved review ID `5f7a3b71ecf9bcdd07f105b1b9a8edcfd03f54e55edbf170d536b5cf1386ff17`, review SHA256 `4b6a84d0f304962d88975f3b0e083ebb458c886bb43e4d7f12224f32fbe2a95e`, assessment SHA256 `4d2a4fa5bdd60be9e2088191cd50bd6230fc0a153b2c4ebea4311cf6445d245a`. Private read and same-key replay equal the original response; only one review row exists. The single wrong-hash POST returns 409 and review count stays 0 before the valid save. Admission explicitly references this review and offers inspect_control_review while recordNativeExterior remains false. Private request/review context is absent from the public review projection. Fourteen actual API calls are retained: two 201 enqueues, eleven 200 results/mutations/reads and one 409 denial.
+
+Full prior rows are preserved: cases 39, sources 36, registry_records/sites/drafts 1 each, packets 0. Jobs/attempts/metadata each move 73→75; all prior 73 are unchanged. Only the two named sources' canonical processing metadata changes, with original bytes/identity/revision/receipts intact. Only the draft's references/revision change; native candidate and geometry remain identical. Operations move 133→139: two source-document retries, three reference operations and one review. All previous operations remain unchanged. Six canonical outbox events and two job streams are added; previous events remain immutable and only affected stream counters advance. Pending jobs remain 0. These checks qualify the scoped current API/PostgreSQL/private persistence flow, not independent accuracy, learning, default processor execution or GF/release acceptance.
+
+## Commands and cleanup
+
+With `<proof>` as the new private directory: runtime.mjs preflight/start-storage, transport.mjs preflight, corrected database.mjs before, api.mjs start, `node --import tsx <proof>/journey.mjs`, database.mjs after, api.mjs stop, runtime.mjs stop-storage and finalize.mjs all exit 0. One initial private baseline comparison exited 1 because it compared a full draft row with the historical five-field projection; it was corrected to compare identical fields and reused the unchanged snapshot. Failure evidence is retained; no application mutation or repeated extraction resulted. No new tests/typecheck or unrelated campaigns were run for this handoff-only change.
+
+Identity-checked API PID 46148 is absent and port 3192 has no listener. The three task-started storage containers are stopped; the import preflight and two owned TEXT containers were automatically removed. All 24 original container IDs and all 14 volume names remain; Docker Engine 29.8.0 is available. Eight profile/config/historical PID files are unchanged. No migrations, source reupload, push/main/deploy or production code edits occurred.
+
+## Retained RUN-CONTROL-02 prerequisite history
+
 # RUN-CONTROL-02 — canonical text runtime prerequisite, 4 October 2026
 
 Both unchanged reference originals and all five historical excerpts are available and intact. Refresh remains blocked because the current canonical text extractor requires the stopped Python processor; this assignment excludes starting that processor, an external/native subprocess, manually generated parts and production edits. No jobs, references or reviews were added or changed. This is a prerequisite receipt, not completion of the review persistence flow.
