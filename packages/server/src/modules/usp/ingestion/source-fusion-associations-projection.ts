@@ -29,6 +29,7 @@ export function exactIdentifier(text:string,value:string){
 export function associationLiterals(context:SourceFusionContext,unsupportedSources:readonly string[]=[]):AssociationLiteral[]{
   const literals:AssociationLiteral[]=[];
   for(const source of context.sources){
+    if(source.kind==='raster')throw new AppError(422,'SOURCE_FUSION_RASTER_CONTEXT_ONLY','Raster metadata does not support association proposals.');
     if(source.kind==='geoparquet')throw new AppError(422,'SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY',
       'GeoParquet rows support source context only; property associations are unsupported.');
     if(source.kind==='citygml')throw new AppError(422,'SOURCE_FUSION_CITYGML_CONTEXT_ONLY',
@@ -117,6 +118,7 @@ export function associationManualSelection(request:FusionAssociationRequest,cont
   ifcProjection?:AssociationIFCProjection){
   const selected=new Set(keys);
   const candidates=context.sources.flatMap<SourceFusionContext['sources'][number]>(source=>{
+    if(source.kind==='raster')throw new AppError(422,'SOURCE_FUSION_RASTER_CONTEXT_ONLY','Raster metadata does not support association proposals.');
     if(source.kind==='geoparquet')throw new AppError(422,'SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY',
       'GeoParquet rows support source context only; property associations are unsupported.');
     if(source.kind==='citygml')throw new AppError(422,'SOURCE_FUSION_CITYGML_CONTEXT_ONLY',

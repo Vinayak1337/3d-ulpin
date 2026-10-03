@@ -27,8 +27,9 @@ import {citygmlSummary} from './citygml-processor';
 import {acceptedFusionCityGMLTx,verifyFusionCityGMLTools} from './source-fusion-citygml-authority';
 
 import {acceptedFusionGeoParquetTx,verifyFusionGeoParquetTools,readFusionGeoParquetResult,type FusionGeoParquetAuthority} from './source-fusion-geoparquet-authority';
+import {acceptedFusionRasterTx,readFusionRasterResult,type FusionRasterAuthority} from './source-fusion-raster-authority';
 
-export type FusionAuthority=FusionGeoParquetAuthority|{kind:'document';input:DocumentInput;acceptedFence:number}|
+export type FusionAuthority=FusionGeoParquetAuthority|FusionRasterAuthority|{kind:'document';input:DocumentInput;acceptedFence:number}|
   {kind:'cityjson';input:CityJSONInput;acceptedFence:number}|{kind:'ifc';input:IFCInput;acceptedFence:number}|
   {kind:'dxf';input:DXFInput;acceptedFence:number}|{kind:'kml';input:KMLInput;acceptedFence:number}|{kind:'citygml';input:CityGMLInput;acceptedFence:number};
 export type FusionBudget={deadlineAt:number;signal:AbortSignal;reservedBytes:number};
@@ -42,7 +43,8 @@ type AuthorityDependencies={transaction:typeof transaction;document:typeof assoc
   dxf?:typeof acceptedFusionDXFTx;dxfTools?:typeof verifyFusionDXFTools;
   kml?:typeof acceptedFusionKMLTx;kmlTools?:typeof verifyFusionKMLTools;
   citygml?:typeof acceptedFusionCityGMLTx;citygmlTools?:typeof verifyFusionCityGMLTools;
-  geoparquet?:typeof acceptedFusionGeoParquetTx;geoparquetTools?:typeof verifyFusionGeoParquetTools};
+  geoparquet?:typeof acceptedFusionGeoParquetTx;geoparquetTools?:typeof verifyFusionGeoParquetTools;
+  raster?:typeof acceptedFusionRasterTx};
 const defaults:AuthorityDependencies={transaction,document:associationDocumentInputTx,cityjson:acceptedCityJSONTx,gate:lockSourceCaseDestinationTx};
 
 /** All final rows share one transaction after ALL object I/O. No persistent write. */
@@ -77,6 +79,8 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
         authority=await (deps.citygml??acceptedFusionCityGMLTx)(client,pin,true);
       }else if(selection.kind==='geoparquet'){
         authority=await (deps.geoparquet??acceptedFusionGeoParquetTx)(client,pin,true);
+      }else if(selection.kind==='raster'){
+        authority=await (deps.raster??acceptedFusionRasterTx)(client,pin,true);
       }else if(selection.kind!=='cityjson'){
         const prior=expected?.[index];
         const input=await deps.document(client,ctx,pin,prior?.kind==='document'?prior.input:undefined,true);
@@ -152,6 +156,10 @@ export function fusionJson(bytes:Uint8Array,budget:Pick<FusionBudget,'deadlineAt
  * conventions over the existing bounded stream; no shared reader is changed. */
 export async function readFusionResult(selection:SourceFusionSelection,authority:FusionAuthority,budget:FusionBudget,
   read:typeof readFusionObject=readFusionObject){
+  if(selection.kind==='raster'){
+    if(authority.kind!=='raster')throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
+    return readFusionRasterResult(selection,authority,budget,read);
+  }
   if(selection.kind==='geoparquet'){
     if(authority.kind!=='geoparquet')throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
     return readFusionGeoParquetResult(selection,authority,budget,read);
