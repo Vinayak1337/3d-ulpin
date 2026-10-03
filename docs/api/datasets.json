@@ -5292,6 +5292,24 @@
         "originalUnchanged": true,
         "scope": "Saved native crop through canonical amendment/private read/replay/review/commit/history with technical SQL/transport/target controls; no native rerun",
         "limits": "Current HTTP/persistence, authentic property crosswalk/measurement/learning and image packet completion/release remain unqualified"
+      },
+      "privateImagePdfEvidence": {
+        "guide": "docs/evidence/usp/packet-image-pdf-handoff.md",
+        "workerCodeCommit": "f8825090",
+        "completionSha256": "0e63ec81d27e21256c4fe1b708232aca26b5d956ddb6d7c12ec3d6c9df53dc8e",
+        "pdfSha256": "1893b7bb2bf26b3ebe54b99fbdfd432dd5d1878901bb8a9744043a1ad4f2eb39",
+        "pdfBytes": 60397,
+        "recipe": "pack1-single-original-image-region/1",
+        "pages": 1,
+        "originalUnchanged": true,
+        "scope": "Saved committed crop -> canonical plan/confirm/execute/private PDF download, controlled source/target/snapshot/SQL/storage; one guarded exact-pixel/PDF inspection",
+        "unsupported": [
+          "alpha",
+          "image_queue",
+          "image_zip",
+          "image_property_card"
+        ],
+        "qualification": "Current HTTP/persistence/real contention, authentic property applicability/measurement, Indian operational/learning/scale/release unqualified"
       }
     },
     {
