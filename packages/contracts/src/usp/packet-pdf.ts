@@ -3,6 +3,8 @@ import {PacketRegionWorkerSchema,PACKET_REGION_LIMITS} from '../packet-region';
 import {RegistryRegionCitationSchema,RegistryRegionOriginalSchema} from '../registry-document-evidence';
 import {CoreIdSchema,CoreSha256Schema,coreText} from '../spatial/core/scalars';
 import {UspSnapshotScopeSchema,UspTargetPinSchema,UspPrincipalSchema,UspAssetRefSchema} from './common';
+import {UspImagePdfPacketPlanInputSchema,UspImagePdfPacketPlanSchema,UspPacketImagePdfReceiptSchema,
+  UspImagePdfPacketPlanExecutionSchema} from './packet-image-pdf';
 
 /** Assembly bytes are a derivative, never evidence applicability or a packet
  * publication. The plan service must separately supply its reviewed binding. */
@@ -114,10 +116,10 @@ export const UspPacketPdfOriginalsReceiptSchema=z.strictObject({...UspPacketPdfM
 }).readonly();
 export const UspPdfOriginalsPacketPlanExecutionSchema=UspPdfPacketPlanExecutionSchema.unwrap().extend({
   packet:UspPacketPdfOriginalsReceiptSchema}).readonly();
-export const UspAnyPdfPacketPlanInputSchema=z.union([UspPdfPacketPlanInputSchema,UspPdfMultiPacketPlanInputSchema,UspPdfOriginalsPacketPlanInputSchema]);
-export const UspAnyPdfPacketPlanSchema=z.union([UspPdfPacketPlanSchema,UspPdfMultiPacketPlanSchema,UspPdfOriginalsPacketPlanSchema]);
-export const UspAnyPacketPdfReceiptSchema=z.union([UspPacketPdfReceiptSchema,UspPacketPdfMultiReceiptSchema,UspPacketPdfOriginalsReceiptSchema]);
-export const UspAnyPdfPacketPlanExecutionSchema=z.union([UspPdfPacketPlanExecutionSchema,UspPdfMultiPacketPlanExecutionSchema,UspPdfOriginalsPacketPlanExecutionSchema]);
+export const UspAnyPdfPacketPlanInputSchema=z.union([UspPdfPacketPlanInputSchema,UspPdfMultiPacketPlanInputSchema,UspPdfOriginalsPacketPlanInputSchema,UspImagePdfPacketPlanInputSchema]);
+export const UspAnyPdfPacketPlanSchema=z.union([UspPdfPacketPlanSchema,UspPdfMultiPacketPlanSchema,UspPdfOriginalsPacketPlanSchema,UspImagePdfPacketPlanSchema]);
+export const UspAnyPacketPdfReceiptSchema=z.union([UspPacketPdfReceiptSchema,UspPacketPdfMultiReceiptSchema,UspPacketPdfOriginalsReceiptSchema,UspPacketImagePdfReceiptSchema]);
+export const UspAnyPdfPacketPlanExecutionSchema=z.union([UspPdfPacketPlanExecutionSchema,UspPdfMultiPacketPlanExecutionSchema,UspPdfOriginalsPacketPlanExecutionSchema,UspImagePdfPacketPlanExecutionSchema]);
 export type AnyPdfPacketPlanInput=z.infer<typeof UspAnyPdfPacketPlanInputSchema>;
 export type AnyPdfPacketPlan=z.infer<typeof UspAnyPdfPacketPlanSchema>;
 export type AnyPdfPacketPlanExecution=z.infer<typeof UspAnyPdfPacketPlanExecutionSchema>;

@@ -15,6 +15,12 @@ import {assertUspJobAttemptTx,type UspJobAttempt} from '../jobs';
 import {enrolledPacketPdfJobTx,preparePacketPdfJobTx} from './pdf-job-authority';
 import {pdfExecutionLive,type PreparedPdfExecution,type PdfPacketIo,type PdfCropRecovery} from './pdf-service';
 import {assertCleanRegionPng} from './region-extract';
+import {PACKET_IMAGE_PDF_RECIPE} from '../../../../../contracts/src/usp/packet-image-pdf';
+
+function supported(plan:AnyPdfPacketPlan){
+  if(plan.input.recipe===PACKET_IMAGE_PDF_RECIPE)throw new AppError(422,'PACKET_IMAGE_PDF_QUEUE_UNSUPPORTED',
+    'Image PDF entry checkpoints are unsupported. Use synchronous execution.');
+}
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),text=z.string().min(1).max(512);
 /** Private server receipt: no new public job input, recipe or plan hash. */
@@ -77,6 +83,7 @@ async function checkpointAttemptTx(client:PoolClient,receipt:Checkpoint){
  * share lock. Projection reads bounded immutable receipts, never crop/profile
  * bytes; historical acceptance does not qualify current reuse or readiness. */
 export async function packetPdfEntryProgressTx(client:PoolClient,input:PacketPdfJobInput,plan:AnyPdfPacketPlan){
+  supported(plan);
   if(plan.planId!==input.command.planId||plan.version!==input.command.version||plan.planSha256!==input.planSha256||
     fingerprint(plan.entries)!==input.bindingsSha256)conflict('The checkpoint progress belongs to another exact PDF plan.');
   const requiredCount=plan.entries.length;
@@ -113,6 +120,7 @@ function checkedCrop(bytes:Uint8Array,identity:z.output<typeof identitySchema>){
  * canonical owned attempt accepts an immutable receipt in a short transaction. */
 export function packetPdfCropRecovery(ctx:RequestContext,input:PacketPdfJobInput,owned:UspJobAttempt,
   first:PreparedPdfExecution,io:PdfPacketIo,bounds:DbDeadline):PdfCropRecovery{
+  supported(first.plan);
   const live=()=>{bounds.signal?.throwIfAborted();pdfExecutionLive(bounds.deadlineAt);};
   const capture=async(client:PoolClient)=>{
     live();const current=await preparePacketPdfJobTx(client,ctx,input);

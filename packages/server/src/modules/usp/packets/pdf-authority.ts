@@ -1,6 +1,8 @@
 import type {PoolClient} from 'pg';
 import type {RequestContext} from '@ulpin/contracts/usp';
 import {RegistryDocumentCitationsSchema,type RegistryRegionCitation} from '@ulpin/contracts';
+import type {RegistryImageRegionCitation} from '../../../../../contracts/src/registry-document-evidence';
+import {PACKET_IMAGE_PDF_RECIPE,UspImagePdfPacketPlanEntrySchema} from '../../../../../contracts/src/usp/packet-image-pdf';
 import {UspPdfPacketPlanEntrySchema,PACKET_PDF_ORIGINALS_RECIPE,PACKET_PDF_ORIGINALS_LIMITS,PacketPdfOriginalSetSchema,type AnyPdfPacketPlanInput as PdfPacketPlanInput,
   type AnyPdfPacketPlan as PdfPacketPlan} from '../../../../../contracts/src/usp/packet-pdf';
 import {canonical,fingerprint} from '../../cases/domain';
@@ -11,6 +13,10 @@ import {equalPin} from '../declarations/authority';
 import {lockRegistryDocumentCasesTx} from '../../registry/registry-document-locks';
 import {registryRegionSourceTx,assertRegionCitation,regionCitationId} from '../../registry/registry-region-evidence';
 import {documentSourceTx} from '../ingestion/document-context';
+import {registryImageRegionSourceTx,assertImageRegionCitation,imageRegionCitationId} from '../../registry/registry-image-region-evidence';
+import {assertImagePdfRgb} from './image-pdf-render';
+
+type RegionBinding=RegistryRegionCitation|RegistryImageRegionCitation;
 
 export function assertPdfPlanActor(ctx:RequestContext,plan:PdfPacketPlan){
   assertLocalUsp(ctx);
@@ -30,15 +36,19 @@ async function targetTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlan
   if(target.id!==input.target.ref.id||target.site_id!==input.scope.scopeId||target.revision!==input.target.revision||
     !['building','floor','space'].includes(target.kind))
     throw new AppError(422,'PACKET_PLAN_TARGET','Use the exact recorded building, floor or space.');
+  const image=input.recipe===PACKET_IMAGE_PDF_RECIPE;
+  if(image&&!['building','floor'].includes(target.kind))
+    throw new AppError(422,'PACKET_IMAGE_PDF_TARGET','Image packets support exact building or floor targets.');
   const citations=RegistryDocumentCitationsSchema.parse(target.body?.documentCitations??[]);
   const bindings=input.entries.map(entry=>{
-    const binding=citations.find(p=>p.version==='registry-document-region-citation/1'&&p.id===entry.bindingId) as RegistryRegionCitation|undefined;
+    const binding=citations.find(p=>p.version===(image?'registry-image-region-citation/1':'registry-document-region-citation/1')&&p.id===entry.bindingId) as RegionBinding|undefined;
     if(binding&&(binding.target.recordId!==target.id||binding.target.revision>=target.revision||binding.purpose!==input.purpose))
       conflict('The exact region has not passed canonical commit for this target and purpose.');
-    if(binding&&binding.id!==regionCitationId(binding))conflict('The exact committed region failed its integrity check.');
+    if(binding&&binding.id!==(binding.version==='registry-image-region-citation/1'?imageRegionCitationId(binding):regionCitationId(binding)))
+      conflict('The exact committed region failed its integrity check.');
     return binding;
   });
-  const supplied=bindings.filter((binding):binding is RegistryRegionCitation=>Boolean(binding));
+  const supplied=bindings.filter((binding):binding is RegionBinding=>Boolean(binding));
   if(input.recipe===PACKET_PDF_ORIGINALS_RECIPE){
     const originals=new Map<string,RegistryRegionCitation['document']>();
     for(const binding of supplied){
@@ -68,7 +78,7 @@ export async function protectPdfPlanInputsTx(client:PoolClient,ctx:RequestContex
   await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
   for(const id of [...new Set(inputs.map(input=>input.scope.scopeId))].sort())
     await client.query('SELECT id FROM registry_sites WHERE id=$1 FOR SHARE',[id]);
-  const bindings=before.flatMap(item=>item.bindings.filter((binding):binding is RegistryRegionCitation=>Boolean(binding)))
+  const bindings=before.flatMap(item=>item.bindings.filter((binding):binding is RegionBinding=>Boolean(binding)))
     .sort((a,b)=>a.document.sourceId.localeCompare(b.document.sourceId));
   for(const binding of bindings){
     const source=(await client.query('SELECT id,case_id,inspection FROM sources WHERE id=$1 FOR SHARE',[binding.document.sourceId])).rows[0];
@@ -77,7 +87,7 @@ export async function protectPdfPlanInputsTx(client:PoolClient,ctx:RequestContex
   }
   return after;
 }
-async function committedTargetTx(client:PoolClient,input:PdfPacketPlanInput,captured:Record<string,any>,bindings:(RegistryRegionCitation|undefined)[]){
+async function committedTargetTx(client:PoolClient,input:PdfPacketPlanInput,captured:Record<string,any>,bindings:(RegionBinding|undefined)[]){
   const current=(await client.query(`SELECT r.*,c.status AS project_status FROM registry_records r
     LEFT JOIN usp_project_codes c ON c.record_id=r.id WHERE r.id=$1 AND r.site_id=$2 FOR SHARE OF r`,
     [input.target.ref.id,input.scope.scopeId])).rows[0]??notFound('The selected target is unavailable.');
@@ -93,7 +103,7 @@ async function committedTargetTx(client:PoolClient,input:PdfPacketPlanInput,capt
   }
   return current;
 }
-async function sourceAccessTx(client:PoolClient,ctx:RequestContext,siteId:string,binding:RegistryRegionCitation){
+async function sourceAccessTx(client:PoolClient,ctx:RequestContext,siteId:string,binding:RegionBinding){
   if(binding.selection.subject!==ctx.principal.subject)
     throw new AppError(403,'PACKET_PDF_SOURCE_ACCESS','This region is unavailable to the current operator.');
   const original=binding.document,current=await documentSourceTx(client,original.caseId,original.sourceId);
@@ -102,6 +112,8 @@ async function sourceAccessTx(client:PoolClient,ctx:RequestContext,siteId:string
     throw new AppError(403,'PACKET_PDF_SOURCE_ACCESS','Current access does not authorize this original region.');
   if(current.source.revision!==original.sourceRevision||current.source.sha256!==original.sourceSha256||
     Number(current.source.bytes)!==original.sourceBytes)conflict('The retained original bytes changed.');
+  if(binding.version==='registry-image-region-citation/1')
+    assertImageRegionCitation(binding,await registryImageRegionSourceTx(client,siteId,original,true));
 }
 export async function authorizePdfPlanTx(client:PoolClient,ctx:RequestContext,plan:PdfPacketPlan){
   assertPdfPlanActor(ctx,plan);const {captured,target,bindings}=await targetTx(client,ctx,plan.input);
@@ -135,12 +147,15 @@ export async function assessPdfPlanTx(client:PoolClient,ctx:RequestContext,input
     const binding=bindings[index];
     if(binding){
       await sourceAccessTx(client,ctx,input.scope.scopeId,binding);
-      assertRegionCitation(binding,await registryRegionSourceTx(client,input.scope.scopeId,binding.document,true));
+      if(binding.version==='registry-image-region-citation/1'){
+        assertImagePdfRgb(binding.validation);
+      }else assertRegionCitation(binding,await registryRegionSourceTx(client,input.scope.scopeId,binding.document,true));
     }
     const body={selection,binding:binding??null,targetPath:[input.target],
       applicabilitySha256:binding?fingerprint({binding,target:input.target,purpose:input.purpose}):null,
       state:binding?'included':'blocked_required_context',reasonCode:binding?null:'committed_region_binding_unavailable'};
-    entries.push(UspPdfPacketPlanEntrySchema.parse({...body,entrySha256:fingerprint(body)}));
+    entries.push((input.recipe===PACKET_IMAGE_PDF_RECIPE?UspImagePdfPacketPlanEntrySchema:UspPdfPacketPlanEntrySchema)
+      .parse({...body,entrySha256:fingerprint(body)}));
   }
   return {targetBodySha256:captured.body_sha256 as string,targetLabel:target.body?.name??target.identifier,
     entries,requiredContext:bindings.every(Boolean)?'available' as const:'blocked' as const};

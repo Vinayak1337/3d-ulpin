@@ -21,9 +21,14 @@ import {registryRegionSourceTx} from '../../registry/registry-region-evidence';
 import {assemblePacketPdf,assemblePacketPdfRegions,assemblePacketPdfOriginals} from './pdf-render';
 import {protectPdfPlanTx,protectPdfPlanInputsTx,authorizePdfPlanTx,assessPdfPlanTx,assertPdfAssessment,assertPdfPlanActor} from './pdf-authority';
 import {loadPdfPlanTx,validatePlan,validateConfirmation,validateExecution,livePlanTx,planHeadTx,savePlanReceiptTx} from './plan-store';
+import {PACKET_IMAGE_PDF_RECIPE,PACKET_IMAGE_PDF_LIMITS} from '../../../../../contracts/src/usp/packet-image-pdf';
+import {PacketImageRegionService} from './image-region';
+import {registryImageRegionSourceTx,prepareRegistryImageRegion} from '../../registry/registry-image-region-evidence';
+import {assemblePacketImagePdf,assertImagePdfRgb} from './image-pdf-render';
 
 /** Internal I/O seam only. Each byte read is bounded by the immutable receipt. */
 export type PdfPacketIo={extract:PacketRegionService['extract'];put:typeof putOriginal;
+  imageExtract?:PacketImageRegionService['extract'];
   read:(key:string,bytes:number,hash:string,deadlineAt?:number)=>Promise<Uint8Array>;
   /** Internal current-recipe authority for queued accepted-crop reuse. */
   recipe?:(sourceId:string,deadlineAt:number)=>Promise<string>};
@@ -41,7 +46,9 @@ async function boundedPdfRead(key:string,bytes:number,hash:string,deadlineAt?:nu
   }finally{object.body.destroy();}
 }
 const regionService=new PacketRegionService();
+const imageRegionService=new PacketImageRegionService();
 export const pdfPacketStorage:PdfPacketIo={extract:regionService.extract.bind(regionService),read:boundedPdfRead,
+  imageExtract:imageRegionService.extract.bind(imageRegionService),
   put:(key,bytes,type,signal)=>putOriginal(key,bytes,type,signal??AbortSignal.timeout(30_000)),
   recipe:async(_sourceId,deadlineAt)=>{pdfExecutionLive(deadlineAt);const {packetRegionRecipeSha}=await import('./region-runtime');
     pdfExecutionLive(deadlineAt);const recipe=await packetRegionRecipeSha();pdfExecutionLive(deadlineAt);return recipe;}};
@@ -153,7 +160,9 @@ export async function preparePdfExecutionTx(client:PoolClient,ctx:RequestContext
       throw new AppError(422,'PACKET_PLAN_BLOCKED','Every required committed region binding is needed.');
     const bindings=plan.entries.map(entry=>entry.binding!);
     const sources=[];
-    for(const binding of bindings)sources.push(await registryRegionSourceTx(client,plan.input.scope.scopeId,binding.document,true));
+    for(const binding of bindings)sources.push(binding.version==='registry-image-region-citation/1'?
+      await registryImageRegionSourceTx(client,plan.input.scope.scopeId,binding.document,true):
+      await registryRegionSourceTx(client,plan.input.scope.scopeId,binding.document,true));
     return {plan,confirmation,bindings,sources};
 }
 export type PreparedPdfExecution=Exclude<Awaited<ReturnType<typeof preparePdfExecutionTx>>,{replay:unknown}>;
@@ -162,19 +171,35 @@ export function pdfExecutionLive(deadlineAt?:number){if(deadlineAt!==undefined&&
 export type PdfCropRecovery=(index:number,extract:()=>Promise<Buffer>)=>Promise<Buffer>;
 export async function stagePdfExecution(first:PreparedPdfExecution,io:PdfPacketIo=storage,deadlineAt?:number,recover?:PdfCropRecovery){
   // No transaction or mutation lock spans native execution or object I/O.
-  const {plan,confirmation,bindings,sources}=first,multi=plan.input.recipe!==PACKET_PDF_RECIPE,
+  const {plan,bindings,sources}=first,image=plan.input.recipe===PACKET_IMAGE_PDF_RECIPE,
+    multi=!image&&plan.input.recipe!==PACKET_PDF_RECIPE,
     multipleOriginals=plan.input.recipe===PACKET_PDF_ORIGINALS_RECIPE;
   const live=()=>pdfExecutionLive(deadlineAt);
+  if(image&&recover)throw new AppError(422,'PACKET_IMAGE_PDF_QUEUE_UNSUPPORTED','Image PDF checkpoint recovery is not supported by this recipe.');
   const extractCrop=async(index:number)=>{
     live();const binding=bindings[index];
+    if(binding.version==='registry-image-region-citation/1'){
+      if(!image||index!==0||bindings.length!==1)conflict('The image binding differs from its exact single-image recipe.');
+      assertImagePdfRgb(binding.validation);
+      if(!io.imageExtract)throw new AppError(503,'PACKET_IMAGE_PDF_EXTRACT_UNAVAILABLE','The private image extractor is unavailable.');
+      const crop=await io.imageExtract(binding.document.sourceId,{revision:String(binding.document.sourceRevision),
+        sha256:binding.document.sourceSha256,purpose:'private_source_preview',selection:binding.region});live();
+      const proof=await prepareRegistryImageRegion({document:binding.document,region:binding.region,purpose:binding.purpose},
+        sources[index] as Awaited<ReturnType<typeof registryImageRegionSourceTx>>,async()=>crop);
+      if(canonical(proof.validation)!==canonical(binding.validation))conflict('The exact bound image crop or decoder recipe changed. Review a fresh binding.');
+      live();return crop.bytes;
+    }
+    if(image)conflict('An image packet needs its exact committed original-image binding.');
     const crop=await io.extract(binding.document.sourceId,binding.page,{revision:String(binding.document.sourceRevision),
       sha256:binding.document.sourceSha256,purpose:'private_source_preview',selection:binding.region},deadlineAt);live();
-    const proof=await prepareRegistryRegion({document:binding.document,page:binding.page,region:binding.region,purpose:binding.purpose},sources[index],async()=>crop);
+    const proof=await prepareRegistryRegion({document:binding.document,page:binding.page,region:binding.region,purpose:binding.purpose},
+      sources[index] as Awaited<ReturnType<typeof registryRegionSourceTx>>,async()=>crop);
     if(canonical(proof.validation)!==canonical(binding.validation))conflict('The exact bound crop or renderer recipe changed. Review a fresh binding.');
     live();return crop.bytes;
   };
   const cropAt=(index:number)=>recover?recover(index,()=>extractCrop(index)):extractCrop(index);
-  const assembled=multipleOriginals?await assemblePacketPdfOriginals(bindings.map(binding=>binding.document),bindings.map(binding=>binding.validation),cropAt,live):
+  const assembled=image?assemblePacketImagePdf(bindings[0].validation,await cropAt(0)):
+    multipleOriginals?await assemblePacketPdfOriginals(bindings.map(binding=>binding.document),bindings.map(binding=>binding.validation),cropAt,live):
     multi?await assemblePacketPdfRegions(bindings.map(binding=>binding.validation),cropAt,live):
     assemblePacketPdf(bindings[0].validation,await cropAt(0));
   live();const packetId=randomUUID(),key=`usp/packets/${packetId}/${assembled.manifest.output.sha256}`;
@@ -187,14 +212,15 @@ export async function stagePdfExecution(first:PreparedPdfExecution,io:PdfPacketI
 export async function publishPdfExecutionTx(client:PoolClient,ctx:RequestContext,command:z.output<typeof UspExecutePacketPlanSchema>,
   first:PreparedPdfExecution,staged:Awaited<ReturnType<typeof stagePdfExecution>>,deadlineAt?:number,reuseExisting=false){
     const hash=fingerprint(command),{plan,confirmation,bindings}=first,{packetId,key,assembled}=staged,
-      multi=plan.input.recipe!==PACKET_PDF_RECIPE,multipleOriginals=plan.input.recipe===PACKET_PDF_ORIGINALS_RECIPE;
+      image=plan.input.recipe===PACKET_IMAGE_PDF_RECIPE,multi=!image&&plan.input.recipe!==PACKET_PDF_RECIPE,
+      multipleOriginals=plan.input.recipe===PACKET_PDF_ORIGINALS_RECIPE;
     const live=()=>pdfExecutionLive(deadlineAt);
   // Final same-client publication is atomic with execution/command/outbox.
   // Failed or uncertain publication retains an unreferenced derivative; never
   // delete a possibly committed object or any original on cancellation.
     const final=await preparePdfExecutionTx(client,ctx,command,reuseExisting);if(final.replay)return final.replay;
     if(canonical(final)!==canonical(first))conflict('The confirmed plan or original authority changed during generation.');
-    live();const packet=UspPacketPdfReceiptSchema.parse({version:multipleOriginals?'packet-pdf/3':multi?'packet-pdf/2':'packet-pdf/1',packetId,target:plan.input.target,scope:plan.input.scope,
+    live();const packet=UspPacketPdfReceiptSchema.parse({version:image?'packet-image-pdf/1':multipleOriginals?'packet-pdf/3':multi?'packet-pdf/2':'packet-pdf/1',packetId,target:plan.input.target,scope:plan.input.scope,
       format:'pdf',artifact:{assetId:packetId,version:1,sha256:assembled.manifest.output.sha256},planId:plan.planId,planVersion:plan.version,
       planSha256:plan.planSha256,confirmationId:confirmation.confirmationId,...(multi?{
         entries:bindings.map((binding,index)=>({bindingId:binding.id,entrySha256:plan.entries[index].entrySha256,outputPage:index+1}))}:
@@ -214,7 +240,8 @@ export async function publishPdfExecutionTx(client:PoolClient,ctx:RequestContext
 export async function executePdfPacketPlan(ctx:RequestContext,raw:unknown,io:PdfPacketIo=storage){
   assertLocalUsp(ctx);const startedAt=Date.now(),command=UspExecutePacketPlanSchema.parse(raw);
   const first=await boundedTx(client=>preparePdfExecutionTx(client,ctx,command));if(first.replay)return first.replay;
-  const deadlineAt=first.plan.input.recipe!==PACKET_PDF_RECIPE?startedAt+PACKET_PDF_MULTI_LIMITS.seconds*1000:undefined;
+  const deadlineAt=first.plan.input.recipe===PACKET_IMAGE_PDF_RECIPE?startedAt+PACKET_IMAGE_PDF_LIMITS.seconds*1000:
+    first.plan.input.recipe!==PACKET_PDF_RECIPE?startedAt+PACKET_PDF_MULTI_LIMITS.seconds*1000:undefined;
   const staged=await stagePdfExecution(first,io,deadlineAt);
   return boundedTx(client=>publishPdfExecutionTx(client,ctx,command,first,staged,deadlineAt),deadlineAt);
 }
@@ -238,7 +265,8 @@ export async function readPacketPdf(ctx:RequestContext,packetValue:string,io:Pdf
   const capture=(client:PoolClient)=>capturePacketPdfTx(client,ctx,packetId);
   const before=await boundedTx(capture),output=before.receipt.assembly.output;
   const bytes=await io.read(before.key,output.bytes,output.sha256);
-  const limit=before.receipt.version==='packet-pdf/1'?PACKET_PDF_LIMITS.bytes:PACKET_PDF_MULTI_LIMITS.bytes;
+  const limit=before.receipt.version==='packet-image-pdf/1'?PACKET_IMAGE_PDF_LIMITS.bytes:
+    before.receipt.version==='packet-pdf/1'?PACKET_PDF_LIMITS.bytes:PACKET_PDF_MULTI_LIMITS.bytes;
   if(bytes.length!==output.bytes||bytes.length>limit||sha256(bytes)!==output.sha256)
     throw new AppError(422,'PACKET_PDF_ARTIFACT_INTEGRITY','The saved PDF differs from its exact receipt.');
   const after=await boundedTx(capture);
