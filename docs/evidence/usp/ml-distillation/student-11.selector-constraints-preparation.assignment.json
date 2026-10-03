@@ -2,26 +2,17 @@
   "version": "association-selector-constraints-preparation/1",
   "task": "STUDENT-11-CONSTRAINED-PREP",
   "recordedAt": "2026-10-03",
-  "status": "prepared_for_dispatch_after_saved_reload_handoff_acceptance",
+  "status": "assigned_cpu_preparation_only",
   "authority": "E:/Projects/3d-ulpin/docs/orchestration/PARALLEL_20261003.md at0b209ca31e97fbcbadae9d5bb6dc02524127b1fe, Resume dispatch / ML recovery; explicit continued user authorization of existing ML roles.",
-  "coordinatorBase": "71c70a5ac4268e2503a8b1f9d16e4ef11f268e3a",
+  "coordinatorBase": "0e7bcf91dc014cd2882a103defe99a78d825f87e",
   "primaryStagingHeadObservedReadOnly": "0b209ca31e97fbcbadae9d5bb6dc02524127b1fe",
   "owner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
   "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
   "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
   "branch": "task/ml-association-student-20261002",
-  "codeBaseRule": "Use the unchanged accepted executable95a0df5f plus its evidence-only recovery commit after coordinator acceptance. Record that exact clean HEAD before CPU code edits; do not cherry-pick coordinator documents or change worker branch.",
+  "codeBaseRule": "Begin at exact clean learner448d6ea04f7ff9dfe00a6f05c3a80390503c73fc, executable bytes unchanged from95a0df5f. Keep the existing checkout/branch and record actual turn permissions before CPU edits. Coordinator documents are read-only inputs, not cherry-picks.",
   "outcome": "Implement and CPU-check an explicit source-dependent constrained selector generation policy, reusing the installed Transformers generation interface and existing saved-adapter route. Return concrete code and small controls, not an architecture-only plan. No model or tokenizer runtime phase is authorized by PREP.",
   "hypothesis": "The saved reload now emits schema-valid pointer JSON but selects absent fragment ordinals. During-generation syntax/source-range/citation/state legality can prevent that failure class. This changes the decoding distribution; it cannot establish correct role/field selection, independent truth or IFC transfer. No repeated fitting under the same hypothesis.",
-  "observedSavedOutcomeProvisional": {
-    "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-selector-reload-5c4c5b3f14154294ae01760e60d04b7d",
-    "hostRoot": "E:/BhuAayam-data/task-data/ml-distillation/student/selector-reload-v1-host-20261003-95a0df5f",
-    "jsonAndSchemaValidResponses": 2,
-    "usableResponses": 0,
-    "expectedCorrectClaims": 0,
-    "expectedClaims": 6,
-    "qualification": "Saved artifact observation only; final owner receipt/commit and scoped acceptance still required. Additional unknown/non-null, citation-coverage and role errors exist behind the first range rejection."
-  },
   "executionAllowance": {
     "stageModelRun": false,
     "loadModel": false,
@@ -67,5 +58,28 @@
     "speed": "default/standard",
     "observation": "Verify supplied never/danger-full-access; actual per-turn model/effort/tier only when exposed, no tool tier field."
   },
-  "continuation": "Dispatch only after completing and accepting the interrupted saved reload handoff. Finish one CPU code/preparation increment, commit only owned changes and callback to coordinator, then stop. Coordinator inspects the actual code before one new constrained inference freeze; no automatic model continuation or polling."
+  "continuation": "The interrupted saved reload handoff is accepted and integrated. Complete one CPU code/preparation increment now, commit only owned changes and callback to coordinator, then end. Coordinator inspects actual code before any separately frozen constrained inference. No model/tokenizer runtime phase, automatic fit/inference continuation, polling or schedules.",
+  "studentCodeCommit": "448d6ea04f7ff9dfe00a6f05c3a80390503c73fc",
+  "reloadAcceptance": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-selector-reload-acceptance-v1.json",
+  "reloadAcceptancePhysicalSha256": "922d6d20428c68ca837a9a8b840b92ecf06e69c315bf4675131f1669c996ced4",
+  "acceptedReloadOutcome": {
+    "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-selector-reload-5c4c5b3f14154294ae01760e60d04b7d",
+    "hostRoot": "E:/BhuAayam-data/task-data/ml-distillation/student/selector-reload-v1-host-20261003-95a0df5f",
+    "jsonAndSchemaValidResponses": 2,
+    "usableResponses": 0,
+    "expectedCorrectClaims": 0,
+    "expectedClaims": 6,
+    "qualification": "Technical saved-adapter reload/resource/cleanup accepted; development criteria fail with0/2 usable outputs and0/6 correct accepted claims. Raw outputs remain unchanged. Additional state/citation/role mistakes behind the first range rejection remain unqualified.",
+    "ownerCommit": "448d6ea04f7ff9dfe00a6f05c3a80390503c73fc",
+    "coordinatorIntegrationCommit": "0e7bcf91dc014cd2882a103defe99a78d825f87e"
+  },
+  "pinnedExistingInterfaces": {
+    "runtime/packages/transformers/generation/logits_process.py": "6481506629ff6f021157e893fc64c4e7b5b06a72072771809d679387cb54a4b1",
+    "runtime/packages/transformers/generation/utils.py": "55fd5c50aa785e226afa03e4507b8d27c0328714c0bd048bc60af9e8813a1173",
+    "model/tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "model/tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+  },
+  "interfaceProfileSha256": "bc41ff13e5e5dca76688424f40d688c786ec90e663001f4a760ab5810e5592e1",
+  "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+  "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb"
 }
