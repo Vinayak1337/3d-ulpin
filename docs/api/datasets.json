@@ -6005,6 +6005,26 @@
         },
         "tableStatus": "incomplete",
         "limitation": "Canonical personal-field redactor masks some coordinate sequences. Exact cited unparsed rows remain visible; no reconstruction or privacy bypass. Working frames, epoch, object correspondence and learning remain unqualified."
+      },
+      "surveyCoordinateRedactionObservation": {
+        "handoff": "docs/evidence/usp/survey-coordinate-redaction-handoff.md",
+        "receiptSha256": "161680357b465af742d8fded0738c9ab317505ed42e68d69e730cf1eacad2085",
+        "scope": "Controlled unchanged-source extraction/parser/service checks; no live enrollment or API qualification",
+        "pid": {
+          "parsedRows": 17,
+          "unparsedRows": 0
+        },
+        "nva": {
+          "parsedRows": 166,
+          "unparsedRows": 0,
+          "enabledRows": 164,
+          "disabledRows": 2
+        },
+        "tableStatus": "complete",
+        "state": "needs_input",
+        "readerSha256": "880fd490ac7ce27d57502f38c5c1538d3feb79da623e6aa012498c50fbd6274f",
+        "readerHashScope": "Physical staging code bytes after integration",
+        "limitation": "Working frames, epoch, object correspondence, accuracy and learning remain unqualified. Historical reader-bound results are stale under this recipe; no historical pins were rewritten."
       }
     }
   ],
