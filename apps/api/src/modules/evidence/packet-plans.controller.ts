@@ -24,7 +24,7 @@ import { EvidenceExceptionFilter, readUspBody, UspJsonPost, uspEnvelope } from '
 @Controller('api/v1/usp/packets')
 export class PacketPlansController {
   @Post('plans/enqueue') @HttpCode(202)
-  @ApiOperation({operationId:'POST_api_v1_usp_packets_plans_enqueue',summary:'Durably enqueue a supported PDF-source plan; original-image recipe uses synchronous execution'})
+  @ApiOperation({operationId:'POST_api_v1_usp_packets_plans_enqueue',summary:'Durably enqueue a confirmed PDF-region or single original-image plan with accepted-crop recovery'})
   @ApiBody({schema:requestApiSchema(UspEnqueuePacketPdfJobSchema)})
   @ApiResponse({status:202,schema:envelopeSchema(PacketPdfJobStatusSchema)})
   async enqueue(@Req() req:Request,@Res({passthrough:true}) res:Response){

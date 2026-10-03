@@ -5334,6 +5334,32 @@
         "originalUnchanged": true,
         "scope": "Saved accepted PNG image PDF -> existing record-backed private card/read/replay/exact revision resolver; controlled target/SQL/storage",
         "qualification": "No pixel-derived facts; existing renderer/QR proof reused, no new browser/HTTP/QR-decode claim. Current persistence/authentic applicability/measurement/learning/release remain unqualified"
+      },
+      "privateImagePdfRecoveryEvidence": {
+        "guide": "docs/evidence/usp/packet-image-pdf-recovery-handoff.md",
+        "integratedCodeCommit": "211f9bf2",
+        "completionSha256": "6149afbb7e46cbd61204943cddc702b2e5013c5470aa734473027f5c1174a66c",
+        "journeySha256": "48922790c70fb2346a9fc338f554fa789b25c85053d09e9320143f2e23bace87",
+        "pdfSha256": "1893b7bb2bf26b3ebe54b99fbdfd432dd5d1878901bb8a9744043a1ad4f2eb39",
+        "pdfBytes": 60397,
+        "statuses": [
+          "queued",
+          "failed",
+          "queued",
+          "succeeded"
+        ],
+        "acceptedCounts": [
+          0,
+          1,
+          1,
+          1
+        ],
+        "cropExtractions": 1,
+        "originalUnchanged": true,
+        "scope": "Saved PNG crop -> canonical image job/checkpoint -> post-checkpoint failure -> retry -> exact private result; controlled SQL/storage/extractor/runtime seam",
+        "currentRuntimeFiles": "Retained interpreter/Pillow/native binaries match; staging image worker/decoder script bytes differ from saved recipe due to checkout line endings, so that historical binding must refuse current production reuse until refreshed",
+        "checkpointMigration": "registered_unapplied",
+        "qualification": "No native/model rerun. Current HTTP/PostgreSQL/private persistence/contention, fresh source binding, authentic applicability/rights/measurement, learning/performance/release unqualified"
       }
     },
     {
