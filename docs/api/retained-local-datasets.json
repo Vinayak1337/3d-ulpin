@@ -1242,6 +1242,30 @@
         "image_property_card"
       ],
       "qualification": "Current HTTP/persistence/real contention, authentic property applicability/measurement, Indian operational/learning/scale/release unqualified"
+    },
+    "privateImagePdfBundleEvidence": {
+      "guide": "docs/evidence/usp/packet-image-pdf-bundle-handoff.md",
+      "integratedCodeCommit": "ee9e3c84",
+      "completionSha256": "41ee1a009a87bbefc5aee33ac8aaf936d08a61dae5593b01b13b22a826a3526e",
+      "verificationSha256": "4ae2acd601af11c4f98e6d1714a4bcac14f62df3932eaae779fe317705a25d1f",
+      "zipBytes": 65080,
+      "zipSha256": "6b3e893ce34b3f46b2c6829b35d5481ae7548db1c93beaab67ce3835a38f95cf",
+      "manifestSha256": "962f2d402fd9e3f4006d15581f75aa5a3d65e787545fe223650ef46727bf456e",
+      "pdfSha256": "1893b7bb2bf26b3ebe54b99fbdfd432dd5d1878901bb8a9744043a1ad4f2eb39",
+      "originalUnchanged": true,
+      "scope": "Saved accepted PNG image PDF -> private two-file ZIP with exact typed provenance and full authority recapture; controlled SQL/storage/target",
+      "qualification": "No native rerun; current HTTP/persistence, authentic property applicability/measurement/rights, learning, redistribution/launch and release remain unqualified"
+    },
+    "privateImagePdfCardEvidence": {
+      "guide": "docs/evidence/usp/property-card-image-handoff.md",
+      "integratedCodeCommit": "00835328",
+      "completionSha256": "9b1eebd11b51b6f9bff8fc1626b02ece07af243d5bcd049047613ff34136cec3",
+      "cardBytes": 6775,
+      "cardSha256": "f97ec80fc00f4e211bfdeb3b6bbdb0cbffacb3053a1f994b6d4201cc30d48f6e",
+      "linkedPdfSha256": "1893b7bb2bf26b3ebe54b99fbdfd432dd5d1878901bb8a9744043a1ad4f2eb39",
+      "originalUnchanged": true,
+      "scope": "Saved accepted PNG image PDF -> existing record-backed private card/read/replay/exact revision resolver; controlled target/SQL/storage",
+      "qualification": "No pixel-derived facts; existing renderer/QR proof reused, no new browser/HTTP/QR-decode claim. Current persistence/authentic applicability/measurement/learning/release remain unqualified"
     }
   },
   {

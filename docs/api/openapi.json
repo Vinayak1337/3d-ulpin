@@ -24245,7 +24245,7 @@
             }
           }
         },
-        "summary": "Download an exact accepted private PDF and bounded provenance manifest as a generated compilation ZIP",
+        "summary": "Download an exact accepted private document or image PDF and bounded provenance manifest as a generated compilation ZIP",
         "tags": [
           "USP private accepted PDF bundles"
         ],
@@ -24428,7 +24428,7 @@
             }
           }
         },
-        "summary": "Generate a private one-page summary linked to an executed confirmed text/CSV or required-region PDF plan",
+        "summary": "Generate a private one-page summary linked to an executed confirmed text/CSV, required-region PDF or original-image PDF plan",
         "tags": [
           "USP private exact-revision property cards"
         ],

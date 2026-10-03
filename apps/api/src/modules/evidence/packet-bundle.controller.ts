@@ -15,7 +15,7 @@ import {EvidenceExceptionFilter} from './evidence.http';
 @Controller('api/v1/usp/packets/pdf')
 export class PacketBundleController{
   @Get(':packetId/bundle') @HttpCode(200)
-  @ApiOperation({operationId:'GET_api_v1_usp_packets_pdf_packetId_bundle',summary:'Download an exact accepted private PDF and bounded provenance manifest as a generated compilation ZIP'})
+  @ApiOperation({operationId:'GET_api_v1_usp_packets_pdf_packetId_bundle',summary:'Download an exact accepted private document or image PDF and bounded provenance manifest as a generated compilation ZIP'})
   @ApiParam({name:'packetId',schema:{type:'string',format:'uuid'}})
   @ApiResponse({status:200,content:{'application/zip':{schema:{type:'string',format:'binary'}}}})
   async bundle(@Param('packetId') value:string,@Req() req:Request,@Res() res:Response){
