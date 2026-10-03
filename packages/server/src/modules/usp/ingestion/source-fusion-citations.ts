@@ -139,7 +139,7 @@ export function fusionGeoParquetCitationFields(source:Extract<SourceFusionContex
   })));
   return {document:fusionCitationDocumentPin(source.pin),inputSha256:source.pin.inputSha256,readerSha256:source.pin.readerSha256,
     acceptedFence:source.pin.acceptedFence,resultBytes:source.pin.resultBytes,
-    geoparquet:{artifactSha256:source.artifactSha256,artifactBytes:source.artifactBytes,profile:'ulpin-native-geoparquet/1' as const,
+    geoparquet:{artifactSha256:source.artifactSha256,artifactBytes:source.artifactBytes,profile:'usp-native-geoparquet/1' as const,
       selectionSha256:fragment.selectionSha256,sourceContextSha256:fingerprint({source:fragment.source,reader:fragment.reader,
         schema:fragment.schema,geoMetadata:fragment.geoMetadata,profile:fragment.profile,rowGroups:fragment.rowGroups,
         semantics:fragment.semantics,summary:fragment.summary}),fragmentSha256:fingerprint(fragment),inspectionStatus:source.summary.status,
