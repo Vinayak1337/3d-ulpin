@@ -1,0 +1,140 @@
+{
+  "artifacts": {
+    "cpu-controls.execution.json": {
+      "bytes": 467,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-native-code-return-e0b6a5398a994648b142cec85b3a59ef\\cpu-controls.execution.json",
+      "physicalSha256": "2b2da789c08094d09d56ac852b3339310839e779b83e2eadebcd2a3cbca48bf8"
+    },
+    "cpu-controls.log": {
+      "bytes": 1178,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-native-code-return-e0b6a5398a994648b142cec85b3a59ef\\cpu-controls.log",
+      "physicalSha256": "8313c99d9580c2f46637f4bdef4e8581305bc85cbd1fab5f8c12541ade37021b"
+    },
+    "disabled-prototype.json": {
+      "bytes": 11053,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-native-code-return-e0b6a5398a994648b142cec85b3a59ef\\disabled-prototype.json",
+      "physicalSha256": "7dd66b85b28d3ec41bbcee4a9e18ec82d0e17fccffc19794c239df577e8c8442"
+    },
+    "input-authorities.json": {
+      "bytes": 4514,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-native-code-return-e0b6a5398a994648b142cec85b3a59ef\\input-authorities.json",
+      "physicalSha256": "76ebd540770e8f7a92e8b6ef2613c2d9e2f3d19a1b806f1306b0365f25edac49"
+    },
+    "rank-policy.json": {
+      "bytes": 4168,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-native-code-return-e0b6a5398a994648b142cec85b3a59ef\\rank-policy.json",
+      "physicalSha256": "b3424a646061c0d5cc4b6b5689ea33b0a8480277ddb20ccf4d5e6d0dc53351d4"
+    },
+    "source-check.json": {
+      "bytes": 15594,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-native-code-return-e0b6a5398a994648b142cec85b3a59ef\\source-check.json",
+      "physicalSha256": "3e106174f9b6b0a99af777eebde17b04d66d3f2992a3bb66d06a44690fab481c"
+    },
+    "source-pins.json": {
+      "bytes": 10060,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-native-code-return-e0b6a5398a994648b142cec85b3a59ef\\source-pins.json",
+      "physicalSha256": "96332f2bf6598fb48af2f7518616f6c560a5bffc1a96df2f7836a7a2e6fef7db"
+    }
+  },
+  "baseCommit": "67e69991d35c92ac07e1db24b969c69621536549",
+  "branch": "task/ml-association-student-20261002",
+  "cleanup": {
+    "nativeProcessesStarted": 0,
+    "ownedProcessesRemaining": 0,
+    "resources": "only private code/evidence receipt directory created; retained inputs and histories unchanged",
+    "stageDirectoriesCreated": 0
+  },
+  "codeCommit": "0bc9836a7b64be84b43a009378cd36c16893996d",
+  "coordinatorPacketCheckpoint": "0a71cf36a226b3e17acb80a66521f2b8dc17b9f0",
+  "implementation": [
+    "explicit rank assignment/freeze, complete 23-source set and retained donor subsets through existing stager",
+    "freeze built before mkdir/copy; code-only, unknown, mixed and drifted authority refused",
+    "train-only CPU default retained; explicit development in admitted runner; evaluation refused",
+    "original existing Qwen loader only, seven prompt-bound continuation proofs and logits_to_keep=1 scoring",
+    "both logits cast to float32; raw per-focus score/identity/latency preserved before complete vectors and unchanged-fragment projection",
+    "future isolated two-logit NLL/equal-opposite gradient and ten-parent weighting proof with CPU float64 and CUDA float32 tolerances",
+    "write-once rank preflight/raw/technical/result/provenance and guard-owned authoritative completion"
+  ],
+  "next": "Coordinator reviews final code and separately freezes one final-head STUDENT-27 original-base baseline if accepted.",
+  "observedStagingHeadReadOnly": "f3018e0a42af08cbd816b01548721b15000396a2",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-native-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-native-code-v1.md"
+  ],
+  "ownedSources": [
+    "services/geo/geo/usp_learning/association/fragment_rank.py",
+    "services/geo/geo/usp_learning/association/student.py",
+    "scripts/usp/learning/association/association_student.py",
+    "scripts/usp/learning/association/stage_selector_baseline.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_baseline.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py",
+    "scripts/usp/learning/association/test_fragment_rank_runtime.py"
+  ],
+  "permissions": {
+    "approval_policy": "never",
+    "sandbox_mode": "danger-full-access",
+    "source": "supplied turn instructions"
+  },
+  "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+  "protectedBoundary": "No training labels/publication, host expected selections, originals, unrelated code, staging/main, providers, services, volumes, frontend, dependencies, push or deploy changed.",
+  "protectedExistingSourcesUnchanged": 32,
+  "recordedAtUtc": "2026-10-03T21:37:08.524793+00:00",
+  "recovery": {
+    "historyRead": true,
+    "hypothesis": "pointwise support/non-support objective replaces failed generative subset objective; no quality claim",
+    "newAcquisitionOrDependencyOrReader": false,
+    "researchPacket": {
+      "bytes": 8149,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-recovery-research-v1.json",
+      "physicalSha256": "5f99f8d680794847ddf986f442e3082309b4123656564f870d7da75fc5fb319a"
+    }
+  },
+  "runtimeSourceCount": 23,
+  "status": "code_and_cpu_controls_complete_awaiting_coordinator_review",
+  "systemPromptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+  "task": "STUDENT-26-FRAGMENT-RANK-NATIVE-CODE",
+  "unrun": [
+    "actual native import/tokenizer boundary/model load/forward/GPU/loss proof",
+    "stage/runtime/model copy or profile generation",
+    "host expectations/comparison",
+    "fit, teacher, evaluation, promotion or release"
+  ],
+  "verification": {
+    "compileCommand": "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe -B -I -S - (inline in-memory compile of the seven owned sources and physical protected-pin check)",
+    "compileCount": 7,
+    "compileExitCode": 0,
+    "diffCheckCommand": "git diff --check",
+    "diffCheckExitCode": 0,
+    "donorProfileAndInputMocks": false,
+    "focusedCpuCommand": [
+      "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "scripts/usp/learning/association/test_fragment_rank_runtime.py"
+    ],
+    "focusedCpuExitCode": 0,
+    "focusedCpuTests": 4,
+    "mocks": [
+      "future assignment and clean Git commit/blob replies",
+      "tokenizer bytes/pins/IDs",
+      "torch/transformers modules and model forward",
+      "native technical loss proof"
+    ],
+    "nativeImportAttempts": 0,
+    "realPositiveStageAdmission": "exact future assignment, source/input validation and make_freeze executed; intercepted first mkdir; no filesystem stage effects",
+    "testOutputMeaning": "technical synthetic outputs only; native proof and source relevance remain unqualified"
+  },
+  "version": "student-fragment-rank-native-code-result/1",
+  "workerSettings": {
+    "interpretation": "No service-tier field is exposed. Verify supplied never/danger-full-access; report actual observed settings only.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Implement consequential source/score admission and native lifecycle integration through the accepted supervisor; preserve default-off routes and historical behavior.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
