@@ -12,6 +12,7 @@ import {fusionDXFSourceProjection} from './source-fusion-dxf';
 import {fusionKMLSourceProjection} from './source-fusion-kml';
 import {fusionCityGMLSourceProjection} from './source-fusion-citygml';
 import {fusionGeoParquetSourceProjection} from './source-fusion-geoparquet';
+import {fusionRasterSourceProjection} from './source-fusion-raster';
 
 type Loaded=Awaited<ReturnType<typeof readFusionResult>>;
 export type SourceFusionDependencies={authority:typeof fusionAuthorityBatch;read:typeof readFusionResult};
@@ -81,6 +82,7 @@ export function fusionSourceProjection(selection:SourceFusionSelection,loaded:Lo
   if(selection.kind==='kml'&&loaded.kind==='kml')return fusionKMLSourceProjection(selection,loaded);
   if(selection.kind==='citygml'&&loaded.kind==='citygml')return fusionCityGMLSourceProjection(selection,loaded);
   if(selection.kind==='geoparquet'&&loaded.kind==='geoparquet')return fusionGeoParquetSourceProjection(selection,loaded);
+  if(selection.kind==='raster'&&loaded.kind==='raster')return fusionRasterSourceProjection(selection,loaded);
   if(selection.kind==='document_ocr'&&loaded.kind==='document')return fusionOcrSourceProjection(selection,loaded.result);
   if(selection.kind==='document'&&loaded.kind==='document'){
     const native=loaded.result.native;

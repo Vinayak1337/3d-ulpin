@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {SourceFusionGeoParquetSelectionSchema,SourceFusionGeoParquetSchema} from './source-fusion-geoparquet';
+import {SourceFusionRasterSelectionSchema,SourceFusionRasterSchema} from './source-fusion-raster';
 import {SourceFusionPinSchema,SourceFusionLiteralJsonSchema,SourceFusionLiteralObjectSchema} from './source-fusion-common';
 export {SourceFusionPinSchema,SourceFusionLiteralJsonSchema,SourceFusionLiteralObjectSchema,type SourceFusionJsonValue} from './source-fusion-common';
 import {DocumentPartSchema,DocumentFormatSchema,DocumentOcrItemSchema,DocumentOcrSelectionSchema,DocumentStatusSchema} from './usp/document-ingestion';
@@ -26,13 +27,14 @@ export const SourceFusionSelectionSchema=z.discriminatedUnion('kind',[
   z.strictObject({kind:z.literal('kml'),pin:SourceFusionPinSchema,
     featureOrdinals:z.array(z.number().int().min(0).max(9999)).min(1).max(25)}),
   z.strictObject({kind:z.literal('citygml'),pin:SourceFusionPinSchema,
-    buildingOrdinals:z.array(z.number().int().min(0).max(24999)).min(1).max(25)}),SourceFusionGeoParquetSelectionSchema]);
+    buildingOrdinals:z.array(z.number().int().min(0).max(24999)).min(1).max(25)}),SourceFusionGeoParquetSelectionSchema,SourceFusionRasterSelectionSchema]);
 export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFusionSelectionSchema).min(2).max(8)})
   .superRefine((value,ctx)=>{
     const keys=value.sources.map(s=>s.pin.sourceId.toLowerCase());
     if(new Set(keys).size!==keys.length)ctx.addIssue({code:'custom',message:'Select each source once.'});
     let count=0;
     for(const source of value.sources){
+      if(source.kind==='raster'){count++;continue;}
       const ids=source.kind==='document'?source.partIds:source.kind==='cityjson'?source.objectIds:
         source.kind==='ifc'?source.stepIds:source.kind==='dxf'?source.entityOrdinals:
           source.kind==='kml'?source.featureOrdinals:source.kind==='citygml'?source.buildingOrdinals:source.kind==='geoparquet'?source.rowIndices:source.itemOrdinals;count+=ids.length;
@@ -162,7 +164,7 @@ export const SourceFusionCityGMLSchema=z.strictObject({...base,kind:z.literal('c
     unselectedBuildings:z.literal('not_expanded'),opaqueContent:z.literal('literal_only'),
     referenceResolution:z.literal('not_performed'),geometryQualification:z.literal('not_assessed'),propertyMatching:z.literal('unsupported')})});
 export const SourceFusionContextSchema=z.strictObject({version:z.literal(SOURCE_FUSION_VERSION),contextSha256:hash,
-  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema,SourceFusionDXFSchema,SourceFusionKMLSchema,SourceFusionCityGMLSchema,SourceFusionGeoParquetSchema])).min(2).max(8),
+  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema,SourceFusionDXFSchema,SourceFusionKMLSchema,SourceFusionCityGMLSchema,SourceFusionGeoParquetSchema,SourceFusionRasterSchema])).min(2).max(8),
   association:z.strictObject({state:z.literal('not_assessed'),membership:z.literal('operator_selection'),
     reason:z.literal('source_set_membership_does_not_establish_relationships'),
     canonicalTargets:z.array(z.never()).max(0),crossSourceFrameAlignment:z.literal('not_assessed'),

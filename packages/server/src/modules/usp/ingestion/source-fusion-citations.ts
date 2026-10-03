@@ -40,6 +40,8 @@ export function citationReadBudget():FusionBudget{
  * No independent transaction, write or trusted caller-supplied context exists. */
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string){
+  if(request.selection.sources.some(source=>source.kind==='raster'))
+    throw new AppError(422,'SOURCE_FUSION_RASTER_CONTEXT_ONLY','Raster metadata supports source context only; registry citation attachment is unsupported.');
   if(request.selection.sources.some(source=>source.kind==='geoparquet')&&!siteId)
     throw new AppError(422,'SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY','GeoParquet citation selection requires its exact canonical building/floor target site.');
   if(request.selection.sources.some(source=>source.kind==='citygml')&&!siteId)
@@ -89,7 +91,13 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       if(loaded.kind==='geoparquet')geoparquets.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       return loaded;
     }});
-  const context=assembled;
+  // Keep the result type as narrow as the explicit admission above. Existing
+  // registry consumers remain exhaustive without adding a raster citation route.
+  const context={...assembled,sources:assembled.sources.map(source=>{
+    if(source.kind==='raster')throw new AppError(422,'SOURCE_FUSION_RASTER_CONTEXT_ONLY',
+      'Raster metadata supports source context only; registry citation attachment is unsupported.');
+    return source;
+  })};
   // All supported source variants stay in the exact context hash; no selected
   // fragment is silently dropped before the amendment is accepted.
   if(context.contextSha256!==request.contextSha256)conflict('The explicitly selected fusion context changed.');

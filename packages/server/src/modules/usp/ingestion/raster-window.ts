@@ -107,6 +107,7 @@ async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:st
       sourceSha256:ctx.source.sha256,stale});
   return {ctx,job,input,stale,capture};
 }
+export {statusTx as rasterWindowCaptureTx};
 type ReadDependencies={transaction:typeof transaction;object:typeof readRasterObject};
 export class RasterWindowService{
   constructor(private readonly reads:ReadDependencies={transaction,object:readRasterObject}){}

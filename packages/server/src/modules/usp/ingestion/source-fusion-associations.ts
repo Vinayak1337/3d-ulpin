@@ -28,6 +28,8 @@ import {associationLiterals,associationPreflight,validateFusionAssociations,type
 type Capture={context:SourceFusionContext;unsupportedCitationSources:string[];revalidate:()=>Promise<void>;ifcProjection?:AssociationIFCProjection};
 /** Capture accepted authority, not a caller context fingerprint or model answer. */
 export async function captureAssociationFusion(ctx:RequestContext,selection:SourceFusionRequest,budget:FusionBudget,siteId?:string):Promise<Capture>{
+  if(selection.sources.some(source=>source.kind==='raster'))
+    throw new AppError(422,'SOURCE_FUSION_RASTER_CONTEXT_ONLY','Raster metadata supports source context only; association proposals are unsupported.');
   if(selection.sources.some(source=>source.kind==='geoparquet'))
     throw new AppError(422,'SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY','GeoParquet rows support source context only; association proposals are unsupported.');
   if(selection.sources.some(source=>source.kind==='citygml'))
@@ -80,6 +82,8 @@ function proposalMessages(literals:AssociationLiteral[],targets:DocumentAssociat
 /** Single governed proposal call. No association store or registry mutation. */
 export async function proposeFusionAssociations(ctx:RequestContext,raw:unknown,deps:FusionAssociationDependencies=defaults){
   const request=FusionAssociationRequestSchema.parse(raw);assertLocalUsp(ctx);
+  if(request.context.selection.sources.some(source=>source.kind==='raster'))
+    throw new AppError(422,'SOURCE_FUSION_RASTER_CONTEXT_ONLY','Raster metadata supports source context only; association proposals are unsupported.');
   if(request.context.selection.sources.some(source=>source.kind==='geoparquet'))
     throw new AppError(422,'SOURCE_FUSION_GEOPARQUET_CONTEXT_ONLY','GeoParquet rows support source context only; association proposals are unsupported.');
   if(request.context.selection.sources.some(source=>source.kind==='citygml'))
