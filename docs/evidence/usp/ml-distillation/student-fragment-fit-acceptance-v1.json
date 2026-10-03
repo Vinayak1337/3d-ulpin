@@ -1,0 +1,271 @@
+{
+  "cleanup": {
+    "aclAndOwnerIntegrityCleanupPassed": true,
+    "appContainerProfileDeleteHresult": "0x00000000",
+    "executableCodeEdited": false,
+    "originalsAndOutputsRetained": true,
+    "ownedJobClosed": true,
+    "pendingOwnedProcessOrToolSession": false,
+    "pushDeployOrPromotion": false,
+    "sharedCheckoutEdited": false
+  },
+  "coordinatorBase": "67874bf8cb2d3d160ef22f99d455d8bc7017c1b4",
+  "decision": "accepted_single_contained_fit_save_resource_evidence",
+  "fit": {
+    "assistantJsonPlusEosTokens": [
+      84,
+      84,
+      92,
+      86,
+      84,
+      84
+    ],
+    "combinedTokens": [
+      2649,
+      3427,
+      2270,
+      1939,
+      1542,
+      1925
+    ],
+    "epochOrdersAndFiniteLossGradientsMatched": true,
+    "epochs": 6,
+    "excludedRows": [],
+    "gradientScale": 128.0,
+    "lossQualification": "In-sample provisional-supervision observation only; no learned retrieval/selection quality or independent correctness.",
+    "maximumCombinedTokens": 3427,
+    "seed": 17,
+    "sequenceLimit": 4096,
+    "supervisedTokens": 3084,
+    "teacherExamples": 6,
+    "trainingMeanLoss": [
+      0.13540216286977133,
+      0.04834620654582977,
+      0.029031995373467605,
+      0.01852848279910783,
+      0.01230378282101204,
+      0.007391716295387596
+    ],
+    "truncation": false,
+    "updates": 36
+  },
+  "fitResult": {
+    "bytes": 10360,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-fit-df9b4b53a7e84b0ba3246baeb1221851\\outputs\\fit\\fit-result.json",
+    "physicalSha256": "7227d04269978f9de1b8f9a4b85e1d7814d68618a597a9ad7dea5ec95acf3a82"
+  },
+  "guard": {
+    "bytes": 37832,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-fit-df9b4b53a7e84b0ba3246baeb1221851\\receipts\\association_adapter-fit-guard.json",
+    "physicalSha256": "074c3aa2790ca4cdb81e7bc3f34e113da1eaae476d0f570e2841b238a110bd64"
+  },
+  "integratedEvidence": {
+    "bytes": 37403,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-adapter-fit-v1.json",
+    "physicalSha256": "8bb5fcdac2af6caea4430d36bed439398dc9fc6ab3466beceda9290b207fb56f"
+  },
+  "integratedEvidenceCommit": "38b3177c7dc0ddd85e9b263e9f9649fa44b9cbce",
+  "integratedMarkdown": {
+    "bytes": 5703,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-adapter-fit-v1.md",
+    "physicalSha256": "caaacc27898c5e001ee28a9500633faee5f0fd53757cb287a8fb167ab9b25cdc"
+  },
+  "modelProfile": {
+    "bytes": 2700920,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-fit-df9b4b53a7e84b0ba3246baeb1221851\\profile.json",
+    "physicalSha256": "62ae8fa1ab76cf458b08685f0d134f30c92fae1adcaed08b7c4c7253e0d63709"
+  },
+  "next": "One separately frozen STUDENT-20 reload and same-development host comparison, followed by review; no automatic retry/fit/evaluation/promotion.",
+  "outputAcceptance": {
+    "bytes": 2333,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-fit-df9b4b53a7e84b0ba3246baeb1221851\\receipts\\association_adapter-fit-accepted.json",
+    "physicalSha256": "c5d9eb5ab27979774df3d087ed58d6d7cce6110c3172e75369200e7586fdf814"
+  },
+  "ownerEvidence": {
+    "bytes": 36595,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-adapter-fit-v1.json",
+    "physicalSha256": "b72dc25b9729ff1e5e0d7f27f543cd70c0d5f3700370e4488d60b5fcd350e85e"
+  },
+  "ownerEvidenceCommit": "671dfa78d7780d5279d8f110682525bf2c109622",
+  "ownerExecutionHead": "d47d33999a8ac644a1147180b4e38f434825931c",
+  "physicalPinInterpretation": "Owner and integrated physical evidence hashes differ only by Git checkout LF/CRLF handling; canonical committed content matches. Execution authority is the original unchanged learner/stage bytes.",
+  "qualification": {
+    "developmentSelectionQuality": false,
+    "evaluationOrPromotionOrRelease": false,
+    "generalizationOrAssociation": false,
+    "learningGain": false,
+    "reloadedAdapter": false,
+    "resourceAndCleanupForThisStage": true,
+    "singleContainedFitAndSavedAdapter": true
+  },
+  "recordedAtUtc": "2026-10-03T14:46:10.328940+00:00",
+  "resourceAndObjectiveProofResults": {
+    "attentionBlockHistoryPassed": true,
+    "attentionControlPassed": true,
+    "attentionScopeRestored": true,
+    "fitResourceAccepted": true,
+    "liveGraphControlPassed": true,
+    "lossEquivalencePassed": true,
+    "preBackwardReclamationHistoryPassed": true,
+    "reclamationControlPassed": true
+  },
+  "resources": {
+    "bounds": {
+      "batchSize": 1,
+      "cpuThreads": 2,
+      "maxChildPhaseSeconds": 600,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "maxJobCommittedBytes": 6442450944,
+      "minimumCudaFreeBytes": 1610612736,
+      "recording": "Job commitment and RSS separate. Preserve original guard/resource controls and model/runtime. Preparation starts no GPU/native phase or process."
+    },
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpuSampleCount": 75,
+    "jobPeakCommittedBytes": 6019911680,
+    "maxCudaAllocatedBytes": 1485943296,
+    "maxCudaReservedBytes": 1604321280,
+    "minimumSampledFreeCudaBytes": 5749342208,
+    "peakProcessRssBytes": 4226834432,
+    "qualification": "This exact six-row stage only; no scale or other-workload claim.",
+    "rssMethod": "50ms actual Job-member RSS/peak working sets"
+  },
+  "retainedReviewFailure": {
+    "execution": {
+      "bytes": 548,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-19-fragment-fit-review-v1-d682b04c7e7347a3a8afc2f7df369807\\review-attempt-1.execution.json",
+      "physicalSha256": "dac9fe19c7c1cf17a5b1b706d7f3b8ed6b8b02e9b60139846b8d8b3882c8d118"
+    },
+    "helper": {
+      "bytes": 13206,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-19-fragment-fit-review-v1-d682b04c7e7347a3a8afc2f7df369807\\review_fit.attempt-1.py",
+      "physicalSha256": "7c90c6e3cb4304b8de006bcd1d421d52561a112b0a41031bf0bd65891ac502fc"
+    },
+    "reason": "Review helper initially assumed acceptedOutputs instead of the actual artifacts map. Corrected metadata field and used guard observation peakJobMemoryBytes; no owner code/artifact or native campaign changed."
+  },
+  "reviewAudit": {
+    "bytes": 4497,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-19-fragment-fit-review-v1-d682b04c7e7347a3a8afc2f7df369807\\audit.json",
+    "physicalSha256": "6b41e7368635af1dd22c648f2bebd0dd0fb9e756a6b8e9962e7f2cb9e0b76c67"
+  },
+  "reviewExecution": {
+    "bytes": 548,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-19-fragment-fit-review-v1-d682b04c7e7347a3a8afc2f7df369807\\review-attempt-2.execution.json",
+    "physicalSha256": "9be41ef360e8ca80425d9d428375d870c10213e5ec20eb419adf95e349ebfc96"
+  },
+  "reviewHelper": {
+    "bytes": 13729,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-19-fragment-fit-review-v1-d682b04c7e7347a3a8afc2f7df369807\\review_fit.py",
+    "physicalSha256": "427dd3eccde1d2114acb41bcf538a66ad141e8c5565dfabe6036e393113c9290"
+  },
+  "reviewState": "needs_independent_review",
+  "sarvamDerived": false,
+  "save": {
+    "adapterFiles": {
+      "README.md": "6e51505b6810e9b0d1241a645afe41a17bcd7b4d5969b9f98fcc128adf2dabc7",
+      "adapter_config.json": "1212e5d8beb299b4a53eb1b8dc2f3bece2ff35d016ed6cc0d8fd4d012fa052d5",
+      "adapter_model.safetensors": "f56683a79a493bd21cd909616f22be83720a3b4721a1ccc3c55e0f93ddf7630b"
+    },
+    "baseDigest": {
+      "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+      "tensorCount": 290
+    },
+    "baseUnchanged": true,
+    "savedStateMatchesTrainableAdapter": true,
+    "tensorCount": 96,
+    "trainableParameters": 540672
+  },
+  "savedFitProof": {
+    "bytes": 9562,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-fit-return-fbae28f9c8e94e0694cd080de1a5f376\\accepted-fit-proof.json",
+    "physicalSha256": "573dff67b4b9a385c047cb3a8bd439ae97e87c280ffb3ec27db71840b234bde9"
+  },
+  "supervisionState": "provisional_synthetic_supervision",
+  "targetProof": {
+    "acceptanceReason": "Exact executed source/input/target hashes, native preflight for every unchanged full sequence, runtime encoder/mask assertions and all 36 update receipts establish the bounded fit target path. Missing serialized arrays for five rows remain explicit and do not justify another tokenizer/fit campaign.",
+    "allRowTargetHashesAndLengthsMatched": true,
+    "allSixLiteralArrayEqualityQualified": false,
+    "everyUpdateMaskAndSupervisedCountChecked": true,
+    "firstUpdateLiteralIdsPositionsEosMatched": true,
+    "frozenEncoderCompleteTargetTemplatePrefixEosChecks": true,
+    "limitation": "Executed frozen encoder checks complete template/prefix/EOS alignment for all six rows and constructs masked labels; every update checks prompt masks and targets. Receipts preserve all six target hashes/lengths and all 36 supervised counts. Literal token IDs/positions are serialized only for the first update; no all-six-array equality claim or native reconstruction.",
+    "literalTokenArraysSerializedRows": 1
+  },
+  "task": "STUDENT-19-FRAGMENT-FIT",
+  "timings": {
+    "childElapsedSeconds": null,
+    "fitCommandWallSeconds": 501.79700000000594,
+    "fitLoopSeconds": 97.48748380001052,
+    "guardCleanupSeconds": null,
+    "guardElapsedSeconds": 318.75,
+    "guardSetupSeconds": null,
+    "interpretation": "Separate child/setup/cleanup duration fields are not exposed. Existing guard enforced the 600-second child cap and accepted its zero exit. Guard elapsed excludes initial host profile validation; fit-command wall includes all command overhead.",
+    "modelAndBaseVerificationSeconds": 2.054389999990235,
+    "nativeFitFunctionElapsedSeconds": 102.09313459999976,
+    "stageWallSeconds": 224.56299999999464
+  },
+  "verification": {
+    "existingSavedFitPureReadmissionMatched": true,
+    "hostExpectationsOrEvaluationOpened": false,
+    "integrationSourceEquality": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "671dfa78d7780d5279d8f110682525bf2c109622",
+        "38b3177c7dc0ddd85e9b263e9f9649fa44b9cbce",
+        "--",
+        "scripts/usp/learning/association/association_adapter.py",
+        "scripts/usp/learning/association/association_student.py",
+        "scripts/usp/learning/association/stage_adapter.py",
+        "scripts/usp/learning/association/stage_baseline.py",
+        "scripts/usp/learning/association/stage_fragment_adapter.py",
+        "scripts/usp/learning/association/stage_selector_baseline.py",
+        "scripts/usp/learning/model_isolation.py",
+        "scripts/usp/security/appcontainer_audit.py",
+        "services/geo/geo/__init__.py",
+        "services/geo/geo/native_ifc.py",
+        "services/geo/geo/usp_learning/__init__.py",
+        "services/geo/geo/usp_learning/association/__init__.py",
+        "services/geo/geo/usp_learning/association/adapter.py",
+        "services/geo/geo/usp_learning/association/candidate_baseline.py",
+        "services/geo/geo/usp_learning/association/candidate_selection.py",
+        "services/geo/geo/usp_learning/association/chunked_loss.py",
+        "services/geo/geo/usp_learning/association/citation_view.py",
+        "services/geo/geo/usp_learning/association/fragment_adapter.py",
+        "services/geo/geo/usp_learning/association/fragment_baseline.py",
+        "services/geo/geo/usp_learning/association/fragment_selection.py",
+        "services/geo/geo/usp_learning/association/memory_observation.py",
+        "services/geo/geo/usp_learning/association/native_candidates.py",
+        "services/geo/geo/usp_learning/association/query_attention.py",
+        "services/geo/geo/usp_learning/association/reclamation.py",
+        "services/geo/geo/usp_learning/association/selector_adapter.py",
+        "services/geo/geo/usp_learning/association/selector_baseline.py",
+        "services/geo/geo/usp_learning/association/selector_constraints.py",
+        "services/geo/geo/usp_learning/association/selectors.py",
+        "services/geo/geo/usp_learning/association/student.py",
+        "services/geo/geo/usp_learning/association/validation.py",
+        "services/geo/geo/usp_learning/resources.py"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin",
+      "exitCode": 0
+    },
+    "matchedActualProfileEntries": 19679,
+    "matchedInputArtifacts": 9,
+    "matchedOutputArtifacts": 21,
+    "matchedPhysicalCanonicalGitSources": 31,
+    "matchedPrivateArtifacts": 18,
+    "matchedUniqueReferences": 51,
+    "modelMetadataEntries": 9,
+    "nativeFitTokenizerControlsOrModelCampaignRerun": false,
+    "ownedEvidenceOnlyCommit": true,
+    "pureFinalHeadReloadAdmissionPassed": true,
+    "stageAndGeneratedCommandMatchExactProtocol": true,
+    "stageRunProofExits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "version": "student-fragment-fit-acceptance/1"
+}
