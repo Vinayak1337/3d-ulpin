@@ -1,0 +1,181 @@
+{
+  "version": "ml-distill-teacher-support-pairs/2",
+  "recordedAtUtc": "2026-10-03T15:47:07.033824+00:00",
+  "status": "provisional_synthetic_supervision",
+  "reviewState": "needs_independent_review",
+  "sarvamDerived": false,
+  "provenance": {
+    "task": "TEACHER-06-QUALIFIED-SUPPORT-PAIRS",
+    "assignmentPath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/teacher-06.support-pairs.assignment.json",
+    "assignmentPhysicalSha256": "524e3408972c4ab2820dd408d51c4a59004094d5289e00c23fe120374ef3111f",
+    "assignmentCommit": "67793c1a8354b8d2cb3d08d87aa8e057e3a7e9a0",
+    "workerBaseCommit": "2dc90d376343430f9c71d7e3ac614a08ba9e122e",
+    "assemblerCanonicalLfSha256": "8937c66f93520a202250c189455ef36db032750bed27b9002406b5d1f1c02f16",
+    "parentDatasetSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+  },
+  "parent": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-fragments-v1.jsonl",
+    "bytes": 82626,
+    "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+  },
+  "counts": {
+    "originalRows": 6,
+    "appendedRows": 4,
+    "outputRows": 10,
+    "pairs": 2,
+    "newSupportedSelections": 2,
+    "newQualifiedEmptySelections": 2,
+    "newCandidateAppearances": 22,
+    "newSelectedAppearances": 2,
+    "selectedJustifications": 2,
+    "excludedJustifications": 20,
+    "uniqueChosenCandidates": 11,
+    "chosenOriginalSourceHashes": 2,
+    "totalCandidateAppearances": 57,
+    "totalSelectedAppearances": 12,
+    "totalEmptySelections": 3
+  },
+  "newRows": [
+    {
+      "annotationId": "teacher-fragments-v2-pair01-a",
+      "pairId": "teacher-pair-v2-01",
+      "rawRowSha256": "2e0cd2c693f33d263fe599dfa7822d3d431f12a70d91eca23d2d518ab3ae8d7c",
+      "contextSha256": "371da4b732dc27bdbe5d78e7e7049294fd3275720e41674ae6af3917c6868432",
+      "parent": {
+        "exampleId": "teacher-fragments-v1-05",
+        "rawRowSha256": "9046d1b77eb19c966b05f7fd0b25d772c5afd210c2a31c7d5367ae868b5cffe3",
+        "contextSha256": "44e1f6396fb62793de749ff74accf02055b680a79a2ae32043b52ac3527c82c6",
+        "candidatesCompactSha256": "6e0217d2ab52d651f7ecdb044019a6b0b9adb52da8335b72b36e74db8954ba3e",
+        "inputCompactSha256": "739a0def9de49c09abec1a3783ca3036203585d9a8615b379a376e194c52e397",
+        "supervisionCompactSha256": "74a317639e4b2107dada909c3629a17226ac60cf3a53c40fb6e5413ce7df52fa"
+      },
+      "selected": [
+        "c4"
+      ],
+      "quoteSourceHashes": [
+        "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e"
+      ]
+    },
+    {
+      "annotationId": "teacher-fragments-v2-pair01-b",
+      "pairId": "teacher-pair-v2-01",
+      "rawRowSha256": "909e3621de425d7fe9835b45c8129c6d9d861cea1430ea027006b0243ecaaaab",
+      "contextSha256": "84544d0b55148661053d3ff3344e7b2397c4c64ef9f3179df1f5162df5f05c50",
+      "parent": {
+        "exampleId": "teacher-fragments-v1-05",
+        "rawRowSha256": "9046d1b77eb19c966b05f7fd0b25d772c5afd210c2a31c7d5367ae868b5cffe3",
+        "contextSha256": "44e1f6396fb62793de749ff74accf02055b680a79a2ae32043b52ac3527c82c6",
+        "candidatesCompactSha256": "6e0217d2ab52d651f7ecdb044019a6b0b9adb52da8335b72b36e74db8954ba3e",
+        "inputCompactSha256": "739a0def9de49c09abec1a3783ca3036203585d9a8615b379a376e194c52e397",
+        "supervisionCompactSha256": "74a317639e4b2107dada909c3629a17226ac60cf3a53c40fb6e5413ce7df52fa"
+      },
+      "selected": [],
+      "quoteSourceHashes": [
+        "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e"
+      ]
+    },
+    {
+      "annotationId": "teacher-fragments-v2-pair02-a",
+      "pairId": "teacher-pair-v2-02",
+      "rawRowSha256": "b066025f1c298fb87937467d8ddb28531a0072fd9bdbdd0f55caf70acf8e1fb5",
+      "contextSha256": "e25765d07e220d1b5db313dff6c8472b3917c10218e532c1eaf9bbb8258b6af7",
+      "parent": {
+        "exampleId": "teacher-fragments-v1-01",
+        "rawRowSha256": "ea18d8f5ffef404a3483280b4fd00890be9b4e389d7924a7337ffbf153d7b8aa",
+        "contextSha256": "0f71a1859f84e79e9a5459742387e0b19ba4c2dda310becedf5da66c28030a67",
+        "candidatesCompactSha256": "ea51ac16efe73c7eebda0df77f629d559da5b0bd629a61c1fc179fdb1c15d8e4",
+        "inputCompactSha256": "23f112de58162adf42ac552885e8789f9ec6ba0c484b20f3953a5ad1a7f7670e",
+        "supervisionCompactSha256": "19450906c1eb089c6fe61a6b44b3a2f1bd12084b61fa06652e16521c0a451cd7"
+      },
+      "selected": [
+        "c3"
+      ],
+      "quoteSourceHashes": [
+        "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+      ]
+    },
+    {
+      "annotationId": "teacher-fragments-v2-pair02-b",
+      "pairId": "teacher-pair-v2-02",
+      "rawRowSha256": "c2f9f69b88a6489cd929b565cfac9a5858db17fd7d380e6f16f41f1a3252a6cd",
+      "contextSha256": "645526e2b78f40ca1a1e17963181bd3d461c0f561c720575d78cbe8dde1415e7",
+      "parent": {
+        "exampleId": "teacher-fragments-v1-01",
+        "rawRowSha256": "ea18d8f5ffef404a3483280b4fd00890be9b4e389d7924a7337ffbf153d7b8aa",
+        "contextSha256": "0f71a1859f84e79e9a5459742387e0b19ba4c2dda310becedf5da66c28030a67",
+        "candidatesCompactSha256": "ea51ac16efe73c7eebda0df77f629d559da5b0bd629a61c1fc179fdb1c15d8e4",
+        "inputCompactSha256": "23f112de58162adf42ac552885e8789f9ec6ba0c484b20f3953a5ad1a7f7670e",
+        "supervisionCompactSha256": "19450906c1eb089c6fe61a6b44b3a2f1bd12084b61fa06652e16521c0a451cd7"
+      },
+      "selected": [],
+      "quoteSourceHashes": [
+        "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/train-teacher-fragments-v2.jsonl",
+      "bytes": 138050,
+      "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/rows-v2.receipt.json",
+      "bytes": 4109,
+      "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/source-support-v2.receipt.json",
+      "bytes": 33399,
+      "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/check-v2.receipt.json",
+      "bytes": 5911,
+      "physicalSha256": "bccf0e62338ba201e1d9cb552be5cb302f8a80eb1a6586d816c28c793e4a5b1c"
+    }
+  ],
+  "execution": {
+    "argv": [
+      "C:/Python313/python.exe",
+      "-B",
+      "C:/Users/kvina/.codex/worktrees/ml-teacher-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/teacher/prepare_fragment_support_pairs_v2.py",
+      "--output-dir",
+      "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf"
+    ],
+    "cwd": "C:/Users/kvina/.codex/worktrees/ml-teacher-20261002/3d-ulpin",
+    "startedAtUtc": "2026-10-03T15:47:06.917441+00:00",
+    "endedAtUtc": "2026-10-03T15:47:07.029646+00:00",
+    "exitCode": 0,
+    "python": "3.13.7",
+    "mode": "stdlib_cpu_data_only",
+    "explicitCompile": {
+      "method": "built-in compile() of changed producer only",
+      "startedAtUtc": "2026-10-03T15:47:06.920744+00:00",
+      "endedAtUtc": "2026-10-03T15:47:06.924954+00:00",
+      "exitCode": 0
+    },
+    "bytecodeDisabled": true
+  },
+  "gaps": [
+    "No new missing/absent/null/withheld state labels are warranted by these chosen fragments",
+    "No square-metre unit or explicit current approval is established in the respective supplied contexts",
+    "Empty selection is context-limited; unobserved original/property contents are not classified",
+    "OCR/native provenance and uncertainty remain; no independent truth, source requalification or model result"
+  ],
+  "suppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "workerSettings": {
+    "interpretation": "Dispatch exposes model/effort but no tier; do not claim a speed from prompt/global preference.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Careful train-only request annotation must distinguish complete literal support from a fragment that shares words but lacks a required unit, type, scope or status.",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "dataReviewRequiredBeforeLearnerAdmissionOrFit": true
+}
