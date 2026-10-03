@@ -49,3 +49,7 @@ Immutable receipt: `E:/BhuAayam-data/task-data/desktop-packet-pdf-entry-progress
 Lead publishes the additive status schema/API/client/catalogue. Controlled SQL/storage/extractor/current-recipe/target/snapshot authority and unchanged genuine crop inputs remain distinct from current HTTP/PostgreSQL/private persistence, migration application, authentic applicability/approved revision, source rights, geometry/learning, scale/performance and GF4/release. Current reuse eligibility is deliberately unqualified by this reader.
 
 No new renderer/native/model/source acquisition/service/listener/Docker/provider/GPU/environment/dependency/cache/profile/frontend/push/deploy work. Generic jobs/dispatcher/db/storage/config, registry writers, worker/runtime and registered migration bytes remain unchanged. Supplied `never` / `danger-full-access`; requested Sol6.1/high/default-standard, actual per-turn settings unexposed.
+
+## Lead integration, 3 October
+
+Code/handoff `7d642917` / `e25faf43`; three integrated progress controls plus queue compatibility pass. Status published in OpenAPI/client. Completion/67 physical/31 Git pins matched. Backend/client types and API validation pass; 259 operations/294 named schemas. No current HTTP/persistence or broader qualification follows.

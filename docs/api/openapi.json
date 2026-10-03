@@ -24209,6 +24209,56 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/packets/pdf/{packetId}/bundle": {
+      "get": {
+        "operationId": "GET_api_v1_usp_packets_pdf_packetId_bundle",
+        "parameters": [
+          {
+            "name": "packetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "description": "Canonical result",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Download an exact accepted private PDF and bounded provenance manifest as a generated compilation ZIP",
+        "tags": [
+          "USP private accepted PDF bundles"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/packet-bundle.controller.ts",
+        "x-batch": "PACK1-ZIP-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/property-cards/generate": {
       "post": {
         "operationId": "POST_api_v1_usp_property_cards_generate",
@@ -193591,6 +193641,79 @@
                   "artifact"
                 ],
                 "additionalProperties": false
+              },
+              "entryProgress": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "checkpointCapability": {
+                    "type": "string",
+                    "enum": [
+                      "available",
+                      "unavailable"
+                    ]
+                  },
+                  "requiredCount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4
+                  },
+                  "acceptedCount": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                  },
+                  "currentReuseEligibility": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "entries": {
+                    "minItems": 1,
+                    "maxItems": 4,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "index": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 3
+                        },
+                        "required": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "accepted_checkpoint",
+                            "checkpoint_unavailable"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "index",
+                        "required",
+                        "state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "checkpointCapability",
+                  "requiredCount",
+                  "acceptedCount",
+                  "currentReuseEligibility",
+                  "entries"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -193602,7 +193725,8 @@
               "status",
               "attempt",
               "errorCode",
-              "result"
+              "result",
+              "entryProgress"
             ],
             "additionalProperties": false
           },

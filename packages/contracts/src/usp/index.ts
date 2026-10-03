@@ -27,6 +27,7 @@ export * from './dxf-ingestion';
 export * from './kml-ingestion';
 export * from './packets';
 export * from './packet-pdf-jobs';
+export * from './packet-pdf-bundle';
 export * from './property-card';
 
 export * from './citygml-ingestion';
