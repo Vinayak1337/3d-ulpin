@@ -1,0 +1,330 @@
+{
+  "baseEqualityScope": "All pinned original model bytes verified by stage/worker; explicit local base. No new in-memory base-tensor digest is emitted by the existing reload runner.",
+  "cases": [
+    {
+      "exampleId": "ifc4-source-native-v1",
+      "expected": [
+        "c1"
+      ],
+      "fp": 0,
+      "misses": 0,
+      "selected": [
+        "c1"
+      ],
+      "tp": 1
+    },
+    {
+      "exampleId": "ifc2x3-source-native-v1",
+      "expected": [],
+      "fp": 2,
+      "misses": 0,
+      "selected": [
+        "c0",
+        "c1"
+      ],
+      "tp": 0
+    }
+  ],
+  "cleanup": {
+    "aclAndOwnerIntegrityCleanupPassed": true,
+    "appContainerProfileDeleted": true,
+    "executableRepositoryChanges": false,
+    "originalsAndOutputsRetained": true,
+    "ownedJobClosed": true,
+    "pendingOwnedProcessOrToolSession": false,
+    "pushDeployOrPromotion": false,
+    "sharedCheckoutChanges": false
+  },
+  "controllerInterpretation": "Whole syntax/context/current IDs and unchanged-fragment projection pass, but do not establish request support. Neither absent nor null is a numerical value and no generated number is credited.",
+  "coordinatorBase": "a47e18e79e60faaa53494f092c3e68e4986ff177",
+  "decision": "accepted_technical_execution_evidence_quality_failed",
+  "developmentCriteria": {
+    "acceptedPositivePrecisionPassed": false,
+    "allPassed": false,
+    "exactRequestSelectionSetsPassed": false,
+    "positiveRecallPassed": true,
+    "runtimeResourcesTransportCleanupPassed": true,
+    "unsupportedRequestFalsePositivesPassed": false,
+    "validWholeResponsesPassed": true
+  },
+  "developmentCriteriaPassed": false,
+  "freshInMemoryBaseTensorDigestQualified": false,
+  "hostComparison": {
+    "bytes": 16936,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\host-comparison.json",
+    "physicalSha256": "8dd735628320ff0e8e89c2bea04bd56c67503caa1d85ebc2e31fd84f1c511ce0"
+  },
+  "integratedEvidence": {
+    "bytes": 42680,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-adapter-reload-v1.json",
+    "physicalSha256": "a1b81d25c79685f575a83a88f7fc206b9601962d5dd02c45148e258c3e7ff947"
+  },
+  "integratedEvidenceCommit": "06e77723ca47a87a6ba41ad167d433630a295e4d",
+  "integratedMarkdown": {
+    "bytes": 6427,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-adapter-reload-v1.md",
+    "physicalSha256": "9e2e194d690457efa5469d04695f4c1a42ec8f6ba0c3b066a0e52fa92d53f6a9"
+  },
+  "metrics": {
+    "adapter": {
+      "acceptedTruePositives": 1,
+      "candidateFragments": 7,
+      "correctContextLimitedEmptyRetrievals": 0,
+      "exactRequestSelectionSets": 1,
+      "expectedCount": 1,
+      "falsePositives": 2,
+      "families": 1,
+      "jsonSyntaxValidResponses": 2,
+      "misses": 0,
+      "positiveRecall": 1.0,
+      "precision": 0.3333333333333333,
+      "requests": 2,
+      "schemaValidResponses": 2,
+      "selectedCount": 3,
+      "unsupportedRequestFalsePositives": 2,
+      "unsupportedRequests": 1,
+      "validWholeResponses": 2
+    },
+    "baseline": {
+      "acceptedTruePositives": 0,
+      "candidateFragments": 7,
+      "correctContextLimitedEmptyRetrievals": 1,
+      "exactRequestSelectionSets": 1,
+      "expectedCount": 1,
+      "falsePositives": 0,
+      "families": 1,
+      "jsonSyntaxValidResponses": 2,
+      "misses": 1,
+      "positiveRecall": 0.0,
+      "precision": null,
+      "requests": 2,
+      "schemaValidResponses": 2,
+      "selectedCount": 0,
+      "unsupportedRequestFalsePositives": 0,
+      "unsupportedRequests": 1,
+      "validWholeResponses": 2
+    },
+    "deltaAdapterMinusBaseline": {
+      "acceptedTruePositives": 1,
+      "candidateFragments": 0,
+      "correctContextLimitedEmptyRetrievals": -1,
+      "exactRequestSelectionSets": 0,
+      "expectedCount": 0,
+      "falsePositives": 2,
+      "families": 0,
+      "jsonSyntaxValidResponses": 0,
+      "misses": -1,
+      "positiveRecall": 1.0,
+      "precision": null,
+      "requests": 0,
+      "schemaValidResponses": 0,
+      "selectedCount": 3,
+      "unsupportedRequestFalsePositives": 2,
+      "unsupportedRequests": 0,
+      "validWholeResponses": 0
+    }
+  },
+  "nextDecision": "Do not promote or open evaluation. Preserve this failed-quality candidate; request two small qualified-support/abstention pairs from the existing blind teacher using retained train contexts only. No new fit/reload authorized yet; learner stays idle until accepted data/admission and a separate freeze.",
+  "observedError": "Name retrieval recovers its supporting fragment; a request requiring a supplied non-null numerical value selects field-name fragments whose recorded values are absent/null. Keyword relevance is insufficient under the requested qualification. Exact sets remain 1/2, aggregate precision 1/3 and unsupported false positives 2.",
+  "ownerEvidence": {
+    "bytes": 41898,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-adapter-reload-v1.json",
+    "physicalSha256": "25a92f85f903dcbc53fd3a11683e0f735b1866c7d90d11baba6e5a9a2f4c707a"
+  },
+  "ownerEvidenceCommit": "8bad2505baa7f9d01eede03de686ae930d1a0695",
+  "ownerExecutionHead": "671dfa78d7780d5279d8f110682525bf2c109622",
+  "physicalPinInterpretation": "Separate owner/integrated physical LF/CRLF receipt pins; canonical committed content and all execution source bytes match.",
+  "qualification": {
+    "containedReloadTransportAndResources": true,
+    "freshInMemoryBaseDigest": false,
+    "frozenQualityPassed": false,
+    "generalizationOrCanonicalAssociation": false,
+    "heldOutEvaluationOrPromotionOrRelease": false,
+    "inferenceReadinessOrNetLearningGain": false,
+    "tinyDevelopmentTradeoffObserved": true
+  },
+  "recordedAtUtc": "2026-10-03T15:33:50.800907+00:00",
+  "resources": {
+    "baseline": {
+      "cuda": "12.8",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 170,
+      "maxCudaAllocatedBytes": 1291972608,
+      "maxCudaReservedBytes": 1356857344,
+      "minimumSampledFreeCudaBytes": 6030360576,
+      "peakJobCommittedBytes": 5431214080,
+      "peakProcessRssBytes": 3259510784,
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    },
+    "deltaTunedMinusBaseline": {
+      "maxCudaAllocatedBytes": 2162688,
+      "maxCudaReservedBytes": 2097152,
+      "minimumSampledFreeCudaBytes": -2097152,
+      "peakJobCommittedBytes": 30044160,
+      "peakProcessRssBytes": 5128192
+    },
+    "tuned": {
+      "cuda": "12.8",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 177,
+      "maxCudaAllocatedBytes": 1294135296,
+      "maxCudaReservedBytes": 1358954496,
+      "minimumSampledFreeCudaBytes": 6028263424,
+      "peakJobCommittedBytes": 5461258240,
+      "peakProcessRssBytes": 3264638976,
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    }
+  },
+  "retainedReviewFailure": {
+    "execution": {
+      "bytes": 554,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-20-fragment-reload-review-v1-fec014d3689b48f39bc84c07fdc64ab8\\review-attempt-1.execution.json",
+      "physicalSha256": "04c7c23b32a6c39122bb04d7d7f909defcab4eb4218e61e4c8adfb506ba4e4e2"
+    },
+    "helper": {
+      "bytes": 10873,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-20-fragment-reload-review-v1-fec014d3689b48f39bc84c07fdc64ab8\\review_reload.attempt-1.py",
+      "physicalSha256": "0d5a3323a65b058226d080ee557069fc254ff6de1382befd0873750ec7012c1f"
+    },
+    "reason": "Pure codec projection omits the runner-added exampleId. Added only the exact raw-response identity for stored-row equality; common projection fields already matched. No owner code, output, metric or model change."
+  },
+  "retainedUnscoredHostHelperFailure": {
+    "execution": {
+      "bytes": 113,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\comparison-execution.json",
+      "physicalSha256": "4d3f26c49fce94a535a12e2705433a8a5aead3dadea526cf204b2cbd4bcd3a12"
+    },
+    "reason": "Initial helper compared top-level representation objects before scoring. The adapter receipt wraps the same fragment metadata in its training representation; use its fragment field and confirm controller representation equality. No native run, expectation reread, criteria or output changes.",
+    "source": {
+      "bytes": 11769,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-adapter-reload-v1-host-b8446233a35e4cb9bf4cfb95cca59b45\\compare_once.attempt-1.py",
+      "physicalSha256": "9b66b4f290cd4094f93fc191874f48ade826a1713498e1b1b62b7b3541c23375"
+    }
+  },
+  "reviewAudit": {
+    "bytes": 7275,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-20-fragment-reload-review-v1-fec014d3689b48f39bc84c07fdc64ab8\\audit.json",
+    "physicalSha256": "765f16c465e6c95c63233bc6a91876358f6350a73f95ed355445ff32d4fe8ce8"
+  },
+  "reviewExecution": {
+    "bytes": 554,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-20-fragment-reload-review-v1-fec014d3689b48f39bc84c07fdc64ab8\\review-attempt-2.execution.json",
+    "physicalSha256": "cd459cf7476d69a3b6b83c2c83d97375adbce8fb467852fdc904b12f37bccae0"
+  },
+  "reviewHelper": {
+    "bytes": 10924,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-20-fragment-reload-review-v1-fec014d3689b48f39bc84c07fdc64ab8\\review_reload.py",
+    "physicalSha256": "eb41c698d0224ced898ed6d9521f3079c08c1bed7c77d6f14bc5800d4bf9e15c"
+  },
+  "task": "STUDENT-20-FRAGMENT-RELOAD",
+  "technicalAcceptance": {
+    "bytes": 3655,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-reload-return-a747d2d33ddd4b45ac00d3c3f4fb7bfe\\technical-acceptance.json",
+    "physicalSha256": "522477fffdf5842a9a0b846aa247b8b690bb808896f441de658f9690836b7712"
+  },
+  "timings": {
+    "baseline": {
+      "childOnlySeconds": null,
+      "cleanupSeconds": null,
+      "guardSetupChildCleanupAggregateSeconds": 127.125,
+      "guardSetupSeconds": null,
+      "guardedCommandWallSeconds": 283.66215619999275,
+      "modelLoadSeconds": 1.6905505000031553,
+      "modelSectionSeconds": 6.040705200008233,
+      "perRequestGenerationSeconds": [
+        2.3849428000103217,
+        1.959430600007181
+      ],
+      "phaseTimingLimitation": "Frozen guard records only setup/child/cleanup aggregate after initial profile verification; separate phase times are not emitted. No child-only time inferred.",
+      "separatePhaseTimingAvailable": false,
+      "stageWallSeconds": 158.7348778000014
+    },
+    "deltaTunedMinusBaseline": {
+      "guardSetupChildCleanupAggregateSeconds": 2.422000000005937,
+      "guardedCommandWallSeconds": 17.71284380000725,
+      "modelLoadSeconds": 0.30503659999521915,
+      "modelSectionSeconds": 1.9097434999857796,
+      "perRequestGenerationSeconds": [
+        0.779114999982994,
+        0.8254929999966407
+      ],
+      "stageWallSeconds": -0.42287779999605846
+    },
+    "qualification": "Observed single runs only; no repeated benchmark, normalized cold/warm experiment or generalized speed claim. Separate guard setup/child/cleanup durations are not exposed.",
+    "tuned": {
+      "childOnlySeconds": null,
+      "cleanupSeconds": null,
+      "guardSetupChildCleanupAggregateSeconds": 129.54700000000594,
+      "guardSetupSeconds": null,
+      "guardedCommandWallSeconds": 301.375,
+      "modelLoadSeconds": 1.9955870999983745,
+      "modelSectionSeconds": 7.950448699994013,
+      "perRequestGenerationSeconds": [
+        3.1640577999933157,
+        2.7849236000038218
+      ],
+      "stageWallSeconds": 158.31200000000536
+    }
+  },
+  "verification": {
+    "actualProfileEntries": 19688,
+    "exactReloadedAdapterTensors": 96,
+    "integrationSourceEquality": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "8bad2505baa7f9d01eede03de686ae930d1a0695",
+        "06e77723ca47a87a6ba41ad167d433630a295e4d",
+        "--",
+        "scripts/usp/learning/association/association_adapter.py",
+        "scripts/usp/learning/association/association_student.py",
+        "scripts/usp/learning/association/stage_adapter.py",
+        "scripts/usp/learning/association/stage_baseline.py",
+        "scripts/usp/learning/association/stage_fragment_adapter.py",
+        "scripts/usp/learning/association/stage_selector_baseline.py",
+        "scripts/usp/learning/model_isolation.py",
+        "scripts/usp/security/appcontainer_audit.py",
+        "services/geo/geo/__init__.py",
+        "services/geo/geo/native_ifc.py",
+        "services/geo/geo/usp_learning/__init__.py",
+        "services/geo/geo/usp_learning/association/__init__.py",
+        "services/geo/geo/usp_learning/association/adapter.py",
+        "services/geo/geo/usp_learning/association/candidate_baseline.py",
+        "services/geo/geo/usp_learning/association/candidate_selection.py",
+        "services/geo/geo/usp_learning/association/chunked_loss.py",
+        "services/geo/geo/usp_learning/association/citation_view.py",
+        "services/geo/geo/usp_learning/association/fragment_adapter.py",
+        "services/geo/geo/usp_learning/association/fragment_baseline.py",
+        "services/geo/geo/usp_learning/association/fragment_selection.py",
+        "services/geo/geo/usp_learning/association/memory_observation.py",
+        "services/geo/geo/usp_learning/association/native_candidates.py",
+        "services/geo/geo/usp_learning/association/query_attention.py",
+        "services/geo/geo/usp_learning/association/reclamation.py",
+        "services/geo/geo/usp_learning/association/selector_adapter.py",
+        "services/geo/geo/usp_learning/association/selector_baseline.py",
+        "services/geo/geo/usp_learning/association/selector_constraints.py",
+        "services/geo/geo/usp_learning/association/selectors.py",
+        "services/geo/geo/usp_learning/association/student.py",
+        "services/geo/geo/usp_learning/association/validation.py",
+        "services/geo/geo/usp_learning/resources.py"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin",
+      "exitCode": 0
+    },
+    "matchedHostArtifacts": 14,
+    "matchedNativeOutputs": 6,
+    "matchedPhysicalCanonicalGitSources": 31,
+    "matchedReferenceAuthorities": 58,
+    "matchedReturnArtifacts": 19,
+    "nativeOrTokenizerOrBaselineOrComparisonCampaignRerun": false,
+    "originalExpectationFileReopened": false,
+    "originalExpectationReferencesVerifiedAgainstFrozenHostCopy": true,
+    "pureStrictProjectionsReproduced": 2,
+    "rawFrozenHostCopyMetricsReproduced": true,
+    "savedFitBindings": 11
+  },
+  "version": "student-fragment-reload-acceptance/1"
+}

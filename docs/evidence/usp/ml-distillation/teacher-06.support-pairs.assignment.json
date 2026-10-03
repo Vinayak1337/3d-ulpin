@@ -1,0 +1,90 @@
+{
+  "authorities": {
+    "familyFreeze": {
+      "bytes": 10867,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\family-freeze.json",
+      "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+    },
+    "fragmentPrompt": {
+      "bytes": 673,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\fragment-prompt.txt",
+      "physicalSha256": "d3a93d1323145cf31db765de8647d5f0ce252f653b6b38273fc5a184fd00dbac"
+    },
+    "fragmentSchema": {
+      "bytes": 4537,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\fragment-schema-v1.json",
+      "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082"
+    },
+    "legacyContract": {
+      "bytes": 3966,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\legacy-schema-v1.json",
+      "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    "originalTeacherAcceptance": {
+      "bytes": 3098,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher-fragment-requests-acceptance-v1.json",
+      "physicalSha256": "40d99bf7d0f165d5c1ebbb88aeff40b6e7ba54fcfe22a9be5684ad39a78fcf26"
+    },
+    "originalTrainManifest": {
+      "bytes": 3742,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher\\fragment-requests-v1.manifest.json",
+      "physicalSha256": "ff27ae1bb7d20932d23066b79bed894d5ce115ee68cc3fa6fe991c7ea58d8831"
+    },
+    "originalTrainingData": {
+      "bytes": 82626,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\train-teacher-fragments-v1.jsonl",
+      "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+    }
+  },
+  "baseCommit": "2dc90d376343430f9c71d7e3ac614a08ba9e122e",
+  "blindBoundary": "Do not read any development/evaluation/held-out/retired context, original, expectation, result, prediction or metric; do not read current ML lane status, student evidence/acceptance/protocols or runtime/baseline metadata. No development feedback is provided in this assignment. The common family manifest gives membership only; it does not grant non-train data access.",
+  "branch": "task/ml-distillation-teacher",
+  "callback": "Return exact owned code/evidence commits, dataset/row/parent/quote source hashes, actual CPU commands/exits, counts/qualification/gaps and clean final HEAD to coordinator 01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then stop. Coordinator reviews data before any separate learner admission/fit assignment.",
+  "dataRequirements": [
+    "Retain the original dataset byte-for-byte as the prefix of one new uniquely named v2 JSONL. Preserve original six row bytes, order, IDs, input/output/provenance/supervision. Never overwrite original datasets/manifests.",
+    "Create up to two pairs, each using the same unchanged train candidate population/order/provenance/neutral IDs. One request has literal support; the other adds a genuine qualification that supplied fragments do not establish. Choose different source contexts/field types where available; do not make near-duplicate copies solely to increase row count.",
+    "A shared field name/keyword alone is not direct support. Check every requested qualifier such as literal value/type, unit, scope, stated authority or explicit status. Distinguish a supplied value from a reference to a field, an unavailable qualification or an inferred relationship. Empty is no_support_in_supplied_context, never a claim of whole-original/property absence.",
+    "New requests/annotation IDs are labelled teacher material. Recompute candidateSetSha256/context model input and exact fragment-selection target through the same versioned format; preserve all original fragment bytes/locators/order. Keep train split/family unchanged.",
+    "Use a distinct v2 annotation ID for every appended row. Record the original context/row parent hash, request intent and concise source-backed justification of selected or excluded candidate IDs. Do not invent values, units, geometry, official IDs, permissions, rights or missing/absent/null/withheld states.",
+    "If a desired incomplete/qualified-negative state is not genuinely represented in the allowed material, report that gap and return only supported pairs. Do not fabricate a null/absent token, substitute a source or force four rows.",
+    "New outputs remain provisional_synthetic_supervision/needs_independent_review, sarvamDerived=false. Record requested/observed teacher provenance honestly; these are not independent truth, official operational facts or qualified evaluation labels."
+  ],
+  "exclusions": "No student code/admission/stagers, shared schema/prompt/family/catalogue/API/gateway/frontend/staging/main edits, originals rewrite, native/GPU, acquisition/install/provider calls, host/services/volumes/credentials, push/deploy/public activation or new tasks/subagents/polls/schedules.",
+  "executionAllowance": {
+    "cpuDataAndProducer": true,
+    "evaluation": false,
+    "fit": false,
+    "inference": false,
+    "modelLoad": false,
+    "nativeProcessing": false,
+    "promotion": false,
+    "reload": false
+  },
+  "outcome": "Append up to four annotation rows as two supported/qualified-unsupported request pairs to the retained six-row train dataset. Return a usable pinned provisional dataset and compact source-support checks; no model/training phase.",
+  "ownedPaths": [
+    "docs/evidence/usp/ml-distillation/teacher/fragment-support-pairs-v2.json",
+    "docs/evidence/usp/ml-distillation/teacher/fragment-support-pairs-v2.md",
+    "docs/evidence/usp/ml-distillation/teacher/prepare_fragment_support_pairs_v2.py"
+  ],
+  "privateOutput": "One new unique fragment-support-pairs-v2 directory under E:/BhuAayam-data/task-data/ml-distillation/teacher, including dataset/row/source/check receipts; large source bytes remain outside Git.",
+  "recordedAtUtc": "2026-10-03T15:33:50.800907+00:00",
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "sourceBoundary": "Only unchanged candidate fragments/contexts from the original six Haryana RERA2831/Tower-3 and Bihar Magnolia train rows, their retained teacher manifests and already linked train-source originals for a chosen quote check. No source acquisition, source/context augmentation, altered fragments or new family. Read only the explicitly listed small common files; do not inventory donor stage roots.",
+  "task": "TEACHER-06-QUALIFIED-SUPPORT-PAIRS",
+  "verification": "Compile the new small producer once and run one CPU check for exact original-byte prefix, new pair IDs/train-family membership, unchanged candidate fragments/input equality and whole-output current-ID/context binding. Reuse your existing producer/format checks; coordinator applies the accepted codec on return. Inspect only source support for the two chosen contexts. No native tokenizer, model, old source/fit/control campaign or extra reviewer.",
+  "version": "teacher-qualified-support-pairs-assignment/1",
+  "workerSettings": {
+    "interpretation": "Dispatch exposes model/effort but no tier; do not claim a speed from prompt/global preference.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Careful train-only request annotation must distinguish complete literal support from a fragment that shares words but lacks a required unit, type, scope or status.",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin"
+}
