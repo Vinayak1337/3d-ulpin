@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import {SurveyReportService} from '@ulpin/server/modules/usp/ingestion/survey-report';
+import {SurveyReportController} from './survey-report.controller';
 import {DocumentAssociationService} from '@ulpin/server/modules/usp/ingestion/document-association';
 import {DocumentAssociationController} from './document-association.controller';
 import {DocumentPagesService} from '@ulpin/server/modules/usp/ingestion/document-pages';
@@ -23,9 +25,9 @@ import { CityJsonEvidenceService, DecisionEvidenceService, OriginalEvidenceServi
   PacketEvidenceService, SnapshotEvidenceService } from './evidence.services';
 
 @Module({
-  controllers: [SnapshotEvidenceController, OriginalEvidenceController, DecisionEvidenceController,
+  controllers: [SurveyReportController, SnapshotEvidenceController, OriginalEvidenceController, DecisionEvidenceController,
     CityJsonEvidenceController, PacketEvidenceController, PacketPlansController, PacketBundleController, PropertyCardController, PacketRegionController, PacketImageRegionController, DocumentAssociationController, DocumentPagesController, DocumentImagesController, SourceFusionController, SourceFusionAssociationsController, DeclarationsController],
-  providers: [SnapshotEvidenceService, OriginalEvidenceService, DecisionEvidenceService,
+  providers: [SurveyReportService, SnapshotEvidenceService, OriginalEvidenceService, DecisionEvidenceService,
     CityJsonEvidenceService, PacketEvidenceService, PacketRegionService, PacketImageRegionService, DocumentAssociationService, DocumentPagesService, DocumentImagesService, SourceFusionService, SourceFusionAssociationService],
 })
 export class EvidenceModule {}

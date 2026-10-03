@@ -19995,6 +19995,235 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/evidence/survey-report/context": {
+      "post": {
+        "operationId": "POST_api_v1_usp_evidence_survey_report_context",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Strict JSON exact document pins; at most 4 KiB received bytes; no caller table or URL",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cited source rows/statistics and actionable gaps; needs_input",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-store"
+                  ]
+                }
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_200_application_json"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Private Host/Origin or current operator access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Exact accepted document unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "408": {
+            "description": "Request body deadline",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Current source/job/reader/access/attempt pins changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Bounded request/result/table/response limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Unsupported or ambiguous layout, or exact result integrity failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Bounded storage read unavailable or expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "504": {
+            "description": "Current authority database deadline",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Inspect one private accepted native TEXT LP360 survey report as source literals; frames, comparison, accuracy and learning remain unqualified",
+        "tags": [
+          "USP literal survey report"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/survey-report.controller.ts",
+        "x-batch": "SURVEY-CONTEXT-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/snapshots": {
       "post": {
         "operationId": "POST_api_v1_usp_snapshots",
@@ -20035,7 +20264,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20054,7 +20283,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -20073,7 +20302,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20092,7 +20321,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20111,7 +20340,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20130,7 +20359,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20149,7 +20378,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20218,7 +20447,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20237,7 +20466,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -20256,7 +20485,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20275,7 +20504,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20294,7 +20523,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20313,7 +20542,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20332,7 +20561,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20401,7 +20630,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20420,7 +20649,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -20439,7 +20668,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20458,7 +20687,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20477,7 +20706,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20496,7 +20725,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20515,7 +20744,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20584,7 +20813,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20603,7 +20832,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -20622,7 +20851,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20641,7 +20870,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20660,7 +20889,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20679,7 +20908,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20698,7 +20927,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20767,7 +20996,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20786,7 +21015,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -20805,7 +21034,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20824,7 +21053,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20843,7 +21072,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20862,7 +21091,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20881,7 +21110,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20973,7 +21202,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -20992,7 +21221,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -21011,7 +21240,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21030,7 +21259,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21049,7 +21278,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21068,7 +21297,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21087,7 +21316,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21156,7 +21385,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21175,7 +21404,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -21194,7 +21423,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21213,7 +21442,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21232,7 +21461,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21251,7 +21480,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21270,7 +21499,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21339,7 +21568,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21358,7 +21587,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -21377,7 +21606,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21396,7 +21625,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21415,7 +21644,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21434,7 +21663,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21453,7 +21682,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21522,7 +21751,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21541,7 +21770,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -21560,7 +21789,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21579,7 +21808,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21598,7 +21827,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21617,7 +21846,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21636,7 +21865,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21705,7 +21934,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21724,7 +21953,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -21743,7 +21972,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21762,7 +21991,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21781,7 +22010,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21800,7 +22029,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21819,7 +22048,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21888,7 +22117,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21907,7 +22136,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -21926,7 +22155,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21945,7 +22174,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21964,7 +22193,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -21983,7 +22212,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22002,7 +22231,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22071,7 +22300,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22090,7 +22319,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -22109,7 +22338,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22128,7 +22357,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22147,7 +22376,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22166,7 +22395,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22185,7 +22414,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22254,7 +22483,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22273,7 +22502,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -22292,7 +22521,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22311,7 +22540,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22330,7 +22559,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22349,7 +22578,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22368,7 +22597,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22437,7 +22666,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22456,7 +22685,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -22475,7 +22704,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22494,7 +22723,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22513,7 +22742,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22532,7 +22761,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22551,7 +22780,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22620,7 +22849,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22639,7 +22868,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -22658,7 +22887,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22677,7 +22906,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22696,7 +22925,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22715,7 +22944,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22734,7 +22963,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22803,7 +23032,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22822,7 +23051,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -22841,7 +23070,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22860,7 +23089,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22879,7 +23108,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22898,7 +23127,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22917,7 +23146,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -22985,7 +23214,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23004,7 +23233,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -23023,7 +23252,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23042,7 +23271,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23061,7 +23290,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23080,7 +23309,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23099,7 +23328,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23193,7 +23422,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23212,7 +23441,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -23231,7 +23460,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23250,7 +23479,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23269,7 +23498,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23288,7 +23517,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23307,7 +23536,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23474,7 +23703,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23493,7 +23722,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -23512,7 +23741,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23531,7 +23760,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23550,7 +23779,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23569,7 +23798,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23588,7 +23817,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23707,7 +23936,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23726,7 +23955,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -23745,7 +23974,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23764,7 +23993,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23783,7 +24012,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23802,7 +24031,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23821,7 +24050,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23890,7 +24119,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23909,7 +24138,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -23928,7 +24157,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23947,7 +24176,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23966,7 +24195,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -23985,7 +24214,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24004,7 +24233,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24073,7 +24302,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24092,7 +24321,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -24111,7 +24340,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24130,7 +24359,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24149,7 +24378,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24168,7 +24397,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24187,7 +24416,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24256,7 +24485,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24275,7 +24504,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -24294,7 +24523,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24313,7 +24542,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24332,7 +24561,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24351,7 +24580,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24370,7 +24599,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24439,7 +24668,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24458,7 +24687,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -24477,7 +24706,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24496,7 +24725,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24515,7 +24744,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24534,7 +24763,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24553,7 +24782,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24722,7 +24951,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24741,7 +24970,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -24760,7 +24989,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24779,7 +25008,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24798,7 +25027,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24817,7 +25046,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24836,7 +25065,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24905,7 +25134,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24924,7 +25153,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -24943,7 +25172,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24962,7 +25191,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -24981,7 +25210,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25000,7 +25229,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25019,7 +25248,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25313,7 +25542,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25332,7 +25561,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -25351,7 +25580,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25370,7 +25599,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25389,7 +25618,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25408,7 +25637,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25427,7 +25656,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25825,7 +26054,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25844,7 +26073,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -25863,7 +26092,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25882,7 +26111,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25901,7 +26130,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25920,7 +26149,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25939,7 +26168,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -25958,7 +26187,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26035,7 +26264,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26054,7 +26283,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -26073,7 +26302,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26092,7 +26321,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26111,7 +26340,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26130,7 +26359,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26149,7 +26378,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26168,7 +26397,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26237,7 +26466,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26256,7 +26485,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -26275,7 +26504,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26294,7 +26523,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26313,7 +26542,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26332,7 +26561,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26351,7 +26580,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26420,7 +26649,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26439,7 +26668,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -26458,7 +26687,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26477,7 +26706,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26496,7 +26725,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26515,7 +26744,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26534,7 +26763,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26603,7 +26832,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26622,7 +26851,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -26641,7 +26870,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26660,7 +26889,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26679,7 +26908,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26698,7 +26927,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26717,7 +26946,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26786,7 +27015,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26805,7 +27034,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -26824,7 +27053,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26843,7 +27072,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26862,7 +27091,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26881,7 +27110,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26900,7 +27129,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26969,7 +27198,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -26988,7 +27217,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_403_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
                 }
               }
             },
@@ -27007,7 +27236,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -27026,7 +27255,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -27045,7 +27274,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -27064,7 +27293,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -27083,7 +27312,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/POST_usp_snapshots_Response_400_application_json"
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
                 }
               }
             },
@@ -176801,6 +177030,1843 @@
         ],
         "additionalProperties": false
       },
+      "POST_usp_evidence_survey_report_context_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "type": "object",
+            "properties": {
+              "caseId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "caseRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "jobId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "resultSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "caseId",
+              "caseRevision",
+              "sourceId",
+              "sourceRevision",
+              "sourceSha256",
+              "jobId",
+              "resultSha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "document"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_evidence_survey_report_context_Response_200_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "enum": [
+                  "survey-report-context/1"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "needs_input"
+                ]
+              },
+              "document": {
+                "type": "object",
+                "properties": {
+                  "caseId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "caseRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "jobId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "resultSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "caseId",
+                  "caseRevision",
+                  "sourceId",
+                  "sourceRevision",
+                  "sourceSha256",
+                  "jobId",
+                  "resultSha256"
+                ],
+                "additionalProperties": false
+              },
+              "profile": {
+                "type": "string",
+                "enum": [
+                  "lp360-control-point-table19/1"
+                ]
+              },
+              "characterOffsets": {
+                "type": "string",
+                "enum": [
+                  "part-local-utf16-end-exclusive"
+                ]
+              },
+              "report": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "object",
+                    "properties": {
+                      "literal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096
+                      },
+                      "citation": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "line": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "characterStart": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "characterEnd": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "line",
+                          "characterStart",
+                          "characterEnd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "literal",
+                      "citation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "lp360Version": {
+                    "type": "object",
+                    "properties": {
+                      "literal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096
+                      },
+                      "citation": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "line": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "characterStart": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "characterEnd": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "line",
+                          "characterStart",
+                          "characterEnd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "literal",
+                      "citation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "generatedTime": {
+                    "nullable": true,
+                    "type": "object",
+                    "properties": {
+                      "literal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096
+                      },
+                      "citation": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "line": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "characterStart": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "characterEnd": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "line",
+                          "characterStart",
+                          "characterEnd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "literal",
+                      "citation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "surfaceMethod": {
+                    "nullable": true,
+                    "type": "object",
+                    "properties": {
+                      "literal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096
+                      },
+                      "citation": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "line": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "characterStart": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "characterEnd": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "line",
+                          "characterStart",
+                          "characterEnd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "literal",
+                      "citation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "horizontalUnits": {
+                    "nullable": true,
+                    "type": "object",
+                    "properties": {
+                      "literal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096
+                      },
+                      "citation": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "line": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "characterStart": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "characterEnd": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "line",
+                          "characterStart",
+                          "characterEnd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "literal",
+                      "citation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "verticalUnits": {
+                    "nullable": true,
+                    "type": "object",
+                    "properties": {
+                      "literal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096
+                      },
+                      "citation": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "line": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "characterStart": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "characterEnd": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "line",
+                          "characterStart",
+                          "characterEnd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "literal",
+                      "citation"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "title",
+                  "lp360Version",
+                  "generatedTime",
+                  "surfaceMethod",
+                  "horizontalUnits",
+                  "verticalUnits"
+                ],
+                "additionalProperties": false
+              },
+              "table": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "complete",
+                      "incomplete"
+                    ]
+                  },
+                  "header": {
+                    "nullable": true,
+                    "type": "object",
+                    "properties": {
+                      "literal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096
+                      },
+                      "citation": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "line": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "characterStart": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "characterEnd": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "line",
+                          "characterStart",
+                          "characterEnd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "literal",
+                      "citation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "end": {
+                    "nullable": true,
+                    "type": "object",
+                    "properties": {
+                      "literal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096
+                      },
+                      "citation": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "line": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "characterStart": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "characterEnd": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "line",
+                          "characterStart",
+                          "characterEnd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "literal",
+                      "citation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "declaredTotal": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "observedRows": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "parsedRows": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "parsedEnabledRows": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "parsedDisabledRows": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "unparsedRows": {
+                    "maxItems": 200,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "literal": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 4096
+                        },
+                        "citation": {
+                          "type": "object",
+                          "properties": {
+                            "partId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "line": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "characterStart": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "characterEnd": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "partId",
+                            "line",
+                            "characterStart",
+                            "characterEnd"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "literal",
+                        "citation"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "rows": {
+                    "maxItems": 200,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "ordinal": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "pointIdentifier": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "pointType": {
+                          "type": "string",
+                          "enum": [
+                            "nva",
+                            "pid"
+                          ]
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "statusLiteral": {
+                          "nullable": true,
+                          "type": "string",
+                          "enum": [
+                            "Turned Off"
+                          ]
+                        },
+                        "statusCitation": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "partId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "line": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "characterStart": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "characterEnd": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "partId",
+                            "line",
+                            "characterStart",
+                            "characterEnd"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "quote": {
+                          "type": "object",
+                          "properties": {
+                            "literal": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 4096
+                            },
+                            "citation": {
+                              "type": "object",
+                              "properties": {
+                                "partId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "line": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "characterStart": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "characterEnd": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "partId",
+                                "line",
+                                "characterStart",
+                                "characterEnd"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "literal",
+                            "citation"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "fields": {
+                          "minItems": 19,
+                          "maxItems": 19,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "literal": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "stated",
+                                  "unavailable"
+                                ]
+                              },
+                              "value": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128
+                                  },
+                                  {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "enum": [
+                                      null
+                                    ]
+                                  }
+                                ]
+                              },
+                              "citation": {
+                                "type": "object",
+                                "properties": {
+                                  "partId": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  "line": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "characterStart": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "characterEnd": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "partId",
+                                  "line",
+                                  "characterStart",
+                                  "characterEnd"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "field": {
+                                "type": "string",
+                                "enum": [
+                                  "Name",
+                                  "Description",
+                                  "Type",
+                                  "Control X",
+                                  "Control Y",
+                                  "Control Z",
+                                  "H Offset",
+                                  "Accuracy X",
+                                  "Accuracy Y",
+                                  "Accuracy Z",
+                                  "Measured X",
+                                  "Measured Y",
+                                  "Surface Z",
+                                  "Z Location",
+                                  "Delta X",
+                                  "Delta Y",
+                                  "Delta XY",
+                                  "Delta Z",
+                                  "Delta XYZ"
+                                ]
+                              },
+                              "role": {
+                                "type": "string",
+                                "enum": [
+                                  "identity",
+                                  "survey_control",
+                                  "source_offset",
+                                  "published_control_error",
+                                  "product_coordinate",
+                                  "source_location",
+                                  "published_residual"
+                                ]
+                              },
+                              "unitAxis": {
+                                "type": "string",
+                                "enum": [
+                                  "none",
+                                  "horizontal",
+                                  "vertical",
+                                  "combined"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "literal",
+                              "state",
+                              "value",
+                              "citation",
+                              "field",
+                              "role",
+                              "unitAxis"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "ordinal",
+                        "pointIdentifier",
+                        "pointType",
+                        "enabled",
+                        "statusLiteral",
+                        "statusCitation",
+                        "quote",
+                        "fields"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "header",
+                  "end",
+                  "declaredTotal",
+                  "observedRows",
+                  "parsedRows",
+                  "parsedEnabledRows",
+                  "parsedDisabledRows",
+                  "unparsedRows",
+                  "rows"
+                ],
+                "additionalProperties": false
+              },
+              "publishedSummary": {
+                "type": "object",
+                "properties": {
+                  "horizontalMeasured": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "verticalMeasured": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "withheld": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "total": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "quotes": {
+                    "maxItems": 16,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "literal": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 4096
+                        },
+                        "citation": {
+                          "type": "object",
+                          "properties": {
+                            "partId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "line": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "characterStart": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "characterEnd": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "partId",
+                            "line",
+                            "characterStart",
+                            "characterEnd"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "literal",
+                        "citation"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "horizontalMeasured",
+                  "verticalMeasured",
+                  "withheld",
+                  "total",
+                  "quotes"
+                ],
+                "additionalProperties": false
+              },
+              "publishedStatistics": {
+                "maxItems": 15,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "section": {
+                      "type": "string",
+                      "enum": [
+                        "First Component Error",
+                        "Second Component Error",
+                        "Product Accuracy"
+                      ]
+                    },
+                    "label": {
+                      "type": "string",
+                      "enum": [
+                        "RMSE",
+                        "Max",
+                        "Min",
+                        "Mean",
+                        "Median",
+                        "StdDev",
+                        "#CPs Used"
+                      ]
+                    },
+                    "axes": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "X"
+                            ]
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              "Y"
+                            ]
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              "Z"
+                            ]
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              "R(XY)"
+                            ]
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              "3D(XYZ)"
+                            ]
+                          }
+                        ]
+                      },
+                      "minItems": 5,
+                      "maxItems": 5
+                    },
+                    "values": {
+                      "minItems": 5,
+                      "maxItems": 5,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "literal": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "stated",
+                              "unavailable"
+                            ]
+                          },
+                          "value": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128
+                              },
+                              {
+                                "type": "string",
+                                "nullable": true,
+                                "enum": [
+                                  null
+                                ]
+                              }
+                            ]
+                          },
+                          "citation": {
+                            "type": "object",
+                            "properties": {
+                              "partId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "line": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
+                              "characterStart": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "characterEnd": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "partId",
+                              "line",
+                              "characterStart",
+                              "characterEnd"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "literal",
+                          "state",
+                          "value",
+                          "citation"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "header": {
+                      "type": "object",
+                      "properties": {
+                        "literal": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 4096
+                        },
+                        "citation": {
+                          "type": "object",
+                          "properties": {
+                            "partId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "line": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "characterStart": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "characterEnd": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "partId",
+                            "line",
+                            "characterStart",
+                            "characterEnd"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "literal",
+                        "citation"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "quote": {
+                      "type": "object",
+                      "properties": {
+                        "literal": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 4096
+                        },
+                        "citation": {
+                          "type": "object",
+                          "properties": {
+                            "partId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "line": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "characterStart": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "characterEnd": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "partId",
+                            "line",
+                            "characterStart",
+                            "characterEnd"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "literal",
+                        "citation"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "section",
+                    "label",
+                    "axes",
+                    "values",
+                    "header",
+                    "quote"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "statements": {
+                "maxItems": 40,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "literal": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
+                    },
+                    "citation": {
+                      "type": "object",
+                      "properties": {
+                        "partId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "line": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "characterStart": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "characterEnd": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "partId",
+                        "line",
+                        "characterStart",
+                        "characterEnd"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "disclaimer",
+                        "source_role",
+                        "withholding"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "literal",
+                    "citation",
+                    "kind"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "gaps": {
+                "maxItems": 32,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "action": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "action"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "qualification": {
+                "type": "object",
+                "properties": {
+                  "coordinateFrame": {
+                    "type": "string",
+                    "enum": [
+                      "needs_input"
+                    ]
+                  },
+                  "heightLinkage": {
+                    "type": "string",
+                    "enum": [
+                      "needs_input"
+                    ]
+                  },
+                  "surveyEpoch": {
+                    "type": "string",
+                    "enum": [
+                      "needs_input"
+                    ]
+                  },
+                  "objectCorrespondence": {
+                    "type": "string",
+                    "enum": [
+                      "needs_input"
+                    ]
+                  },
+                  "comparison": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "accuracy": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  },
+                  "learningSplit": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  }
+                },
+                "required": [
+                  "coordinateFrame",
+                  "heightLinkage",
+                  "surveyEpoch",
+                  "objectCorrespondence",
+                  "comparison",
+                  "accuracy",
+                  "learningSplit"
+                ],
+                "additionalProperties": false
+              },
+              "parts": {
+                "maxItems": 512,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "locator": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "row": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "line": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "lineEnd": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "paragraph": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "table": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "column": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "headerRow": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "sheetIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "sheetId": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "cell": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+                        },
+                        "cellState": {
+                          "type": "string",
+                          "enum": [
+                            "literal",
+                            "empty",
+                            "empty_string",
+                            "whitespace",
+                            "formula_cached",
+                            "formula_uncached",
+                            "error",
+                            "unsupported"
+                          ]
+                        },
+                        "cellType": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20
+                        },
+                        "unitId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "unitSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "segmentIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "segmentCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "characterStart": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "characterEnd": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "characterStart",
+                        "characterEnd"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "method": {
+                      "type": "string",
+                      "enum": [
+                        "native_text"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "sourceId",
+                    "sourceRevision",
+                    "sourceSha256",
+                    "text",
+                    "sha256",
+                    "locator",
+                    "method"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "warnings": {
+                "maxItems": 100,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              }
+            },
+            "required": [
+              "version",
+              "state",
+              "document",
+              "profile",
+              "characterOffsets",
+              "report",
+              "table",
+              "publishedSummary",
+              "publishedStatistics",
+              "statements",
+              "gaps",
+              "qualification",
+              "parts",
+              "warnings"
+            ],
+            "additionalProperties": false
+          },
+          "meta": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "enum": [
+                  "usp/1"
+                ]
+              },
+              "requestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "intake"
+                        ]
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "workspaceId",
+                      "version"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "snapshot"
+                        ]
+                      },
+                      "scopeId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "world": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "manifestId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "snapshotDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "stage": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "recorded",
+                          "retained"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "scopeId",
+                      "world",
+                      "manifestId",
+                      "snapshotDigest",
+                      "stage"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "requestId",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_evidence_survey_report_context_Response_400_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "error": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "message": {
+                "type": "string",
+                "pattern": "^[^\\u0000-\\u001f\\u007f]{1,1024}(?![\\s\\S])"
+              },
+              "retryable": {
+                "type": "boolean"
+              },
+              "requestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable",
+              "requestId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_evidence_survey_report_context_Response_403_application_json": {
+        "anyOf": [
+          {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "error": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "message": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]{1,1024}(?![\\s\\S])"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "requestId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable",
+                  "requestId"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "error"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "HOST_DENIED",
+                      "ORIGIN_DENIED"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "requestId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "requestId"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
       "POST_usp_snapshots_Request_application_json": {
         "type": "object",
         "properties": {
@@ -177553,120 +179619,6 @@
           "meta"
         ],
         "additionalProperties": false
-      },
-      "POST_usp_snapshots_Response_400_application_json": {
-        "readOnly": true,
-        "type": "object",
-        "properties": {
-          "error": {
-            "readOnly": true,
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
-              },
-              "message": {
-                "type": "string",
-                "pattern": "^[^\\u0000-\\u001f\\u007f]{1,1024}(?![\\s\\S])"
-              },
-              "retryable": {
-                "type": "boolean"
-              },
-              "requestId": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
-              }
-            },
-            "required": [
-              "code",
-              "message",
-              "retryable",
-              "requestId"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "required": [
-          "error"
-        ],
-        "additionalProperties": false
-      },
-      "POST_usp_snapshots_Response_403_application_json": {
-        "anyOf": [
-          {
-            "readOnly": true,
-            "type": "object",
-            "properties": {
-              "error": {
-                "readOnly": true,
-                "type": "object",
-                "properties": {
-                  "code": {
-                    "type": "string",
-                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
-                  },
-                  "message": {
-                    "type": "string",
-                    "pattern": "^[^\\u0000-\\u001f\\u007f]{1,1024}(?![\\s\\S])"
-                  },
-                  "retryable": {
-                    "type": "boolean"
-                  },
-                  "requestId": {
-                    "type": "string",
-                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
-                  }
-                },
-                "required": [
-                  "code",
-                  "message",
-                  "retryable",
-                  "requestId"
-                ],
-                "additionalProperties": false
-              }
-            },
-            "required": [
-              "error"
-            ],
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "error": {
-                "type": "object",
-                "properties": {
-                  "code": {
-                    "type": "string",
-                    "enum": [
-                      "HOST_DENIED",
-                      "ORIGIN_DENIED"
-                    ]
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "requestId": {
-                    "type": "string",
-                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
-                  }
-                },
-                "required": [
-                  "code",
-                  "message",
-                  "requestId"
-                ],
-                "additionalProperties": false
-              }
-            },
-            "required": [
-              "error"
-            ],
-            "additionalProperties": false
-          }
-        ]
       },
       "POST_usp_snapshots_read_Request_application_json": {
         "type": "object",
