@@ -37,10 +37,15 @@ ACCEPTED_LATER_SOURCE_SHA256 = {
 }
 
 
-def checked_source_pins(source_bytes, baseline_files, assigned_canonical_pins, *, candidate_mode=False):
+def checked_source_pins(source_bytes, baseline_files, assigned_canonical_pins, *, candidate_mode=False, fragment_mode=False):
     """Pure pre-mkdir check of both assignment and protected-source authorities."""
     paths = SOURCE_PATHS
-    if candidate_mode:
+    require(not (candidate_mode and fragment_mode), "mixed_baseline_source_modes_refused")
+    if fragment_mode:
+        from geo.usp_learning.association import fragment_baseline as fragment
+        paths = fragment.SOURCE_PATHS
+        require(set(paths) == {*fragment.base.SOURCE_PATHS, *fragment.EXTRA_CODE}, "fragment_transitive_source_set_drift")
+    elif candidate_mode:
         from geo.usp_learning.association import candidate_baseline as candidate
         paths = candidate.SOURCE_PATHS
         require(set(paths) == {*SOURCE_PATHS, *candidate.EXTRA_CODE, "scripts/usp/learning/association/stage_baseline.py"},
@@ -55,57 +60,80 @@ def checked_source_pins(source_bytes, baseline_files, assigned_canonical_pins, *
         pins[relative] = hashlib.sha256(raw).hexdigest()
         if candidate_mode and relative in candidate.PROTECTED_PINS:
             require(assigned_canonical_pins[relative] == candidate.PROTECTED_PINS[relative], "candidate_protected_source_drift:" + relative)
+        if fragment_mode and relative in fragment.PROTECTED_PINS:
+            require(assigned_canonical_pins[relative] == fragment.PROTECTED_PINS[relative], "fragment_protected_source_drift:" + relative)
         if relative in BASELINE_CODE and not relative.endswith("association_student.py"):
             expected = (ACCEPTED_LATER_SOURCE_SHA256[relative] if relative in ACCEPTED_LATER_SOURCE_SHA256
                         else baseline_files["code/" + relative])
+            if fragment_mode and relative == "services/geo/geo/usp_learning/association/student.py":
+                # Only this exact new route admits the separately accepted hook.
+                expected = fragment.STUDENT_SHA
             require(pins[relative] == expected, "selector_protected_source_drift:" + relative)
     return pins
+
+
+def checked_stage_assignment(assignment):
+    """Pure positive admission, called before donor inspection or stage effects."""
+    if assignment.get("version") == "association-fragment-baseline-assignment/1":
+        from geo.usp_learning.association import fragment_baseline
+        return fragment_baseline.checked_assignment(assignment), "fragment"
+    if assignment.get("version") == "association-candidate-baseline-assignment/1":
+        from geo.usp_learning.association import candidate_baseline as candidate
+        return candidate.checked_assignment(assignment), "candidate"
+    require(not {"fragmentRoute", "fragmentContract", "fragmentSchemaCanonicalLfSha256"} & set(assignment),
+            "separate_fragment_execution_required")
+    return checked_assignment(assignment), "selector"
 
 
 def stage(assignment_path):
     assignment_path = Path(assignment_path)
     assignment_bytes = assignment_path.read_bytes()
-    assignment = strict_json(assignment_bytes)
-    candidate_mode = assignment.get("version") == "association-candidate-baseline-assignment/1"
-    if candidate_mode:
-        from geo.usp_learning.association import candidate_baseline as candidate
-        assignment = candidate.checked_assignment(assignment)
-    else:
-        assignment = checked_assignment(assignment)
+    assignment, mode = checked_stage_assignment(strict_json(assignment_bytes))
+    candidate_mode, fragment_mode = mode == "candidate", mode == "fragment"
+    admission = None
+    if fragment_mode:
+        from geo.usp_learning.association import fragment_baseline as admission
+    elif candidate_mode:
+        from geo.usp_learning.association import candidate_baseline as admission
     # PREP is refused above before inspecting/copying any runtime or making a stage.
     require(isolation.sha(BASELINE / "profile.json") == BASELINE_PROFILE_SHA, "selector_baseline_parent_profile_drift")
     baseline = isolation.read(BASELINE / "profile.json")
-    names = {"input_batch": "development.json", "schema": "schema-v1.json",
-             "family_freeze": "family-freeze.json", "model_receipt": "model-acquisition.json"}
-    for name in names.values():
-        require(isolation.sha(BASELINE / "inputs" / name) == baseline["files"]["inputs/" + name], "baseline_input_drift")
-    if candidate_mode:
-        artifact_paths = {name: Path(assignment["artifactRoot"]) / name for name in candidate.ARTIFACT_PINS}
+    names = (admission.INPUT_NAMES if fragment_mode else
+             {"input_batch": "development.json", "schema": "schema-v1.json",
+              "family_freeze": "family-freeze.json", "model_receipt": "model-acquisition.json"})
+    input_paths = {key: (Path(assignment["artifactRoot"]) if fragment_mode else BASELINE / "inputs") / name
+                   for key, name in names.items()}
+    for key, name in names.items():
+        expected = admission.INPUT_PINS[key] if fragment_mode else baseline["files"]["inputs/" + name]
+        require(isolation.sha(input_paths[key]) == expected, "baseline_input_drift")
+    if admission is not None:
+        artifact_paths = {name: Path(assignment["artifactRoot"]) / name for name in admission.ARTIFACT_PINS}
         artifact_bytes = {name: path.read_bytes() for name, path in artifact_paths.items()}
-        candidate.checked_payload(assignment, {key: (BASELINE / "inputs" / name).read_bytes() for key, name in names.items()}, artifact_bytes)
+        admission.checked_payload(assignment, {key: path.read_bytes() for key, path in input_paths.items()}, artifact_bytes)
     else:
         require(assignment["inputBatchSha256"] == baseline["files"]["inputs/development.json"], "selector_baseline_new_inputs_refused")
         schema_path = Path(assignment["selectorSchema"])
         schema_bytes = schema_path.read_bytes()
         checked_schema(schema_bytes)
-    checked_batch(isolation.read(BASELINE / "inputs/development.json"), assignment["cases"],
-                  isolation.read(BASELINE / "inputs/schema-v1.json"), isolation.read(BASELINE / "inputs/family-freeze.json"))
-    receipt = isolation.read(BASELINE / "inputs/model-acquisition.json")
+    checked_batch(isolation.read(input_paths["input_batch"]), assignment["cases"],
+                  isolation.read(input_paths["schema"]), isolation.read(input_paths["family_freeze"]))
+    receipt = isolation.read(input_paths["model_receipt"])
     require(receipt["model"] == assignment["model"] and receipt["revision"] == assignment["revision"], "selector_model_identity_drift")
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
     require(commit == assignment["studentCodeCommit"], "selector_baseline_frozen_code_head_drift")
     require(not subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO, text=True).strip(),
             "selector_baseline_clean_checkout_required")
     source_bytes = {}
-    source_paths = candidate.SOURCE_PATHS if candidate_mode else SOURCE_PATHS
+    source_paths = admission.SOURCE_PATHS if admission is not None else SOURCE_PATHS
     for relative in source_paths:
         raw = (REPO / relative).read_bytes()
         require(raw.replace(b"\r\n", b"\n") == subprocess.check_output(["git", "show", commit + ":" + relative], cwd=REPO),
                 "selector_uncommitted_execution_source:" + relative)
         source_bytes[relative] = raw
-    code_pins = checked_source_pins(source_bytes, baseline["files"], assignment.get("runtimeCodeCanonicalLfSha256"), candidate_mode=candidate_mode)
+    code_pins = checked_source_pins(source_bytes, baseline["files"], assignment.get("runtimeCodeCanonicalLfSha256"),
+                                   candidate_mode=candidate_mode, fragment_mode=fragment_mode)
     require(shutil.disk_usage(BASELINE.parent).free >= 15 * 1024**3, "selector_staging_disk_headroom")
-    root = BASELINE.parent / (("candidate-baseline-" if candidate_mode else "selector-baseline-") + uuid.uuid4().hex)
+    root = BASELINE.parent / (mode + "-baseline-" + uuid.uuid4().hex)
     root.mkdir()
     for directory in (*isolation.READONLY, "outputs", "scratch", "state", "receipts"):
         (root / directory).mkdir()
@@ -128,16 +156,19 @@ def stage(assignment_path):
     for relative, digest in baseline["files"].items():
         if relative.startswith(("runtime/", "model/")):
             copy(isolation.safe_path(BASELINE, relative), relative, digest)
-    for relative in (source_paths if candidate_mode else CODE):
+    for relative in (source_paths if admission is not None else CODE):
         copy(REPO / relative, "code/" + relative, code_pins[relative])
-    for name in (*names.values(), "runtime-requirements-resolved.txt"):
-        copy(BASELINE / "inputs" / name, "inputs/" + name, baseline["files"]["inputs/" + name])
-    if candidate_mode:
-        copy(assignment_path, "inputs/candidate-assignment.json", hashlib.sha256(assignment_bytes).hexdigest())
+    for key, name in names.items():
+        expected = admission.INPUT_PINS[key] if fragment_mode else baseline["files"]["inputs/" + name]
+        copy(input_paths[key], "inputs/" + name, expected)
+    copy(BASELINE / "inputs/runtime-requirements-resolved.txt", "inputs/runtime-requirements-resolved.txt",
+         baseline["files"]["inputs/runtime-requirements-resolved.txt"])
+    if admission is not None:
+        copy(assignment_path, "inputs/" + mode + "-assignment.json", hashlib.sha256(assignment_bytes).hexdigest())
         for name, path in artifact_paths.items():
-            copy(path, "inputs/" + name, candidate.ARTIFACT_PINS[name])
-        freeze = candidate.make_freeze(assignment, assignment_bytes, code_pins)
-        candidate.checked_run_inputs(freeze, root / "inputs")
+            copy(path, "inputs/" + name, admission.ARTIFACT_PINS[name])
+        freeze = admission.make_freeze(assignment, assignment_bytes, code_pins)
+        admission.checked_run_inputs(freeze, root / "inputs")
     else:
         copy(assignment_path, "inputs/selector-assignment.json", hashlib.sha256(assignment_bytes).hexdigest())
         copy(schema_path, "inputs/selector-schema-v1.json", hashlib.sha256(schema_bytes).hexdigest())
@@ -168,7 +199,7 @@ def stage(assignment_path):
     stage_record = {"root": str(root), "command": command, "profileSha256": isolation.sha(root / "profile.json"),
         "copied": copied, "sourcePhysicalSha256": code_pins,
         "relocation": "Fresh pinned baseline runtime/model/input copy; targets/expectations excluded. Representation frozen separately."}
-    if not candidate_mode:
+    if admission is None:
         stage_record["sourceExpectations"] = isolation.read(BASELINE / "stage.json")["sourceExpectations"]
     isolation.write(root / "stage.json", stage_record)
     print(json.dumps({"stage": str(root), "profileSha256": isolation.sha(root / "profile.json"), "copied": copied}), flush=True)
