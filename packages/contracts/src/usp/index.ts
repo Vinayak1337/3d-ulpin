@@ -28,6 +28,7 @@ export * from './kml-ingestion';
 export * from './packets';
 export * from './packet-pdf-jobs';
 export * from './packet-image-pdf';
+export * from './packet-mixed-pdf';
 export * from './packet-pdf-bundle';
 export * from './property-card';
 

@@ -3150,6 +3150,29 @@
             "multipleOriginalZipSha256": "4e8a715caa87d363d6726e69f6c09e38b3f1f8a85b41d51a8d71813371d370e2",
             "originalsUnchanged": true,
             "qualification": "Saved accepted PDFs with reconstructed SQL/storage/source/target authority; no originals included, current HTTP/persistence/applicability/redistribution/learning/release unqualified"
+          },
+          "privateMixedPdfPacketEvidence": {
+            "guide": "docs/evidence/usp/packet-mixed-pdf-handoff.md",
+            "integratedCodeCommit": "a9ba7567",
+            "completionSha256": "f2d9e0ece5eb75bdb7685ca9beaa2a45259aa1157e426268a3b8488a542b4002",
+            "recipe": "pack1-mixed-pdf-image-regions/1",
+            "pdfBytes": 192174,
+            "pdfSha256": "06621cc12cb2396f99f314dc4cf21778576f0b9e7bf5da11d6dcd655f0609126",
+            "zipBytes": 198700,
+            "zipSha256": "cae36818c628f9d787aee713f6aa66a49c6ed70b1d4f8df286c5bfd7505e73b6",
+            "cardBytes": 6666,
+            "cardSha256": "ecdda49d50761f6cfac803ad32372c8cf8a294f135ee95562501c12aea0a032a",
+            "pages": 2,
+            "acceptedCounts": [
+              0,
+              1,
+              1,
+              2
+            ],
+            "originalUnchanged": true,
+            "scope": "One retained Haryana PDF crop plus one foreign NYC PNG crop, in explicit order; controlled same-target/source/SQL/storage/runtime authority; queue/retry/private PDF/ZIP/card. This is not an authentic property or geography crosswalk.",
+            "checkpointMigration": "Applied by separate RUN-CURRENT-01 in retained isolated profile; this mixed flow has not run there.",
+            "qualification": "Historical image script-byte drift remains ineligible for current production reuse without a fresh binding. Current HTTP/PostgreSQL/private persistence/contention, authentic applicability/measurement/rights, learning and release remain unqualified."
           }
         },
         {
@@ -5372,6 +5395,29 @@
         "currentRuntimeFiles": "Retained interpreter/Pillow/native binaries match; staging image worker/decoder script bytes differ from saved recipe due to checkout line endings, so that historical binding must refuse current production reuse until refreshed",
         "checkpointMigration": "registered_unapplied",
         "qualification": "No native/model rerun. Current HTTP/PostgreSQL/private persistence/contention, fresh source binding, authentic applicability/rights/measurement, learning/performance/release unqualified"
+      },
+      "privateMixedPdfPacketEvidence": {
+        "guide": "docs/evidence/usp/packet-mixed-pdf-handoff.md",
+        "integratedCodeCommit": "a9ba7567",
+        "completionSha256": "f2d9e0ece5eb75bdb7685ca9beaa2a45259aa1157e426268a3b8488a542b4002",
+        "recipe": "pack1-mixed-pdf-image-regions/1",
+        "pdfBytes": 192174,
+        "pdfSha256": "06621cc12cb2396f99f314dc4cf21778576f0b9e7bf5da11d6dcd655f0609126",
+        "zipBytes": 198700,
+        "zipSha256": "cae36818c628f9d787aee713f6aa66a49c6ed70b1d4f8df286c5bfd7505e73b6",
+        "cardBytes": 6666,
+        "cardSha256": "ecdda49d50761f6cfac803ad32372c8cf8a294f135ee95562501c12aea0a032a",
+        "pages": 2,
+        "acceptedCounts": [
+          0,
+          1,
+          1,
+          2
+        ],
+        "originalUnchanged": true,
+        "scope": "One retained Haryana PDF crop plus one foreign NYC PNG crop, in explicit order; controlled same-target/source/SQL/storage/runtime authority; queue/retry/private PDF/ZIP/card. This is not an authentic property or geography crosswalk.",
+        "checkpointMigration": "Applied by separate RUN-CURRENT-01 in retained isolated profile; this mixed flow has not run there.",
+        "qualification": "Historical image script-byte drift remains ineligible for current production reuse without a fresh binding. Current HTTP/PostgreSQL/private persistence/contention, authentic applicability/measurement/rights, learning and release remain unqualified."
       }
     },
     {
