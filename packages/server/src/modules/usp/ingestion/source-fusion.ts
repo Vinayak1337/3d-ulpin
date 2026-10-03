@@ -10,6 +10,7 @@ import {fusionAuthorityBatch,readFusionResult,fusionLive,type FusionBudget} from
 import {fusionIFCSourceProjection} from './source-fusion-ifc';
 import {fusionDXFSourceProjection} from './source-fusion-dxf';
 import {fusionKMLSourceProjection} from './source-fusion-kml';
+import {fusionCityGMLSourceProjection} from './source-fusion-citygml';
 
 type Loaded=Awaited<ReturnType<typeof readFusionResult>>;
 export type SourceFusionDependencies={authority:typeof fusionAuthorityBatch;read:typeof readFusionResult};
@@ -77,6 +78,7 @@ export function fusionSourceProjection(selection:SourceFusionSelection,loaded:Lo
   if(selection.kind==='ifc'&&loaded.kind==='ifc')return fusionIFCSourceProjection(selection,loaded);
   if(selection.kind==='dxf'&&loaded.kind==='dxf')return fusionDXFSourceProjection(selection,loaded);
   if(selection.kind==='kml'&&loaded.kind==='kml')return fusionKMLSourceProjection(selection,loaded);
+  if(selection.kind==='citygml'&&loaded.kind==='citygml')return fusionCityGMLSourceProjection(selection,loaded);
   if(selection.kind==='document_ocr'&&loaded.kind==='document')return fusionOcrSourceProjection(selection,loaded.result);
   if(selection.kind==='document'&&loaded.kind==='document'){
     const native=loaded.result.native;

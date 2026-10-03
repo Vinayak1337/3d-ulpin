@@ -31,6 +31,8 @@ export function citationReadBudget():FusionBudget{
  * No independent transaction, write or trusted caller-supplied context exists. */
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string){
+  if(request.selection.sources.some(source=>source.kind==='citygml'))
+    throw new AppError(422,'SOURCE_FUSION_CITYGML_CONTEXT_ONLY','CityGML fragments support source context only; citation attachment is unsupported.');
   if(request.selection.sources.some(source=>source.kind==='kml')&&!siteId)
     throw new AppError(422,'SOURCE_FUSION_KML_CONTEXT_ONLY','KML citation selection requires its exact canonical building/floor target site.');
   if(request.selection.sources.some(source=>source.kind==='dxf')&&!siteId)
@@ -54,7 +56,7 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
   const dxfs=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'dxf'}>}>();
   const kmls=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'kml'}>}>();
   let selected:SourceFusionSelection[]=[],captured:FusionAuthority[]=[],budget:FusionBudget|undefined;
-  const context=await assembleSourceFusion(ctx,request.selection,{
+  const assembled=await assembleSourceFusion(ctx,request.selection,{
     authority:async(ctx,selections,current,expected)=>{
       const authorities=await fusionAuthorityBatch(ctx,selections,current,expected,authorityDependencies);
       selected=selections;captured=authorities;budget=current;return authorities;
@@ -66,6 +68,13 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       if(loaded.kind==='kml')kmls.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       return loaded;
     }});
+  // Preserve every supported source and expose a narrowed citation context.
+  // Refuse an unexpected CityGML projection rather than filtering it out.
+  const context={...assembled,sources:assembled.sources.map(source=>{
+    if(source.kind==='citygml')throw new AppError(422,'SOURCE_FUSION_CITYGML_CONTEXT_ONLY',
+      'CityGML fragments support source context only; citation attachment is unsupported.');
+    return source;
+  })};
   // All supported source variants stay in the exact context hash; no selected
   // fragment is silently dropped before the amendment is accepted.
   if(context.contextSha256!==request.contextSha256)conflict('The explicitly selected fusion context changed.');

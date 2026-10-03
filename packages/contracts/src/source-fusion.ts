@@ -4,6 +4,7 @@ import {DocumentPartSchema,DocumentFormatSchema,DocumentOcrItemSchema,DocumentOc
 import {IFCSummarySchema,IFC_LIMITS} from './usp/ifc-ingestion';
 import {DXFSummarySchema,DXF_LIMITS} from './usp/dxf-ingestion';
 import {KMLSummarySchema,KML_LIMITS} from './usp/kml-ingestion';
+import {CityGMLSummarySchema,CITYGML_LIMITS} from './usp/citygml-ingestion';
 
 export const SOURCE_FUSION_VERSION='source-fusion-context/1' as const;
 export const SOURCE_FUSION_LIMITS=Object.freeze({sources:8,selections:25,requestBytes:64*1024,
@@ -61,7 +62,9 @@ export const SourceFusionSelectionSchema=z.discriminatedUnion('kind',[
   z.strictObject({kind:z.literal('dxf'),pin:SourceFusionPinSchema,
     entityOrdinals:z.array(z.number().int().min(0).max(9999)).min(1).max(25)}),
   z.strictObject({kind:z.literal('kml'),pin:SourceFusionPinSchema,
-    featureOrdinals:z.array(z.number().int().min(0).max(9999)).min(1).max(25)})]);
+    featureOrdinals:z.array(z.number().int().min(0).max(9999)).min(1).max(25)}),
+  z.strictObject({kind:z.literal('citygml'),pin:SourceFusionPinSchema,
+    buildingOrdinals:z.array(z.number().int().min(0).max(24999)).min(1).max(25)})]);
 export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFusionSelectionSchema).min(2).max(8)})
   .superRefine((value,ctx)=>{
     const keys=value.sources.map(s=>s.pin.sourceId.toLowerCase());
@@ -70,10 +73,10 @@ export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFus
     for(const source of value.sources){
       const ids=source.kind==='document'?source.partIds:source.kind==='cityjson'?source.objectIds:
         source.kind==='ifc'?source.stepIds:source.kind==='dxf'?source.entityOrdinals:
-          source.kind==='kml'?source.featureOrdinals:source.itemOrdinals;count+=ids.length;
+          source.kind==='kml'?source.featureOrdinals:source.kind==='citygml'?source.buildingOrdinals:source.itemOrdinals;count+=ids.length;
       const uniqueIds=source.kind==='document'?source.partIds.map(id=>id.toLowerCase()):ids;
       if(new Set<string|number>(uniqueIds).size!==ids.length)
-        ctx.addIssue({code:'custom',message:'Select each native part, OCR ordinal, object, IFC STEP ID, DXF entity or KML feature ordinal once.'});
+        ctx.addIssue({code:'custom',message:'Select each native part, OCR ordinal, object, IFC STEP ID, DXF entity, KML feature or CityGML building ordinal once.'});
       if(source.kind==='cityjson'&&source.pin.resultBytes>16*1024)
         ctx.addIssue({code:'custom',message:'CityJSON result receipts have a 16 KiB profile.'});
       if(source.kind==='ifc'&&source.pin.resultBytes>IFC_LIMITS.resultBytes)
@@ -82,6 +85,8 @@ export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFus
         ctx.addIssue({code:'custom',message:'DXF result receipts have a 16 KiB profile.'});
       if(source.kind==='kml'&&source.pin.resultBytes>KML_LIMITS.resultBytes)
         ctx.addIssue({code:'custom',message:'KML result receipts have a 512 KiB profile.'});
+      if(source.kind==='citygml'&&source.pin.resultBytes>CITYGML_LIMITS.resultBytes)
+        ctx.addIssue({code:'custom',message:'CityGML result receipts have a 512 KiB profile.'});
     }
     if(count>25)ctx.addIssue({code:'custom',message:'Select at most 25 native parts/objects total.'});
   });
@@ -174,8 +179,26 @@ export const SourceFusionKMLMetadataSchema=z.strictObject({summary:KMLSummarySch
     unselectedFeatures:z.literal('not_expanded'),referenceResolution:z.literal('not_performed'),
     geometryQualification:z.literal('not_assessed'),propertyMatching:z.literal('unsupported')})});
 export const SourceFusionKMLSchema=SourceFusionKMLMetadataSchema.extend({...base,kind:z.literal('kml')});
+const citygmlLiterals=z.strictObject({elements:z.array(SourceFusionLiteralObjectSchema).max(25000),
+  coordinates:z.array(SourceFusionLiteralObjectSchema).max(25000),
+  identifiers:z.array(SourceFusionLiteralObjectSchema).max(25000),references:z.array(SourceFusionLiteralObjectSchema).max(25000)});
+/** Literal XML inventory scoped to selected native buildings. Unselected
+ * building subtrees and link targets are never expanded or made registry identities. */
+export const SourceFusionCityGMLSchema=z.strictObject({...base,kind:z.literal('citygml'),summary:CityGMLSummarySchema,
+  artifactSha256:hash,artifactBytes:z.number().int().positive().max(CITYGML_LIMITS.artifactBytes),selectionSha256:hash,
+  selectionHashBasis:z.literal('accepted_source_result_input_reader_fence_artifact_and_sorted_building_ordinals'),
+  nativeIdentifierScope:z.literal('source_native_only; not_canonical_registry_ids'),
+  source:SourceFusionLiteralObjectSchema,parser:SourceFusionLiteralObjectSchema,
+  namespaces:z.array(SourceFusionLiteralObjectSchema).max(25000),sourceContext:citygmlLiterals,
+  buildings:z.array(citygmlLiterals.extend({ordinal:z.number().int().min(0).max(24999),key:z.string(),pointer:z.string(),
+    record:SourceFusionLiteralObjectSchema,recordSha256:hash,fragmentSha256:hash})).min(1).max(25),
+  findings:z.array(SourceFusionLiteralObjectSchema).max(4),semantics:SourceFusionLiteralObjectSchema,
+  coverage:z.strictObject({selectedBuildings:z.number().int().positive().max(25),availableNativeBuildings:z.number().int().nonnegative().max(25000),
+    scope:z.literal('selected_building_literal_subtrees_and_separate_nonbuilding_source_context'),
+    unselectedBuildings:z.literal('not_expanded'),opaqueContent:z.literal('literal_only'),
+    referenceResolution:z.literal('not_performed'),geometryQualification:z.literal('not_assessed'),propertyMatching:z.literal('unsupported')})});
 export const SourceFusionContextSchema=z.strictObject({version:z.literal(SOURCE_FUSION_VERSION),contextSha256:hash,
-  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema,SourceFusionDXFSchema,SourceFusionKMLSchema])).min(2).max(8),
+  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema,SourceFusionDXFSchema,SourceFusionKMLSchema,SourceFusionCityGMLSchema])).min(2).max(8),
   association:z.strictObject({state:z.literal('not_assessed'),membership:z.literal('operator_selection'),
     reason:z.literal('source_set_membership_does_not_establish_relationships'),
     canonicalTargets:z.array(z.never()).max(0),crossSourceFrameAlignment:z.literal('not_assessed'),
