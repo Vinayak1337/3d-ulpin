@@ -1,7 +1,7 @@
 import type {PoolClient} from 'pg';
 import type {RequestContext} from '@ulpin/contracts/usp';
 import {RegistryDocumentCitationsSchema,type RegistryRegionCitation} from '@ulpin/contracts';
-import {UspPdfPacketPlanEntrySchema,type AnyPdfPacketPlanInput as PdfPacketPlanInput,
+import {UspPdfPacketPlanEntrySchema,PACKET_PDF_ORIGINALS_RECIPE,PACKET_PDF_ORIGINALS_LIMITS,PacketPdfOriginalSetSchema,type AnyPdfPacketPlanInput as PdfPacketPlanInput,
   type AnyPdfPacketPlan as PdfPacketPlan} from '../../../../../contracts/src/usp/packet-pdf';
 import {canonical,fingerprint} from '../../cases/domain';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
@@ -39,7 +39,18 @@ async function targetTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlan
     return binding;
   });
   const supplied=bindings.filter((binding):binding is RegistryRegionCitation=>Boolean(binding));
-  if(supplied.some(binding=>canonical(binding.document)!==canonical(supplied[0].document)))
+  if(input.recipe===PACKET_PDF_ORIGINALS_RECIPE){
+    const originals=new Map<string,RegistryRegionCitation['document']>();
+    for(const binding of supplied){
+      const prior=originals.get(binding.document.sourceId);
+      if(prior&&canonical(prior)!==canonical(binding.document))conflict('The selected canonical original has inconsistent source pins.');
+      originals.set(binding.document.sourceId,binding.document);
+    }
+    if([...originals.values()].reduce((n,o)=>n+o.sourceBytes,0)>PACKET_PDF_ORIGINALS_LIMITS.originalBytes)
+      throw new AppError(413,'PACKET_PDF_ORIGINAL_BYTES','Select canonical originals within the aggregate 32 MiB source profile.');
+    if(bindings.every(Boolean)&&!PacketPdfOriginalSetSchema.safeParse(supplied.map(b=>b.document)).success)
+      throw new AppError(422,'PACKET_PDF_ORIGINAL_SCOPE','Select required regions from at least two exact canonical originals.');
+  }else if(supplied.some(binding=>canonical(binding.document)!==canonical(supplied[0].document)))
     throw new AppError(422,'PACKET_PDF_ORIGINAL_SCOPE','Select committed regions from one exact unchanged original.');
   return {captured,target,bindings};
 }

@@ -46,6 +46,8 @@ export function validateExecution(plan:AnyPacketPlan,raw:unknown){
       bindingId:entry.binding!.id,entrySha256:entry.entrySha256,outputPage:index+1})))||
       canonical(p.assembly.regions)!==canonical(plan.entries.map(entry=>entry.binding!.validation)))
       conflict('The PDF execution does not match every ordered required region.');
+    if(p.version==='packet-pdf/3'&&canonical(p.assembly.originals)!==canonical(plan.entries.map(entry=>entry.binding!.document)))
+      conflict('The PDF execution does not match every exact ordered original.');
     return pdf;
   }
   if(packet.format==='pdf')conflict('The PDF execution belongs to another plan kind.');

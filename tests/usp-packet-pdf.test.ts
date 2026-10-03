@@ -8,6 +8,7 @@ import {spawnSync} from 'node:child_process';
 import {RegistryRegionCitationSchema} from '../packages/contracts/src';
 import {UspSnapshotManifestSchema,type RequestContext} from '../packages/contracts/src/usp';
 import {UspPdfPacketPlanInputSchema,UspPacketPdfReceiptSchema,UspPdfMultiPacketPlanInputSchema,UspPacketPdfMultiReceiptSchema} from '../packages/contracts/src/usp/packet-pdf';
+import {UspPdfOriginalsPacketPlanInputSchema,UspPacketPdfOriginalsReceiptSchema,PacketPdfOriginalSetSchema,PACKET_PDF_ORIGINALS_RECIPE} from '../packages/contracts/src/usp/packet-pdf';
 import {PacketRegionWorkerSchema} from '../packages/contracts/src/packet-region';
 import {createPacketPlan,revisePacketPlan,confirmPacketPlan,executePacketPlan,readPacketPlan} from '../packages/server/src/modules/usp/packets/plan-service';
 import {readPacketPdf,type PdfPacketIo} from '../packages/server/src/modules/usp/packets/pdf-service';
@@ -29,6 +30,8 @@ const root='E:/BhuAayam-data/task-data/desktop-packet-region-extract-20261002/re
 const present=existsSync(root+'/result.json')&&existsSync(root+'/region.png'),subject='packet-pdf-protocol-control';
 const secondRoot=process.env.ULPIN_PACKET_MULTI_SECOND_ROOT??'E:/BhuAayam-data/task-data/desktop-packet-pdf-multiregion-20261003/second-region';
 const actualSecond=existsSync(secondRoot+'/result.json')&&existsSync(secondRoot+'/region.png');
+const originalsRoot=process.env.ULPIN_PACKET_ORIGINALS_SECOND_ROOT??'E:/BhuAayam-data/task-data/desktop-packet-pdf-multiple-originals-20261003/second-original';
+const actualOtherOriginal=existsSync(originalsRoot+'/result.json')&&existsSync(originalsRoot+'/region.png');
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const siteId=id(1),sourceId=id(2),caseId=id(3),targetId=id(4),manifestId=id(5),digest='a'.repeat(64);
 type State={plans:any[];confirmations:any[];executions:any[];receipts:any[];packets:any[];cards:any[];streams:any[];events:any[]};
@@ -46,6 +49,7 @@ class ControlDb{
   sourceCase:any={id:caseId,site_id:siteId,revision:1,archived:false,context:null,frame:null};
   citation:any;record:any;captured:any;history=new Map<number,any>();
   secondRegion:any;secondPng?:Buffer;secondCitation:any;extractOrder:string[]=[];
+  secondSource:any;secondSourceCase:any;secondArchived=false;secondLatest=1;
   scope={kind:'snapshot' as const,scopeId:siteId,world:{namespace:'world',id:`registry-site/${siteId}`},manifestId,
     snapshotDigest:digest,stage:'recorded' as const};
   target={ref:{namespace:'registry_record' as const,id:targetId},revision:2};
@@ -83,6 +87,24 @@ class ControlDb{
     assert.notEqual(this.secondCitation.id,this.citation.id);
     this.record.body.documentCitations=[this.citation,this.secondCitation];this.capture();this.history.set(2,structuredClone(this.record.body));
   }
+  async enableMultipleOriginals(){
+    assert(actualOtherOriginal,'A genuine retained second-original crop is required; no first-source pixel fallback');
+    this.secondRegion=PacketRegionWorkerSchema.parse(JSON.parse(readFileSync(originalsRoot+'/result.json','utf8')));
+    this.secondPng=readFileSync(originalsRoot+'/region.png');assert.equal(sha256(this.secondPng),this.secondRegion.output.sha256);
+    assert.notEqual(this.secondRegion.sourceSha256,this.region.sourceSha256);
+    this.secondSource={...structuredClone(this.source),id:id(12),case_id:id(13),family_id:id(12),
+      sha256:this.secondRegion.sourceSha256,bytes:this.secondRegion.sourceBytes,
+      inspection:{documentOriginal:{...this.source.inspection.documentOriginal,sha256:this.secondRegion.sourceSha256,bytes:this.secondRegion.sourceBytes}}};
+    this.secondSourceCase={...this.sourceCase,id:id(13)};
+    const original={caseId:id(13),caseRevision:1,sourceId:id(12),sourceRevision:1,
+      sourceSha256:this.secondRegion.sourceSha256,sourceBytes:this.secondRegion.sourceBytes};
+    const current=await registryRegionSourceTx({query:(q:string,v:any[])=>this.query(q,v)} as any,siteId,original);
+    this.secondCitation=RegistryRegionCitationSchema.parse({...this.citation,document:original,page:this.secondRegion.page,
+      region:this.secondRegion.selection,validation:this.secondRegion,authoritySha256:current.authority.authoritySha256,
+      selection:{...this.citation.selection,accessSha256:ingestionBinding(id(13)).access}});
+    this.secondCitation.id=regionCitationId(this.secondCitation);
+    this.record.body.documentCitations=[this.citation,this.secondCitation];this.capture();this.history.set(2,structuredClone(this.record.body));
+  }
   capture(){this.captured={...structuredClone(this.record),project_code:this.identity?.code??null,project_status:this.identity?.status??null,
     project_location:this.identity?.location??null,projectIdentity:this.identity,historicalAliases:[]};}
   manifest(){return UspSnapshotManifestSchema.parse({schemaVersion:'usp/1',id:manifestId,digest,scope:this.scope,
@@ -104,10 +126,12 @@ class ControlDb{
     if(q==='BEGIN'||q==='COMMIT'||q==='ROLLBACK'||q.includes('pg_advisory_xact_lock'))return result();
     if(q.startsWith('SELECT set_config'))return result([{deadline_live:true}]);
     if(q.startsWith('SELECT id FROM cases')&&q.includes('FOR SHARE')){this.heldCases.add(v[0]);return result([{id:v[0]}]);}
-    if(q.includes('FROM cases'))return result(v[0]===caseId?[{...this.sourceCase,archived:this.archived}]:[]);
+    if(q.includes('FROM cases'))return result(v[0]===caseId?[{...this.sourceCase,archived:this.archived}]:
+      this.secondSourceCase&&v[0]===this.secondSourceCase.id?[{...this.secondSourceCase,archived:this.secondArchived}]:[]);
     if(q.startsWith('SELECT max(revision) AS revision FROM usp_property_cards'))return result([{revision:Math.max(...this.state.cards.filter(c=>c.id===v[0]).map(c=>c.revision))}]);
-    if(q.includes('SELECT max(revision)'))return result([{revision:this.latest}]);
-    if(q.includes('FROM sources'))return result(v[q.includes('WHERE case_id=')?1:0]===sourceId?[structuredClone(this.source)]:[]);
+    if(q.includes('SELECT max(revision)'))return result([{revision:this.secondSourceCase&&v[0]===this.secondSourceCase.id?this.secondLatest:this.latest}]);
+    if(q.includes('FROM sources')){const selected=v[q.includes('WHERE case_id=')?1:0];return result(selected===sourceId?[structuredClone(this.source)]:
+      this.secondSource&&selected===this.secondSource.id?[structuredClone(this.secondSource)]:[]);}
     if(q.startsWith('SELECT body FROM usp_snapshots'))return result([{body:this.manifest()}]);
     if(q.startsWith('SELECT body,body_sha256 FROM usp_snapshot_bodies'))return result(v[2]===targetId&&v[3]===2?
       [{body:structuredClone(this.captured),body_sha256:fingerprint(this.captured)}]:[]);
@@ -140,12 +164,13 @@ class ControlDb{
   pdf:PdfPacketIo={extract:async(source,page,raw:any)=>{
     assert.equal(this.active,0);assert.equal(this.transactionActive,0);assert.equal(this.heldCases.size,0);
     this.extracts++;if(this.extractFail)throw new Error('CONTROL renderer failed');
-    assert.equal(source,sourceId);assert.equal(page,1);assert.equal(raw.sha256,this.region.sourceSha256);
     const second=this.secondCitation&&canonical(raw.selection)===canonical(this.secondCitation.region);
+    const original=second?this.secondCitation.document:this.citation.document;
+    assert.equal(source,original.sourceId);assert.equal(page,1);assert.equal(raw.sha256,original.sourceSha256);
     assert.equal(canonical(raw.selection),canonical(second?this.secondCitation.region:this.citation.region));
     this.extractOrder.push(second?this.secondCitation.id:this.citation.id);this.afterExtract?.();
     return {bytes:second?this.secondPng!:this.png,provenance:{...(second?this.secondRegion:this.region),
-      version:'packet-region/1',caseId,caseRevision:1,sourceId,sourceRevision:1,purpose:'private_source_preview'}};
+      version:'packet-region/1',caseId:original.caseId,caseRevision:original.caseRevision,sourceId:original.sourceId,sourceRevision:original.sourceRevision,purpose:'private_source_preview'}};
   },put:async(key,bytes,type)=>{assert.equal(this.active,0);assert.equal(type,'application/pdf');assert(!this.objects.has(key));
     this.puts++;this.objects.set(key,Buffer.from(bytes));this.afterPut?.();},
     read:async(key,bytes,hash)=>{assert.equal(this.active,0);this.reads++;const value=this.objects.get(key);assert(value);
@@ -160,6 +185,7 @@ class ControlDb{
   multiInput(bindingIds=[this.secondCitation.id,this.citation.id]){return UspPdfMultiPacketPlanInputSchema.parse({...this.input(),
     recipe:'pack1-multi-region-image/1',entries:bindingIds.map(bindingId=>({bindingId,required:true,
       inclusionReason:'Explicit controlled committed inclusion; actual retained source pixels, applicability unqualified'}))});}
+  originalsInput(bindingIds=[this.secondCitation.id,this.citation.id]){return UspPdfOriginalsPacketPlanInputSchema.parse({...this.multiInput(bindingIds),recipe:PACKET_PDF_ORIGINALS_RECIPE});}
 }
 async function withDb(action:(db:ControlDb,ctx:RequestContext)=>Promise<void>){
   const globals=globalThis as unknown as {ulpinPool?:Pool},prior=globals.ulpinPool,oldSubject=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
@@ -366,4 +392,68 @@ test('multi-region duplicate/optional selections refuse; required second crop dr
     try{await assert.rejects(()=>executePacketPlan(ctx,{planId:revised.planId,version:revised.version,confirmationId:accepted.confirmationId,
       guard:{mode:'create',requestKey:randomUUID()}},db.io),(e:any)=>e.code==='PACKET_PDF_DEADLINE');}finally{Date.now=now;}
     assert.equal(db.puts,0);assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);
+  }));
+
+test('two actual PDF originals retain ordered crops through blocked/revise/confirm/execute/private read/replay/card',
+  {skip:!present||!actualOtherOriginal},()=>withDb(async(db,ctx)=>{
+    await db.enableMultipleOriginals();
+    // The old recipe must keep its one-original boundary.
+    await assert.rejects(()=>createPacketPlan(ctx,{input:db.multiInput(),guard:{mode:'create',requestKey:randomUUID()}},db.io),
+      (e:any)=>e.code==='PACKET_PDF_ORIGINAL_SCOPE');
+    const blocked=await createPacketPlan(ctx,{input:db.originalsInput([db.secondCitation.id,digest]),guard:{mode:'create',requestKey:randomUUID()}},db.io);
+    assert.equal(blocked.requiredContext,'blocked');
+    await assert.rejects(()=>confirmPacketPlan(ctx,confirm(blocked),db.io),(e:any)=>e.code==='PACKET_PLAN_BLOCKED');
+    const plan=await revisePacketPlan(ctx,{planId:blocked.planId,input:db.originalsInput(),
+      guard:{mode:'update',requestKey:randomUUID(),expectedVersion:1,expectedManifestId:manifestId}},db.io);
+    const confirmation=await confirmPacketPlan(ctx,confirm(plan),db.io),command={planId:plan.planId,version:plan.version,
+      confirmationId:confirmation.confirmationId,guard:{mode:'create',requestKey:randomUUID()}};
+    db.queries=[];
+    const execution=await executePacketPlan(ctx,command,db.io),receipt=UspPacketPdfOriginalsReceiptSchema.parse(execution.packet);
+    assert.equal(plan.version,2);assert.equal(receipt.assembly.version,'packet-pdf-assembly/3');assert.equal(receipt.assembly.output.pages,2);
+    assert.deepEqual(receipt.assembly.regions,[db.secondRegion,db.region]);
+    assert.deepEqual(receipt.assembly.originals,[db.secondCitation.document,db.citation.document]);
+    assert(!UspPacketPdfOriginalsReceiptSchema.safeParse({...receipt,entries:[receipt.entries[1],receipt.entries[0]]}).success);
+    assert(!UspPacketPdfOriginalsReceiptSchema.safeParse({...receipt,entries:[receipt.entries[0],{...receipt.entries[0],outputPage:2}]}).success);
+    assert.deepEqual(db.extractOrder,[db.secondCitation.id,db.citation.id]);assert.equal(db.extracts,2);assert.equal(db.puts,1);
+    const recording=db.queries.findIndex(q=>q.q.includes('physical-area-recording'));
+    for(const sourceCaseId of [caseId,id(13)]){
+      const gate=db.queries.findIndex(q=>q.v[0]===`registry-import:${sourceCaseId}`),row=db.queries.findIndex(q=>q.q==='SELECT id FROM cases WHERE id=$1 FOR SHARE'&&q.v[0]===sourceCaseId);
+      assert(gate>=0&&gate<row&&row<recording);
+    }
+    const output=await readPacketPdf(ctx,receipt.packetId,db.pdf);assert.deepEqual(output.receipt,receipt);assert.equal(sha256(output.bytes),receipt.artifact.sha256);
+    assert.deepEqual(await executePacketPlan(ctx,command,db.io),execution);assert.equal(db.extracts,2);assert.equal(db.puts,1);
+    const card=await generatePropertyCard(ctx,cardCommand(plan),db.cardIo);
+    assert.deepEqual(card.evidenceEntrySha256,plan.entries.map(e=>e.entrySha256));assert.equal(card.packetId,receipt.packetId);
+    assert.equal((await resolvePropertyCard(ctx,{cardId:card.cardId,revision:1},db.cardIo)).card.packetSha256,receipt.artifact.sha256);
+    const saved=process.env.ULPIN_PACKET_ORIGINALS_FLOW_ROOT;
+    if(saved){mkdirSync(saved,{recursive:true});writeFileSync(saved+'/packet.pdf',output.bytes,{flag:'wx'});
+      writeFileSync(saved+'/flow.json',JSON.stringify({scope:'Two distinct genuine source crops; controlled target/bindings/applicability/snapshot/SQL/storage/extraction transports',
+        plan,confirmation,execution,card,output:{bytes:output.bytes.length,sha256:sha256(output.bytes)},extracts:db.extracts,
+        extractOrder:db.extractOrder,packetPuts:1,originals:'Unchanged retained originals; no operational property crosswalk'},null,2)+'\n',{flag:'wx'});}
+  }));
+
+test('second original revocation blocks full publication/download/replay; distinct original count and aggregate bytes are bounded',
+  {skip:!present||!actualOtherOriginal},()=>withDb(async(db,ctx)=>{
+    await db.enableMultipleOriginals();const input=db.originalsInput();
+    const small=db.citation.document;
+    assert(!PacketPdfOriginalSetSchema.safeParse([small,small]).success);
+    assert(!PacketPdfOriginalSetSchema.safeParse([1,2,3].map(n=>({...small,sourceId:id(100+n),sourceBytes:16*1024**2}))).success);
+    assert(!UspPdfOriginalsPacketPlanInputSchema.safeParse({...input,entries:[input.entries[0],input.entries[0]]}).success);
+    const plan=await createPacketPlan(ctx,{input,guard:{mode:'create',requestKey:randomUUID()}},db.io),confirmation=await confirmPacketPlan(ctx,confirm(plan),db.io),
+      command={planId:plan.planId,version:plan.version,confirmationId:confirmation.confirmationId,guard:{mode:'create',requestKey:randomUUID()}};
+    db.secondArchived=true;await assert.rejects(()=>executePacketPlan(ctx,command,db.io),(e:any)=>e.status===403);assert.equal(db.extracts,0);
+    db.secondArchived=false;db.afterPut=()=>{db.secondSource.inspection.documentOriginal.subject='revoked-second-original';};
+    await assert.rejects(()=>executePacketPlan(ctx,command,db.io),(e:any)=>e.status===403);
+    assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);assert.equal(db.objects.size,1);
+    assert(!db.state.receipts.some(r=>r.operation==='packet_plan_execute'));assert(!db.state.events.some(e=>e.type==='packet.plan.executed'));
+    db.afterPut=undefined;db.secondSource.inspection.documentOriginal.subject=subject;
+    const execution=await executePacketPlan(ctx,command,db.io);assert.equal(db.state.packets.length,1);
+    db.afterRead=()=>{db.secondArchived=true;};
+    await assert.rejects(()=>readPacketPdf(ctx,execution.packet.packetId,db.pdf),(e:any)=>e.status===403);
+    db.afterRead=undefined;const reads=db.reads,extracts=db.extracts;
+    await assert.rejects(()=>readPacketPdf(ctx,execution.packet.packetId,db.pdf),(e:any)=>e.status===403);assert.equal(db.reads,reads);
+    await assert.rejects(()=>executePacketPlan(ctx,command,db.io),(e:any)=>e.status===403);assert.equal(db.extracts,extracts);
+    const saved=process.env.ULPIN_PACKET_ORIGINALS_FLOW_ROOT;if(saved)writeFileSync(saved+'/denials.json',JSON.stringify({scope:'controlled second-source/access/SQL/storage denials',
+      beforeExtractionDenied:true,afterStagingDenied:true,readyRowsAfterDeniedStage:0,unreferencedDerivativePreserved:true,afterDownloadReadDenied:true,
+      revokedReplayDenied:true,sameOriginalNewRecipeDenied:true,aggregateBytesSchemaDenied:true,duplicateSelectionDenied:true},null,2)+'\n',{flag:'wx'});
   }));
