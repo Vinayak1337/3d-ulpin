@@ -24,16 +24,33 @@ const personalKey = /^(?:(?:owner|father|mother|spouse|applicant|seller|buyer|wi
 const keyName = (key: string) => key.replace(/[\s_'’.-]/g, '');
 const unavailable = (value: unknown) => value === null || (typeof value === 'string' && /^(unknown|absent|withheld|conflicting)$/i.test(value));
 
+/** Decide before masking: only a join of two complete decimal tokens is a
+ * numeric-boundary false positive. A whole identifier-shaped fraction, bare
+ * number, formatted phone, or malformed/ambiguous context stays protected. */
+function spansAdjacentDecimals(value:string,offset:number,input:string):boolean{
+  const end=offset+value.length;
+  if(!/^\d+\s+\d+$/.test(value)||input[offset-1]!=='.'||!/[0-9]/.test(input[offset-2]??'')||
+    input[end]!=='.'||!/[0-9]/.test(input[end+1]??''))return false;
+  let start=offset-2,finish=end+1;
+  while(start>=0&&/[0-9]/.test(input[start]))start--;
+  if(input[start]==='-'||input[start]==='+')start--;
+  while(finish<input.length&&/[0-9]/.test(input[finish]))finish++;
+  return (start<0||!/[\w.+-]/.test(input[start]))&&(finish===input.length||!/[\w.]/.test(input[finish]));
+}
+
 export function redactPrivateText(text: string): string {
   const masked = text
-    .replace(/(?<![\w])\d{4}(?:[\s-]?\d{4}){3}(?![\w])/g, '[redacted VID]')
-    .replace(/(?<![\w])\d{4}(?:[\s-]?\d{4}){2}(?![\w])/g, value => {
+    .replace(/(?<![\w])\d{4}(?:[\s-]?\d{4}){3}(?![\w])/g,
+      (value,offset,input)=>spansAdjacentDecimals(value,offset,input)?value:'[redacted VID]')
+    .replace(/(?<![\w])\d{4}(?:[\s-]?\d{4}){2}(?![\w])/g, (value,offset,input) => {
+      if(spansAdjacentDecimals(value,offset,input))return value;
       const digits = value.replace(/\D/g, '');
       // Invalid/unclassified 12-digit identifiers stay fully masked (legacy protection).
       return passesVerhoeff(digits) ? `[redacted Aadhaar] XXXX XXXX ${digits.slice(-4)}` : '[redacted identifier]';
     })
     .replace(/\b[A-Z]{5}\d{4}[A-Z]\b/gi, '[redacted PAN]')
-    .replace(/(?<![\w])(?:\+91[\s-]?|91[\s-]|0)?[6-9](?:[\s-]?\d){9}(?![\w])/g, '[redacted phone]')
+    .replace(/(?<![\w])(?:\+91[\s-]?|91[\s-]|0)?[6-9](?:[\s-]?\d){9}(?![\w])/g,
+      (value,offset,input)=>spansAdjacentDecimals(value,offset,input)?value:'[redacted phone]')
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted email]')
     .replace(/[A-Z0-9._%+-]+\s*(?:\[at\]|\(at\))\s*[A-Z0-9.-]+(?:\s*(?:\[dot\]|\(dot\)|\.)\s*[A-Z0-9-]+)+/gi, '[redacted email]');
   // Labels are conservative; arbitrary names in prose require a qualified review route.
