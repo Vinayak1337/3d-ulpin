@@ -40,9 +40,9 @@ const originalsRoot=process.env.ULPIN_PACKET_ORIGINALS_SECOND_ROOT??'E:/BhuAayam
 const actualOtherOriginal=existsSync(originalsRoot+'/result.json')&&existsSync(originalsRoot+'/region.png');
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const siteId=id(1),sourceId=id(2),caseId=id(3),targetId=id(4),manifestId=id(5),digest='a'.repeat(64);
-type State={plans:any[];confirmations:any[];executions:any[];receipts:any[];packets:any[];cards:any[];streams:any[];events:any[];jobs:any[];jobMeta:any[];attempts:any[]};
+type State={plans:any[];confirmations:any[];executions:any[];receipts:any[];packets:any[];cards:any[];streams:any[];events:any[];jobs:any[];jobMeta:any[];attempts:any[];checkpoints:any[]};
 class ControlDb{
-  state:State={plans:[],confirmations:[],executions:[],receipts:[],packets:[],cards:[],streams:[],events:[],jobs:[],jobMeta:[],attempts:[]};
+  state:State={plans:[],confirmations:[],executions:[],receipts:[],packets:[],cards:[],streams:[],events:[],jobs:[],jobMeta:[],attempts:[],checkpoints:[]};
   queries:{q:string;v:any[]}[]=[];active=0;connects=0;releases=0;transactionActive=0;heldCases=new Set<string>();
   expired=false;archived=false;latest=1;failEvent=false;extractFail=false;afterExtract?:()=>void;afterPut?:()=>void|Promise<void>;afterRead?:()=>void;commitLost=false;
   ctx!:RequestContext;objects=new Map<string,Uint8Array>();extracts=0;puts=0;reads=0;identity:any=null;afterCardRead?:()=>void;
@@ -56,6 +56,8 @@ class ControlDb{
   citation:any;record:any;captured:any;history=new Map<number,any>();
   secondRegion:any;secondPng?:Buffer;secondCitation:any;extractOrder:string[]=[];
   secondSource:any;secondSourceCase:any;secondArchived=false;secondLatest=1;
+  checkpointAvailable=true;extractFailAt=0;cropPuts=0;recipeChanged=false;afterCropPut?:()=>void|Promise<void>;
+  extractAttempts:string[]=[];
   scope={kind:'snapshot' as const,scopeId:siteId,world:{namespace:'world',id:`registry-site/${siteId}`},manifestId,
     snapshotDigest:digest,stage:'recorded' as const};
   target={ref:{namespace:'registry_record' as const,id:targetId},revision:2};
@@ -132,6 +134,13 @@ class ControlDb{
     const q=sql.replace(/\s+/g,' ').trim();this.queries.push({q,v});const result=(rows:any[]=[])=>({rows,rowCount:rows.length});
     if(q==='BEGIN'||q==='COMMIT'||q==='ROLLBACK'||q.includes('pg_advisory_xact_lock'))return result();
     if(q.startsWith('SELECT set_config'))return result([{deadline_live:true}]);
+    if(q.startsWith("SELECT to_regclass('usp_packet_pdf_entry_checkpoints')"))return result([{available:this.checkpointAvailable}]);
+    if(q.startsWith('SELECT * FROM usp_packet_pdf_entry_checkpoints'))return result(this.state.checkpoints.filter(c=>c.job_id===v[0]&&c.entry_index===v[1]).map(c=>structuredClone(c)));
+    if(q.startsWith('INSERT INTO usp_packet_pdf_entry_checkpoints')){
+      assert(!this.state.checkpoints.some(c=>c.job_id===v[1]&&c.entry_index===v[4]));
+      this.state.checkpoints.push({id:v[0],job_id:v[1],plan_id:v[2],plan_version:v[3],entry_index:v[4],identity_sha256:v[5],
+        artifact_sha256:v[6],artifact_bytes:v[7],object_key:v[8],accepted_attempt:v[9],accepted_fence:v[10],
+        body:structuredClone(v[11]),body_sha256:v[12]});return result();}
     if(q.startsWith('INSERT INTO jobs')){this.state.jobs.push({id:v[0],case_id:v[1],source_id:v[2],operation:'packet-pdf',case_revision:v[3],
       input_fingerprint:v[4],payload:structuredClone(v[5]),status:'queued',attempts:0,error:null,created_at:new Date().toISOString()});return result();}
     if(q.startsWith('SELECT id FROM jobs WHERE operation='))return result(this.state.jobs.filter(j=>j.payload.command.planId===v[0]&&String(j.payload.command.version)===v[1]));
@@ -194,7 +203,8 @@ class ControlDb{
   }
   pdf:PdfPacketIo={extract:async(source,page,raw:any)=>{
     assert.equal(this.active,0);assert.equal(this.transactionActive,0);assert.equal(this.heldCases.size,0);
-    this.extracts++;if(this.extractFail)throw new Error('CONTROL renderer failed');
+    this.extracts++;this.extractAttempts.push(source);
+    if(this.extractFail||this.extracts===this.extractFailAt)throw new Error('CONTROL renderer failed');
     const second=this.secondCitation&&canonical(raw.selection)===canonical(this.secondCitation.region);
     const original=second?this.secondCitation.document:this.citation.document;
     assert.equal(source,original.sourceId);assert.equal(page,1);assert.equal(raw.sha256,original.sourceSha256);
@@ -202,10 +212,12 @@ class ControlDb{
     this.extractOrder.push(second?this.secondCitation.id:this.citation.id);this.afterExtract?.();
     return {bytes:second?this.secondPng!:this.png,provenance:{...(second?this.secondRegion:this.region),
       version:'packet-region/1',caseId:original.caseId,caseRevision:original.caseRevision,sourceId:original.sourceId,sourceRevision:original.sourceRevision,purpose:'private_source_preview'}};
-  },put:async(key,bytes,type)=>{assert.equal(this.active,0);assert.equal(type,'application/pdf');assert(!this.objects.has(key));
-    this.puts++;this.objects.set(key,Buffer.from(bytes));await this.afterPut?.();},
+  },put:async(key,bytes,type)=>{assert.equal(this.active,0);assert(['application/pdf','image/png'].includes(type));assert(!this.objects.has(key));
+    this.objects.set(key,Buffer.from(bytes));if(type==='image/png'){this.cropPuts++;await this.afterCropPut?.();}
+    else{this.puts++;await this.afterPut?.();}},
     read:async(key,bytes,hash)=>{assert.equal(this.active,0);this.reads++;const value=this.objects.get(key);assert(value);
-      assert.equal(bytes,value.length);this.afterRead?.();return Buffer.from(value);}};
+      assert.equal(bytes,value.length);this.afterRead?.();return Buffer.from(value);},
+    recipe:async source=>this.recipeChanged?'0'.repeat(64):source===this.secondSource?.id?this.secondRegion.recipeSha256:this.region.recipeSha256};
   io={read:async()=>{throw new Error('PDF must not use PACK0 original I/O');},put:async()=>{throw new Error('PDF must not use PACK0 writer');},pdf:this.pdf};
   cardIo:PropertyCardIo={readPacket:async()=>{throw new Error('PDF card must use the dedicated PDF reader');},pdf:this.pdf,put:this.pdf.put,
     readCard:async(key,bytes,hash)=>{assert.equal(this.active,0);this.reads++;const value=this.objects.get(key);assert(value);
@@ -539,13 +551,13 @@ test('queued PDF: expired attempt recovery fences old owner; revoked staged sour
     await withDb(async(db,ctx)=>{
       const {queued}=await queuedOriginals(db,ctx);db.afterPut=()=>{db.secondSource.inspection.documentOriginal.subject='revoked-after-stage';};
       await runPacketPdfJob(queued.jobId,db.pdf);
-      assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);assert.equal(db.objects.size,1);
+      assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);assert.equal(db.objects.size,3);
       assert.equal(db.state.jobMeta[0].logical_state,'failed');assert.equal(db.state.jobs[0].error,'PACKET_PDF_ACCESS_REVOKED');
       assert(!db.state.events.some(e=>e.type==='job.succeeded'||e.type==='packet.plan.executed'));
       db.afterPut=undefined;db.secondSource.inspection.documentOriginal.subject=subject;
       const failed=await readPacketPdfJob(ctx,queued.jobId),retry={jobId:queued.jobId,action:'retry',expectedVersion:failed.version,requestKey:randomUUID()};
       assert.equal((await controlPacketPdfJob(ctx,retry)).status,'queued');await runPacketPdfJob(queued.jobId,db.pdf);
-      assert.equal((await readPacketPdfJob(ctx,queued.jobId)).status,'succeeded');assert.equal(db.state.packets.length,1);assert.equal(db.objects.size,2);
+      assert.equal((await readPacketPdfJob(ctx,queued.jobId)).status,'succeeded');assert.equal(db.state.packets.length,1);assert.equal(db.objects.size,4);
     });
   });
 test('queued PDF: synchronous winner and lost acceptance acknowledgement preserve one result; cancellation blocks staged publication',
@@ -555,7 +567,7 @@ test('queued PDF: synchronous winner and lost acceptance acknowledgement preserv
       db.afterPut=async()=>{db.afterPut=undefined;await executePacketPlan(ctx,{...command,guard:{mode:'create',requestKey:randomUUID()}},db.io);db.commitLost=true;};
       await runPacketPdfJob(queued.jobId,db.pdf);
       const accepted=await readPacketPdfJob(ctx,queued.jobId);assert.equal(accepted.status,'succeeded');
-      assert.equal(db.state.packets.length,1);assert.equal(db.state.executions.length,1);assert.equal(db.objects.size,2);
+      assert.equal(db.state.packets.length,1);assert.equal(db.state.executions.length,1);assert.equal(db.objects.size,4);
       assert.equal(accepted.result!.packetId,db.state.packets[0].id);assert.equal(db.state.attempts[0].completion_sha256,accepted.result!.artifact.sha256);
       const count=db.extracts;await runPacketPdfJob(queued.jobId,db.pdf);assert.equal(db.extracts,count);
     });
@@ -564,7 +576,82 @@ test('queued PDF: synchronous winner and lost acceptance acknowledgement preserv
       db.afterPut=async()=>{db.afterPut=undefined;const current=await readPacketPdfJob(ctx,queued.jobId);
         await controlPacketPdfJob(ctx,{jobId:queued.jobId,action:'cancel',expectedVersion:current.version,requestKey:randomUUID()});};
       await runPacketPdfJob(queued.jobId,db.pdf);assert.equal((await readPacketPdfJob(ctx,queued.jobId)).status,'cancelled');
-      assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);assert.equal(db.objects.size,1);
+      assert.equal(db.state.packets.length,0);assert.equal(db.state.executions.length,0);assert.equal(db.objects.size,3);
       assert.equal(db.state.attempts[0].state,'fenced');assert(!db.state.events.some(e=>e.type==='job.succeeded'||e.type==='packet.plan.executed'));
+    });
+  });
+
+test('PDF entry recovery: accepted first crop survives later failure; retry reuses it and preserves exact packet bytes',
+  {skip:!present||!actualOtherOriginal},()=>withDb(async(db,ctx)=>{
+    const {plan,queued}=await queuedOriginals(db,ctx);db.extractFailAt=2;
+    await runPacketPdfJob(queued.jobId,db.pdf);
+    const failed=await readPacketPdfJob(ctx,queued.jobId);
+    assert.equal(failed.status,'failed');assert.equal(failed.result,null);assert.equal(db.state.packets.length,0);
+    assert.equal(db.state.checkpoints.length,1);assert.equal(db.cropPuts,1);assert.equal(db.puts,0);
+    const first=structuredClone(db.state.checkpoints[0]);
+    assert.equal(first.entry_index,0);assert.equal(first.accepted_attempt,1);assert.equal(first.accepted_fence,1);
+    assert.equal(first.body.identity.original.sourceId,db.secondSource.id);assert.equal(db.state.attempts[0].state,'fenced');
+    await controlPacketPdfJob(ctx,{jobId:queued.jobId,action:'retry',expectedVersion:failed.version,requestKey:randomUUID()});
+    await runPacketPdfJob(queued.jobId,db.pdf);
+    const accepted=await readPacketPdfJob(ctx,queued.jobId),output=await readPacketPdfJobResult(ctx,queued.jobId,db.pdf);
+    assert.equal(accepted.status,'succeeded');assert.equal(accepted.attempt.number,2);assert.equal(db.state.packets.length,1);
+    assert.equal(db.extracts,3);assert.equal(db.cropPuts,2);assert.equal(db.puts,1);
+    assert.deepEqual(db.extractAttempts,[db.secondSource.id,sourceId,sourceId]);
+    assert.deepEqual(db.state.checkpoints[0],first);assert.equal(db.state.checkpoints[1].accepted_attempt,2);
+    assert.equal(db.state.checkpoints[1].entry_index,1);assert.equal(db.state.checkpoints[1].accepted_fence,2);
+    assert.equal(output.bytes.length,337862);assert.equal(sha256(output.bytes),'cda69b79c3aeccac153b624bb70cb62add81889e7add54a323e0426feb638172');
+    const extracts=db.extracts;await runPacketPdfJob(queued.jobId,db.pdf);assert.equal(db.extracts,extracts);
+    const saved=process.env.ULPIN_PACKET_ENTRY_FLOW_ROOT;
+    if(saved){mkdirSync(saved,{recursive:true});writeFileSync(saved+'/packet.pdf',output.bytes,{flag:'wx'});
+      writeFileSync(saved+'/accepted-first-crop.png',db.objects.get(first.object_key)!,{flag:'wx'});
+      writeFileSync(saved+'/flow.json',JSON.stringify({scope:'Actual retained crop pixels through packet checkpoint/queue/service methods; SQL/storage/extractor/current-recipe/target/snapshot authority are explicit controls',
+        plan,queued,failed,accepted,checkpointAfterFailure:first,checkpoints:db.state.checkpoints,attempts:db.state.attempts,
+        job:db.state.jobs[0],metadata:db.state.jobMeta[0],execution:db.state.executions[0].body,
+        extractAttempts:db.extractAttempts,cropPuts:db.cropPuts,packetPuts:db.puts,firstCropRepeated:false,
+        output:{bytes:output.bytes.length,sha256:sha256(output.bytes)},events:db.state.events},null,2)+'\n',{flag:'wx'});}
+  }));
+
+test('PDF entry recovery: revoked full-set authority, changed recipe and corrupt committed crop refuse reuse without extraction',
+  {skip:!present||!actualOtherOriginal},()=>withDb(async(db,ctx)=>{
+    const {queued}=await queuedOriginals(db,ctx);db.extractFailAt=2;await runPacketPdfJob(queued.jobId,db.pdf);
+    const first=structuredClone(db.state.checkpoints[0]),reads=db.reads;
+    const retry=async()=>{const failed=await readPacketPdfJob(ctx,queued.jobId);
+      await controlPacketPdfJob(ctx,{jobId:queued.jobId,action:'retry',expectedVersion:failed.version,requestKey:randomUUID()});};
+    await retry();db.archived=true;await runPacketPdfJob(queued.jobId,db.pdf);
+    assert.equal(db.state.jobs[0].error,'PACKET_PDF_ACCESS_REVOKED');assert.equal(db.reads,reads);assert.equal(db.extracts,2);
+    db.archived=false;await retry();db.recipeChanged=true;await runPacketPdfJob(queued.jobId,db.pdf);
+    assert.equal(db.state.jobs[0].error,'PACKET_PDF_INPUT_STALE');assert.equal(db.reads,reads);assert.equal(db.extracts,2);
+    db.recipeChanged=false;await retry();const corrupt=Buffer.from(db.objects.get(first.object_key)!);corrupt[corrupt.length-1]^=1;
+    db.objects.set(first.object_key,corrupt);await runPacketPdfJob(queued.jobId,db.pdf);
+    assert.equal(db.state.jobs[0].error,'PACKET_PDF_CHECKPOINT_INTEGRITY');assert.equal(db.extracts,2);
+    assert.deepEqual(db.state.checkpoints[0],first);assert.equal(db.state.checkpoints.length,1);assert.equal(db.state.packets.length,0);
+    assert(!db.state.events.some(e=>e.type==='job.succeeded'||e.type==='packet.plan.executed'));
+  }));
+
+test('PDF entry recovery: missing migration stays actionable; expired acceptance is not cached; unknown entry COMMIT recovers',
+  {skip:!present||!actualOtherOriginal},async()=>{
+    await withDb(async(db,ctx)=>{
+      const {queued,command}=await queuedOriginals(db,ctx);db.checkpointAvailable=false;
+      await runPacketPdfJob(queued.jobId,db.pdf);
+      assert.equal(db.state.jobs[0].error,'PACKET_PDF_CHECKPOINT_UNAVAILABLE');assert.equal(db.extracts,0);assert.equal(db.objects.size,0);
+      const sync=await executePacketPlan(ctx,command,db.io);assert.equal(sync.packet.artifact.sha256,'cda69b79c3aeccac153b624bb70cb62add81889e7add54a323e0426feb638172');
+      assert.equal(db.state.checkpoints.length,0);
+    });
+    await withDb(async(db,ctx)=>{
+      const {queued}=await queuedOriginals(db,ctx);
+      db.afterCropPut=()=>{db.afterCropPut=undefined;db.state.attempts[0].lease_until=new Date(Date.now()-1).toISOString();};
+      await runPacketPdfJob(queued.jobId,db.pdf);
+      assert.equal(db.state.checkpoints.length,0);assert.equal(db.objects.size,1);assert.equal(db.state.packets.length,0);
+      assert.equal(db.state.jobs[0].error,'PACKET_PDF_INPUT_STALE');
+    });
+    await withDb(async(db,ctx)=>{
+      const {queued}=await queuedOriginals(db,ctx);
+      db.afterCropPut=()=>{db.afterCropPut=undefined;db.commitLost=true;};await runPacketPdfJob(queued.jobId,db.pdf);
+      assert.equal(db.state.checkpoints.length,1);assert.equal(db.state.jobs[0].status,'running');assert.equal(db.state.packets.length,0);
+      const first=structuredClone(db.state.checkpoints[0]);db.state.attempts[0].lease_until=new Date(Date.now()-1).toISOString();
+      await runPacketPdfJob(queued.jobId,db.pdf);
+      assert.equal((await readPacketPdfJob(ctx,queued.jobId)).status,'succeeded');assert.equal(db.extracts,2);
+      assert.deepEqual(db.state.checkpoints[0],first);assert.equal(db.state.checkpoints.length,2);assert.equal(db.state.packets.length,1);
+      assert.deepEqual(db.extractAttempts,[db.secondSource.id,sourceId]);
     });
   });

@@ -24,7 +24,9 @@ import {loadPdfPlanTx,validatePlan,validateConfirmation,validateExecution,livePl
 
 /** Internal I/O seam only. Each byte read is bounded by the immutable receipt. */
 export type PdfPacketIo={extract:PacketRegionService['extract'];put:typeof putOriginal;
-  read:(key:string,bytes:number,hash:string,deadlineAt?:number)=>Promise<Uint8Array>};
+  read:(key:string,bytes:number,hash:string,deadlineAt?:number)=>Promise<Uint8Array>;
+  /** Internal current-recipe authority for queued accepted-crop reuse. */
+  recipe?:(sourceId:string,deadlineAt:number)=>Promise<string>};
 async function boundedPdfRead(key:string,bytes:number,hash:string,deadlineAt?:number){
   if(!Number.isSafeInteger(bytes)||bytes<1||bytes>PACKET_PDF_MULTI_LIMITS.bytes)
     throw new AppError(422,'PACKET_PDF_ARTIFACT_INTEGRITY','The saved PDF exceeds its bounded receipt.');
@@ -40,7 +42,9 @@ async function boundedPdfRead(key:string,bytes:number,hash:string,deadlineAt?:nu
 }
 const regionService=new PacketRegionService();
 export const pdfPacketStorage:PdfPacketIo={extract:regionService.extract.bind(regionService),read:boundedPdfRead,
-  put:(key,bytes,type,signal)=>putOriginal(key,bytes,type,signal??AbortSignal.timeout(30_000))};
+  put:(key,bytes,type,signal)=>putOriginal(key,bytes,type,signal??AbortSignal.timeout(30_000)),
+  recipe:async(_sourceId,deadlineAt)=>{pdfExecutionLive(deadlineAt);const {packetRegionRecipeSha}=await import('./region-runtime');
+    pdfExecutionLive(deadlineAt);const recipe=await packetRegionRecipeSha();pdfExecutionLive(deadlineAt);return recipe;}};
 const storage=pdfPacketStorage;
 const boundedTx=<T>(work:(client:PoolClient)=>Promise<T>,deadlineAt?:number)=>transaction(work,{deadlineAt:Math.min(Date.now()+30_000,deadlineAt??Infinity)});
 async function protectTx(client:PoolClient,ctx:RequestContext,plan:PdfPacketPlan){
@@ -155,12 +159,13 @@ export async function preparePdfExecutionTx(client:PoolClient,ctx:RequestContext
 export type PreparedPdfExecution=Exclude<Awaited<ReturnType<typeof preparePdfExecutionTx>>,{replay:unknown}>;
 export function pdfExecutionLive(deadlineAt?:number){if(deadlineAt!==undefined&&Date.now()>=deadlineAt)
   throw new AppError(503,'PACKET_PDF_DEADLINE','The bounded PDF operation expired; no packet is published.');}
-export async function stagePdfExecution(first:PreparedPdfExecution,io:PdfPacketIo=storage,deadlineAt?:number){
+export type PdfCropRecovery=(index:number,extract:()=>Promise<Buffer>)=>Promise<Buffer>;
+export async function stagePdfExecution(first:PreparedPdfExecution,io:PdfPacketIo=storage,deadlineAt?:number,recover?:PdfCropRecovery){
   // No transaction or mutation lock spans native execution or object I/O.
   const {plan,confirmation,bindings,sources}=first,multi=plan.input.recipe!==PACKET_PDF_RECIPE,
     multipleOriginals=plan.input.recipe===PACKET_PDF_ORIGINALS_RECIPE;
   const live=()=>pdfExecutionLive(deadlineAt);
-  const cropAt=async(index:number)=>{
+  const extractCrop=async(index:number)=>{
     live();const binding=bindings[index];
     const crop=await io.extract(binding.document.sourceId,binding.page,{revision:String(binding.document.sourceRevision),
       sha256:binding.document.sourceSha256,purpose:'private_source_preview',selection:binding.region},deadlineAt);live();
@@ -168,6 +173,7 @@ export async function stagePdfExecution(first:PreparedPdfExecution,io:PdfPacketI
     if(canonical(proof.validation)!==canonical(binding.validation))conflict('The exact bound crop or renderer recipe changed. Review a fresh binding.');
     live();return crop.bytes;
   };
+  const cropAt=(index:number)=>recover?recover(index,()=>extractCrop(index)):extractCrop(index);
   const assembled=multipleOriginals?await assemblePacketPdfOriginals(bindings.map(binding=>binding.document),bindings.map(binding=>binding.validation),cropAt,live):
     multi?await assemblePacketPdfRegions(bindings.map(binding=>binding.validation),cropAt,live):
     assemblePacketPdf(bindings[0].validation,await cropAt(0));
