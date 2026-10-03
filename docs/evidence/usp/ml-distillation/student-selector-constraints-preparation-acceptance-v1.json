@@ -1,0 +1,207 @@
+{
+  "version": "student-selector-constraints-preparation-acceptance/1",
+  "recordedAt": "2026-10-03",
+  "ownerCodeCommit": "ebc8554d3e30d6ab0072c140af1fe97c79f7db53",
+  "ownerFinalCommit": "ec2b6b090e8c29f8739ea864b28b44db6c03d386",
+  "ownerReceiptPhysicalSha256": "a78b39f69cce978912b044710733790638f50ae8c444cb2e209b258f0811237b",
+  "primaryStagingHeadObservedReadOnly": "409d26414b5f7544fc4db41d1b14c95d43604957",
+  "review": "Complete six-file owned implementation/control delta and evidence inspected. Persistent byte grammar/lazy source intervals, citation/state bounds, compact shared vocabulary trie, generated-prefix-only masking, Unicode/escape/EOS transport and raw preservation are coherent. Existing projector/core fit/resource/containment files remain unchanged; historical generation has a default-off hook and new explicit execution/freeze gates. Empty allowed sets, unsupported transport and final byte-decoding mismatches fail without repair.",
+  "verification": {
+    "command": "python -B -I -S - (owned/retained pins, owner control/compile evidence and exact constrained execution/source preflight)",
+    "initialExitCode": 1,
+    "initialFailure": "Audit-only whole-object equality assumed receipt metrics held every raw-log field; receipt intentionally retains a metric subset. All source/code/retained pins and compile/control exits passed first.",
+    "continuationCommand": "python -B -I -S - (all recorded metric fields, separate policy/tokenizer equality and execution/source preflight)",
+    "exitCode": 0,
+    "ownedCodePinsMatched": 6,
+    "retainedReferencePinsMatched": 9,
+    "runtimeSourcePinsMatched": 21,
+    "protectedSourcesUnchanged": true,
+    "sixOwnerControlsAndCompileReused": true,
+    "testsRerun": false,
+    "checkedExecutionAndSourcePinsPassed": true,
+    "nativeModulesImported": false,
+    "stageCreated": false
+  },
+  "policy": {
+    "policy": {
+      "bounds": {
+        "batchSize": 1,
+        "beams": 1,
+        "generatedTokens": 768,
+        "maskNodeVisits": 1500000,
+        "maskSeconds": 5,
+        "outputBytes": 65536,
+        "trieNodes": 1500000
+      },
+      "citationCoverage": "literal/unit spans inside one own citation; distinct pointer triples per citation list",
+      "forcedElements": [
+        "syntax/key order/schema limits",
+        "source ranges",
+        "literal/unit citation coverage and lengths",
+        "state/value compatibility",
+        "at least two conflict citations",
+        "first no_canonical_targets abstention",
+        "empty canonicalLinks"
+      ],
+      "language": "compact JSON; sorted object keys; fixed public schema enums; Unicode scalar decision codes, length1..120",
+      "notEnforced": [
+        "correct semantic role/literal/state/unit",
+        "exact identifier/unit boundaries",
+        "duplicate quoted text at different positions",
+        "conflict truth/coverage",
+        "native attribute matching"
+      ],
+      "qualification": "controller-enforced validity is not learned accuracy; unchanged whole-response semantic projection required",
+      "schemaSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+      "selection": "Transformers prefix_allowed_tokens_fn additive negative-infinity mask; allowed logits unchanged",
+      "sourceChoices": "current source lexical positions only; lazy integer intervals, nonempty spans, exclusive ends",
+      "states": "declared requires a non-null literal; unknown/absent/null/withheld require null literal and unit",
+      "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+      "transport": "pinned ByteLevel BPE bytes; incremental strict UTF-8/JSON escapes; all added tokens excluded except complete-response EOS151645",
+      "version": "association-selector-constraints/1"
+    },
+    "policySha256": "ec73957cd919f8635ef3bb7a7353ec331965dbe59dcd0f1f1463dd1be49f1744",
+    "tokenizerFilesSha256": {
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    }
+  },
+  "ownedCode": {
+    "services/geo/geo/usp_learning/association/selector_constraints.py": {
+      "physicalSha256": "2804fefb697160e1988cc6239e03d71c225bb4a57ba3924fcbb0c8399ad9898b",
+      "canonicalLfSha256": "2804fefb697160e1988cc6239e03d71c225bb4a57ba3924fcbb0c8399ad9898b"
+    },
+    "scripts/usp/learning/association/test_selector_constraints.py": {
+      "physicalSha256": "7c11b534f04e172e742d8edac1112a2975673ed7c3adf03e67d2589c151426ed",
+      "canonicalLfSha256": "7c11b534f04e172e742d8edac1112a2975673ed7c3adf03e67d2589c151426ed"
+    },
+    "services/geo/geo/usp_learning/association/selector_baseline.py": {
+      "physicalSha256": "22d9a53b42653acbdfaaf9a10de5c4632347d14c8ba53ef99a19033eeef0c793",
+      "canonicalLfSha256": "22d9a53b42653acbdfaaf9a10de5c4632347d14c8ba53ef99a19033eeef0c793"
+    },
+    "services/geo/geo/usp_learning/association/selector_adapter.py": {
+      "physicalSha256": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+      "canonicalLfSha256": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d"
+    },
+    "scripts/usp/learning/association/association_adapter.py": {
+      "physicalSha256": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535",
+      "canonicalLfSha256": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535"
+    },
+    "scripts/usp/learning/association/stage_selector_adapter.py": {
+      "physicalSha256": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295",
+      "canonicalLfSha256": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295"
+    }
+  },
+  "runtimeCodeCanonicalLfSha256": {
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+    "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+    "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "scripts/usp/learning/association/association_adapter.py": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535",
+    "services/geo/geo/usp_learning/association/adapter.py": "ccd509742623b0b13bf02b9a1a5df08599e6cefe573f6db89d76a2056d04080d",
+    "services/geo/geo/usp_learning/association/citation_view.py": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+    "services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+    "services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+    "services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/selector_baseline.py": "22d9a53b42653acbdfaaf9a10de5c4632347d14c8ba53ef99a19033eeef0c793",
+    "services/geo/geo/usp_learning/association/selector_adapter.py": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+    "scripts/usp/learning/association/stage_adapter.py": "bd620d0568df745bb00a849fbf7ae99c4a527fa3914b4a1964e58eb559c5abb1",
+    "scripts/usp/learning/association/stage_selector_adapter.py": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295",
+    "services/geo/geo/usp_learning/association/selector_constraints.py": "2804fefb697160e1988cc6239e03d71c225bb4a57ba3924fcbb0c8399ad9898b"
+  },
+  "ownerControls": {
+    "command": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_selector_constraints.py"
+    ],
+    "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+    "startedAtUtc": "2026-10-03T07:03:43.218145+00:00",
+    "exitCode": 0,
+    "elapsedSeconds": 1.9888501999957953,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null
+  },
+  "observedUtf8FailureAndFix": {
+    "command": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_selector_constraints.py"
+    ],
+    "exitCode": 1,
+    "testsRun": 6,
+    "failedTests": 1,
+    "exception": "AssertionError: State with utf8 pending bytes ED A0 is not None; test_utf8_escapes_and_eos_prefixes line131",
+    "finding": "CPython incremental UTF-8 decoder deferred surrogate rejection; explicit second-byte Unicode-scalar constraints added.",
+    "rerunReason": "Resolve this observed prefix-legality defect and cover one representative unconstrained decision-code prefix."
+  },
+  "cpuMetrics": {
+    "elapsedSeconds": 1.7746040000056382,
+    "vocabularyBuildSeconds": 0.513002100000449,
+    "trieNodes": 333010,
+    "compactTrieArrayBytes": 4329130,
+    "representativeMask": {
+      "enforcedValidityIsLearnedAccuracy": false,
+      "eosEmitted": true,
+      "generatedBytesSha256": "8134d79f80e7f30ba9c8f08e928e39588cc18717dc6141761d2570e3f23c1f0b",
+      "grammarComplete": true,
+      "maskCalls": 77,
+      "maskSeconds": 0.019720100055565126,
+      "maxMaskSeconds": 0.001497400000516791,
+      "policyVersion": "association-selector-constraints/1",
+      "repairApplied": false,
+      "sourceInputSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4",
+      "trieNodeVisits": 24555
+    },
+    "freeCodeMask": {
+      "allowedTokens": 146991,
+      "nodeVisits": 326415,
+      "seconds": 1.0512248000013642
+    },
+    "memory": {
+      "method": "GetProcessMemoryInfo current CPU test process",
+      "peakWorkingSetBytes": 107331584,
+      "privateCommittedBytes": 73355264,
+      "workingSetBytes": 83009536
+    }
+  },
+  "historicalQualityUnchanged": {
+    "jsonSchemaValid": "2/2",
+    "usableOutputs": "0/2",
+    "emittedClaims": 7,
+    "acceptedClaims": 0,
+    "correctExpectedClaims": "0/6",
+    "precision": null,
+    "comparisonRerun": false
+  },
+  "nativeTokenizerAndGenerationIntegrationVerified": false,
+  "evaluationOpened": false,
+  "promotionAuthorized": false,
+  "settings": {
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null
+  },
+  "nextDecision": "Freeze one separately versioned contained constrained reload with exact final21 sources and accepted original model/adapter/prompt/development inputs. Compare retained unconstrained and constrained policies separately; enforced syntax/ranges/state/abstentions are not learned accuracy."
+}
