@@ -1,0 +1,87 @@
+{
+  "version": "student-fragment-runtime-preparation-acceptance/1",
+  "recordedAtUtc": "2026-10-03T12:12:29.112324+00:00",
+  "status": "cpu_exact_target_free_fragment_admission_and_dispatch_accepted_native_unqualified",
+  "ownerCodeCommit": "15e7e350be9bdac27a9721757db61d4cad5f312b",
+  "ownerEvidenceCommit": "04931c584bacc5bb68d6b839173c2a93adbaf25d",
+  "integratedCodeCommit": "d9011bf48e96ecc4c21c1c49dab73dc49132a43e",
+  "integratedEvidenceCommit": "7cc7b2d9def786fcb3371573dd19af321bdcc0f6",
+  "ownerReceiptPhysicalSha256": "d08af092e8813c8d9b59acd7e5f5d0380076e55f4abf4540ed5dc14c27847816",
+  "integratedReceipt": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-runtime-preparation-v1.json",
+    "physicalSha256": "c88348d90374da2d1b5379ebaf7ffd756581a312e2c329a23238138d485cfaaf",
+    "bytes": 20995
+  },
+  "integratedMarkdown": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-runtime-preparation-v1.md",
+    "physicalSha256": "a799d17ece534e8fb6dea502b3558c3b3f6350dbc439e0f2256d655717208016",
+    "bytes": 3480
+  },
+  "inspection": "Reviewed fragment_baseline, existing stager/CLI deltas and focused test. Exact assignment/freeze binds complete unchanged source contexts and requests, accepted codec/prompt/policy/family/model/settings and 20 transitive sources. Only exact fragment mode admits the accepted student hook; historical source authority remains strict. Existing loader/single generation/controller/guard are reused. Worker completion still awaits authoritative protected supervisor acceptance.",
+  "verification": {
+    "command": [
+      "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-16-runtime-review-v1-58960c5677e34f1aa1ae3bbad686930f\\audit.py"
+    ],
+    "exitCode": 0,
+    "audit": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-16-runtime-review-v1-58960c5677e34f1aa1ae3bbad686930f\\audit.json",
+      "physicalSha256": "fabd1364bd9ef369faab42353b6981fced72101e3b74f19290972088c86ed52c",
+      "bytes": 13732
+    },
+    "auditSource": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-16-runtime-review-v1-58960c5677e34f1aa1ae3bbad686930f\\audit.py",
+      "physicalSha256": "81eb5c046f44555212588af21975a4c9b843da91adc634d51b39c147a2649f3d",
+      "bytes": 8194
+    },
+    "matchedSmallReferenceAndMetadataFiles": 19,
+    "matchedSourcePhysicalCanonicalGitPins": 20,
+    "matchedProtectedSources": 17,
+    "integratedCanonicalSourceParity": 20,
+    "filteredDonorRuntimeModelMetadataEntries": 19384,
+    "plannedProfileEntries": 19417,
+    "purePositivePayloadAndSourceAdmissionPassed": true,
+    "contextCandidateCounts": [
+      4,
+      3
+    ],
+    "workerCompiledSourcesConsumed": 4,
+    "workerFocusedControlsConsumed": 5,
+    "workerCompileExit": 0,
+    "workerControlsExit": 0,
+    "changedWhitespaceCheckExit": 0,
+    "workerSuitesOrDonorRuntimeCampaignRepeated": false,
+    "stageOrModelRun": false,
+    "nativeImports": [],
+    "hostExpectationsRead": false,
+    "teacherDataRead": false,
+    "evaluationOpened": false
+  },
+  "runtimePlan": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-runtime-preparation-0f625a641aa24e53970e2c0074b6de79\\future-freeze-command-plan.json",
+    "physicalSha256": "9acaceb6612cd4454f886387c02c7815359483c09f983d80ea6081282f4878dd",
+    "bytes": 38868
+  },
+  "nextExecutionHead": "04931c584bacc5bb68d6b839173c2a93adbaf25d",
+  "stagingObservedReadOnlyCleanHead": "30fb6b93c22a7f2ec1acfab0db0ef0c334e84c1e",
+  "settings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "reason": "Sole learner preserves accepted containment, resource and controller context for the bounded new fragment run.",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "tierInterpretation": "Dispatch exposes no per-turn tier field; prompt and local preference do not establish an observed running tier."
+  },
+  "limitations": [
+    "No native token, transport, resource-fit, relevance, abstention or model accuracy result yet.",
+    "Teacher labels remain provisional synthetic supervision needing independent review; no held-out/retired corpus opened.",
+    "Acceptance is limited to CPU runtime preparation. One separately frozen contained development baseline follows; no fit, evaluation, promotion or shared gateway registration authorized."
+  ]
+}
