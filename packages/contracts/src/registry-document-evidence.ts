@@ -76,7 +76,7 @@ export const RegistryCityGMLFragmentSchema=SourceFusionCityGMLSchema.extend({bui
 export const RegistryGeoParquetCitationSchema=z.strictObject({...citationBase,version:z.literal('registry-geoparquet-citation/1'),
   resultBytes:z.number().int().positive().max(GEOPARQUET_LIMITS.resultBytes),
   geoparquet:z.strictObject({artifactSha256:hash,artifactBytes:z.number().int().positive().max(GEOPARQUET_LIMITS.artifactBytes),
-    profile:z.literal('ulpin-native-geoparquet/1'),selectionSha256:hash,sourceContextSha256:hash,fragmentSha256:hash,
+    profile:z.literal('usp-native-geoparquet/1'),selectionSha256:hash,sourceContextSha256:hash,fragmentSha256:hash,
     inspectionStatus:GeoParquetSummarySchema.shape.status,window:GeoParquetSummarySchema.shape.window,
     enrolledSelection:GeoParquetSelectionSchema,continuation:GeoParquetContinuationPinSchema.nullable(),
     rowIndex:SourceFusionGeoParquetSchema.shape.rows.element.shape.rowIndex,

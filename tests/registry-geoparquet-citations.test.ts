@@ -149,6 +149,7 @@ test('selected continued row plus EPSG document traverse building/floor amendmen
     const f=fixture(kind),receipt=await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies),record=f.state.draft.records[0];
     assert.equal(receipt.draftRevision,2);assert.equal(f.state.draftWrites,1);assert.equal(record.documentCitations!.length,2);
     const pin=record.documentCitations![0];assert(pin.version==='registry-geoparquet-citation/1');assert.equal(pin.id,citationId(pin));
+    assert.equal(pin.geoparquet.profile,f.result.artifact.profile);
     assert.equal(pin.geoparquet.rowIndex,3);assert.equal(pin.geoparquet.ordinal,1);assert.equal(pin.geoparquet.rowGroupIndex,0);
     assert.equal(pin.geoparquet.rowIndexInGroup,3);assert.equal(pin.geoparquet.recordPointer,'/rows/1');assert.equal(pin.geoparquet.continuation!.jobId,f.parentJobId);
     assert(!Object.hasOwn(pin,'identityAssertion'));assert(!Object.hasOwn(pin,'partId'));assert.deepEqual(publicRegistryBody(record),f.record);
