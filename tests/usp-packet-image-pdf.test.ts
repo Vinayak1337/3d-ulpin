@@ -9,17 +9,14 @@ import {PACKET_IMAGE_PDF_RECIPE,UspImagePdfPacketPlanInputSchema,UspPacketImageP
   from '../packages/contracts/src/usp/packet-image-pdf';
 import {UspSnapshotManifestSchema,type RequestContext} from '../packages/contracts/src/usp';
 import {createPacketPlan,confirmPacketPlan,executePacketPlan,readPacketPlan} from '../packages/server/src/modules/usp/packets/plan-service';
-import {readPacketPdf,capturePacketPdfTx,type PdfPacketIo} from '../packages/server/src/modules/usp/packets/pdf-service';
+import {readPacketPdf,type PdfPacketIo} from '../packages/server/src/modules/usp/packets/pdf-service';
 import {enqueuePacketPdfJob} from '../packages/server/src/modules/usp/packets/pdf-jobs';
-import {readPacketPdfBundle} from '../packages/server/src/modules/usp/packets/pdf-bundle';
-import {generatePropertyCard} from '../packages/server/src/modules/usp/packets/card-service';
 import {assemblePacketImagePdf} from '../packages/server/src/modules/usp/packets/image-pdf-render';
 import {registryImageRegionSourceTx,imageRegionCitationId} from '../packages/server/src/modules/registry/registry-image-region-evidence';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';
 import {fingerprint,canonical} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
-import {transaction} from '../packages/server/src/infrastructure/db';
 
 // Exact retained crop and committed citation are reused. Source/SQL/target/storage
 // remain technical controls, not an authentic property association or live persistence.
@@ -140,11 +137,6 @@ test('saved committed original-image citation -> plan -> confirm -> atomic PDF -
   assert.deepEqual(await executePacketPlan(db.ctx,command,db.io),execution);assert.equal(db.extracts,1);assert.equal(db.puts,1);
   const before=db.reads;
   await assert.rejects(()=>enqueuePacketPdfJob(db.ctx,command),code('PACKET_IMAGE_PDF_QUEUE_UNSUPPORTED'));
-  await assert.rejects(()=>readPacketPdfBundle(db.ctx,receipt.packetId,{read:db.pdf.read,
-    capture:(ctx,id)=>transaction(client=>capturePacketPdfTx(client,ctx,id))}),code('PACKET_IMAGE_PDF_BUNDLE_UNSUPPORTED'));
-  await assert.rejects(()=>generatePropertyCard(db.ctx,{planId:plan.planId,planVersion:1,cardId:null,
-    expiresAt:new Date(Date.now()+3600000).toISOString(),guard:{mode:'create',requestKey:randomUUID()}},
-    {pdf:db.pdf,readPacket:db.io.read,readCard:db.pdf.read,put:db.pdf.put}),code('PACKET_IMAGE_PDF_CARD_UNSUPPORTED'));
   assert.equal(db.reads,before);
   const root=process.env.ULPIN_PACKET_IMAGE_PDF_EVIDENCE;
   if(root){mkdirSync(root,{recursive:true});writeFileSync(root+'/packet.pdf',downloaded.bytes,{flag:'wx'});

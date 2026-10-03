@@ -2092,7 +2092,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Download an exact accepted private PDF and bounded provenance manifest as a generated compilation ZIP */
+        /** Download an exact accepted private document or image PDF and bounded provenance manifest as a generated compilation ZIP */
         get: operations["GET_api_v1_usp_packets_pdf_packetId_bundle"];
         put?: never;
         post?: never;
@@ -2111,7 +2111,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Generate a private one-page summary linked to an executed confirmed text/CSV or required-region PDF plan */
+        /** Generate a private one-page summary linked to an executed confirmed text/CSV, required-region PDF or original-image PDF plan */
         post: operations["POST_api_v1_usp_property_cards_generate"];
         delete?: never;
         options?: never;
