@@ -1,0 +1,257 @@
+{
+  "actualProfile": {
+    "counts": {
+      "code": 33,
+      "inputs": 18,
+      "model": 9,
+      "runtime": 19630
+    },
+    "entries": 19690,
+    "sha256": "26564c096c2d3395e7ac6d8374563f7b102d91446a0f34a391a430ae0af1cd2f"
+  },
+  "cleanup": {
+    "guardCleanupPassed": true,
+    "jobClosed": true,
+    "observedAtUtc": "2026-10-03T19:45:15.9058426Z",
+    "originalsAndStagesRetained": true,
+    "ownedProcessIds": [
+      37580,
+      35672,
+      46748
+    ],
+    "pendingToolSessions": [],
+    "remainingProcesses": []
+  },
+  "criteria": {
+    "acceptedPositivePrecisionPassed": false,
+    "allPassed": false,
+    "exactRequestSelectionSetsPassed": false,
+    "positiveRecallPassed": true,
+    "runtimeResourcesTransportCleanupPassed": true,
+    "unsupportedRequestFalsePositivesPassed": false,
+    "validWholeResponsesPassed": true
+  },
+  "decision": "accept_technical_reload_and_retain_failed_development_candidate",
+  "executionHead": "856a937b3a8c4c8819cb033ab54362da28b1ef2e",
+  "historicalV1FailurePreserved": true,
+  "hostComparison": {
+    "bytes": 16407,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-reload-attempt2-host-db7f012932b8444eaa23931f6ecfcd1f\\host-comparison.json",
+    "physicalSha256": "ce12e6e928247978d319e89aba22252e283252eef620253c2e6aa8c169de5fda"
+  },
+  "integratedEvidenceCommit": "fca63ab948f60594afa4cac35d35757a7d927bba",
+  "integratedReport": {
+    "bytes": 52244,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-reload-v2.json",
+    "physicalSha256": "d514bd6d52d549cde8e29cb39544456a917f1d8c55c9533c4fb9bedacfc91d62"
+  },
+  "limitations": [
+    "Two requests in one development family only.",
+    "No fresh reload in-memory base digest.",
+    "Single-run timings do not establish speed."
+  ],
+  "metrics": {
+    "adapter": {
+      "acceptedTruePositives": 1,
+      "candidateFragments": 7,
+      "correctContextLimitedEmptyRetrievals": 0,
+      "exactRequestSelectionSets": 0,
+      "expectedCount": 1,
+      "falsePositives": 3,
+      "families": 1,
+      "jsonSyntaxValidResponses": 2,
+      "misses": 0,
+      "positiveRecall": 1.0,
+      "precision": 0.25,
+      "requests": 2,
+      "schemaValidResponses": 2,
+      "selectedCount": 4,
+      "unsupportedRequestFalsePositives": 2,
+      "unsupportedRequests": 1,
+      "validWholeResponses": 2
+    },
+    "baseline": {
+      "acceptedTruePositives": 0,
+      "candidateFragments": 7,
+      "correctContextLimitedEmptyRetrievals": 1,
+      "exactRequestSelectionSets": 1,
+      "expectedCount": 1,
+      "falsePositives": 0,
+      "families": 1,
+      "jsonSyntaxValidResponses": 2,
+      "misses": 1,
+      "positiveRecall": 0.0,
+      "precision": null,
+      "requests": 2,
+      "schemaValidResponses": 2,
+      "selectedCount": 0,
+      "unsupportedRequestFalsePositives": 0,
+      "unsupportedRequests": 1,
+      "validWholeResponses": 2
+    },
+    "deltaAdapterMinusBaseline": {
+      "acceptedTruePositives": 1,
+      "candidateFragments": 0,
+      "correctContextLimitedEmptyRetrievals": -1,
+      "exactRequestSelectionSets": -1,
+      "expectedCount": 0,
+      "falsePositives": 3,
+      "families": 0,
+      "jsonSyntaxValidResponses": 0,
+      "misses": -1,
+      "positiveRecall": 1.0,
+      "precision": null,
+      "requests": 0,
+      "schemaValidResponses": 0,
+      "selectedCount": 4,
+      "unsupportedRequestFalsePositives": 2,
+      "unsupportedRequests": 0,
+      "validWholeResponses": 0
+    }
+  },
+  "next": "STUDENT-25 CPU-only per-candidate support policy and57-pair compiler from unchanged ten training rows; future native route separately frozen.",
+  "ownerEvidenceCommit": "e7da160fe2bd2ae3aa245bf15ab55c266071d0a3",
+  "ownerFinalCheckpoint": {
+    "bytes": 2704,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-reload-attempt2-return-4adb84fdcb344bab90a12ec4a9d16eaf\\final-checkpoint.json",
+    "physicalSha256": "cd5f441c02a339c3bb0b2b224d7027f61e920a8416794ef0488a94050fde69f2"
+  },
+  "ownerReport": {
+    "bytes": 51268,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-reload-v2.json",
+    "physicalSha256": "a4e905e377ca53898a0a37fa90366d432519ddc7cf84cc0edbf171d07cc6538d"
+  },
+  "qualification": {
+    "evaluationOrPromotionOrRelease": false,
+    "frozenDevelopmentQualityPassed": false,
+    "technicalNativeReload": true
+  },
+  "recordedAtUtc": "2026-10-03T20:05:11.559998+00:00",
+  "requests": [
+    {
+      "acceptedSelectedIds": [
+        "c1",
+        "c2"
+      ],
+      "candidateCount": 4,
+      "contextSha256": "d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5",
+      "correctContextLimitedEmptyRetrieval": null,
+      "exactSetMatch": false,
+      "exampleId": "ifc4-source-native-v1",
+      "expectedCount": 1,
+      "expectedIds": [
+        "c1"
+      ],
+      "falsePositiveIds": [
+        "c2"
+      ],
+      "falsePositives": 1,
+      "generationSeconds": 3.589988599997014,
+      "inputTokens": 1290,
+      "jsonSyntaxValid": true,
+      "missedIds": [],
+      "misses": 0,
+      "outputTokens": 88,
+      "precision": 0.5,
+      "projectionStatus": "selected_fragments",
+      "rawText": "{\"candidateSetSha256\":\"d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5\",\"selected\":[\"c1\",\"c2\"],\"version\":\"evidence-association-fragment-selection/1\"}",
+      "recall": 1.0,
+      "repairApplied": false,
+      "request": "Retrieve the fragment that supplies the IfcBuilding Name.",
+      "selectedCount": 2,
+      "selectedFraction": 0.5,
+      "selectionSchemaValid": true,
+      "selectionValid": true,
+      "sourceSupport": "Exact retained reader/source fragment supplies IfcBuilding.Name, distinct from project/storey names and GlobalId.",
+      "truePositiveIds": [
+        "c1"
+      ],
+      "truePositives": 1,
+      "unsupportedRequest": false,
+      "wholeResponseAccepted": true
+    },
+    {
+      "acceptedSelectedIds": [
+        "c0",
+        "c1"
+      ],
+      "candidateCount": 3,
+      "contextSha256": "d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c",
+      "correctContextLimitedEmptyRetrieval": false,
+      "exactSetMatch": false,
+      "exampleId": "ifc2x3-source-native-v1",
+      "expectedCount": 0,
+      "expectedIds": [],
+      "falsePositiveIds": [
+        "c0",
+        "c1"
+      ],
+      "falsePositives": 2,
+      "generationSeconds": 2.9424632000009296,
+      "inputTokens": 921,
+      "jsonSyntaxValid": true,
+      "missedIds": [],
+      "misses": 0,
+      "outputTokens": 88,
+      "precision": 0.0,
+      "projectionStatus": "selected_fragments",
+      "rawText": "{\"candidateSetSha256\":\"d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c\",\"selected\":[\"c0\",\"c1\"],\"version\":\"evidence-association-fragment-selection/1\"}",
+      "recall": null,
+      "repairApplied": false,
+      "request": "Retrieve any supplied non-null numerical elevation value for IfcBuilding.",
+      "selectedCount": 2,
+      "selectedFraction": 0.6666666666666666,
+      "selectionSchemaValid": true,
+      "selectionValid": true,
+      "sourceSupport": "Supplied context has absent Elevation, explicit null ElevationOfRefHeight and missing/unqualified georeference; none supplies a non-null numerical building elevation. This is context-limited, not property-wide absence.",
+      "truePositiveIds": [],
+      "truePositives": 0,
+      "unsupportedRequest": true,
+      "wholeResponseAccepted": true
+    }
+  ],
+  "resources": {
+    "cuda": "12.8",
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpuSampleCount": 180,
+    "maxCudaAllocatedBytes": 1294135296,
+    "maxCudaReservedBytes": 1358954496,
+    "minimumSampledFreeCudaBytes": 6028263424,
+    "peakJobCommittedBytes": 5433962496,
+    "peakProcessRssBytes": 3265454080,
+    "torch": "2.8.0+cu128",
+    "transformers": "4.57.6"
+  },
+  "reviewAudit": {
+    "bytes": 18296,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-23-attempt2-review-v1-8f472df3dc5c45adb1267941cbef7ab5\\audit.json",
+    "physicalSha256": "2dd44432b15860bd4db7bda3a9d187527ccfd42285d0002461ab47cac0d72271"
+  },
+  "reviewExecution": {
+    "bytes": 701,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-23-attempt2-review-v1-8f472df3dc5c45adb1267941cbef7ab5\\review.execution.json",
+    "physicalSha256": "5baee44e65b41eb576eb8317c7b0643039ef25976d9181ec577ebe4e5e76fa3f"
+  },
+  "reviewHelper": {
+    "bytes": 7473,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-23-attempt2-review-v1-8f472df3dc5c45adb1267941cbef7ab5\\review.py",
+    "physicalSha256": "d9ffcfad979adda8e2787530d33b85e8c81ac0a2e8c8142fd508e6557680805d"
+  },
+  "technicalAcceptance": {
+    "bytes": 4875,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-reload-attempt2-return-4adb84fdcb344bab90a12ec4a9d16eaf\\technical-acceptance.json",
+    "physicalSha256": "996dd1339bc00bbf826289ee43fc38986fdae242b5f32d5e027dda0f6cb7bd49"
+  },
+  "verification": {
+    "exactExpectedFreeze": true,
+    "integrationEqualityExit": 0,
+    "nativeModelTestsOrComparisonRerun": false,
+    "nativeSavedTensors": 96,
+    "nativeTransportAndCleanup": true,
+    "originalHostExpectationsReadByCoordinator": false,
+    "physicalReferencesMatched": 53,
+    "sameElevenFitBindings": true,
+    "sourcesMatched": 33
+  },
+  "version": "student-fragment-support-v2-reload-acceptance/2"
+}

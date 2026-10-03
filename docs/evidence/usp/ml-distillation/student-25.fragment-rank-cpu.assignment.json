@@ -1,0 +1,123 @@
+{
+  "acceptedPreviousResult": {
+    "bytes": 9608,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-support-v2-reload-acceptance-v2.json",
+    "physicalSha256": "83d304a542b2b76c912a04dfc06053b0bc5f8e63c98f50ff6fb3f622e8841d39"
+  },
+  "branch": "task/ml-association-student-20261002",
+  "callback": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "checks": [
+    "Once stabilized, run one focused CPU test invocation and compile the3 new sources; no accepted old suites/native campaigns.",
+    "Actual unchanged ten-row compiler journey:57 pairs12positive45negative,3 empty parents,2 train families, original context/candidate order and parental/target bindings exact. Show the existing same-candidate/different-request pairs retain opposite labels without changing evidence.",
+    "Concrete boundary controls: source-only prompts independent of target/teacher fields; non-train or incomplete/drifted targets fail before publication; complete finite score vectors project exactly and empty/tie/nonfinite/missing/duplicate/foreign scores fail or abstain according to frozen policy. Synthetic scores are explicitly technical fixtures, never model or source-quality evidence.",
+    "Reproduce stable binary-loss values for correct/incorrect positive and negative technical score fixtures with finite extremes. No new numerical/native proof or benchmark.",
+    "Return owned code/evidence commits, immutable dataset/policy/input hashes, actual commands/exits, final clean HEAD and dirty/resource/session status. Then authorized coordinator callback and stop."
+  ],
+  "exclusions": "No development/evaluation context or host expectation access for this task; no new teacher/source labels, acquisitions/installations, native libraries/tokenizer/model/GPU, prompt/parameter sweep or old-fit retry. Teacher idle/blind; held-out/retired evaluation closed. Existing33 sources, shared gateway/API/catalogue/frontend/dependencies/staging/main/providers/host/services/volumes/push/deploy remain protected. Do not cherry-pick coordinator commits.",
+  "executionAllowance": {
+    "cpuCodeAndDataPreparation": true,
+    "evaluation": false,
+    "fit": false,
+    "inference": false,
+    "loadModel": false,
+    "modelStage": false,
+    "nativeImports": false,
+    "promotion": false,
+    "tokenizer": false
+  },
+  "executionHead": "e7da160fe2bd2ae3aa245bf15ab55c266071d0a3",
+  "familyMetadataMayBeReadButNonTrainOriginalsMustRemainUnopened": true,
+  "outcome": "Executable default-off candidate-support scoring policy, train-only 57-pair compiler and focused CPU controls. No native model phase.",
+  "ownedPaths": [
+    "services/geo/geo/usp_learning/association/fragment_rank.py",
+    "scripts/usp/learning/association/prepare_fragment_rank.py",
+    "scripts/usp/learning/association/test_fragment_rank.py",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-cpu-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-cpu-v1.md"
+  ],
+  "protectedExecutionSourcePins": {
+    "bytes": 16993,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-reload-attempt2-return-4adb84fdcb344bab90a12ec4a9d16eaf\\execution-source-pins.json",
+    "physicalSha256": "99e3f08a8c947a65f1b7acdcd870dca2c2c42dbdcfa6b6016092f4de59185f28"
+  },
+  "reason": "V1 and v2 generative subset fits retained unsupported selections; v2 adds a distractor and falls to exact0/2, precision1/4. Change the learned objective deliberately to classify support for every request/candidate, with explicit negative supervision. Do not sweep the old fitter or patch development selections.",
+  "recordedAtUtc": "2026-10-03T20:05:11.565156+00:00",
+  "reuse": "Existing fragment_support_v2 checked_data/checked_teacher/checked_support_files and fragment_selection context/identity/projection remain authorities. Add one leaf policy/compiler, not another registry, model gateway, source store, fitter or containment service. Do not modify existing33 execution sources or tests.",
+  "scoringPolicy": {
+    "comparisonBoundary": "This is a new objective/prompt/decision route. Historical generative baseline/v1/v2 remain preserved; do not call this a same-policy comparison or reuse their outputs as the new rank baseline. A separately frozen native original-base reference, fit/reload and unchanged development criteria are future work only.",
+    "futureNativeScore": "Future separately authorized native route must prove byte-exact distinct single-token0/1 continuations at the real prompt boundary and derive margin=logit1-logit0 at the last prompt position using both label logits. Not calibrated probability. Reject unsuitable tokenizer/transport; no silent label substitution. This CPU increment emits no actual tokens, logits or learned scores.",
+    "inputs": "Pure constructor takes only the complete unchanged source-only fragment context and current focus candidate ID; same full context/provenance and order for every focus. It never accepts target/teacher output, expected selections, candidate rank, history or host expectations.",
+    "labels": "Fixed binary next-token labels0=no_direct_support_in_supplied_context and1=direct_support_for_request. Freeze generic system prompt and rendered source-only user structure; focus every current candidate. Explicitly treat text/locators as data. No source-specific examples, IDs, numerical heuristics, keyword filters or label-derived prompt/ordering.",
+    "objective": "Binary two-logit negative log likelihood, stable mathematical reference for future native loss; no loss on structural JSON, context hashes or IDs. Labels and pair weights are training-only. Preserve unchanged original base and existing LoRA/containment authorities in future native implementation.",
+    "projection": "Use existing fragment selection validation to recover unchanged fragments under evidence-association-fragment-selection/1. Empty means no_support_in_supplied_context only. Multiple/conflicting supports remain possible. Report deterministic formatting/identity/threshold/projection separately from future learned relevance.",
+    "selection": "Require a complete finite score vector bound to exact context identity, current unique IDs and original candidate order. Select each candidate iff margin>0; exact ties abstain. No top-k/minimum selections, repair, fallback, source-semantic postfilters or tuned threshold. Reject the whole vector on missing/duplicate/unknown/nonfinite/mismatched scores.",
+    "version": "association-fragment-rank-policy/1"
+  },
+  "task": "STUDENT-25-FRAGMENT-RANK-CPU",
+  "trainCompiler": {
+    "admission": "Accept only the exact pinned ten-row dataset, unchanged six-row prefix, four support authorities, schemas and family freeze. Reuse existing admission checks. Require complete explicit selected targets; reject missing, malformed, unknown, duplicate, drifted or non-train supervision before publishing output. Do not infer negative labels from incomplete or rejected rows.",
+    "bindings": "Each pair binds original raw/canonical parent row, request/context, candidate/fragment and target hashes, family/split and parent provenance. Separate target/teacher metadata from scoring inputs. Retain10-parent/57-pair denominators and exact12/45 counts.",
+    "expansion": "In original parent and candidate order, emit one pair for every current candidate:57 pairs from10 parent rows,12 label1 and45 label0,3 empty parents,2 unchanged training families. All original request/context/candidate bytes and source provenance remain exact. Related variants remain together.",
+    "label": "label1 iff current ID is in that parent's explicit provisional selected set, otherwise label0 within this admitted complete context. This is a deterministic projection of existing provisional synthetic supervision, not new source truth, official absence, independent labels or57 independent examples. Preserve reviewState needs_independent_review, source limitations, conflicts, unknown/absent/null/withheld distinctions and Sarvam exclusion.",
+    "objectiveWeights": "Fixed candidate mean per parent and mean across10 parents; pair weight is1/(10*candidateCount) stored exactly as rational denominator, no positive weighting/resampling or sweep. Report counts and this objective without claiming fitted quality.",
+    "publication": "One fresh immutable UUID directory under E:/BhuAayam-data/task-data/ml-distillation/student. Retain unchanged input copies, train-fragment-rank-v1.jsonl, separate source-only scoring inputs, policy/prompt metadata, lineage/count receipt and exact commands/exits. Never overwrite originals or historical outputs; fail closed on drift."
+  },
+  "trainFamilies": [
+    "in-haryana-rera-2831",
+    "in-bihar-magnolia-residency"
+  ],
+  "trainOnlyAuthorities": {
+    "family-freeze.json": {
+      "bytes": 10867,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\inputs\\family-freeze.json",
+      "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+    },
+    "fragment-schema-v1.json": {
+      "bytes": 4537,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\inputs\\fragment-schema-v1.json",
+      "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082"
+    },
+    "rows-v2.receipt.json": {
+      "bytes": 4109,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\inputs\\rows-v2.receipt.json",
+      "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+    },
+    "schema-v1.json": {
+      "bytes": 3966,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\inputs\\schema-v1.json",
+      "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    "source-support-v2.receipt.json": {
+      "bytes": 33399,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\inputs\\source-support-v2.receipt.json",
+      "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+    },
+    "train-teacher-fragments-v1.jsonl": {
+      "bytes": 82626,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\inputs\\train-teacher-fragments-v1.jsonl",
+      "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+    },
+    "train-teacher-fragments-v2.jsonl": {
+      "bytes": 138050,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\inputs\\train-teacher-fragments-v2.jsonl",
+      "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+    },
+    "training-row-pins-v2.json": {
+      "bytes": 6560,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\inputs\\training-row-pins-v2.json",
+      "physicalSha256": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+    }
+  },
+  "version": "student-fragment-rank-cpu-assignment/1",
+  "workerSettings": {
+    "interpretation": "Tools expose model/effort but no tier; verify supplied never/danger-full-access and report only observed settings.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Implement the request-conditioned objective, source-only scoring boundary and complete abstention projection without target leakage.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin"
+}
