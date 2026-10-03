@@ -1,0 +1,180 @@
+{
+  "version": "student-selector-constrained-reload-acceptance/1",
+  "recordedAtUtc": "2026-10-03T08:18:50.916315+00:00",
+  "ownerCommit": "fa8676e68a79ccfdba263da37b853d173daeeb76",
+  "integratedEvidenceCommit": "4d83d37b037fa4cff6af8cb719f2d2597e62ac89",
+  "executionCodeCommit": "ec2b6b090e8c29f8739ea864b28b44db6c03d386",
+  "rawOwnerReceiptSha256": "bb08df55fd00a877e7a06728162946106be1de31bf8d165f6b8a7343802f946e",
+  "status": "technical_reload_accepted_development_criteria_failed",
+  "inspection": "Evidence-only owned delta accepted. All 33 references, 21 executed Git/coordinator/owner source pins, exact retained technical acceptance, host counts and both unchanged semantic projections agree. Nine emitted/eight distinct claims yield zero accepted signatures and zero of six correct. Existing native acceptance is consumed; no fit, inference, controller campaign or acceptance helper repeated.",
+  "verification": {
+    "command": "python -B -I -S - (constrained reference/code/proof/projection/signature/resource inspection; separate remaining preflight continuation)",
+    "audit": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\selector-constrained-review-20261003.json",
+      "physicalSha256": "5e8e5f74d77aef298225ec9fcdcdf241ebd9446d82e1bd36d18a223f0b72111d"
+    },
+    "initialExitCode": 1,
+    "initialFailure": "Audit-only prior artifact lookup used outputs/reload/selector-preflight.json; actual retained key is preflight. All reference, code, proof, projection, signature and resource assertions preceding this lookup passed.",
+    "firstContinuationExitCode": 1,
+    "firstContinuationFailure": "Audit-only prior receipt root lookup assumed runRoot; no later assertion ran. Final continuation consumes the retained accepted preflight pin directly.",
+    "finalContinuationExitCode": 0,
+    "referencePinsMatched": 33,
+    "executionSourcePinsMatched": 21,
+    "unchangedProjectionReproduced": 2,
+    "hostCountsAndExamplesExact": true,
+    "preflightPhysicalSha256Unchanged": true,
+    "noModelModulesImported": true,
+    "acceptanceHelperRerun": false,
+    "modelRerun": false
+  },
+  "profileSha256": "1c846a1b90ca117fefe64a51985b57788e6d6267d3ecfa642c5120b0db37734a",
+  "runFreezeSha256": "81c425f557d6477c4dacf81ee292056a79386b9e672f023d0ada1bbee7ac8f3d",
+  "guardSha256": "a2092b54a192c174237ecf4a6b2cb02571b41e5518921d597c24521d28fad518",
+  "hostSummarySha256": "61f14315be371d3c1371699cf34e376b0b2e8120f6391f5aa6f65fd2feaf09e1",
+  "adapterWeightsSha256": "93890e8ba23dd0c363cdcb36ed7e6f6b8f0a2ab2e3a3fe6e675ce91dfd277c70",
+  "generationConstraintsPolicySha256": "ec73957cd919f8635ef3bb7a7353ec331965dbe59dcd0f1f1463dd1be49f1744",
+  "technicalAcceptance": {
+    "reloadResourcesAndArtifactsAccepted": true,
+    "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-selector-reload-6dcb589a909b42b69dec5b024b308bd3",
+    "executedCommit": "ec2b6b090e8c29f8739ea864b28b44db6c03d386",
+    "profileSha256": "1c846a1b90ca117fefe64a51985b57788e6d6267d3ecfa642c5120b0db37734a",
+    "guardSha256": "a2092b54a192c174237ecf4a6b2cb02571b41e5518921d597c24521d28fad518",
+    "acceptedReceiptSha256": "c55be6d4a7d960a16a9e98e3aee653ed7aa02755a7c63876d76884d1ad5095bc",
+    "runFreezeSha256": "81c425f557d6477c4dacf81ee292056a79386b9e672f023d0ada1bbee7ac8f3d",
+    "fitProofSha256": "6862a6f26f4b6e2f22d7ca4034cf851b81861afe01213c5a6bca914cf1ec1fcd",
+    "rawOutputsSha256": "aeb9c795dfe38c503ad75836afe221576f6bc31585e362b19fb14578d1c60a2b",
+    "resultSha256": "407d7d67cb32683356d8bd5947c79b10736bb7d56d90c126743d0ce86bf56168",
+    "preflightSha256": "a654ee9b4998f64dc943a6eb1f68718f13b059ad0efb1eeda3165e9f93693d4c",
+    "adapterReload": {
+      "explicitLocalBase": true,
+      "remoteBaseLookup": false,
+      "savedTensorsExact": true,
+      "tensorCount": 96
+    },
+    "adapterWeightsSha256": "93890e8ba23dd0c363cdcb36ed7e6f6b8f0a2ab2e3a3fe6e675ce91dfd277c70",
+    "generationConstraintsPolicySha256": "ec73957cd919f8635ef3bb7a7353ec331965dbe59dcd0f1f1463dd1be49f1744",
+    "nativeTransportChecked": true,
+    "fitPerformedInThisProcess": false,
+    "teacherInputsInReload": false,
+    "jobClosed": true,
+    "cleanupPassed": true,
+    "acceptedOutputHashes": {
+      "reload/completion.json": "6766148b63be91a2493cd9cf025fae662c96c73f3762e238b9c3458e66467f13",
+      "reload/raw-0.json": "be38a53fd27dd77b0c58cfed4882d6f90b8b07a399d1470f140174192db41a1d",
+      "reload/raw-1.json": "cf8f7ca8c2dcd506778b8ff3d2e679b86e0e3c2a5cd2d6ea1a073c3f06f095d0",
+      "reload/raw-outputs.json": "aeb9c795dfe38c503ad75836afe221576f6bc31585e362b19fb14578d1c60a2b",
+      "reload/result.json": "407d7d67cb32683356d8bd5947c79b10736bb7d56d90c126743d0ce86bf56168",
+      "reload/selector-preflight.json": "a654ee9b4998f64dc943a6eb1f68718f13b059ad0efb1eeda3165e9f93693d4c"
+    }
+  },
+  "counts": {
+    "jsonSyntaxValid": 2,
+    "selectorSchemaValid": 2,
+    "rawSelectorValid": 2,
+    "expandedOutputValid": 0,
+    "modelOutputValid": 0,
+    "emittedClaims": 9,
+    "uniqueEmittedExpandedSignatures": 8,
+    "acceptedClaims": 0,
+    "uniqueAcceptedClaims": 0,
+    "correctAcceptedClaims": 0,
+    "expectedClaims": 6,
+    "validNoTargetAbstention": 0,
+    "validEmptyCanonicalLinks": 0,
+    "controllerEnforcedRawNoTargetMarker": 2,
+    "controllerEnforcedRawEmptyLinks": 2,
+    "examples": 2,
+    "families": 1
+  },
+  "precision": null,
+  "coverage": 0.0,
+  "stateCounts": {
+    "null": {
+      "correct": 0,
+      "expected": 1
+    },
+    "absent": {
+      "correct": 0,
+      "expected": 1
+    }
+  },
+  "rejectionStages": {
+    "raw_json": 0,
+    "selector_schema": 0,
+    "selector_ranges": 0,
+    "expanded_semantics": 2
+  },
+  "semanticFailure": "Both expanded responses fail native_attribute_role_state_or_literal_mismatch. Correct roles/states/literals remain unlearned; forced syntax/ranges/citations/no-target markers earn no learned accuracy and invalid fallbacks earn no credit.",
+  "inputTokens": [
+    536,
+    493
+  ],
+  "outputTokens": [
+    202,
+    168
+  ],
+  "generationSeconds": [
+    6.826935899996897,
+    5.347029800002929
+  ],
+  "resources": {
+    "bounds": {
+      "maxJobCommittedBytes": 6442450944,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "minimumCudaFreeBytes": 1610612736,
+      "maxChildPhaseSeconds": 600,
+      "maxFitSequenceTokens": 4096,
+      "cpuThreads": 2,
+      "batchSize": 1
+    },
+    "runtime": {
+      "cuda": "12.8",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 374,
+      "maxCudaAllocatedBytes": 1090065408,
+      "maxCudaReservedBytes": 1147142144,
+      "minimumSampledFreeCudaBytes": 6240075776,
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    },
+    "peakJobCommittedBytes": 5246791680,
+    "sampledPeakProcessRssBytes": 3257221120,
+    "rssMethod": "50ms actual Job-member RSS/peak working sets",
+    "masking": {
+      "nativeTransportChecked": true,
+      "trieNodes": 333010,
+      "maskCalls": 370,
+      "trieNodeVisits": 121430,
+      "maskSeconds": 0.12669920004555024,
+      "maxMaskSeconds": 0.0016415999998571351,
+      "qualification": "MaskSeconds measures callback trie search only. Tensor transfer/processor/GPU costs are in generation time; no controlled overhead or speedup claim."
+    },
+    "stageSeconds": 161.54514049999852,
+    "hostInvocationSeconds": 307.29971160000423,
+    "guardSetupChildCleanupSeconds": 138.32800000000134,
+    "modelSectionSeconds": 14.194799299999431,
+    "loadSeconds": 2.0155688999948325,
+    "generationSeconds": 12.173965699999826,
+    "childElapsedSeconds": null,
+    "timingQualification": "Separate child wall time is not exposed; unchanged supervisor enforced the 600-second child limit. Host time includes runtime verification outside that phase. Different output sequences/runs do not establish speedup or controlled overhead.",
+    "cumulativeWithinBounds": true,
+    "peakResetScope": "Original one-time CUDA initialization reset only; no inter-example resets."
+  },
+  "containmentAndCleanupPassed": true,
+  "evaluationOpened": false,
+  "promotionAuthorized": false,
+  "settings": {
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "primaryStagingHeadObservedReadOnly": "c170fc17267f4492af89eedd7208c11c313f6522"
+  },
+  "nextDecision": "CPU-only STUDENT-12-NATIVE-CANDIDATES-PREP in the existing learner: admit cited typed facts from verified retained reader records, then let the student select candidate IDs without rewriting known facts. Candidate construction correctness and later model selection remain distinct. Teacher idle; model route/run freeze follows reviewed preparation.",
+  "nextAssignment": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-12.native-candidates-preparation.assignment.json"
+}
