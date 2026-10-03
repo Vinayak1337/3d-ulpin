@@ -226,6 +226,7 @@ export * from './building-registry-report';
 export * from './document-association';
 export * from './document-pages';
 export * from './document-images';
+export * from './packet-image-region';
 export * from './source-fusion';
 export * from './source-fusion-geoparquet';
 export * from './source-fusion-associations';

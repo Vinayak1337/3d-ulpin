@@ -14,6 +14,8 @@ import {PacketPlansController} from './packet-plans.controller';
 import {PacketBundleController} from './packet-bundle.controller';
 import {PropertyCardController} from './property-card.controller';
 import {PacketRegionController} from './packet-region.controller';
+import {PacketImageRegionController} from './packet-image-region.controller';
+import {PacketImageRegionService} from '@ulpin/server/modules/usp/packets/image-region';
 import {PacketRegionService} from '@ulpin/server/modules/usp/packets/region-extract';
 import { CityJsonEvidenceController, DecisionEvidenceController, OriginalEvidenceController,
   PacketEvidenceController, SnapshotEvidenceController } from './evidence.controllers';
@@ -22,8 +24,8 @@ import { CityJsonEvidenceService, DecisionEvidenceService, OriginalEvidenceServi
 
 @Module({
   controllers: [SnapshotEvidenceController, OriginalEvidenceController, DecisionEvidenceController,
-    CityJsonEvidenceController, PacketEvidenceController, PacketPlansController, PacketBundleController, PropertyCardController, PacketRegionController, DocumentAssociationController, DocumentPagesController, DocumentImagesController, SourceFusionController, SourceFusionAssociationsController, DeclarationsController],
+    CityJsonEvidenceController, PacketEvidenceController, PacketPlansController, PacketBundleController, PropertyCardController, PacketRegionController, PacketImageRegionController, DocumentAssociationController, DocumentPagesController, DocumentImagesController, SourceFusionController, SourceFusionAssociationsController, DeclarationsController],
   providers: [SnapshotEvidenceService, OriginalEvidenceService, DecisionEvidenceService,
-    CityJsonEvidenceService, PacketEvidenceService, PacketRegionService, DocumentAssociationService, DocumentPagesService, DocumentImagesService, SourceFusionService, SourceFusionAssociationService],
+    CityJsonEvidenceService, PacketEvidenceService, PacketRegionService, PacketImageRegionService, DocumentAssociationService, DocumentPagesService, DocumentImagesService, SourceFusionService, SourceFusionAssociationService],
 })
 export class EvidenceModule {}

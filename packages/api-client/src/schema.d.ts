@@ -2170,6 +2170,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/packets/sources/{sourceId}/image-region": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Crop an acknowledged oriented PNG/JPEG original; source-only preview with unassessed applicability */
+        post: operations["POST_api_v1_usp_packets_sources_sourceId_image_region"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/evidence/document-association/preview": {
         parameters: {
             query?: never;
@@ -36168,6 +36185,31 @@ export interface components {
                 selectionAcknowledged: true;
             };
         };
+        POST_usp_packets_sources_sourceId_image_region_Request_application_json: {
+            revision: string;
+            sha256: string;
+            /** @enum {string} */
+            purpose: "private_source_preview";
+            selection: {
+                frame: {
+                    /** @enum {string} */
+                    kind: "image_oriented_top_left_pixels";
+                    width: number;
+                    height: number;
+                    orientation: {
+                        exifValue: number | null;
+                        applied: number;
+                        /** @enum {string} */
+                        provenance: "source_exif" | "specification_default";
+                    };
+                };
+                /** @enum {string} */
+                coordinates: "oriented_original_pixel_edges/1";
+                region: (number)[];
+                /** @enum {boolean} */
+                selectionAcknowledged: true;
+            };
+        };
         POST_usp_evidence_document_association_preview_Request_application_json: {
             document: {
                 /** Format: uuid */
@@ -63848,6 +63890,37 @@ export interface operations {
             /** @description Canonical result */
             200: {
                 headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_packets_sources_sourceId_image_region: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sourceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_packets_sources_sourceId_image_region_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Base64url JSON matching PacketImageRegionProvenanceSchema */
+                    "X-Region-Provenance"?: string;
+                    "X-Region-Sha256"?: string;
                     /** @description Server request identifier. */
                     "X-Request-Id"?: string;
                     [name: string]: unknown;
