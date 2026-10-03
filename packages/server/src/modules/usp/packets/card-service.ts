@@ -17,7 +17,6 @@ import { readPacket0 } from '../packet0';
 import { readPacketPlan } from './plan-service';
 import { readPacketPdf, type PdfPacketIo } from './pdf-service';
 import { isPdfPlan } from './plan-store';
-import {PACKET_IMAGE_PDF_RECIPE} from '../../../../../contracts/src/usp/packet-image-pdf';
 import { authorizePlanTx, protectPlanDisclosureTx } from './plan-authority';
 import { projectCardFactsTx } from './card-projection';
 import { propertyCardResolverUrl } from './card-render';
@@ -73,8 +72,6 @@ async function storedTx(client: PoolClient, cardId: string, revision: number) {
 type Executed = { plan: AnyPacketPlan; confirmation: PacketPlanConfirmation; execution: PacketPlanExecution | PdfPacketPlanExecution };
 async function executed(ctx: RequestContext, planId: string, version: number): Promise<Executed> {
   const view = await readPacketPlan(ctx, { planId, version });
-  if(view.plan.input.recipe===PACKET_IMAGE_PDF_RECIPE)throw new AppError(422,'PACKET_IMAGE_PDF_CARD_UNSUPPORTED',
-    'Property cards are unsupported for this single-image PDF recipe.');
   if (!view.confirmation || !view.execution || view.plan.requiredContext !== 'available')
     throw new AppError(422, 'CARD_EXECUTED_PLAN_REQUIRED', 'Execute a confirmed complete packet plan before generating a card.');
   return { plan: view.plan, confirmation: view.confirmation, execution: view.execution };
