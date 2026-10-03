@@ -77,3 +77,7 @@ source acquisition, service/Docker/provider/model/GPU, runtime/profile/dependenc
 frontend, push/deploy or public activation occurred. No owned processes remain.
 PACK1-PDF-06 independently owns entry progress; its files and all registry/native/
 generic authorities are unchanged. Lead owns integration/API/client/catalogue/ledger.
+
+## Lead integration, 3 October
+
+Code/handoff `de395cdf` / `3a486330`; two integrated bundle controls and Nest metadata check pass. EvidenceModule/controller, contract export and operation manifest wired; API publishes private ZIP. Completion/proof/26 nested physical/67 protected Git pins matched. Backend/client types and API validation pass; 259 operations/294 named schemas. No current HTTP/persistence or broader qualification follows.

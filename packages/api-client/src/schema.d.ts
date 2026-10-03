@@ -2085,6 +2085,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/packets/pdf/{packetId}/bundle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download an exact accepted private PDF and bounded provenance manifest as a generated compilation ZIP */
+        get: operations["GET_api_v1_usp_packets_pdf_packetId_bundle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/property-cards/generate": {
         parameters: {
             query?: never;
@@ -32126,6 +32143,21 @@ export interface components {
                         sha256: string;
                     };
                 } | null;
+                readonly entryProgress: {
+                    /** @enum {string} */
+                    checkpointCapability: "available" | "unavailable";
+                    requiredCount: number;
+                    acceptedCount: number | null;
+                    /** @enum {string} */
+                    currentReuseEligibility: "not_assessed";
+                    entries: {
+                        index: number;
+                        /** @enum {boolean} */
+                        required: true;
+                        /** @enum {string} */
+                        state: "pending" | "accepted_checkpoint" | "checkpoint_unavailable";
+                    }[];
+                };
             };
             readonly meta: {
                 /** @enum {string} */
@@ -63518,6 +63550,30 @@ export interface operations {
                 };
                 content: {
                     "application/pdf": string;
+                };
+            };
+        };
+    };
+    GET_api_v1_usp_packets_pdf_packetId_bundle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                packetId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
                 };
             };
         };

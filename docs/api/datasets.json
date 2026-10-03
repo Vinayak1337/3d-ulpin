@@ -3104,6 +3104,40 @@
             "currentRecipeAuthority": "controlled per-source historical profiles in saved journey; production validates configured current profile",
             "originalsUnchanged": true,
             "qualification": "SQL/storage/extractor/current-recipe/target/snapshot controls; current HTTP/PostgreSQL/private storage, authentic applicability, geometry/learning/scale/release unqualified"
+          },
+          "privatePdfEntryProgressEvidence": {
+            "guide": "docs/evidence/usp/packet-pdf-entry-progress-handoff.md",
+            "integratedCodeCommit": "7d642917",
+            "completionSha256": "308fc89fdc2b8bf93b855f789a464f94d1f59e8eacf4d85677f61b8a43fc1723",
+            "acceptedCounts": [
+              0,
+              1,
+              1,
+              2
+            ],
+            "phases": [
+              "queued",
+              "failed",
+              "retry_queued",
+              "succeeded"
+            ],
+            "currentReuseEligibility": "not_assessed",
+            "missingSchema": "unavailable with null accepted count",
+            "originalsUnchanged": true,
+            "qualification": "Controlled methods and retained checkpoint rows; no current HTTP/persistence/migration/application or applicability qualification"
+          },
+          "privatePdfBundleEvidence": {
+            "guide": "docs/evidence/usp/packet-pdf-bundle-handoff.md",
+            "integratedCodeCommit": "de395cdf",
+            "completionSha256": "97ec9638615fd6c1aeb4bb643e0e805aac4d57cea2d01ff0f22975f2913a622a",
+            "entries": [
+              "packet.pdf",
+              "manifest.json"
+            ],
+            "multipleOriginalZipBytes": 343239,
+            "multipleOriginalZipSha256": "4e8a715caa87d363d6726e69f6c09e38b3f1f8a85b41d51a8d71813371d370e2",
+            "originalsUnchanged": true,
+            "qualification": "Saved accepted PDFs with reconstructed SQL/storage/source/target authority; no originals included, current HTTP/persistence/applicability/redistribution/learning/release unqualified"
           }
         },
         {
@@ -3247,6 +3281,40 @@
             "currentRecipeAuthority": "controlled per-source historical profiles in saved journey; production validates configured current profile",
             "originalsUnchanged": true,
             "qualification": "SQL/storage/extractor/current-recipe/target/snapshot controls; current HTTP/PostgreSQL/private storage, authentic applicability, geometry/learning/scale/release unqualified"
+          },
+          "privatePdfEntryProgressEvidence": {
+            "guide": "docs/evidence/usp/packet-pdf-entry-progress-handoff.md",
+            "integratedCodeCommit": "7d642917",
+            "completionSha256": "308fc89fdc2b8bf93b855f789a464f94d1f59e8eacf4d85677f61b8a43fc1723",
+            "acceptedCounts": [
+              0,
+              1,
+              1,
+              2
+            ],
+            "phases": [
+              "queued",
+              "failed",
+              "retry_queued",
+              "succeeded"
+            ],
+            "currentReuseEligibility": "not_assessed",
+            "missingSchema": "unavailable with null accepted count",
+            "originalsUnchanged": true,
+            "qualification": "Controlled methods and retained checkpoint rows; no current HTTP/persistence/migration/application or applicability qualification"
+          },
+          "privatePdfBundleEvidence": {
+            "guide": "docs/evidence/usp/packet-pdf-bundle-handoff.md",
+            "integratedCodeCommit": "de395cdf",
+            "completionSha256": "97ec9638615fd6c1aeb4bb643e0e805aac4d57cea2d01ff0f22975f2913a622a",
+            "entries": [
+              "packet.pdf",
+              "manifest.json"
+            ],
+            "multipleOriginalZipBytes": 343239,
+            "multipleOriginalZipSha256": "4e8a715caa87d363d6726e69f6c09e38b3f1f8a85b41d51a8d71813371d370e2",
+            "originalsUnchanged": true,
+            "qualification": "Saved accepted PDFs with reconstructed SQL/storage/source/target authority; no originals included, current HTTP/persistence/applicability/redistribution/learning/release unqualified"
           }
         },
         {
