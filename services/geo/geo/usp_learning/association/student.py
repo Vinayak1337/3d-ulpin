@@ -32,17 +32,24 @@ def prompt_messages(example):
 
 
 def run_local(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, *, model_loader=None,
-              fragment_route=None, fragment_contract=None, preserve_preflight=None):
+              fragment_route=None, fragment_contract=None, preserve_preflight=None, fragment_adapter_reload=None):
     require_boundary()  # before dependencies, model bytes or GPU initialization
     for example in examples:
         validate_input(example, contract, family_freeze, ("development",))
     sources = None
     if fragment_route is not None:
         from . import fragment_selection as fragment
-        require(model_loader is None and callable(preserve_preflight), "fragment_baseline_preflight_or_loader_refused")
+        require(callable(preserve_preflight), "fragment_baseline_preflight_or_loader_refused")
+        if model_loader is not None:
+            from .fragment_adapter import checked_loader_authorization
+            require(callable(model_loader), "fragment_reload_loader_required")
+            checked_loader_authorization(fragment_adapter_reload, fragment_route)
+        else:
+            require(fragment_adapter_reload is None, "fragment_reload_loader_required")
         sources = fragment.checked_route(fragment_route, examples, fragment_contract, contract, family_freeze)
     else:
-        require(fragment_contract is None and preserve_preflight is None, "explicit_fragment_route_required")
+        require(fragment_contract is None and preserve_preflight is None and fragment_adapter_reload is None,
+                "explicit_fragment_route_required")
     import torch
     import transformers
     from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteria, StoppingCriteriaList

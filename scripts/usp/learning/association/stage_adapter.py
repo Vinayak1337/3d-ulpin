@@ -83,25 +83,38 @@ def accepted_fit(root):
     require(completion["runFreezeSha256"] == isolation.sha(root / "inputs/run-freeze.json"), "fit freeze drift")
     freeze = isolation.read(root / "inputs/run-freeze.json")
     assignment = isolation.read(root / "inputs/assignment.json")
-    selector = None
-    if freeze.get("version") == "association-selector-adapter-freeze/1":
+    selector, fragment = None, None
+    if freeze.get("version") == "association-fragment-fit-freeze/1":
+        from geo.usp_learning.association import fragment_adapter as fragment
+    elif ("fragment" in str(freeze.get("version", "")) or "fragment" in str(assignment.get("version", ""))):
+        raise RuntimeError("explicit fragment fit freeze required")
+    elif freeze.get("version") == "association-selector-adapter-freeze/1":
         from geo.usp_learning.association import selector_adapter as selector
     elif (str(freeze.get("version", "")).startswith("association-selector") or "representation" in freeze
           or assignment.get("version") == "association-selector-adapter-execution/1"):
         raise RuntimeError("explicit selector adapter freeze required")
-    plan = checked_freeze(freeze, assignment) if selector is None else selector.checked_freeze(freeze, assignment)
+    plan = (fragment.checked_freeze(freeze, assignment) if fragment is not None else
+            checked_freeze(freeze, assignment) if selector is None else selector.checked_freeze(freeze, assignment))
     updates = plan["plannedUpdates"]
     require(freeze["fitSettings"] == FIT and freeze["numerics"] == NUMERICS
             and freeze["inputSha256"]["training_data"] == plan["datasetSha256"]
             and freeze["inputSha256"]["assignment"] == isolation.sha(root / "inputs/assignment.json")
             and freeze["memoryExecutionPolicy"] == assignment["memoryExecutionPolicy"]
-            and freeze["previousFailureReceiptSha256"] == assignment["previousFailureReceiptSha256"]
-            and freeze["previousFailedFit"] == assignment["previousFailedFit"]
             and freeze["lossImplementation"] == LOSS_POLICY, "fit configuration/data drift")
+    if fragment is None:
+        require(freeze["previousFailureReceiptSha256"] == assignment["previousFailureReceiptSha256"]
+                and freeze["previousFailedFit"] == assignment["previousFailedFit"], "fit history drift")
     preflight = isolation.read(output / "token-preflight.json")
     progress = [json.loads(line) for line in (output / "fit-progress.jsonl").read_text().splitlines()]
-    checked_count_receipts(plan, preflight, result, manifest, progress, versioned=selector is not None or "datasetDeclaration" in freeze)
-    if selector is not None:
+    checked_count_receipts(plan, preflight, result, manifest, progress,
+                           versioned=fragment is not None or selector is not None or "datasetDeclaration" in freeze)
+    if fragment is not None:
+        schema = fragment.checked_inputs(freeze, assignment, root / "inputs", source_root=root / "code")
+        contract, family = isolation.read(root / "inputs/schema-v1.json"), isolation.read(root / "inputs/family-freeze.json")
+        rows, delta = fragment.checked_teacher((root / "inputs/train-teacher-fragments-v1.jsonl").read_bytes(), schema, contract, family)
+        require(same(isolation.read(output / "teacher-delta.json"), delta), "fragment admission receipt drift")
+        fragment.checked_fit_metadata(preflight, result, manifest, rows, fragment.FragmentRepresentation(schema, contract, family))
+    elif selector is not None:
         schema = selector.checked_inputs(freeze, assignment, root / "inputs")
         contract, family = isolation.read(root / "inputs/schema-v1.json"), isolation.read(root / "inputs/family-freeze.json")
         rows, delta = selector.checked_teacher((root / "inputs/train-teacher-v2.jsonl").read_bytes(),
@@ -200,7 +213,8 @@ def accepted_fit(root):
             "attentionScopeRestored": True, "attentionBlockHistoryPassed": True,
             "attentionBlocksSha256": result["attentionBlocksSha256"], "attentionScopeSha256": result["attentionScopeSha256"],
             "memoryPhasesSha256": result["memoryPhasesSha256"],
-            **({"representation": selector.representation_metadata()} if selector is not None else {})}
+            **({"representation": selector.representation_metadata()} if selector is not None else {}),
+            **(fragment.proof_metadata(root, freeze) if fragment is not None else {})}
 
 
 def stage(action, fit_root=None, *, citation_view_assignment=None):
