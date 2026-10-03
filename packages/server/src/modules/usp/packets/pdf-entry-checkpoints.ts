@@ -16,11 +16,9 @@ import {enrolledPacketPdfJobTx,preparePacketPdfJobTx} from './pdf-job-authority'
 import {pdfExecutionLive,type PreparedPdfExecution,type PdfPacketIo,type PdfCropRecovery} from './pdf-service';
 import {assertCleanRegionPng} from './region-extract';
 import {PACKET_IMAGE_PDF_RECIPE} from '../../../../../contracts/src/usp/packet-image-pdf';
-
-function supported(plan:AnyPdfPacketPlan){
-  if(plan.input.recipe===PACKET_IMAGE_PDF_RECIPE)throw new AppError(422,'PACKET_IMAGE_PDF_QUEUE_UNSUPPORTED',
-    'Image PDF entry checkpoints are unsupported. Use synchronous execution.');
-}
+import {PACKET_IMAGE_REGION_LIMITS,PacketImageRegionWorkerSchema} from '../../../../../contracts/src/packet-image-region';
+import {assertCleanImageRegionPng} from './image-region';
+import {assertImagePdfRgb} from './image-pdf-render';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),text=z.string().min(1).max(512);
 /** Private server receipt: no new public job input, recipe or plan hash. */
@@ -29,16 +27,26 @@ const identitySchema=z.strictObject({version:z.literal('packet-pdf-entry/1'),job
   entryIndex:z.number().int().min(0).max(3),entrySha256:hash,bindingId:hash,bindingSha256:hash,
   targetSha256:hash,targetBodySha256:hash,snapshotSha256:hash,original:RegistryRegionOriginalSchema,
   validation:PacketRegionWorkerSchema,actorSha256:hash,subject:text,accessViewId:text,policyVersion:text});
-const checkpointSchema=z.strictObject({version:z.literal('packet-pdf-entry-checkpoint/1'),checkpointId:z.uuid(),
+// The old schema and parsed body remain unchanged, including every hash pin.
+const imageIdentitySchema=identitySchema.extend({version:z.literal('packet-image-pdf-entry/1'),validation:PacketImageRegionWorkerSchema});
+const anyIdentitySchema=z.discriminatedUnion('version',[identitySchema,imageIdentitySchema]);
+type Identity=z.output<typeof anyIdentitySchema>;
+const pdfCheckpointSchema=z.strictObject({version:z.literal('packet-pdf-entry-checkpoint/1'),checkpointId:z.uuid(),
   identity:identitySchema,identitySha256:hash,objectKey:text,
   attempt:z.strictObject({number:z.number().int().positive(),fence:z.number().int().positive(),owner:text,
     inputSha256:hash,leaseUntil:z.iso.datetime({offset:true})}),acceptedAt:z.iso.datetime({offset:true})});
+const imageCheckpointSchema=pdfCheckpointSchema.extend({version:z.literal('packet-image-pdf-entry-checkpoint/1'),identity:imageIdentitySchema});
+const checkpointSchema=z.discriminatedUnion('version',[pdfCheckpointSchema,imageCheckpointSchema]);
 type Checkpoint=z.output<typeof checkpointSchema>;
 
 function expectedIdentity(input:PacketPdfJobInput,plan:AnyPdfPacketPlan,index:number){
   const entry=plan.entries[index],binding=entry?.binding;
   if(!entry||!binding||entry.state!=='included')conflict('The exact required PDF entry is unavailable.');
-  return identitySchema.parse({version:'packet-pdf-entry/1',jobId:input.jobId,jobInputSha256:fingerprint(input),
+  const image=plan.input.recipe===PACKET_IMAGE_PDF_RECIPE;
+  if(image&&(index!==0||plan.entries.length!==1||binding.version!=='registry-image-region-citation/1'))
+    conflict('The exact single-image checkpoint binding is unavailable.');
+  if(!image&&binding.version==='registry-image-region-citation/1')conflict('An image binding cannot enter a PDF-page checkpoint.');
+  return anyIdentitySchema.parse({version:image?'packet-image-pdf-entry/1':'packet-pdf-entry/1',jobId:input.jobId,jobInputSha256:fingerprint(input),
     planId:plan.planId,planVersion:plan.version,planSha256:plan.planSha256,
     confirmationId:input.command.confirmationId,confirmationSha256:input.confirmationSha256,
     entryIndex:index,entrySha256:entry.entrySha256,bindingId:binding.id,bindingSha256:fingerprint(binding),
@@ -46,10 +54,10 @@ function expectedIdentity(input:PacketPdfJobInput,plan:AnyPdfPacketPlan,index:nu
     snapshotSha256:fingerprint(plan.input.scope),original:binding.document,validation:binding.validation,
     actorSha256:input.actorSha256,subject:input.subject,accessViewId:input.accessViewId,policyVersion:input.policyVersion});
 }
-function checkpointKey(id:string,identity:z.output<typeof identitySchema>){
+function checkpointKey(id:string,identity:Identity){
   return `usp/packets/jobs/${identity.jobId}/entries/${identity.entryIndex}/${id}/${identity.validation.output.sha256}`;
 }
-function decodeCheckpoint(row:Record<string,any>,identity:z.output<typeof identitySchema>):Checkpoint{
+function decodeCheckpoint(row:Record<string,any>,identity:Identity):Checkpoint{
   if(Buffer.byteLength(canonical(row.body))>65536)conflict('The private PDF entry receipt exceeds its bound.');
   const parsed=checkpointSchema.safeParse(row.body);
   if(!parsed.success)conflict('The private PDF entry receipt is invalid.');
@@ -64,7 +72,7 @@ function decodeCheckpoint(row:Record<string,any>,identity:z.output<typeof identi
     conflict('The accepted PDF entry differs from its immutable authority or bytes.');
   return receipt;
 }
-async function checkpointTx(client:PoolClient,identity:z.output<typeof identitySchema>){
+async function checkpointTx(client:PoolClient,identity:Identity){
   const row=(await client.query('SELECT * FROM usp_packet_pdf_entry_checkpoints WHERE job_id=$1 AND entry_index=$2 FOR SHARE',
     [identity.jobId,identity.entryIndex])).rows[0];
   if(!row)return null;
@@ -83,7 +91,6 @@ async function checkpointAttemptTx(client:PoolClient,receipt:Checkpoint){
  * share lock. Projection reads bounded immutable receipts, never crop/profile
  * bytes; historical acceptance does not qualify current reuse or readiness. */
 export async function packetPdfEntryProgressTx(client:PoolClient,input:PacketPdfJobInput,plan:AnyPdfPacketPlan){
-  supported(plan);
   if(plan.planId!==input.command.planId||plan.version!==input.command.version||plan.planSha256!==input.planSha256||
     fingerprint(plan.entries)!==input.bindingsSha256)conflict('The checkpoint progress belongs to another exact PDF plan.');
   const requiredCount=plan.entries.length;
@@ -110,17 +117,20 @@ export async function packetPdfEntryProgressTx(client:PoolClient,input:PacketPdf
   return PacketPdfJobEntryProgressSchema.parse({checkpointCapability:'available',requiredCount,acceptedCount:accepted.size,
     currentReuseEligibility:'not_assessed',entries:plan.entries.map((_,index)=>({index,required:true,state:accepted.has(index)?'accepted_checkpoint':'pending'}))});
 }
-function checkedCrop(bytes:Uint8Array,identity:z.output<typeof identitySchema>){
+function checkedCrop(bytes:Uint8Array,identity:Identity){
   const proof=identity.validation.output;
-  if(proof.bytes>PACKET_REGION_LIMITS.pngBytes||bytes.length!==proof.bytes||sha256(bytes)!==proof.sha256)
+  const image=identity.version==='packet-image-pdf-entry/1';
+  if(proof.bytes>(image?PACKET_IMAGE_REGION_LIMITS.pngBytes:PACKET_REGION_LIMITS.pngBytes)||bytes.length!==proof.bytes||sha256(bytes)!==proof.sha256)
     throw new AppError(422,'PACKET_PDF_CHECKPOINT_INTEGRITY','The accepted crop differs from its bounded byte receipt. Review a new plan.');
-  const png=Buffer.from(bytes);assertCleanRegionPng(png,proof.pixels);return png;
+  const png=Buffer.from(bytes);
+  if(identity.version==='packet-image-pdf-entry/1'){
+    assertImagePdfRgb(identity.validation);assertCleanImageRegionPng(png,proof.pixels,'RGB');
+  }else assertCleanRegionPng(png,proof.pixels);return png;
 }
 /** Only committed exact crops are reused. Every I/O occurs outside SQL; one
  * canonical owned attempt accepts an immutable receipt in a short transaction. */
 export function packetPdfCropRecovery(ctx:RequestContext,input:PacketPdfJobInput,owned:UspJobAttempt,
   first:PreparedPdfExecution,io:PdfPacketIo,bounds:DbDeadline):PdfCropRecovery{
-  supported(first.plan);
   const live=()=>{bounds.signal?.throwIfAborted();pdfExecutionLive(bounds.deadlineAt);};
   const capture=async(client:PoolClient)=>{
     live();const current=await preparePacketPdfJobTx(client,ctx,input);
@@ -133,7 +143,17 @@ export function packetPdfCropRecovery(ctx:RequestContext,input:PacketPdfJobInput
       throw new AppError(503,'PACKET_PDF_CHECKPOINT_UNAVAILABLE','Apply the registered PDF entry checkpoint migration before queued execution.');
     live();
   };
-  const recipe=async(identity:z.output<typeof identitySchema>)=>{
+  const recipe=async(identity:Identity)=>{
+    if(identity.version==='packet-image-pdf-entry/1'){
+      live();if(!io.imageRuntime)throw new AppError(503,'PACKET_IMAGE_CHECKPOINT_RUNTIME_UNAVAILABLE','Configure current image runtime authority before crop recovery.');
+      const current=await io.imageRuntime(bounds.deadlineAt);live();
+      const expected=identity.validation.runtime;
+      if(canonical(current.recipe)!==canonical(identity.validation.recipe)||
+        current.runtime.pythonSha256!==expected.pythonSha256||current.runtime.launcherSha256!==expected.launcherSha256||
+        current.runtime.pillowImageSha256!==expected.pillowImageSha256||current.runtime.imagingSha256!==expected.imagingSha256)
+        throw new AppError(409,'PACKET_IMAGE_CHECKPOINT_STALE','The current image recipe or decoder differs from the accepted crop. Review a new binding.');
+      return;
+    }
     live();if(!io.recipe)throw new AppError(503,'PACKET_PDF_CHECKPOINT_RECIPE_UNAVAILABLE','Configure current recipe authority before accepted crop recovery.');
     const current=await io.recipe(identity.original.sourceId,bounds.deadlineAt);live();
     if(current!==identity.validation.recipeSha256)
@@ -151,6 +171,8 @@ export function packetPdfCropRecovery(ctx:RequestContext,input:PacketPdfJobInput
       return png;
     }
     // The existing extraction/provenance preflight runs unchanged for a miss.
+    // An unresolved/drifted image runtime must refuse before native crop I/O.
+    if(identity.version==='packet-image-pdf-entry/1')await recipe(identity);
     live();const png=checkedCrop(await extract(),identity);live();await recipe(identity);
     const checkpointId=randomUUID(),key=checkpointKey(checkpointId,identity),remaining=bounds.deadlineAt-Date.now();
     const signal=AbortSignal.timeout(remaining);
@@ -159,7 +181,7 @@ export function packetPdfCropRecovery(ctx:RequestContext,input:PacketPdfJobInput
     await transaction(async client=>{
       await capture(client);const winner=await checkpointTx(client,identity);
       if(winner)return;
-      const receipt=checkpointSchema.parse({version:'packet-pdf-entry-checkpoint/1',checkpointId,identity,
+      const receipt=checkpointSchema.parse({version:identity.version==='packet-image-pdf-entry/1'?'packet-image-pdf-entry-checkpoint/1':'packet-pdf-entry-checkpoint/1',checkpointId,identity,
         identitySha256:fingerprint(identity),objectKey:key,attempt:{number:owned.number,fence:owned.fence,
           owner:owned.owner,inputSha256:owned.inputSha256,leaseUntil:owned.leaseUntil},acceptedAt:new Date().toISOString()});
       if(Buffer.byteLength(canonical(receipt))>65536)conflict('The private PDF entry receipt exceeds its bound.');
