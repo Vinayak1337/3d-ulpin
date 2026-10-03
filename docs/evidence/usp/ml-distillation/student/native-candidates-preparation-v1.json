@@ -1,0 +1,496 @@
+{
+  "version": "association-native-candidates-preparation-evidence/1",
+  "task": "STUDENT-12-NATIVE-CANDIDATES-PREP",
+  "recordedAtUtc": "2026-10-03T08:44:34.799963+00:00",
+  "status": "cpu_preparation_complete_for_review",
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "baseCommit": "fa8676e68a79ccfdba263da37b853d173daeeb76",
+  "codeCommit": "a2b663cbb6bd9a236341725ab65e2a70833ff7a1",
+  "primaryStagingReadOnlyHeadAtHandoff": "ffe16d0e54e52e904dc1adef1982602fcd69b08e",
+  "assignment": {
+    "path": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-12.native-candidates-preparation.assignment.json",
+    "physicalSha256": "1a2da59403f8737a9b3573777712e94a04094e65e8d686071b6e3499b41e2657"
+  },
+  "previousAcceptance": {
+    "path": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-selector-constrained-reload-acceptance-v1.json",
+    "physicalSha256": "26c11263b193409c60738f174d1e33b9647061571668f163e4c2c8d9f563f640"
+  },
+  "privateOutput": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc",
+  "representation": {
+    "policy": {
+      "constructionPolicySha256": "07540ff3bbe14d9eeb9796ddde0d2b246e7d98595063c8aa516b755958d5badd",
+      "forcedElements": [
+        "JSON/schema",
+        "candidate-set identity",
+        "current IDs/uniqueness",
+        "unchanged parsed facts/citations",
+        "no_canonical_targets and empty canonicalLinks"
+      ],
+      "notEnforced": [
+        "which candidates to select",
+        "nonempty or full selection",
+        "learned relevance"
+      ],
+      "selection": "optional distinct current IDs only; full set identity required; whole-response validation",
+      "transport": "existing pinned ByteLevel Vocabulary and Controller; no output repair or cap closing",
+      "version": "association-candidate-selection-policy/1"
+    },
+    "policySha256": "9bbff02c55134a8fc772155cf197b7ae21b5deaf26dc01dfb75ade42e35f26ce",
+    "promptVersion": "association-candidate-prompt/1",
+    "schemaCanonicalLfSha256": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574",
+    "systemPromptSha256": "97354126da61e713fb381c9de46e6966de82ec2424a50feaf93b538d43a6780c",
+    "tokenizerFilesSha256": {
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    },
+    "version": "evidence-association-candidate-selection/1"
+  },
+  "constructionPolicy": {
+    "additionalRoles": {
+      "Elevation": "level",
+      "ElevationOfRefHeight": "level",
+      "GlobalId": "source_identifier"
+    },
+    "admission": "exact record pointer, entity/STEP ID, attribute/index, source byte spans and raw literal",
+    "authority": "frozen family/manifest/lineage; pinned retained reader and unchanged original bytes",
+    "qualification": "candidate construction is deterministic; no learned selection or operational truth claim",
+    "roles": {
+      "IfcBuilding.Name": "building",
+      "IfcBuilding.ObjectType": "building_type",
+      "IfcBuildingStorey.Name": "floor",
+      "IfcProject.Name": "project"
+    },
+    "unsupported": [
+      "numeric normalization",
+      "decoded value not exactly citable",
+      "unmapped roles",
+      "missing native metadata",
+      "georeference",
+      "explicit input conflicts"
+    ],
+    "values": "supported exact-citable strings; explicit parser null and not_in_schema_entity absent stay distinct",
+    "version": "association-native-candidates/1"
+  },
+  "ownedCodePins": {
+    "scripts/usp/learning/association/candidate-schema-v1.json": {
+      "physicalSha256": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574",
+      "canonicalLfSha256": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574"
+    },
+    "scripts/usp/learning/association/prepare_native_candidates.py": {
+      "physicalSha256": "aac4c5947eb4e4c87077383e38722f89436f1645b131fdbb78772de6a4a7d4dc",
+      "canonicalLfSha256": "aac4c5947eb4e4c87077383e38722f89436f1645b131fdbb78772de6a4a7d4dc"
+    },
+    "scripts/usp/learning/association/test_native_candidates.py": {
+      "physicalSha256": "d474330b32c283faee0cb4763f8fcaffa41aff9e45b45fcd23ef29b19746d968",
+      "canonicalLfSha256": "d474330b32c283faee0cb4763f8fcaffa41aff9e45b45fcd23ef29b19746d968"
+    },
+    "services/geo/geo/usp_learning/association/candidate_selection.py": {
+      "physicalSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+      "canonicalLfSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785"
+    },
+    "services/geo/geo/usp_learning/association/native_candidates.py": {
+      "physicalSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+      "canonicalLfSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df"
+    },
+    "services/geo/geo/usp_learning/association/selector_baseline.py": {
+      "physicalSha256": "80f0dbb30db59844562829714d77614fd7257b58b211bcaa1ea12374348b7f61",
+      "canonicalLfSha256": "80f0dbb30db59844562829714d77614fd7257b58b211bcaa1ea12374348b7f61"
+    },
+    "services/geo/geo/usp_learning/association/selector_constraints.py": {
+      "physicalSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+      "canonicalLfSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064"
+    }
+  },
+  "protectedPins": {
+    "scripts/usp/learning/association/schema-v1.json": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/association/schema-v1.json",
+      "canonicalLfSha256": "3ba8fab2958ba93b042493bc4e6c0693f2049bdaa07f260c6639110c87a36a42"
+    },
+    "scripts/usp/learning/association/selector-schema-v1.json": {
+      "path": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/scripts/usp/learning/association/selector-schema-v1.json",
+      "canonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4"
+    },
+    "docs/evidence/usp/ml-distillation/family-freeze.json": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/docs/evidence/usp/ml-distillation/family-freeze.json",
+      "canonicalLfSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+    },
+    "services/geo/geo/usp_learning/association/validation.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/validation.py",
+      "canonicalLfSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2"
+    },
+    "services/geo/geo/usp_learning/association/selectors.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/selectors.py",
+      "canonicalLfSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e"
+    },
+    "services/geo/geo/usp_learning/association/adapter.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/adapter.py",
+      "canonicalLfSha256": "ccd509742623b0b13bf02b9a1a5df08599e6cefe573f6db89d76a2056d04080d"
+    },
+    "services/geo/geo/usp_learning/association/selector_adapter.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/selector_adapter.py",
+      "canonicalLfSha256": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d"
+    },
+    "services/geo/geo/usp_learning/association/student.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/student.py",
+      "canonicalLfSha256": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87"
+    },
+    "scripts/usp/learning/model_isolation.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/model_isolation.py",
+      "canonicalLfSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676"
+    },
+    "scripts/usp/security/appcontainer_audit.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/security/appcontainer_audit.py",
+      "canonicalLfSha256": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f"
+    },
+    "docs/evidence/usp/native-ifc/manifest.json": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/docs/evidence/usp/native-ifc/manifest.json",
+      "canonicalLfSha256": "6c0deada3556b2c7103669e5fd738e02bcb84e378c99b40d80e9ac0988c2b678"
+    },
+    "services/geo/geo/__init__.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/__init__.py",
+      "canonicalLfSha256": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09"
+    },
+    "services/geo/geo/usp_learning/__init__.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/__init__.py",
+      "canonicalLfSha256": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a"
+    },
+    "services/geo/geo/usp_learning/resources.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/resources.py",
+      "canonicalLfSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+    },
+    "services/geo/geo/usp_learning/association/__init__.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/__init__.py",
+      "canonicalLfSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679"
+    },
+    "scripts/usp/learning/association/association_adapter.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/association/association_adapter.py",
+      "canonicalLfSha256": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535"
+    },
+    "services/geo/geo/usp_learning/association/citation_view.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/citation_view.py",
+      "canonicalLfSha256": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea"
+    },
+    "services/geo/geo/usp_learning/association/chunked_loss.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/chunked_loss.py",
+      "canonicalLfSha256": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7"
+    },
+    "services/geo/geo/usp_learning/association/memory_observation.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/memory_observation.py",
+      "canonicalLfSha256": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d"
+    },
+    "services/geo/geo/usp_learning/association/reclamation.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/reclamation.py",
+      "canonicalLfSha256": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27"
+    },
+    "services/geo/geo/usp_learning/association/query_attention.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/services/geo/geo/usp_learning/association/query_attention.py",
+      "canonicalLfSha256": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec"
+    },
+    "scripts/usp/learning/association/stage_adapter.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/association/stage_adapter.py",
+      "canonicalLfSha256": "bd620d0568df745bb00a849fbf7ae99c4a527fa3914b4a1964e58eb559c5abb1"
+    },
+    "scripts/usp/learning/association/stage_selector_adapter.py": {
+      "path": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/association/stage_selector_adapter.py",
+      "canonicalLfSha256": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295"
+    }
+  },
+  "inputs": {
+    "batch": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/development-v1/development.json",
+      "physicalSha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536"
+    },
+    "lineage": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\development-v1\\lineage.json",
+      "physicalSha256": "24ec58e4ed7d8266777044c85a735511d5d995b8b629ada047944f80fff65618",
+      "use": "Source/reader pointers, hashes and provenance only. Do not rerun prepare_inputs.py, which also produces expectations."
+    },
+    "manifest": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\native-ifc\\manifest.json",
+      "physicalSha256": "d250f3e8bb993bb706771e602e5c091781dfa4a9817d30f8e75adfd9a4ebce2c"
+    },
+    "readers": [
+      {
+        "exampleId": "ifc4-source-native-v1",
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc4.json",
+        "physicalSha256": "b0d08570e368ccd6f1b32adc113b1363afa523cc8fa359fe65e087009bd6b0b6"
+      },
+      {
+        "exampleId": "ifc2x3-source-native-v1",
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc2x3.json",
+        "physicalSha256": "66dcfb321cac47b605ffed87beaf060b50b1203a151b738fe446b6251d003d3a"
+      }
+    ],
+    "sources": [
+      {
+        "familyId": "buildingsmart-certification-simple-scene",
+        "issuer": "buildingSMART International Ltd.",
+        "originalPath": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc2x3-building-architecture.ifc",
+        "originalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%202.3.0.1%20%28IFC%202x3%20TC1%29/Simple-Scene/Building-Architecture.ifc",
+        "sourceId": "IFC 2.3.0.1 (IFC 2x3 TC1)/Simple-Scene/Building-Architecture.ifc",
+        "sourceSha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885",
+        "split": "development"
+      },
+      {
+        "familyId": "buildingsmart-certification-simple-scene",
+        "issuer": "buildingSMART International Ltd.",
+        "originalPath": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc4-building-architecture.ifc",
+        "originalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%204.0.2.1%20%28IFC%204%20ADD2%20TC1%29/Simple-Scene/Building-Architecture.ifc",
+        "sourceId": "IFC 4.0.2.1 (IFC 4 ADD2 TC1)/Simple-Scene/Building-Architecture.ifc",
+        "sourceSha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80",
+        "split": "development"
+      }
+    ]
+  },
+  "contexts": [
+    {
+      "candidateCount": 4,
+      "candidateSetSha256": "ededc3e493b107fb4d016456d36a86a4d06acb3d689e0c9e14dce2e7928d3d41",
+      "exampleId": "ifc4-source-native-v1",
+      "inputSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4",
+      "unsupported": []
+    },
+    {
+      "candidateCount": 2,
+      "candidateSetSha256": "64859a859f9096890862e7aaf1aef86ddf281c00c237b41481dd51e3917515e2",
+      "exampleId": "ifc2x3-source-native-v1",
+      "inputSha256": "5cdbd1fec015bc2eecde12ee37dea41eeb0fc7c6eb9e7ac8470af04bd74c3a88",
+      "unsupported": [
+        {
+          "key": "ifc2x3-georeference",
+          "reason": "georeference_not_property_candidate"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "completeOwnedDeltaReviewed": true,
+    "findings": "No remaining concrete finding at this CPU source/projection scope. Reader/hash/pointer/STEP/index/original-byte authority, immutable identity, whole-response projection and default-off transport/generation seams inspected.",
+    "tests": {
+      "command": [
+        "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/association/test_native_candidates.py"
+      ],
+      "exitCode": 0,
+      "toolWallSeconds": 0.9031813,
+      "combinedOutput": "test_incomplete_native_absent_null_and_unsupported_georeference (__main__.CandidateTests.test_incomplete_native_absent_null_and_unsupported_georeference) ... ok\r\ntest_shared_transport_candidate_prefixes_and_selector_default (__main__.CandidateTests.test_shared_transport_candidate_prefixes_and_selector_default) ... ok\r\ntest_source_records_subset_empty_and_immutable_snapshot (__main__.CandidateTests.test_source_records_subset_empty_and_immutable_snapshot) ... ok\r\ntest_stale_reader_pointer_original_and_conflict_denied (__main__.CandidateTests.test_stale_reader_pointer_original_and_conflict_denied) ... ok\r\ntest_whole_response_identity_unknown_duplicate_and_no_fact_rewrite (__main__.CandidateTests.test_whole_response_identity_unknown_duplicate_and_no_fact_rewrite) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 5 tests in 0.674s\r\n\r\nOK\r\n{\"elapsedSeconds\": 0.6770312999942689, \"expectationsConsumed\": false, \"ifc2x3\": {\"candidateCount\": 2, \"setSha256\": \"64859a859f9096890862e7aaf1aef86ddf281c00c237b41481dd51e3917515e2\", \"states\": [\"absent\", \"null\"], \"unsupported\": [{\"key\": \"ifc2x3-georeference\", \"reason\": \"georeference_not_property_candidate\"}]}, \"ifc4\": {\"candidateCount\": 4, \"emptySelectionFraction\": 0, \"setSha256\": \"ededc3e493b107fb4d016456d36a86a4d06acb3d689e0c9e14dce2e7928d3d41\", \"subsetAcceptedCount\": 1}, \"nativeModelOrParserInitialized\": false, \"passed\": true, \"testsRun\": 5, \"transport\": {\"controls\": [{\"enforcedValidityIsLearnedAccuracy\": false, \"eosEmitted\": true, \"generatedBytesSha256\": \"af5bc18dc5a7cb6d4676463e20c8b675c738274469a20b5ec898ddd9265724d9\", \"grammarComplete\": true, \"maskCalls\": 159, \"maskSeconds\": 0.014983099994424265, \"maxMaskSeconds\": 0.0012447999979485758, \"policyVersion\": \"association-candidate-selection-policy/1\", \"repairApplied\": false, \"sourceInputSha256\": \"da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4\", \"trieNodeVisits\": 46540}, {\"enforcedValidityIsLearnedAccuracy\": false, \"eosEmitted\": true, \"generatedBytesSha256\": \"1c5e77d6eaa0a117b5ff3058670d6c313cab72bab602f20a88b81b5bdd7553e3\", \"grammarComplete\": true, \"maskCalls\": 163, \"maskSeconds\": 0.015889899943431374, \"maxMaskSeconds\": 0.001261299999896437, \"policyVersion\": \"association-candidate-selection-policy/1\", \"repairApplied\": false, \"sourceInputSha256\": \"da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4\", \"trieNodeVisits\": 47823}], \"nativeTokenizerUsed\": false, \"seconds\": 0.5759328999993159, \"segmentation\": \"actual vocabulary single-byte IDs; not native encoding\", \"trieNodes\": 333010}}\r\n",
+      "observedMetrics": {
+        "elapsedSeconds": 0.6770312999942689,
+        "expectationsConsumed": false,
+        "ifc2x3": {
+          "candidateCount": 2,
+          "setSha256": "64859a859f9096890862e7aaf1aef86ddf281c00c237b41481dd51e3917515e2",
+          "states": [
+            "absent",
+            "null"
+          ],
+          "unsupported": [
+            {
+              "key": "ifc2x3-georeference",
+              "reason": "georeference_not_property_candidate"
+            }
+          ]
+        },
+        "ifc4": {
+          "candidateCount": 4,
+          "emptySelectionFraction": 0,
+          "setSha256": "ededc3e493b107fb4d016456d36a86a4d06acb3d689e0c9e14dce2e7928d3d41",
+          "subsetAcceptedCount": 1
+        },
+        "nativeModelOrParserInitialized": false,
+        "passed": true,
+        "testsRun": 5,
+        "transport": {
+          "controls": [
+            {
+              "enforcedValidityIsLearnedAccuracy": false,
+              "eosEmitted": true,
+              "generatedBytesSha256": "af5bc18dc5a7cb6d4676463e20c8b675c738274469a20b5ec898ddd9265724d9",
+              "grammarComplete": true,
+              "maskCalls": 159,
+              "maskSeconds": 0.014983099994424265,
+              "maxMaskSeconds": 0.0012447999979485758,
+              "policyVersion": "association-candidate-selection-policy/1",
+              "repairApplied": false,
+              "sourceInputSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4",
+              "trieNodeVisits": 46540
+            },
+            {
+              "enforcedValidityIsLearnedAccuracy": false,
+              "eosEmitted": true,
+              "generatedBytesSha256": "1c5e77d6eaa0a117b5ff3058670d6c313cab72bab602f20a88b81b5bdd7553e3",
+              "grammarComplete": true,
+              "maskCalls": 163,
+              "maskSeconds": 0.015889899943431374,
+              "maxMaskSeconds": 0.001261299999896437,
+              "policyVersion": "association-candidate-selection-policy/1",
+              "repairApplied": false,
+              "sourceInputSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4",
+              "trieNodeVisits": 47823
+            }
+          ],
+          "nativeTokenizerUsed": false,
+          "seconds": 0.5759328999993159,
+          "segmentation": "actual vocabulary single-byte IDs; not native encoding",
+          "trieNodes": 333010
+        }
+      },
+      "suppliedApprovalPolicy": "never",
+      "suppliedSandboxMode": "danger-full-access",
+      "requestedModel": "gpt-6-astra",
+      "requestedReasoning": "xhigh",
+      "requiredSpeed": "default/standard",
+      "observedModel": null,
+      "observedReasoning": null,
+      "observedServiceTier": null
+    },
+    "compile": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "-"
+      ],
+      "operation": "compile(read_bytes(), absolute_path, exec) for the six changed/new Python files, before tests; no execution or pycache",
+      "exitCode": 0,
+      "files": {
+        "scripts/usp/learning/association/prepare_native_candidates.py": {
+          "physicalSha256": "aac4c5947eb4e4c87077383e38722f89436f1645b131fdbb78772de6a4a7d4dc",
+          "canonicalLfSha256": "aac4c5947eb4e4c87077383e38722f89436f1645b131fdbb78772de6a4a7d4dc"
+        },
+        "scripts/usp/learning/association/test_native_candidates.py": {
+          "physicalSha256": "d474330b32c283faee0cb4763f8fcaffa41aff9e45b45fcd23ef29b19746d968",
+          "canonicalLfSha256": "d474330b32c283faee0cb4763f8fcaffa41aff9e45b45fcd23ef29b19746d968"
+        },
+        "services/geo/geo/usp_learning/association/candidate_selection.py": {
+          "physicalSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+          "canonicalLfSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785"
+        },
+        "services/geo/geo/usp_learning/association/native_candidates.py": {
+          "physicalSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+          "canonicalLfSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df"
+        },
+        "services/geo/geo/usp_learning/association/selector_baseline.py": {
+          "physicalSha256": "80f0dbb30db59844562829714d77614fd7257b58b211bcaa1ea12374348b7f61",
+          "canonicalLfSha256": "80f0dbb30db59844562829714d77614fd7257b58b211bcaa1ea12374348b7f61"
+        },
+        "services/geo/geo/usp_learning/association/selector_constraints.py": {
+          "physicalSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+          "canonicalLfSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064"
+        }
+      },
+      "nativeModelOrParserInitialized": false
+    },
+    "cli": {
+      "command": "& 'C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe' -B -I -S 'C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/association/prepare_native_candidates.py' --assignment 'C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-12.native-candidates-preparation.assignment.json' --assignment-sha256 1a2da59403f8737a9b3573777712e94a04094e65e8d686071b6e3499b41e2657",
+      "exitCode": 0,
+      "toolWallSeconds": 0.2368691,
+      "preparationSeconds": 0.08822810000128811
+    },
+    "workingAndCodeStagedDiffChecks": 0,
+    "initialControlFailures": [],
+    "protectedPinsMatched": 23,
+    "nativeImports": [],
+    "expectationsConsumed": false
+  },
+  "artifacts": {
+    "candidate-prompt.txt": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/candidate-prompt.txt",
+      "physicalSha256": "97354126da61e713fb381c9de46e6966de82ec2424a50feaf93b538d43a6780c"
+    },
+    "candidate-route.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/candidate-route.json",
+      "physicalSha256": "ac177a8e15fa8bb41226b9a151e0f69ac6c6dcc253063b89c738163b10a60267"
+    },
+    "candidate-schema-v1.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/candidate-schema-v1.json",
+      "physicalSha256": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574"
+    },
+    "cli-invocation.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/cli-invocation.json",
+      "physicalSha256": "6c360e109383fca3c6e70195a23705ee226f8e3de341938ecb1377e2fad1297b"
+    },
+    "compile-invocation.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/compile-invocation.json",
+      "physicalSha256": "8ed448c854bce883b11b5b73b332912a9b20c687b6fa382f5af11ed24c4ecfeb"
+    },
+    "context-0.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/context-0.json",
+      "physicalSha256": "dd66325a702e7647cdfb36375b731b50086a0c51053b3b258a177e5afb9eb63d"
+    },
+    "context-1.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/context-1.json",
+      "physicalSha256": "cdd4b3b0e74eed4fb03dfe1159a280605a6c93916f070481af40f80cda40b9cc"
+    },
+    "cpu-controls-invocation.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/cpu-controls-invocation.json",
+      "physicalSha256": "245cb329a74784a131cbe16955bc054cce90266d3bb327bca67af08bd120bc3d"
+    },
+    "model-input-0.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/model-input-0.json",
+      "physicalSha256": "3ef88d7ee0426691ab16e93774481f95747dd5d383e5985095dc5298fbc858ef"
+    },
+    "model-input-1.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/model-input-1.json",
+      "physicalSha256": "5743889102c7ab48a9aefd9a7ac2cbf20e538444a6ece8bb03ac3c5e9645ae78"
+    },
+    "preparation.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/preparation.json",
+      "physicalSha256": "968fbaae903cda193ebb2d74cc7a54f054136071def8d5431f0c8e61e0690bbc"
+    },
+    "technical-projections.json": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/technical-projections.json",
+      "physicalSha256": "94e0ecf264fc5518e074231d173276a6f2784f52535729995b70b3e984d115d5"
+    }
+  },
+  "behavior": {
+    "candidateConstruction": "Four verified candidates from current IFC4 evidence and two from current IFC2x3 evidence; no outside attributes enumerated or expected answers consumed.",
+    "selection": "Empty and proper subset selections pass the unchanged validator. Selected IDs expand exact stored facts; added/repeated/unknown IDs, field rewrite, or foreign candidate-set identity reject the complete response.",
+    "absence": "Parser absent/not_in_schema_entity retains null value/raw and no attribute byte span. Explicit null retains the exact original $ byte span.",
+    "unsupported": "IFC2x3 georeference fragment is explicitly omitted as unsupported for property candidates. Unknown roles, numeric/structured normalization, non-citable decoded strings and missing native metadata remain unsupported; explicit multi-fragment conflicts refuse this route.",
+    "identity": "Each candidate provenance includes exact input/source/reader/pointer/locator bindings; short cN IDs require the full hash of their immutable input-bound candidate set. The model cannot rewrite parsed facts.",
+    "transport": "Existing Vocabulary/Controller and single generate call are reused. Candidate grammar masks only representation/current IDs/uniqueness/identity; empty/subset selection and complete-response EOS are preserved.",
+    "defaultCompatibility": "Historical selector schema/prompt/policy/projector and protected core remain unchanged. Optional candidate_route and grammar hooks default to None; no new generation loop/stager/model loader."
+  },
+  "futureExecution": {
+    "authorization": false,
+    "modelAndAdapterSelected": false,
+    "staging": "No candidate execution admission is enabled in current stager/worker CLI. Later inspected assignment must choose the model/route and bind accepted context artifacts, input/schema/prompt/policy/code hashes through the existing stager/CLI before any model run.",
+    "runtimeHook": "run_selectors(candidate_route=...) validates exact version/representation, frozen snapshot hashes, original input equality and candidate schema before native imports; shared controller accepts the candidate grammar. Caller must pass hashes from the later trusted freeze, never user-provided facts.",
+    "nativeTransportStatus": "Candidate grammar checked with actual pinned vocabulary single-byte IDs only. Native tokenizer/model execution for this candidate route has not run.",
+    "resources": "Original containment/resource/guard code and caps preserved; no new hardware/performance qualification."
+  },
+  "qualityAttribution": {
+    "candidateConstructionIsLearnedAccuracy": false,
+    "selectionAccuracyMeasured": false,
+    "technicalSubsetAndEmptyAreLearningLabels": false,
+    "forcedNoTargetMarkersAndEmptyLinksAreModelSelection": false,
+    "priorStudent11QualityUnchanged": "0/2 semantically usable and 0/6 accepted correct claims; no model phase repeated.",
+    "canonicalAssociationQualified": false,
+    "operationalQualification": false,
+    "generalizationQualified": false
+  },
+  "scope": {
+    "cpuOnly": true,
+    "nativeIfcParserInitialized": false,
+    "nativeTokenizerInitialized": false,
+    "modelLoaded": false,
+    "modelStageCreated": false,
+    "inferencePerformed": false,
+    "fitPerformed": false,
+    "expectationsConsumed": false,
+    "heldOutContentOpened": false,
+    "teacherFeedbackSent": false,
+    "acquisitionPerformed": false,
+    "stagingOrFrontendChanged": false,
+    "dependencyOrHostConfigurationChanged": false
+  },
+  "sourceProvenance": "Unchanged buildingSMART certification samples, CC-BY-4.0, pinned revision and hashes retained in manifest/lineage. Foreign test_only scope; no Indian operational facts or new qualified learning labels.",
+  "cleanup": "No native child, GPU allocation, model stage, service or listener. Private CPU artifacts retained; no source/original/earlier-output changes.",
+  "return": "Commit only the two evidence files, callback coordinator with exact code/evidence/final heads and pins, then stop. No automatic model continuation."
+}
