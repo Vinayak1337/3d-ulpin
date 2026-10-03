@@ -1,0 +1,404 @@
+{
+  "version": "association-selector-constraints-preparation-result/1",
+  "task": "STUDENT-11-CONSTRAINED-PREP",
+  "recordedAtUtc": "2026-10-03T07:11:26.074568+00:00",
+  "status": "cpu_preparation_complete_for_coordinator_review",
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "baseCommit": "448d6ea04f7ff9dfe00a6f05c3a80390503c73fc",
+  "codeCommit": "ebc8554d3e30d6ab0072c140af1fe97c79f7db53",
+  "primaryStagingReadOnlyObservedAtResume": "409d26414b5f7544fc4db41d1b14c95d43604957",
+  "assignment": {
+    "path": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-11.selector-constraints-preparation.assignment.json",
+    "physicalSha256": "8adbfddb0a2405236c3c3d47769dd64418f53b74f659a0a5533bfafe0ea78f28"
+  },
+  "acceptedHistoricalReload": {
+    "path": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-selector-reload-acceptance-v1.json",
+    "physicalSha256": "922d6d20428c68ca837a9a8b840b92ecf06e69c315bf4675131f1669c996ced4"
+  },
+  "scope": {
+    "cpuOnly": true,
+    "modelOrNativeTokenizerLoaded": false,
+    "newModelStageCreated": false,
+    "fitOrInferencePerformed": false,
+    "expectationsConsumed": false,
+    "heldOutEvaluationOpened": false,
+    "teacherFeedbackSent": false,
+    "sourceAcquisitionPerformed": false,
+    "runtimeOrDependencyChanges": false
+  },
+  "settingsObservation": {
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null
+  },
+  "policy": {
+    "policy": {
+      "bounds": {
+        "batchSize": 1,
+        "beams": 1,
+        "generatedTokens": 768,
+        "maskNodeVisits": 1500000,
+        "maskSeconds": 5,
+        "outputBytes": 65536,
+        "trieNodes": 1500000
+      },
+      "citationCoverage": "literal/unit spans inside one own citation; distinct pointer triples per citation list",
+      "forcedElements": [
+        "syntax/key order/schema limits",
+        "source ranges",
+        "literal/unit citation coverage and lengths",
+        "state/value compatibility",
+        "at least two conflict citations",
+        "first no_canonical_targets abstention",
+        "empty canonicalLinks"
+      ],
+      "language": "compact JSON; sorted object keys; fixed public schema enums; Unicode scalar decision codes, length1..120",
+      "notEnforced": [
+        "correct semantic role/literal/state/unit",
+        "exact identifier/unit boundaries",
+        "duplicate quoted text at different positions",
+        "conflict truth/coverage",
+        "native attribute matching"
+      ],
+      "qualification": "controller-enforced validity is not learned accuracy; unchanged whole-response semantic projection required",
+      "schemaSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+      "selection": "Transformers prefix_allowed_tokens_fn additive negative-infinity mask; allowed logits unchanged",
+      "sourceChoices": "current source lexical positions only; lazy integer intervals, nonempty spans, exclusive ends",
+      "states": "declared requires a non-null literal; unknown/absent/null/withheld require null literal and unit",
+      "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+      "transport": "pinned ByteLevel BPE bytes; incremental strict UTF-8/JSON escapes; all added tokens excluded except complete-response EOS151645",
+      "version": "association-selector-constraints/1"
+    },
+    "policySha256": "ec73957cd919f8635ef3bb7a7353ec331965dbe59dcd0f1f1463dd1be49f1744",
+    "tokenizerFilesSha256": {
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    }
+  },
+  "ownedCode": {
+    "services/geo/geo/usp_learning/association/selector_constraints.py": {
+      "physicalSha256": "2804fefb697160e1988cc6239e03d71c225bb4a57ba3924fcbb0c8399ad9898b",
+      "canonicalLfSha256": "2804fefb697160e1988cc6239e03d71c225bb4a57ba3924fcbb0c8399ad9898b"
+    },
+    "scripts/usp/learning/association/test_selector_constraints.py": {
+      "physicalSha256": "7c11b534f04e172e742d8edac1112a2975673ed7c3adf03e67d2589c151426ed",
+      "canonicalLfSha256": "7c11b534f04e172e742d8edac1112a2975673ed7c3adf03e67d2589c151426ed"
+    },
+    "services/geo/geo/usp_learning/association/selector_baseline.py": {
+      "physicalSha256": "22d9a53b42653acbdfaaf9a10de5c4632347d14c8ba53ef99a19033eeef0c793",
+      "canonicalLfSha256": "22d9a53b42653acbdfaaf9a10de5c4632347d14c8ba53ef99a19033eeef0c793"
+    },
+    "services/geo/geo/usp_learning/association/selector_adapter.py": {
+      "physicalSha256": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+      "canonicalLfSha256": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d"
+    },
+    "scripts/usp/learning/association/association_adapter.py": {
+      "physicalSha256": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535",
+      "canonicalLfSha256": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535"
+    },
+    "scripts/usp/learning/association/stage_selector_adapter.py": {
+      "physicalSha256": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295",
+      "canonicalLfSha256": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295"
+    }
+  },
+  "runtimeCodeCanonicalLfSha256": {
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+    "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+    "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "scripts/usp/learning/association/association_adapter.py": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535",
+    "services/geo/geo/usp_learning/association/adapter.py": "ccd509742623b0b13bf02b9a1a5df08599e6cefe573f6db89d76a2056d04080d",
+    "services/geo/geo/usp_learning/association/citation_view.py": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+    "services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+    "services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+    "services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/selector_baseline.py": "22d9a53b42653acbdfaaf9a10de5c4632347d14c8ba53ef99a19033eeef0c793",
+    "services/geo/geo/usp_learning/association/selector_adapter.py": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+    "scripts/usp/learning/association/stage_adapter.py": "bd620d0568df745bb00a849fbf7ae99c4a527fa3914b4a1964e58eb559c5abb1",
+    "scripts/usp/learning/association/stage_selector_adapter.py": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295",
+    "services/geo/geo/usp_learning/association/selector_constraints.py": "2804fefb697160e1988cc6239e03d71c225bb4a57ba3924fcbb0c8399ad9898b"
+  },
+  "interfaces": {
+    "retainedRoot": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-selector-reload-5c4c5b3f14154294ae01760e60d04b7d",
+    "profileSha256": "bc41ff13e5e5dca76688424f40d688c786ec90e663001f4a760ab5810e5592e1",
+    "filesSha256": {
+      "runtime/packages/transformers/generation/logits_process.py": "6481506629ff6f021157e893fc64c4e7b5b06a72072771809d679387cb54a4b1",
+      "runtime/packages/transformers/generation/utils.py": "55fd5c50aa785e226afa03e4507b8d27c0328714c0bd048bc60af9e8813a1173",
+      "model/tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "model/tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    },
+    "transformersVersion": "4.57.6",
+    "method": "Inspected pinned Python sources and tokenizer JSON; no native runtime executed.",
+    "primitive": "PrefixConstrainedLogitsProcessor calls prefix_allowed_tokens_fn then adds a negative-infinity mask, preserving relative allowed logits."
+  },
+  "modelAndAdapterProvenance": {
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "baseWeightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+    "acceptedFit": {
+      "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-selector-fit-c73b74907e694b2b833d4d7b82e29998",
+      "profileSha256": "d23b89d93af48b007ab7918ff8046d4e180b9af3fb9df290ba60fb3569f9bd3d",
+      "guardSha256": "d1908e32a1fa156b2452bf51f2a68ca69caaa7bbafd6c040036d826ecf2334b0",
+      "adapterManifestSha256": "59c0182a4f5cc6760f2f8fa55a445c7a20feea6cd311385ece60060f3b77b3a0",
+      "fitResultSha256": "f186d50831cde98a951d0dc5eed24629636c63b31ca03fb764c7be0672cb7e17",
+      "adapterWeightsSha256": "93890e8ba23dd0c363cdcb36ed7e6f6b8f0a2ab2e3a3fe6e675ce91dfd277c70"
+    },
+    "qualification": "Copied existing accepted bindings; no weights loaded or new fit/reload qualification."
+  },
+  "sources": {
+    "trainingDataset": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-selectors-v1.jsonl",
+      "physicalSha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb"
+    },
+    "trainingView": {
+      "exampleId": "teacher-haryana-floor02",
+      "inputCanonicalJsonSha256": "d1c6dfeae45355817a1601a65d82c2df5a90dc1cc853e8ee20240668f9f515da",
+      "use": "Only the input field of retained row2 used for source bounds/projection; teacher target not used."
+    },
+    "developmentBatch": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-selector-reload-5c4c5b3f14154294ae01760e60d04b7d/inputs/development.json",
+      "physicalSha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536"
+    },
+    "developmentView": {
+      "exampleId": "ifc4-source-native-v1",
+      "inputCanonicalJsonSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4",
+      "use": "Only retained first source view used for bounds; no expectations or fitting. Foreign IFC remains foreign development evidence."
+    },
+    "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+    "parsedSelectorSchemaCanonicalJsonSha256": "bf61accbe3e5a48d2340b21283ac0fa359a3cd3f01fa8ce75ecf0da5e0852a6f",
+    "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+    "integrity": "Source files, family split, schema, prompt and source-to-text lexical policy unchanged; technical fixtures are not operational records or new learning labels."
+  },
+  "verification": {
+    "review": "Complete six-file owned delta inspected, including new grammar/controller/tests, generation hook, stager/source pins and freeze/dispatch validation; no remaining concrete finding at CPU scope.",
+    "controls": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_selector_constraints.py"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "startedAtUtc": "2026-10-03T07:03:43.218145+00:00",
+      "exitCode": 0,
+      "elapsedSeconds": 1.9888501999957953,
+      "suppliedApprovalPolicy": "never",
+      "suppliedSandboxMode": "danger-full-access",
+      "requestedModel": "gpt-6-astra",
+      "requestedReasoning": "xhigh",
+      "requestedSpeed": "default/standard",
+      "observedModel": null,
+      "observedReasoning": null,
+      "observedServiceTier": null
+    },
+    "initialObservedFailure": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_selector_constraints.py"
+      ],
+      "exitCode": 1,
+      "testsRun": 6,
+      "failedTests": 1,
+      "exception": "AssertionError: State with utf8 pending bytes ED A0 is not None; test_utf8_escapes_and_eos_prefixes line131",
+      "finding": "CPython incremental UTF-8 decoder deferred surrogate rejection; explicit second-byte Unicode-scalar constraints added.",
+      "rerunReason": "Resolve this observed prefix-legality defect and cover one representative unconstrained decision-code prefix."
+    },
+    "coverage": [
+      "One unchanged training source-copy fixture and one unchanged development empty output pass the existing projector; a grammar-legal wrong role is still rejected; source snapshots unchanged.",
+      "Absent fragment4, empty/reversed/out-of-range spans, cross-citation values, incompatible null states, duplicate citation triples and fewer than two conflict citations are rejected; decimal/bool/negative/leading-zero integer forms are unavailable.",
+      "Raw UTF-8, escaped Unicode and paired UTF-16 boundaries; premature EOS excluded; token-cap incomplete output preserved; empty legal vocabulary fails clearly.",
+      "Actual pinned vocabulary fixture tokens preserve raw bytes and generated-only prefix boundaries, including multiple JSON components in a token. Fixture byte-trie segmentation is not native BPE encoding.",
+      "Historical adapter freeze still accepted; unversioned policy refused; separately versioned reload policy checked; PREP refused before runtime inspection/mkdir; retained IFC4 raw still rejected with selector_fragment_range and zero accepted claims.",
+      "One existing generate call and default None hook; selector codec/projector, semantic validation, core adapter, containment and resource source bytes unchanged from base; no native model/tokenizer library imports."
+    ],
+    "metrics": {
+      "compactTrieArrayBytes": 4329130,
+      "elapsedSeconds": 1.7746040000056382,
+      "freeCodeMask": {
+        "allowedTokens": 146991,
+        "nodeVisits": 326415,
+        "seconds": 1.0512248000013642
+      },
+      "memory": {
+        "method": "GetProcessMemoryInfo current CPU test process",
+        "peakWorkingSetBytes": 107331584,
+        "privateCommittedBytes": 73355264,
+        "workingSetBytes": 83009536
+      },
+      "nativeTokenizerOrModelImported": false,
+      "nativeTransportQualification": "deferred to separately authorized contained run",
+      "partialUtf8MaskVisits": 393,
+      "passed": true,
+      "representativeMask": {
+        "enforcedValidityIsLearnedAccuracy": false,
+        "eosEmitted": true,
+        "generatedBytesSha256": "8134d79f80e7f30ba9c8f08e928e39588cc18717dc6141761d2570e3f23c1f0b",
+        "grammarComplete": true,
+        "maskCalls": 77,
+        "maskSeconds": 0.019720100055565126,
+        "maxMaskSeconds": 0.001497400000516791,
+        "policyVersion": "association-selector-constraints/1",
+        "repairApplied": false,
+        "sourceInputSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4",
+        "trieNodeVisits": 24555
+      },
+      "representativeTokenCount": 76,
+      "testsRun": 6,
+      "trieNodes": 333010,
+      "vocabularyBuildSeconds": 0.513002100000449,
+      "vocabularyPayloadBytes": 975969
+    },
+    "compile": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "-"
+      ],
+      "operation": "compile(read_bytes(), absolute_path, exec) for the six owned Python files; no execution or pycache",
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "exitCode": 0,
+      "compiledFiles": {
+        "services/geo/geo/usp_learning/association/selector_constraints.py": {
+          "physicalSha256": "2804fefb697160e1988cc6239e03d71c225bb4a57ba3924fcbb0c8399ad9898b",
+          "canonicalLfSha256": "2804fefb697160e1988cc6239e03d71c225bb4a57ba3924fcbb0c8399ad9898b"
+        },
+        "scripts/usp/learning/association/test_selector_constraints.py": {
+          "physicalSha256": "7c11b534f04e172e742d8edac1112a2975673ed7c3adf03e67d2589c151426ed",
+          "canonicalLfSha256": "7c11b534f04e172e742d8edac1112a2975673ed7c3adf03e67d2589c151426ed"
+        },
+        "services/geo/geo/usp_learning/association/selector_baseline.py": {
+          "physicalSha256": "22d9a53b42653acbdfaaf9a10de5c4632347d14c8ba53ef99a19033eeef0c793",
+          "canonicalLfSha256": "22d9a53b42653acbdfaaf9a10de5c4632347d14c8ba53ef99a19033eeef0c793"
+        },
+        "services/geo/geo/usp_learning/association/selector_adapter.py": {
+          "physicalSha256": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+          "canonicalLfSha256": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d"
+        },
+        "scripts/usp/learning/association/association_adapter.py": {
+          "physicalSha256": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535",
+          "canonicalLfSha256": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535"
+        },
+        "scripts/usp/learning/association/stage_selector_adapter.py": {
+          "physicalSha256": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295",
+          "canonicalLfSha256": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295"
+        }
+      },
+      "elapsedSeconds": 0.011102799995569512,
+      "pythonVersion": "3.11.15 (main, Aug  7 2026, 02:24:19) [MSC v.1944 64 bit (AMD64)]",
+      "nativeModulesImported": []
+    },
+    "gitDiffCheckExitCode": 0,
+    "codeCommitStagedDiffCheckExitCode": 0,
+    "hostArtifacts": [
+      {
+        "path": "E:/BhuAayam-data/task-data/ml-distillation/student/selector-constraints-preparation-host-20261003-448d6ea0/controls-invocation.json",
+        "physicalSha256": "0951dabcfbdb8a79ee710db28d48f383d8e4c1c16186a3fab3344d861cf03650"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/ml-distillation/student/selector-constraints-preparation-host-20261003-448d6ea0/controls.stdout.log",
+        "physicalSha256": "a0c1e28ef0aac50b37c761066da11c91be1a7e80656a4c97a9cf5c2b77d15263"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/ml-distillation/student/selector-constraints-preparation-host-20261003-448d6ea0/controls.stderr.log",
+        "physicalSha256": "79891b2fb9d9ec4ffe9a89f1464c7c35e8cd785274632456806d4f054d502346"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/ml-distillation/student/selector-constraints-preparation-host-20261003-448d6ea0/initial-control-failure.json",
+        "physicalSha256": "5866a464dab96bb8576e69a70235a2b81649ad430e1f54184175dfca6ead360a"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/ml-distillation/student/selector-constraints-preparation-host-20261003-448d6ea0/compile-invocation.json",
+        "physicalSha256": "8f357fb085ffb2c1704fc551f410bf0d767f6dccd7bd94f2377a5045ec659318"
+      }
+    ]
+  },
+  "historicalQualityUnchanged": {
+    "jsonSchemaValid": "2/2",
+    "usableOutputs": "0/2",
+    "emittedClaims": 7,
+    "acceptedClaims": 0,
+    "correctExpectedClaims": "0/6",
+    "precision": null,
+    "comparisonRerun": false
+  },
+  "futureExecutionRecipe": {
+    "authorization": "Not executable authorization. Coordinator must inspect/accept this code and issue a separate pinned assignment before staging or native work.",
+    "task": "STUDENT-11-CONSTRAINED-RELOAD",
+    "assignmentVersion": "association-selector-constrained-execution/1",
+    "freezeVersion": "association-selector-constrained-freeze/1",
+    "action": "reload",
+    "generationConstraints": "Exact policy metadata above from selector_constraints.metadata(); old execution/freezes reject this field.",
+    "studentCodeCommit": "The accepted final clean code/evidence HEAD, with unchanged runtime pins listed above; do not reuse the historical STUDENT-10 assignment.",
+    "requiredRuntimeSourcePinCount": 21,
+    "runtimeDonorProfileSha256": "a09ee7907b8dc207b01712d84ec33245218773f479cf91301957ee76b32ae503",
+    "acceptedFit": {
+      "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-selector-fit-c73b74907e694b2b833d4d7b82e29998",
+      "profileSha256": "d23b89d93af48b007ab7918ff8046d4e180b9af3fb9df290ba60fb3569f9bd3d",
+      "guardSha256": "d1908e32a1fa156b2452bf51f2a68ca69caaa7bbafd6c040036d826ecf2334b0",
+      "adapterManifestSha256": "59c0182a4f5cc6760f2f8fa55a445c7a20feea6cd311385ece60060f3b77b3a0",
+      "fitResultSha256": "f186d50831cde98a951d0dc5eed24629636c63b31ca03fb764c7be0672cb7e17",
+      "adapterWeightsSha256": "93890e8ba23dd0c363cdcb36ed7e6f6b8f0a2ab2e3a3fe6e675ce91dfd277c70"
+    },
+    "inputs": "Retain both originally frozen development case pins, source-only prompt, selector schema, base model/tokenizer pins and accepted adapter; no expectations/teacher targets in contained inputs.",
+    "generationSettings": {
+      "seed": 17,
+      "cpuThreads": 2,
+      "maxInputTokens": 2048,
+      "maxNewTokens": 768,
+      "batchSize": 1,
+      "doSample": false,
+      "dtype": "float16",
+      "attention": "sdpa",
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "minimumFreeCudaBytes": 1610612736,
+      "maxPeakProcessRssBytes": 6442450944,
+      "maxRunSeconds": 600,
+      "maxFitSeconds": 600,
+      "evaluationAllowed": false
+    },
+    "resourceBounds": {
+      "maxJobCommittedBytes": 6442450944,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "minimumCudaFreeBytes": 1610612736,
+      "maxChildPhaseSeconds": 600,
+      "maxFitSequenceTokens": 4096,
+      "cpuThreads": 2,
+      "batchSize": 1
+    },
+    "boundaries": "Original Job/egress/guard/output/resource/cleanup acceptance remains mandatory. Reload-only; no fit, sweep, automatic retry, evaluation or promotion.",
+    "firstRuntimeChecks": "Inside separately authorized containment, verify actual fast-tokenizer vocabulary/decoder/byte decoding, callback integration and final text equivalence before accepting any inference result.",
+    "comparison": "Retain separate unconstrained and constrained raw strings. Report schema/range/expanded validity, emitted/unique accepted/correct claims, precision/coverage, forced policy elements and measured resources separately; enforced fields are not learned accuracy."
+  },
+  "limitations": [
+    "Native tokenizer decode and Transformers generation integration remain unverified by PREP.",
+    "CPU trie timing is not model/GPU end-to-end performance qualification; broad decision-code prefix cost was about 1.05 seconds in this one control.",
+    "The controller forces syntax, ranges, citation coverage/state compatibility, conflict minimum, no-canonical-target abstention and empty links; none establishes learned correctness.",
+    "Semantic role/value/state/unit selection, exact lexical boundaries, duplicate quoted text at distinct pointers, conflict truth/coverage and native attribute correspondence remain unchanged-projector responsibilities.",
+    "No canonical association, operational source accuracy, model promotion, evaluation or release gate passes."
+  ],
+  "handoff": {
+    "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+    "resources": "No live owned process, listener, model stage, GPU allocation or service to clean up; retained host CPU logs only.",
+    "continuation": "Commit the two evidence files, callback coordinator with code/evidence commits, then stop; no automatic inference."
+  }
+}
