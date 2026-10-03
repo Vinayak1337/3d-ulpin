@@ -1,0 +1,326 @@
+{
+  "schemaVersion": "survey-control-source/1",
+  "task": "DATA-CONTROL-02",
+  "preparedAt": "2026-10-04T01:26:53.9067475+05:30",
+  "baseCommit": "91ad25d2e6b734d3a08c0815d6ba016e7e411454",
+  "branch": "task/desktop-survey-control-source",
+  "worktree": "C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin",
+  "privateRoot": "E:/BhuAayam-data/task-data/desktop-survey-control-source-20261003",
+  "outcome": "Actual published surveyed-coordinate tables retained; exact report working-frame prerequisite remains unresolved. Not a qualified executable reference-comparison source.",
+  "sourceFamily": "usace-affiliated-nj-cape-may-2025-test-only",
+  "source": {
+    "creators": [
+      {
+        "name": "White, David",
+        "affiliation": "US Army Corps of Engineers, Mobile District"
+      },
+      {
+        "name": "Harwood, Joseph (Heath)",
+        "affiliation": "US Army Corps of Engineers, Mobile District"
+      },
+      {
+        "name": "Shawler, Justin",
+        "affiliation": "US Army Engineer Research and Development Center Coastal and Hydraulics Laboratory",
+        "orcid": "0000-0002-8695-5566"
+      },
+      {
+        "name": "Harris, Brian",
+        "affiliation": "US Army Engineer Research and Development Center Coastal and Hydraulics Laboratory",
+        "orcid": "0000-0001-5771-1880"
+      }
+    ],
+    "useClass": "public institutional/research development evidence; no operational records, D1 association or learning labels",
+    "issuer": "Zenodo research deposit credited to named USACE/ERDC-affiliated authors; not asserted to be an independently authenticated official federal publication or Indian operational source.",
+    "geography": "Cape May Campground Confined Disposal Facility / Cape May Canal, New Jersey, USA; separate foreign test_only family.",
+    "publicationDate": "2025-09-30",
+    "doi": "10.5281/zenodo.17236055",
+    "fixedRecord": "17236055",
+    "explicitVersionString": null,
+    "conceptRecord": "17236054",
+    "title": "UAS Orthomosaic Imagery and Lidar-Derived Digital Elevation Models for the Cape May, Railroad, and Ocean City Confined Disposal Facilities, New Jersey, USA",
+    "terms": {
+      "qualification": "Declaration retained as published; no broader third-party rights, endorsement or production redistribution qualification claimed.",
+      "attribution": "White, David; Harwood, Joseph (Heath); Shawler, Justin; Harris, Brian (2025), UAS Orthomosaic Imagery and Lidar-Derived Digital Elevation Models for the Cape May, Railroad, and Ocean City Confined Disposal Facilities, New Jersey, USA, Zenodo, https://doi.org/10.5281/zenodo.17236055",
+      "metadataLocator": "zenodo-record-17236055.json#/metadata/license/id",
+      "deed": "https://creativecommons.org/licenses/by/4.0/",
+      "declaredLicence": "CC BY 4.0"
+    }
+  },
+  "originals": [
+    {
+      "id": "deposit-metadata",
+      "pin": {
+        "path": "E:/BhuAayam-data/task-data/desktop-survey-control-source-20261003/originals/zenodo-record-17236055.json",
+        "bytes": 22031,
+        "sha256": "966599043ea2799b3415a80537acb1e17ae504d57a53685a84f163a8c18c5ab3",
+        "retainedFileTimeUtc": "2026-10-03T18:26:32.3850064Z"
+      },
+      "url": "https://zenodo.org/api/records/17236055",
+      "kind": "unchanged issuing repository API bytes",
+      "downloadCompletedAt": "2026-10-03T23:56:32.4024173+05:30",
+      "httpStatus": 200,
+      "parentArchiveId": null
+    },
+    {
+      "id": "accuracy-archive",
+      "pin": {
+        "path": "E:/BhuAayam-data/task-data/desktop-survey-control-source-20261003/originals/accuracy-reports.zip",
+        "bytes": 36256,
+        "sha256": "54ec53234550ca102ca37be5a2e4e0fc130ebe23c04b20c826913f12bb6f0480",
+        "retainedFileTimeUtc": "2026-10-03T18:26:32.7519357Z"
+      },
+      "url": "https://zenodo.org/api/records/17236055/files/Accuracy%20Reports.zip/content",
+      "kind": "unchanged source ZIP",
+      "downloadCompletedAt": "2026-10-03T23:56:32.7665354+05:30",
+      "httpStatus": 200,
+      "parentArchiveId": null
+    },
+    {
+      "id": "nva-table",
+      "pin": {
+        "path": "E:/BhuAayam-data/task-data/desktop-survey-control-source-20261003/originals/20250722_capemay_nva_report.txt",
+        "bytes": 44314,
+        "sha256": "dfcd0e1fa9030dcdd0b8d9990cf257fe1e8154e73dbd1ff23d1f39c6747e8a0e",
+        "retainedFileTimeUtc": "2026-10-03T18:27:09.0631181Z"
+      },
+      "url": "zip-entry:Accuracy Reports/20250722_capemay_nva_report.txt",
+      "kind": "unchanged decompressed source entry",
+      "downloadCompletedAt": null,
+      "httpStatus": null,
+      "parentArchiveId": "accuracy-archive"
+    },
+    {
+      "id": "pid-table",
+      "pin": {
+        "path": "E:/BhuAayam-data/task-data/desktop-survey-control-source-20261003/originals/20250722_capemay_pid_report.txt",
+        "bytes": 6458,
+        "sha256": "6a185639d8775640a5103136f536b345bc886560a5baef0ef19a5d529740aff2",
+        "retainedFileTimeUtc": "2026-10-03T18:27:09.0681206Z"
+      },
+      "url": "zip-entry:Accuracy Reports/20250722_capemay_pid_report.txt",
+      "kind": "unchanged decompressed source entry",
+      "downloadCompletedAt": null,
+      "httpStatus": null,
+      "parentArchiveId": "accuracy-archive"
+    },
+    {
+      "id": "licence-deed",
+      "pin": {
+        "path": "E:/BhuAayam-data/task-data/desktop-survey-control-source-20261003/originals/cc-by-4.0-deed.html",
+        "bytes": 31950,
+        "sha256": "8dda1ccec4be91fc80821d4e4fd5c568072b9a3a74b2fdc07c249a27e920ef01",
+        "retainedFileTimeUtc": "2026-10-03T18:30:55.0172512Z"
+      },
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "kind": "unchanged licence-deed HTML",
+      "downloadCompletedAt": "2026-10-04T00:00:55.0230961+05:30",
+      "httpStatus": 200,
+      "parentArchiveId": null
+    }
+  ],
+  "publisherArchive": {
+    "checksumAndSizeMatched": true,
+    "sha256": "54ec53234550ca102ca37be5a2e4e0fc130ebe23c04b20c826913f12bb6f0480",
+    "md5": "20cebc187203440be450de8288b0db14",
+    "bytes": 36256,
+    "otherEightReportEntriesRetainedOnlyInsideOriginalArchive": true,
+    "selectedEntryBytesMatched": true
+  },
+  "survey": {
+    "rawObservationFilesRetained": false,
+    "absoluteAccuracy": "Source-reported below 2 cm RTK RMSE; not independently verified here; shared base/trajectory error correlations unquantified.",
+    "method": "Source declares two Leica GS18 RTK GNSS instruments: static rebar base, one-second collection interval, more than three-hour sessions, rover surveyed PIDs/NVAs/VVAs, OPUS base solution and Leica Infinity adjustment.",
+    "reportAcquisitionDate": "Report filenames use 20250722; narrative names July 20th 2025 for Cape May collection. These conflicting source dates remain distinct; report generation time is not a survey epoch.",
+    "verticalAcquisitionLiteral": "ellipsoid heights tied to Geodetic Reference System (GRS) 1980",
+    "exactSurveyEpoch": null,
+    "horizontalReferenceLiteral": "North American Datum (NAD) of 1983 with the 2011 realization",
+    "locator": "zenodo-record-17236055.json#/metadata/description; Ground Control Data"
+  },
+  "roles": {
+    "nva": "Source describes surveyed hard flat surfaces for vertical comparison to ground-classified lidar; report Type=nva, 166 rows, 164 enabled/2 Turned Off, 0 horizontal/164 vertical measured, literal #CPs Withheld: 166 of 166.",
+    "pid": "Source describes surveyed checkerboard centers and image-selected horizontal comparison; report Type=pid, 17 rows, all enabled, 17 horizontal/vertical measured, literal #CPs Withheld: 0 of 17.",
+    "fittedControls": "No unambiguous per-point fitting membership or adjustment-input history established by the retained deposit. PID 0-of-17 withholding alone does not prove points were fitted.",
+    "statementScope": "2025 imagery post-mosaic QA/QC; do not extend it to an undocumented lidar adjustment/training split or to this application.",
+    "independentAcquisition": "Source coordinates originate from separately surveyed GNSS points rather than copying model coordinates.",
+    "sourceIndependenceStatement": "Ground Control Points (GCPs) were only used for accuracy determinations during post-mosaic QA/QC.",
+    "untouchedCheckpoints": "Source reports NVA 166-of-166 withholding; preserve as source text with QA-only statement. No new split, held-out evaluation or independent correctness qualification performed."
+  },
+  "frames": {
+    "acquisition": {
+      "datum": "NAD83(2011)",
+      "height": "GRS80 ellipsoidal",
+      "status": "source_declared_survey_context; exact projected report linkage unestablished"
+    },
+    "finalProducts": {
+      "horizontalLiteral": "NAD 1983 State Plane New Jersey FIPS 2900 (US Feet)",
+      "conversion": "Source says Vdatum conversion occurred after comparisons; no software/grid/version/epoch pins retained.",
+      "verticalLiteral": "North American Vertical Datum of 1988 (US survey feet)"
+    },
+    "report": {
+      "projection": null,
+      "status": "needs_input",
+      "tableSpecificVerticalReference": null,
+      "exactCrsIdentifier": null,
+      "axisMeaning": null,
+      "horizontalUnits": "meter",
+      "verticalUnits": "meter",
+      "axisLabels": [
+        "Control X",
+        "Control Y",
+        "Control Z"
+      ]
+    },
+    "guard": "Do not assign the final-product US-foot State Plane/NAVD88 declaration to the metre report coordinates, infer UTM/zone from ranges, or transform anything to D1 EPSG:7415."
+  },
+  "tables": [
+    {
+      "file": "20250722_capemay_nva_report.txt",
+      "sha256": "dfcd0e1fa9030dcdd0b8d9990cf257fe1e8154e73dbd1ff23d1f39c6747e8a0e",
+      "bytes": 44314,
+      "rows": 166,
+      "enabledRows": 164,
+      "disabledRows": 2,
+      "headerLine": 337,
+      "firstDataLine": 338,
+      "lastDataLine": 503,
+      "columns": [
+        "Name",
+        "Description",
+        "Type",
+        "Control X",
+        "Control Y",
+        "Control Z",
+        "H Offset",
+        "Accuracy X",
+        "Accuracy Y",
+        "Accuracy Z",
+        "Measured X",
+        "Measured Y",
+        "Surface Z",
+        "Z Location",
+        "Delta X",
+        "Delta Y",
+        "Delta XY",
+        "Delta Z",
+        "Delta XYZ"
+      ],
+      "summaryLiterals": [
+        "LP360 Version: 2025.1.151.12",
+        "Generated Time:    2025-08-27 15:02:31 (UTC)",
+        "#CPs Measured( Horizontal ):  0",
+        "#CPs Measured( Vertical ):    164",
+        "#CPs Withheld:             166 of 166"
+      ],
+      "omittedHorizontalMeasurements": 166,
+      "workingCrsDeclaredInTable": false
+    },
+    {
+      "file": "20250722_capemay_pid_report.txt",
+      "sha256": "6a185639d8775640a5103136f536b345bc886560a5baef0ef19a5d529740aff2",
+      "bytes": 6458,
+      "rows": 17,
+      "enabledRows": 17,
+      "disabledRows": 0,
+      "headerLine": 82,
+      "firstDataLine": 83,
+      "lastDataLine": 99,
+      "columns": [
+        "Name",
+        "Description",
+        "Type",
+        "Control X",
+        "Control Y",
+        "Control Z",
+        "H Offset",
+        "Accuracy X",
+        "Accuracy Y",
+        "Accuracy Z",
+        "Measured X",
+        "Measured Y",
+        "Surface Z",
+        "Z Location",
+        "Delta X",
+        "Delta Y",
+        "Delta XY",
+        "Delta Z",
+        "Delta XYZ"
+      ],
+      "summaryLiterals": [
+        "LP360 Version: 2025.1.151.12",
+        "Generated Time:    2025-09-09 12:45:40 (UTC)",
+        "#CPs Measured( Horizontal ):  17",
+        "#CPs Measured( Vertical ):    17",
+        "#CPs Withheld:             0 of 17"
+      ],
+      "omittedHorizontalMeasurements": 0,
+      "workingCrsDeclaredInTable": false
+    }
+  ],
+  "adapterPrerequisite": {
+    "ingestion": "Native TEXT can retain these bytes, but current native-point-control/1 consumer does not accept this layout. Future source-traceable adapter must retain file/hash/line/span and separately reviewed correspondence; do not hand-author a replacement original.",
+    "schema": "Whitespace-delimited fixed-layout table after Control Points heading; 19 tokens; optional Turned Off prefix.",
+    "identifiers": "Description is original gs_### survey-point ID; Name is report row ordinal. Preserve both; neither is a building/object/ULPIN.",
+    "missing": "Preserve ----- as unavailable measurement; preserve numeric zeros, exclusions, nva/pid and source withholding summary separately.",
+    "coordinates": "Read literal Control X/Y/Z and original metre units only after an exact source-backed report CRS/vertical linkage exists; do not use Surface Z or Measured X/Y as survey truth.",
+    "comparisons": "Measured X/Y and Surface Z are issuer-selected product comparisons; rounded Delta fields and RMSE are source results, never application ground truth or current application performance."
+  },
+  "preciseRemainingPrerequisites": [
+    "An issuing-source definition/WKT/EPSG identifier for the metre working report X/Y projection and axis meanings, plus explicit linkage of Control Z to the pre-Vdatum survey height reference/epoch.",
+    "An actual corresponding same-site model/native geometry and reviewed point correspondence in a supported matching frame; none is acquired or invented here.",
+    "Any claim requiring fully independent untouched lidar checkpoints needs source-backed per-point fitting/exclusion history; retain literal NVA/PID report differences rather than invent a partition."
+  ],
+  "retainedBaseline": {
+    "D1": "Completed EPSG/3DBAG interpretation found no independent D1 object controls; not revisited or reassociated.",
+    "changedGap": "Actual small surveyed-point tables, named GNSS datum/height context and source QA method now exist in a separate family; exact projected report frame remains missing.",
+    "DATA06": "Pending in orchestration ledger; no retained usable independent table in catalogue; prior NYC pack is aerial imagery/DEM/lidar with differing dates, no verified same-area drone capture."
+  },
+  "checkedLeads": [
+    {
+      "result": "Actual Helenenschacht GCP text and five-row CSV inspected; projected/vertical frame and untouched-checkpoint role not established. Discovery only; not official merely because public.",
+      "family": "Existing OpenDroneMap lead"
+    },
+    {
+      "result": "ScienceBase query 403; no authentication/bypass/retry. Search and one DataCite query did not supply an original table; no online-absence assertion.",
+      "family": "USGS"
+    },
+    {
+      "result": "Named NAVD88 query supplied selected USACE-affiliated deposit, actual small ZIP and exact surveyed reports. Bulk imagery/DEM/clouds omitted.",
+      "family": "Institutional/research Zenodo"
+    }
+  ],
+  "privateInspection": {
+    "path": "E:/BhuAayam-data/task-data/desktop-survey-control-source-20261003/inspection.json",
+    "bytes": 8933,
+    "sha256": "609b0a21c973b8cb79c5df14d261a5454fa911ce51790b1d465f0d6650b9ce91",
+    "retainedFileTimeUtc": "2026-10-03T18:34:09.5378191Z"
+  },
+  "discoveryReceipt": {
+    "path": "E:/BhuAayam-data/task-data/desktop-survey-control-source-20261003/discovery-receipt.json",
+    "bytes": 4904,
+    "sha256": "e2e9cef85e99a6c9a89fd33d3156a5bbc1f82074906f32fbdef15576b81e6b17",
+    "retainedFileTimeUtc": "2026-10-03T19:56:53.9058346Z"
+  },
+  "checks": {
+    "incompleteData": "NVA horizontal ----- and source literal zeros/exclusions retained",
+    "codeBuild": "not applicable: source evidence only",
+    "publisherZipSizeAndMd5": "pass",
+    "selectedZipEntryBytes": "pass",
+    "sourceSchemaAndRowCounts": "pass: NVA166/PID17, unique original IDs, two excluded NVA rows"
+  },
+  "unqualified": [
+    "Report CRS/vertical mapping and executable reference comparison",
+    "Model correspondence, accuracy, geometry admission and global placement",
+    "D1/Indian operational applicability, rights/identity/measurement",
+    "Learning/evaluation/held-out/performance/release/deployment"
+  ],
+  "settings": {
+    "suppliedSandboxMode": "danger-full-access",
+    "requestedEffort": "high",
+    "requestedSpeed": "default/standard",
+    "suppliedApprovalPolicy": "never",
+    "actualPerTurnModelEffortTier": "unexposed",
+    "requestedModel": "gpt-6.1-sol",
+    "verification": "Supplied current-turn instructions; no global-config or running-tier claim."
+  },
+  "cleanup": "No services/native/model/GPU/held-out/provider calls or owned processes started. Staging and all production/catalogue/ML files remain read-only; source writers closed."
+}
