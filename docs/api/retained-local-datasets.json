@@ -845,6 +845,20 @@
       "scope": "Private canonical workflow code and local controls; corrected real host smoke uses IFC2X3 with SQL/storage doubles; IFC4 summary reuses retained output.",
       "httpPersistenceVerified": false,
       "integratedRuntimeProfile": "requires fresh profile/2 for actual checkout; saved owner profile is historical"
+    },
+    "taskSufficiencyEvidence": {
+      "guide": "docs/evidence/usp/ifc-sufficiency-handoff.md",
+      "codeCommit": "d8b608c56b8e05b241cb054e6cf48b17ada8b126",
+      "proofSha256": "ada26a09b930c562573bd60a54c8a7f59a036390b8a9ac58c86eeacc23eeaee3",
+      "scope": "Canonical original retention, evaluate/read/replay and final-access/stale refusal over unchanged IFC2X3 original with disclosed in-memory SQL/source/case controls; retained native output used for metadata schema/policy controls only.",
+      "acceptedResultIntegrationVerified": false,
+      "httpPersistenceVerified": false,
+      "nativeArtifactRead": false,
+      "sourceUnits": "native_artifact_not_read",
+      "limitations": [
+        "Exact accepted IFC input/result envelope was not retained; historical raw reader differs from current physical checkout. No envelope fabrication, pin alias or native rerun.",
+        "No geometry, placement, property/floor correspondence, rights, accuracy or learning qualification."
+      ]
     }
   },
   {

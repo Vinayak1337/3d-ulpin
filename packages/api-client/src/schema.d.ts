@@ -59528,7 +59528,7 @@ export interface components {
                 }[];
                 processing: {
                     /** @enum {string} */
-                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required" | "unavailable" | "inspected_local" | "inspected_partial";
+                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required" | "unavailable" | "inspected_local" | "inspected_partial" | "inspected_metadata";
                     /** Format: uuid */
                     jobId: string | null;
                     resultSha256: string | null;
@@ -59636,6 +59636,47 @@ export interface components {
                                 rights: "not_assessed";
                             };
                         }) | null;
+                        /** @enum {string} */
+                        coverage: "accepted_result_metadata_only; native_artifact_not_read";
+                    };
+                    ifc?: {
+                        inputSha256: string | null;
+                        readerSha256: string | null;
+                        acceptedFence: number | null;
+                        /** @enum {string} */
+                        tools: "not_checked" | "current" | "unavailable";
+                        code: string | null;
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "ulpin-native-ifc/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            schema: "IFC2X3" | "IFC4";
+                            entityCount: number;
+                            recordCount: number;
+                            buildingCount: number;
+                            storeyCount: number;
+                            spaceCount: number;
+                            /** @enum {string} */
+                            georeferenceState: "supplied_unqualified" | "missing_or_unqualified";
+                            /** @enum {string} */
+                            inspectionFrame: "source_local";
+                            /** @enum {boolean} */
+                            metadataOnly: true;
+                            /** @enum {string} */
+                            geometry: "unsupported";
+                            /** @enum {string} */
+                            globalPlacement: "not_qualified";
+                            /** @enum {boolean} */
+                            unitConversionApplied: false;
+                            /** @enum {boolean} */
+                            storeysAreLegalUnits: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        } | null;
+                        /** @enum {string} */
+                        sourceUnits: "native_artifact_not_read";
                         /** @enum {string} */
                         coverage: "accepted_result_metadata_only; native_artifact_not_read";
                     };
@@ -59751,7 +59792,7 @@ export interface components {
                 }[];
                 processing: {
                     /** @enum {string} */
-                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required" | "unavailable" | "inspected_local" | "inspected_partial";
+                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required" | "unavailable" | "inspected_local" | "inspected_partial" | "inspected_metadata";
                     /** Format: uuid */
                     jobId: string | null;
                     resultSha256: string | null;
@@ -59859,6 +59900,47 @@ export interface components {
                                 rights: "not_assessed";
                             };
                         }) | null;
+                        /** @enum {string} */
+                        coverage: "accepted_result_metadata_only; native_artifact_not_read";
+                    };
+                    ifc?: {
+                        inputSha256: string | null;
+                        readerSha256: string | null;
+                        acceptedFence: number | null;
+                        /** @enum {string} */
+                        tools: "not_checked" | "current" | "unavailable";
+                        code: string | null;
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "ulpin-native-ifc/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            schema: "IFC2X3" | "IFC4";
+                            entityCount: number;
+                            recordCount: number;
+                            buildingCount: number;
+                            storeyCount: number;
+                            spaceCount: number;
+                            /** @enum {string} */
+                            georeferenceState: "supplied_unqualified" | "missing_or_unqualified";
+                            /** @enum {string} */
+                            inspectionFrame: "source_local";
+                            /** @enum {boolean} */
+                            metadataOnly: true;
+                            /** @enum {string} */
+                            geometry: "unsupported";
+                            /** @enum {string} */
+                            globalPlacement: "not_qualified";
+                            /** @enum {boolean} */
+                            unitConversionApplied: false;
+                            /** @enum {boolean} */
+                            storeysAreLegalUnits: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        } | null;
+                        /** @enum {string} */
+                        sourceUnits: "native_artifact_not_read";
                         /** @enum {string} */
                         coverage: "accepted_result_metadata_only; native_artifact_not_read";
                     };

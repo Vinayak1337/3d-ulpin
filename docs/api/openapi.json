@@ -332078,7 +332078,8 @@
                         "canonical_conversion_required",
                         "unavailable",
                         "inspected_local",
-                        "inspected_partial"
+                        "inspected_partial",
+                        "inspected_metadata"
                       ]
                     },
                     "jobId": {
@@ -332559,6 +332560,187 @@
                         "tools",
                         "code",
                         "metadata",
+                        "coverage"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "ifc": {
+                      "type": "object",
+                      "properties": {
+                        "inputSha256": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                        },
+                        "readerSha256": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                        },
+                        "acceptedFence": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "tools": {
+                          "type": "string",
+                          "enum": [
+                            "not_checked",
+                            "current",
+                            "unavailable"
+                          ]
+                        },
+                        "code": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]{1,100}(?![\\s\\S])"
+                        },
+                        "summary": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "schemaVersion": {
+                              "type": "string",
+                              "enum": [
+                                "ulpin-native-ifc/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 33554432
+                            },
+                            "schema": {
+                              "type": "string",
+                              "enum": [
+                                "IFC2X3",
+                                "IFC4"
+                              ]
+                            },
+                            "entityCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "recordCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
+                            },
+                            "buildingCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
+                            },
+                            "storeyCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
+                            },
+                            "spaceCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
+                            },
+                            "georeferenceState": {
+                              "type": "string",
+                              "enum": [
+                                "supplied_unqualified",
+                                "missing_or_unqualified"
+                              ]
+                            },
+                            "inspectionFrame": {
+                              "type": "string",
+                              "enum": [
+                                "source_local"
+                              ]
+                            },
+                            "metadataOnly": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            },
+                            "geometry": {
+                              "type": "string",
+                              "enum": [
+                                "unsupported"
+                              ]
+                            },
+                            "globalPlacement": {
+                              "type": "string",
+                              "enum": [
+                                "not_qualified"
+                              ]
+                            },
+                            "unitConversionApplied": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "storeysAreLegalUnits": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "rights": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "schemaVersion",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "schema",
+                            "entityCount",
+                            "recordCount",
+                            "buildingCount",
+                            "storeyCount",
+                            "spaceCount",
+                            "georeferenceState",
+                            "inspectionFrame",
+                            "metadataOnly",
+                            "geometry",
+                            "globalPlacement",
+                            "unitConversionApplied",
+                            "storeysAreLegalUnits",
+                            "rights"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "sourceUnits": {
+                          "type": "string",
+                          "enum": [
+                            "native_artifact_not_read"
+                          ]
+                        },
+                        "coverage": {
+                          "type": "string",
+                          "enum": [
+                            "accepted_result_metadata_only; native_artifact_not_read"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "inputSha256",
+                        "readerSha256",
+                        "acceptedFence",
+                        "tools",
+                        "code",
+                        "summary",
+                        "sourceUnits",
                         "coverage"
                       ],
                       "additionalProperties": false
@@ -333154,7 +333336,8 @@
                         "canonical_conversion_required",
                         "unavailable",
                         "inspected_local",
-                        "inspected_partial"
+                        "inspected_partial",
+                        "inspected_metadata"
                       ]
                     },
                     "jobId": {
@@ -333635,6 +333818,187 @@
                         "tools",
                         "code",
                         "metadata",
+                        "coverage"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "ifc": {
+                      "type": "object",
+                      "properties": {
+                        "inputSha256": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                        },
+                        "readerSha256": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                        },
+                        "acceptedFence": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "tools": {
+                          "type": "string",
+                          "enum": [
+                            "not_checked",
+                            "current",
+                            "unavailable"
+                          ]
+                        },
+                        "code": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]{1,100}(?![\\s\\S])"
+                        },
+                        "summary": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "schemaVersion": {
+                              "type": "string",
+                              "enum": [
+                                "ulpin-native-ifc/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 33554432
+                            },
+                            "schema": {
+                              "type": "string",
+                              "enum": [
+                                "IFC2X3",
+                                "IFC4"
+                              ]
+                            },
+                            "entityCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "recordCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
+                            },
+                            "buildingCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
+                            },
+                            "storeyCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
+                            },
+                            "spaceCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
+                            },
+                            "georeferenceState": {
+                              "type": "string",
+                              "enum": [
+                                "supplied_unqualified",
+                                "missing_or_unqualified"
+                              ]
+                            },
+                            "inspectionFrame": {
+                              "type": "string",
+                              "enum": [
+                                "source_local"
+                              ]
+                            },
+                            "metadataOnly": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            },
+                            "geometry": {
+                              "type": "string",
+                              "enum": [
+                                "unsupported"
+                              ]
+                            },
+                            "globalPlacement": {
+                              "type": "string",
+                              "enum": [
+                                "not_qualified"
+                              ]
+                            },
+                            "unitConversionApplied": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "storeysAreLegalUnits": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "rights": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "schemaVersion",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "schema",
+                            "entityCount",
+                            "recordCount",
+                            "buildingCount",
+                            "storeyCount",
+                            "spaceCount",
+                            "georeferenceState",
+                            "inspectionFrame",
+                            "metadataOnly",
+                            "geometry",
+                            "globalPlacement",
+                            "unitConversionApplied",
+                            "storeysAreLegalUnits",
+                            "rights"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "sourceUnits": {
+                          "type": "string",
+                          "enum": [
+                            "native_artifact_not_read"
+                          ]
+                        },
+                        "coverage": {
+                          "type": "string",
+                          "enum": [
+                            "accepted_result_metadata_only; native_artifact_not_read"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "inputSha256",
+                        "readerSha256",
+                        "acceptedFence",
+                        "tools",
+                        "code",
+                        "summary",
+                        "sourceUnits",
                         "coverage"
                       ],
                       "additionalProperties": false
