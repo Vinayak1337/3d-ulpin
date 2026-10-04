@@ -62,6 +62,8 @@ def stage(action, assignment_path, fit_root=None, *, fragment=fragment, training
     proof = None
     if getattr(fragment, "IS_RANK_FIT", False):
         require(training_sources is None and training == TRAINING, "rank_fit_mixed_training_sources")
+        # Phase authority resolves its independently accepted predecessor before
+        # make_freeze and the first mkdir; no new containment CLI capability.
         sources = fragment.stage_sources(assignment_path, assignment_bytes, BASELINE, RUNTIME)
     else:
         sources = {}
