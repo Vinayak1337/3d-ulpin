@@ -40,6 +40,15 @@ export function validateAdaptiveMapping(raw:unknown,sourceProfile:SourceProfile,
       return invalid('MODEL_FIELD_SEMANTICS','A personal or address field cannot be a building identity or name.');
     if(op.target==='building.sourceKey' && /(?:parcel|survey|lot|bbl|plot|tax|floor|unit)/i.test(field))
       return invalid('MODEL_FIELD_SEMANTICS','A parcel, tax or unit identifier cannot serve as a building source key.');
+    // Uniqueness on one row does not establish identifier meaning. Refuse clear
+    // measurement/date cues, without rejecting an explicitly identifier-named
+    // field solely because its name also contains a measurement word. Neither
+    // cue establishes source meaning: issuer evidence and officer review remain.
+    const words=field.replace(/([a-z0-9])([A-Z])/g,'$1_$2').toLowerCase().split(/[_ -]+/);
+    const identifierNamed=words.some(word=>['id','identifier','key','uuid','guid','objectid','globalid'].includes(word));
+    if(op.target==='building.sourceKey'&&!identifierNamed
+      &&words.some(word=>['height','elevation','area','length','volume','date','time','year'].includes(word)))
+      return invalid('MODEL_FIELD_SEMANTICS','A measurement or date does not establish building identity; review source identifier meaning or author a manual recipe.');
     if(op.target==='building.name' && /(?:^|[_ -])(?:id|bin|bbl|code|number|date|height|elevation|parcel|lot|tax|unit|floor)(?:$|[_ -])/i.test(field))
       return invalid('MODEL_FIELD_SEMANTICS','An identifier, measurement or date field cannot serve as a building name.');
   }
