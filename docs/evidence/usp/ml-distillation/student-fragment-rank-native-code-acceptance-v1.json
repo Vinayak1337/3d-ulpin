@@ -1,0 +1,72 @@
+{
+  "coordinatorVerification": {
+    "integratedDiffCheckExitCode": 0,
+    "nativeModelOrGpuRun": false,
+    "receiptAndSourceMatchingExitCode": 0
+  },
+  "decision": "accept_code_admission_and_cpu_wiring_only",
+  "implementation": "Explicit exact-head rank assignment/freeze and original donor subsets use existing stage/dispatcher/loader/guard. Seven single-token continuation scores are cast to float32; complete ordered finite vectors precede existing projection. CPU-only defaults retain train eligibility; native development authority is explicit and evaluation refused. Native synthetic NLL/weight/gradient proof does not update or label model parameters.",
+  "integratedCodeCommit": "508694ebf87f5c01d0608df9718e5e50af711f73",
+  "integratedEvidenceCommit": "4c30cea97c2379015a7f68d6f2293653716cfc1a",
+  "integratedReport": {
+    "bytes": 7973,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-native-code-v1.json",
+    "physicalSha256": "ed0898badc16c94a88954479b248e031105ae66f5e5551b3a0c2ac7bfcb13579"
+  },
+  "next": "Separate STUDENT-27 freeze authorizes one fresh original-base seven-score run, then host-only comparison after technical acceptance and cleanup. Teacher remains idle/blind; held-out evaluation closed.",
+  "ownerBaseCommit": "67e69991d35c92ac07e1db24b969c69621536549",
+  "ownerCodeCommit": "0bc9836a7b64be84b43a009378cd36c16893996d",
+  "ownerEvidenceCommit": "8ae5484d21764777466651e95b184ed10d5c267f",
+  "ownerFinalCheckpoint": {
+    "bytes": 4169,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-native-code-return-e0b6a5398a994648b142cec85b3a59ef\\final-checkpoint.json",
+    "physicalSha256": "df0d1e9b8dd0c3ea3ad98b3c4680cb21a80c1a22edad80823681e29b6f279aab"
+  },
+  "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+  "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+  "recordedAtUtc": "2026-10-03T21:49:04.457916+00:00",
+  "review": {
+    "bytes": 20694,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-26-review-v1-fb9a247128184a22ba892710e2e36ac1\\review.json",
+    "physicalSha256": "5da645f5080394e6048b305751b0a24852ad4bfbcbafa0d7a928ed966e5c4aa5"
+  },
+  "reviewSummary": {
+    "findings": [],
+    "integrationContentMatchesOwner": true,
+    "matchedReferences": 31,
+    "matchedUniqueReferences": 23,
+    "nativeTransitiveSourceCount": 23,
+    "ownedEvidenceFiles": 2,
+    "ownedSources": 7,
+    "protectedExistingSourcesUnchanged": 32
+  },
+  "sourcePins": {
+    "bytes": 10060,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-native-code-return-e0b6a5398a994648b142cec85b3a59ef\\source-pins.json",
+    "physicalSha256": "96332f2bf6598fb48af2f7518616f6c560a5bffc1a96df2f7836a7a2e6fef7db"
+  },
+  "stagingReadOnlyHead": "4ece1fb3e98819ed6fa5233a97f16e245b0238dc",
+  "task": "STUDENT-26-FRAGMENT-RANK-NATIVE-CODE",
+  "unqualified": [
+    "native tokenizer/model/forward/technical loss proof",
+    "actual stage/profile/contained guard and cleanup",
+    "learned relevance or quality",
+    "fit/evaluation/promotion/operational source or release"
+  ],
+  "verificationConsumed": {
+    "cpuControls": 4,
+    "diffCheckExitCode": 0,
+    "exitCode": 0,
+    "inMemoryCompiles": 7,
+    "mocks": [
+      "future Git head/blob authority",
+      "tokenizer bytes and IDs",
+      "native modules/tensors/Qwen forward",
+      "native loss proof"
+    ],
+    "nativeImportAttempts": 0,
+    "real": "Nine pinned development metadata files and two donor profiles; real admission/make_freeze stopped at first intercepted mkdir.",
+    "rerun": false
+  },
+  "version": "student-fragment-rank-native-code-acceptance/1"
+}

@@ -1,0 +1,158 @@
+{
+  "version": "association-selector-baseline-assignment/1",
+  "task": "STUDENT-09-BASELINE",
+  "recordedAt": "2026-10-03",
+  "purpose": "One contained pretrained source-span-selector baseline on the unchanged two-example development slice. Establish syntax/range/expanded-validation and source-native coverage for the new representation before deciding any adapter fit.",
+  "coordinatorPreparationBase": "da25f7730bfc3a3dffe0fa40d65a2b8dfa03281d",
+  "primaryStagingHeadObservedReadOnly": "408efe0838d9d5a1d80ab01ccf2b197fdd230dec",
+  "executionOwner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "studentCodeCommit": "409bae3baafcebb9ad152a702cef07e3c286815a",
+  "runtimeCodeCanonicalLfSha256": {
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+    "scripts/usp/learning/association/association_student.py": "12f55b8e6d4ba5db3f0617381a8c5af744714400fc02b19611d61e169edf7324",
+    "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+    "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/selector_baseline.py": "842088a7d5042c29c74a80049601c634288196eafb0fd54d81d737be008c430f",
+    "scripts/usp/learning/association/stage_selector_baseline.py": "70df68a9b8d89a8316f75c3602ac21b8597cfc555ca1b26eed101aae42be0629"
+  },
+  "preparationAcceptance": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-selector-preparation-acceptance-v1.json",
+  "preparationAcceptancePhysicalSha256": "326814cd302cdda70e8a79bd5571394a1a5fd9156260bb03c0f972e2666d8371",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "modelWeightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+  "modelLicence": "Apache-2.0; retained pinned model receipt; local-files-only/safetensors/no remote code.",
+  "settings": {
+    "seed": 17,
+    "cpuThreads": 2,
+    "maxInputTokens": 2048,
+    "maxNewTokens": 768,
+    "batchSize": 1,
+    "doSample": false,
+    "dtype": "float16",
+    "attention": "sdpa",
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumFreeCudaBytes": 1610612736,
+    "maxPeakProcessRssBytes": 6442450944,
+    "maxRunSeconds": 600,
+    "maxFitSeconds": 600,
+    "evaluationAllowed": false
+  },
+  "promptVersion": "association-selector-prompt/1",
+  "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+  "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+  "selectorSchema": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\scripts\\usp\\learning\\association\\selector-schema-v1.json",
+  "lexicalPolicy": {
+    "version": "lossless_lexical_spans/1",
+    "pattern": "\\w+|\\s+|[^\\w\\s]",
+    "flags": "Python re.UNICODE default; no normalization or case folding."
+  },
+  "inputBatchSha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536",
+  "cases": [
+    {
+      "exampleId": "ifc4-source-native-v1",
+      "inputCanonicalJsonSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4"
+    },
+    {
+      "exampleId": "ifc2x3-source-native-v1",
+      "inputCanonicalJsonSha256": "5cdbd1fec015bc2eecde12ee37dea41eeb0fc7c6eb9e7ac8470af04bd74c3a88"
+    }
+  ],
+  "executionAllowance": {
+    "cpuPreparation": true,
+    "stageModelRun": true,
+    "loadModel": true,
+    "inference": true,
+    "fit": false,
+    "evaluation": false,
+    "promotion": false,
+    "freshBaselinePhases": 1
+  },
+  "acceptedParentRuntime": {
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\baseline-af47550c33ea4dc2a3dc1aebc56363c4",
+    "profileSha256": "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438",
+    "runtimeFiles": 19375,
+    "modelFiles": 9,
+    "inputPhysicalSha256": {
+      "development.json": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536",
+      "schema-v1.json": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+      "family-freeze.json": "93c243f28895ac084c3f1853cba80b9e0b5286f881aba44d6cb7ab6e3a164730",
+      "model-acquisition.json": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2",
+      "run-freeze.json": "3e3f19169714ace15c86da655337fd5abfe3459fc766bdf567d831c1ccc49b73"
+    },
+    "runtime": "Fresh copy of the accepted CPython 3.11/torch 2.8.0+cu128/transformers 4.57.6 runtime; all runtime/model bytes pinned by the unchanged parent profile. No package or model acquisition.",
+    "futureProfile": "Stage a fresh private selector-baseline root; inspect generated freeze/profile/command against this assignment and use the existing guard to verify profile, OS no-egress token, Job limits, outputs and cleanup before acceptance."
+  },
+  "resourceBounds": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600,
+    "maxInputTokens": 2048,
+    "maxNewTokens": 768,
+    "cpuThreads": 2,
+    "batchSize": 1
+  },
+  "lengthPolicy": "Measure both source-only selector prompts with the pinned tokenizer before model loading, retain exact lexical view/codepoint offsets and Python/Unicode versions, and refuse over-limit input without truncation. No prompt/source/setting changes or automatic retry.",
+  "inferencePolicy": "Fresh pretrained base only; no adapter, teacher targets, explanations, independent expectations or canonical targets in model input. Use the exact reviewed greedy generate/resource path. Preserve raw response before strict JSON/schema/range expansion and unchanged legacy semantic/family validation. Whole-response rejection; no repairs or partial accepted claims.",
+  "hostComparison": {
+    "sourceExpectations": "E:/BhuAayam-data/task-data/ml-distillation/student/development-v1/expectations.json",
+    "expectedClaimsSha256": "061b98c57bdb386c8fc4bce38660b18fd16340d739d40f75b60b10f95a6f93ce",
+    "expectedClaims": 6,
+    "expectedExamples": 2,
+    "families": 1,
+    "retainedOriginalBaselineSummary": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\baseline-af47550c33ea4dc2a3dc1aebc56363c4\\baseline-summary.json",
+    "retainedOriginalBaselineSummarySha256": "19240f8f4256e196a2ff8025c09d0d1f5308f73a66f87da132ab57d73ad00a36",
+    "originalCounts": {
+      "validOutputs": 0,
+      "correctAcceptedClaims": 0,
+      "expectedClaims": 6
+    },
+    "metricDefinition": "On the host after guard/output/cleanup acceptance, compare only accepted expanded outputs with unchanged source-supported expectations by the original (role,state,literal,unit) signature, per example. Report unique accepted signatures/correct intersection/expected denominator, emitted claim count, source-native precision (null if none), coverage and valid no_canonical_targets abstentions separately. Report raw JSON/schema/range/expanded-validation counts and rejection stages separately. Rejected expansions receive zero accepted-claim credit. Do not use the old raw-text citation summarizer on selector arrays.",
+    "method": "One short host-only in-memory comparison may write a new summary receipt outside the contained model stage. Do not change the frozen executable code before staging or edit existing summaries. Pin expected bytes before reading; never place expectations in the contained inputs/code/prompt.",
+    "qualification": "Two related IFC development examples; exact source spans and validator acceptance are not independent semantic accuracy. No natural conflict accuracy or canonical matching/generalization/operational qualification is supported."
+  },
+  "developmentCriteriaBeforeAnyLaterEvaluation": {
+    "validRawSelectorOutputs": "2/2",
+    "validExpandedOutputs": "2/2",
+    "correctExpectedClaims": "6/6",
+    "acceptedSourceNativePrecision": 1,
+    "noCanonicalTargetsAbstentions": "2/2",
+    "nullAndAbsentStates": "Preserve distinct source-supported null and absent states; no invented values.",
+    "canonicalLinks": "Empty in both outputs.",
+    "resourcesAndCleanup": "Existing measured caps and containment/cleanup acceptance all pass.",
+    "interpretation": "Predeclared tiny development criteria only. This baseline cannot authorize fitting, opening evaluation or promotion automatically; inspect actual errors and return for the next bounded assignment."
+  },
+  "ownership": "This learner alone owns the model/GPU phase and new baseline evidence/handoff. Existing coordinator schema/family/data/teacher files, old code/runs, staging, shared containment/resources/dependencies, frontend, services and gateway stay read-only. No source/model acquisitions or provider calls.",
+  "settingsRequired": {
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "speed": "default/standard",
+    "observedTurnSettings": "Report actual supplied permissions and model/effort/tier only when exposed. Dispatch has no tier field; a prompt does not configure speed."
+  },
+  "continuation": "One fresh private stage and one contained pretrained baseline phase from the renewed freeze. On any execution/resource/length/pin failure preserve evidence and return the exact blocker; no automatic retry or broad repair. Return fresh profile/freeze/prompt/input/code hashes, raw outputs, separate validator and host metrics, actual latency/resources, guard/cleanup evidence and exact new v2 evidence/handoff commit. Callback only to the ML coordinator and stop; no fitting, evaluation access or promotion.",
+  "evaluationOpened": false,
+  "teacherFeedback": "Teacher remains idle and receives no development/evaluation contents, expected labels or predictions.",
+  "promotionAuthorized": false,
+  "stageCorrectionAcceptance": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-selector-stage-correction-acceptance-v1.json",
+  "stageCorrectionAcceptancePhysicalSha256": "ca0e1edade32e9f33d280cecb4c1a682f1da7e9c3678f49529f0ae6608ee7e75",
+  "previousBlockedAttempt": {
+    "receipt": "docs/evidence/usp/ml-distillation/student/selector-baseline-v1.json",
+    "physicalSha256": "29154bbbab7ddb2730b8a4ff0e5144785eedd4aa34154ded9c9f1a33a69e04ea",
+    "stageAttempts": 1,
+    "modelAttempts": 0,
+    "status": "blocked before root.mkdir; preserve the failed staging evidence and null quality metrics."
+  },
+  "renewedExecution": "New separately authorized stage/inference after inspected source-pin correction. Only execution code checkpoint/staging-leaf pin change; model/runtime/prompt/inputs/settings/expectations/resources/metrics and quality criteria remain frozen. Use the exact learner physical checkout; coordinator CRLF copies are not execution bytes.",
+  "ownedEvidenceOutput": "docs/evidence/usp/ml-distillation/student/selector-baseline-v2.json and selector-baseline-v2.md. Use a new private runtime/evidence root and preserve v1 blocked artifacts; never overwrite them."
+}

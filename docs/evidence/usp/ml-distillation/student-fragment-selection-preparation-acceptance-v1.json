@@ -1,0 +1,120 @@
+{
+  "version": "student-fragment-selection-preparation-acceptance/1",
+  "recordedAtUtc": "2026-10-03T11:33:48.632941+00:00",
+  "status": "cpu_source_only_fragment_retrieval_codec_and_default_off_hook_accepted_native_unqualified",
+  "ownerCodeCommit": "e8b032c92a974ed2bab545587ad4c4cb8d2f4161",
+  "ownerEvidenceCommit": "0a6c4ce7e9de9594af4744d88cc9172fd5c2a649",
+  "integratedCodeCommit": "1ac0ccf12374a60cf3de4a15be14b393b5f0f8ed",
+  "integratedEvidenceCommit": "02abd5c3ad641d0101865fa867dfe102d5bdba07",
+  "ownerReceiptPhysicalSha256": "f0c5d017713c1f473a18f7a4bb0d85dce99e4a3271fb88be1fb6a21a184aead0",
+  "integratedReceipt": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-selection-preparation-v1.json",
+    "physicalSha256": "840b6264d5a987537b9cd99980b53e44dccc3094ff170bf463f53289db358ce3",
+    "bytes": 20230
+  },
+  "inspection": "Four Python deltas reviewed: source-only complete request/fragment/provenance/order/family context; strict no-repair/current ID projection; context-limited empty retrieval; existing loader/single generation and shared byte controller through default-off run_local parameters. Guard/CLI/stagers/native/selector/candidate paths unchanged; no current stage admits this route.",
+  "verification": {
+    "command": "Pinned Python -B -I -S -; reference/source/seam pins and two pure saved route/projection checks",
+    "exitCode": 0,
+    "audit": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\fragment-selection-preparation-review-20261003.json",
+      "physicalSha256": "c8a4bad79a1145caccb241b648b522c4a3d52acf99e5a9ed23a9bfd5db62d4a2",
+      "bytes": 1581
+    },
+    "uniqueReferencePinsMatched": 20,
+    "privateArtifactPinsMatched": 12,
+    "executedSourcePinsMatched": 17,
+    "futureInterfaceSources": 16,
+    "futureHostSeams": 5,
+    "pureProjectionChecks": 2,
+    "workerFocusedCpuControlsConsumed": 5,
+    "workerCompiledSourcesConsumed": 4,
+    "workerCommandExits": {
+      "compile": 0,
+      "controls": 0,
+      "preparation": 0
+    },
+    "workerSuiteOrPreparationRepeated": false,
+    "nativeModelRun": false,
+    "teacherTargetsOrExpectationsConsumed": false,
+    "sourceReconstruction": false,
+    "acceptedTeacherDatasetCodecAdmission": {
+      "rows": 6,
+      "purpose": "Separate post-acceptance pure schema/current-ID/fragments compatibility check of accepted provisional train targets; no model, fitting or accuracy credit."
+    }
+  },
+  "representation": {
+    "familyCanonicalLfSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+    "policy": {
+      "bounds": {
+        "contextUtf8Bytes": 600000,
+        "responseUtf8Bytes": 65536
+      },
+      "candidates": "unchanged input.evidence in original order; contiguous c0 through c24; no label-derived selection or ordering",
+      "empty": "no_support_in_supplied_context; never factual absence in a property or whole original",
+      "forced": [
+        "JSON/schema",
+        "context identity",
+        "current unique IDs",
+        "unchanged retrieved fragments"
+      ],
+      "identity": "canonical complete request/context, original fragment order/provenance and frozen family/split",
+      "notEnforced": [
+        "relevance",
+        "conflict completeness",
+        "nonempty or full selection"
+      ],
+      "projection": "unchanged original fragments only; no generated claims or canonical associations",
+      "selection": "optional distinct current IDs; full context identity; whole-response rejection without repair",
+      "transport": "existing ID-choice grammar primitives and ByteLevel Vocabulary/Controller",
+      "version": "association-fragment-retrieval-policy/1"
+    },
+    "policySha256": "a3768b2c51d2e64ce3c75c14bd6c0d7241747092cff37ba2c8f8344c9afba721",
+    "promptVersion": "association-fragment-prompt/1",
+    "schemaCanonicalLfSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+    "systemPromptSha256": "d3a93d1323145cf31db765de8647d5f0ce252f653b6b38273fc5a184fd00dbac",
+    "tokenizerFilesSha256": {
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    },
+    "version": "evidence-association-fragment-selection/1"
+  },
+  "execution": {
+    "cpuOnly": true,
+    "modelStageCreated": false,
+    "modelRuntimeCopied": false,
+    "modelOrTokenizerInitialized": false,
+    "modelInferencePhases": 0,
+    "fitPhases": 0,
+    "sourceReconstruction": false,
+    "teacherTargetsConsulted": false,
+    "expectationsConsumed": false,
+    "evaluationOpened": false,
+    "servicesStarted": false,
+    "sharedApplicationChanged": false,
+    "pushOrDeploy": false,
+    "ownedResourcesRemaining": []
+  },
+  "nextSourceOnlyDevelopment": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-91836b2691344e2e8f0f28535ed6c4cb\\preparation.json",
+    "physicalSha256": "eef78431d063df9a2b9e337b74fe6ce7d6b40a63783a9e5eb7b583688bc41bc4",
+    "bytes": 6023
+  },
+  "hostExpectations": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\requested-fragment-development-v1-host-expectations.json",
+    "physicalSha256": "71efa01a6e56e35c24a6e9440c01e0e8aeb3be322fedc877343765eae45f943e",
+    "bytes": 1833
+  },
+  "futureCriteria": "One supported requested subset and one context-limited unsupported empty answer; both complete valid and exact request sets, original bounds/cleanup. Unqualified until an actual separately frozen contained run. No fit justified solely by current technical controls.",
+  "settings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "primaryStagingReadOnlyObservation": "188bdfd651c3078a6c2d72aa0fa64ae1acbe5cd3"
+}

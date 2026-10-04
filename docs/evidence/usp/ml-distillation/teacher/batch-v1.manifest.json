@@ -1,0 +1,80 @@
+{
+  "version": "ml-distill-teacher-batch/1",
+  "createdDate": "2026-10-02",
+  "status": "provisional_synthetic_supervision",
+  "split": "train",
+  "familyIds": [
+    "in-bihar-magnolia-residency",
+    "in-haryana-rera-2831"
+  ],
+  "coordinatorCommit": "3073365b193872362c44e9e74e2811d4be783855",
+  "contractPins": {
+    "schema": "3ba8fab2958ba93b042493bc4e6c0693f2049bdaa07f260c6639110c87a36a42",
+    "freeze": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+  },
+  "codePins": {
+    "assemble_batch.py": "d394f27d1af7128e039ffde95e5e19d8852552bea53f1e4434340d3c5ff1621d",
+    "prepare_inventory.py": "4ec63fc3d9fad2630e556e9dbe5a2da8880f2bdafb99dde885e5e11c53078d95"
+  },
+  "codeHashConvention": "canonical LF bytes; original/data hashes remain raw",
+  "sourceInventory": "docs/evidence/usp/ml-distillation/teacher/inventory.json (earlier acquisition checkpoint; freeze selects train)",
+  "artifacts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\train-teacher-v1.jsonl",
+      "bytes": 65298,
+      "sha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\rejected-interpretations-v1.jsonl",
+      "bytes": 7077,
+      "sha256": "aa9877dc9d6838d132c7bf43e10dcb6b331d45af9c214489d5f0ad7ce722c1f3"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\validation-v1-final.json",
+      "bytes": 8335,
+      "sha256": "d39bca067ac9b977d648a03df578fb1f2f368d208c3dfb411b40b77ba1917092"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\spot-check-v1.json",
+      "bytes": 1002,
+      "sha256": "d84888da2910fca90578f94749228412d8a4f453977f47bfc428366cd4b86fec"
+    }
+  ],
+  "examples": 11,
+  "claims": 62,
+  "rejects": 5,
+  "exampleIds": [
+    "teacher-haryana-floor01",
+    "teacher-haryana-floor02",
+    "teacher-haryana-title02",
+    "teacher-haryana-section-title",
+    "teacher-haryana-refuge-multifloor",
+    "teacher-haryana-site-conflict",
+    "teacher-bihar-type5-multilevel",
+    "teacher-bihar-identifier-conflict",
+    "teacher-bihar-table-units-missing",
+    "teacher-haryana-portal-revision-gap",
+    "teacher-bihar-unusable-approval-date"
+  ],
+  "teacher": {
+    "role": "dedicated_ML_teacher",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "max",
+    "observedModelReasoningTier": "unexposed",
+    "requiredSpeed": "default/standard",
+    "method": "task_teacher_authored/1"
+  },
+  "reviewState": "needs_independent_review",
+  "validationState": "passed_local_consistency",
+  "inputMethods": [
+    "native_text",
+    "ocr_observation",
+    "source_supported_annotation"
+  ],
+  "unitHandling": "Exact stated units retained; missing units remain null with abstention, no conversion.",
+  "qualification": "tiny experimental train seed; neither official records nor independent ground truth",
+  "evaluationAccess": false,
+  "devRawAccess": false,
+  "sarvamDerived": false,
+  "sourceSpecificLaunchClearance": "unconfirmed; user-authorized public local development only"
+}

@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ulpin:ml:fragment-selection:1",
+  "title": "Requested retrieval of unchanged evidence fragments",
+  "description": "Experimental leaf retrieval contract. Context identity is SHA256 of canonical UTF-8 JSON (sort_keys=True, ensure_ascii=False, separators=(',',':')) of the complete context. Identity includes request, original fragments, candidate order and family/split. IDs are c0 through c24 in context order. Selection returns exact unchanged fragments and establishes no new claim, canonical association or operational identity.",
+  "$defs": {
+    "fragment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "familyId",
+        "sourceSha256",
+        "method",
+        "locator",
+        "text"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "familyId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "method": {
+          "enum": [
+            "native_text",
+            "native_metadata",
+            "ocr_observation",
+            "source_supported_annotation"
+          ]
+        },
+        "locator": {
+          "type": "object",
+          "description": "Original native pointer/entity/span or PDF page/part/region. Preserve exact reader/attempt/item hashes where available. Does not imply a canonical job."
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "fragment"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^c(0|[1-9][0-9]*)$",
+          "maxLength": 3
+        },
+        "fragment": {
+          "$ref": "#/$defs/fragment"
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "exampleId",
+        "familyId",
+        "split",
+        "request",
+        "candidates"
+      ],
+      "properties": {
+        "version": {
+          "const": "association-fragment-context/1"
+        },
+        "exampleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "familyId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "split": {
+          "enum": [
+            "train",
+            "development"
+          ]
+        },
+        "request": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "candidates": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 25,
+          "items": {
+            "$ref": "#/$defs/candidate"
+          }
+        }
+      }
+    },
+    "modelInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "candidateSetSha256",
+        "request",
+        "candidates"
+      ],
+      "properties": {
+        "version": {
+          "const": "evidence-association-fragment-input/1"
+        },
+        "candidateSetSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "request": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "candidates": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 25,
+          "items": {
+            "$ref": "#/$defs/candidate"
+          }
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "candidateSetSha256",
+        "selected"
+      ],
+      "properties": {
+        "version": {
+          "const": "evidence-association-fragment-selection/1"
+        },
+        "candidateSetSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "selected": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 25,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^c(0|[1-9][0-9]*)$",
+            "maxLength": 3
+          }
+        }
+      }
+    }
+  },
+  "$ref": "#/$defs/context"
+}

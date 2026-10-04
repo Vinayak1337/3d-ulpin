@@ -1,0 +1,601 @@
+{
+  "version": "association-selector-baseline-receipt/2",
+  "task": "STUDENT-09-BASELINE",
+  "recordedAt": "2026-10-03",
+  "status": "execution_accepted_development_quality_failed",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "executionCodeHead": "409bae3baafcebb9ad152a702cef07e3c286815a",
+  "coordinatorCheckpoint": "264b1a77bbd4a6d906c3f7d0946a5319902f0ea2",
+  "primaryStagingHeadObservedReadOnly": "408efe0838d9d5a1d80ab01ccf2b197fdd230dec",
+  "assignment": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-09.selector-baseline-v2.assignment.json",
+    "physicalSha256": "c4e2a9f077109dba637f27b11897336ef42590079a91da10f47716b630e19d63"
+  },
+  "settings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "observation": "Actual turn model/effort/tier unexposed; no settings change claimed."
+  },
+  "stageRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69",
+  "hostEvidenceRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b",
+  "preStageChecks": {
+    "assignmentSha256": "c4e2a9f077109dba637f27b11897336ef42590079a91da10f47716b630e19d63",
+    "cleanCodeHead": "409bae3baafcebb9ad152a702cef07e3c286815a",
+    "canonicalCodePinsMatched": 12,
+    "acceptancePinsMatched": 2,
+    "parentProfileAndFiveInputPinsMatched": true,
+    "hostExpectationAndOriginalSummaryPinsMatched": true,
+    "v1BlockedReceiptUnchanged": true,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedTier": null
+  },
+  "stageInvocation": {
+    "command": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_selector_baseline.py",
+      "--assignment",
+      "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-09.selector-baseline-v2.assignment.json"
+    ],
+    "startedAtUtc": "2026-10-02T22:10:27.973653+00:00",
+    "exitCode": 0,
+    "elapsedSeconds": 194.15600000000086,
+    "hostEvidenceRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b"
+  },
+  "stageCopies": {
+    "bytes": 8601228765,
+    "fileCount": 19402
+  },
+  "preLaunchChecks": {
+    "stageRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69",
+    "profileSha256": "083145a4da0e41143e7adee67ca0e9b779ac9fa352cff0139c23791db08075a7",
+    "freezeSha256": "e9bcb496b0775c7e9ad2df910c24d467bc6a174474e9f7c79f59c792ccff22bb",
+    "stagedRuntimeFiles": 19375,
+    "stagedModelFiles": 9,
+    "stagedCodeFiles": 11,
+    "inputFiles": 9,
+    "allReviewedPinsAndCleanHeadMatched": true,
+    "expectationContentsExcluded": true,
+    "jobMemoryBytes": 6442450944,
+    "timeoutSeconds": 600,
+    "command": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\association_student.py",
+      "run",
+      "--input-batch",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\development.json",
+      "--schema",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\schema-v1.json",
+      "--family-freeze",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\family-freeze.json",
+      "--model-receipt",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\model-acquisition.json",
+      "--run-freeze",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\run-freeze.json",
+      "--output-dir",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\outputs\\baseline",
+      "--containment-profile",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\profile.json",
+      "--containment-sha256",
+      "083145a4da0e41143e7adee67ca0e9b779ac9fa352cff0139c23791db08075a7"
+    ]
+  },
+  "modelInvocation": {
+    "command": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\association_student.py",
+      "run",
+      "--input-batch",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\development.json",
+      "--schema",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\schema-v1.json",
+      "--family-freeze",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\family-freeze.json",
+      "--model-receipt",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\model-acquisition.json",
+      "--run-freeze",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\run-freeze.json",
+      "--output-dir",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\outputs\\baseline",
+      "--containment-profile",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\profile.json",
+      "--containment-sha256",
+      "083145a4da0e41143e7adee67ca0e9b779ac9fa352cff0139c23791db08075a7"
+    ],
+    "startedAtUtc": "2026-10-02T22:15:43.388712+00:00",
+    "exitCode": 0,
+    "elapsedSeconds": 394.5,
+    "oneAuthorizedPhase": true
+  },
+  "hostComparison": {
+    "command": "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe -B -I -S -",
+    "execution": "One in-memory host comparator after guard/artifact acceptance; exit 0. Source expectations remained outside the contained stage.",
+    "summary": {
+      "version": "association-selector-host-summary/1",
+      "task": "STUDENT-09-BASELINE",
+      "attempt": "v2",
+      "comparison": "Only valid accepted expanded claims, exact (role,state,literal,unit) signatures per example; duplicate signatures count once. Rejected outputs/fallbacks receive zero credit.",
+      "counts": {
+        "examples": 2,
+        "families": 1,
+        "jsonSyntaxValidOutputs": 0,
+        "selectorSchemaValidOutputs": 0,
+        "rawSelectorValidOutputs": 0,
+        "expandedValidOutputs": 0,
+        "validModelOutputs": 0,
+        "expectedClaims": 6,
+        "acceptedEmittedClaims": 0,
+        "uniqueAcceptedClaims": 0,
+        "correctAcceptedClaims": 0,
+        "validNoCanonicalTargetsAbstentions": 0,
+        "strictlyParsedOutputCount": 0,
+        "emittedClaimsInStrictlyParsedOutputs": 0,
+        "rawRoleKeyOccurrences": 8
+      },
+      "examples": [
+        {
+          "exampleId": "ifc4-source-native-v1",
+          "expectedClaims": 4,
+          "emittedClaimCount": null,
+          "emittedClaimCountReason": "Raw output is not strict JSON; no fence stripping or diagnostic repair performed.",
+          "rawRoleKeyOccurrences": 2,
+          "acceptedEmittedClaims": 0,
+          "uniqueAcceptedClaims": 0,
+          "correctAcceptedClaims": 0,
+          "validNoCanonicalTargetsAbstention": false,
+          "errors": [
+            {
+              "message": "Expecting value: line 1 column 1 (char 0)",
+              "stage": "raw_json"
+            }
+          ],
+          "inputTokens": 536,
+          "outputTokens": 115,
+          "generationSeconds": 6.013263500000903,
+          "reachedTokenLimit": false,
+          "promptSha256": "9e5803b0183d751a9c1c5e25a2e61eb4f78f3827c127b044dfe854ea51e7b7ef"
+        },
+        {
+          "exampleId": "ifc2x3-source-native-v1",
+          "expectedClaims": 2,
+          "emittedClaimCount": null,
+          "emittedClaimCountReason": "Raw output is not strict JSON; no fence stripping or diagnostic repair performed.",
+          "rawRoleKeyOccurrences": 6,
+          "acceptedEmittedClaims": 0,
+          "uniqueAcceptedClaims": 0,
+          "correctAcceptedClaims": 0,
+          "validNoCanonicalTargetsAbstention": false,
+          "errors": [
+            {
+              "message": "Expecting value: line 1 column 1 (char 0)",
+              "stage": "raw_json"
+            }
+          ],
+          "inputTokens": 493,
+          "outputTokens": 288,
+          "generationSeconds": 13.428589900002407,
+          "reachedTokenLimit": false,
+          "promptSha256": "0687edbcb3ceb10c6fcc3e67ea4157b4c1ec121f00bdfcf94d7aba94909c29a6"
+        }
+      ],
+      "acceptedSourceNativePrecision": null,
+      "sourceNativeCoverage": 0.0,
+      "emittedClaimCount": null,
+      "rawEmissionNote": "Role-key occurrences are lexical observations only, not parsed claims, valid selectors or accepted credit.",
+      "resourcesPassed": true,
+      "cleanupPassed": true,
+      "developmentCriteriaPassed": false,
+      "loadSeconds": 2.072582100001455,
+      "runnerElapsedSeconds": 21.521203600001172,
+      "guardElapsedSeconds": 230.48500000000058,
+      "hostInvocationSeconds": 394.5,
+      "jobPeakCommittedBytes": 5194674176,
+      "sampledPeakProcessRssBytes": 3209711616,
+      "runtime": {
+        "cuda": "12.8",
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "gpuSampleCount": 407,
+        "maxCudaAllocatedBytes": 1087902720,
+        "maxCudaReservedBytes": 1142947840,
+        "minimumSampledFreeCudaBytes": 6244270080,
+        "torch": "2.8.0+cu128",
+        "transformers": "4.57.6"
+      },
+      "lexicalPythonVersion": "3.11.15 (main, Aug  7 2026, 02:24:19) [MSC v.1944 64 bit (AMD64)]",
+      "unicodeVersion": "14.0.0",
+      "artifactPins": {
+        "guard": "beb59c5f80e81042c81fc2e9263efd823318cf9af7b99e7d16c51c95970f28a2",
+        "accepted": "423bfddd4ef48eb6db1813dd3ebdec3d7d8813cf7c23d10602400429906d3948",
+        "result": "3ea3a6a3a1bdea70d1be56d90de3693daaa648fb15ccba6e472327ccc88fa1d2",
+        "raw": "ef6d643e05d91a04b1ad35e6cfa2b6d286b11c48a7f3332ef5e7c4968a080506",
+        "preflight": "a654ee9b4998f64dc943a6eb1f68718f13b059ad0efb1eeda3165e9f93693d4c",
+        "expectations": "061b98c57bdb386c8fc4bce38660b18fd16340d739d40f75b60b10f95a6f93ce"
+      },
+      "evaluationOpened": false,
+      "fitPerformed": false,
+      "repairApplied": false,
+      "generalizationQualified": false,
+      "canonicalAssociationQualified": false,
+      "conflictAccuracy": null
+    }
+  },
+  "freeze": {
+    "auxiliaryInputSha256": {
+      "selector-assignment.json": "c4e2a9f077109dba637f27b11897336ef42590079a91da10f47716b630e19d63",
+      "selector-prompt.txt": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+      "selector-schema-v1.json": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4"
+    },
+    "baselineProfileSha256": "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438",
+    "canonicalAssociationQualified": false,
+    "cases": [
+      {
+        "exampleId": "ifc4-source-native-v1",
+        "inputCanonicalJsonSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4"
+      },
+      {
+        "exampleId": "ifc2x3-source-native-v1",
+        "inputCanonicalJsonSha256": "5cdbd1fec015bc2eecde12ee37dea41eeb0fc7c6eb9e7ac8470af04bd74c3a88"
+      }
+    ],
+    "evaluationAllowed": false,
+    "expectedClaimsSha256": "061b98c57bdb386c8fc4bce38660b18fd16340d739d40f75b60b10f95a6f93ce",
+    "fitPerformed": false,
+    "inputSha256": {
+      "family_freeze": "93c243f28895ac084c3f1853cba80b9e0b5286f881aba44d6cb7ab6e3a164730",
+      "input_batch": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536",
+      "model_receipt": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2",
+      "schema": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    "lexicalPolicy": {
+      "flags": "Python re.UNICODE default; no normalization or case folding.",
+      "pattern": "\\w+|\\s+|[^\\w\\s]",
+      "version": "lossless_lexical_spans/1"
+    },
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "modelRevision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "promotionAuthorized": false,
+    "promptVersion": "association-selector-prompt/1",
+    "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+    "settings": {
+      "attention": "sdpa",
+      "batchSize": 1,
+      "cpuThreads": 2,
+      "doSample": false,
+      "dtype": "float16",
+      "evaluationAllowed": false,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "maxFitSeconds": 600,
+      "maxInputTokens": 2048,
+      "maxNewTokens": 768,
+      "maxPeakProcessRssBytes": 6442450944,
+      "maxRunSeconds": 600,
+      "minimumFreeCudaBytes": 1610612736,
+      "seed": 17
+    },
+    "sourceCommit": "409bae3baafcebb9ad152a702cef07e3c286815a",
+    "systemPromptSha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb",
+    "teacherTargetsInPrompt": false,
+    "version": "association-selector-baseline-freeze/1"
+  },
+  "codePins": {
+    "scripts/usp/learning/model_isolation.py": {
+      "canonicalLfSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "physicalSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676"
+    },
+    "scripts/usp/security/appcontainer_audit.py": {
+      "canonicalLfSha256": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+      "physicalSha256": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca"
+    },
+    "scripts/usp/learning/association/association_student.py": {
+      "canonicalLfSha256": "12f55b8e6d4ba5db3f0617381a8c5af744714400fc02b19611d61e169edf7324",
+      "physicalSha256": "12f55b8e6d4ba5db3f0617381a8c5af744714400fc02b19611d61e169edf7324"
+    },
+    "services/geo/geo/__init__.py": {
+      "canonicalLfSha256": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+      "physicalSha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a"
+    },
+    "services/geo/geo/usp_learning/__init__.py": {
+      "canonicalLfSha256": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+      "physicalSha256": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335"
+    },
+    "services/geo/geo/usp_learning/resources.py": {
+      "canonicalLfSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "physicalSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+    },
+    "services/geo/geo/usp_learning/association/__init__.py": {
+      "canonicalLfSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "physicalSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679"
+    },
+    "services/geo/geo/usp_learning/association/student.py": {
+      "canonicalLfSha256": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+      "physicalSha256": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87"
+    },
+    "services/geo/geo/usp_learning/association/validation.py": {
+      "canonicalLfSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "physicalSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2"
+    },
+    "services/geo/geo/usp_learning/association/selectors.py": {
+      "canonicalLfSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+      "physicalSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e"
+    },
+    "services/geo/geo/usp_learning/association/selector_baseline.py": {
+      "canonicalLfSha256": "842088a7d5042c29c74a80049601c634288196eafb0fd54d81d737be008c430f",
+      "physicalSha256": "842088a7d5042c29c74a80049601c634288196eafb0fd54d81d737be008c430f"
+    },
+    "scripts/usp/learning/association/stage_selector_baseline.py": {
+      "canonicalLfSha256": "70df68a9b8d89a8316f75c3602ac21b8597cfc555ca1b26eed101aae42be0629",
+      "physicalSha256": "70df68a9b8d89a8316f75c3602ac21b8597cfc555ca1b26eed101aae42be0629"
+    }
+  },
+  "model": {
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "weightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+    "parentRuntimeProfileSha256": "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438",
+    "profileSha256": "083145a4da0e41143e7adee67ca0e9b779ac9fa352cff0139c23791db08075a7",
+    "runtimeFiles": 19375,
+    "modelFiles": 9,
+    "newAcquisition": false
+  },
+  "preflight": {
+    "inputTokens": [
+      536,
+      493
+    ],
+    "truncation": false,
+    "pythonVersion": "3.11.15 (main, Aug  7 2026, 02:24:19) [MSC v.1944 64 bit (AMD64)]",
+    "unicodeVersion": "14.0.0",
+    "sourceLexicalOffsetsPreserved": true,
+    "teacherTargetsInPrompt": false
+  },
+  "guard": {
+    "exitCode": 0,
+    "failure": null,
+    "outputsAccepted": true,
+    "elapsedSeconds": 230.48500000000058,
+    "observation": {
+      "effectiveJobBeforeResume": {
+        "jobMemoryLimitBytes": 6442450944,
+        "limitFlags": 8704,
+        "peakJobMemoryBytes": 385024
+      },
+      "environmentKeys": [
+        "CUBLAS_WORKSPACE_CONFIG",
+        "ComSpec",
+        "DO_NOT_TRACK",
+        "HF_HOME",
+        "HF_HUB_DISABLE_TELEMETRY",
+        "HF_HUB_OFFLINE",
+        "LOCALAPPDATA",
+        "MKL_NUM_THREADS",
+        "OMP_NUM_THREADS",
+        "PATH",
+        "SystemDrive",
+        "SystemRoot",
+        "TEMP",
+        "TMP",
+        "TOKENIZERS_PARALLELISM",
+        "TRANSFORMERS_OFFLINE",
+        "USERPROFILE",
+        "USP_MODEL_SESSION",
+        "USP_MODEL_SESSION_SHA256",
+        "WANDB_DISABLED",
+        "WINDIR"
+      ],
+      "exitCode": 0,
+      "inheritedHandleCount": 2,
+      "jobClosed": true,
+      "jobValidatedBeforeResume": true,
+      "output": "`torch_dtype` is deprecated! Use `dtype` instead!\r\nThe following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.\r\n{\"exampleCount\": 2, \"modelOutputValidCount\": 0, \"runtime\": {\"torch\": \"2.8.0+cu128\", \"transformers\": \"4.57.6\", \"cuda\": \"12.8\", \"gpu\": \"NVIDIA GeForce RTX 3070\", \"gpuSampleCount\": 407, \"maxCudaAllocatedBytes\": 1087902720, \"maxCudaReservedBytes\": 1142947840, \"minimumSampledFreeCudaBytes\": 6244270080}}\r\n",
+      "outputTruncated": false,
+      "peakJobMemoryBytes": 5194674176,
+      "peakProcessRssBytes": 3209711616,
+      "pid": 20300,
+      "rssMethod": "50ms actual Job-member RSS/peak working sets",
+      "stdinSource": "NUL",
+      "token": {
+        "appContainerSid": "S-1-15-2-3163149726-1910792244-974302563-1170846167-2696969937-1310170131-2350354159",
+        "capabilityCount": 0,
+        "isAppContainer": true
+      },
+      "tokenValidatedBeforeResume": true
+    },
+    "cleanup": {
+      "appcontainerActions": "{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\\\scratch\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\\\outputs\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\\\model\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\\\inputs\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\\\code\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\\\runtime\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\\\state\\\\association_student-run-session.json\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\\\state\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\\\profile.json\", \"exitCode\": 0, \"failed\": false}\n{\"aclRevokePath\": \"E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student\\\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\", \"exitCode\": 0, \"failed\": false}\n{\"sidFreeFailed\": false, \"failed\": false}\n{\"profileDeleteHresult\": \"0x00000000\", \"failed\": false}\n",
+      "errors": [],
+      "ownerScopesAttempted": 2,
+      "passed": true,
+      "profileCreated": true
+    },
+    "guardSha256": "beb59c5f80e81042c81fc2e9263efd823318cf9af7b99e7d16c51c95970f28a2",
+    "acceptedSha256": "423bfddd4ef48eb6db1813dd3ebdec3d7d8813cf7c23d10602400429906d3948"
+  },
+  "artifacts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\development.json",
+      "bytes": 6419,
+      "sha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\family-freeze.json",
+      "bytes": 11079,
+      "sha256": "93c243f28895ac084c3f1853cba80b9e0b5286f881aba44d6cb7ab6e3a164730"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\model-acquisition.json",
+      "bytes": 3987,
+      "sha256": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\run-freeze.json",
+      "bytes": 2489,
+      "sha256": "e9bcb496b0775c7e9ad2df910c24d467bc6a174474e9f7c79f59c792ccff22bb"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\runtime-requirements-resolved.txt",
+      "bytes": 455,
+      "sha256": "c27e534e121858d96dfa531e14374642a43bed9544aeef0426b39353280ab4e3"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\schema-v1.json",
+      "bytes": 3966,
+      "sha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\selector-assignment.json",
+      "bytes": 12090,
+      "sha256": "c4e2a9f077109dba637f27b11897336ef42590079a91da10f47716b630e19d63"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\selector-prompt.txt",
+      "bytes": 1781,
+      "sha256": "616f05ef389d1d9964f5215e349545d1cb4ad2fd023a9df75515bdf116535beb"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\inputs\\selector-schema-v1.json",
+      "bytes": 5698,
+      "sha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\outputs\\baseline\\completion.json",
+      "bytes": 38564,
+      "sha256": "0adccb302f9c75976e7e41f35a669d901abcb56a2ad95ed86dcdeee1cfd0b88f"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\outputs\\baseline\\raw-0.json",
+      "bytes": 863,
+      "sha256": "1f065c562f8295996b4c416da97a0960bae77adc164c13d0a3b8f70feae41085"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\outputs\\baseline\\raw-1.json",
+      "bytes": 1569,
+      "sha256": "d7cd9e28f3c2b520a63c4bc0007d14a5b3ae393638b339316d4f06dffdfbd825"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\outputs\\baseline\\raw-outputs.json",
+      "bytes": 2481,
+      "sha256": "ef6d643e05d91a04b1ad35e6cfa2b6d286b11c48a7f3332ef5e7c4968a080506"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\outputs\\baseline\\result.json",
+      "bytes": 3863,
+      "sha256": "3ea3a6a3a1bdea70d1be56d90de3693daaa648fb15ccba6e472327ccc88fa1d2"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\outputs\\baseline\\selector-preflight.json",
+      "bytes": 17244,
+      "sha256": "a654ee9b4998f64dc943a6eb1f68718f13b059ad0efb1eeda3165e9f93693d4c"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\profile.json",
+      "bytes": 2666821,
+      "sha256": "083145a4da0e41143e7adee67ca0e9b779ac9fa352cff0139c23791db08075a7"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\receipts\\association_student-run-accepted.json",
+      "bytes": 791,
+      "sha256": "423bfddd4ef48eb6db1813dd3ebdec3d7d8813cf7c23d10602400429906d3948"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\receipts\\association_student-run-guard.json",
+      "bytes": 37186,
+      "sha256": "beb59c5f80e81042c81fc2e9263efd823318cf9af7b99e7d16c51c95970f28a2"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\stage.json",
+      "bytes": 2032,
+      "sha256": "849dc9604d0ed2192672427804ce9f03e70683493e239a43222505a1573b3438"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\state\\association_student-run-attempt.json",
+      "bytes": 128,
+      "sha256": "f7a89ad83a84d49ca00bef227947c523bd7b4ff6c042456038c3c9e7d5bfd67e"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-d5cce4ac0de0494ca17fee3a3e5b1b69\\state\\association_student-run-session.json",
+      "bytes": 1852,
+      "sha256": "2bfb3f5880ceffcafbbb864701a8f91cfbad8648bdc2372f20d2654e062af110"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b\\host-summary.json",
+      "bytes": 4190,
+      "sha256": "30d0f2422c34a58e8213874d86fcbb65ab8d174c494c111531d2126c8e22e7af"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b\\model-invocation.json",
+      "bytes": 1659,
+      "sha256": "13ffa1fd162a4599691b46b8c8eb225157faa11a6702e7c7a8285cb4d023fb98"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b\\model.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b\\model.stdout.log",
+      "bytes": 2214,
+      "sha256": "e162fabf311effc03f9e27e458e4cf5194ee9d8c45b36997c51dcc69675778c4"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b\\pre-launch-checks.json",
+      "bytes": 2078,
+      "sha256": "a8ea214ad01e00dfd81c3282f9e41deb1bb452fc054db8c013d20cb82290aef9"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b\\pre-stage-checks.json",
+      "bytes": 537,
+      "sha256": "8586a8ec11dee2304a5e0e8a83c725e7dfae1b9e49c4d4f966c934bbafd14ed2"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b\\stage-invocation.json",
+      "bytes": 713,
+      "sha256": "623ec3af973fe1341b6b076d6c8a693d38f9a91ff50482392c0f67f36ac871c4"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b\\stage.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\selector-baseline-v2-host-20261003-409bae3b\\stage.stdout.log",
+      "bytes": 420,
+      "sha256": "dbd4ce3b46e8dcc3c42ed113dc0fed260aa0d23f14ba6498589b87911da14f8e"
+    }
+  ],
+  "rawObservations": "Both raw responses begin with Markdown code fences and fail strict JSON at character zero. Text also uses literal strings instead of span arrays and omits citations; IFC2X3 repeats unit keys. No fence stripping, parsing repair or partial claim acceptance performed. Lexical role-key occurrences (2 and 6) are not valid emitted claim counts.",
+  "qualityInterpretation": "0/2 strict JSON, selector schema, selector-range and expanded-valid outputs; 0 accepted emissions, 0 unique accepted signatures, 0/6 correct expected claims, precision null, coverage 0, valid no-canonical-target abstentions 0/2. Tiny development criteria failed; historical original baseline counts were also 0/2 and 0/6. No measured gain or canonical/generalization/operational qualification.",
+  "limitsAndCleanup": "Existing bounds passed. Owned Job closed; AppContainer ACL/profile and owner-scope cleanup passed; no process cleanup remains. Runtime/evidence files retained.",
+  "historicalV1ReceiptSha256": "29154bbbab7ddb2730b8a4ff0e5144785eedd4aa34154ded9c9f1a33a69e04ea",
+  "executionCounts": {
+    "freshStages": 1,
+    "guardedPhases": 1,
+    "retries": 0,
+    "fitPhases": 0,
+    "evaluationPhases": 0
+  },
+  "evaluationOpened": false,
+  "fitPerformed": false,
+  "repairApplied": false,
+  "promoted": false,
+  "codeChanges": false,
+  "continuation": "Callback to coordinator and stop. No automatic fitting, prompt sweep, output repair, rerun, evaluation access or promotion."
+}

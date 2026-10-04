@@ -1,0 +1,125 @@
+{
+  "compatibilityBoundary": "Original-model loader/PEFT/optimizer/scaler/numerics/attention/reclamation/containment and historical phase routes preserved. Generic accepted_fit unchanged; new phases use protected accepted_outputs plus explicit state/phase authority.",
+  "continuationConstraint": "Phase bindings require the SAME clean learner executionHEAD across all3 phases. Native phase1/2 return only private receipts and keep learner Git HEAD unchanged; coordinator publishes reviewed evidence on its own lane. Do not commit learner phase evidence between phases or change sourceCommit to bypass chain identity.",
+  "decision": "Accept seven owned source files and four standard-library CPU controls; native serializer/state continuity/phase/resources/quality remain unrun.",
+  "implementation": [
+    "Separate exact STUDENT-31 phase assignment/freeze authority; fixed ranges 0->20,20->40,40->60; same global seed17 schedule and original model/data/prompt/loss/LoRA/numerics.",
+    "Named 96 fp32 masters/540672 parameters; AdamW named group order/settings and all96 moments/steps; five GradScaler entries; complete cursor/contribution/loss/order binding; torch CPU/single CUDA and Python RNG.386 tensors including two RNG tensors.",
+    "Strict bounded JSON and safetensors only. Byte-level header/extents/shape/dtype/finite/step checks before native deserialization; exact file sets/hashes. Exclusive durable flushed/fsynced closed files, exact readback and RNG neutrality; manifest last. Partial save is not resumable.",
+    "Later phase accepts only separately pinned successful predecessor with protected accepted_outputs guard/map, completion and explicit phase history/proof/base/state binding plus independent acceptance. Readonly staged copies use existing containment paths.",
+    "Fresh original-model/shared PEFT loader and optimizer/scaler retained. Restore exact state and RNG after initialization/controls immediately before next parent. Shared loop keeps global updates/epochs and complete loss history; local phase has20 updates/114 contributions.",
+    "Each phase verifies original290-tensor base unchanged and full checkpoint equality, then emits explicit phase manifest/result through existing supervisor completion. Phases1/2 emit no final adapter and fitPerformed=false; phase3 alone uses shared adapter save/equality and final60-update result.",
+    "Tiny future native proof uses actual serializer, dropout/AdamW/GradScaler and fresh objects with exact next-loss/gradient/master/optimizer/scaler/RNG/cursor comparison. Proof isolates/restores real training RNG; later phases inherit the accepted first-phase proof."
+  ],
+  "integratedCodeCommit": "c9f5585f078115e44fd3983ceb408620a5d54f63",
+  "integratedEvidenceCommit": "2e1b4fc1b2454b7305866458046aaba9339b1469",
+  "integratedReport": {
+    "bytes": 12929,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1.json",
+    "physicalSha256": "eef1926eac7fd338f48ba0aa43b39ef838ca6039c15369c1a5028ca4927f16e0"
+  },
+  "next": "STUDENT-31 phase1 only, one fresh stage and one guarded20-update fit with actual four-step checkpoint equivalence before model fitting. Separately accept checkpoint before phase2.",
+  "ownerBaseCommit": "7a42a9e3d70b816612def13dec7125b9215d4dc7",
+  "ownerCodeCommit": "d98903f7cee2fdf7e82b12c785f5445978c309c9",
+  "ownerEvidenceCommit": "37fac56393acce067d717d5f259d9bf760396727",
+  "ownerFinalization": {
+    "bytes": 23751,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\finalization.json",
+    "physicalSha256": "745185fd4a6e21693b2fcf9b6f9691aa260ab756466fedb8a2db60c4ba697463"
+  },
+  "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+  "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+  "receiptIndex": {
+    "bytes": 3998,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\receipt-index.json",
+    "physicalSha256": "bdc09ad257ebac868f5bc854abe19de0cfc23aad5f2108cc98484e110b695389"
+  },
+  "recordedAtUtc": "2026-10-04T00:39:01.033243+00:00",
+  "review": {
+    "bytes": 20112,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-30-review-v1-40db4695a7b94e48a3d3b9289442d13f\\review.json",
+    "physicalSha256": "4be1f6aa521059fc128518de84df1649ef984a716410c2d50c0ebde25cb8d11e"
+  },
+  "reviewSummary": {
+    "executionSourcesVerified": 35,
+    "oldSuitesOrNativeCampaignRerun": false,
+    "ownedCompilesConsumed": 7,
+    "ownedSourcesReviewed": 7,
+    "physicalReferencesMatched": 19,
+    "protectedReviewFilesVerified": 40,
+    "targetedCpuControlsConsumed": 4
+  },
+  "stagingReadOnlyHead": "d4bdbbe75ae3d2a5aedcb2b7fb1a9dde5dc571d6",
+  "task": "STUDENT-30-FRAGMENT-RANK-CHECKPOINT-CODE",
+  "trainingPlan": {
+    "counts": {
+      "emptyParents": 3,
+      "families": 2,
+      "negative": 45,
+      "pairs": 57,
+      "parents": 10,
+      "positive": 12
+    },
+    "datasetSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd",
+    "epochs": 6,
+    "pairs": 57,
+    "parentCandidateCounts": {
+      "teacher-fragments-v1-01": 4,
+      "teacher-fragments-v1-02": 7,
+      "teacher-fragments-v1-03": 5,
+      "teacher-fragments-v1-04": 6,
+      "teacher-fragments-v1-05": 7,
+      "teacher-fragments-v1-06": 6,
+      "teacher-fragments-v2-pair01-a": 7,
+      "teacher-fragments-v2-pair01-b": 7,
+      "teacher-fragments-v2-pair02-a": 4,
+      "teacher-fragments-v2-pair02-b": 4
+    },
+    "plannedCandidateContributions": 342,
+    "plannedUpdates": 60,
+    "seed": 17,
+    "teacherExamples": 10,
+    "version": "association-fragment-rank-training-plan/1",
+    "weighting": "exact rational 1/(10*candidateCount); no resampling or positive weighting"
+  },
+  "unrun": [
+    "Native safetensors serialization, declared5056-byte CPU/16-byte CUDA RNG state shape, exact stochastic optimizer continuity and full model phase completion remain unrun. The future native gate fails closed on mismatch.",
+    "CPU tensor/device/codec/optimizer models and synthetic successful-run metadata are technical doubles, not native correctness, resource, relevance or learning qualification.",
+    "STUDENT29 timed out without adapter/checkpoint; its44 completed updates remain immutable historical evidence and cannot resume or count toward the new experiment.",
+    "Each phase needs an independent positive final-clean-head assignment; phases2/3 also need separately reviewed successful preceding checkpoint acceptance. No phase runs in Task30.",
+    "Frozen57 pairs from ten provisional parents/two train families retain needs_independent_review. No new labels or quality comparison; Sarvam excluded."
+  ],
+  "verificationConsumed": {
+    "actualScope": "Real retained source/train/donor metadata and admission, exact safe-format/schema/state helpers with stdlib doubles; positive phase1/phase2 stager stops at first mkdir; worker/shared-fit pre-native boundary and forged predecessor refusal. No old suite or native proof rerun.",
+    "controlsPassed": 4,
+    "diffCheckExitCode": 0,
+    "doublesDisclosure": [
+      "Tensor/autograd/device/RNG byte arrays and modeled optimizer/scaler/dropout behavior; not native float/device equivalence",
+      "Safetensors codec double writes/reads the format using stdlib struct; actual production validators/capture/publish/read/restore execute; native safetensors unrun",
+      "Virtual read-only assignment/freeze/preceding outputs/acceptance/checkpoint files, Path stat/iteration and checked_path double for admission fixtures; alias rejection separately uses real paths",
+      "Clean future Git replies and disk headroom for actual stage paths; first mkdir interrupted before any real stage/copy",
+      "Protected accepted_outputs guard result doubled for complete phase2 admission; native prior progress/token/control/state are synthetic metadata fixtures",
+      "Worker boundary and pre-native phase observation intercepted; v1 rank freeze validation doubled for affected historical dispatch"
+    ],
+    "firstInvocationPassed": true,
+    "focusedCommand": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_fragment_rank_checkpoint.py"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "exitCode": 0
+    },
+    "futureSourceSetMatchesPacket": 35,
+    "historicalTimeoutArtifactsUnchanged": true,
+    "ownedRuntimeSources": 6,
+    "ownedSourcesCompiledInMemory": 7,
+    "protectedRuntimeSources": 29,
+    "protectedSourcesPhysicalAndCanonicalUnchanged": 40,
+    "trainAuthoritiesUnchanged": 14
+  },
+  "version": "association-rank-checkpoint-code-acceptance/1"
+}

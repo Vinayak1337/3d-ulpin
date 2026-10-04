@@ -1,0 +1,314 @@
+{
+  "acceptedFit": {
+    "acceptedReceiptSha256": "95c5d72e12a38cd6dd7b949abed18e24d8de46c4a2c4dc1fb24dd669fa3d9afc",
+    "adapterManifestSha256": "a6b0020f9ad50a9b38371b233cc63198a02adec2a2df69979dffd563dc6dd55c",
+    "adapterWeightsSha256": "66598aad3ea6345332eede3234bb5dde8b0b21161fe22680527cc53af70ff36e",
+    "fitAssignmentSha256": "1b720909a6207eb8462366ba9fc0d1bd70ee0192b266287f2a76ef30e661e974",
+    "fitFreezeSha256": "6411c2a8d824617056a8bd5214ac0061a6e6d01522eb19edefb4d95e44ec1fbd",
+    "fitProofSha256": "8836b437ef8bb4147ec6f482f87e7197f7280821c555390ccb147daa5955b4fe",
+    "fitResultSha256": "2b00379c6d1715c3d2a7d26c0a531cda9e8913edd97fd70600f89420d8040bf7",
+    "guardSha256": "40be29c8ebe1445772714083fc2f00f8ba8126cce0703930e657212548b8021d",
+    "profileSha256": "6a40f31c155eda85224f8e82b1b3e91833667632bde38bd8754ede396d93d9e7",
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5",
+    "sourceCommit": "32e661a13e04db23b1cab3f0211b12b372474d38"
+  },
+  "action": "reload",
+  "attentionControlBeforeFit": {
+    "attentionDropout": 0,
+    "causal": true,
+    "cpuFloat64": {
+      "gradientAtol": 1e-10,
+      "gradientRtol": 1e-09,
+      "lossAtol": 1e-10,
+      "lossRtol": 1e-10,
+      "outputAtol": 1e-10,
+      "outputRtol": 1e-10
+    },
+    "cudaFloat16Float32": {
+      "gradientAtol": 2e-05,
+      "gradientRtol": 0.005,
+      "lossAtol": 5e-05,
+      "lossRtol": 0.0005,
+      "outputAtol": 0.0005,
+      "outputRtol": 0.005
+    },
+    "headDimension": 64,
+    "keyValueHeads": 2,
+    "qualification": "Technical objective-preservation fixture only, never source truth or model quality.",
+    "queryChunkSizes": [
+      128,
+      128,
+      7
+    ],
+    "queryHeads": 14,
+    "reference": "Original pinned Transformers SDPA causal route, same Q/K/V and scalar objective, no candidate-derived reference.",
+    "requirements": [
+      "all Q/K/V gradients finite and within tolerances",
+      "all query outputs preserved in order",
+      "absolute causal offsets and final short block covered",
+      "RNG unchanged/restored",
+      "no model parameter or optimizer/precision changes",
+      "no cumulative resource breach"
+    ],
+    "scale": 0.125,
+    "scaledGradientMultiplier": 128.0,
+    "sequenceTokens": 263,
+    "toleranceReason": "Tight double-precision algebra check; CUDA permits fp16 GEMM/reduction and grouped K/V gradient-accumulation rounding with unchanged float32 math/loss. No bitwise equality claim for the full fit."
+  },
+  "cases": [
+    {
+      "candidateCount": 4,
+      "contextSha256": "d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5",
+      "exampleId": "ifc4-source-native-v1",
+      "inputCanonicalJsonSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4",
+      "request": "Retrieve the fragment that supplies the IfcBuilding Name."
+    },
+    {
+      "candidateCount": 3,
+      "contextSha256": "d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c",
+      "exampleId": "ifc2x3-source-native-v1",
+      "inputCanonicalJsonSha256": "5cdbd1fec015bc2eecde12ee37dea41eeb0fc7c6eb9e7ac8470af04bd74c3a88",
+      "request": "Retrieve any supplied non-null numerical elevation value for IfcBuilding."
+    }
+  ],
+  "executable": true,
+  "executionAllowance": {
+    "evaluation": false,
+    "fit": false,
+    "freshPhases": 1,
+    "inference": true,
+    "loadModel": true,
+    "promotion": false,
+    "stageModelRun": true
+  },
+  "inferenceSettings": {
+    "attention": "sdpa",
+    "batchSize": 1,
+    "cpuThreads": 2,
+    "doSample": false,
+    "dtype": "float16",
+    "evaluationAllowed": false,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "maxFitSeconds": 600,
+    "maxInputTokens": 2048,
+    "maxNewTokens": 768,
+    "maxPeakProcessRssBytes": 6442450944,
+    "maxRunSeconds": 600,
+    "minimumFreeCudaBytes": 1610612736,
+    "seed": 17
+  },
+  "memoryExecutionPolicy": {
+    "headChunkTokens": 64,
+    "interUpdateReclamation": true,
+    "preBackwardReclamation": true,
+    "queryChunkedAttention": {
+      "backend": "MATH",
+      "baselineAndReloadUnchanged": true,
+      "batchSize": 1,
+      "checkpointPreserveRngState": true,
+      "checkpointUseReentrant": false,
+      "control": {
+        "attentionDropout": 0,
+        "causal": true,
+        "cpuFloat64": {
+          "gradientAtol": 1e-10,
+          "gradientRtol": 1e-09,
+          "lossAtol": 1e-10,
+          "lossRtol": 1e-10,
+          "outputAtol": 1e-10,
+          "outputRtol": 1e-10
+        },
+        "cudaFloat16Float32": {
+          "gradientAtol": 2e-05,
+          "gradientRtol": 0.005,
+          "lossAtol": 5e-05,
+          "lossRtol": 0.0005,
+          "outputAtol": 0.0005,
+          "outputRtol": 0.005
+        },
+        "headDimension": 64,
+        "keyValueHeads": 2,
+        "qualification": "Technical objective-preservation fixture only, never source truth or model quality.",
+        "queryChunkSizes": [
+          128,
+          128,
+          7
+        ],
+        "queryHeads": 14,
+        "reference": "Original pinned Transformers SDPA causal route, same Q/K/V and scalar objective, no candidate-derived reference.",
+        "requirements": [
+          "all Q/K/V gradients finite and within tolerances",
+          "all query outputs preserved in order",
+          "absolute causal offsets and final short block covered",
+          "RNG unchanged/restored",
+          "no model parameter or optimizer/precision changes",
+          "no cumulative resource breach"
+        ],
+        "scale": 0.125,
+        "scaledGradientMultiplier": 128.0,
+        "sequenceTokens": 263,
+        "toleranceReason": "Tight double-precision algebra check; CUDA permits fp16 GEMM/reduction and grouped K/V gradient-accumulation rounding with unchanged float32 math/loss. No bitwise equality claim for the full fit."
+      },
+      "headDimension": 64,
+      "keyValueContext": "complete original K/V for every query block; enable_gqa=True",
+      "keyValueHeads": 2,
+      "mask": "boolean key_position <= absolute_query_position; is_causal=False",
+      "mathIntermediates": "float32; reduced precision disabled and unchanged",
+      "primitive": "torch.nn.functional.scaled_dot_product_attention",
+      "productionInputDtype": "float16",
+      "queryChunkTokens": 128,
+      "queryHeads": 14,
+      "scale": 0.125,
+      "scope": "exact loaded Qwen2 instances in fit only; Qwen-local interface restored in finally",
+      "supportedIncomingMask": "None (unpadded complete causal sequence); other masks rejected",
+      "version": "association-checkpointed-query-sdpa/1"
+    }
+  },
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "modelProfileSha256": "86b0f0b19d4e740f2e6e38f7eea8eaccd24b7b3072883f8b7d22421c39b8ef75",
+  "modelWeightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+  "numerics": {
+    "adamBetas": [
+      0.9,
+      0.999
+    ],
+    "adamEpsilon": 1e-08,
+    "adapterDtype": "float32",
+    "attention": "sdpa",
+    "baseDtype": "float16",
+    "checkpointing": "non-reentrant",
+    "initialGradientScale": 128.0,
+    "logits": "only positions predicting supervised assistant JSON plus EOS; prompt labels masked",
+    "lossDtype": "float32",
+    "scaleGrowthInterval": 2000,
+    "shuffle": "Random(17), one permutation per epoch"
+  },
+  "representation": {
+    "datasetSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd",
+    "fragment": {
+      "familyCanonicalLfSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+      "policy": {
+        "bounds": {
+          "contextUtf8Bytes": 600000,
+          "responseUtf8Bytes": 65536
+        },
+        "candidates": "unchanged input.evidence in original order; contiguous c0 through c24; no label-derived selection or ordering",
+        "empty": "no_support_in_supplied_context; never factual absence in a property or whole original",
+        "forced": [
+          "JSON/schema",
+          "context identity",
+          "current unique IDs",
+          "unchanged retrieved fragments"
+        ],
+        "identity": "canonical complete request/context, original fragment order/provenance and frozen family/split",
+        "notEnforced": [
+          "relevance",
+          "conflict completeness",
+          "nonempty or full selection"
+        ],
+        "projection": "unchanged original fragments only; no generated claims or canonical associations",
+        "selection": "optional distinct current IDs; full context identity; whole-response rejection without repair",
+        "transport": "existing ID-choice grammar primitives and ByteLevel Vocabulary/Controller",
+        "version": "association-fragment-retrieval-policy/1"
+      },
+      "policySha256": "a3768b2c51d2e64ce3c75c14bd6c0d7241747092cff37ba2c8f8344c9afba721",
+      "promptVersion": "association-fragment-prompt/1",
+      "schemaCanonicalLfSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+      "systemPromptSha256": "d3a93d1323145cf31db765de8647d5f0ce252f653b6b38273fc5a184fd00dbac",
+      "tokenizerFilesSha256": {
+        "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+        "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+      },
+      "version": "evidence-association-fragment-selection/1"
+    },
+    "reviewState": "needs_independent_review",
+    "supportInputSha256": {
+      "rows-v2.receipt.json": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555",
+      "source-support-v2.receipt.json": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257",
+      "train-teacher-fragments-v1.jsonl": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742",
+      "training-row-pins-v2.json": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+    },
+    "target": "unchanged canonical fragment selection JSON plus EOS; assistant-only loss",
+    "teacherSupervision": "provisional_synthetic_supervision",
+    "trainingPlan": {
+      "datasetSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd",
+      "epochs": 6,
+      "plannedUpdates": 60,
+      "teacherExamples": 10,
+      "version": "association-training-plan/1"
+    },
+    "version": "association-fragment-support-training/2"
+  },
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "runtimeCodeCanonicalLfSha256": {
+    "scripts/usp/learning/association/association_adapter.py": "b6154b901b674b86afe208096dfdfdb763019d3e8c467a329a2a50b0feff33a7",
+    "scripts/usp/learning/association/association_student.py": "63fa1104dd274b63dac1f66d38243995fc195c4bf86f42054b9e3f3185e818db",
+    "scripts/usp/learning/association/stage_adapter.py": "4293ead8a761c5a7fbe8c9300e642e549bae5c0cc2dbe6d96fbe9d671f239fee",
+    "scripts/usp/learning/association/stage_baseline.py": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93",
+    "scripts/usp/learning/association/stage_fragment_adapter.py": "eb67224af8c901da86b5206de7a41d3399f32fe2a6d28dd7fae8b34eb038d385",
+    "scripts/usp/learning/association/stage_fragment_support_v2.py": "500d5e1b70b581b5e25e5de6fbfb0bbc727f9bf8c30e02f80fb66f5e313eca1d",
+    "scripts/usp/learning/association/stage_selector_baseline.py": "36bf1c9483c6cfe33f62ecd3520baa18ef60c2fda00aee905354d0e8eec7228a",
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+    "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+    "services/geo/geo/native_ifc.py": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+    "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "services/geo/geo/usp_learning/association/adapter.py": "25dff6e136b9878bf82a1d6a254eb117250833613f68be59d36543684d74e881",
+    "services/geo/geo/usp_learning/association/candidate_baseline.py": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+    "services/geo/geo/usp_learning/association/candidate_selection.py": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+    "services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "services/geo/geo/usp_learning/association/citation_view.py": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+    "services/geo/geo/usp_learning/association/fragment_adapter.py": "071b171547017f942432105a32cb5303a175d6ec8243c6bf1dd7df1e49e39b4d",
+    "services/geo/geo/usp_learning/association/fragment_baseline.py": "63c923ed5d32593388852aa2e8b7fe6eb96682796295881c5a634c9fc08a778d",
+    "services/geo/geo/usp_learning/association/fragment_selection.py": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0",
+    "services/geo/geo/usp_learning/association/fragment_support_v2.py": "88d327bb359c2491245581c4d3aa569b4c1fdb2e0971a7e6be0bf1a39104c5b9",
+    "services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+    "services/geo/geo/usp_learning/association/native_candidates.py": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+    "services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+    "services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+    "services/geo/geo/usp_learning/association/selector_adapter.py": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+    "services/geo/geo/usp_learning/association/selector_baseline.py": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+    "services/geo/geo/usp_learning/association/selector_constraints.py": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/student.py": "aa12e79e05a99e7e6fccaea6b49be93d7dac2dca828ea9fbe74d8636e17bb4a2",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+  },
+  "runtimeProfileSha256": "a09ee7907b8dc207b01712d84ec33245218773f479cf91301957ee76b32ae503",
+  "settings": {
+    "alpha": 16,
+    "batchSize": 1,
+    "cacheDuringFit": false,
+    "cpuThreads": 2,
+    "dropout": 0.05,
+    "epochs": 6,
+    "gradientAccumulation": 1,
+    "gradientCheckpointing": true,
+    "gradientClipNorm": 1,
+    "learningRate": 0.0002,
+    "loss": "assistant JSON target plus EOS only; all prompt tokens masked",
+    "maxSequenceTokens": 4096,
+    "method": "supervised_causal_LoRA",
+    "optimizer": "AdamW",
+    "rank": 8,
+    "seed": 17,
+    "targets": [
+      "q_proj",
+      "v_proj"
+    ],
+    "warmupSteps": 0,
+    "weightDecay": 0
+  },
+  "studentCodeCommit": "856a937b3a8c4c8819cb033ab54362da28b1ef2e",
+  "task": "STUDENT-23-FRAGMENT-SUPPORT-V2-RELOAD",
+  "trainingPlan": {
+    "datasetSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd",
+    "epochs": 6,
+    "plannedUpdates": 60,
+    "teacherExamples": 10,
+    "version": "association-training-plan/1"
+  },
+  "version": "association-fragment-support-reload-assignment/2"
+}

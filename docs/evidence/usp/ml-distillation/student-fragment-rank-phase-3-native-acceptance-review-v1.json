@@ -1,0 +1,144 @@
+{
+  "acceptance": {
+    "bytes": 10545,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-3-native-acceptance-v1.json",
+    "physicalSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c"
+  },
+  "adapter": {
+    "bytes": 1344,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-36-final-fit-review-v1-71fda6ce670a4c31b7487a0580d424c0\\adapter-checkpoint-value-check.json",
+    "physicalSha256": "b84d63324d84ad9a68a6b30ef675043b5fbbb33b5f260006b340ad904ad969a0"
+  },
+  "base": {
+    "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+    "tensorCount": 290
+  },
+  "checkpoint": {
+    "cursor": {
+      "contributions": 342,
+      "scheduleSha256": "8150b58a5f9a66ada112ca4e62a4a0d238341dc51b4c6398d03f1e359c15be1d",
+      "updates": 60
+    },
+    "files": {
+      "manifest.json": {
+        "bytes": 499,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\checkpoint\\manifest.json",
+        "physicalSha256": "8605234e0d4f3213e4096dffb4fbf089c97d0daeeb3e7cfdc71c302e0ff34ed4"
+      },
+      "state.json": {
+        "bytes": 30803,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\checkpoint\\state.json",
+        "physicalSha256": "3f5555f58435d801b37d96bc77ef48409ea5ca91d5b41a71a8ce494a7640e41a"
+      },
+      "tensors.safetensors": {
+        "bytes": 6549296,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\checkpoint\\tensors.safetensors",
+        "physicalSha256": "b81cf9ab71c38ab17c030015852008f4b5ab01ebe73b61c533665966d88951be"
+      }
+    },
+    "lossCount": 60,
+    "masters": 96,
+    "parameters": 540672,
+    "priorLossPrefix": 40,
+    "rngUnchanged": true,
+    "roundtripExact": true,
+    "scaler": {
+      "_growth_tracker": 60,
+      "backoff_factor": 0.5,
+      "growth_factor": 2.0,
+      "growth_interval": 2000,
+      "scale": 128.0
+    },
+    "tensors": 386
+  },
+  "doubles": [],
+  "executionHead": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+  "finalization": {
+    "bytes": 2289,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-3-technical-v1-199a56f8bb4c4cc9ab969079aa3d5554\\finalization.json",
+    "physicalSha256": "2c7d6966a180e452ffb61109cd85489a420dbf5152bab1f0b78fa2b6460fb8fa"
+  },
+  "frozenRuntimeSourcesVerified": 35,
+  "guardCleanupPassed": true,
+  "hostChecks": [
+    "protected output guard/profile/map/cleanup",
+    "assignment/freeze/code/input/predecessor",
+    "completion supervisor/hash binding",
+    "strict386-tensor checkpoint60/342/scaler128-growth60",
+    "full recipe/token/loss/attention/reclamation/progress history",
+    "exact40-loss predecessor prefix",
+    "copied accepted native first-phase proof",
+    "shared final adapter three-file/config/hash check",
+    "serialized96 fp32 adapter tensors exactly equal checkpoint masters"
+  ],
+  "hostNativeImports": false,
+  "hostVerification": {
+    "bytes": 4564,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-3-technical-v1-199a56f8bb4c4cc9ab969079aa3d5554\\host-verification.json",
+    "physicalSha256": "4103d8d2ffebeb4010395cdc3bcfb6b2b7a188e504ff5a33e02895ea1692a285"
+  },
+  "nativeRunOrProofRepeated": false,
+  "nextDecision": "Code-only explicit accepted phase3 adapter reload authority/loader route. Existing rank baseline deliberately refuses adapted wrappers/arbitrary loaders. Separate reviewed final-head positive native reload/comparison packet follows; no new model execution now.",
+  "ownedChildGone": true,
+  "phase": {
+    "endUpdate": 60,
+    "final": true,
+    "localContributions": 114,
+    "localUpdates": 20,
+    "number": 3,
+    "startUpdate": 40
+  },
+  "physicalReferencesVerified": 71,
+  "qualification": "Technical60-update/342-contribution final fit, full-state durability and exact adapter save. No native reload/inference/quality/source truth/generalization/promotion.57 related pairs/ten provisional parents/two training families remain needs_independent_review, Sarvam excluded.",
+  "readonlyInputCount": 19,
+  "receiptIndex": {
+    "bytes": 7346,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-3-technical-v1-199a56f8bb4c4cc9ab969079aa3d5554\\receipt-index.json",
+    "physicalSha256": "7d9bebe6428e838beff7b8fe42d823938a1001b6a8a9203ed936ffb179e63d57"
+  },
+  "recordedAtUtc": "2026-10-04T11:29:36.163962+00:00",
+  "resources": {
+    "bounds": {
+      "batchSize": 1,
+      "cpuThreads": 2,
+      "maxChildPhaseSeconds": 600,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "maxJobCommittedBytes": 6442450944,
+      "maxPromptTokens": 4096,
+      "minimumCudaFreeBytes": 1610612736,
+      "recording": "Job commitment and RSS separate; CUDA allocated/reserved/minimum free, observed native fit/guard/host/stage/cleanup timings and peak phase records. No invented child-only timings or speedup claim. Existing caps remain, no host/pagefile/global resource change.",
+      "truncation": false
+    },
+    "cuda": {
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 251,
+      "maxCudaAllocatedBytes": 1487851520,
+      "maxCudaReservedBytes": 1639972864,
+      "minimumSampledFreeCudaBytes": 5927600128
+    },
+    "peakJobCommittedBytes": 5810532352,
+    "peakProcessRssBytes": 4098764800,
+    "rssMethod": "50ms actual Job-member RSS/peak working sets"
+  },
+  "stageRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472",
+  "task": "STUDENT-36-FRAGMENT-RANK-PHASE-3-FIT",
+  "technicalRecovery": {
+    "bytes": 90627,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-3-technical-v1-199a56f8bb4c4cc9ab969079aa3d5554\\technical-recovery.json",
+    "physicalSha256": "7635ef4817b07987bcfb77fdd5586384825d2e00a2a97099a1e7f6024615eab8"
+  },
+  "timings": {
+    "exactChildOnlySeconds": null,
+    "exactCleanupOnlySeconds": null,
+    "exactSetupOnlySeconds": null,
+    "fitSeconds": 229.33522410001024,
+    "guardSeconds": 357.71899999998277,
+    "modelAndBaseVerificationSeconds": 1.3343067000096198,
+    "resultElapsedSeconds": 233.36545009998372,
+    "runHostSeconds": 521.4023150999856,
+    "stageHostSeconds": 151.24104530000477
+  },
+  "version": "student-fragment-rank-phase-native-review/1"
+}

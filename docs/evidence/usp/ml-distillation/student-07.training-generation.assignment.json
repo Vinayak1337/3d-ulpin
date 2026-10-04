@@ -1,0 +1,82 @@
+{
+  "version": "ml-association-training-generation-diagnostic/1",
+  "task": "STUDENT-07",
+  "purpose": "One in-sample raw-generation check on two fixed short real-source training examples, to distinguish failure to generate learned structures from cross-family transfer before any new fit or training-data change.",
+  "workerCodeBase": "aeddcaa731bc89672e42d5f8be1a889ea5521f55",
+  "coordinatorIntegrationHead": "20267336a2774a93b9e3bb983f4192021605437f",
+  "executionOwner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "workerWorktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "callbackThreadId": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "requestedWorkerModel": "gpt-6-astra",
+  "requestedWorkerReasoning": "xhigh",
+  "speed": "default/standard required; tool has no per-turn tier field. Historical fit assignment model/effort remains unchanged.",
+  "acceptedFitRoot": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-query-sdpa-fit-f90a65c82dde45ae9c2e0ce4a60dddcd",
+  "acceptedFitProfileSha256": "75c3ebe9d116846026b9924402446ef5d457bd929a324407f899f13ce1a45a45",
+  "fitAssignment": "adapter-05.query-chunked-sdpa.assignment.json",
+  "fitAssignmentSha256": "9b986a49a897476aedbe5e84f6ec3056943f316b220130e096cd7707b35b25b1",
+  "fitManifestSha256": "c86f1efc303460e8091275d541580a2a4b7b500cec18585e7afee807f7f9f3c0",
+  "fitResultSha256": "ca867eae38ac51a4b0afa18805e376b833af724cf244e7cff6148eaa8197ac19",
+  "adapterSafetensorsSha256": "4456b00aba8591c751ecfef8ac78f1272eabd3f56e0212266f8b5fc2c508b485",
+  "student06ReceiptSha256": "de954d2fc45a2621b3993a51827f05306f098776442d0a1b6f4392ce14e69c83",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "trainingDataset": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v2.jsonl",
+  "teacherV2Sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+  "split": "train only; frozen families retain original membership. No relabelling to development and no evaluation files opened or staged.",
+  "cases": [
+    {
+      "exampleId": "teacher-haryana-floor02",
+      "familyId": "in-haryana-rera-2831",
+      "inputCanonicalJsonSha256": "d1c6dfeae45355817a1601a65d82c2df5a90dc1cc853e8ee20240668f9f515da",
+      "teacherOutputCanonicalJsonSha256": "591b1e9e927f28bd38f09709db58fc755451673e6a5a52c159d03b7976148057",
+      "sourceSha256": [
+        "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+      ],
+      "expectedClaims": 6,
+      "promptSha256": "05d8574eb69dca6c22fbaf6569b543a19c37396b95ca259a05eaeb81499ece98",
+      "promptTokens": 424,
+      "referenceTargetTokensIncludingEos": 447
+    },
+    {
+      "exampleId": "teacher-bihar-unusable-approval-date",
+      "familyId": "in-bihar-magnolia-residency",
+      "inputCanonicalJsonSha256": "1e6a5a8e5485b4d9eb4b9e92ea0f1be4ff34752c0c70b49e3233548164c15ba1",
+      "teacherOutputCanonicalJsonSha256": "77fd0df366bfad76a174c6d9f6dd6d58e1a61f371359b76f8394c75659432392",
+      "sourceSha256": [
+        "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e"
+      ],
+      "expectedClaims": 1,
+      "promptSha256": "3bb5aca15d6ff790becc394d01906f5e6c8e15950574622d79e9fabfe7820b0a",
+      "promptTokens": 378,
+      "referenceTargetTokensIncludingEos": 112
+    }
+  ],
+  "inference": "Original SYSTEM_PROMPT, prompt_messages, tokenizer chat template, SETTINGS and greedy generation code/settings; explicit local base plus exact saved adapter, no query-attention fit override, fitting or data-target feedback in this process.",
+  "modelVisibleInputs": "Only the two unchanged selected input evidence keys/text, in original order. No teacher explanations/target outputs, no independent expectations, no development or held-out contents in the model prompt.",
+  "hostComparison": "Validate raw responses unchanged with original schema/citation/literal checks against train membership. Compare accepted claims/citations/conflicts/abstentions to the already accepted provisional teacher targets on the host after inference; separate schema validity, exact source-native claim coverage, extra claims, unknown-null behavior, required abstentions and literal preservation. Report 2 examples/2 families/7 expected claims and undefined precision if none accepted. This is training reconstruction, never independent source accuracy or generalization.",
+  "interpretation": "If trained-family raw generation also fails, return those concrete errors before another fit. If it passes, current evidence supports a format/family coverage gap; no automatic data expansion, constrained decoding or new model fit is authorized by this diagnostic.",
+  "executionAllowance": {
+    "freshContainedInferencePhases": 1,
+    "examples": 2,
+    "generationPerExample": 1,
+    "fit": false,
+    "baselineRerun": false,
+    "developmentRerun": false,
+    "evaluation": false,
+    "repairOrConstrainedDecoding": false,
+    "automaticRetry": false,
+    "promotion": false
+  },
+  "bounds": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600
+  },
+  "implementation": "New leaf diagnostic/staging logic and narrow association_adapter reload dispatch if needed, using existing containment action/arguments and exact accepted-fit loader. Do not mutate student.py baseline/inference functions, old run/freeze files, shared model_isolation/resources/security primitives or third-party/dependency sources. Any reused supervisor completion qualification string is generic legacy metadata, not authority: emit authoritative train-only diagnostic scope and explicitly disclose that fixed field without claiming a new development result.",
+  "verification": "Review owned delta; focused split/target-isolation and byte-pin checks only, then the one actual diagnostic. No repeated fit/control/source campaigns. No fake development split to reuse validation.",
+  "teacherFeedback": "Return only train-case predictions/errors to coordinator; coordinator may then provide concrete train-only feedback to teacher. Teacher remains idle during this run.",
+  "ownership": "Same sole learner/GPU owner; primary staging and coordinator schema/freeze/status/assignments are read-only. Preserve all original and successful/failed-run bytes."
+}

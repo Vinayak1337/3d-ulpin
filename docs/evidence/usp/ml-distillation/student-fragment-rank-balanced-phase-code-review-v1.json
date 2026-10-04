@@ -1,0 +1,79 @@
+{
+  "activeRuntimeSources": 36,
+  "classMass": "1/2 each; total1; parent totals unequal",
+  "codeAccepted": false,
+  "correction": "Read result binding.fit and binding.numerics; retain strict top-level preflight/manifest settings and strict plan/loss/representation/objective checks. If duplicate result fields exist, reject conflicts. Add one focused emitted-shape acceptance/refusal CPU control.",
+  "developmentOrExpectationsOpened": false,
+  "exactChangedPaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-code-v1.md",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_rank_phase.py",
+    "scripts/usp/learning/association/test_fragment_rank_balance.py",
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_balance.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py"
+  ],
+  "finding": {
+    "impact": "Valid emitted phase result fails host acceptance and phase2/3 accepted_previous. CPU checks stopped at before_imports and did not exercise output-recipe acceptance.",
+    "origin": "Pre-existing learner host reader mismatch; coordinator checked_output_recipe already fixes legacy path. This is not a measured native weighted-loss failure.",
+    "reader": "checked_output_history requires result.settings and result.numerics",
+    "severity": "blocking before native packet",
+    "signature": "KeyError: settings in checked_output_history",
+    "writer": "adapter.fit result + PhaseSession.result_fields stores fit/numerics in binding only"
+  },
+  "heldOutOpened": false,
+  "integrationPerformed": false,
+  "knownWorkingReference": {
+    "function": "checked_output_recipe",
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_phase_adapter.py",
+    "use": "Adapt existing reader helper to admitted balanced configuration; do not substitute coordinator source pins for learner."
+  },
+  "learnerClean": true,
+  "learnerHead": "116c0a9eb2b7681e0ed24935277ba05fc2d83b91",
+  "limitations": [
+    "Float64 dual scalar derivatives and declared float32 dtype; no native FP32/autograd/device equivalence.",
+    "Tensor/device/autocast/model/decoder/head/scaler128/attention/GPU observations are stdlib doubles. No native optimizer/model or resource behavior measured.",
+    "Tokenizer/chat rendering/lengths are synthetic doubles; real source-only messages and label-boundary/encoding helpers execute. Native tokenizer/prefix/length proof unrun.",
+    "Shared fitter model-boundary callback is intercepted; actual filesystem/source/assignment/freeze/codec/payload validation runs on copied source text and retained train metadata. Dummy0 Git identity/no model/runtime/containment profile prevents native staging."
+  ],
+  "nativeExecutionAuthorized": false,
+  "nativeWeightedLossAutogradCheckpointFitResourcesQuality": "unrun",
+  "objectiveSha256": "d4ccb3dd75ec5e47d08f9ccb9d9ab5e043ac177147ec098e5e7aa96226531702",
+  "ownerBase": "9e1782a98252542d02440022f8680535f4ee0080",
+  "ownerCodeCommit": "a87aa5d75ea796d8ea3ea3f4e6bc06c811abc1a8",
+  "physicalCanonicalGitSourcesVerified": true,
+  "recordedAtUtc": "2026-10-04T16:01:58.447707+00:00",
+  "references": {
+    "bytes": 19428,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-44-balanced-recipe-review-v1-9c8424112ded4d53bfbb30a221d795f7\\checked-references.json",
+    "physicalSha256": "789defbd0ca9528be3a94cd3a58648ced6b9b6532b66013757b6179221165582"
+  },
+  "reproduction": {
+    "bytes": 904,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-44-balanced-recipe-review-v1-9c8424112ded4d53bfbb30a221d795f7\\host-recipe-reproduction.json",
+    "physicalSha256": "e4089fa3596322f06f8bbc6391d195413c02a6e61f113057ff498a8e8893f78d"
+  },
+  "retainedCpuChecks": "Three original controls passed; corrected startup assertion alone rerun passed; seven in-memory compiles. Consumed without rerunning.",
+  "reviewedReferences": 69,
+  "scalerClarification": "init_scale128,growth_interval2000; tracker reaches60. Earlier assignment shorthand growth60 was inaccurate; runtime unchanged.",
+  "stagingWritten": false,
+  "storageMoved": false,
+  "suppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "teacherMessaged": false,
+  "unchangedProtectedSources": 35,
+  "version": "student-fragment-rank-balanced-phase-code-coordinator-review/1",
+  "workerSettings": {
+    "observedEffort": null,
+    "observedModel": null,
+    "observedTier": null,
+    "requestedEffort": "xhigh",
+    "requestedModel": "gpt-6.1-sol",
+    "requiredSpeed": "default/standard1x",
+    "tierToolControl": "Unexposed; prompt is not configuration."
+  }
+}

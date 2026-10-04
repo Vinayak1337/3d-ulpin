@@ -1,0 +1,65 @@
+{
+  "version": "ml-distillation-teacher-selector-target-acceptance/1",
+  "task": "TEACHER-04",
+  "recordedAt": "2026-10-03",
+  "acceptedScope": "Lossless train-only representation/data and code integrity. Original provisional labels retain their qualification; no model-quality result or new source facts.",
+  "ownerCommit": "fdaaa81a56c1b633d0cd8d5ce10d0908d795fd82",
+  "integratedCommit": "15a5a26f62495d2214f8f86f1f29ff07b0860216",
+  "primaryStagingHeadObservedReadOnly": "c3f06dce23c592df372f062fe62a44b09ed5fde9",
+  "data": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-selectors-v1.jsonl",
+    "bytes": 78908,
+    "rawSha256": "36649ae4f7ca82e50366a627abdc89e02696f0c56cc0a5b648b88a07403cd9cb",
+    "parentRawSha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+    "rows": 11,
+    "claimAppearances": 62,
+    "conflictAppearances": 2,
+    "abstentionAppearances": 22,
+    "mandatoryNoCanonicalTargets": 11,
+    "quoteSelectors": 84,
+    "nonNullLiteralUnitSelectors": 58,
+    "policy": "lossless_lexical_spans/1",
+    "inputAndSampleIdsUnchanged": true,
+    "supervisionChange": "Only selectorProjection provenance; existing augmentation=false and provisional qualification preserved."
+  },
+  "artifactPins": {
+    "mappingRawSha256": "2d4e73f01f91a3e5c12b9d226cc0aa8126514c09dfc497a8013aa119a69d91c7",
+    "receiptRawSha256": "173df178d81f7725fda89fe00e608f053966380b873bcefc18d027fde4daacd5",
+    "selectorSchemaCanonicalLfSha256": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+    "preparationCanonicalLfSha256": "29c7cfc1716c052ce569b90c08c519504afb5b1611bd16ef7a43c3205177f0d9",
+    "decoderCanonicalLfSha256": "06e60c6df39aeb6207253f8a84fb04a1c586a27e07a66bc0f77394f5b09a14c3"
+  },
+  "coordinatorInspection": {
+    "entireEncoderDecoderAndSavedManifestReceiptMappingInspected": true,
+    "newRawArtifactPinsMatched": 4,
+    "retainedRawArtifactAndSourcePinsMatched": 20,
+    "historicalTeacherGitFilesUnchanged": 12,
+    "newCanonicalLfPhysicalAndOwnerGitCodePinsMatched": 2,
+    "newSourcesCompiledInMemory": 2,
+    "independentExpectedSelectorTargetsAndProvenanceMappingsChecked": 11,
+    "all142PointersEarliestAlignedSupportedSpanRulesChecked": true,
+    "originalInputOutputAndSupervisionRecoveryChecked": 11,
+    "decodedRowsCheckedWithOriginalValidatorAndCurrentTrainFreeze": 11,
+    "workerWholeResponseCorruptionControlsReused": 6,
+    "allFourIntegratedChangedGitBlobsMatchOwner": true,
+    "secondDatasetAssemblyOrModelExecution": false,
+    "commands": [
+      {"command": "python -B -I -S - (read-only pins/code compile and independent target/mapping/provenance reconstruction, exact parent-row recovery and original train-only validation)", "exit": 0},
+      {"command": "git cherry-pick fdaaa81a56c1b633d0cd8d5ce10d0908d795fd82", "exit": 0},
+      {"command": "git diff --exit-code fdaaa81a56c1b633d0cd8d5ce10d0908d795fd82 HEAD -- (four new teacher paths)", "exit": 0},
+      {"command": "git diff --check", "exit": 0}
+    ]
+  },
+  "nextDependency": "The existing sole learner continues STUDENT-09-PREP codec/prompt/interface preparation against this exact accepted target representation. Its return must be inspected before a separately frozen pretrained selector baseline; supplying targets does not authorize model staging, fitting or inference.",
+  "unchangedBoundaries": {
+    "fullJsonBaselineAndBothCandidateDevelopment": "0/2 valid raw responses; 0/6 accepted claims each",
+    "earlierTrainingDiagnostic": "1/7 accepted provisional claims",
+    "newFactualLabels": 0,
+    "absentNullStateOrIfcExamplesAdded": false,
+    "evaluationOpened": false,
+    "teacherReceivedDevelopmentContent": false,
+    "modelExecuted": false,
+    "promoted": false,
+    "gatewayRegistered": false
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "correctCompactMapSha256": "1ab91ff470c356d3cb4bafebac033496d55b6c6144685d5aa45ca0d62a57b58d",
+  "decision": "Accept immutable host-wrapper failure evidence and retained-stage metadata admission only; native proof/fit/checkpoint/resource unrun.",
+  "diagnosis": "Host wrapper used indented newline-terminated serialization for a compact canonical map hash. Parsed maps and sorted compact physicalSHA agree; first guard unrun. No source/native checkpoint defect established.",
+  "executionHead": "37fac56393acce067d717d5f259d9bf760396727",
+  "failureSignature": "AssertionError at host stdin line27: indented newline JSON map hash compared against compact canonical hash. First native guard never invoked.",
+  "learnerClean": true,
+  "next": "One first still-unrun generated guard command on exact retained stage under continuation1. No recopy/source/recipe/limit change; use existing checkpoint.canonical for compact map verification.",
+  "ownerFinalization": {
+    "bytes": 2435,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-1-technical-v1-6867bdd57904460fbff5f6b39d0b8c53\\finalization.json",
+    "physicalSha256": "5c64ede08c2a6e7433d94b1548b7dd3ba1b285d5485a0499769292908e494c96"
+  },
+  "phase": {
+    "endUpdate": 20,
+    "final": false,
+    "localContributions": 114,
+    "localUpdates": 20,
+    "number": 1,
+    "startUpdate": 0
+  },
+  "privateReceiptIndex": {
+    "bytes": 4226,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-1-technical-v1-6867bdd57904460fbff5f6b39d0b8c53\\receipt-index.json",
+    "physicalSha256": "0adadad75616b8568a56f070390a4da6c7e176f17eceae228684355c637dc042"
+  },
+  "privateTechnicalRecovery": {
+    "bytes": 12004,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-1-technical-v1-6867bdd57904460fbff5f6b39d0b8c53\\technical-recovery.json",
+    "physicalSha256": "8a94ae2b1e2b47de192d40c8e446b3ecccfbbaddc9cafb0c347890778842be40"
+  },
+  "qualification": "Only a successfully staged and metadata-matched input profile. No native checkpoint/fit/resource/cleanup or model-quality result. Previous lost44 updates remain excluded.",
+  "recordedAtUtc": "2026-10-04T00:53:36.784464+00:00",
+  "repositoryWrites": false,
+  "review": {
+    "bytes": 10473,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-31-admission-review-v1-2a3ddd497f4f426d8c07230f4a710dbc\\review.json",
+    "physicalSha256": "b5a36dfae66ae25c69b3b96f992ccbbc0307173137f90bc51eb3ffa551f8a2ff"
+  },
+  "reviewSummary": {
+    "nativeDirectoriesEmpty": true,
+    "physicalReferencesMatched": 16,
+    "profileParsedMapAndCorrectCompactHashExact": true,
+    "runtimeModelFullHashCampaign": false,
+    "stageInputsMatched": 14,
+    "unchangedStageSourcesMatched": 35
+  },
+  "stage": {
+    "counts": {
+      "code": 35,
+      "inputs": 14,
+      "model": 9,
+      "runtime": 19630
+    },
+    "freeze": {
+      "bytes": 44590,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\run-freeze.json",
+      "physicalSha256": "d22fd3c50d27da1bd107954e4078661aaa63901765aff668efc2419a7313d7f3"
+    },
+    "nativeGuardAttempts": 0,
+    "profile": {
+      "bytes": 2702013,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\profile.json",
+      "physicalSha256": "6807fffeb816e89e7944cdb23e443ed05d1a24e2767089ef3ba31ff2b9fb486d"
+    },
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6",
+    "stageAttempts": 1,
+    "stageElapsedSeconds": 182.84400000001187,
+    "stageExitCode": 0,
+    "stageJson": {
+      "bytes": 7167,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\stage.json",
+      "physicalSha256": "a887c2b2b117e2c49a8e7f29c2cd5430fe22c002dc4fb53f4d97a820aafc4557"
+    }
+  },
+  "stagingReadOnlyHead": "b9c4819e7e665d8e1499afcd355fe60073be9abc",
+  "task": "STUDENT-31-FRAGMENT-RANK-PHASE-FIT",
+  "version": "association-rank-phase-host-admission-blocker-acceptance/1",
+  "wrongIndentedMapSha256": "9958efca12f0ecdecb53dc5d61dbf83eac636d6ea066037732f56277c2393a94"
+}

@@ -1,0 +1,94 @@
+{
+  "acceptedAtEvidenceScope": true,
+  "comparisonPerformed": false,
+  "createdStages": 0,
+  "currentRuntimePhysicalCanonicalGitPins": 40,
+  "decision": "accept_immutable_pre_stage_import_failure_no_native_execution",
+  "diagnosis": "Isolated Python removes script directory from sys.path. Thin entry line7 imports sibling before inserting fixed repository/script roots. Existing CPU suite preseeded paths, so startup was not exercised.",
+  "diagnosisReceipt": {
+    "bytes": 3428,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-ec836c38ffa5404695e46237923516a8\\failure-diagnosis.json",
+    "physicalSha256": "ed039aeead611eb5d7bc484e7b3b9dffc67e910da79c99a39ef1adb1c55d9cc1"
+  },
+  "executionHead": "dbddf4951e47b855865d0940850049ee98debf31",
+  "existingAnalogue": {
+    "behavior": "Derives REPO from __file__ and inserts entry sibling/services roots before importing shared_stage.",
+    "canonicalLfSha256": "6bd9d6789f76adbcb0c5872d7f319d9b8812da05cd2dd03b21cf9545f1c82662",
+    "path": "scripts/usp/learning/association/stage_fragment_rank_phase.py"
+  },
+  "expectationsOpened": false,
+  "finalization": {
+    "bytes": 2161,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-ec836c38ffa5404695e46237923516a8\\finalization-final.json",
+    "physicalSha256": "ee86553f4cc9d809e0579f654276ba637ff014abf79bfc85288cbb708db84e70"
+  },
+  "guardInvocations": 0,
+  "inference": "Traceback precedes shared-stage import/admission/mkdir/copy/native operations. No model, checkpoint serializer, tokenizer or learning result was tested.",
+  "learnerClean": true,
+  "nativeEffects": false,
+  "next": "STUDENT-39 bootstrap-only fix with isolated subprocess help/disabled admission regression. A new final-head positive native packet follows accepted code; consumed STUDENT-38 is never retried.",
+  "observedStageCommand": {
+    "attempt": 1,
+    "command": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_fragment_rank_reload.py",
+      "--assignment",
+      "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-38.fragment-rank-reload.assignment.json"
+    ],
+    "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+    "elapsedSeconds": 0.054391899990150705,
+    "exitCode": 1,
+    "finishedAtUtc": "2026-10-04T12:29:53.781476+00:00",
+    "startedAtUtc": "2026-10-04T12:29:53.726867+00:00"
+  },
+  "receiptIndex": {
+    "bytes": 5284,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-ec836c38ffa5404695e46237923516a8\\receipt-index-final.json",
+    "physicalSha256": "846c203fe88932a16a25fd1620e63a1db2a5e439808ef85549e06b1b7fa3b8ec"
+  },
+  "recordedAtUtc": "2026-10-04T12:35:33.300355+00:00",
+  "research": {
+    "finding": "-I excludes script directory and user site-packages and ignores PYTHON environment. Retain -B -I -S and explicitly add only fixed local entry roots.",
+    "url": "https://docs.python.org/3.11/using/cmdline.html#cmdoption-I",
+    "version": "CPython3.11"
+  },
+  "resources": {
+    "disk": {
+      "finalDisk": {
+        "freeBytes": 677658951680,
+        "totalBytes": 2000381014016,
+        "usedBytes": 1322722062336
+      },
+      "initialDisk": {
+        "freeBytes": 677658972160,
+        "totalBytes": 2000381014016,
+        "usedBytes": 1322722041856
+      },
+      "nativeJobRssCuda": null
+    },
+    "nativeJobRssCuda": null,
+    "processPreflight": {
+      "excludedCurrentHostRecorderPid": 46304,
+      "observedAtUtc": "2026-10-04T12:29:53.6785709Z",
+      "ownedNativeProcesses": []
+    }
+  },
+  "retainedTraining": "Accepted fullstate60 updates/342 contributions/final96-tensor adapter and historical sourceCommit7a7b6eb5 unchanged. Quality/reload remain unrun.",
+  "reviewedReferenceFiles": 25,
+  "sourceCheckpointWrites": false,
+  "stageInvocations": 1,
+  "stderr": {
+    "bytes": 329,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-ec836c38ffa5404695e46237923516a8\\stage.stderr.txt",
+    "physicalSha256": "21c939c3822075a29f00507c535b480236c0c39130a65a8ce3645e396ffcd56a"
+  },
+  "technicalReport": {
+    "bytes": 18826,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-ec836c38ffa5404695e46237923516a8\\technical-recovery.json",
+    "physicalSha256": "0651ea4d2c76fa4ece95ca0db116d2179468ee464e771875cc31486dec41f23e"
+  },
+  "version": "student-fragment-rank-reload-bootstrap-failure-acceptance/1"
+}

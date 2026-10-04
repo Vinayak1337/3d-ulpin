@@ -1,0 +1,405 @@
+{
+  "coordinatorBase": "60133c7ecb303f0cad256e4852c84abd712827a1",
+  "decision": "accepted_contained_fit_save_resource_scope",
+  "executionHead": "32e661a13e04db23b1cab3f0211b12b372474d38",
+  "fit": {
+    "allRecordedLossesAndGradientNormsFinite": true,
+    "developmentOpened": false,
+    "epochMeanLoss": [
+      0.09971502311527729,
+      0.030466805212199688,
+      0.017580242874100805,
+      0.014312599413096904,
+      0.011719598399940878,
+      0.006988365831784904
+    ],
+    "evaluationOpened": false,
+    "gradientScales": [
+      128.0
+    ],
+    "nativeRuntimeVersions": {
+      "accelerate": "1.10.1",
+      "peft": "0.17.1",
+      "safetensors": "0.8.0",
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    },
+    "supervisedTokens": 5106,
+    "teacherExamples": 10,
+    "trainingPlan": {
+      "datasetSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd",
+      "epochs": 6,
+      "plannedUpdates": 60,
+      "teacherExamples": 10,
+      "version": "association-training-plan/1"
+    },
+    "updates": 60
+  },
+  "freeze": {
+    "bytes": 18653,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\inputs\\run-freeze.json",
+    "physicalSha256": "6411c2a8d824617056a8bd5214ac0061a6e6d01522eb19edefb4d95e44ec1fbd"
+  },
+  "guard": {
+    "bytes": 38953,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\receipts\\association_adapter-fit-guard.json",
+    "physicalSha256": "40be29c8ebe1445772714083fc2f00f8ba8126cce0703930e657212548b8021d"
+  },
+  "integratedCommit": "a1d4c41c7388d4ccb5812fc520281be417e78f98",
+  "integratedReport": {
+    "bytes": 32364,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-fit-v1.json",
+    "physicalSha256": "4ba2f82632b22a4c8b29ff67fe9061e22398e48b68f5da422184a548b9f32a32"
+  },
+  "limitations": [
+    "No new absent/null/withheld native-state coverage or official operational qualification.",
+    "The unchanged fitter serializes literal token-ID/position arrays for the first update only. All-row native preflight still executes full prompt/target/EOS/prefix/mask assertions and records target hashes/lengths; do not claim or reconstruct unrecorded arrays.",
+    "All-row targets/lengths and executed prefix/EOS/mask assertions are accepted; literal token arrays exist only for the first update.",
+    "In-sample loss decrease establishes no output quality; unchanged development criteria still require a separately frozen reload.",
+    "Separate child/setup/cleanup durations are unexposed; no reconstructed duration or fresh reload base digest is claimed."
+  ],
+  "nativePreflight": {
+    "allRowPrefixEosAndMaskAssertionsExecuted": true,
+    "epochOrder": [
+      [
+        7,
+        3,
+        0,
+        5,
+        1,
+        9,
+        2,
+        4,
+        6,
+        8
+      ],
+      [
+        1,
+        5,
+        0,
+        9,
+        7,
+        4,
+        2,
+        8,
+        6,
+        3
+      ],
+      [
+        7,
+        0,
+        8,
+        1,
+        6,
+        4,
+        5,
+        9,
+        3,
+        2
+      ],
+      [
+        7,
+        5,
+        2,
+        9,
+        3,
+        8,
+        0,
+        6,
+        4,
+        1
+      ],
+      [
+        6,
+        1,
+        9,
+        7,
+        4,
+        2,
+        3,
+        0,
+        5,
+        8
+      ],
+      [
+        6,
+        2,
+        8,
+        1,
+        3,
+        9,
+        4,
+        5,
+        7,
+        0
+      ]
+    ],
+    "excludedRows": [],
+    "firstUpdateLiteralReceipt": {
+      "exampleId": "teacher-fragments-v2-pair01-b",
+      "includesEos": true,
+      "lastRecordedTargetTokenId": 151645,
+      "supervisedDenominator": 85,
+      "targetTokenIdsCount": 85,
+      "targetTokenPositionsCount": 85
+    },
+    "maximumCombinedTokens": 3427,
+    "rows": [
+      {
+        "assistantJsonPlusEosTokens": 84,
+        "combinedTokens": 2649,
+        "exampleId": "teacher-fragments-v1-01",
+        "promptSha256": "4831b2f7d04daed40ba916630129815d1172cec666e6fa5780680b2cde7f643f",
+        "promptTokens": 2565,
+        "sixEpochSupervisedTokens": 504,
+        "targetSha256": "0a30c98c7a31a5185c4988b1d7a05247c5f66ab6f4fe7583641ef22d248c122d",
+        "updates": 6
+      },
+      {
+        "assistantJsonPlusEosTokens": 84,
+        "combinedTokens": 3427,
+        "exampleId": "teacher-fragments-v1-02",
+        "promptSha256": "34a63d2dfb91e4de98e5c8347c16dc29721a31b77be2e48baf0b648f771f36b7",
+        "promptTokens": 3343,
+        "sixEpochSupervisedTokens": 504,
+        "targetSha256": "7fb787a1e2a4fb5558dcfaff7a167cfe16e0ed56a00d3047e96a87e850b4aa0c",
+        "updates": 6
+      },
+      {
+        "assistantJsonPlusEosTokens": 92,
+        "combinedTokens": 2270,
+        "exampleId": "teacher-fragments-v1-03",
+        "promptSha256": "f7be9e8a02effa75b0619493a73afe3440f4b352a5f77312d4733994b8d6bc5c",
+        "promptTokens": 2178,
+        "sixEpochSupervisedTokens": 552,
+        "targetSha256": "0b30223c33ec72f9298b1344bb26fe5bc202bae158e1cbc144ec4898c5b1ac4b",
+        "updates": 6
+      },
+      {
+        "assistantJsonPlusEosTokens": 86,
+        "combinedTokens": 1939,
+        "exampleId": "teacher-fragments-v1-04",
+        "promptSha256": "af59d138f7151374b71b79ad939fe1fa250c4dad1079cc1816fb60998d388d1b",
+        "promptTokens": 1853,
+        "sixEpochSupervisedTokens": 516,
+        "targetSha256": "c32eccbf85738dca0f7829cf9c738bd7607f6de20705ca3831e9f12b46d5c2e0",
+        "updates": 6
+      },
+      {
+        "assistantJsonPlusEosTokens": 84,
+        "combinedTokens": 1542,
+        "exampleId": "teacher-fragments-v1-05",
+        "promptSha256": "d50d5249d117995fdcaa2335fca1564008948a957c34a9e900f870a4ce66438c",
+        "promptTokens": 1458,
+        "sixEpochSupervisedTokens": 504,
+        "targetSha256": "eaedb80b109cefd3ecfddd91f3986b0d8e7987eb5cbd0935ffeeb0292bff8c37",
+        "updates": 6
+      },
+      {
+        "assistantJsonPlusEosTokens": 84,
+        "combinedTokens": 1925,
+        "exampleId": "teacher-fragments-v1-06",
+        "promptSha256": "43ebd4407e466ba227f26d7c014582b2c3177227707ea3860ca40ca8ebc93b75",
+        "promptTokens": 1841,
+        "sixEpochSupervisedTokens": 504,
+        "targetSha256": "396c6c9711e4c875d961863c39f8bc8fcf3075e3b09bb44520e3e37517baf021",
+        "updates": 6
+      },
+      {
+        "assistantJsonPlusEosTokens": 84,
+        "combinedTokens": 1536,
+        "exampleId": "teacher-fragments-v2-pair01-a",
+        "promptSha256": "88ba5c454e3dc4e3739fccf72b11628abe5980fbc9aa86c07362b7e164a98d86",
+        "promptTokens": 1452,
+        "sixEpochSupervisedTokens": 504,
+        "targetSha256": "30d109febae3988a05fccbca6bc4f7bfbd2054160268bc7a478cd0a637e52506",
+        "updates": 6
+      },
+      {
+        "assistantJsonPlusEosTokens": 85,
+        "combinedTokens": 1540,
+        "exampleId": "teacher-fragments-v2-pair01-b",
+        "promptSha256": "b99fab18ce42909b75bb38fab5c813ff695eb9cccb4eeb9e783f4877b916158d",
+        "promptTokens": 1455,
+        "sixEpochSupervisedTokens": 510,
+        "targetSha256": "172f55a37ad7e9919a02a4a07f4d8af1a81a17a2b17dcad59e0c501e0004b354",
+        "updates": 6
+      },
+      {
+        "assistantJsonPlusEosTokens": 84,
+        "combinedTokens": 2649,
+        "exampleId": "teacher-fragments-v2-pair02-a",
+        "promptSha256": "610cb4ffd255976e7a77a8d2368407a4d94fc73376f6991ec3fca7f3c4143dd4",
+        "promptTokens": 2565,
+        "sixEpochSupervisedTokens": 504,
+        "targetSha256": "f786a71f4e04e6dab5eef8f2631bfa0bd128ce8ca81cd25fa9652bf31a172cd3",
+        "updates": 6
+      },
+      {
+        "assistantJsonPlusEosTokens": 84,
+        "combinedTokens": 2654,
+        "exampleId": "teacher-fragments-v2-pair02-b",
+        "promptSha256": "422b80a76f5ae3a909d3b026f8c85f66a350d26751792414706f8521b46e7d25",
+        "promptTokens": 2570,
+        "sixEpochSupervisedTokens": 504,
+        "targetSha256": "f91326f8dbc23420e21a77a8259a68bcfe0f14758d58e58c7192b6de8a78ece9",
+        "updates": 6
+      }
+    ],
+    "sequenceLimit": 4096,
+    "truncation": false
+  },
+  "next": "One separately frozen STUDENT-23 saved-adapter reload and one post-cleanup host comparison; teacher idle, held-out and retired corpora closed.",
+  "outputAcceptance": {
+    "bytes": 2333,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\receipts\\association_adapter-fit-accepted.json",
+    "physicalSha256": "95c5d72e12a38cd6dd7b949abed18e24d8de46c4a2c4dc1fb24dd669fa3d9afc"
+  },
+  "ownerEvidenceCommit": "f25bc4a0f473b9e3fc9d8f13087f971c98e5b310",
+  "ownerFinalCheckpoint": {
+    "bytes": 3358,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-fit-return-da5db5ea7abc459ebbd893498ee1ebf9\\final-checkpoint.json",
+    "physicalSha256": "a0b9c1fc5144ddc4f5620be06fcd2c71c0c84a082a112816722f20e56993fb0d"
+  },
+  "ownerReport": {
+    "bytes": 31673,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-fit-v1.json",
+    "physicalSha256": "f3ecf99ffe7c6eac961c93b02a34e4dace2d93e4c50cc09ac50dacc8da18d262"
+  },
+  "profile": {
+    "bytes": 2701657,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-support-v2-fit-23d6787a96704a1b8770b5ef88dc82b5\\profile.json",
+    "physicalSha256": "6a40f31c155eda85224f8e82b1b3e91833667632bde38bd8754ede396d93d9e7"
+  },
+  "qualification": {
+    "containedFitSaveAndResource": true,
+    "evaluationOrPromotionOrRelease": false,
+    "generalizationOrCanonicalAssociation": false,
+    "independentTruthOrNewAbsentNullCoverage": false,
+    "reloadOrInferenceOrModelQuality": false
+  },
+  "recordedAtUtc": "2026-10-03T18:44:56.844721+00:00",
+  "reproducedFitProof": {
+    "bytes": 10036,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-22-support-fit-review-v1-8d032b7260c54bc2875e9a6c50fb2aed\\reproduced-fit-proof.json",
+    "physicalSha256": "8836b437ef8bb4147ec6f482f87e7197f7280821c555390ccb147daa5955b4fe"
+  },
+  "resources": {
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpuSampleCount": 123,
+    "maxCudaAllocatedBytes": 1485943296,
+    "maxCudaReservedBytes": 1604321280,
+    "minimumSampledFreeCudaBytes": 5749342208,
+    "peakJobCommittedBytes": 6004740096,
+    "peakProcessRssBytes": 4219731968
+  },
+  "reviewAudit": {
+    "bytes": 18516,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-22-support-fit-review-v1-8d032b7260c54bc2875e9a6c50fb2aed\\audit.json",
+    "physicalSha256": "c1624fb7666726266188b2bc4b041e8ff5227f5baf8cae3b30c7726b0762b5ec"
+  },
+  "reviewExecution": {
+    "bytes": 538,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-22-support-fit-review-v1-8d032b7260c54bc2875e9a6c50fb2aed\\review.execution.json",
+    "physicalSha256": "fb258b011a6a265674d61cc461ef594f03ea7f39ba7c19dc9931168dfd84906f"
+  },
+  "reviewHelper": {
+    "bytes": 10137,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-22-support-fit-review-v1-8d032b7260c54bc2875e9a6c50fb2aed\\review_fit.py",
+    "physicalSha256": "7a3378bd1dcc1583ea46d6e3e99b3113b66e5a353c639c4589d3df0ecf01d79c"
+  },
+  "save": {
+    "adapterFiles": {
+      "README.md": "36fedbb85de61715d03592c6bd3a213d97dc2e237cdd661753e819cc734c0875",
+      "adapter_config.json": "41e0d26d63a6250cea043512dd4dd6aa20d39d8e534ecb204785ab56452304bd",
+      "adapter_model.safetensors": "66598aad3ea6345332eede3234bb5dde8b0b21161fe22680527cc53af70ff36e"
+    },
+    "baseParametersAfter": {
+      "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+      "tensorCount": 290
+    },
+    "baseParametersBefore": {
+      "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+      "tensorCount": 290
+    },
+    "savedStateMatchesTrainableAdapter": true,
+    "tensorCount": 96,
+    "trainableParameters": 540672
+  },
+  "savedFitProof": {
+    "bytes": 10036,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-fit-return-da5db5ea7abc459ebbd893498ee1ebf9\\accepted-fit-proof.json",
+    "physicalSha256": "8836b437ef8bb4147ec6f482f87e7197f7280821c555390ccb147daa5955b4fe"
+  },
+  "stagingReadOnlyObservation": {
+    "changedByThisTask": false,
+    "dirty": [
+      " M apps/api/src/modules/register/operation-manifest.json",
+      " M apps/api/src/modules/register/register.module.ts",
+      " M docs/api/datasets.json",
+      " M docs/api/openapi.json",
+      " M docs/api/source-pins.json",
+      " M packages/api-client/src/schema.d.ts",
+      " M packages/contracts/src/index.ts"
+    ],
+    "head": "25edc6c589c8589ad9a1ee3132874d0603b3daad"
+  },
+  "suppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "task": "STUDENT-22-FRAGMENT-SUPPORT-V2-FIT",
+  "timing": {
+    "childSetupAndCleanupSeparateSeconds": null,
+    "fitCommandWallSeconds": 461.30863490000775,
+    "fitLoopSeconds": 129.32244789999095,
+    "guardElapsedSeconds": 279.5,
+    "interpretation": "Only exposed durations; do not infer unreported phase durations.",
+    "modelAndBaseVerificationSeconds": 1.2749296999973012,
+    "nativeElapsedSeconds": 132.38137849999475,
+    "nativeTokenizationSeconds": 0.23547949999920093,
+    "savedFitProofWallSeconds": 0.30987769999774173,
+    "stageCommandWallSeconds": 221.0529538999981
+  },
+  "verification": {
+    "allTenRowsTargetsAndCompleteBound": true,
+    "commonSavedFitPureReadmissionReproduced": true,
+    "existingFirstUpdateArraysChecked": true,
+    "guardAndOutputAcceptanceAndCleanup": true,
+    "inputs": 13,
+    "integrationEquality": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "f25bc4a0f473b9e3fc9d8f13087f971c98e5b310",
+        "a1d4c41c7388d4ccb5812fc520281be417e78f98",
+        "--",
+        "docs/evidence/usp/ml-distillation/student/fragment-support-v2-fit-v1.json",
+        "docs/evidence/usp/ml-distillation/student/fragment-support-v2-fit-v1.md"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin",
+      "exitCode": 0
+    },
+    "matchedReferences": 59,
+    "nativeResourceProjectionMatched": true,
+    "nativeTokenizerOrModelOrControlCampaignRerun": false,
+    "outputs": 21,
+    "physicalCanonicalGitStagedSources": 33,
+    "profileEntries": 19685,
+    "runtimeOrModelContentsCampaignRerun": false,
+    "supervisedTokens": 5106,
+    "updates": 60
+  },
+  "version": "student-fragment-support-v2-fit-acceptance/1",
+  "workerSettings": {
+    "actualModel": null,
+    "actualPerTurnServiceTier": null,
+    "actualReasoning": null,
+    "interpretation": "Dispatch exposes model/effort but no tier; verify supplied permissions, report observable settings honestly and do not claim a speed from a prompt or global preference.",
+    "reason": "Preserve the reviewed versioned ten-row authority and existing source, split, objective and resource controls during one original-base fit.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  }
+}

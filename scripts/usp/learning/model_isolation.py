@@ -22,6 +22,7 @@ import types
 import uuid
 
 STAGING_PARENT = Path("E:/BhuAayam-data/task-data/desktop-model-egress-enforcement")
+ASSOCIATION_STAGING_PARENT = Path("E:/BhuAayam-data/task-data/ml-distillation/student")
 SHELL = Path("C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe")
 SHELL_SHA = "362a356ce7f0940ec74f73a8fc2c990a2cc24a38a11c90bbd8eca947110ad139"
 MODULE_SHA = "60e8b93ee7a9111d38912c7d45ce83a56dccf772bd974b96bd3cc4c678744560"
@@ -30,7 +31,9 @@ HARNESS = "scripts/usp/security/appcontainer_audit.py"
 # Canonical LF source of the reviewed primitive at candidate 2f0928e. Early
 # token checks have no profile yet; reject source drift before executing it.
 HARNESS_SOURCE_SHA256 = "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f"
-ROLES = ("compare_reranker.py", "train_reranker_lora.py", "control.py")
+ASSOCIATION_ROLE = "association_student.py"
+ASSOCIATION_ADAPTER_ROLE = "association_adapter.py"
+ROLES = ("compare_reranker.py", "train_reranker_lora.py", "control.py", ASSOCIATION_ROLE, ASSOCIATION_ADAPTER_ROLE)
 READONLY = ("runtime", "code", "inputs", "model")
 _BOUNDARY = None
 
@@ -93,7 +96,7 @@ def load_profile(path, digest, *, host=True):
     if host:
         for parent in root.parents:
             require(not (parent.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT), "reparse staging ancestor rejected")
-    require(root.parent == STAGING_PARENT and path.name == "profile.json", "new task-private profile required")
+    require(root.parent in (STAGING_PARENT, ASSOCIATION_STAGING_PARENT) and path.name == "profile.json", "new task-private profile required")
     safe_path(root, path.name)
     require(sha(path) == digest, "profile SHA256 drift")
     profile = read(path)
@@ -185,12 +188,24 @@ def explicit_environment(root, session_path):
 def checked_command(root, profile, command, profile_path, profile_sha):
     require(len(command) >= 3 and Path(command[1]).name in ROLES, "known pinned Qwen role required")
     role = Path(command[1]).name
-    script = safe_path(root, "code/control.py" if role == "control.py" else "code/scripts/usp/learning/" + role)
+    association = role in (ASSOCIATION_ROLE, ASSOCIATION_ADAPTER_ROLE)
+    require(root.parent == (ASSOCIATION_STAGING_PARENT if association else STAGING_PARENT), "role staging scope mismatch")
+    script = safe_path(root, "code/scripts/usp/learning/association/" + role if association else
+                       ("code/control.py" if role == "control.py" else "code/scripts/usp/learning/" + role))
     require(script.relative_to(root).as_posix() in profile["files"], "role code is not pinned")
     args = list(command[2:])
-    require(args[0] in ("prepare", "run"), "only prepare/run roles allowed")
+    require(args[0] in (("fit", "reload") if role == ASSOCIATION_ADAPTER_ROLE else ("prepare", "run")), "unsupported role action")
     allowed = {"--corpus", "--input-proof", "--originals-dir", "--retained-dir", "--baseline-dir",
                "--e5-result", "--output-dir", "--containment-profile", "--containment-sha256"}
+    if role == ASSOCIATION_ROLE:
+        require(args[0] == "run", "association baseline exposes only run")
+        allowed = {"--input-batch", "--schema", "--family-freeze", "--model-receipt", "--run-freeze",
+                   "--output-dir", "--containment-profile", "--containment-sha256"}
+    elif role == ASSOCIATION_ADAPTER_ROLE:
+        allowed = {"--schema", "--family-freeze", "--model-receipt", "--run-freeze", "--assignment",
+                   "--output-dir", "--containment-profile", "--containment-sha256"}
+        allowed |= ({"--training-data", "--teacher-v1"} if args[0] == "fit" else
+                    {"--input-batch", "--adapter-dir", "--adapter-manifest", "--fit-proof"})
     seen = set()
     require(len(args[1:]) % 2 == 0, "explicit role arguments required")
     for key, value in zip(args[1::2], args[2::2]):
@@ -206,7 +221,12 @@ def checked_command(root, profile, command, profile_path, profile_sha):
             safe_path(root, path.relative_to(root).as_posix())
             require(path.is_relative_to(root / "outputs") if key == "--output-dir"
                     else any(path.is_relative_to(root / directory) for directory in READONLY), "role path scope mismatch")
+            if association and key != "--output-dir":
+                require(path.is_relative_to(root / "inputs") and
+                        (path.is_dir() if key == "--adapter-dir" else path.is_file()), "association input must be a pinned input file/directory")
     require({"--output-dir", "--containment-profile", "--containment-sha256"} <= seen, "missing contained role arguments")
+    if association:
+        require(seen == allowed, "missing association input arguments")
     return script, args
 
 
@@ -336,11 +356,23 @@ def launch_model(command, output_dir, limits, profile_path, profile_sha):
                "cleanup": cleanup, "commands": commands, "profile": name, "sid": expected_sid,
                "profileSha256": profile_sha, "elapsedSeconds": time.monotonic() - started,
                "limits": limits, "outputsAccepted": failure is None}
-    if failure is None and args[0] == "run" and script.name != "control.py":
+    if failure is None and (args[0] == "run" or script.name == ASSOCIATION_ADAPTER_ROLE) and script.name != "control.py":
         try:
             destination = Path(args[args.index("--output-dir") + 1])
             if script.name == "compare_reranker.py":
                 write(destination / "run/run.json", {**read(destination / "run/result.json"), "supervisor": receipt})
+            elif script.name == ASSOCIATION_ADAPTER_ROLE and args[0] == "fit":
+                write(destination / "completion.json", {"supervisor": receipt,
+                      "runFreezeSha256": sha(Path(args[args.index("--run-freeze") + 1])),
+                      "fitResultSha256": sha(destination / "fit-result.json"),
+                      "tokenPreflightSha256": sha(destination / "token-preflight.json"),
+                      "adapterManifestSha256": sha(destination / "adapter-manifest.json"),
+                      "evaluationOpened": False, "developmentOpened": False, "promoted": False})
+            elif script.name in (ASSOCIATION_ROLE, ASSOCIATION_ADAPTER_ROLE):
+                write(destination / "completion.json", {"supervisor": receipt,
+                      "runFreezeSha256": sha(Path(args[args.index("--run-freeze") + 1])),
+                      "rawOutputsSha256": sha(destination / "raw-outputs.json"), "resultSha256": sha(destination / "result.json"),
+                      "evaluationOpened": False, "qualification": "source_native_development_only", "promoted": False})
             else:
                 write(destination / "completion.json", {"supervisor": receipt, "freezeSha256": sha(destination / "freeze.json"),
                       "artifacts": {p.relative_to(destination).as_posix(): sha(p) for p in destination.rglob("*") if p.is_file()},

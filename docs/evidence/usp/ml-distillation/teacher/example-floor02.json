@@ -1,0 +1,209 @@
+{
+  "input": {
+    "version": "evidence-association-input/1",
+    "exampleId": "teacher-haryana-floor02",
+    "familyId": "in-haryana-rera-2831",
+    "evidence": [
+      {
+        "key": "t3-2-title:item-8",
+        "familyId": "in-haryana-rera-2831",
+        "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+        "method": "ocr_observation",
+        "locator": {
+          "page": 1,
+          "sourcePageBoxes": [
+            {
+              "pageNumber": 1,
+              "frame": "pdf_display_page_top_left_points",
+              "box": [
+                2280.6705,
+                1569.40575,
+                2368.6815,
+                1581.40725
+              ],
+              "derivedFrom": "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin"
+            }
+          ],
+          "sourcePageFrame": {
+            "kind": "pdf_display_page_top_left_points",
+            "rotation": 0,
+            "width": 2586.0,
+            "height": 1694.0
+          },
+          "selectedRegion": [
+            2250.0,
+            990.0,
+            2565.0,
+            1690.0
+          ],
+          "candidatePath": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-2-title\\result.json",
+          "candidateSha256": "e051c2e3c27129effb778596e49e85ea23ee1e3578f2d3e6476b433b91e19e9d",
+          "receiptPath": "E:\\BhuAayam-data\\task-data\\desktop-plan-context-inputs-20261002\\t3-2-title\\receipt.json",
+          "receiptSha256": "5bb13a84241d478d0806144d7f7ab00df1993903335235fbcedee2496664476b",
+          "itemOrdinal": 8,
+          "itemSha256": "6511c63da0f1fdfa44324c7c88282df8999bb22f7dd680ab5d29692f32b08223",
+          "readerMethod": "ocr:docling-tesseract-cli-full-page",
+          "textCompleteness": "unverified"
+        },
+        "text": "TOWER03"
+      },
+      {
+        "key": "t3-2-floor02-reused:item-0",
+        "familyId": "in-haryana-rera-2831",
+        "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+        "method": "ocr_observation",
+        "locator": {
+          "page": 1,
+          "sourcePageBoxes": [
+            {
+              "pageNumber": 1,
+              "frame": "pdf_display_page_top_left_points",
+              "box": [
+                1856.8935000000001,
+                770.0025,
+                2062.697,
+                799.784
+              ],
+              "derivedFrom": "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin"
+            }
+          ],
+          "sourcePageFrame": {
+            "kind": "pdf_display_page_top_left_points",
+            "rotation": 0,
+            "width": 2586.0,
+            "height": 1694.0
+          },
+          "selectedRegion": [
+            1820.0,
+            750.0,
+            2130.0,
+            825.0
+          ],
+          "candidatePath": "E:\\BhuAayam-data\\task-data\\desktop-large-plan-ocr-20261002\\trial-001\\result.json",
+          "candidateSha256": "3fef032598e08a90c61eb7c6bd1afd64bf32650d78fb673d83bfe9864f3faab3",
+          "receiptPath": "E:\\BhuAayam-data\\task-data\\desktop-large-plan-ocr-20261002\\trial-001\\receipt.json",
+          "receiptSha256": "6d9c05421d2c9310e7e0dcbd5021b725f06c2d66566a44251ae1d64d61ff210b",
+          "itemOrdinal": 0,
+          "itemSha256": "770fb5cd4abb2ceb9d0f56632738d1030c68bf61bfd37ecee9ac1bbd9519c901",
+          "readerMethod": "ocr:docling-tesseract-cli-full-page",
+          "textCompleteness": "unverified"
+        },
+        "text": "TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)"
+      }
+    ]
+  },
+  "output": {
+    "version": "evidence-association-output/1",
+    "claims": [
+      {
+        "role": "building",
+        "state": "declared",
+        "literal": "TOWER03",
+        "unit": null,
+        "citations": [
+          {
+            "key": "t3-2-title:item-8",
+            "quote": "TOWER03"
+          }
+        ]
+      },
+      {
+        "role": "drawing",
+        "state": "declared",
+        "literal": "TYPICAL FLOOR - 02",
+        "unit": null,
+        "citations": [
+          {
+            "key": "t3-2-floor02-reused:item-0",
+            "quote": "TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)"
+          }
+        ]
+      },
+      {
+        "role": "floor",
+        "state": "declared",
+        "literal": "13rd",
+        "unit": null,
+        "citations": [
+          {
+            "key": "t3-2-floor02-reused:item-0",
+            "quote": "TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)"
+          }
+        ]
+      },
+      {
+        "role": "floor",
+        "state": "declared",
+        "literal": "21st",
+        "unit": null,
+        "citations": [
+          {
+            "key": "t3-2-floor02-reused:item-0",
+            "quote": "TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)"
+          }
+        ]
+      },
+      {
+        "role": "floor",
+        "state": "declared",
+        "literal": "30th",
+        "unit": null,
+        "citations": [
+          {
+            "key": "t3-2-floor02-reused:item-0",
+            "quote": "TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)"
+          }
+        ]
+      },
+      {
+        "role": "floor",
+        "state": "declared",
+        "literal": "38th",
+        "unit": null,
+        "citations": [
+          {
+            "key": "t3-2-floor02-reused:item-0",
+            "quote": "TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)"
+          }
+        ]
+      }
+    ],
+    "conflicts": [],
+    "abstentions": [],
+    "canonicalLinks": []
+  },
+  "supervision": {
+    "version": "ml-distill-teacher-supervision/1",
+    "split": "train",
+    "state": "provisional_synthetic_supervision",
+    "reviewState": "needs_independent_review",
+    "validationState": "syntax_citation_literal_identifier_unit_checked",
+    "teacher": {
+      "role": "dedicated_ML_teacher",
+      "requestedModel": "gpt-6.1-sol",
+      "requestedReasoning": "max",
+      "observedModelReasoningTier": "unexposed",
+      "requiredSpeed": "default/standard",
+      "method": "task_teacher_authored/1"
+    },
+    "schemaSha256": "3ba8fab2958ba93b042493bc4e6c0693f2049bdaa07f260c6639110c87a36a42",
+    "freezeSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+    "coordinatorCommit": "3073365b193872362c44e9e74e2811d4be783855",
+    "sourceLineage": [
+      {
+        "familyId": "in-haryana-rera-2831",
+        "split": "train",
+        "sourceId": "haryana-2831-tower3-plan2.pdf",
+        "originalPath": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-tower3-plan2.pdf",
+        "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+        "issuer": "Haryana RERA / project submitter",
+        "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/b76ed9cb4dNDg2NTg="
+      }
+    ],
+    "explanation": "Four printed floor occurrences. Preserve 13rd exactly; 02 names the typical drawing, not the building second floor.",
+    "qualification": "not_assessed",
+    "canonicalMatchState": "not_assessed",
+    "sarvamDerived": false,
+    "augmentation": false
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "assignment": {
+    "bytes": 30184,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-28.fragment-rank-fit-code.assignment.json",
+    "physicalSha256": "ad680efb33f76148ea8631fb535bd2c6eb5e9288450f8b9556de33158eb8c12d"
+  },
+  "baseCommit": "971fa41aae40359e2b36be37897cd3e06d106928",
+  "branch": "task/ml-association-student-20261002",
+  "checks": {
+    "affectedRerun": {
+      "exitCode": 0,
+      "fix": "Read-only BytesIO Path.open for the same virtual assignment/input metadata; preserved initial raw receipts.",
+      "passed": 1
+    },
+    "diffCheckExitCode": 0,
+    "fourFocusedControls": "passed across the two invocations",
+    "initialFocusedInvocation": {
+      "cause": "Virtual assignment read_bytes double did not cover streaming Path.open hash read; no runtime effect occurred.",
+      "exitCode": 1,
+      "harnessErrors": 1,
+      "passed": 3
+    },
+    "protectedReviewSourcesUnchanged": 36,
+    "publicationLineagePairsPolicyPromptUnchanged": true,
+    "retainedTrainAuthoritiesUnchanged": 14,
+    "scope": "Real train publication/source/donor metadata admission; stage/host/worker paths intercepted before mkdir/guard/output. Shared fit reaches the pre-native import boundary. Token/tensor/decoder/head/scaler and native-proof operations are doubles, not native qualification.",
+    "sevenOwnedSourcesInMemoryCompile": "passed; initial seven plus changed test recompile"
+  },
+  "codeCommit": "865d2bf6135fd4f3d4a31687054bfc2c026eb4b1",
+  "codeDiffCheck": {
+    "bytes": 206,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\code-diff-check.json",
+    "physicalSha256": "eeb6a0b0228ae23086367d8e26e28a88a29f038bca9a4222d41ca0d4c0f227fd"
+  },
+  "counts": {
+    "emptyParents": 3,
+    "futureContributions": 342,
+    "futureUpdates": 60,
+    "negative": 45,
+    "pairs": 57,
+    "parents": 10,
+    "positive": 12,
+    "trainFamilies": 2
+  },
+  "execution": {
+    "codeOnlyMetadataOutputsCreated": true,
+    "developmentOrEvaluationOpened": false,
+    "gpuOrFitOrInference": false,
+    "labelsOrTrainingRepublished": false,
+    "nativeImports": false,
+    "providersServicesHostChanges": false,
+    "pushDeployPromotion": false,
+    "runtimeModelTokenizerBytesRead": false,
+    "stageOrProfileCreated": false,
+    "stagingCheckoutModified": false,
+    "subagentsOrChatsCreated": false
+  },
+  "implemented": [
+    "Exact future STUDENT-29 fit-only authority. Complete train publication/input/source/plan admission precedes output/native effects; this code packet and the disabled prototype cannot launch.",
+    "Prompt-only complete contexts; actual future label_boundary proof per all 57 prompts with 4096 no truncation/exclusion; labels/supervision remain outside messages.",
+    "Two last-position native label logits cast float32; stable weighted NLL with exact 1/(10*candidateCount). Sequential backward and graph release; one shared unscale/finite/frozen/clip/scaler step after the complete parent.",
+    "Six seed 17 parent permutations;60 updates and342 candidate contributions; sum parent contributions per epoch without claiming a per-step global objective.",
+    "Shared model loader/PEFT, frozen-base/head and96-tensor/540672-parameter checks, attention/reclamation/resource controls, safetensors equality/save/manifest preserved. Legacy defaults and reload code remain.",
+    "Future CPU/CUDA synthetic equivalence uses the actual new loss/accumulator helpers, float32 and float16 head logits, scale 128 and independent analytic parent-gradient sums. No native proof ran now.",
+    "Thin rank stage wrapper reuses shared stage recipe, reads11 immutable payload files plus requirements/independent assignment/freeze, and excludes old teacher JSONL/support-history payloads.33 actual execution sources, 27 protected plus6 owned runtime files."
+  ],
+  "limitations": [
+    "Doubles do not establish actual tokenizer lengths, native numeric/gradient equivalence, memory/runtime, fit/save/reload correctness or learned relevance.",
+    "Ten provisional related parents in two train families remain provisional_synthetic_supervision/needs_independent_review; 57 pairs are not 57 independent examples or operational facts. Sarvam excluded.",
+    "Native fit requires independent coordinator review and a separate positive STUDENT-29 final-clean-head assignment. Disabled prototype includes a code checkpoint but no execution head, command or launch allowance.",
+    "No rank reload path or evaluation is admitted. The prior original-base recall miss remains uncorrected until separately authorized native fit and later comparison succeed."
+  ],
+  "observedStagingHeadReadOnly": "0f6182a7ea00a2b102bf54559455344cf611ff2f",
+  "ownedCode": [
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py",
+    "scripts/usp/learning/association/stage_fragment_rank.py",
+    "scripts/usp/learning/association/test_fragment_rank_fit.py"
+  ],
+  "privateReceiptIndex": {
+    "bytes": 4033,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\receipt-index.json",
+    "physicalSha256": "c4b7219756fd6400ab4835fb2f96527430b805d332160b16c214e4a06f8c1e8b"
+  },
+  "receipts": {
+    "checks": {
+      "bytes": 2704,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\checks.json",
+      "physicalSha256": "1061b6baed6071919c9120f48be394713d121dfb18ef8b1d4f2e766314cb0795"
+    },
+    "commands": {
+      "controls-1.command.json": {
+        "bytes": 320,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\controls-1.command.json",
+        "physicalSha256": "8ee8ccda3a458dd459fc4a207a1f0a158b642eb4c2d5fa349a46b9f39c03d246"
+      },
+      "controls-1.stderr.txt": {
+        "bytes": 2330,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\controls-1.stderr.txt",
+        "physicalSha256": "40a0738931169f9dde4079abc5d0499f7d61b95a385aad7490b750e18a79a0fc"
+      },
+      "controls-1.stdout.txt": {
+        "bytes": 0,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\controls-1.stdout.txt",
+        "physicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "controls-2.command.json": {
+        "bytes": 625,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\controls-2.command.json",
+        "physicalSha256": "4d744e3fd1e377d93f76d5f80ac9e42726d49aa498fef9a406f35ca4552006e8"
+      },
+      "controls-2.stderr.txt": {
+        "bytes": 238,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\controls-2.stderr.txt",
+        "physicalSha256": "0ad257c3c62e44fd0bab10ade82f19b0c90072af45d79f546299414ad2944505"
+      },
+      "controls-2.stdout.txt": {
+        "bytes": 0,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\controls-2.stdout.txt",
+        "physicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "inputs": {
+      "bytes": 4647,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\fit-inputs.json",
+      "physicalSha256": "571aef1090c44b4018447884dce4f0f86d4be61a66f05ec94dd13c71ef34e297"
+    },
+    "plan": {
+      "bytes": 6621,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\fit-plan.json",
+      "physicalSha256": "780446a01253ec839533990179b2335f777e38223fa61f42772c587d9476585a"
+    },
+    "policy": {
+      "bytes": 1321,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\policy-binding.json",
+      "physicalSha256": "5ddb6090f98bcb25005cfce60c8c4186e841be1e3149589760459918bd71c9d9"
+    },
+    "prototype": {
+      "bytes": 20673,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\disabled-fit-prototype.json",
+      "physicalSha256": "cf2f1f31ed94f96a87a725cdc1644800001af5253d0d4b6a41961d7a89e159d9"
+    },
+    "sources": {
+      "bytes": 10667,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-code-v1-fc6a4a56245443c1b91834047c6ee3d6\\execution-sources.json",
+      "physicalSha256": "e4b6c42496a591b85b0864baf24c5764a88f670d39c95bb9694a1f0ff5c41b74"
+    }
+  },
+  "settings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "status": "implemented_cpu_controls_passed_native_unrun",
+  "task": "STUDENT-28-FRAGMENT-RANK-FIT-CODE",
+  "version": "association-fragment-rank-fit-code-evidence/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

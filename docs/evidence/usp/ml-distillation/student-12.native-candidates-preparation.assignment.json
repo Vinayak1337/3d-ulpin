@@ -1,0 +1,155 @@
+{
+  "version": "student-native-candidate-preparation-assignment/1",
+  "task": "STUDENT-12-NATIVE-CANDIDATES-PREP",
+  "attempt": 1,
+  "recordedAtUtc": "2026-10-03T08:18:50.916315+00:00",
+  "plan": "docs/orchestration/ML_DISTILL_01.md",
+  "continuingAuthorization": "staging docs/orchestration/PARALLEL_20261003.md, Resume dispatch — ML recovery; ML-DISTILL-01 explicitly authorizes coordinator/worker/lead messages.",
+  "outcome": "Runnable CPU source-to-candidate-to-selected-legacy-output slice from the two unchanged retained development inputs. Expose verified native parser facts as candidates and preserve optional selection; prepare minimal default-off runtime reuse for a separately reviewed/frozen inference.",
+  "hypothesis": "Context.model_input currently drops typed native attributes and exposes only lexical tokens. Controller validity cannot fix invented semantic roles/literals. Derive known native facts deterministically from actual parser records; model chooses relevant current-input candidates instead of reproducing already parsed facts.",
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "studentCodeCommit": "fa8676e68a79ccfdba263da37b853d173daeeb76",
+  "coordinatorEvidenceBase": "4d83d37b037fa4cff6af8cb719f2d2597e62ac89",
+  "previousAcceptance": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-selector-constrained-reload-acceptance-v1.json",
+    "physicalSha256": "26c11263b193409c60738f174d1e33b9647061571668f163e4c2c8d9f563f640"
+  },
+  "executionAllowance": {
+    "cpuPreparation": true,
+    "stageModelRun": false,
+    "inference": false,
+    "fit": false,
+    "freshModelPhases": 0,
+    "modelAcquisition": false,
+    "evaluation": false,
+    "promotion": false
+  },
+  "modelSelection": {
+    "requestedWorkerModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "reason": "Sole learner retains detailed runtime context; precise source/reader/pointer authority and default-off codec reuse warrant deep implementation reasoning.",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "tierInterpretation": "Dispatch exposes model/effort only. Do not claim prompt text configures speed; verify supplied never/danger-full-access.",
+    "futureStudentModelAndRoute": "Not selected by this CPU assignment. No weights load or automatic reuse/refit of the failed selector adapter."
+  },
+  "ownedNewFiles": [
+    "services/geo/geo/usp_learning/association/native_candidates.py",
+    "services/geo/geo/usp_learning/association/candidate_selection.py",
+    "scripts/usp/learning/association/candidate-schema-v1.json",
+    "scripts/usp/learning/association/prepare_native_candidates.py",
+    "scripts/usp/learning/association/test_native_candidates.py",
+    "docs/evidence/usp/ml-distillation/student/native-candidates-preparation-v1.json",
+    "docs/evidence/usp/ml-distillation/student/native-candidates-preparation-v1.md"
+  ],
+  "ownedNarrowOptionalHooks": [
+    "services/geo/geo/usp_learning/association/selector_constraints.py",
+    "services/geo/geo/usp_learning/association/selector_baseline.py",
+    "scripts/usp/learning/association/stage_selector_baseline.py",
+    "scripts/usp/learning/association/association_student.py"
+  ],
+  "hookScope": "Use only the minimum explicit default-off representation/context/projector/grammar/admission hooks needed by the candidate route. Preserve the existing single generate loop, shared Vocabulary byte trie/transport, guard and stager. No second generation loop/stager/model loader, hidden monkeypatch, copied vocabulary/controller, broad refactor or changed historical defaults. Existing selector policy/schema/prompt semantics must remain unchanged. No native stage is authorized; a later assignment must pin the new route/code/input/policy explicitly.",
+  "protectedCanonicalLfSha256": {
+    "scripts/usp/learning/association/schema-v1.json": "3ba8fab2958ba93b042493bc4e6c0693f2049bdaa07f260c6639110c87a36a42",
+    "scripts/usp/learning/association/selector-schema-v1.json": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+    "docs/evidence/usp/ml-distillation/family-freeze.json": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/adapter.py": "ccd509742623b0b13bf02b9a1a5df08599e6cefe573f6db89d76a2056d04080d",
+    "services/geo/geo/usp_learning/association/selector_adapter.py": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+    "services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+    "docs/evidence/usp/native-ifc/manifest.json": "6c0deada3556b2c7103669e5fd738e02bcb84e378c99b40d80e9ac0988c2b678",
+    "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+    "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "scripts/usp/learning/association/association_adapter.py": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535",
+    "services/geo/geo/usp_learning/association/citation_view.py": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+    "services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+    "services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+    "services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+    "scripts/usp/learning/association/stage_adapter.py": "bd620d0568df745bb00a849fbf7ae99c4a527fa3914b4a1964e58eb559c5abb1",
+    "scripts/usp/learning/association/stage_selector_adapter.py": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295"
+  },
+  "inputBatch": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/student/development-v1/development.json",
+    "physicalSha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536"
+  },
+  "lineage": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\development-v1\\lineage.json",
+    "physicalSha256": "24ec58e4ed7d8266777044c85a735511d5d995b8b629ada047944f80fff65618",
+    "use": "Source/reader pointers, hashes and provenance only. Do not rerun prepare_inputs.py, which also produces expectations."
+  },
+  "nativeManifest": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\native-ifc\\manifest.json",
+    "physicalSha256": "d250f3e8bb993bb706771e602e5c091781dfa4a9817d30f8e75adfd9a4ebce2c"
+  },
+  "sources": [
+    {
+      "familyId": "buildingsmart-certification-simple-scene",
+      "split": "development",
+      "sourceId": "IFC 2.3.0.1 (IFC 2x3 TC1)/Simple-Scene/Building-Architecture.ifc",
+      "originalPath": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc2x3-building-architecture.ifc",
+      "sourceSha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885",
+      "issuer": "buildingSMART International Ltd.",
+      "originalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%202.3.0.1%20%28IFC%202x3%20TC1%29/Simple-Scene/Building-Architecture.ifc"
+    },
+    {
+      "familyId": "buildingsmart-certification-simple-scene",
+      "split": "development",
+      "sourceId": "IFC 4.0.2.1 (IFC 4 ADD2 TC1)/Simple-Scene/Building-Architecture.ifc",
+      "originalPath": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\originals\\ifc4-building-architecture.ifc",
+      "sourceSha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80",
+      "issuer": "buildingSMART International Ltd.",
+      "originalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%204.0.2.1%20%28IFC%204%20ADD2%20TC1%29/Simple-Scene/Building-Architecture.ifc"
+    }
+  ],
+  "readers": [
+    {
+      "exampleId": "ifc4-source-native-v1",
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc4.json",
+      "physicalSha256": "b0d08570e368ccd6f1b32adc113b1363afa523cc8fa359fe65e087009bd6b0b6"
+    },
+    {
+      "exampleId": "ifc2x3-source-native-v1",
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ifc-native\\outputs\\final\\ifc2x3.json",
+      "physicalSha256": "66dcfb321cac47b605ffed87beaf060b50b1203a151b738fe446b6251d003d3a"
+    }
+  ],
+  "requirements": [
+    "Build candidates only for supported native attributes in the current supplied evidence, derived generically from the actual retained reader records. Reuse NATIVE_ROLES and current GlobalId/Elevation role/state rules; no source-name/example-case selection templates or six-answer table.",
+    "Admit trusted bounded source/reader references by frozen family and manifest pins. Verify unchanged source and reader hashes, reader source identity/size, exact JSON pointer, record entityType/STEP ID and nativeAttribute fields against the actual parser value/locator. For present attributes verify attribute/index and exclusive byte bounds plus rawLiteral against unchanged original bytes. Refuse stale/mismatched hash/pointer/metadata/bytes without fallback; never treat caller locator metadata alone as truth.",
+    "For an actual retained absent attribute require parser state absent with not_in_schema_entity, null raw/value and matching record/attribute/pointer. Do not invent a byte span. Preserve explicit null with actual $ bytes and supplied string values separately. Unsupported numeric normalization, role, decoded literal not exactly citable, absent metadata and georeference stay explicitly unsupported; no inferred geometry, transform or identity.",
+    "Every admitted candidate has exact unchanged legacy role/state/literal/unit/citations, source/family/method/locator, reader hash/pointer and input/candidate-set provenance. Short IDs are local to an immutable per-input candidate set, never canonical IDs. Produce separate versioned candidate input/output/context and a pinned candidate/prompt/policy representation. ID/context binding must distinguish candidate sets across inputs: verify exact input/set provenance in the immutable generation/projection envelope or selection schema; reusing a local index alone must not admit stale selections.",
+    "Student output may select only current candidate IDs; it cannot rewrite roles, states, literals, units or citations. Allow empty and subset choices, not forced enumeration. Refuse unknown, duplicate, stale-context or malformed selection as a whole response. Expand selected IDs through unchanged validate_output and report forced no_canonical_targets/empty canonicalLinks separately from model selection. Do not derive natural conflicts or silently resolve real input conflicts.",
+    "Freeze prompt/schema/decoder/data lineage for inspection. Candidate projection stays immutable from preparation through prompt/decoder/projection; no post-hoc repair, partial credit or expected-answer consumption. Mask only the representation and current candidate choices, never force correct/full selection. Reuse existing byte transport/controller machinery via narrow optional hooks if needed.",
+    "Report deterministic candidate construction/source correctness separately from later learned selection precision/coverage; no model accuracy, generalization, canonical matching, operational qualification or new learning labels from these CPU checks.",
+    "Read only the two development source/reader records and existing public provenance. Teacher remains idle and receives no development contents/expectations/predictions. Train remains Haryana/Bihar; OGC held-out and retired mapping corpora remain unopened. Do not consume expectations.json in producer, prompt, decoder or preparation verification."
+  ],
+  "acceptanceChecks": [
+    "One representative unchanged IFC4 input demonstrates actual source/reader admission, typed cited candidates and selected subset expansion through unchanged validator; empty selection remains valid with zero selection coverage.",
+    "One unchanged incomplete IFC2x3 input preserves distinct parser absent versus explicit null and refuses georeference as a property candidate.",
+    "One focused stale/mismatched reader or pointer control denies admission; one output identity/unknown-or-duplicate ID control denies whole-response projection. Technical modifications are labelled controls, not operational records or learning labels.",
+    "If the shared default-off hook changes, check one existing selector-default regression plus candidate grammar empty/subset/current-ID/complete-EOS behavior using the existing CPU byte transport. Preserve actual failures; no broad matrix or historical model/control campaign.",
+    "Run changed Python syntax and the small focused CPU test/CLI once after stabilization. Record actual commands/exits, candidate/source/input/prompt/schema/policy/code pins and output path. No Transformers/Torch/model/GPU/native reader initialization; no source or expectations regeneration. Reading the retained pinned tokenizer JSON/metadata for shared byte-transport CPU checks is allowed; weights and native model libraries remain unloaded."
+  ],
+  "resourceBounds": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600,
+    "cpuThreads": 2,
+    "interpretation": "No model or GPU child in this assignment. Preserve these existing caps and guard bytes for a later separate run."
+  },
+  "privateOutput": "One new immutable directory under E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-<unique>; do not overwrite earlier data, model outputs or originals.",
+  "exclusions": "Staging/main/other worktrees, frontend/API/gateway/catalogue/shared dependencies, core fit/adapter/projector/schema/family freeze, all historical original/teacher/fit/reload/evaluation artifacts, providers/Sarvam, service/Docker/socket/volume/credentials/host configuration, acquisition/push/deployment/promotion.",
+  "return": "Separate owned code and evidence commits where practical; return exact heads, concise CPU outcome/pins/commands, known unsupported cases, dirty paths and cleanup. Send one completion or material-blocker callback to coordinator 01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then stop. No new tasks/subagents/polls/schedules or automatic model continuation.",
+  "callback": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759"
+}

@@ -1,0 +1,164 @@
+{
+  "acceptedScope": "Exact six-row train-only fragment representation, separate fit/reload authority, split runtime/model stager and minimal default-off hooks through the existing fitter/guard/proof/loader. No new shared application/API registration.",
+  "assignment": {
+    "bytes": 16602,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-18.fragment-adapter-preparation.assignment-v2.json",
+    "physicalSha256": "d0444d2d273486dc76ceb5b1214bec0f4a00577eb53cd8df7cf714c65886f5f6"
+  },
+  "coordinatorBase": "8972dc3926eb51196835ca82656a0ce86efeddb6",
+  "decision": "accepted_cpu_preparation_only",
+  "evidence": {
+    "bytes": 30289,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-adapter-preparation-v1.json",
+    "physicalSha256": "8c670595bfa40fc82b772911e5466f4a53b76dbb4ea8b5b856ec31bb0977447f"
+  },
+  "evidenceMarkdown": {
+    "bytes": 6431,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-adapter-preparation-v1.md",
+    "physicalSha256": "440e6d4902b425d914db747c114affff42c55a1819a749e7fbb1666ce7e64117"
+  },
+  "integratedCodeCommit": "79d19e17c3d21644649ca3804609354ba44f47d7",
+  "integratedEvidenceCommit": "ad429edee3539372c44341b0e4c98293e940c9cc",
+  "next": "Exactly one separately frozen STUDENT-19 fit at the unchanged clean learner final HEAD. Review the saved-fit result before granting any STUDENT-20 reload.",
+  "ownerBase": "a1f424f7d0496f920388c51c0fc891b3c9a2762e",
+  "ownerCodeCommit": "47e47f0b5e1b1301f8c8d9ebb1a0cdb0bdaa033f",
+  "ownerEvidence": {
+    "bytes": 29691,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-adapter-preparation-v1.json",
+    "physicalSha256": "350bd3be2be494432bff264d01335a5b4b616405db6de012a50ad683be106088"
+  },
+  "ownerFinalHead": "d47d33999a8ac644a1147180b4e38f434825931c",
+  "qualification": {
+    "associationOrGeneralization": false,
+    "cpuPreparation": true,
+    "evaluationOrPromotionOrRelease": false,
+    "learningOrSelectionQuality": false,
+    "nativeFitOrResourceFit": false,
+    "nativeTokenizerLengths": false,
+    "savedAdapterOrReload": false
+  },
+  "recordedAtUtc": "2026-10-03T14:06:48.515908+00:00",
+  "resourceBounds": {
+    "batchSize": 1,
+    "cpuThreads": 2,
+    "maxChildPhaseSeconds": 600,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "maxJobCommittedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "recording": "Job commitment and RSS separate. Preserve original guard/resource controls and model/runtime. Preparation starts no GPU/native phase or process."
+  },
+  "retainedReviewFailure": {
+    "execution": {
+      "bytes": 555,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-18-preparation-review-v1-6cfd28c94b29439e85d7a1d05d9513a0\\review-attempt-1.execution.json",
+      "physicalSha256": "50eaf4ad28498fe6bb4a37b6341a16c5d97f4da41330cee130038934eccdd7b6"
+    },
+    "helper": {
+      "bytes": 11269,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-18-preparation-review-v1-6cfd28c94b29439e85d7a1d05d9513a0\\review_preparation.attempt-1.py",
+      "physicalSha256": "1788a4915a4fcabd32f22a4596f839b6e1b341d2ff91cd7b14e64d2ed732ac9c"
+    },
+    "reason": "Audit helper initially assumed every receipt path was absolute. Resolve the seven explicitly owned relative code references against the learner checkout; no owner code/receipt/source was changed."
+  },
+  "reviewAudit": {
+    "bytes": 2738,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-18-preparation-review-v1-6cfd28c94b29439e85d7a1d05d9513a0\\audit.json",
+    "physicalSha256": "6b2fa92eaa7d80869739e65f53fb581df96a16c43c7e22f3653d1a1f428e888a"
+  },
+  "reviewExecution": {
+    "bytes": 555,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-18-preparation-review-v1-6cfd28c94b29439e85d7a1d05d9513a0\\review-attempt-2.execution.json",
+    "physicalSha256": "f38d1c4e2b3afc0351724d0fee3b78bd1a7a8e19715ee8868f86f8b6e7ad8b11"
+  },
+  "reviewHelper": {
+    "bytes": 11376,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-18-preparation-review-v1-6cfd28c94b29439e85d7a1d05d9513a0\\review_preparation.py",
+    "physicalSha256": "271458c33c056b08d2a1731031ad6d15e2236a2d534a4356e50e0d363a8b905a"
+  },
+  "reviewState": "needs_independent_review",
+  "sarvamDerived": false,
+  "supervisionState": "provisional_synthetic_supervision",
+  "task": "STUDENT-18-FRAGMENT-ADAPTER-PREP",
+  "trainingAuthority": {
+    "bytes": 82626,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\train-teacher-fragments-v1.jsonl",
+    "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+  },
+  "verification": {
+    "compileFullShellInvocationCaptured": false,
+    "compileMethod": "compile exact changed source bytes, exec mode; no native imports or bytecode file",
+    "completeOwnedCodeReview": true,
+    "consumedOwnerCompiledSources": 7,
+    "consumedOwnerCpuControls": 6,
+    "integratedEvidenceCanonicalBytesMatchOwner": true,
+    "integrationSourceEquality": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "d47d33999a8ac644a1147180b4e38f434825931c",
+        "ad429edee3539372c44341b0e4c98293e940c9cc",
+        "--",
+        "scripts/usp/learning/association/association_adapter.py",
+        "scripts/usp/learning/association/association_student.py",
+        "scripts/usp/learning/association/stage_adapter.py",
+        "scripts/usp/learning/association/stage_baseline.py",
+        "scripts/usp/learning/association/stage_fragment_adapter.py",
+        "scripts/usp/learning/association/stage_selector_baseline.py",
+        "scripts/usp/learning/model_isolation.py",
+        "scripts/usp/security/appcontainer_audit.py",
+        "services/geo/geo/__init__.py",
+        "services/geo/geo/native_ifc.py",
+        "services/geo/geo/usp_learning/__init__.py",
+        "services/geo/geo/usp_learning/association/__init__.py",
+        "services/geo/geo/usp_learning/association/adapter.py",
+        "services/geo/geo/usp_learning/association/candidate_baseline.py",
+        "services/geo/geo/usp_learning/association/candidate_selection.py",
+        "services/geo/geo/usp_learning/association/chunked_loss.py",
+        "services/geo/geo/usp_learning/association/citation_view.py",
+        "services/geo/geo/usp_learning/association/fragment_adapter.py",
+        "services/geo/geo/usp_learning/association/fragment_baseline.py",
+        "services/geo/geo/usp_learning/association/fragment_selection.py",
+        "services/geo/geo/usp_learning/association/memory_observation.py",
+        "services/geo/geo/usp_learning/association/native_candidates.py",
+        "services/geo/geo/usp_learning/association/query_attention.py",
+        "services/geo/geo/usp_learning/association/reclamation.py",
+        "services/geo/geo/usp_learning/association/selector_adapter.py",
+        "services/geo/geo/usp_learning/association/selector_baseline.py",
+        "services/geo/geo/usp_learning/association/selector_constraints.py",
+        "services/geo/geo/usp_learning/association/selectors.py",
+        "services/geo/geo/usp_learning/association/student.py",
+        "services/geo/geo/usp_learning/association/validation.py",
+        "services/geo/geo/usp_learning/resources.py",
+        "scripts/usp/learning/association/test_fragment_adapter.py"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin",
+      "exitCode": 0
+    },
+    "matchedPhysicalCanonicalGitSources": 31,
+    "matchedPrivateArtifacts": 19,
+    "matchedUniqueReferences": 41,
+    "modelMetadataEntries": 9,
+    "ownerCompileExit": 0,
+    "ownerControlExit": 0,
+    "ownerMetadataExit": 0,
+    "ownerSuitesOrNativeOrModelCampaignsRerun": false,
+    "physicalEvidencePinInterpretation": "Git checkout converted LF to CRLF; owner and integrated physical evidence pins are recorded separately. Committed/canonical content matches. Initial recording-helper exact physical-equality assertion was corrected before any output was written; original helper retained.",
+    "profilePlanEntries": {
+      "fit": 19679,
+      "reload": 19688
+    },
+    "protectedSourcesUnchanged": 25,
+    "pureFinalHeadCheckedExecutionMakeFreezeCheckedSourcesAndTeacherAdmission": true,
+    "runtimeMetadataEntries": 19630,
+    "stageAdapterAstUnchangedOutsideAcceptedFit": true,
+    "trainCounts": {
+      "candidateAppearances": 35,
+      "rows": 6,
+      "selectedAppearances": 10
+    },
+    "trainingRowsAndTargetMetadataMatched": 6
+  },
+  "version": "student-fragment-adapter-preparation-acceptance/1"
+}

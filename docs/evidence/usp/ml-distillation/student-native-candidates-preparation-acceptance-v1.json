@@ -1,0 +1,159 @@
+{
+  "version": "student-native-candidates-preparation-acceptance/1",
+  "recordedAtUtc": "2026-10-03T09:01:34.949902+00:00",
+  "status": "cpu_source_candidate_projection_accepted_native_model_execution_unqualified",
+  "ownerCodeCommit": "a2b663cbb6bd9a236341725ab65e2a70833ff7a1",
+  "ownerEvidenceCommit": "53f8ef06f4e95d2375238b6824a29e6808cc923b",
+  "integratedCodeCommit": "b547d00d91101220ed9b773132b82497e789828b",
+  "integratedEvidenceCommit": "a09a31eccaf2dca5c046d5c9b956742c9a8059be",
+  "rawOwnerReceiptSha256": "378ca4124f11bf37a3d890a9b329da71bb285052d4f0bc1d5946cf642d4c6e53",
+  "inspection": "All seven owned code/schema/control deltas reviewed. Source authority verifies frozen family, manifest/lineage, unchanged original/reader identity/hash, actual record/entity/STEP/attribute index and original byte spans. Immutable candidate sets and optional distinct-ID selections preserve absent/null and unsupported georeference, reject whole-response identity/unknown/duplicate/rewrite failures and expand through unchanged legacy validation. Two default-off hooks reuse the existing byte trie/controller and single generate loop; stager/CLI execution is still disabled for candidates.",
+  "verification": {
+    "command": "python -B -I -S - (owned/reference/protected integrity; source reconstruction of the two retained candidate snapshots and four unchanged technical projections)",
+    "exitCode": 0,
+    "audit": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\native-candidate-review-20261003.json",
+      "physicalSha256": "491229c7cc5811415e0c1417699d08aa97ec178dc48633ccc5c78ce6d5ea15d1"
+    },
+    "referencePinsMatched": 14,
+    "ownedSourcePinsMatchedToExecutedGit": 7,
+    "protectedPinsMatched": 23,
+    "integratedSourcePinsMatched": 7,
+    "sourceVerifiedSnapshotsReproduced": 2,
+    "technicalProjectionsReproduced": 4,
+    "workerFocusedTestsConsumed": 5,
+    "workerTestsExitCode": 0,
+    "workerCompileExitCode": 0,
+    "workerCliExitCode": 0,
+    "testSuiteRerun": false,
+    "cliRerun": false,
+    "modelRun": false,
+    "expectationsConsumed": false
+  },
+  "privatePreparation": {
+    "root": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc",
+    "preparationSha256": "968fbaae903cda193ebb2d74cc7a54f054136071def8d5431f0c8e61e0690bbc",
+    "routeSha256": "ac177a8e15fa8bb41226b9a151e0f69ac6c6dcc253063b89c738163b10a60267",
+    "contexts": [
+      {
+        "candidateCount": 4,
+        "candidateSetSha256": "ededc3e493b107fb4d016456d36a86a4d06acb3d689e0c9e14dce2e7928d3d41",
+        "exampleId": "ifc4-source-native-v1",
+        "inputSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4",
+        "unsupported": []
+      },
+      {
+        "candidateCount": 2,
+        "candidateSetSha256": "64859a859f9096890862e7aaf1aef86ddf281c00c237b41481dd51e3917515e2",
+        "exampleId": "ifc2x3-source-native-v1",
+        "inputSha256": "5cdbd1fec015bc2eecde12ee37dea41eeb0fc7c6eb9e7ac8470af04bd74c3a88",
+        "unsupported": [
+          {
+            "key": "ifc2x3-georeference",
+            "reason": "georeference_not_property_candidate"
+          }
+        ]
+      }
+    ]
+  },
+  "representation": {
+    "policy": {
+      "constructionPolicySha256": "07540ff3bbe14d9eeb9796ddde0d2b246e7d98595063c8aa516b755958d5badd",
+      "forcedElements": [
+        "JSON/schema",
+        "candidate-set identity",
+        "current IDs/uniqueness",
+        "unchanged parsed facts/citations",
+        "no_canonical_targets and empty canonicalLinks"
+      ],
+      "notEnforced": [
+        "which candidates to select",
+        "nonempty or full selection",
+        "learned relevance"
+      ],
+      "selection": "optional distinct current IDs only; full set identity required; whole-response validation",
+      "transport": "existing pinned ByteLevel Vocabulary and Controller; no output repair or cap closing",
+      "version": "association-candidate-selection-policy/1"
+    },
+    "policySha256": "9bbff02c55134a8fc772155cf197b7ae21b5deaf26dc01dfb75ade42e35f26ce",
+    "promptVersion": "association-candidate-prompt/1",
+    "schemaCanonicalLfSha256": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574",
+    "systemPromptSha256": "97354126da61e713fb381c9de46e6966de82ec2424a50feaf93b538d43a6780c",
+    "tokenizerFilesSha256": {
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    },
+    "version": "evidence-association-candidate-selection/1"
+  },
+  "constructionPolicy": {
+    "additionalRoles": {
+      "Elevation": "level",
+      "ElevationOfRefHeight": "level",
+      "GlobalId": "source_identifier"
+    },
+    "admission": "exact record pointer, entity/STEP ID, attribute/index, source byte spans and raw literal",
+    "authority": "frozen family/manifest/lineage; pinned retained reader and unchanged original bytes",
+    "qualification": "candidate construction is deterministic; no learned selection or operational truth claim",
+    "roles": {
+      "IfcBuilding.Name": "building",
+      "IfcBuilding.ObjectType": "building_type",
+      "IfcBuildingStorey.Name": "floor",
+      "IfcProject.Name": "project"
+    },
+    "unsupported": [
+      "numeric normalization",
+      "decoded value not exactly citable",
+      "unmapped roles",
+      "missing native metadata",
+      "georeference",
+      "explicit input conflicts"
+    ],
+    "values": "supported exact-citable strings; explicit parser null and not_in_schema_entity absent stay distinct",
+    "version": "association-native-candidates/1"
+  },
+  "candidateConstruction": {
+    "ifc4Count": 4,
+    "ifc2x3Count": 2,
+    "statesPreserved": [
+      "absent",
+      "null"
+    ],
+    "unsupported": "IFC2x3 georeference and documented unsupported numeric/structured/unmapped/non-citable metadata; explicit conflicts refuse this slice.",
+    "qualification": "Deterministic cited source construction and technical subset/empty selection only, conditional on the supplied evidence. No learned relevance, independent semantic accuracy, new learning labels or canonical matching."
+  },
+  "qualityAttribution": {
+    "candidateConstructionIsLearnedAccuracy": false,
+    "selectionAccuracyMeasured": false,
+    "technicalSubsetAndEmptyAreLearningLabels": false,
+    "forcedNoTargetMarkersAndEmptyLinksAreModelSelection": false,
+    "priorStudent11QualityUnchanged": "0/2 semantically usable and 0/6 accepted correct claims; no model phase repeated.",
+    "canonicalAssociationQualified": false,
+    "operationalQualification": false,
+    "generalizationQualified": false
+  },
+  "nativeExecution": {
+    "nativeTokenizerInitialized": false,
+    "nativeParserInitialized": false,
+    "modelLoaded": false,
+    "stageCreated": false,
+    "inferencePerformed": false,
+    "fitPerformed": false,
+    "selectionAccuracyMeasured": false,
+    "cpuPeakMemoryMeasured": false,
+    "evaluationOpened": false,
+    "promotionAuthorized": false
+  },
+  "settings": {
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "primaryStagingHeadObservedReadOnly": "ffe16d0e54e52e904dc1adef1982602fcd69b08e"
+  },
+  "nextDecision": "Prepare explicit candidate admission through the existing stager and worker CLI for the original pinned pretrained Qwen base with no adapter. Preserve existing generation/guard/resource authority. CPU-only wiring must be inspected and a separate exact native baseline assignment frozen before any model stage/run.",
+  "nextAssignment": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-13.candidate-runtime-preparation.assignment.json"
+}

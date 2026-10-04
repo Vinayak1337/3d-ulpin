@@ -1,0 +1,258 @@
+{
+  "version": "student-candidate-runtime-preparation-assignment/1",
+  "task": "STUDENT-13-CANDIDATE-RUNTIME-PREP",
+  "attempt": 1,
+  "recordedAtUtc": "2026-10-03T09:01:34.949902+00:00",
+  "plan": "docs/orchestration/ML_DISTILL_01.md",
+  "continuingAuthorization": "PARALLEL_20261003.md Resume dispatch — ML recovery and the explicit coordinator/learner/lead authority in ML-DISTILL-01.",
+  "outcome": "Enable the accepted candidate representation through exact explicit-version admission in the existing stager and worker CLI, using the existing generate loop and guard. Return executable CPU-verified wiring and a concrete complete future source/input/policy freeze plan; do not create a model stage or run inference.",
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "studentCodeCommit": "53f8ef06f4e95d2375238b6824a29e6808cc923b",
+  "coordinatorAcceptedBase": "a09a31eccaf2dca5c046d5c9b956742c9a8059be",
+  "preparationAcceptance": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-native-candidates-preparation-acceptance-v1.json",
+    "physicalSha256": "41da0180d63ec4ece60e848a34d9fe994f02c32357239c7f2729bce1d1d3769c"
+  },
+  "executionAllowance": {
+    "cpuPreparation": true,
+    "stageModelRun": false,
+    "inference": false,
+    "fit": false,
+    "freshModelPhases": 0,
+    "modelAcquisition": false,
+    "evaluation": false,
+    "promotion": false
+  },
+  "workerSettings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "reason": "Existing sole learner owns runtime/containment context; exact explicit-version admission and immutable accepted context transport need careful implementation.",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "permissions": "Verify actual supplied never/danger-full-access; tool has no speed argument and prompt text does not configure tier."
+  },
+  "futureInferenceCandidate": {
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "weightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+    "adapter": null,
+    "modelReceipt": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\baseline-af47550c33ea4dc2a3dc1aebc56363c4\\inputs\\model-acquisition.json",
+      "physicalSha256": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2"
+    },
+    "license": "apache-2.0",
+    "reason": "Measure the new candidate-ID representation using the existing original pretrained base. The failed selector adapter was trained on a different output target and is not automatically transferred or refitted. This preparation selects the intended future route, not execution authorization.",
+    "settings": {
+      "seed": 17,
+      "cpuThreads": 2,
+      "maxInputTokens": 2048,
+      "maxNewTokens": 768,
+      "batchSize": 1,
+      "doSample": false,
+      "dtype": "float16",
+      "attention": "sdpa",
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "minimumFreeCudaBytes": 1610612736,
+      "maxPeakProcessRssBytes": 6442450944,
+      "maxRunSeconds": 600,
+      "maxFitSeconds": 600,
+      "evaluationAllowed": false
+    },
+    "nativeRuntimeParent": {
+      "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\baseline-af47550c33ea4dc2a3dc1aebc56363c4",
+      "profilePhysicalSha256": "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438"
+    },
+    "nativeExecutionRequires": "Coordinator inspection of returned owned code and a separately frozen one-phase baseline assignment at the exact clean executed source head. No automatic stage, model load, inference or second policy run."
+  },
+  "acceptedPreparation": {
+    "root": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc",
+    "evidence": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\native-candidates-preparation-v1.json",
+      "physicalSha256": "378ca4124f11bf37a3d890a9b329da71bb285052d4f0bc1d5946cf642d4c6e53"
+    },
+    "preparation": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/preparation.json",
+      "physicalSha256": "968fbaae903cda193ebb2d74cc7a54f054136071def8d5431f0c8e61e0690bbc"
+    },
+    "route": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/candidate-route.json",
+      "physicalSha256": "ac177a8e15fa8bb41226b9a151e0f69ac6c6dcc253063b89c738163b10a60267"
+    },
+    "contexts": [
+      {
+        "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/context-0.json",
+        "physicalSha256": "dd66325a702e7647cdfb36375b731b50086a0c51053b3b258a177e5afb9eb63d"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/context-1.json",
+        "physicalSha256": "cdd4b3b0e74eed4fb03dfe1159a280605a6c93916f070481af40f80cda40b9cc"
+      }
+    ],
+    "candidateSchema": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/candidate-schema-v1.json",
+      "physicalSha256": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574"
+    },
+    "prompt": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc/candidate-prompt.txt",
+      "physicalSha256": "97354126da61e713fb381c9de46e6966de82ec2424a50feaf93b538d43a6780c"
+    },
+    "representation": {
+      "policy": {
+        "constructionPolicySha256": "07540ff3bbe14d9eeb9796ddde0d2b246e7d98595063c8aa516b755958d5badd",
+        "forcedElements": [
+          "JSON/schema",
+          "candidate-set identity",
+          "current IDs/uniqueness",
+          "unchanged parsed facts/citations",
+          "no_canonical_targets and empty canonicalLinks"
+        ],
+        "notEnforced": [
+          "which candidates to select",
+          "nonempty or full selection",
+          "learned relevance"
+        ],
+        "selection": "optional distinct current IDs only; full set identity required; whole-response validation",
+        "transport": "existing pinned ByteLevel Vocabulary and Controller; no output repair or cap closing",
+        "version": "association-candidate-selection-policy/1"
+      },
+      "policySha256": "9bbff02c55134a8fc772155cf197b7ae21b5deaf26dc01dfb75ade42e35f26ce",
+      "promptVersion": "association-candidate-prompt/1",
+      "schemaCanonicalLfSha256": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574",
+      "systemPromptSha256": "97354126da61e713fb381c9de46e6966de82ec2424a50feaf93b538d43a6780c",
+      "tokenizerFilesSha256": {
+        "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+        "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+      },
+      "version": "evidence-association-candidate-selection/1"
+    },
+    "constructionPolicy": {
+      "additionalRoles": {
+        "Elevation": "level",
+        "ElevationOfRefHeight": "level",
+        "GlobalId": "source_identifier"
+      },
+      "admission": "exact record pointer, entity/STEP ID, attribute/index, source byte spans and raw literal",
+      "authority": "frozen family/manifest/lineage; pinned retained reader and unchanged original bytes",
+      "qualification": "candidate construction is deterministic; no learned selection or operational truth claim",
+      "roles": {
+        "IfcBuilding.Name": "building",
+        "IfcBuilding.ObjectType": "building_type",
+        "IfcBuildingStorey.Name": "floor",
+        "IfcProject.Name": "project"
+      },
+      "unsupported": [
+        "numeric normalization",
+        "decoded value not exactly citable",
+        "unmapped roles",
+        "missing native metadata",
+        "georeference",
+        "explicit input conflicts"
+      ],
+      "values": "supported exact-citable strings; explicit parser null and not_in_schema_entity absent stay distinct",
+      "version": "association-native-candidates/1"
+    },
+    "caseBindings": [
+      {
+        "candidateCount": 4,
+        "candidateSetSha256": "ededc3e493b107fb4d016456d36a86a4d06acb3d689e0c9e14dce2e7928d3d41",
+        "exampleId": "ifc4-source-native-v1",
+        "inputSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4",
+        "unsupported": []
+      },
+      {
+        "candidateCount": 2,
+        "candidateSetSha256": "64859a859f9096890862e7aaf1aef86ddf281c00c237b41481dd51e3917515e2",
+        "exampleId": "ifc2x3-source-native-v1",
+        "inputSha256": "5cdbd1fec015bc2eecde12ee37dea41eeb0fc7c6eb9e7ac8470af04bd74c3a88",
+        "unsupported": [
+          {
+            "key": "ifc2x3-georeference",
+            "reason": "georeference_not_property_candidate"
+          }
+        ]
+      }
+    ],
+    "sourceInput": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/development-v1/development.json",
+      "physicalSha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536"
+    }
+  },
+  "ownedNewFiles": [
+    "services/geo/geo/usp_learning/association/candidate_baseline.py",
+    "scripts/usp/learning/association/test_candidate_runtime.py",
+    "docs/evidence/usp/ml-distillation/student/native-candidate-runtime-preparation-v1.json",
+    "docs/evidence/usp/ml-distillation/student/native-candidate-runtime-preparation-v1.md"
+  ],
+  "ownedNarrowHooks": [
+    "scripts/usp/learning/association/stage_selector_baseline.py",
+    "scripts/usp/learning/association/association_student.py",
+    "services/geo/geo/usp_learning/association/selector_baseline.py"
+  ],
+  "hookScope": "Only exact candidate assignment/freeze/input/prompt/policy/schema/context/source-set admission and dispatch. Reuse the original source pin/copy/profile builder, association_student.py contained role, model boundary, run_selectors single generate loop and shared byte Controller. Add no second stager/CLI/model loader/generation or generic unchecked plugin factory. Preserve existing baseline/selector/adapter defaults and strict refusal of candidate inputs by historical assignment versions.",
+  "protectedCanonicalLfSha256": {
+    "scripts/usp/learning/association/schema-v1.json": "3ba8fab2958ba93b042493bc4e6c0693f2049bdaa07f260c6639110c87a36a42",
+    "scripts/usp/learning/association/selector-schema-v1.json": "dcc129e1c1600e583f6b7792a6ad5f1cf5e14ba206cde5a53df81bdfa14e07f4",
+    "docs/evidence/usp/ml-distillation/family-freeze.json": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/adapter.py": "ccd509742623b0b13bf02b9a1a5df08599e6cefe573f6db89d76a2056d04080d",
+    "services/geo/geo/usp_learning/association/selector_adapter.py": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+    "services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+    "docs/evidence/usp/native-ifc/manifest.json": "6c0deada3556b2c7103669e5fd738e02bcb84e378c99b40d80e9ac0988c2b678",
+    "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+    "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "scripts/usp/learning/association/association_adapter.py": "b5cd990b22176d281766de7ca250e8b855582ccf47f505fb951a0527f3b53535",
+    "services/geo/geo/usp_learning/association/citation_view.py": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+    "services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+    "services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+    "services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+    "scripts/usp/learning/association/stage_adapter.py": "bd620d0568df745bb00a849fbf7ae99c4a527fa3914b4a1964e58eb559c5abb1",
+    "scripts/usp/learning/association/stage_selector_adapter.py": "571aa14155894c42bedbd28bc46f74b19ab6eedaa49dd39fe6a497823ad26295",
+    "scripts/usp/learning/association/candidate-schema-v1.json": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574",
+    "scripts/usp/learning/association/prepare_native_candidates.py": "aac4c5947eb4e4c87077383e38722f89436f1645b131fdbb78772de6a4a7d4dc",
+    "scripts/usp/learning/association/test_native_candidates.py": "d474330b32c283faee0cb4763f8fcaffa41aff9e45b45fcd23ef29b19746d968",
+    "services/geo/geo/usp_learning/association/candidate_selection.py": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+    "services/geo/geo/usp_learning/association/native_candidates.py": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+    "services/geo/geo/usp_learning/association/selector_constraints.py": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+    "services/geo/geo/native_ifc.py": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+    "scripts/usp/learning/association/stage_baseline.py": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93"
+  },
+  "requirements": [
+    "Create exact positive admission for a separately frozen candidate baseline task/version and one fresh contained inference phase only. Current PREP or forged/mixed/legacy assignments cannot create a stage. Reject before copying runtime/model bytes or making stage directories. No generated future execution assignment is dispatched or used during this CPU task.",
+    "Pin the accepted preparation receipt, route, both context snapshots, original development batch/schema/family freeze, candidate schema/prompt/representation and pretrained model receipt/settings. The freeze must bind actual auxiliary bytes and candidate-set/input identities, not merely caller-provided local IDs or self-issued snapshot hashes. A changed context/route/prompt/schema/policy/allowed source set fails before model initialization without fallback or regeneration.",
+    "Extend the existing stager source allowlist/pin logic only for the exact required candidate admission/selection/construction/byte-controller and pure native_ifc byte-index modules. Freeze the complete executed Git/canonical-LF source set and actual copied physical bytes. Include all transitive required modules without loading native parser libraries. Keep original baseline protected-source authorities, immutable inputs and full profile verification.",
+    "Select the candidate branch in the existing worker CLI by its exact admitted freeze version, validate through the candidate admission leaf, and call existing run_selectors with the accepted candidate_route. Preserve guarded host/contained worker separation and exact original role/arguments; do not touch model_isolation/resources/AppContainer/guard or bypass them.",
+    "Preserve accepted v1 candidate construction/selection/schema/prompt/policy bytes and optional empty/subset selections. Do not regenerate candidates, rewrite source inputs, consume expectations, force all candidates, transfer/refit an adapter or change greedy/numerical/token/resource settings. Unknown or incomplete outputs remain whole-response rejection; no cap closing, repair or partial credit.",
+    "Emit candidate-specific preflight/result/completion names and truthful metadata through existing write-once outputs. Bind actual model/raw/source/context/policy bytes. Distinguish forced validity and parser-copied facts from selected IDs/coverage; empty valid selections get zero coverage. Host-only later expected-signature comparison remains outside contained inputs/code/prompt and is not run here.",
+    "Preserve train-only Haryana/Bihar and the single IFC development family. Teacher remains idle, evaluation/retired mapping corpora closed. No model/native tokenizer/parser library import, weights read/copy, model stage, GPU, inference, fitting, acquisition, services, dependencies or shared application changes in this preparation.",
+    "Provide an exact future SOURCE_PATHS/input/auxiliary/prompt/schema/policy/model/settings/command inventory at the clean returned code commit, with current candidate artifacts physically hashed. This is a complete preparation plan for one later frozen baseline, not a runtime pass or a self-authorized execution."
+  ],
+  "acceptanceChecks": [
+    "One CPU admission/CLI-dispatch preparation uses the two accepted unchanged snapshots (ordinary IFC4 and incomplete IFC2x3) and verifies their exact input/set/prompt/schema/policy identities through the same pure functions used by future stager/worker.",
+    "One tampered/foreign context or changed route pin refuses the candidate freeze before model initialization; one PREP/mixed-version refusal proves no stage/copy is reached. Technical fixtures cannot authorize a real model phase.",
+    "One existing baseline/selector-default admission and dispatch control proves historical routes and protected settings remain unchanged. Reuse retained evidence for unrelated projector/grammar/source controls rather than rerunning them.",
+    "Compile changed Python and run only the small new CPU controls after stabilization. Record actual commands/exits, complete owned/transitive source pins and exact future input inventory. No actual runtime/model copy, native import, original source parsing, previous campaign or host expectation comparison."
+  ],
+  "resourceBounds": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600,
+    "cpuThreads": 2,
+    "interpretation": "No model/native child in this CPU assignment. Job/RSS remain separate in any future native receipt; existing guard and cumulative caps are unchanged."
+  },
+  "privateOutput": "One new immutable CPU report/freeze-plan directory under E:/BhuAayam-data/task-data/ml-distillation/student/candidate-runtime-preparation-<unique>. Preserve accepted candidate and all historical source/model/runtime/output directories; do not create a copied model stage.",
+  "exclusions": "Staging/main/other worktrees, teacher/held-out/retired corpora, expectations, original bytes/readers/candidate preparation, parser/fit/projector/core guard/schema/family and protected sources, frontend/gateway/API/catalogue/shared dependencies, service/Docker/socket/volumes/credentials/host config, network/model acquisition/provider calls/push/deployment/promotion.",
+  "callback": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "return": "Return exact owned code and evidence commits, actual small CPU checks and source/input/route pins, complete future freeze/command inventory, known limitations, dirty paths and cleanup. Send one completion or material-blocker callback to coordinator, then stop at PREP. No automatic model phase, new task/subagent, polling or schedule."
+}

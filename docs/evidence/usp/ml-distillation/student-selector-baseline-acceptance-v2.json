@@ -1,0 +1,89 @@
+{
+  "version": "student-selector-baseline-acceptance/2",
+  "recordedAt": "2026-10-03",
+  "ownerCommit": "c2773a4ca5054a851b611945db7ac6dab3d9f24b",
+  "executionCodeCommit": "409bae3baafcebb9ad152a702cef07e3c286815a",
+  "coordinatorIntegrationCommit": "7fd3bb6f067099590981258cdd7f6c45b01043c7",
+  "primaryStagingHeadObservedReadOnly": "2940105fe62e38bdbfec9e2784fcd0a82ecb7a02",
+  "status": "technical_execution_accepted_development_quality_failed",
+  "inspection": "Complete handoff, raw strings, result, lexical preflight, immutable freeze/profile, code pins, guard/accepted receipts and host comparison inspected. Thirty artifact pins, twelve executed physical/Git code pins and both evidence files matched; six guard-accepted output hashes verified. Both unchanged raw projection results and exact source lexical views reproduced without model execution.",
+  "verification": {
+    "command": "python -B -I -S - (artifact/executed-code/guard/source-only lexical/projector/host expectation integrity check)",
+    "exitCode": 0,
+    "artifactPinsMatched": 30,
+    "codePinsMatched": 12,
+    "evidenceFilesMatched": 2,
+    "acceptedOutputPinsMatched": 6,
+    "rawProjectorResultsReproduced": 2,
+    "lexicalViewsReproduced": 2
+  },
+  "profileSha256": "083145a4da0e41143e7adee67ca0e9b779ac9fa352cff0139c23791db08075a7",
+  "freezeSha256": "e9bcb496b0775c7e9ad2df910c24d467bc6a174474e9f7c79f59c792ccff22bb",
+  "inputTokens": [
+    536,
+    493
+  ],
+  "outputTokens": [
+    115,
+    288
+  ],
+  "generationSeconds": [
+    6.013263500000903,
+    13.428589900002407
+  ],
+  "runnerSeconds": 21.521203600001172,
+  "guardScopeSeconds": 230.48500000000058,
+  "hostInvocationSeconds": 394.5,
+  "jobPeakCommittedBytes": 5194674176,
+  "sampledPeakRssBytes": 3209711616,
+  "cuda": {
+    "cuda": "12.8",
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpuSampleCount": 407,
+    "maxCudaAllocatedBytes": 1087902720,
+    "maxCudaReservedBytes": 1142947840,
+    "minimumSampledFreeCudaBytes": 6244270080,
+    "torch": "2.8.0+cu128",
+    "transformers": "4.57.6"
+  },
+  "containmentAndCleanup": "Zero-capability AppContainer and 6-GiB Job validated before resume; Job closed, child output untruncated and cleanup passed. Existing CPU/CUDA/Job/free-memory/time bounds unchanged.",
+  "counts": {
+    "examples": 2,
+    "families": 1,
+    "jsonSyntaxValidOutputs": 0,
+    "selectorSchemaValidOutputs": 0,
+    "rawSelectorValidOutputs": 0,
+    "expandedValidOutputs": 0,
+    "validModelOutputs": 0,
+    "expectedClaims": 6,
+    "acceptedEmittedClaims": 0,
+    "uniqueAcceptedClaims": 0,
+    "correctAcceptedClaims": 0,
+    "validNoCanonicalTargetsAbstentions": 0,
+    "strictlyParsedOutputCount": 0,
+    "emittedClaimsInStrictlyParsedOutputs": 0,
+    "rawRoleKeyOccurrences": 8
+  },
+  "precision": null,
+  "coverage": 0.0,
+  "observedFailure": "Both untouched responses start with Markdown fences and reject at raw_json character zero. Raw text additionally uses free-form literals and omits citations; IFC2X3 repeats unit keys. No strict emitted-claim count is available and lexical occurrences confer no credit.",
+  "repairApplied": false,
+  "fitPerformed": false,
+  "evaluationOpened": false,
+  "promotionAuthorized": false,
+  "modelRerun": false,
+  "qualification": "Technical execution/resource acceptance only; source-native development criteria fail at 0/2 valid and 0/6 correct accepted expectations. Precision remains undefined. No canonical matching, conflict or generalization qualification.",
+  "nextDecision": "Prepare one selector-target adaptation through the existing accepted fit/reload machinery, reusing the original eleven-row train-only selector dataset and the unchanged selector inference prompt. CPU-only representation/admission/encoding/dispatch preparation first; separately inspect and freeze an eventual single fresh-base fit/reload. No further pretrained prompt sweep or output repair.",
+  "permissions": "supplied never / danger-full-access",
+  "settings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "observation": "Actual turn model/effort/tier unexposed; no settings change claimed."
+  }
+}

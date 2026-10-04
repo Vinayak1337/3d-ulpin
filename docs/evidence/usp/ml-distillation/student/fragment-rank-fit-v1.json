@@ -1,0 +1,342 @@
+{
+  "absentArtifacts": [
+    "outputs/fit/completion.json",
+    "outputs/fit/fit-result.json",
+    "outputs/fit/adapter-manifest.json",
+    "outputs/fit/adapter/adapter_model.safetensors",
+    "outputs/fit/attention-scope.json",
+    "receipts/association_adapter-fit-accepted.json"
+  ],
+  "acceptedOutputsHelper": "Not invoked: accepted map/completion/saved fit absent after guard failure. Generic accepted_fit not invoked.",
+  "attempt": 1,
+  "baseAndAdapter": {
+    "baseAfterEquality": "unrun",
+    "frozenGradientsAbsentAt44RecordedSteps": true,
+    "originalBaseBefore": {
+      "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+      "tensorCount": 290
+    },
+    "originalHeadFrozenAtLoad": true,
+    "resumeCheckpoint": "absent; in-memory parameters lost on enforced termination",
+    "savedAdapter": "absent",
+    "savedStateEquality": "unrun",
+    "trainableParameters": 540672,
+    "trainableTensors": 96
+  },
+  "boundaries": {
+    "developmentOrHostExpectationsOpened": false,
+    "executableEdits": false,
+    "guardAttempts": 1,
+    "inferenceReloadEvaluation": false,
+    "newProfileOrUncontainedFallback": false,
+    "providersServicesHostChangesOutsideGuard": false,
+    "retries": 0,
+    "stageAttempts": 1,
+    "teacherLabelsPublicationChanged": false
+  },
+  "branch": "task/ml-association-student-20261002",
+  "commands": {
+    "guard": {
+      "attempt": 1,
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\association_adapter.py",
+        "fit",
+        "--schema",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\inputs\\schema-v1.json",
+        "--family-freeze",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\inputs\\family-freeze.json",
+        "--model-receipt",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\inputs\\model-acquisition.json",
+        "--assignment",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\inputs\\assignment.json",
+        "--teacher-v1",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\inputs\\train-fragment-rank-v1.jsonl",
+        "--training-data",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\inputs\\train-fragment-rank-v1.jsonl",
+        "--run-freeze",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\inputs\\run-freeze.json",
+        "--output-dir",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\outputs\\fit",
+        "--containment-profile",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\profile.json",
+        "--containment-sha256",
+        "15cc480338548d4cdadf13274b2c6b7417b566f866fff0d4212906a07b2af9cc"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "elapsedSeconds": 788.6870000000054,
+      "exitCode": 1,
+      "finishedUtc": "2026-10-03T23:30:11.412789+00:00",
+      "stage": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9",
+      "startedUtc": "2026-10-03T23:17:02.717585+00:00"
+    },
+    "receiptRecovery": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "-"
+      ],
+      "exitCode": 0,
+      "scope": "Read-only primary artifact validation and new immutable host recovery receipt; native imports blocked. No model execution."
+    },
+    "stage": {
+      "attempt": 1,
+      "command": [
+        "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_fragment_rank.py",
+        "--assignment",
+        "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-29.fragment-rank-fit.assignment.json"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "elapsedSeconds": 149.54700000000594,
+      "exitCode": 0,
+      "finishedUtc": "2026-10-03T23:16:15.892371+00:00",
+      "startedUtc": "2026-10-03T23:13:46.339850+00:00"
+    },
+    "stoppedOwnedProcesses": {
+      "checkedAtUtc": "2026-10-03T23:31:45.0543984Z",
+      "command": "Get-CimInstance Win32_Process, filtered to exact owned stage root",
+      "exitCode": 0,
+      "ownedProcesses": [],
+      "scope": "One read-only process snapshot; executable or command line contains the exact owned stage root. PowerShell observation process excluded.",
+      "stageRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9"
+    }
+  },
+  "decision": "No saved-fit acceptance; stop after one attempt and return preserved receipts.",
+  "executionHead": "8176cd8e74ebe7312a99b9bc3d7e5d336e4bf396",
+  "failure": {
+    "message": "probe timed out after 600000 ms",
+    "type": "TimeoutError"
+  },
+  "guard": {
+    "cleanup": {
+      "detail": "Guard records ACL revocation, profile deletion and SID free success. Protected timeout path closes owned Job and waits for child termination; post-run exact-stage process snapshot found none.",
+      "errors": [],
+      "ownerScopesAttempted": 2,
+      "passed": true,
+      "profileCreated": true
+    },
+    "exitCode": 1,
+    "observation": {},
+    "outputsAccepted": false,
+    "primary": {
+      "bytes": 36320,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\receipts\\association_adapter-fit-guard.json",
+      "physicalSha256": "090e4bb9c420a170a3d7f49bf250c7f4b2d6c1dc3eb1e403a4498a16cab4ef2f"
+    }
+  },
+  "lastObservedPhase": {
+    "candidateIndex": 2,
+    "elapsedSeconds": 510.9731998999923,
+    "epoch": 5,
+    "exampleId": "teacher-fragments-v1-05",
+    "focusCandidateId": "c2",
+    "gpu": {
+      "allocatedBytes": 1154391552,
+      "freeBytes": 6181355520,
+      "initialized": true,
+      "measured": true,
+      "peakAllocatedBytes": 1487139328,
+      "peakReservedBytes": 1635778560,
+      "reservedBytes": 1172307968,
+      "reservedMinusAllocatedBytes": 17916416,
+      "totalBytes": 8589410304
+    },
+    "native": {
+      "jobCapBytes": 6442450944,
+      "jobCurrentCommittedBytes": 5470208000,
+      "jobCurrentMethod": "QueryInformationJobObject JobObjectLimitViolationInformation.JobMemory",
+      "jobPeakCommittedBytes": 5835636736,
+      "processPeakRssBytes": 4102279168,
+      "processPrivateCommittedBytes": 5470208000,
+      "processRssBytes": 3112251392
+    },
+    "peaksReset": false,
+    "phase": "after_backward_reclamation",
+    "unreachableObjectsCollected": 511,
+    "update": 45
+  },
+  "limitations": [
+    "The timeout path retains no terminal guard observation; resource maxima here are the recorded child self-observations, not terminal supervisor peaks.",
+    "Termination preserved logs but there is no saved adapter or resume checkpoint. Partial updates cannot be promoted or reused as accepted training.",
+    "No retry, executable edits, changed limits or additional stage were performed. Any recovery experiment needs a new coordinator assignment."
+  ],
+  "nativePreflight": {
+    "excludedRows": [],
+    "labelIdPairs": [
+      [
+        15,
+        16
+      ]
+    ],
+    "maxPromptTokens": 3375,
+    "minPromptTokens": 1484,
+    "parents": 10,
+    "passed": true,
+    "prompts": 57,
+    "sourcePairAndOrderBindingsVerified": true,
+    "truncation": false
+  },
+  "nativeTechnicalControls": {
+    "actualHelpersUsed": true,
+    "attentionPassed": true,
+    "fourCpuCudaFp32Fp16Records": true,
+    "independentAnalyticParentGradientSumMatched": true,
+    "lossDtype": "float32",
+    "primaryLossProof": {
+      "bytes": 2524,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\outputs\\fit\\loss-equivalence.json",
+      "physicalSha256": "449ec1b2a9e236c2d3e27084f9f41258a794871d101f013467ac320ee1538fcc"
+    },
+    "reclamationPassed": true,
+    "rngRestored": true,
+    "scale": 128,
+    "weightedLossAndAccumulationPassed": true
+  },
+  "packets": {
+    "student-29.fragment-rank-fit.assignment.json": {
+      "bytes": 20321,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-29.fragment-rank-fit.assignment.json",
+      "physicalSha256": "fa4d862899f095d6fe4ceec36a3f953fa7978ad5b7cc5122efd08d68488d2d17"
+    },
+    "student-29.fragment-rank-fit.protocol.json": {
+      "bytes": 15568,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-29.fragment-rank-fit.protocol.json",
+      "physicalSha256": "01087684456f33fb599db9c16f4f49ca538d9ebf5035d9d7b278bb57e5ed2c15"
+    },
+    "student-fragment-rank-fit-code-acceptance-v1.json": {
+      "bytes": 5847,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-fit-code-acceptance-v1.json",
+      "physicalSha256": "27ab21266158b927d5cf71bb3d9cef2cdc0f0ae295426e5980502fb10516564f"
+    }
+  },
+  "partialFit": {
+    "allRecordedCompletedStepsFiniteAndUnskipped": true,
+    "attentionHistoryPrefixVerified": true,
+    "candidateContributionsInCompletedParents": 253,
+    "candidateForwardsAndLosses": 256,
+    "candidateReclamationRetainedGradientsPrefixVerified": true,
+    "completeEpochContributionSums": [
+      0.6672022423590533,
+      0.5498685832135379,
+      0.47673078649677336,
+      0.43231745139928535
+    ],
+    "completedCandidateBackwards": 255,
+    "completedUpdates": 44,
+    "epochSumsScope": "In-sample sums at successive parameter states; no relevance or full-global-per-step claim",
+    "gradientScales": [
+      128.0
+    ],
+    "incompleteParent": {
+      "completedBackwards": 2,
+      "epoch": 5,
+      "exampleId": "teacher-fragments-v1-05",
+      "optimizerUpdateCompleted": false,
+      "thirdCandidateLastPhase": "after_backward_reclamation",
+      "update": 45
+    },
+    "orderedPrefixVerified": true,
+    "partialEpoch5ContributionSum": 0.1159848153765779,
+    "plannedContributions": 342,
+    "plannedUpdates": 60
+  },
+  "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+  "privateReceiptIndex": {
+    "bytes": 10649,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-technical-v1-90b3623b587341d2b0555c4a95f82393\\receipt-index.json",
+    "physicalSha256": "ca6dcc67853f812ad0512f0647a831b71bb192b894ef69ab539577b843e84792"
+  },
+  "privateReceiptRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-technical-v1-90b3623b587341d2b0555c4a95f82393",
+  "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+  "qualification": "57 related pairs from ten provisional synthetic parents in two train families; needs_independent_review. Sarvam excluded. Loss history is in-sample optimization only, not relevance or generalized learning.",
+  "recordedAtUtc": "2026-10-03T23:36:22.266903+00:00",
+  "resources": {
+    "cudaPeakAllocatedBytes": 1487139328,
+    "cudaPeakReservedBytes": 1635778560,
+    "gpuSampleRecords": 557,
+    "jobPeakCommittedBytes": 5835636736,
+    "minimumRecordedCudaFreeBytes": 5717884928,
+    "phaseRecords": 1947,
+    "processPeakRssBytes": 4102279168,
+    "scope": "Retained child self-observations only. Guard terminal observation is empty after timeout; no terminal peak or child-success claim."
+  },
+  "settings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "sourcePhysicalCanonicalAndTrainPayloadAdmissionRechecked": true,
+  "stageAdmission": {
+    "canonicalJsonMapSha256": "dd64a75c6f59ebca9ce07e39b54ec7a676d52af9cc747d20198f730f09ab4c85",
+    "clean": true,
+    "copied": {
+      "bytes": 8605277362,
+      "fileCount": 19685
+    },
+    "freezeSha256": "670815235ec240d9e2494790424f2f7e798cbc71fd16844d9684cd5e62512cc6",
+    "head": "8176cd8e74ebe7312a99b9bc3d7e5d336e4bf396",
+    "inputFiles": [
+      "inputs/assignment.json",
+      "inputs/counts.json",
+      "inputs/family-freeze.json",
+      "inputs/fragment-schema-v1.json",
+      "inputs/lineage.json",
+      "inputs/model-acquisition.json",
+      "inputs/policy.json",
+      "inputs/publication.json",
+      "inputs/run-freeze.json",
+      "inputs/runtime-requirements-resolved.txt",
+      "inputs/schema-v1.json",
+      "inputs/scoring-inputs.jsonl",
+      "inputs/system-prompt.txt",
+      "inputs/train-fragment-rank-v1.jsonl"
+    ],
+    "passed": true,
+    "profileFileCount": 19686,
+    "profileSha256": "15cc480338548d4cdadf13274b2c6b7417b566f866fff0d4212906a07b2af9cc",
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9",
+    "stageRuntimeSeconds": 149.54700000000594
+  },
+  "stageRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9",
+  "status": "failed_timeout_no_saved_adapter",
+  "task": "STUDENT-29-FRAGMENT-RANK-FIT",
+  "technicalRecovery": {
+    "bytes": 20810,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-technical-v1-90b3623b587341d2b0555c4a95f82393\\technical-recovery.json",
+    "physicalSha256": "7acb90baee15ea480190ede90b8adb2ed68aa5c6ffbdbf1ebdae5c63c9858960"
+  },
+  "timings": {
+    "childTimeoutMilliseconds": 600000,
+    "hostGuardCommandSeconds": 788.6870000000054,
+    "lastRecordedChildPhaseSeconds": 510.9731998999923,
+    "scope": "Distinct observed clocks; no invented child-only fit duration or speedup claim",
+    "stageSeconds": 149.54700000000594,
+    "sumRecorded44UpdateDurationsSeconds": 495.9113607000472,
+    "supervisorReceiptSeconds": 624.6719999999914
+  },
+  "unchangedExecutableCode": true,
+  "unrun": [
+    "Remaining 16 complete-parent updates and full 342-contribution completion",
+    "Original-base after-fit digest equality",
+    "Saved 96-tensor adapter/state equality, manifest and completion",
+    "Attention-scope restoration receipt after forced termination",
+    "Authoritative accepted output map and saved-fit acceptance",
+    "Reload/inference/development relevance/evaluation/promotion"
+  ],
+  "version": "association-fragment-rank-fit-evidence/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

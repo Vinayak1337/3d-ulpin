@@ -1,0 +1,93 @@
+{
+  "baseCommit": "eb55cacb80840702a30ac662d000a89812031253",
+  "branch": "task/ml-association-student-20261002",
+  "checkPlan": {
+    "className": "IsolatedWorkerAdmissionControls",
+    "groups": 1,
+    "invocations": 1,
+    "journeys": [
+      "real isolated worker main complete positive host admission to guarded_run entry, body blocked",
+      "real isolated worker main disabled authority refused before guard"
+    ],
+    "permittedDoubles": "Only the explicit fail-closed guard-body boundary interception. Fixture is copied real metadata/checkpoint/adapter bytes with current code identity; no input/native/model/tensor/loader/path/import/admission doubles.",
+    "resources": "CPU-only; subprocess timeout bounded appropriately for retained stdlib admission, no model/native dependencies/GPU/Job/ACL/stage creation or peak claims."
+  },
+  "codeAcceptance": {
+    "bytes": 7758,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-bootstrap-code-acceptance-v1.json",
+    "physicalSha256": "b9d8ea3745a996fcc8281317363e42ba7c67102444a6d869604a665f60ec2da0"
+  },
+  "exclusions": "No retained stage repair/retry/copy refresh/guard run/native/model/GPU/PEFT/Torch load/score/fit/optimizer/comparison. No old test suites/control/runtime/serializer/donor/model inventory campaigns, expectations/evaluation/teacher/labels/model/recipe/policy/threshold changes. No unowned files/shared guard/helper/phase/adapter changes, coordinator/staging/other-worker edits, environment/ACL/install/service/storage/provider/main/push/deploy/promotion.",
+  "executable": false,
+  "executionAllowance": null,
+  "failureAcceptance": {
+    "bytes": 5819,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-worker-bootstrap-failure-acceptance-v1.json",
+    "physicalSha256": "e8e12183fe024e0bf2dd00fa2e2e7637a29e647aa35a759eb34d2ec0b74125af"
+  },
+  "futureNative": "Coordinator reviews and freezes a new final-head positive native packet after complete host admission proof. Consumed40 command/stage stay sealed; no native permission in this code-only assignment or fixture.",
+  "implementation": [
+    "Add only the missing fixed association sibling root derived from resolved __file__ to association_student existing bootstrap. Keep existing repo roots/-B-I-S, preadmission/guard/child model-boundary code, source/fit/pin validation and all legacy routes unchanged.",
+    "Inspect both entry preambles and lazy sibling imports along actual host/child reload path so another unexercised import assumption is not left in this flow. Reuse prior Python-I diagnosis and completed stager fix; do not broaden ownership or research/reproduce the known failure again.",
+    "Add/select one IsolatedWorkerAdmissionControls group. Keep existing Controls and IsolatedEntryControls unchanged/unexecuted. Two affected source compiles, source-scoped whitespace/protected checks and40 final code pins only.",
+    "For a CPU-only positive admission fixture, copy only the29 retained source-only/accepted-fit input files into a new owned private directory; exclude runtime/model bytes and never edit retained stage. Update copied assignment/current40 physical/canonical source pins and freeze to actual proposed codeHEAD, preserving all accepted model/fit/data/recipe identities. This fixture is explicitly CPU-only, supplies an unreachable private containment-profile path and provides no native execution authority or valid stage/profile.",
+    "Launch isolated child Python-B-I-S with a small private runpy harness that executes the real association_student file as __main__ with its real CLI argv, from unrelated private cwd. Do not preload product modules or modify child sys.path/import/admission/source/tensor bytes. Allow only a disclosed fail-closed profiling/call interception at entry to the exact protected resources.guarded_run function, before its body. Record that full real preadmit/accepted_fit_files returned and this boundary was reached. No guard/ACL/Job/state/model execution is permitted.",
+    "Second isolated child uses the same copied fixture changed to executable:false with regenerated coherent assignment/freeze hashes; it must refuse separate_positive_rank_reload_required before reaching guard. Record actual argv/cwd/logs/exit and interception explicitly. No positive stage or native command. Keep all29 fixture data bytes other than assignment/freeze exact to retained inputs.",
+    "Commit the two owned sources before the focused control if necessary to give the fixture exact actual codeHEAD/Git/current-source authority; then one focused invocation/group and compact evidence commit. No runnable positive protocol/packet or production interception/flag added. If safe exact interception or input admission cannot be built under ownership, stop with specific evidence rather than run guard or weaken checks."
+  ],
+  "outcome": "Repair actual worker host fixed-path bootstrap and prove complete positive admission under isolated startup before any guard execution.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-worker-bootstrap-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-worker-bootstrap-code-v1.md"
+  ],
+  "ownedPaths": [
+    "scripts/usp/learning/association/association_student.py",
+    "scripts/usp/learning/association/test_fragment_rank_reload.py"
+  ],
+  "previousProtocol": {
+    "bytes": 15966,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-40.fragment-rank-reload.protocol.json",
+    "physicalSha256": "ec0a531274f5553972e9b16ac678f85f8e999b1b5e8ee0c4693b7743f128752d"
+  },
+  "protectedSourceSnapshot": {
+    "bytes": 11038,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-40-worker-bootstrap-failure-v1-d55d5546048644088f60e0f1f4170913\\student-41-protected-sources.json",
+    "physicalSha256": "6f761dba3682d44eb582d6989f0e69874f35027d2a6e5e4d4f5c4c00a544f4f0"
+  },
+  "recordedAtUtc": "2026-10-04T13:16:25.902693+00:00",
+  "requestedSettings": {
+    "model": "gpt-6.1-sol",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Same isolated-bootstrap failure family recurred in worker positive admission; existing sole learner retains ownership and must verify the full affected route.",
+    "reasoning": "xhigh",
+    "requiredSpeed": "default/standard1x"
+  },
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "retainedStage": {
+    "freeze": {
+      "bytes": 15458,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\inputs\\run-freeze.json",
+      "physicalSha256": "0f31863e0c3dd30a316c6d84401909fbb8cb25e5897f9132b40ed358c4d2a1b8"
+    },
+    "profile": {
+      "bytes": 2704501,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\profile.json",
+      "physicalSha256": "a954f3d12ab76f72b84f9a13b96fb8e8720a4edfca48ffd49cad2cf8a7684487"
+    },
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511",
+    "stageJson": {
+      "bytes": 7340,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\stage.json",
+      "physicalSha256": "b86508712772c3cec9ff75632230f3af5f84e4f4f0d89fb18b4a77b6a733fbb9"
+    }
+  },
+  "returnRequirements": "Exact base/code/final commits and four changed paths, one selected group/actual child commands/exits/logs/disclosed guard interception, real original-fit positive admission, two compiles,39 protected unchanged and40 final source pins, private receipts/index/finalization and compact owned JSON/Markdown. Historical fit and retained40 stage unchanged/unrebound. Callback once to01a0fbd1-c2aa-75c0-8a52-4c4f662f3759 then end.",
+  "task": "STUDENT-41-FRAGMENT-RANK-RELOAD-WORKER-BOOTSTRAP-CODE",
+  "version": "student-fragment-rank-reload-worker-bootstrap-code-assignment/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

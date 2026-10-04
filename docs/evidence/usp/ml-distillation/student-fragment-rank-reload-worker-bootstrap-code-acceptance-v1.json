@@ -1,0 +1,112 @@
+{
+  "accepted": true,
+  "changedPaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-worker-bootstrap-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-worker-bootstrap-code-v1.md",
+    "scripts/usp/learning/association/association_student.py",
+    "scripts/usp/learning/association/test_fragment_rank_reload.py"
+  ],
+  "consumedFocusedControls": {
+    "command": {
+      "bytes": 1598,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\controls-1.command.json",
+      "physicalSha256": "d19065ae43ece138a481179c84f8c7039a355f105690b8cd15d32b0289122abf"
+    },
+    "controls": {
+      "bytes": 15707,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\isolated-worker-controls.json",
+      "physicalSha256": "01affc31b5412c8d8f23721e4c6d86d6f07acce3071674ea288f8bc97eec0dad"
+    },
+    "disabled": {
+      "bytes": 2031,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\disabled-boundary.json",
+      "physicalSha256": "2c94a5f44f695cf4d5697822f3a3e61570ffa631150ecd7a240ff61f71eba975"
+    },
+    "disabledBeforeGuard": true,
+    "exactProtectedGuardEntryReached": true,
+    "guardBodyExecuted": false,
+    "invocations": 1,
+    "nativeModulesLoaded": false,
+    "originalFitReturnedAuthorities": 17,
+    "parentExit": 0,
+    "positive": {
+      "bytes": 2994,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\positive-boundary.json",
+      "physicalSha256": "eebbcbc132f7fac9641007b589f821638369372a2924d97ee5affbc6edd47c76"
+    },
+    "positiveRealAdmission": true,
+    "soleDouble": "Exact protected guarded_run call event raises BaseException before function body; no product import/path/admission/source/tensor doubles.",
+    "testsPassed": 1
+  },
+  "coordinatorIntegratedInMemoryCompiles": 2,
+  "decision": "accept_fixed_worker_bootstrap_and_real_positive_host_admission_only",
+  "existingReloadCodeAcceptance": {
+    "bytes": 17430,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-code-acceptance-v1.json",
+    "physicalSha256": "0def5581bb068db2683ac1d28f53ec5f3e191e44220afd15426fe377d4b547dc"
+  },
+  "existingThinBootstrapAcceptance": {
+    "bytes": 7758,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-bootstrap-code-acceptance-v1.json",
+    "physicalSha256": "b9d8ea3745a996fcc8281317363e42ba7c67102444a6d869604a665f60ec2da0"
+  },
+  "historicalFit": {
+    "acceptedFit": {
+      "acceptancePath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-fragment-rank-phase-3-native-acceptance-v1.json",
+      "acceptanceSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+      "reviewPath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-fragment-rank-phase-3-native-acceptance-review-v1.json",
+      "reviewSha256": "cda8d0f67e1105c98f42b76accc2f2d1aecc20cc6aa9d22aa5a1053c4ba8b310",
+      "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472"
+    },
+    "adapter": {
+      "acceptedFitSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+      "candidateContributions": 342,
+      "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+      "filesSha256": {
+        "README.md": "d58f094333cfc1c4dd7444763d0d4900fa12102545f64c28d5689920da5f1793",
+        "adapter_config.json": "caddd7cee4ba510b73088fa191db872b6a1947f023ae35bc5b6f64a3e5b5b584",
+        "adapter_model.safetensors": "544f198727df29a629cd9ae4540a221adb27cdb390116d8ddb7b03a302da832b"
+      },
+      "trainingSourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+      "updates": 60
+    },
+    "checkpointRebound": false,
+    "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+    "sourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270"
+  },
+  "integratedOwnedCommits": [
+    "985a9e9034246741a50160a3aee3deb1a08e6bbf",
+    "ca6312df49c58018bdafa416581e316b4bf26180"
+  ],
+  "nativeReloadPerformed": false,
+  "next": "STUDENT42 new positive final-head stage/reload and one technically accepted host-only development comparison. No consumed40 stage/command retry.",
+  "oldClassesAstUnchanged": true,
+  "oldClassesRerun": false,
+  "onlyRuntimeSourceChanged": "scripts/usp/learning/association/association_student.py",
+  "ownedGitBytesEqual": true,
+  "ownerCodeCommit": "3bb064a80a2106bbd2f9f262ce19083c39e9eafc",
+  "ownerFinalHead": "9e1782a98252542d02440022f8680535f4ee0080",
+  "priorFailureAcceptance": {
+    "bytes": 5819,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-worker-bootstrap-failure-acceptance-v1.json",
+    "physicalSha256": "e8e12183fe024e0bf2dd00fa2e2e7637a29e647aa35a759eb34d2ec0b74125af"
+  },
+  "privateReview": {
+    "bytes": 3848,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-41-worker-bootstrap-review-native-packet-v1-d2c776a8f5044992aa4b649b8083676a\\review.json",
+    "physicalSha256": "9d612482d3af074a95ebcafd67c99e1150aa78cc624de8639d14ae1fbf4cbb71"
+  },
+  "protectedRuntimeSourceCount": 39,
+  "protectedUnchanged": true,
+  "qualityComparisonPerformed": false,
+  "recordedAtUtc": "2026-10-04T13:36:17.379165+00:00",
+  "report": {
+    "bytes": 12623,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1.json",
+    "physicalSha256": "b5d0f985cbcd19cced9e585f90af101d385e881e367b315366c8d6be38b083cb"
+  },
+  "retained40StageUnchanged": true,
+  "runtimeSourceCount": 40,
+  "sourceWhitespaceExit": 0,
+  "version": "student-fragment-rank-reload-worker-bootstrap-code-acceptance/1"
+}

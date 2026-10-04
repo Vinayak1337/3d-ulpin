@@ -1,0 +1,219 @@
+{
+  "assignment": {
+    "bytes": 14130,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-38.fragment-rank-reload.assignment.json",
+    "physicalSha256": "cfce18c2ac9f842488973b929cccd961e907ecc1dd88160144e7b586feaebc36"
+  },
+  "attempt": 1,
+  "branch": "task/ml-association-student-20261002",
+  "changedCondition": "Final fit60/342 independently accepted and saved. Separate reviewed explicit reload route now has three passing corrected CPU controls; no prior native reload of this adapter.",
+  "codeAcceptance": {
+    "bytes": 17430,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-code-acceptance-v1.json",
+    "physicalSha256": "0def5581bb068db2683ac1d28f53ec5f3e191e44220afd15426fe377d4b547dc"
+  },
+  "developmentCriteria": {
+    "acceptedPositivePrecision": 1,
+    "exactRequestSelectionSets": "2/2",
+    "positiveRecall": 1,
+    "qualification": "One tiny development family only; no independent source truth/generalization/official association/evaluation/canonical link/promotion/release qualification. Training labels57 related pairs/ten parents/two families remain needs_independent_review/Sarvam excluded.",
+    "resourcesAndCleanup": "All existing bounds and authoritative technical/guard/cleanup acceptance pass.",
+    "unsupportedRequestFalsePositives": 0,
+    "validCompleteVectors": "2/2"
+  },
+  "exclusions": "No code/Git/evidence commits, fit/optimizer/new model or labels/source/recipe/policy/threshold changes, baseline rerun/extra inference/sweep/held-out access/teacher, old/native/control/CPU test campaign, dependency/acquisition/provider/shared API/frontend/staging/other-worker/host/service/credential/storage compression/move/link/push/deploy/promotion changes. Preserve sealed training history and originals.",
+  "exclusiveOwner": {
+    "codeEditsAuthorized": false,
+    "gpuAndModel": true,
+    "learnerThread": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+    "teacherIdleAndBlind": true
+  },
+  "executionHead": "dbddf4951e47b855865d0940850049ee98debf31",
+  "expectedGeneratedFreeze": {
+    "interpretation": "Pure metadata only. Actual generated stage freeze must match exact physical bytes/hash; do not compare pretty JSON with compact-map SHA.",
+    "metadata": {
+      "bytes": 15458,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-37-reload-code-review-v1-7e5579d4b1614095bea0da68ad372be4\\expected-student-38-reload-freeze.json",
+      "physicalSha256": "d8d548c809865f523b0e67c215a7e2deb6b31ac7c1768fa3c056d9af9796f922"
+    }
+  },
+  "historicalFit": {
+    "acceptedFit": {
+      "acceptancePath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-fragment-rank-phase-3-native-acceptance-v1.json",
+      "acceptanceSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+      "reviewPath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-fragment-rank-phase-3-native-acceptance-review-v1.json",
+      "reviewSha256": "cda8d0f67e1105c98f42b76accc2f2d1aecc20cc6aa9d22aa5a1053c4ba8b310",
+      "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472"
+    },
+    "adapter": {
+      "acceptedFitSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+      "candidateContributions": 342,
+      "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+      "filesSha256": {
+        "README.md": "d58f094333cfc1c4dd7444763d0d4900fa12102545f64c28d5689920da5f1793",
+        "adapter_config.json": "caddd7cee4ba510b73088fa191db872b6a1947f023ae35bc5b6f64a3e5b5b584",
+        "adapter_model.safetensors": "544f198727df29a629cd9ae4540a221adb27cdb390116d8ddb7b03a302da832b"
+      },
+      "trainingSourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+      "updates": 60
+    },
+    "checkpointRebound": false,
+    "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+    "sourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270"
+  },
+  "hostComparison": {
+    "baselineAcceptance": {
+      "bytes": 7759,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-baseline-acceptance-v1.json",
+      "physicalSha256": "089902a634551261b09fa2af2f64e1494284e8a9dc18d855468ac62188fb4951"
+    },
+    "baselineComparison": {
+      "bytes": 7553,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-v1-host-181145e2dea4483ab14de8cddd24ec4d\\comparison.json",
+      "physicalSha256": "f9ace6cba14fb2bc2f5bb97b6a6615f50a6262b00f0c3f0d83184a7ab00fb0bb"
+    },
+    "baselineMargins": [
+      -0.265625,
+      -0.71875,
+      -0.703125,
+      -0.609375,
+      -1.640625,
+      -2.296875,
+      -2.859375
+    ],
+    "baselineMetrics": {
+      "candidates": 7,
+      "contextLimitedEmptyRequests": 2,
+      "exactRequestSets": 1,
+      "expectedPositive": 1,
+      "falsePositives": 0,
+      "families": 1,
+      "misses": 1,
+      "positiveRecall": 0,
+      "precision": null,
+      "requests": 2,
+      "selected": 0,
+      "truePositives": 0,
+      "unsupportedRequestFalsePositives": 0,
+      "validCompleteVectors": 2
+    },
+    "candidateFocuses": 7,
+    "comparability": "Same two source-only requests/seven focuses, original baseline retained without model rerun. One tuned comparison; no threshold/prompt/sweep.",
+    "deterministicContributions": "Token identity, complete score vector, threshold and unchanged-fragment citation projection do not establish learned relevance. Empty means no_support_in_supplied_context, never whole-property absence; no canonical association.",
+    "examples": 2,
+    "expectations": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/coordinator/requested-fragment-development-v1-host-expectations.json",
+      "physicalSha256": "71efa01a6e56e35c24a6e9440c01e0e8aeb3be322fedc877343765eae45f943e"
+    },
+    "families": 1,
+    "hostOnlyOutput": "One new immutable fragment-rank-reload-v1-host UUID directory under private student parent; preserve all originals/failures.",
+    "metrics": "Report actual complete-vector validity2/2 and chosen IDs/counts per request. Against frozen host sets report exact sets, TP/FP/misses per request and aggregate precision TP/selected (null if zero), positive recall TP/expected (null for an empty expected set), unsupported-request FP and context-limited empty retrieval. Rejected/incomplete vectors get no partial retrieval/exact credit. Keep all request/candidate denominators and raw scores visible.",
+    "timing": "Only after all nativeAcceptance checks pass may hash/read existing pinned expectations once for one host-only comparison. Technical failure leaves them unread. No extra inference or teacher disclosure."
+  },
+  "nativeAcceptance": [
+    "Actual local original Qwen2.5-0.5B-Instruct via unchanged shared PEFT reload lifecycle, no optimizer/fit or remote/custom code. Exact enabled/unmerged/default PEFT config,48 LoRA layers/all eval/frozen/no grads.",
+    "Actual96 fp32 loaded/saved adapter tensors540672 params byte-equal to accepted checkpoint masters through strict name bijection; original290-tensor base digest equal accepted fit before and after scores. Shared exact load proof present. Preserve technical receipt.",
+    "Same source-only seven prompts in original four/three focus order, byte-exact real single distinct non-special0/1 continuation/prefix/tokenizer pins/no truncation and identical retained baseline prompt/input identities. No technical loss-proof campaign rerun in reload.",
+    "Actual logits_to_keep=1/use_cache=false native shape(1,1,vocab); cast both label logits float32 before finite margin1-minus0. Seven independently retained raw records, complete vectors, unchanged margin>0/tie abstention/projection; accepted adapter provenance/current-process fit=false.",
+    "Native result/proof/preflight/raw/worker completion exact hashes and provenance; protected completion/guard/accepted artifact map/profile inventory/child exit0, outputsAcceptedtrue, Job/ACL/session cleanup passed and owned child gone. Worker completion remains provisional.",
+    "All unchanged600-second/6GiB Job/RSS/CUDA allocation/reservation and minimum free1.5GiB/batch1/CPU2 bounds pass; record actual timing/peaks separately. No inferred speedup or native claim from doubles."
+  ],
+  "outcome": "One actual accepted final adapter reload on the unchanged two source-only development requests/seven focuses, followed by one host-only baseline comparison after technical acceptance.",
+  "ownedEvidenceOutput": [],
+  "plannedInventory": {
+    "canonicalJsonMapSha256": "272652a30ea44f62ced8f8281704a9a6d527141db414629e7cd7eaab7db45c1e",
+    "derivedFrom": "Pinned donor profile subsets, final learner40 sources, source-only development artifacts,17 accepted-fit files, requirements/assignment/freeze. No runtime bytes inventoried now.",
+    "fileCount": 19708,
+    "inputFiles": [
+      "inputs/accepted-fit/acceptance.json",
+      "inputs/accepted-fit/accepted-map.json",
+      "inputs/accepted-fit/adapter-manifest.json",
+      "inputs/accepted-fit/adapter/README.md",
+      "inputs/accepted-fit/adapter/adapter_config.json",
+      "inputs/accepted-fit/adapter/adapter_model.safetensors",
+      "inputs/accepted-fit/assignment.json",
+      "inputs/accepted-fit/checkpoint-proof.json",
+      "inputs/accepted-fit/checkpoint/manifest.json",
+      "inputs/accepted-fit/checkpoint/state.json",
+      "inputs/accepted-fit/checkpoint/tensors.safetensors",
+      "inputs/accepted-fit/completion.json",
+      "inputs/accepted-fit/freeze.json",
+      "inputs/accepted-fit/guard.json",
+      "inputs/accepted-fit/result.json",
+      "inputs/accepted-fit/review.json",
+      "inputs/accepted-fit/token-preflight.json",
+      "inputs/context-0.json",
+      "inputs/context-1.json",
+      "inputs/development.json",
+      "inputs/family-freeze.json",
+      "inputs/fragment-rank-reload-assignment.json",
+      "inputs/fragment-route.json",
+      "inputs/fragment-schema-v1.json",
+      "inputs/legacy-schema-v1.json",
+      "inputs/model-acquisition.json",
+      "inputs/preparation.json",
+      "inputs/run-freeze.json",
+      "inputs/runtime-requirements-resolved.txt"
+    ],
+    "metadata": {
+      "bytes": 2664751,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-37-reload-code-review-v1-7e5579d4b1614095bea0da68ad372be4\\expected-student-38-profile-map.json",
+      "physicalSha256": "b0499f3b5b37252c446c26bc96b4cf70553bf14776f8efb800738437164d2e9d"
+    },
+    "modelFiles": 9,
+    "profileRootOrProfileSha256": "Fresh UUID root/profile observed during staging; never reuse old fit/baseline stage.",
+    "runtimeFiles": 19630,
+    "sourceFiles": 40
+  },
+  "preflight": [
+    "Verify actual supplied never/danger-full-access, clean exact HEAD/branch, assignment/protocol/code acceptance/expected metadata pins. Keep HEAD fixed; no packet cherry-pick or code/evidence commit.",
+    "Run stageCommand once. Existing host stager validates original accepted phase3 evidence and donors then copies the precise readonly source/model/development/fit authority. Record command/cwd/times/exits/stage/profile/freeze/copied bytes.",
+    "Compare generated freeze physical hash and parsed exact profile files against expected map; compact canonical-map SHA uses checkpoint.canonical, while metadata file hash uses its exact indented newline bytes. Actual readonly inputs exactly planned; no labels/expectations/evaluation or teacher payload.",
+    "Execute the generated guard command at most once. Stop on first stage/admission/native/score/resource/output/cleanup failure. Preserve stage and private failure receipts, leave expectations unread; no retry, code repair, extra inference or fresh stage."
+  ],
+  "privateOnlyReturn": true,
+  "recordedAtUtc": "2026-10-04T12:18:59.478521+00:00",
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "resourceBounds": {
+    "attention": "sdpa",
+    "batchSize": 1,
+    "cpuThreads": 2,
+    "dtype": "float16",
+    "maxChildPhaseSeconds": 600,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "maxInputTokens": 2048,
+    "maxJobCommittedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "recording": "Job commitment and RSS separate; CUDA allocated/reserved/minimum free, actual host/setup/guard/child/cleanup/model-section and per-focus forward timing where exposed. Preserve existing initialization-only peak reset; no inferred speedup.",
+    "seed": 17,
+    "truncation": false
+  },
+  "returnRequirements": "Write private technical report, exact execution head/source/input/fit/code authority, actual commands/exits/profile/freeze/guard/accepted/completion/preflight/technical proof/seven raw/vector/result/resources/cleanup and optional host comparison. Receipt index/finalization with absolute hashes/bytes; no Git/evidence commits or guarded-output edits. Coordinator publishes review. Callback once to01a0fbd1-c2aa-75c0-8a52-4c4f662f3759 then end.",
+  "runCommandAuthority": "One exact fresh stage.json command array through existing protected guard after actual profile/freeze/map match. No reconstructed or direct native command.",
+  "stageCommand": [
+    "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+    "-B",
+    "-I",
+    "-S",
+    "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_fragment_rank_reload.py",
+    "--assignment",
+    "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-38.fragment-rank-reload.assignment.json"
+  ],
+  "task": "STUDENT-38-FRAGMENT-RANK-RELOAD",
+  "version": "student-fragment-rank-reload-protocol/1",
+  "workerSettings": {
+    "interpretation": "Current dispatch exposes model/effort but no tier; prompt/global default is not observation.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Consequential exact accepted-fit/native tensor/base/scoring and guarded comparison; existing sole learner/GPU owner.",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard1x"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

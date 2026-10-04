@@ -1,0 +1,50 @@
+{
+  "acceptedScope": "Two completed standard NTFS compression operations and retained logical/path/security evidence only; original capacity target was unmet.",
+  "currentCapacity": {
+    "bytes": 1236,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-35-phase-2-packet-v1-7709b7c68a5646b9a05d9e17595c9e5c\\storage-decision.json",
+    "physicalSha256": "ced73b46924af9ab8268b5b9b0ad2d55807c0c9ef4874d312a0f28878d8658f5"
+  },
+  "finalization": {
+    "bytes": 2430,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\cold-runtime-space-recovery-v1-1a74d901ef38479fb4cec66dd084c768\\finalization.json",
+    "physicalSha256": "e9a6615458833baa9e2ffb5aaa81265df4436f5b148ad4a9e842c9e18adb6628"
+  },
+  "fullRuntimeHashCampaignRepeated": false,
+  "historicalFailureCause": null,
+  "historicalFinalFreeBytes": 7406792704,
+  "nextDecision": "Close storage recovery. Fresh phase2 packet from independently accepted phase1; no storage migration or further compression.",
+  "qualification": "Storage integrity only; no additional learning/quality/native proof.",
+  "receiptIndex": {
+    "bytes": 8475,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\cold-runtime-space-recovery-v1-1a74d901ef38479fb4cec66dd084c768\\receipt-index.json",
+    "physicalSha256": "cb647789896ceccce5e8933cd3c4e0414762793dcfbcc3af603814447a81d930"
+  },
+  "recordedAtUtc": "2026-10-04T10:23:35.770227+00:00",
+  "referencesVerified": 32,
+  "report": {
+    "bytes": 17810,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\cold-runtime-space-recovery-v1-1a74d901ef38479fb4cec66dd084c768\\report.json",
+    "physicalSha256": "84572ae77f7825ddc72a2c0c26def2d65cc8df4351160f2ce081681691ab4b25"
+  },
+  "scopedStoredDataSavingsBytes": 4659707034,
+  "scopes": [
+    {
+      "logicalDataStorageBytesSaved": 2329853517,
+      "number": 1,
+      "runtimeDirectory": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\runtime",
+      "status": "compression_exit0_integrity_verified"
+    },
+    {
+      "logicalDataStorageBytesSaved": 2329853517,
+      "number": 2,
+      "runtimeDirectory": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\runtime",
+      "status": "compression_exit0_integrity_verified"
+    }
+  ],
+  "snapshotsDirectlyCompared": true,
+  "task": "STUDENT-34-COLD-RUNTIME-SPACE-RECOVERY",
+  "thirdCompressionLaunched": false,
+  "version": "student-cold-runtime-space-review/1",
+  "volumeSavingsQualified": false
+}

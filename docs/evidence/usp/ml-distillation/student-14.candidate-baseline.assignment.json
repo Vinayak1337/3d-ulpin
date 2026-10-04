@@ -1,0 +1,108 @@
+{
+  "version": "association-candidate-baseline-assignment/1",
+  "task": "STUDENT-14-CANDIDATE-BASELINE",
+  "executionAllowance": {
+    "stageModelRun": true,
+    "inference": true,
+    "fit": false,
+    "evaluation": false,
+    "promotion": false,
+    "freshBaselinePhases": 1
+  },
+  "studentCodeCommit": "9a8f65ac5af330a901b876bae2f4c514787567c9",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "adapter": null,
+  "settings": {
+    "seed": 17,
+    "cpuThreads": 2,
+    "maxInputTokens": 2048,
+    "maxNewTokens": 768,
+    "batchSize": 1,
+    "doSample": false,
+    "dtype": "float16",
+    "attention": "sdpa",
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumFreeCudaBytes": 1610612736,
+    "maxPeakProcessRssBytes": 6442450944,
+    "maxRunSeconds": 600,
+    "maxFitSeconds": 600,
+    "evaluationAllowed": false
+  },
+  "baselineProfileSha256": "e06f20f9c285af4d3052c441e76a039ad04eba5c6b11fa618ea0a2a2ddbc5438",
+  "inputSha256": {
+    "input_batch": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536",
+    "schema": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+    "family_freeze": "93c243f28895ac084c3f1853cba80b9e0b5286f881aba44d6cb7ab6e3a164730",
+    "model_receipt": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2"
+  },
+  "acceptedArtifactSha256": {
+    "preparation.json": "968fbaae903cda193ebb2d74cc7a54f054136071def8d5431f0c8e61e0690bbc",
+    "candidate-route.json": "ac177a8e15fa8bb41226b9a151e0f69ac6c6dcc253063b89c738163b10a60267",
+    "context-0.json": "dd66325a702e7647cdfb36375b731b50086a0c51053b3b258a177e5afb9eb63d",
+    "context-1.json": "cdd4b3b0e74eed4fb03dfe1159a280605a6c93916f070481af40f80cda40b9cc",
+    "candidate-schema-v1.json": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574",
+    "candidate-prompt.txt": "97354126da61e713fb381c9de46e6966de82ec2424a50feaf93b538d43a6780c"
+  },
+  "representation": {
+    "version": "evidence-association-candidate-selection/1",
+    "policy": {
+      "constructionPolicySha256": "07540ff3bbe14d9eeb9796ddde0d2b246e7d98595063c8aa516b755958d5badd",
+      "forcedElements": [
+        "JSON/schema",
+        "candidate-set identity",
+        "current IDs/uniqueness",
+        "unchanged parsed facts/citations",
+        "no_canonical_targets and empty canonicalLinks"
+      ],
+      "notEnforced": [
+        "which candidates to select",
+        "nonempty or full selection",
+        "learned relevance"
+      ],
+      "selection": "optional distinct current IDs only; full set identity required; whole-response validation",
+      "transport": "existing pinned ByteLevel Vocabulary and Controller; no output repair or cap closing",
+      "version": "association-candidate-selection-policy/1"
+    },
+    "policySha256": "9bbff02c55134a8fc772155cf197b7ae21b5deaf26dc01dfb75ade42e35f26ce",
+    "promptVersion": "association-candidate-prompt/1",
+    "systemPromptSha256": "97354126da61e713fb381c9de46e6966de82ec2424a50feaf93b538d43a6780c",
+    "schemaCanonicalLfSha256": "016b415ed96de321c43174023238f8de5582df37dc428731234b6f02a3280574",
+    "tokenizerFilesSha256": {
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    }
+  },
+  "cases": [
+    {
+      "exampleId": "ifc4-source-native-v1",
+      "inputCanonicalJsonSha256": "da3be49d09c86f4cafd459e9ff89c212f2ef0bbe5958ea98c6a1be3824aac4d4"
+    },
+    {
+      "exampleId": "ifc2x3-source-native-v1",
+      "inputCanonicalJsonSha256": "5cdbd1fec015bc2eecde12ee37dea41eeb0fc7c6eb9e7ac8470af04bd74c3a88"
+    }
+  ],
+  "runtimeCodeCanonicalLfSha256": {
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+    "scripts/usp/learning/association/association_student.py": "434d77acf78e6ac146a281eac8c706a971623d084239600a5585cd36ef1e9615",
+    "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+    "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/selector_baseline.py": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+    "services/geo/geo/usp_learning/association/candidate_baseline.py": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+    "services/geo/geo/usp_learning/association/candidate_selection.py": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+    "services/geo/geo/usp_learning/association/native_candidates.py": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+    "services/geo/geo/usp_learning/association/selector_constraints.py": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+    "services/geo/geo/native_ifc.py": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+    "scripts/usp/learning/association/stage_selector_baseline.py": "e6635654160e4858a589870f048b61ec22e860cb4285c07b06fa4e32aca93bc3",
+    "scripts/usp/learning/association/stage_baseline.py": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93"
+  },
+  "artifactRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\native-candidates-preparation-9e147bf705c5413388f86ab0f785eadc"
+}

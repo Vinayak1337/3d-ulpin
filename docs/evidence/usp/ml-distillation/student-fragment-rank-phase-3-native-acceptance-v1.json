@@ -1,0 +1,163 @@
+{
+  "accepted": true,
+  "acceptedMapSha256": "e002a770bd823ac91cd10e2897722cd08a96a7e28f49deeea4916f51e999597b",
+  "adapterManifestSha256": "f4b451a2497998c16faac586a7ffea6cafa251d3faeea797f4de6f72b80dbc49",
+  "assignmentSha256": "2a8d6c9a6170462a498d691bce305fba8ec0d196c2cebb6ca2c8dddc2c133b38",
+  "binding": {
+    "base": {
+      "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+      "tensorCount": 290
+    },
+    "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+    "fit": {
+      "alpha": 16,
+      "batchSize": 1,
+      "cacheDuringFit": false,
+      "cpuThreads": 2,
+      "dropout": 0.05,
+      "epochs": 6,
+      "excludeOverlongRows": false,
+      "gradientAccumulation": "one complete parent with exact published 1/(10*candidateCount) weights",
+      "gradientCheckpointing": true,
+      "gradientClipNorm": 1,
+      "learningRate": 0.0002,
+      "loss": "two next-token label logits only; prompt-only forward; no JSON/ID/hash/EOS target loss",
+      "maxPromptTokens": 4096,
+      "maxSequenceTokens": 4096,
+      "method": "rank-support LoRA, shared original causal model lifecycle",
+      "optimizer": "AdamW",
+      "rank": 8,
+      "seed": 17,
+      "targets": [
+        "q_proj",
+        "v_proj"
+      ],
+      "truncation": false,
+      "warmupSteps": 0,
+      "weightDecay": 0
+    },
+    "inputPins": {
+      "counts.json": "3e50dc8a3a1bb35d65da810623261981a094660a69b071d59d874e12c0d6109f",
+      "family-freeze.json": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+      "fragment-schema-v1.json": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+      "lineage.json": "7b2291969484aeccb913704e7d88e295f6d7fd26a6cf0de9aea9c87061fb7026",
+      "model-acquisition.json": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2",
+      "policy.json": "9237baa39a7927e4071054bab4fc080356c4f3123d6ac35717f2da4d3b5a2002",
+      "publication.json": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82",
+      "schema-v1.json": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+      "scoring-inputs.jsonl": "753533a1c654274316aed6b2f06641d20ad47d73bfc2375ba1d73d6e05e12696",
+      "system-prompt.txt": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+      "train-fragment-rank-v1.jsonl": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd"
+    },
+    "loss": {
+      "accumulation": "complete parent; sequential candidate forward/backward, graph released after each; one unscale/check/clip/step",
+      "epochReporting": "sum of parent contributions at their successive parameter states; not one full-global per-step objective",
+      "logitsToKeep": 1,
+      "lossDtype": "float32",
+      "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+      "proof": {
+        "actualLossAndAccumulationHelpers": true,
+        "atol": 1e-06,
+        "cpuReference": "independent float64 binary NLL and analytic gradient",
+        "fp16GradientAtol": 0.0001,
+        "fp16GradientRtol": 0.001,
+        "gradientScale": 128.0,
+        "nativeDevices": [
+          "cpu",
+          "cuda"
+        ],
+        "nativeLogitsDtypes": [
+          "float32",
+          "float16"
+        ],
+        "nativeLossDtype": "float32",
+        "rtol": 1e-06,
+        "syntheticOnly": true
+      },
+      "version": "association-fragment-rank-weighted-nll/1",
+      "weight": "published numerator/denominator = 1/(10*candidateCount)"
+    },
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "numerics": {
+      "adamBetas": [
+        0.9,
+        0.999
+      ],
+      "adamEpsilon": 1e-08,
+      "adapterDtype": "float32",
+      "attention": "sdpa",
+      "baseDtype": "float16",
+      "checkpointing": "non-reentrant",
+      "initialGradientScale": 128.0,
+      "logits": "last prompt position, native 0/1 logits cast float32 before two-label NLL",
+      "lossDtype": "float32",
+      "scaleGrowthInterval": 2000,
+      "shuffle": "Random(17), one permutation per epoch"
+    },
+    "phase": {
+      "endUpdate": 60,
+      "final": true,
+      "localContributions": 114,
+      "localUpdates": 20,
+      "number": 3,
+      "startUpdate": 40
+    },
+    "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+    "previousCheckpointManifestSha256": "58693e5d20c106e1f22e0307f33241c280ba2edc394da9a816d8dcc6342c15df",
+    "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+    "publicationSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "scheduleSha256": "8150b58a5f9a66ada112ca4e62a4a0d238341dc51b4c6398d03f1e359c15be1d",
+    "sourceCanonicalLfSha256": {
+      "scripts/usp/learning/association/association_adapter.py": "3bf37e002fdba17e8a60d498bd2fc8593c6c935524ea3ff5bc51e7123c1422d4",
+      "scripts/usp/learning/association/stage_adapter.py": "4293ead8a761c5a7fbe8c9300e642e549bae5c0cc2dbe6d96fbe9d671f239fee",
+      "scripts/usp/learning/association/stage_baseline.py": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93",
+      "scripts/usp/learning/association/stage_fragment_adapter.py": "1ee5a84260d15d07d77dda02ab292bd474863999beb559a9c19b1d916471b776",
+      "scripts/usp/learning/association/stage_fragment_rank_phase.py": "6bd9d6789f76adbcb0c5872d7f319d9b8812da05cd2dd03b21cf9545f1c82662",
+      "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+      "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+      "services/geo/geo/native_ifc.py": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+      "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+      "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "services/geo/geo/usp_learning/association/adapter.py": "301084077551063fd833ade16d46aa20923e6a091374bb0e6f307eb54a8ff3a1",
+      "services/geo/geo/usp_learning/association/candidate_baseline.py": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+      "services/geo/geo/usp_learning/association/candidate_selection.py": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+      "services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+      "services/geo/geo/usp_learning/association/citation_view.py": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+      "services/geo/geo/usp_learning/association/fragment_adapter.py": "071b171547017f942432105a32cb5303a175d6ec8243c6bf1dd7df1e49e39b4d",
+      "services/geo/geo/usp_learning/association/fragment_baseline.py": "63c923ed5d32593388852aa2e8b7fe6eb96682796295881c5a634c9fc08a778d",
+      "services/geo/geo/usp_learning/association/fragment_rank.py": "292b9922421b5140f80a615df0cf1f24840c33d9757e58a574d6a7bc46a1af20",
+      "services/geo/geo/usp_learning/association/fragment_rank_adapter.py": "55b8f4d90bc33551fb9ae0776b62a60b4bbda7b69ef66956e79f6395a25669ab",
+      "services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py": "162901af3fbef48d613fcf69bc4cde8fd55634f31346cd67e3bd8b7bdb0f6706",
+      "services/geo/geo/usp_learning/association/fragment_rank_fit.py": "b082400d907e1732d8d674870078e76df92780618763390437a23dc6dd2c847c",
+      "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py": "0507c7e23d5b3ff8fc06f49e016166c0fbaef6b9fe8d5faa6ebbfe6ce7f27a45",
+      "services/geo/geo/usp_learning/association/fragment_rank_runtime.py": "96d80aeba24d95e8067efb13082d7aa48176fab2a5524fba33693ea496e0f200",
+      "services/geo/geo/usp_learning/association/fragment_selection.py": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0",
+      "services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+      "services/geo/geo/usp_learning/association/native_candidates.py": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+      "services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+      "services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+      "services/geo/geo/usp_learning/association/selector_baseline.py": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+      "services/geo/geo/usp_learning/association/selector_constraints.py": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+      "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+      "services/geo/geo/usp_learning/association/student.py": "8de7e504c5ca37d54a9a73f05d771e7a344c710086370bfc12fc07f77e8c2798",
+      "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+    },
+    "sourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+    "weightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+  },
+  "checkpointFiles": {
+    "manifest.json": "8605234e0d4f3213e4096dffb4fbf089c97d0daeeb3e7cfdc71c302e0ff34ed4",
+    "state.json": "3f5555f58435d801b37d96bc77ef48409ea5ca91d5b41a71a8ce494a7640e41a",
+    "tensors.safetensors": "b81cf9ab71c38ab17c030015852008f4b5ab01ebe73b61c533665966d88951be"
+  },
+  "checkpointProofSha256": "5c535d463460180b9e6f1cb303df40f7d08b2b18f8ed939aacfe40d4658f745a",
+  "completionSha256": "4c0e70172b23d106c93131914b36c86f0ca898d1074007617c02bd5131425ac1",
+  "fitResultSha256": "953a08de35a06ef15fc2c89d2e4aa49d6f6b60c47bce5d7b36741a239a0176cf",
+  "freezeSha256": "145b094627286b1344bf8366612c9176cd1188a85ad839320382fabcc2730358",
+  "guardSha256": "0ebb9be5b7bc4a8dfca7ffba5c99833e33ab2a6117e804c4f8b9b8ad64f2710a",
+  "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472",
+  "version": "association-rank-phase-acceptance/1"
+}

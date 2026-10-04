@@ -1,0 +1,272 @@
+{
+  "baseCommit": "116c0a9eb2b7681e0ed24935277ba05fc2d83b91",
+  "blockedNativeAuthority": "No STUDENT-45 positive native packet exists; current prototype/CPU authorities remain disabled.",
+  "branch": "task/ml-association-student-20261002",
+  "callbackTarget": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "coordinatorReview": {
+    "bytes": 5033,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-balanced-phase-code-review-v1.json",
+    "physicalSha256": "ccb22f6925571842fdf1ec8529c1567ebde928383e547a4aee659b35d05bb3d0"
+  },
+  "design": [
+    "Repair only the host output recipe reader in fragment_rank_phase_adapter.py and the focused regression in test_fragment_rank_balance.py. The actual shared writer emits settings/numerics in result.binding.fit/numerics, while preflight/manifest contain top-level settings/numerics. Current checked_output_history raises KeyError: settings and prevents valid phase acceptance/resumption. Preserve writer/output schemas and historical receipts.",
+    "Reuse the coordinator existing checked_output_recipe helper as the concrete reference, adapting it to admitted legacy or balanced configuration. Strictly require plan/loss/representation to match configuration in all three outputs; preflight/manifest settings and numerics must match FIT/NUMERICS; result.binding.fit/numerics must match. Reject conflicting optional duplicate result settings/numerics. Preserve all existing full binding, objective, mass, native proof, guard/map/checkpoint/source/continuity and input-scope checks. No permissive fallback or objective inference from untrusted output.",
+    "Keep the other40 current runtime texts physically/canonically/Git unchanged. Preserve all seven original STUDENT-44 code sources except this single reader, initial reports/receipts/prototypes/check histories, fourteen train authorities, old phase stages and source-bound checkpoints. No coordinator source substitution for learner pins. Do not change the objective, scaler, serializer, optimizer, stage/worker bootstrap, guards/ACLs/dependencies or shared backend.",
+    "Return corrected final36-source physical/canonical/Git pins and disabled three-phase metadata/prototypes at the new clean learner head. Native runs, positive runtime/model profiles/assignments/stage/guard, teacher/development/expectation/evaluation access and reload remain forbidden. Coordinator will review then separately freeze STUDENT-45 first native balanced phase at the final head."
+  ],
+  "disabledProposal": {
+    "bytes": 7341,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-quality-diagnosis-v1-9f07cd0c28ed45798fb3ca3406430dd1\\disabled-next-comparison.json",
+    "physicalSha256": "9e52fcae44c3d90a03d4017d434eded86c11d4a296e3d04e0e66b5ac88a0d036"
+  },
+  "failureReproduction": {
+    "bytes": 904,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-44-balanced-recipe-review-v1-9c8424112ded4d53bfbb30a221d795f7\\host-recipe-reproduction.json",
+    "physicalSha256": "e4089fa3596322f06f8bbc6391d195413c02a6e61f113057ff498a8e8893f78d"
+  },
+  "fixedRecipe": "Same frozen original Qwen2.5-0.5B-Instruct revision/weight/base digest/runtime; q/v LoRA r8 alpha16 dropout0.05,AdamW lr0.0002 betas0.9/0.999 eps1e-8 decay0 clip1,GradScaler init_scale128/growth_interval2000; tracker ends60,seed17/six exact epoch orders,60parent updates342contributions,20updates114contributions perphase,batch1 CPU2,prompt-only final0/1 IDs15/16 fp32 binary NLL,no truncation4096fit/2048score. Balanced weights are the sole principal changed factor; objective/binding/proof metadata changes are coupled.",
+  "futureComparison": {
+    "baseline": "Retained original-base and current-rank results; no baseline rerun",
+    "developmentCriteria": {
+      "exactRequestSelectionSets": "2/2",
+      "positiveRecall": 1,
+      "precision": 1,
+      "unsupportedRequestFalsePositives": 0,
+      "validCompleteVectors": "2/2"
+    },
+    "enabled": false,
+    "hostExpectations": "Remain sealed to code/fitting. Later host-only comparison consumes independently retained cached expectation authority only after native reload/resource/cleanup acceptance, without reopening the original or any closed held-out set.",
+    "principalFactor": "fixed class-balanced objective",
+    "qualification": "One tiny development family; no independent source truth/generalization/canonical association/promotion/release claim.",
+    "resourceBounds": {
+      "batchSize": 1,
+      "cpuThreads": 2,
+      "cudaAllocatedBytes": 6442450944,
+      "cudaReservedBytes": 6442450944,
+      "jobCommittedBytes": 6442450944,
+      "maxChildSeconds": 600,
+      "minimumCudaFreeBytes": 1610612736
+    }
+  },
+  "historicalAuthority": {
+    "contributions": 342,
+    "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+    "phaseAcceptances": [
+      {
+        "bytes": 10483,
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-1-native-acceptance-v1.json",
+        "physicalSha256": "723631ce0b62d5682ef73abe998671db63c891fa9ab104b92a819f9f52d6c8f7"
+      },
+      {
+        "bytes": 10546,
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-2-native-acceptance-v1.json",
+        "physicalSha256": "609e01df8011b2e4ff8748322a694097e91ab0f2bdcfa67def4c8cc8d0209123"
+      },
+      {
+        "bytes": 10545,
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-3-native-acceptance-v1.json",
+        "physicalSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c"
+      }
+    ],
+    "sealed": true,
+    "sourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+    "updates": 60
+  },
+  "hypothesis": "A fixed objective with1/2 effective mass per class may improve positive coverage while retaining request-qualified abstention; causation and benefit unestablished. This task implements reviewable code only.",
+  "implementationAllowed": true,
+  "knownWorkingReader": {
+    "coordinatorHead": "7625acf2ba977d0744dfcf869b294c22354420e5",
+    "function": "checked_output_recipe",
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_phase_adapter.py"
+  },
+  "nativeBaselineQualityAcceptance": {
+    "bytes": 9636,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-native-acceptance-v1.json",
+    "physicalSha256": "1f3e4fe3cebef0b5dece40761fb0ca91fd69f7012e20a851e9ed47bc749efb3d"
+  },
+  "nativeExecutionAllowed": false,
+  "objectiveAuthority": {
+    "canonicalJsonSha256": "d4ccb3dd75ec5e47d08f9ccb9d9ab5e043ac177147ec098e5e7aa96226531702",
+    "physicalFile": {
+      "bytes": 1407,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-43-diagnosis-review-balanced-code-v1-baf9545394054b82be881aeb07844638\\balanced-objective-authority.json",
+      "physicalSha256": "17c99382bf3b1c892d9ac2bfd746d9934f781baba53cae75a422ebf915122ec1"
+    },
+    "record": {
+      "classMultipliers": {
+        "0": {
+          "denominator": 274,
+          "numerator": 175
+        },
+        "1": {
+          "denominator": 76,
+          "numerator": 175
+        }
+      },
+      "labels": "0=not directly supported;1=directly supported; provisional supervision unchanged",
+      "negativePairs": 45,
+      "normalization": "Fixed global per-class mass over frozen57 pairs; no per-parent renormalization, sampling or dynamic batch normalization.",
+      "originalCandidateWeight": "1/(10*candidateCount)",
+      "originalNegativeMass": {
+        "denominator": 175,
+        "numerator": 137
+      },
+      "originalPositiveMass": {
+        "denominator": 175,
+        "numerator": 38
+      },
+      "pairs": 57,
+      "parentTotalsEqual": false,
+      "parents": 10,
+      "positivePairs": 12,
+      "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+      "publicationSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82",
+      "selectionPolicySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+      "targetClassMass": {
+        "0": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "1": {
+          "denominator": 2,
+          "numerator": 1
+        }
+      },
+      "totalMass": {
+        "denominator": 1,
+        "numerator": 1
+      },
+      "trainingDataSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd",
+      "version": "association-fragment-rank-balanced-objective/1",
+      "weightDerivationUsesDevelopment": false
+    }
+  },
+  "ownedEvidence": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-output-recipe-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-output-recipe-code-v1.md"
+  ],
+  "ownedSources": [
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py",
+    "scripts/usp/learning/association/test_fragment_rank_balance.py"
+  ],
+  "positiveModelStageAllowed": false,
+  "predecessorDiagnosis": {
+    "bytes": 11204,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-quality-diagnosis-acceptance-v1.json",
+    "physicalSha256": "a43324703c47d5a1ab980d7e6c9a5197acd9b51c1100c66f24eb208d95ebe3de"
+  },
+  "previousAssignment": {
+    "bytes": 19981,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-44.fragment-rank-balanced-phase-code.assignment.json",
+    "physicalSha256": "879446b1bf9182c444c1aa028f77552bb008b850dd244842fcc8c48bfef18f38"
+  },
+  "privateOutput": "One fresh immutable fragment-rank-balanced-phase-output-recipe-code-v1 UUID root under E:/BhuAayam-data/task-data/ml-distillation/student; retain actual commands/exits/logs,source/input pins,targeted check details,disabled prototypes/index/finalization and all observed failures. Preserve the original STUDENT-44 root and evidence paths.",
+  "protectedRuntimeSources": 40,
+  "protectedSourceSnapshot": {
+    "bytes": 16186,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-44-balanced-recipe-review-v1-9c8424112ded4d53bfbb30a221d795f7\\protected-source-snapshot.json",
+    "physicalSha256": "0afbf6cc5d7ba096d6ecd8b4e581b952ebce3ccfdfcd3a9e39d0ffdcbfc726da"
+  },
+  "recordedAtUtc": "2026-10-04T16:04:20.882036+00:00",
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "restrictions": "No model/GPU/native imports or calls,fit/reload/inference/stage/profile/guard/test campaign,new dependency/checkpoint/model/data/source/label/split,teacher/evaluation/development context/raw/expected selections, source refresh/requalification, prompt/threshold/scorer/output contract changes,serializer/guard/ACL/job/environment/pagefile/host/storage/provider/service/shared API/frontend/staging/other worker changes,main/push/deploy/promotion. Staging is read-only. If an unowned source is required, report exact dependency before editing it; proceed independent owned work.",
+  "returnRequirements": "Commit only owned code first, then two owned evidence paths. Callback once with base/code/final commits,clean state,exact changed paths,physical/canonical/Git active-source/protected pins,input preservation,actual CPU command/exits/disclosed doubles,objective and all-phase recipe/binding/proof/prototype hashes. Native behavior/fit/checkpoint/resources/quality remain unrun. Stop for coordinator review; no next experiment,polled wait,schedule,new chat or subagent.",
+  "task": "STUDENT-44-CONTINUATION-1-BALANCED-PHASE-OUTPUT-RECIPE",
+  "trainingPayloadPins": {
+    "counts.json": {
+      "bytes": 84,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\counts.json",
+      "physicalSha256": "3e50dc8a3a1bb35d65da810623261981a094660a69b071d59d874e12c0d6109f"
+    },
+    "inputs/family-freeze.json": {
+      "bytes": 10867,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\family-freeze.json",
+      "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+    },
+    "inputs/fragment-schema-v1.json": {
+      "bytes": 4537,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\fragment-schema-v1.json",
+      "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082"
+    },
+    "inputs/rows-v2.receipt.json": {
+      "bytes": 4109,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\rows-v2.receipt.json",
+      "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+    },
+    "inputs/schema-v1.json": {
+      "bytes": 3966,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\schema-v1.json",
+      "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    "inputs/source-support-v2.receipt.json": {
+      "bytes": 33399,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\source-support-v2.receipt.json",
+      "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+    },
+    "inputs/train-teacher-fragments-v1.jsonl": {
+      "bytes": 82626,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v1.jsonl",
+      "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+    },
+    "inputs/train-teacher-fragments-v2.jsonl": {
+      "bytes": 138050,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v2.jsonl",
+      "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+    },
+    "inputs/training-row-pins-v2.json": {
+      "bytes": 6560,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\training-row-pins-v2.json",
+      "physicalSha256": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+    },
+    "lineage.json": {
+      "bytes": 56203,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\lineage.json",
+      "physicalSha256": "7b2291969484aeccb913704e7d88e295f6d7fd26a6cf0de9aea9c87061fb7026"
+    },
+    "policy.json": {
+      "bytes": 3727,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\policy.json",
+      "physicalSha256": "9237baa39a7927e4071054bab4fc080356c4f3123d6ac35717f2da4d3b5a2002"
+    },
+    "scoring-inputs.jsonl": {
+      "bytes": 271577,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\scoring-inputs.jsonl",
+      "physicalSha256": "753533a1c654274316aed6b2f06641d20ad47d73bfc2375ba1d73d6e05e12696"
+    },
+    "system-prompt.txt": {
+      "bytes": 573,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\system-prompt.txt",
+      "physicalSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5"
+    },
+    "train-fragment-rank-v1.jsonl": {
+      "bytes": 72525,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\train-fragment-rank-v1.jsonl",
+      "physicalSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd"
+    }
+  },
+  "trainingPublication": {
+    "bytes": 11699,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\publication.json",
+    "physicalSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82"
+  },
+  "verification": [
+    "Run only one new focused stdlib CPU output-recipe control under -B -I -S, with native imports blocked: accept writer-shaped balanced result without duplicated top-level settings/numerics and retained legacy metadata, and refuse a wrong bound recipe or conflicting duplicate. Exercise actual production reader/helper and actual PhaseSession result metadata where practical; disclose constructed metadata. Ensure checked_output_history calls the corrected helper. No old BalanceControls group/startup/loss/native/model rerun.",
+    "Compile only the two changed sources in memory and check the owned diff whitespace. Verify40 protected current runtime texts, unchanged input/history pins and final36-source closure. Reuse successful existing checks. Preserve command/exit/logs and source/result hashes; repeat only an affected observed failure.",
+    "Commit only the two owned code/test sources and the two new owned evidence paths. Return base/code/final commits, new private receipt root/index/finalization and disabled metadata. Stop for coordinator review; no native execution or positive packet."
+  ],
+  "version": "ml-distill-fragment-rank-balanced-phase-code-continuation-assignment/1",
+  "workerSettings": {
+    "observedEffort": null,
+    "observedModel": null,
+    "observedTier": null,
+    "requestedEffort": "xhigh",
+    "requestedModel": "gpt-6.1-sol",
+    "requiredSpeed": "default/standard1x",
+    "tierToolControl": "Unexposed; prompt is not configuration."
+  },
+  "workerThread": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

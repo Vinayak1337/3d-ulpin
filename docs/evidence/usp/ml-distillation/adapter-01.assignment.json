@@ -1,0 +1,61 @@
+{
+  "version": "ml-association-adapter-assignment/1",
+  "task": "STUDENT-02",
+  "purpose": "One SFT LoRA adaptation for observed raw JSON envelope, exact citation and state failures; no prompt or parameter sweep.",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "unchangedBaseline": "E:/BhuAayam-data/task-data/ml-distillation/student/baseline-af47550c33ea4dc2a3dc1aebc56363c4",
+  "trainingSelection": "The 11 frozen Haryana/Bihar teacher v2 examples, independently checked to append only the mandatory no_canonical_targets abstention and correction provenance. All input/claim/conflict/existing decision sections and v1/rejects are unchanged.",
+  "teacherV1Sha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+  "settings": {
+    "method": "supervised_causal_LoRA",
+    "targets": [
+      "q_proj",
+      "v_proj"
+    ],
+    "rank": 8,
+    "alpha": 16,
+    "dropout": 0.05,
+    "epochs": 6,
+    "batchSize": 1,
+    "gradientAccumulation": 1,
+    "optimizer": "AdamW",
+    "learningRate": 0.0002,
+    "weightDecay": 0,
+    "warmupSteps": 0,
+    "gradientClipNorm": 1,
+    "seed": 17,
+    "maxSequenceTokens": 4096,
+    "loss": "assistant JSON target plus EOS only; all prompt tokens masked",
+    "gradientCheckpointing": true,
+    "cacheDuringFit": false,
+    "cpuThreads": 2
+  },
+  "lengthPolicy": "Measure each exact compact prompt/target/combined token count under the contained pinned runtime. Never truncate or silently exclude a teacher row. Any bound or resource issue returns exact evidence before a changed fit configuration.",
+  "comparison": "Fresh process loads the exact same frozen base plus saved local safetensors adapter. Reuse both frozen development inputs, expectations, original prompt and generation settings. Keep raw output/projection/adapter receipt distinct; no model-output repair or development-derived training targets.",
+  "developmentCriteriaBeforeEvaluation": {
+    "validRawOutputs": "2/2",
+    "correctExpectedClaims": "6/6",
+    "acceptedPrecision": 1,
+    "exactCitationFraction": 1,
+    "nullAndAbsentStates": "both preserved distinctly",
+    "noCanonicalTargetsAbstentions": "2/2",
+    "canonicalLinks": "empty in both",
+    "resourcesAndCleanup": "all existing measured bounds and containment/cleanup checks pass",
+    "interpretation": "Tiny source-native development acceptance only. No promotion or generalization qualification; evaluation is a later separately frozen candidate task. A failed fit remains useful recorded evidence."
+  },
+  "bounds": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600
+  },
+  "evaluationContentAccess": false,
+  "teacherFeedback": "Training examples/output errors only; never development/evaluation content or predictions.",
+  "promotionAuthorized": false,
+  "executionOwner": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "settingsRequired": "Astra/max latest human override; default/standard required, per-turn tier unexposed",
+  "teacherV2Sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+  "trainingDataset": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v2.jsonl"
+}

@@ -1,0 +1,73 @@
+{
+  "baseCommit": "dbddf4951e47b855865d0940850049ee98debf31",
+  "branch": "task/ml-association-student-20261002",
+  "checkPlan": {
+    "className": "IsolatedEntryControls",
+    "commands": "Record exact argv/cwd/timestamps/exits/stdout/stderr of focused invocation and both child commands. Child cwd/fixtures under one owned private UUID root; no native/model/guard/stage/donor inventory or old CPU suite.",
+    "doubles": "No child bootstrap/shared imports/sys.path/admission/module doubles. Inputs are explicitly disabled assignment metadata only; no model/tensors/OS native capability claim.",
+    "groups": 1,
+    "invocations": 1,
+    "subprocessJourneys": [
+      "real isolated CLI --help",
+      "real isolated CLI disabled positive-version assignment rejection"
+    ]
+  },
+  "codeAcceptance": {
+    "bytes": 17430,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-code-acceptance-v1.json",
+    "physicalSha256": "0def5581bb068db2683ac1d28f53ec5f3e191e44220afd15426fe377d4b547dc"
+  },
+  "exclusions": "No stage/native/guard/model/GPU/PEFT/Torch/load/scoring/fit/optimizer/comparison or unchanged STUDENT-38 retry. No old suite/runtime inventory/control/serializer campaigns, accepted-fit/source/model/recipe/prompt/threshold/labels/expectations/evaluation/teacher changes, other files/coordinator/staging writes, environment/ACL/package/host/service/storage/provider/main/push/deploy/promotion.",
+  "executable": false,
+  "executionAllowance": null,
+  "failureAcceptance": {
+    "bytes": 4779,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-bootstrap-failure-acceptance-v1.json",
+    "physicalSha256": "2cacf2affae3bb1cb941171aa44ed56dd37946bbf0fcfd10997f67f7f3fa665d"
+  },
+  "futureNative": "After code review, coordinator freezes new final executionHEAD/source pins/assignment/freeze/map; STUDENT-38 consumed remains immutable. Actual reload/quality still unrun.",
+  "implementation": [
+    "Use the existing stage_fragment_rank_phase entry bootstrap pattern: derive fixed repo/script roots from resolved __file__, add only needed local roots before sibling/shared imports. Keep -B -I -S and shared stage/assignment delegation. No cwd/PYTHONPATH/site/package/install/guard fallback.",
+    "Add one focused IsolatedEntryControls group in the existing test module. It must launch actual subprocess argv [sys.executable,-B,-I,-S,entry,...] without preseeded child sys.path/import wrappers, from an unrelated private temporary working directory.",
+    "Actual CLI --help must exit0 and expose assignment argument. Actual CLI with a private copy of the consumed positive-version packet changed only to executable:false must reject with existing separate-positive-reload diagnostic before stage/native effects. No positive/native command or mock of CLI/shared imports.",
+    "Do not alter/rerun the completed Controls suite. Select only IsolatedEntryControls in one targeted invocation. Preserve old test/code behavior; new test is for the observed missing startup path, not an expanded matrix.",
+    "Keep new40 runtime closure identical except thin entry hash; all39 other runtime files remain byte/canonical/Git unchanged. Compile only the two owned sources in memory and perform one scoped whitespace/protected-source check. Disabled prototype remains non-executable; no updated positive packet authored by learner."
+  ],
+  "outcome": "Make the existing thin reload entry import its sibling under the real isolated -B -I -S invocation, while keeping exact positive authority and existing shared-stage/guard behavior.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-bootstrap-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-bootstrap-code-v1.md"
+  ],
+  "ownedPaths": [
+    "scripts/usp/learning/association/stage_fragment_rank_reload.py",
+    "scripts/usp/learning/association/test_fragment_rank_reload.py"
+  ],
+  "previousProtocol": {
+    "bytes": 14639,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-38.fragment-rank-reload.protocol.json",
+    "physicalSha256": "02fdd2a9927103603d3d4b4efa0a641ee01d1a3e9589747ede41e934e1febc19"
+  },
+  "protectedSourceSnapshot": {
+    "bytes": 11033,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-38-bootstrap-failure-review-v1-3ac8d24dc1d14756918c1f71c5085fd5\\student-39-protected-sources.json",
+    "physicalSha256": "4e0ff8e60542bb288d362e3c55911ef6e55f5d0b87f4e5e6749ec02822be2e93"
+  },
+  "recordedAtUtc": "2026-10-04T12:35:33.300355+00:00",
+  "requestedSettings": {
+    "model": "gpt-6.1-sol",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Existing sole ML learner retains context/ownership; focused startup repair. Tool exposes no tier.",
+    "reasoning": "xhigh",
+    "requiredSpeed": "default/standard1x"
+  },
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "returnRequirements": "Commit only owned sources, then compact owned evidence JSON/Markdown. Report base/code/final commits, exact changed paths, two compiles, focused controls commands/exits/private receipts/index/finalization, final40 physical/canonical/Git pins and39 protected unchanged. Historical fit source/outputs/checkpoint never rebound. One callback to01a0fbd1-c2aa-75c0-8a52-4c4f662f3759 then end.",
+  "task": "STUDENT-39-FRAGMENT-RANK-RELOAD-BOOTSTRAP-CODE",
+  "version": "student-fragment-rank-reload-bootstrap-code-assignment/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

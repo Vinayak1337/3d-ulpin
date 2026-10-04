@@ -1,0 +1,134 @@
+{
+  "baseAndAdapter": {
+    "baseAfterEquality": "unrun",
+    "frozenGradientsAbsentAt44RecordedSteps": true,
+    "originalBaseBefore": {
+      "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+      "tensorCount": 290
+    },
+    "originalHeadFrozenAtLoad": true,
+    "resumeCheckpoint": "absent; in-memory parameters lost on enforced termination",
+    "savedAdapter": "absent",
+    "savedStateEquality": "unrun",
+    "trainableParameters": 540672,
+    "trainableTensors": 96
+  },
+  "boundaries": {
+    "developmentOrHostExpectationsOpened": false,
+    "executableEdits": false,
+    "guardAttempts": 1,
+    "inferenceReloadEvaluation": false,
+    "newProfileOrUncontainedFallback": false,
+    "providersServicesHostChangesOutsideGuard": false,
+    "retries": 0,
+    "stageAttempts": 1,
+    "teacherLabelsPublicationChanged": false
+  },
+  "decision": "Accept immutable failed-run evidence only; no saved fit, checkpoint, resource success or quality acceptance.",
+  "failure": {
+    "message": "probe timed out after 600000 ms",
+    "type": "TimeoutError"
+  },
+  "finalization": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-fit-technical-v1-90b3623b587341d2b0555c4a95f82393\\finalization.json",
+    "sha256": "e628a5107d62ae749f2fcc264c1c44bee27266fcd4ef3b3289b84b4b07ad842d"
+  },
+  "guard": {
+    "cleanupAccepted": true,
+    "exitCode": 1,
+    "outputsAccepted": false,
+    "ownedProcessesRemaining": 0,
+    "terminalObservation": {}
+  },
+  "integratedEvidenceCommit": "ccfba9e79c28be2d8ed38577f5286b564aa5c2a6",
+  "nativeControlsConsumed": {
+    "actualHelpersUsed": true,
+    "attentionPassed": true,
+    "fourCpuCudaFp32Fp16Records": true,
+    "independentAnalyticParentGradientSumMatched": true,
+    "lossDtype": "float32",
+    "primaryLossProof": {
+      "bytes": 2524,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\outputs\\fit\\loss-equivalence.json",
+      "physicalSha256": "449ec1b2a9e236c2d3e27084f9f41258a794871d101f013467ac320ee1538fcc"
+    },
+    "reclamationPassed": true,
+    "rngRestored": true,
+    "scale": 128,
+    "weightedLossAndAccumulationPassed": true
+  },
+  "next": "STUDENT-30 code-only safe complete-state checkpoint and bounded phase preparation. A new experiment starts from the original base; 44 lost updates are not reused. No unchanged fit rerun or limit increase.",
+  "ownerEvidenceCommit": "7a42a9e3d70b816612def13dec7125b9215d4dc7",
+  "ownerExecutionHead": "8176cd8e74ebe7312a99b9bc3d7e5d336e4bf396",
+  "qualification": "57 related pairs from ten provisional synthetic parents in two train families; needs_independent_review. Sarvam excluded. Loss history is in-sample optimization only, not relevance or generalized learning.",
+  "recordedAtUtc": "2026-10-03T23:53:12.761979+00:00",
+  "report": {
+    "bytes": 15823,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-fit-v1.json",
+    "physicalSha256": "8ab598197b82f21c6fb11485e2f9cbfbdca991a0ca24ae63345a0bd0124ace30"
+  },
+  "review": {
+    "bytes": 21298,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-29-review-v1-992b1bca9f7b4bb99ea3c59141618f09\\review.json",
+    "physicalSha256": "4641c49752373ce4e879cd75280e683d414b30cdfae0ee6bb649f013068fbca2"
+  },
+  "reviewSummary": {
+    "backwards": 255,
+    "completeParentContributions": 253,
+    "completeUpdates": 44,
+    "forwards": 256,
+    "incompleteParentUpdate": 45,
+    "orderedProgressAttentionAndReclamationPrefixMatched": true,
+    "profileMetadataFiles": 19686,
+    "referencedPhysicalFiles": 35,
+    "runtimeFilesRehashed": false,
+    "trainInputFiles": 14,
+    "unchangedExecutionSources": 33
+  },
+  "selfObservedResources": {
+    "cudaPeakAllocatedBytes": 1487139328,
+    "cudaPeakReservedBytes": 1635778560,
+    "gpuSampleRecords": 557,
+    "jobPeakCommittedBytes": 5835636736,
+    "minimumRecordedCudaFreeBytes": 5717884928,
+    "phaseRecords": 1947,
+    "processPeakRssBytes": 4102279168,
+    "scope": "Retained child self-observations only. Guard terminal observation is empty after timeout; no terminal peak or child-success claim."
+  },
+  "stagingReadOnlyHead": "d4c289267c81ba33306d77420e027fbc2b2c11ed",
+  "task": "STUDENT-29-FRAGMENT-RANK-FIT",
+  "timings": {
+    "childTimeoutMilliseconds": 600000,
+    "hostGuardCommandSeconds": 788.6870000000054,
+    "lastRecordedChildPhaseSeconds": 510.9731998999923,
+    "scope": "Distinct observed clocks; no invented child-only fit duration or speedup claim",
+    "stageSeconds": 149.54700000000594,
+    "sumRecorded44UpdateDurationsSeconds": 495.9113607000472,
+    "supervisorReceiptSeconds": 624.6719999999914
+  },
+  "unrun": [
+    "Remaining 16 complete-parent updates and full 342-contribution completion",
+    "Original-base after-fit digest equality",
+    "Saved 96-tensor adapter/state equality, manifest and completion",
+    "Attention-scope restoration receipt after forced termination",
+    "Authoritative accepted output map and saved-fit acceptance",
+    "Reload/inference/development relevance/evaluation/promotion"
+  ],
+  "verification": [
+    {
+      "command": "Standard-library coordinator review via python.exe -B -I -S -; direct receipt/source/progress/profile/guard assertions",
+      "exitCode": 0,
+      "receipt": {
+        "bytes": 21298,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-29-review-v1-992b1bca9f7b4bb99ea3c59141618f09\\review.json",
+        "physicalSha256": "4641c49752373ce4e879cd75280e683d414b30cdfae0ee6bb649f013068fbca2"
+      }
+    },
+    {
+      "command": "git cherry-pick 7a42a9e3d70b816612def13dec7125b9215d4dc7",
+      "commit": "ccfba9e79c28be2d8ed38577f5286b564aa5c2a6",
+      "exitCode": 0
+    }
+  ],
+  "version": "association-fragment-rank-timeout-acceptance/1"
+}

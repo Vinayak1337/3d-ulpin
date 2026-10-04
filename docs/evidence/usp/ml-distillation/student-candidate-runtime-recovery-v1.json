@@ -1,0 +1,58 @@
+{
+  "version": "candidate-runtime-recovery/1",
+  "recordedAtUtc": "2026-10-03T09:38:01.168493+00:00",
+  "workerThread": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "observedTitle": "AI-06A Learner Full Access",
+  "failedTurn": "01a10102-47f3-70c3-bba2-b5ef328700e4",
+  "observedThreadStatus": "systemError",
+  "observedTurnStatus": "failed",
+  "observedError": "stream disconnected before completion: Transport error: network error: error decoding response body",
+  "assignment": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-13.candidate-runtime-preparation.assignment.json",
+    "physicalSha256": "1e4b637e0278b697eab27f6d5d17a24e39165a124052ce3224e454f2e479cdd6"
+  },
+  "workerHead": "53f8ef06f4e95d2375238b6824a29e6808cc923b",
+  "workerBranch": "task/ml-association-student-20261002",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+  "dirtyState": " M scripts/usp/learning/association/stage_selector_baseline.py\n M services/geo/geo/usp_learning/association/selector_baseline.py\n?? services/geo/geo/usp_learning/association/candidate_baseline.py\n",
+  "checkpointCopies": {
+    "services/geo/geo/usp_learning/association/candidate_baseline.py": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\candidate_baseline.py",
+      "bytes": 11408,
+      "physicalSha256": "16b638d4bf537be8dde30a098752e959746c0828e4b1659a260f2cb78533061a",
+      "savedPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\candidate-runtime-recovery-20261003-cc0c3074082b42f6a549b92eeeda87b0\\saved\\services\\geo\\geo\\usp_learning\\association\\candidate_baseline.py"
+    },
+    "scripts/usp/learning/association/stage_selector_baseline.py": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_selector_baseline.py",
+      "bytes": 12057,
+      "physicalSha256": "e6635654160e4858a589870f048b61ec22e860cb4285c07b06fa4e32aca93bc3",
+      "savedPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\candidate-runtime-recovery-20261003-cc0c3074082b42f6a549b92eeeda87b0\\saved\\scripts\\usp\\learning\\association\\stage_selector_baseline.py"
+    },
+    "services/geo/geo/usp_learning/association/selector_baseline.py": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\selector_baseline.py",
+      "bytes": 16013,
+      "physicalSha256": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+      "savedPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\candidate-runtime-recovery-20261003-cc0c3074082b42f6a549b92eeeda87b0\\saved\\services\\geo\\geo\\usp_learning\\association\\selector_baseline.py"
+    }
+  },
+  "trackedPatch": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\candidate-runtime-recovery-20261003-cc0c3074082b42f6a549b92eeeda87b0\\tracked.patch",
+    "physicalSha256": "3b2dee4a55763c1c3ae142b7854ec54b55d0dbb18f3a83f38e025c2f80ff45df"
+  },
+  "checkpointDisposition": "Preserved all three dirty worker files and base/branch; coordinator copied them to a separate immutable recovery snapshot and did not edit/reset/switch the worker checkout. These are unfinished, unreviewed edits, not accepted code.",
+  "nextAction": "Resume the same sole learner on its existing CPU-only STUDENT-13 assignment from these saved edits; complete CLI wiring, new CPU controls and handoff. No repeated completed campaign, model stage or inference.",
+  "stageModelRunAuthorized": false,
+  "modelPhasesAuthorized": 0,
+  "teacherTurnAuthorizedByRecovery": false,
+  "evaluationOpened": false,
+  "primaryStagingHeadObservedReadOnly": "1d90fd65e0b1ed71382b1d69be8a5e529d1b57f8",
+  "primaryStagingCleanAtObservation": true,
+  "requestedWorkerModel": "gpt-6-astra",
+  "requestedReasoning": "xhigh",
+  "requiredSpeed": "default/standard",
+  "observedModel": null,
+  "observedReasoning": null,
+  "observedServiceTier": null,
+  "suppliedApprovalPolicy": "never",
+  "suppliedSandboxMode": "danger-full-access"
+}

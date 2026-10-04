@@ -1,0 +1,347 @@
+{
+  "version": "association-fragment-selection-preparation-evidence/1",
+  "task": "STUDENT-15-FRAGMENT-SELECTION-PREP",
+  "recordedAtUtc": "2026-10-03T11:08:36.611027+00:00",
+  "baseCommit": "a779bd4c8a9c730d871c4a7bd6eebf0a5e061ce6",
+  "codeCommit": "e8b032c92a974ed2bab545587ad4c4cb8d2f4161",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "assignment": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-15.fragment-selection-preparation.assignment.json",
+    "physicalSha256": "bf3b2d7223de54fecdaf6fe6213a47da3bda29a6e863d2712bc5eee5f01c4bd4",
+    "bytes": 7486
+  },
+  "contract": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\scripts\\usp\\learning\\association\\fragment-selection-schema-v1.json",
+    "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+    "bytes": 4537
+  },
+  "predecessorAcceptance": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-candidate-baseline-acceptance-v1.json",
+    "physicalSha256": "d67286eeae6e2256c2eedf59bfd449658eaf7b5c21c20502105673b4439938b8",
+    "bytes": 8235
+  },
+  "ownedCodeFiles": {
+    "services/geo/geo/usp_learning/association/fragment_selection.py": {
+      "physicalSha256": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0",
+      "canonicalLfSha256": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0",
+      "bytes": 10908
+    },
+    "services/geo/geo/usp_learning/association/student.py": {
+      "physicalSha256": "22fddd9ac9dbab6bf23f45ab9a1356d21113a66a8d8b3bd5f7caae859d001761",
+      "canonicalLfSha256": "22fddd9ac9dbab6bf23f45ab9a1356d21113a66a8d8b3bd5f7caae859d001761",
+      "bytes": 11336
+    },
+    "scripts/usp/learning/association/prepare_fragment_selection.py": {
+      "physicalSha256": "248ae12b0d1f0ae9e44163278e02d0cb0459e26251c8480a9d184023cf0e63cb",
+      "canonicalLfSha256": "248ae12b0d1f0ae9e44163278e02d0cb0459e26251c8480a9d184023cf0e63cb",
+      "bytes": 10728
+    },
+    "scripts/usp/learning/association/test_fragment_selection.py": {
+      "physicalSha256": "c296253df595f21b1d0d3039a7833cb9eece370d3b48881b6478b0d6448b471d",
+      "canonicalLfSha256": "c296253df595f21b1d0d3039a7833cb9eece370d3b48881b6478b0d6448b471d",
+      "bytes": 8255
+    }
+  },
+  "sourceFiles": {
+    "scripts/usp/learning/association/association_student.py": {
+      "canonicalLfSha256": "434d77acf78e6ac146a281eac8c706a971623d084239600a5585cd36ef1e9615",
+      "physicalSha256": "434d77acf78e6ac146a281eac8c706a971623d084239600a5585cd36ef1e9615"
+    },
+    "scripts/usp/learning/association/prepare_fragment_selection.py": {
+      "canonicalLfSha256": "248ae12b0d1f0ae9e44163278e02d0cb0459e26251c8480a9d184023cf0e63cb",
+      "physicalSha256": "248ae12b0d1f0ae9e44163278e02d0cb0459e26251c8480a9d184023cf0e63cb"
+    },
+    "scripts/usp/learning/model_isolation.py": {
+      "canonicalLfSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "physicalSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676"
+    },
+    "scripts/usp/security/appcontainer_audit.py": {
+      "canonicalLfSha256": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+      "physicalSha256": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca"
+    },
+    "services/geo/geo/__init__.py": {
+      "canonicalLfSha256": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+      "physicalSha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a"
+    },
+    "services/geo/geo/native_ifc.py": {
+      "canonicalLfSha256": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+      "physicalSha256": "6372a5009fe23d6f43decb114883d31c9c4db4345196b59734638249ca5d866e"
+    },
+    "services/geo/geo/usp_learning/__init__.py": {
+      "canonicalLfSha256": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+      "physicalSha256": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335"
+    },
+    "services/geo/geo/usp_learning/association/__init__.py": {
+      "canonicalLfSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "physicalSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679"
+    },
+    "services/geo/geo/usp_learning/association/candidate_selection.py": {
+      "canonicalLfSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+      "physicalSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785"
+    },
+    "services/geo/geo/usp_learning/association/fragment_selection.py": {
+      "canonicalLfSha256": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0",
+      "physicalSha256": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0"
+    },
+    "services/geo/geo/usp_learning/association/native_candidates.py": {
+      "canonicalLfSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+      "physicalSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df"
+    },
+    "services/geo/geo/usp_learning/association/selector_constraints.py": {
+      "canonicalLfSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+      "physicalSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064"
+    },
+    "services/geo/geo/usp_learning/association/selectors.py": {
+      "canonicalLfSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+      "physicalSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e"
+    },
+    "services/geo/geo/usp_learning/association/student.py": {
+      "canonicalLfSha256": "22fddd9ac9dbab6bf23f45ab9a1356d21113a66a8d8b3bd5f7caae859d001761",
+      "physicalSha256": "22fddd9ac9dbab6bf23f45ab9a1356d21113a66a8d8b3bd5f7caae859d001761"
+    },
+    "services/geo/geo/usp_learning/association/validation.py": {
+      "canonicalLfSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "physicalSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2"
+    },
+    "services/geo/geo/usp_learning/resources.py": {
+      "canonicalLfSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "physicalSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+    }
+  },
+  "parentInput": {
+    "consultedFields": [
+      "input.exampleId as row locator",
+      "input.evidence"
+    ],
+    "evidenceCanonicalSha256": "a67213d95bbe0c83743e1a1dd2cfae1151d1115b0880c6a1e9b1482c7c356228",
+    "parentExampleId": "teacher-haryana-floor02",
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v2.jsonl",
+    "physicalSha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c"
+  },
+  "privateOutput": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3",
+  "preparation": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\preparation.json",
+    "physicalSha256": "fa4f4b4e477b4617f1ab4793c3667635b057533457ec3f0fa0de18393fb85613",
+    "bytes": 7922
+  },
+  "artifactPins": {
+    "context-0.json": "1e465fea01f5839cdea96db4d62e38498c1e7fa74c7becb44b41d8064f9aa7a0",
+    "context-1.json": "5c7c39934a4de0f13a3acae440bc7d1939c7d9a3d86ec43392dc824d8f4b9ba6",
+    "family-freeze.json": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+    "fragment-prompt.txt": "d3a93d1323145cf31db765de8647d5f0ce252f653b6b38273fc5a184fd00dbac",
+    "fragment-route.json": "163075093eb0be396eaa2ccbd221210ae73643863dfc26a9e9e4ffcaf1a69243",
+    "fragment-schema-v1.json": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+    "future-interface-inventory.json": "81424f91146b54f52d9418ebe65df49a1955fd4ad672793259ec6bf7224fbb1b",
+    "legacy-schema-v1.json": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+    "model-input-0.json": "fc0ca30a1f7c01adadd7618363aaaca12e88c45f5a6e22843c0bafb327b69b77",
+    "model-input-1.json": "62c17e8849fa9cfc0813767600e75dac67c2688fc6c59763f7587048850cc9bb",
+    "source-inputs.json": "f444abd16721a918a991bb1f8779cfad0ba55f714c7ea4fd48590f2dce398412",
+    "technical-controls.json": "e5f99062da2b8eb1bbb6d721dfd8156b1e9d859a2f6405baf6ca33f8705c8d17"
+  },
+  "contexts": [
+    {
+      "candidateCount": 2,
+      "contextSha256": "1e465fea01f5839cdea96db4d62e38498c1e7fa74c7becb44b41d8064f9aa7a0",
+      "exampleId": "cpu-fragment-ocr-label",
+      "split": "train"
+    },
+    {
+      "candidateCount": 2,
+      "contextSha256": "5c7c39934a4de0f13a3acae440bc7d1939c7d9a3d86ec43392dc824d8f4b9ba6",
+      "exampleId": "cpu-fragment-unsupported-request",
+      "split": "train"
+    }
+  ],
+  "cpuControls": [
+    {
+      "exampleId": "cpu-fragment-ocr-label",
+      "kind": "technical_hand_selected_ids_not_prediction",
+      "retrievedCount": 1,
+      "status": "selected_fragments"
+    },
+    {
+      "exampleId": "cpu-fragment-unsupported-request",
+      "kind": "technical_hand_selected_ids_not_prediction",
+      "retrievedCount": 0,
+      "status": "no_support_in_supplied_context"
+    }
+  ],
+  "representation": {
+    "familyCanonicalLfSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+    "policy": {
+      "bounds": {
+        "contextUtf8Bytes": 600000,
+        "responseUtf8Bytes": 65536
+      },
+      "candidates": "unchanged input.evidence in original order; contiguous c0 through c24; no label-derived selection or ordering",
+      "empty": "no_support_in_supplied_context; never factual absence in a property or whole original",
+      "forced": [
+        "JSON/schema",
+        "context identity",
+        "current unique IDs",
+        "unchanged retrieved fragments"
+      ],
+      "identity": "canonical complete request/context, original fragment order/provenance and frozen family/split",
+      "notEnforced": [
+        "relevance",
+        "conflict completeness",
+        "nonempty or full selection"
+      ],
+      "projection": "unchanged original fragments only; no generated claims or canonical associations",
+      "selection": "optional distinct current IDs; full context identity; whole-response rejection without repair",
+      "transport": "existing ID-choice grammar primitives and ByteLevel Vocabulary/Controller",
+      "version": "association-fragment-retrieval-policy/1"
+    },
+    "policySha256": "a3768b2c51d2e64ce3c75c14bd6c0d7241747092cff37ba2c8f8344c9afba721",
+    "promptVersion": "association-fragment-prompt/1",
+    "schemaCanonicalLfSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+    "systemPromptSha256": "d3a93d1323145cf31db765de8647d5f0ce252f653b6b38273fc5a184fd00dbac",
+    "tokenizerFilesSha256": {
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    },
+    "version": "evidence-association-fragment-selection/1"
+  },
+  "checks": {
+    "compileExit": 0,
+    "changedSourcesCompiled": 4,
+    "focusedControls": 5,
+    "focusedControlExit": 0,
+    "preparationCliExit": 0,
+    "historicalPureControl": "Existing compact prompt, legacy projection and default-off signature; train input refused before any future native import.",
+    "wholeResponseDenials": "stale hash, unknown ID, duplicate ID, rewritten/extra output property, incomplete JSON; zero fragment credit and no repair",
+    "nativeImports": [],
+    "predecessorCampaignsRerun": false
+  },
+  "interfaces": {
+    "context": "context(source_only_example, request, fragment_contract, legacy_contract, frozen_family, allowed_splits)",
+    "route": "checked_route(source_only_route, examples, fragment_contract, legacy_contract, frozen_family, allowed_splits)",
+    "project": "project(raw_id_json, immutable_context, fragment_contract, legacy_contract, frozen_family, allowed_splits)",
+    "futureRuntime": "student.run_local(..., fragment_route=None, fragment_contract=None, preserve_preflight=None); explicit optional source-only route uses existing loader/generate/guard and shared byte controller",
+    "retrievalOutput": "acceptedProjection.selected contains current IDs and exact original fragment objects; no claims/canonicalLinks. Empty valid selection has status no_support_in_supplied_context; invalid response has acceptedProjection=null."
+  },
+  "futureAdmission": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\future-admission-seams.json",
+    "physicalSha256": "e3ad07cb71ceabfb117c9e039f519a4bc31ec4f873c2968029f2ff8d2bcf8a27",
+    "bytes": 2612
+  },
+  "remainingWork": "Separate source-only requested subset/empty development freeze and exact stager/CLI assignment/source/byte admission remain required before native execution. No additional owned seam was edited.",
+  "execution": {
+    "cpuOnly": true,
+    "modelStageCreated": false,
+    "modelRuntimeCopied": false,
+    "modelOrTokenizerInitialized": false,
+    "modelInferencePhases": 0,
+    "fitPhases": 0,
+    "sourceReconstruction": false,
+    "teacherTargetsConsulted": false,
+    "expectationsConsumed": false,
+    "evaluationOpened": false,
+    "servicesStarted": false,
+    "sharedApplicationChanged": false,
+    "pushOrDeploy": false,
+    "ownedResourcesRemaining": []
+  },
+  "settings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "limits": [
+    "Both CPU requests use two unchanged fragments from one train-only Haryana parent input, with unverified OCR completeness.",
+    "Hand-selected c1 and empty controls are technical method checks, not model predictions, accepted training labels or benchmark outcomes.",
+    "No support in supplied context establishes no factual absence in a property or original source.",
+    "Request relevance, conflict completeness, semantic correctness, canonical association and generalization remain unmeasured.",
+    "Source-only admission depends on a later trusted freeze of actual input/context bytes; checked_route hashes alone do not authorize a model stage.",
+    "Complete fragment provenance remains in model input as required by the contract; native token count and resource fit remain unmeasured.",
+    "Historical candidate baseline remains accepted at its original pipeline scope; no result or policy was rerun."
+  ],
+  "privateReceipts": {
+    "checks.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\checks.json",
+      "physicalSha256": "eab6e9f4e4cca7fb8f520803c1590ec13b8759dd9100bc0672dec57debc3fbaf",
+      "bytes": 3946
+    },
+    "context-0.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\context-0.json",
+      "physicalSha256": "1e465fea01f5839cdea96db4d62e38498c1e7fa74c7becb44b41d8064f9aa7a0",
+      "bytes": 2551
+    },
+    "context-1.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\context-1.json",
+      "physicalSha256": "5c7c39934a4de0f13a3acae440bc7d1939c7d9a3d86ec43392dc824d8f4b9ba6",
+      "bytes": 2562
+    },
+    "family-freeze.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\family-freeze.json",
+      "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+      "bytes": 10867
+    },
+    "fragment-prompt.txt": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\fragment-prompt.txt",
+      "physicalSha256": "d3a93d1323145cf31db765de8647d5f0ce252f653b6b38273fc5a184fd00dbac",
+      "bytes": 673
+    },
+    "fragment-route.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\fragment-route.json",
+      "physicalSha256": "163075093eb0be396eaa2ccbd221210ae73643863dfc26a9e9e4ffcaf1a69243",
+      "bytes": 6964
+    },
+    "fragment-schema-v1.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\fragment-schema-v1.json",
+      "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+      "bytes": 4537
+    },
+    "future-admission-seams.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\future-admission-seams.json",
+      "physicalSha256": "e3ad07cb71ceabfb117c9e039f519a4bc31ec4f873c2968029f2ff8d2bcf8a27",
+      "bytes": 2612
+    },
+    "future-interface-inventory.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\future-interface-inventory.json",
+      "physicalSha256": "81424f91146b54f52d9418ebe65df49a1955fd4ad672793259ec6bf7224fbb1b",
+      "bytes": 6376
+    },
+    "legacy-schema-v1.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\legacy-schema-v1.json",
+      "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+      "bytes": 3966
+    },
+    "model-input-0.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\model-input-0.json",
+      "physicalSha256": "fc0ca30a1f7c01adadd7618363aaaca12e88c45f5a6e22843c0bafb327b69b77",
+      "bytes": 2559
+    },
+    "model-input-1.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\model-input-1.json",
+      "physicalSha256": "62c17e8849fa9cfc0813767600e75dac67c2688fc6c59763f7587048850cc9bb",
+      "bytes": 2560
+    },
+    "preparation.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\preparation.json",
+      "physicalSha256": "fa4f4b4e477b4617f1ab4793c3667635b057533457ec3f0fa0de18393fb85613",
+      "bytes": 7922
+    },
+    "record-evidence.py": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\record-evidence.py",
+      "physicalSha256": "892dba9e174cc5b83fc7cfb230c4706c8e71ea625c2fe9546cfc4fac2a22760d",
+      "bytes": 11582
+    },
+    "source-inputs.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\source-inputs.json",
+      "physicalSha256": "f444abd16721a918a991bb1f8779cfad0ba55f714c7ea4fd48590f2dce398412",
+      "bytes": 4940
+    },
+    "technical-controls.json": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-selection-preparation-d75c8d62221d4df7a5b4d73fc72ee6e3\\technical-controls.json",
+      "physicalSha256": "e5f99062da2b8eb1bbb6d721dfd8156b1e9d859a2f6405baf6ca33f8705c8d17",
+      "bytes": 3176
+    }
+  }
+}

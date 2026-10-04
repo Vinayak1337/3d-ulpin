@@ -1,0 +1,149 @@
+{
+  "authorities": {
+    "coordinatorTrainingRowPinsV2": {
+      "bytes": 6560,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\teacher-06-support-pairs-review-v1-5a1f206ca86c432ea89d363a89194037\\training-row-pins-v2.json",
+      "physicalSha256": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+    },
+    "developmentUse": "Existing unchanged source-only two-request bundle is a future reload input only, never fit input or target. Host expectations stay closed/outside all prep/stage material.",
+    "fitV1Acceptance": {
+      "bytes": 13207,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-fit-acceptance-v1.json",
+      "physicalSha256": "5d3580049bcc8663e9ee4f48fa73c5ae931a9ff0b256a128b5a536a48856f289"
+    },
+    "fragmentPreparationAcceptance": {
+      "bytes": 8956,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-adapter-preparation-acceptance-v1.json",
+      "physicalSha256": "45c3ac0897db7599f91ba3e4d99c5ada4b5679f2cda0c5e42663f6aa2a04c7cd"
+    },
+    "parentTrainingDataV1": {
+      "bytes": 82626,
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-fragments-v1.jsonl",
+      "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+    },
+    "reloadV1Acceptance": {
+      "bytes": 14973,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-reload-acceptance-v1.json",
+      "physicalSha256": "e977ed76d603243724148860faeaac14e5ba70e6925c8b25d91366b046dbf172"
+    },
+    "rowsReceiptV2": {
+      "bytes": 4109,
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/rows-v2.receipt.json",
+      "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+    },
+    "runtimeAndModelUse": "Same retained runtime-only adapter donor profile a09ee7907b8dc207b01712d84ec33245218773f479cf91301957ee76b32ae503 and fragment-baseline model profile 86b0f0b19d4e740f2e6e38f7eea8eaccd24b7b3072883f8b7d22421c39b8ef75, with same resolved requirements and original Qwen revision/weights. Read profile metadata only; no runtime/weight read/copy/install.",
+    "sourceSupportReceiptV2": {
+      "bytes": 33399,
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/source-support-v2.receipt.json",
+      "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+    },
+    "teacherAcceptance": {
+      "bytes": 7078,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher-qualified-support-pairs-acceptance-v2.json",
+      "physicalSha256": "9d3725a4c519d941c7f9341fa3f51d98746edac2bb74f1975880715482d15aa1"
+    },
+    "teacherReport": {
+      "bytes": 8953,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher\\fragment-support-pairs-v2.json",
+      "physicalSha256": "1102af0d5c74f72440d6e84393fcaaf34988a71929135d16f9613b714e310d52"
+    },
+    "trainingDataV2": {
+      "bytes": 138050,
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/train-teacher-fragments-v2.jsonl",
+      "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+    }
+  },
+  "baseCommit": "8bad2505baa7f9d01eede03de686ae930d1a0695",
+  "branch": "task/ml-association-student-20261002",
+  "callback": "Return exact code/evidence commits, actual commands/exits, source/dataset/row/recipe/profile metadata, historical-default/proof limits and clean final HEAD to coordinator 01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then stop. Teacher idle. Separate review and STUDENT-22 freeze must precede any model phase. No new chats/subagents/polls/schedules.",
+  "data": {
+    "appendedRows": 4,
+    "candidateAppearances": 57,
+    "emptySelections": 3,
+    "families": [
+      "in-haryana-rera-2831",
+      "in-bihar-magnolia-residency"
+    ],
+    "gap": "New pairs cover genuinely unsupported unit/current-status qualifications; no new absent/null/withheld native state class is represented or fabricated.",
+    "originalPrefixBytes": 82626,
+    "originalRows": 6,
+    "reviewState": "needs_independent_review",
+    "rows": 10,
+    "sarvamDerived": false,
+    "selectedAppearances": 12,
+    "status": "provisional_synthetic_supervision"
+  },
+  "executionAllowance": {
+    "cpuAdmissionControls": true,
+    "cpuImplementation": true,
+    "evaluation": false,
+    "fit": false,
+    "inference": false,
+    "nativeTokenizerOrModelLoad": false,
+    "promotion": false,
+    "reload": false,
+    "stageModelRun": false
+  },
+  "implementation": [
+    "Admit exact raw v2 dataset, exact original v1 byte prefix, all ten raw/canonical/context/input/target/supervision pins and four new parent/pair/source-receipt bindings. Preserve complete original row/input/request/candidates/order/provenance/target and uncertainty. Apply the unchanged fragment codec/train-only family checks; reject stale/mixed/unknown datasets/rows/contracts before effects.",
+    "Use the accepted technical source-derived wrapper and representation through existing encode_training/fit. No dummy legacy claims/abstentions or row/target rewrite. Same canonical fragment output/system prompt plus EOS, assistant-only mask and exact 4096 combined bound; no truncation, exclusion, target-shortening or source/policy sweep.",
+    "Add explicit distinct v2 fit/reload assignment/freeze/representation/data authorities rather than spoofing v1/selector versions or changing historical constants/defaults. Future task IDs are STUDENT-22-FRAGMENT-SUPPORT-V2-FIT and STUDENT-23-FRAGMENT-SUPPORT-V2-RELOAD. Return templates executable=false, disabled allowances, unresolved final execution HEAD/source pins and phase hashes; reload accepted-fit/adapter/proof bindings unresolved.",
+    "Planned future fit is ten rows times six seed17 epochs =60 updates from the original Qwen base, not the failed v1 saved adapter. Preserve original FIT/NUMERICS, q/v LoRA rank8/alpha16/dropout0.05, AdamW lr0.0002, 64-token head, pre-backward/inter-update reclamation,128-query attention and original objective/memory/guard controls. Existing common proof must account for all60 updates/order/supervised tokens, finite loss/gradients, unchanged base and96 exact saved tensors/540672 parameters.",
+    "Reuse accepted copy/profile/stager helpers; narrow extraction inside owned fragment stager is permitted to avoid duplicating staging logic. Future fit profile includes only training/parent/receipt/contract/family/model/representation/assignment/freeze/requirements authorities. No development/expectations/old donor code/data/targets/outputs/adapters in fit. Future reload binds a separately accepted v2 fit and unchanged development requests/contexts with no teacher training rows/targets or host expectations.",
+    "Keep explicit default-off reload authorization and existing verify_adapter_files/reload_and_compare/student generation/controller/strict projection. V1 admissions, saved-fit history, baseline/selector/grammar/raw defaults and historical profile artifacts remain strict. No development-specific field/keyword/example-ID special case, forced selection/abstention, changed prompt/controller or scoring criteria.",
+    "Extend only accepted_fit representation/version metadata admission to the new leaf, then retain the one common count/order/loss/attention/reclamation/base/save/resource/output/cleanup proof. No duplicate proof validator, bypass or fabricated prior-failure/selector authority. All transitive execution sources need physical/canonical/Git pins at actual returned checkpoints.",
+    "Read donor/profile/input metadata only now. No native tokenizer/model/stage or runtime/weight copy/inventory. Preserve the known first-update-only literal token-array receipt limitation; all rows still require existing full target/EOS/native preflight at the later separately frozen phase. Do not promise missing serialized arrays or rerun old native phases."
+  ],
+  "outcome": "Implement exact versioned ten-row support-pair fit/reload admission and non-executable future phase templates through the accepted fragment machinery; return CPU-checked code, no model/native stage.",
+  "ownedCodePaths": [
+    "services/geo/geo/usp_learning/association/fragment_support_v2.py",
+    "scripts/usp/learning/association/stage_fragment_support_v2.py",
+    "scripts/usp/learning/association/test_fragment_support_v2.py",
+    "services/geo/geo/usp_learning/association/fragment_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_adapter.py",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_adapter.py",
+    "services/geo/geo/usp_learning/association/student.py"
+  ],
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-support-v2-preparation-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-support-v2-preparation-v1.md"
+  ],
+  "ownership": "New v2 leaf/stager/control plus necessary small explicit version/dispatch/default-off loader and shared metadata/staging reuse hooks. Existing stage_adapter.py ownership remains accepted_fit() only; all other functions protected. Existing v1 fragment module/stager may expose narrowly reusable version-independent helpers, with v1 defaults/admissions/data/source/freeze/proof semantics unchanged. Do not edit all paths unnecessarily or copy a second fitter/proof validator/controller.",
+  "privateOutput": "One new unique fragment-support-v2-preparation directory under E:/BhuAayam-data/task-data/ml-distillation/student; retain originals, failed candidate and all histories.",
+  "protectedSeams": "adapter.py fitter/loader/encode loop, model_isolation.py, appcontainer_audit.py, resources.py, chunked_loss.py, reclamation.py, query_attention.py, memory_observation.py, fragment_selection.py, fragment_baseline.py, legacy/selector/candidate contracts/admissions/stagers and all datasets/prompt/schema/family/teacher files remain read-only. No shared dependencies/API/gateway/catalogue/frontend/staging/main/provider/source acquisition/install/host/services/Docker/volume/credential/push/deploy/promotion changes.",
+  "recordedAtUtc": "2026-10-03T16:11:42.447466+00:00",
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "resourceBounds": {
+    "batchSize": 1,
+    "cpuThreads": 2,
+    "maxChildPhaseSeconds": 600,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "maxJobCommittedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "recording": "Job commitment and RSS separate. CPU preparation runs no native model/GPU/stage; future actual phase must retain all original bounds."
+  },
+  "stagingDirtyPathsPreserved": [
+    "docs/evidence/usp/docker-recovery-20261003.md",
+    "docs/orchestration/NESTJS_MIGRATION.md"
+  ],
+  "stagingObservedReadOnlyHead": "81bf5bd7aa7183649da0deabaf7dcd4c17177c2b",
+  "task": "STUDENT-21-FRAGMENT-SUPPORT-V2-PREP",
+  "verification": "Compile the changed delta once and run a few targeted CPU controls for exact ten-row/prefix/parent/target admission, legacy defaults and mixed-version/stale/source-pin/pre-mkdir refusal, future disabled templates and fake new saved-fit binding through common proof. Reuse prior controls/results; no broad old suites, donor/source/model/fit campaign or new native tokenization. Return exact source/input/profile-plan/recipe pins and actual full command/cwd/exit receipts.",
+  "version": "student-fragment-support-v2-preparation-assignment/1",
+  "workerSettings": {
+    "interpretation": "Dispatch exposes model/effort but no tier. Report observable settings, never claim speed from prompt/global preference.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Versioned dataset/source/fit/reload authority must retain strict historical admissions and common proof while preserving the ten unchanged targets and existing memory containment.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

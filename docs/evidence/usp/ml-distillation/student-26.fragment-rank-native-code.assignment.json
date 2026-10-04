@@ -1,0 +1,225 @@
+{
+  "acceptedCpuPublication": {
+    "bytes": 11699,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\publication.json",
+    "physicalSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82"
+  },
+  "acceptedPreviousResult": {
+    "bytes": 4713,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-cpu-acceptance-v1.json",
+    "physicalSha256": "09dd70dddd59402cef974cf65379c412f3b09e657327e1d682f6cd7382fdc621"
+  },
+  "approvedDonors": {
+    "interpretation": "Code task may read profile/acquisition metadata only. No actual runtime/model/tokenizer bytes, copy/profile generation or native phase. Reuse exact existing donors in future frozen stage.",
+    "model": {
+      "approvedSubset": "model/* and exact original model acquisition metadata only",
+      "profileSha256": "86b0f0b19d4e740f2e6e38f7eea8eaccd24b7b3072883f8b7d22421c39b8ef75",
+      "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80"
+    },
+    "modelIdentity": {
+      "model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "weightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+    },
+    "runtime": {
+      "approvedSubset": "runtime/* and exact requirements metadata only",
+      "profileSha256": "a09ee7907b8dc207b01712d84ec33245218773f479cf91301957ee76b32ae503",
+      "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-citation-view-fit-fffafce9835d4f59bef71f4377bb5619"
+    }
+  },
+  "branch": "task/ml-association-student-20261002",
+  "callback": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "checks": [
+    "One focused native-import-blocked CPU invocation after code stabilizes, and compile the seven owned sources in memory. No existing suites/compiler/model/native campaign rerun; repair observed failures only.",
+    "Positive exact future-assignment metadata branch uses real rank admission/source input validation/make_freeze, then intercepts first mkdir or copy with a controlled boundary; no actual stage/runtime/model effects. Record all technical metadata/commit/donor/profile mocks honestly. This specifically prevents the previous pre-stage omission failure.",
+    "Refuse this code-only packet and invalid/mixed/drifted authority before effects/native import. Check actual dispatcher chooses only admitted rank and preserves the directly affected legacy/default dispatch with CPU doubles; no older baseline rerun.",
+    "CPU tokenizer/forward doubles test label-prefix single-token proof, last-position/both-logit extraction and complete ordered vectors; injected multi-token/prefix drift/nonfinite/incomplete score errors receive no repair or partial acceptance. Synthetic outputs are technical only.",
+    "Return exact code/evidence commits, actual commands/exits, source maps/policy/input/prototype hashes, unchanged protected paths, clean final HEAD and cleanup. Actual native token/score/loss proof, profile/stage/baseline/comparison remain unrun until coordinator review and a new explicit final-head execution packet."
+  ],
+  "exclusions": "No actual native imports/tokenizer/model/GPU/stage/fit/inference or host comparison now; no teacher/new labels, input perturbation, data acquisition/install, evaluation/promotion or automatic sweep. Teacher remains idle/blind. No shared gateway/API/catalogue/frontend/dependency/staging/main/provider/host/services/volume/push/deploy changes. No coordinator cherry-pick, polling, schedules, subagents or new chats.",
+  "executionAllowance": {
+    "cpuCodeAndControls": true,
+    "evaluation": false,
+    "fit": false,
+    "gpu": false,
+    "hostExpectations": false,
+    "inference": false,
+    "modelLoad": false,
+    "modelStage": false,
+    "nativeImports": false,
+    "promotion": false,
+    "sourceOnlyDevelopmentMetadata": true,
+    "tokenizer": false
+  },
+  "executionHead": "67e69991d35c92ac07e1db24b969c69621536549",
+  "failureRecoveryResearch": {
+    "bytes": 8149,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-recovery-research-v1.json",
+    "physicalSha256": "5f99f8d680794847ddf986f442e3082309b4123656564f870d7da75fc5fb319a"
+  },
+  "futureAuthority": {
+    "assignmentVersion": "association-fragment-rank-baseline-assignment/1",
+    "defaultOff": "STUDENT-25/26 preparation packets, unknown versions, mixed modes, missing authorization or code/policy/input drift must fail before effects/native imports. No executable packet is issued by this assignment.",
+    "dispatch": "Extend existing association_student admitted_runtime/structured output dispatch by the exact new version before generic fragment rejection; retain existing default and legacy routes. Use the existing contained run role/supervisor, not a new capability. Prefix rank evidence consistently and preserve raw score records before strict whole-vector projection; final authoritative completion/acceptance/cleanup belongs to existing guard.",
+    "freeze": "Use existing source/commit/freeze/profile machinery with one explicit rank authority. Pin final clean execution head, complete transitive source set, approved runtime/model donors, original model receipt/bytes, exact input/context/schema/family/policy/prompt/route metadata. Frozen settings and source maps remain immutable; code task returns planned metadata only.",
+    "freezeVersion": "association-fragment-rank-baseline-freeze/1",
+    "sourceBoundary": "Exact unchanged two source-only development requests/contexts, four and three candidates in original order and provenance. Seven focus prompts, complete contexts each. No host expectations, train rows/targets, previous outputs/adapters or retired/held-out data in stage/code/prompt/profile. Family metadata is allowed; evaluation originals remain unopened.",
+    "stager": "Extend existing stage_selector_baseline rank mode with target-free authority, exact donor subsets and first-side-effect ordering. Reuse accepted runtime/model/input copy/profile/fresh UUID lifecycle. Do not copy donor inputs/code/outputs/adapters wholesale. Actual copy/profile/stage command is prohibited now.",
+    "task": "STUDENT-27-FRAGMENT-RANK-BASELINE"
+  },
+  "futureCases": [
+    {
+      "candidateCount": 4,
+      "contextSha256": "d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5",
+      "exampleId": "ifc4-source-native-v1",
+      "request": "Retrieve the fragment that supplies the IfcBuilding Name."
+    },
+    {
+      "candidateCount": 3,
+      "contextSha256": "d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c",
+      "exampleId": "ifc2x3-source-native-v1",
+      "request": "Retrieve any supplied non-null numerical elevation value for IfcBuilding."
+    }
+  ],
+  "historicalBoundary": "The generative baseline, v1 and v2 are immutable failed/limited history; no quality improvement is claimed by CPU code. A single original-base baseline for this new scoring route will be separately frozen after code review, on the same two development requests with existing quality criteria. Do not treat older generative outputs as its same-policy reference.",
+  "latestWorkflow": {
+    "instruction": "Read recorded attempt history/research before implementation; preserve the accepted STUDENT-25 checkpoint and frozen inputs. No new ingest/redact.ts reader or re-extraction; return only an actual dependency conflict.",
+    "path": "AGENTS.md",
+    "readOnlyCommand": "git -C E:/Projects/3d-ulpin show 5bed68976f3fc4de677a7b5969ed099b1865c4c3:AGENTS.md",
+    "section": "Failure recovery and learning strategy",
+    "stagingCommit": "5bed68976f3fc4de677a7b5969ed099b1865c4c3"
+  },
+  "nativeImplementation": {
+    "labelProof": "Lazy native imports only after exact profile/phase/boundary admission. For every actual rendered prompt prove tokenize(prompt+label) equals prompt IDs plus exactly one distinct label token for 0 and 1; decoder bytes exactly ASCII 0/1 at the actual boundary. Pin tokenizer files, record IDs/prefix/position proofs. Reject multi-token, merged, altered or unverified continuations, without label substitution.",
+    "projection": "Rank.project_scores recovers unchanged fragments. Output formatting/identity/threshold is deterministic and is not generated-JSON validity or learned relevance. Every model-derived score must be traceable; no forced selection, top-k, source-semantic filters, fallback or threshold adjustment.",
+    "resources": "Retain existing CPU 2/batch 1/seed 17/fp16/SDPA, 2048-token inference admission without truncation, 600-second child, Job commitment and CUDA allocated/reserved <= 6442450944 bytes, CUDA free >= 1610612736. Reuse existing checks before model load and each score and record peaks/Job versus RSS separately. No host configuration, cap change or repeated full profile campaign.",
+    "result": "Emit complete raw score/preflight/technical-proof/result/provenance artifacts through existing write-once output. Mark worker receipts awaiting authoritative guard. Distinguish context-limited empty retrieval and model support from property absence, canonical links and source truth. Honest failure preserves artifacts and leaves host expectations unread.",
+    "score": "Use pinned Qwen2ForCausalLM forward with logits_to_keep=1, supported by Transformers v4.57.6 (public source inspected). Batch1, complete input, no truncation/generation/repair. Assert last-position shape and both native label logits; convert both to float32 before margin=logit1-logit0. Preserve raw logits, margin, focus/context/prompt hashes, prompt lengths, original order and per-focus latency. Require all7 scores and complete finite vectors; no partial accepted result or API fallback.",
+    "sharedLoader": "Extend student.run_local narrowly to use its existing boundary/resource/seed/dtype/SDPA/local-files-only/safetensors loader and snapshots, then delegate score helpers. No second Qwen loader. Original base only for this future baseline, no adapter/model_loader override or optimizer.",
+    "technicalLossProof": "Implement a small future native technical proof: two-logit NLL versus independent accepted CPU reference and analytic equal/opposite gradient on isolated synthetic logits, including positive/negative, tie and finite extremes. CPU float64 and CUDA float32 only where supported, tolerances explicit (float64 1e-10, float32 absolute/relative 1e-6). Exercise candidate/parent weighting without actual training labels. It runs inside the single future baseline phase, never trains or changes model parameters. This code task uses CPU fakes only and claims no native proof."
+  },
+  "outcome": "Code-only wiring for one future contained original-base fragment-rank baseline: exact source/assignment/freeze admission, native single-token support scoring and technical label/loss proof, existing worker output/guard lifecycle. Review final code before any separately frozen native command.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-native-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-native-code-v1.md"
+  ],
+  "ownedExistingSources": [
+    "services/geo/geo/usp_learning/association/fragment_rank.py",
+    "services/geo/geo/usp_learning/association/student.py",
+    "scripts/usp/learning/association/association_student.py",
+    "scripts/usp/learning/association/stage_selector_baseline.py"
+  ],
+  "ownedNewSources": [
+    "services/geo/geo/usp_learning/association/fragment_rank_baseline.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py",
+    "scripts/usp/learning/association/test_fragment_rank_runtime.py"
+  ],
+  "preservedPolicy": {
+    "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+    "representation": "Keep all accepted policy, system prompt, labels, source-only user structure, fixed margin > 0/tie abstention, loss/weights and existing unchanged-fragment output exactly. Generic CPU metadata remains default-off; separate phase authority grants execution later.",
+    "splits": "Retain train-only default API. Add only explicit train/development split selection as needed by the separately admitted baseline; evaluation is always refused. Native runner derives development eligibility from exact frozen authority, never caller text. Existing CPU behavior remains unchanged.",
+    "systemPromptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+    "training": "Do not regenerate/relabel the accepted 57 pairs or read targets while preparing this baseline. Ten-parent supervision/fit remains separate."
+  },
+  "protected36SourcePins": {
+    "bytes": 14978,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-return-93b5bdf4da7a4ef8afd12163f3e6da0e\\source-pins.json",
+    "physicalSha256": "c26ef021522346e7c59a390ab65223be5bebf4c70ff0c00d5f40f7969f607116"
+  },
+  "protectedExceptOwned": [
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/prepare_fragment_rank.py",
+    "scripts/usp/learning/association/stage_adapter.py",
+    "scripts/usp/learning/association/stage_baseline.py",
+    "scripts/usp/learning/association/stage_fragment_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_support_v2.py",
+    "scripts/usp/learning/association/test_fragment_rank.py",
+    "scripts/usp/learning/model_isolation.py",
+    "scripts/usp/security/appcontainer_audit.py",
+    "services/geo/geo/__init__.py",
+    "services/geo/geo/native_ifc.py",
+    "services/geo/geo/usp_learning/__init__.py",
+    "services/geo/geo/usp_learning/association/__init__.py",
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "services/geo/geo/usp_learning/association/candidate_baseline.py",
+    "services/geo/geo/usp_learning/association/candidate_selection.py",
+    "services/geo/geo/usp_learning/association/chunked_loss.py",
+    "services/geo/geo/usp_learning/association/citation_view.py",
+    "services/geo/geo/usp_learning/association/fragment_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_baseline.py",
+    "services/geo/geo/usp_learning/association/fragment_selection.py",
+    "services/geo/geo/usp_learning/association/fragment_support_v2.py",
+    "services/geo/geo/usp_learning/association/memory_observation.py",
+    "services/geo/geo/usp_learning/association/native_candidates.py",
+    "services/geo/geo/usp_learning/association/query_attention.py",
+    "services/geo/geo/usp_learning/association/reclamation.py",
+    "services/geo/geo/usp_learning/association/selector_adapter.py",
+    "services/geo/geo/usp_learning/association/selector_baseline.py",
+    "services/geo/geo/usp_learning/association/selector_constraints.py",
+    "services/geo/geo/usp_learning/association/selectors.py",
+    "services/geo/geo/usp_learning/association/validation.py",
+    "services/geo/geo/usp_learning/resources.py"
+  ],
+  "readOnlyDevelopmentAuthorities": {
+    "context-0.json": {
+      "bytes": 2793,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\context-0.json",
+      "physicalSha256": "d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5"
+    },
+    "context-1.json": {
+      "bytes": 1933,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\context-1.json",
+      "physicalSha256": "d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c"
+    },
+    "development.json": {
+      "bytes": 6419,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\development.json",
+      "physicalSha256": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536"
+    },
+    "family-freeze.json": {
+      "bytes": 10867,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\family-freeze.json",
+      "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+    },
+    "fragment-route.json": {
+      "bytes": 6577,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\fragment-route.json",
+      "physicalSha256": "cd2af2b714a4bea4d60ea176454d2c843dcf09c4645b237e5eaabb3dff3f471d"
+    },
+    "fragment-schema-v1.json": {
+      "bytes": 4537,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\fragment-schema-v1.json",
+      "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082"
+    },
+    "legacy-schema-v1.json": {
+      "bytes": 3966,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\legacy-schema-v1.json",
+      "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    "model-acquisition.json": {
+      "bytes": 3987,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\model-acquisition.json",
+      "physicalSha256": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2"
+    },
+    "preparation.json": {
+      "bytes": 6023,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\preparation.json",
+      "physicalSha256": "eef78431d063df9a2b9e337b74fe6ce7d6b40a63783a9e5eb7b583688bc41bc4"
+    }
+  },
+  "recordedAtUtc": "2026-10-03T21:05:41.673931+00:00",
+  "scope": "Use these seams only. Keep guard/resources/isolation, existing fitter/adapters, model/dependencies, other existing sources/tests and all originals/publications unchanged. If another source is concretely required, return the exact reason/path before broadening ownership; no new independent stage, model loader or supervision service.",
+  "task": "STUDENT-26-FRAGMENT-RANK-NATIVE-CODE",
+  "version": "student-fragment-rank-native-code-assignment/1",
+  "workerSettings": {
+    "interpretation": "No service-tier field is exposed. Verify supplied never/danger-full-access; report actual observed settings only.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Implement consequential source/score admission and native lifecycle integration through the accepted supervisor; preserve default-off routes and historical behavior.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin"
+}

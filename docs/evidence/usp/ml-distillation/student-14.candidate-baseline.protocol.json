@@ -1,0 +1,98 @@
+{
+  "version": "student-candidate-baseline-protocol/1",
+  "task": "STUDENT-14-CANDIDATE-BASELINE",
+  "recordedAtUtc": "2026-10-03T10:05:28.870845+00:00",
+  "assignment": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-14.candidate-baseline.assignment.json",
+    "physicalSha256": "3600fd691cb28a7e00b59fca15b87d2076f6df6e29e10de4695888ca79c0ac09"
+  },
+  "runtimePreparationAcceptance": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-native-candidate-runtime-preparation-acceptance-v1.json",
+    "physicalSha256": "49e0ffd1aa42d9ff6761c8ceab2b49bf34afafa050959e8d52c0b0bfe6e11f4c"
+  },
+  "inspectedRuntimePlan": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\candidate-runtime-preparation-88451b31b0c6440aa97a5cc0e705aae1\\future-freeze-command-plan.json",
+    "physicalSha256": "db3639c90135b2a5ed430a8d9c1f1ed8e12fcf9c6ba9aacd8f54024a8f210100",
+    "bytes": 38692
+  },
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+  "branch": "task/ml-association-student-20261002",
+  "executedHead": "9a8f65ac5af330a901b876bae2f4c514787567c9",
+  "ownership": "Sole learner owns one new private candidate-baseline stage, one contained inference and separate new host report/evidence. Existing executable/model/runtime/source/candidate/teacher/fit/reload artifacts are read-only. No executable edit or refreeze during this run; no stale assignment at another HEAD.",
+  "workerSettings": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "reason": "Existing sole learner retains exact containment/resource and artifact context for the new native BPE candidate route.",
+    "requiredSpeed": "default/standard",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access",
+    "tierInterpretation": "Tool has no per-turn tier argument; assignment text is not speed configuration."
+  },
+  "execution": {
+    "freshStages": 1,
+    "freshContainedInferencePhases": 1,
+    "fitPhases": 0,
+    "adapter": null,
+    "modelAcquisition": false,
+    "evaluationAllowed": false,
+    "promotionAuthorized": false,
+    "baselinePoliciesOrHistoricalRunsRepeated": false
+  },
+  "stageCommand": [
+    "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+    "-B",
+    "-I",
+    "-S",
+    "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/association/stage_selector_baseline.py",
+    "--assignment",
+    "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-14.candidate-baseline.assignment.json"
+  ],
+  "runCommand": "Execute exactly the fresh stage.json command from the assigned clean learner checkout. Preserve actual stage/profile/freeze/assignment/command/source/input/model/policy/raw/proof/guard hashes and flags. No direct model launch outside guarded_run.",
+  "preflight": "Verify supplied permissions, clean branch/HEAD and exact assignment/protocol/acceptance bytes. Let the existing stager enforce disk headroom, donor/copy/source/auxiliary/profile pins. Required contained checks must establish actual fast-tokenizer vocabulary/decoder/byte transport, original config, generated-only callback prefixes, EOS/final-text equivalence and input token bound without truncation. Complete native stages only within the original guard/resource envelope.",
+  "resourceBounds": {
+    "maxJobCommittedBytes": 6442450944,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "maxChildPhaseSeconds": 600,
+    "cpuThreads": 2,
+    "batchSize": 1,
+    "maxInputTokens": 2048,
+    "maxNewTokens": 768,
+    "recording": "Cumulative Job committed and sampled process RSS separately; CUDA allocated/reserved/free; original initialization-only reset. Report host, guard/setup-child-cleanup, model section and per-example generation times separately. Do not infer a separate child time or controlled speedup from other policies."
+  },
+  "inferencePolicy": "Original pinned Qwen base and unchanged seed/greedy/SDPA/fp16/settings; no adapter. Accepted immutable candidate prompts/sets and only the admitted candidate byte grammar through existing single generate. Preserve raw outputs before finish/projection. Empty/subset choices stay possible; no forced all-candidate output, repair, cap closing, fence stripping, clamping, fallback/retry, partial acceptance or changed source facts.",
+  "guardAcceptance": "Consume required complete profile/output/guard/supervisor acceptance once. Candidate-completion.json is worker_complete_awaiting_guard with supervisorAccepted=false; protected completion.json and the accepted receipt are authoritative. Require child success, Job closure, ACL/profile/session cleanup and all artifacts accepted. No output writes after authoritative acceptance. A resource/transport/cleanup/semantic failure receives its actual recorded outcome, not a rerun.",
+  "hostComparison": {
+    "sourceExpectations": {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/student/development-v1/expectations.json",
+      "physicalSha256": "061b98c57bdb386c8fc4bce38660b18fd16340d739d40f75b60b10f95a6f93ce"
+    },
+    "expectedClaims": 6,
+    "examples": 2,
+    "families": 1,
+    "timing": "Only after accepted output/guard/cleanup, pin then read host expectations for one short comparison. Never stage them or include them in executable code, prompt, grammar, candidate construction or contained inputs. If technical execution fails, report that failure without quality credit or accessing expectations.",
+    "metricDefinition": "Per example report candidate denominator and actual selected distinct IDs separately from JSON/schema/set-ID/current-ID/expanded whole-response validity. For complete accepted outputs only, compare unique (role,state,literal,unit) signatures to the unchanged six source-supported expectations; zero partial/fallback credit. Report emitted/selected/unique accepted/correct/expected counts, source-native precision null if none, coverage zero if none, absent/null correctness and canonical marker/link behavior. Empty valid responses get zero selected/accepted coverage. Parser-copied facts and controller-forced identities/states/citations/no-target markers earn no learned semantic/relevance accuracy. Selected-ID coverage alone is not independent relevance, association, generalization or operational accuracy.",
+    "hostOnlyOutput": "One new immutable host report directory under E:/BhuAayam-data/task-data/ml-distillation/student/candidate-baseline-v1-host-<unique>, retaining failed host-report attempts. Read actual new structures; no legacy span/literal summarizer assumption. Repair only a report lookup without rerunning a completed model phase.",
+    "previousResult": "Constrained selector model was 2/2 JSON/schema/ranges but 0/2 usable and 0/6 correct; preserve this named historical policy without rerun. The candidate baseline changes input representation and grammar and is not an unchanged-policy or adapter-gain comparison."
+  },
+  "developmentCriteria": {
+    "validCompleteResponses": "2/2",
+    "correctAcceptedSourceSignatures": "6/6",
+    "acceptedSourceNativePrecision": 1,
+    "absentNullPreserved": "1/1 each, separately",
+    "canonicalLinks": "empty in both accepted projections; controller contribution explicit",
+    "coverage": "Selecting all six eligible source-native candidates is the tiny development coverage criterion, not forced by the grammar or independent learned relevance. Optional empty/subset outputs may be technically valid while failing coverage.",
+    "resourcesAndCleanup": "All original bounds, actual transport and authoritative completion pass.",
+    "qualification": "This one run alone does not authorize evaluation opening, new fit/policy/prompt, promotion or shared gateway/API registration. Report actual contributions and limitations for the next bounded decision."
+  },
+  "ownedEvidenceOutput": [
+    "docs/evidence/usp/ml-distillation/student/candidate-baseline-v1.json",
+    "docs/evidence/usp/ml-distillation/student/candidate-baseline-v1.md"
+  ],
+  "exclusions": "No source/candidate reconstruction or original edits, teacher turn/development feedback, held-out/retired corpora, acquisition/installation, model or inference sweep, shared API/gateway/catalogue/frontend/dependencies, staging/main/other checkouts, credentials/host config/services/Docker/socket/volumes, provider calls/push/deployment/promotion.",
+  "return": "Return one exact evidence-only commit, execution/source/model/input/policy/result/guard/host pins, actual metrics/commands/exits, honest failures/limitations, clean checkout and owned-resource cleanup. Send one completion or material-blocker callback to coordinator 01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then stop. Interrupted handoff resumes from existing disk artifacts without repeating fit/inference. No new tasks/subagents/polls/schedules."
+}

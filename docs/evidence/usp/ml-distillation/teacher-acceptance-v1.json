@@ -1,0 +1,32 @@
+{
+  "version": "ml-teacher-coordinator-acceptance/1",
+  "teacherCommit": "e224399a2aacef3da66e9eb53084b250f46b50a3",
+  "batchSha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+  "examples": 11,
+  "claims": 62,
+  "decisionsAndClaimsChecked": 75,
+  "families": [
+    "in-bihar-magnolia-residency",
+    "in-haryana-rera-2831"
+  ],
+  "checks": [
+    "four raw artifact pins",
+    "two code LF/git/compile pins",
+    "train-only raw hash membership",
+    "unique fragment keys",
+    "all exact citation/literal/unit links",
+    "no canonical links",
+    "unknown value preservation",
+    "one independent retained render and raw OCR item spot-check"
+  ],
+  "sourceSpotCheck": {
+    "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+    "rawCandidateSha256": "3fef032598e08a90c61eb7c6bd1afd64bf32650d78fb673d83bfe9864f3faab3",
+    "literal": "TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)",
+    "viewedRender": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/review-recovery/haryana-plan2-floor02.jpg",
+    "observation": "Printed 13rd,21st,30th,38th and Typical Floor-02 caption agree. This is one source spot-check, not independent truth for all supervision."
+  },
+  "acceptedUse": "provisional experimental training supervision only",
+  "studentInferenceOrTrainingRun": false,
+  "evaluationOpened": false
+}

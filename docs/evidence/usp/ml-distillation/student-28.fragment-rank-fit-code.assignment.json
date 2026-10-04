@@ -1,0 +1,428 @@
+{
+  "acceptedBaseline": {
+    "bytes": 7759,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-baseline-acceptance-v1.json",
+    "physicalSha256": "089902a634551261b09fa2af2f64e1494284e8a9dc18d855468ac62188fb4951"
+  },
+  "acceptedCpuPublication": {
+    "bytes": 11699,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\publication.json",
+    "physicalSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82"
+  },
+  "approvedDonors": {
+    "interpretation": "Code task may read profile/acquisition metadata only. No actual runtime/model/tokenizer bytes, copy/profile generation or native phase. Reuse exact existing donors in future frozen stage.",
+    "model": {
+      "approvedSubset": "model/* and exact original model acquisition metadata only",
+      "profileSha256": "86b0f0b19d4e740f2e6e38f7eea8eaccd24b7b3072883f8b7d22421c39b8ef75",
+      "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80"
+    },
+    "modelIdentity": {
+      "model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "weightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+    },
+    "runtime": {
+      "approvedSubset": "runtime/* and exact requirements metadata only",
+      "profileSha256": "a09ee7907b8dc207b01712d84ec33245218773f479cf91301957ee76b32ae503",
+      "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-citation-view-fit-fffafce9835d4f59bef71f4377bb5619"
+    }
+  },
+  "attempt": 1,
+  "branch": "task/ml-association-student-20261002",
+  "callback": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "checks": [
+    "One focused native-import-blocked CPU invocation after stabilization plus in-memory compilation of seven owned sources and git diff --check. Consume earlier accepted campaigns, no actual native or compiler publication rerun.",
+    "Positive actual rank-fit assignment/payload/source/parent admission and make_freeze use real retained publication/train metadata and donor profiles; future clean Git commit/blob replies may be mocked. Stop at first intercepted mkdir/copy/output effect; disclose every double. This checks the actual stager/worker dispatch, not only leaf validation.",
+    "CPU tokenizer/tensor/model doubles check train-context single-token labels/last-position loss, unchanged complete parent order/weights and exactly one step per complete parent; exact candidate gradient sum versus a frozen synthetic analytic parent contribution. Catch omitted/duplicate/reordered/drifted/nonfinite pair/vector/label/prefix/length or incomplete parent before update/acceptance; preserve earlier raw receipts on failure. No exhaustive matrix.",
+    "Confirm default-off/mixed/unknown/code-only rank refusal before effects/native imports and directly affected legacy/default fit dispatch only with doubles. Protected36 existing source bytes plus publication/lineage/labels/policy/prompt remain exact.",
+    "Return actual commands/exits, source maps/receipts/prototype/plan/input pins, seven-source compile/control results, code/evidence/final commits, clean checkout and zero native/stage/resource effects. Technical doubles do not establish native token/gradient/fit/save/reload correctness or learned relevance."
+  ],
+  "exclusions": "No actual native imports/tokenizer/model/GPU/stage/profile/fit/inference, live providers/services/host changes, code outside seven owned paths, training republish/new labels/teacher/re-extraction, development contexts/requests/expected sets (baseline aggregate failure may guide this fixed objective only), evaluation/retired corpora, source acquisition/installations, dependencies/shared API/catalogue/frontend/staging/main/push/deploy/promotion. Preserve all sources, original publications and failed/successful historical experiments.",
+  "executionAllowance": {
+    "cpuCodeAndMetadataPreparation": true,
+    "evaluation": false,
+    "fit": false,
+    "gpu": false,
+    "inference": false,
+    "modelLoad": false,
+    "nativeImports": false,
+    "promotion": false,
+    "stageModelRun": false,
+    "tokenizer": false
+  },
+  "executionHead": "971fa41aae40359e2b36be37897cd3e06d106928",
+  "frozenPolicy": {
+    "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+    "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+    "qualification": "57 related pairs from ten unchanged provisional teacher parents in two train families, needs_independent_review; not57 independent examples or operational truth. Sarvam excluded; development/evaluation never enters fit inputs.",
+    "selection": "Same complete finite candidate vector, margin logit1-logit0 >0, ties abstain; original fragment projection. No policy/prompt/threshold/source-semantic changes."
+  },
+  "futureFitPlan": {
+    "base": "Exact pinned original Qwen2.5-0.5B-Instruct revision7ae557604adf67be50417f59c2c2f167def9a775, weights fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe; never a failed adapter.",
+    "emptyParents": 3,
+    "epochs": 6,
+    "futureTask": "STUDENT-29-FRAGMENT-RANK-FIT",
+    "inferenceSettings": "Keep STUDENT-27 seed17/fp16/SDPA/batch1/maxInput2048 and actual scoring route frozen for a later reload. No inference is implemented/authorized by this task.",
+    "loss": "Two-logit stable NLL after native head logits cast to float32. Feed exact complete rendered source/focus prompt only; label selects0/1 next-token logit at last prompt position. No prompt/JSON/hash/ID/EOS token loss and no label/teacher metadata in messages. Prefix-plus-label proof validates IDs but appended label is not fed for scoring loss.",
+    "microbatch": "Batch1 sequential candidate forward/backward contributions for a complete parent, release each graph after backward while retaining accumulated adapter gradients; unscale/validate/clip/optimizer step once per parent. No all-pair graph materialization or zero_grad within the parent.",
+    "negative": 45,
+    "objective": "Global J=sum over ten parents of sum over candidates [NLL(logit0,logit1,label)/(10*candidateCount)]. Exact published rational weights remain authoritative. One complete-parent optimizer step accumulates that parent contribution at those same1/(10*c) weights; no per-candidate optimizer steps or renormalization. Sum logged parent contributions for each epoch; do not claim a per-step full-global objective or compare its scale to old JSON loss.",
+    "ordering": "Reuse Random(17) six epoch permutations of ten parent indices. Within each parent retain original candidate order and every candidate exactly once; no class resampling or filtering.",
+    "originalReuse": "Extend existing adapter.py using narrowly scoped opt-in hooks/helpers for this admitted representation. Reuse original loader/PEFT setup,96 tensors/540672 trainable parameters, frozen base/head invariant, numeric checks, query-attention/reclamation/phase handling, safetensors save/equality/manifest and guard-owned completion. Do not clone a competing model loader/fitter/supervisor or change existing generative routes/settings.",
+    "pairs": 57,
+    "parentCandidateCounts": {
+      "teacher-fragments-v1-01": 4,
+      "teacher-fragments-v1-02": 7,
+      "teacher-fragments-v1-03": 5,
+      "teacher-fragments-v1-04": 6,
+      "teacher-fragments-v1-05": 7,
+      "teacher-fragments-v1-06": 6,
+      "teacher-fragments-v2-pair01-a": 7,
+      "teacher-fragments-v2-pair01-b": 7,
+      "teacher-fragments-v2-pair02-a": 4,
+      "teacher-fragments-v2-pair02-b": 4
+    },
+    "parents": 10,
+    "plannedCandidateContributions": 342,
+    "plannedOptimizerUpdates": 60,
+    "positive": 12,
+    "resourceBounds": {
+      "maxChildPhaseSeconds": 600,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "maxJobCommittedBytes": 6442450944,
+      "minimumCudaFreeBytes": 1610612736,
+      "reportJobAndRssSeparately": true
+    },
+    "scope": "Metadata/code requirements only; this is not executable fit authorization or a final-head run freeze.",
+    "seed": 17,
+    "settings": {
+      "adamBetas": [
+        0.9,
+        0.999
+      ],
+      "adamEpsilon": 1e-08,
+      "adapterDtype": "float32",
+      "alpha": 16,
+      "attention": "sdpa",
+      "baseDtype": "float16",
+      "batchSize": 1,
+      "cacheDuringFit": false,
+      "cpuThreads": 2,
+      "dropout": 0.05,
+      "excludeOverlongRows": false,
+      "gradientCheckpointing": "non-reentrant",
+      "gradientClipNorm": 1,
+      "initialGradientScale": 128.0,
+      "learningRate": 0.0002,
+      "lossDtype": "float32",
+      "maxPromptTokens": 4096,
+      "method": "rank-support LoRA, shared original causal model lifecycle",
+      "optimizer": "AdamW",
+      "rank": 8,
+      "scaleGrowthInterval": 2000,
+      "targets": [
+        "q_proj",
+        "v_proj"
+      ],
+      "truncation": false,
+      "weightDecay": 0
+    },
+    "trainFamilies": [
+      "in-haryana-rera-2831",
+      "in-bihar-magnolia-residency"
+    ]
+  },
+  "implementation": [
+    "New fragment_rank_adapter.py is a pure exact fit authority: accepts only separately supplied future rank-fit task/version/final clean code and pinned train publication/source-only contexts/labels, donors and fixed fit plan. Full source/input admission and make_freeze complete before first mkdir/copy/output/native effect. Reject this code-only packet, rank baseline/reload/old generative/mixed/drifted metadata; default-off, train-only, no fit development/evaluation inputs.",
+    "New fragment_rank_fit.py contains lazy rank training token/loss/parent-accumulation helpers invoked only inside the existing admitted adapter fit. Reuse actual rank prompt and label_boundary, with explicit train-only complete contexts. Future actual tokenizer/length/single-token proof required for all57 prompts, 4096 no truncation/exclusion. Last-position two label logits and analytic/native weighted objective/gradient equivalence must be proven at the actual helper boundary; existing STUDENT-27 isolated loss proof does not prove new model training or accumulation.",
+    "Parameterize only the owned stage_fragment_adapter.py seam as needed, with a thin stage_fragment_rank.py wrapper, to stage the fixed train publication through its existing exclusive copy/profile recipe. Derive exact future transitive sources/inputs from implemented authority, preserve original pinned donors and exclude all development/host/adapter/teacher historical-output paths. Existing v1/v2 stage behavior remains stable. No actual stage or runtime/model copy/profile generation now.",
+    "association_adapter.py admits the new fit authority before output/native effects and selects the shared opt-in rank fit; reject unknown/mixed rank metadata instead of legacy fallback. Preserve current guard/model-boundary/CLI/phase/supervisor authority and directly affected existing dispatch. No inference/reload branch in this increment.",
+    "Produce a disabled non-executable fit prototype with actual implemented future source set/phase/input fields/fit/numeric/memory/proof settings and new final code checkpoint. No command/launch allowance/final execution head is supplied by the prototype. Coordinator reviews final code and issues the independent STUDENT-29 packet."
+  ],
+  "outcome": "Implement one default-off admitted rank LoRA fit through the existing adapter lifecycle, with CPU-only executable/data authority preparation. No model work in this increment.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-fit-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-fit-code-v1.md"
+  ],
+  "ownedExistingSourcePins": {
+    "scripts/usp/learning/association/association_adapter.py": {
+      "canonicalLfSha256": "b6154b901b674b86afe208096dfdfdb763019d3e8c467a329a2a50b0feff33a7",
+      "physicalSha256": "b6154b901b674b86afe208096dfdfdb763019d3e8c467a329a2a50b0feff33a7"
+    },
+    "scripts/usp/learning/association/stage_fragment_adapter.py": {
+      "canonicalLfSha256": "eb67224af8c901da86b5206de7a41d3399f32fe2a6d28dd7fae8b34eb038d385",
+      "physicalSha256": "eb67224af8c901da86b5206de7a41d3399f32fe2a6d28dd7fae8b34eb038d385"
+    },
+    "services/geo/geo/usp_learning/association/adapter.py": {
+      "canonicalLfSha256": "25dff6e136b9878bf82a1d6a254eb117250833613f68be59d36543684d74e881",
+      "physicalSha256": "25dff6e136b9878bf82a1d6a254eb117250833613f68be59d36543684d74e881"
+    }
+  },
+  "ownedExistingSources": [
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_adapter.py"
+  ],
+  "ownedNewSources": [
+    "services/geo/geo/usp_learning/association/fragment_rank_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py",
+    "scripts/usp/learning/association/stage_fragment_rank.py",
+    "scripts/usp/learning/association/test_fragment_rank_fit.py"
+  ],
+  "protectedExistingSourceCount": 36,
+  "protectedExistingSourcePins": {
+    "scripts/usp/learning/association/association_student.py": {
+      "canonicalLfSha256": "31e3a892ee252b108bf8bd8ffd793bd00898ef65c55cb4908e53121513292081",
+      "physicalSha256": "31e3a892ee252b108bf8bd8ffd793bd00898ef65c55cb4908e53121513292081"
+    },
+    "scripts/usp/learning/association/prepare_fragment_rank.py": {
+      "canonicalLfSha256": "0182b2f48983e61bae11f0fb63ca1a04a3f7c0e2a44b0aad18b186aab40f606d",
+      "physicalSha256": "0182b2f48983e61bae11f0fb63ca1a04a3f7c0e2a44b0aad18b186aab40f606d"
+    },
+    "scripts/usp/learning/association/stage_adapter.py": {
+      "canonicalLfSha256": "4293ead8a761c5a7fbe8c9300e642e549bae5c0cc2dbe6d96fbe9d671f239fee",
+      "physicalSha256": "4293ead8a761c5a7fbe8c9300e642e549bae5c0cc2dbe6d96fbe9d671f239fee"
+    },
+    "scripts/usp/learning/association/stage_baseline.py": {
+      "canonicalLfSha256": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93",
+      "physicalSha256": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93"
+    },
+    "scripts/usp/learning/association/stage_fragment_support_v2.py": {
+      "canonicalLfSha256": "500d5e1b70b581b5e25e5de6fbfb0bbc727f9bf8c30e02f80fb66f5e313eca1d",
+      "physicalSha256": "500d5e1b70b581b5e25e5de6fbfb0bbc727f9bf8c30e02f80fb66f5e313eca1d"
+    },
+    "scripts/usp/learning/association/stage_selector_baseline.py": {
+      "canonicalLfSha256": "021a461739ff6f9410004f98de5476dbe2100e355012daf881c79d41b028769b",
+      "physicalSha256": "021a461739ff6f9410004f98de5476dbe2100e355012daf881c79d41b028769b"
+    },
+    "scripts/usp/learning/association/test_fragment_rank.py": {
+      "canonicalLfSha256": "ce048537659d67753fd4fb9dd0b491c8838953993da4126ef3b8eda88c6f6e92",
+      "physicalSha256": "ce048537659d67753fd4fb9dd0b491c8838953993da4126ef3b8eda88c6f6e92"
+    },
+    "scripts/usp/learning/association/test_fragment_rank_runtime.py": {
+      "canonicalLfSha256": "1238b9621de2bc15f2b328960c7f35ced8885457f8d5d865e7c6afdd87d78746",
+      "physicalSha256": "1238b9621de2bc15f2b328960c7f35ced8885457f8d5d865e7c6afdd87d78746"
+    },
+    "scripts/usp/learning/model_isolation.py": {
+      "canonicalLfSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+      "physicalSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676"
+    },
+    "scripts/usp/security/appcontainer_audit.py": {
+      "canonicalLfSha256": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+      "physicalSha256": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca"
+    },
+    "services/geo/geo/__init__.py": {
+      "canonicalLfSha256": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+      "physicalSha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a"
+    },
+    "services/geo/geo/native_ifc.py": {
+      "canonicalLfSha256": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+      "physicalSha256": "6372a5009fe23d6f43decb114883d31c9c4db4345196b59734638249ca5d866e"
+    },
+    "services/geo/geo/usp_learning/__init__.py": {
+      "canonicalLfSha256": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+      "physicalSha256": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335"
+    },
+    "services/geo/geo/usp_learning/association/__init__.py": {
+      "canonicalLfSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+      "physicalSha256": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679"
+    },
+    "services/geo/geo/usp_learning/association/candidate_baseline.py": {
+      "canonicalLfSha256": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+      "physicalSha256": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7"
+    },
+    "services/geo/geo/usp_learning/association/candidate_selection.py": {
+      "canonicalLfSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+      "physicalSha256": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785"
+    },
+    "services/geo/geo/usp_learning/association/chunked_loss.py": {
+      "canonicalLfSha256": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+      "physicalSha256": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7"
+    },
+    "services/geo/geo/usp_learning/association/citation_view.py": {
+      "canonicalLfSha256": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+      "physicalSha256": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea"
+    },
+    "services/geo/geo/usp_learning/association/fragment_adapter.py": {
+      "canonicalLfSha256": "071b171547017f942432105a32cb5303a175d6ec8243c6bf1dd7df1e49e39b4d",
+      "physicalSha256": "071b171547017f942432105a32cb5303a175d6ec8243c6bf1dd7df1e49e39b4d"
+    },
+    "services/geo/geo/usp_learning/association/fragment_baseline.py": {
+      "canonicalLfSha256": "63c923ed5d32593388852aa2e8b7fe6eb96682796295881c5a634c9fc08a778d",
+      "physicalSha256": "63c923ed5d32593388852aa2e8b7fe6eb96682796295881c5a634c9fc08a778d"
+    },
+    "services/geo/geo/usp_learning/association/fragment_rank.py": {
+      "canonicalLfSha256": "292b9922421b5140f80a615df0cf1f24840c33d9757e58a574d6a7bc46a1af20",
+      "physicalSha256": "292b9922421b5140f80a615df0cf1f24840c33d9757e58a574d6a7bc46a1af20"
+    },
+    "services/geo/geo/usp_learning/association/fragment_rank_baseline.py": {
+      "canonicalLfSha256": "705617988bcd208656192059e05b973c37cc261875e1ca8996f28122f32d40f1",
+      "physicalSha256": "705617988bcd208656192059e05b973c37cc261875e1ca8996f28122f32d40f1"
+    },
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py": {
+      "canonicalLfSha256": "96d80aeba24d95e8067efb13082d7aa48176fab2a5524fba33693ea496e0f200",
+      "physicalSha256": "96d80aeba24d95e8067efb13082d7aa48176fab2a5524fba33693ea496e0f200"
+    },
+    "services/geo/geo/usp_learning/association/fragment_selection.py": {
+      "canonicalLfSha256": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0",
+      "physicalSha256": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0"
+    },
+    "services/geo/geo/usp_learning/association/fragment_support_v2.py": {
+      "canonicalLfSha256": "88d327bb359c2491245581c4d3aa569b4c1fdb2e0971a7e6be0bf1a39104c5b9",
+      "physicalSha256": "88d327bb359c2491245581c4d3aa569b4c1fdb2e0971a7e6be0bf1a39104c5b9"
+    },
+    "services/geo/geo/usp_learning/association/memory_observation.py": {
+      "canonicalLfSha256": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+      "physicalSha256": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d"
+    },
+    "services/geo/geo/usp_learning/association/native_candidates.py": {
+      "canonicalLfSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+      "physicalSha256": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df"
+    },
+    "services/geo/geo/usp_learning/association/query_attention.py": {
+      "canonicalLfSha256": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+      "physicalSha256": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec"
+    },
+    "services/geo/geo/usp_learning/association/reclamation.py": {
+      "canonicalLfSha256": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+      "physicalSha256": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27"
+    },
+    "services/geo/geo/usp_learning/association/selector_adapter.py": {
+      "canonicalLfSha256": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d",
+      "physicalSha256": "c83bc6552691f2eebb592881cd16e15f19df29cf88cab4aac87edbd87876003d"
+    },
+    "services/geo/geo/usp_learning/association/selector_baseline.py": {
+      "canonicalLfSha256": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+      "physicalSha256": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d"
+    },
+    "services/geo/geo/usp_learning/association/selector_constraints.py": {
+      "canonicalLfSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+      "physicalSha256": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064"
+    },
+    "services/geo/geo/usp_learning/association/selectors.py": {
+      "canonicalLfSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+      "physicalSha256": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e"
+    },
+    "services/geo/geo/usp_learning/association/student.py": {
+      "canonicalLfSha256": "8de7e504c5ca37d54a9a73f05d771e7a344c710086370bfc12fc07f77e8c2798",
+      "physicalSha256": "8de7e504c5ca37d54a9a73f05d771e7a344c710086370bfc12fc07f77e8c2798"
+    },
+    "services/geo/geo/usp_learning/association/validation.py": {
+      "canonicalLfSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+      "physicalSha256": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2"
+    },
+    "services/geo/geo/usp_learning/resources.py": {
+      "canonicalLfSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54",
+      "physicalSha256": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+    }
+  },
+  "recordedAtUtc": "2026-10-03T22:21:09.272800+00:00",
+  "recovery": {
+    "acceptedHistoryRead": "Retain generative baseline/v1/v2 misses/over-selections and new original-base rank recall miss. Do not rerun them. STUDENT-27 establishes native token/score correctness and this new policy base reference, not the cause of the model miss.",
+    "experimentBoundary": "Implement/prep only now. After code review, separately freeze one original-base fit and, after accepted saved fit, one same-policy reload comparison. No sweep, new supervision, threshold adjustment, alternative seed/optimizer or evaluation.",
+    "failureSignature": "Original base has seven negative margins, selected0, expected positives1, TP0/FP0/miss1, valid2/2/exact1/2. Supported Name is missed; unsupported elevation abstains. Root cause remains unproven; tiny provisional data, architecture/model capacity and objective differences are plausible.",
+    "materialAlternative": "Fit the already declared per-candidate binary support objective over unchanged complete contexts/focuses and12 positive/45 negative labels. This replaces structural JSON/ID/EOS target loss while preserving scoring policy. It may improve support discrimination; no assurance of quality. No new research/model acquisition is needed for this bounded test.",
+    "researchReuse": {
+      "bytes": 8149,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-recovery-research-v1.json",
+      "physicalSha256": "5f99f8d680794847ddf986f442e3082309b4123656564f870d7da75fc5fb319a"
+    }
+  },
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "return": "Commit only owned code/evidence and send one exact result/material-blocker callback to coordinator, then stop. Do not execute future native phases, dispatch additional chats/subagents, poll or schedule.",
+  "sourceSetInterpretation": "39 current review/source-pin inventory files, three explicitly mutable and36 protected. Four new leaves are owned. Future native transitive inventory must be derived from implemented admission code, not guessed from this review set.",
+  "sourceSnapshot": {
+    "bytes": 10227,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-27-review-v1-e342e2929fab4784b512b2bb69396bc8\\student-28-source-snapshot.json",
+    "physicalSha256": "60c238158e4920ff8195364b93a27c0b7dacb53271a0103c3defa2d6963db4c0"
+  },
+  "task": "STUDENT-28-FRAGMENT-RANK-FIT-CODE",
+  "trainOnlyAuthorities": {
+    "counts.json": {
+      "bytes": 84,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\counts.json",
+      "physicalSha256": "3e50dc8a3a1bb35d65da810623261981a094660a69b071d59d874e12c0d6109f"
+    },
+    "inputs/family-freeze.json": {
+      "bytes": 10867,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\family-freeze.json",
+      "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+    },
+    "inputs/fragment-schema-v1.json": {
+      "bytes": 4537,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\fragment-schema-v1.json",
+      "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082"
+    },
+    "inputs/rows-v2.receipt.json": {
+      "bytes": 4109,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\rows-v2.receipt.json",
+      "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+    },
+    "inputs/schema-v1.json": {
+      "bytes": 3966,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\schema-v1.json",
+      "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    "inputs/source-support-v2.receipt.json": {
+      "bytes": 33399,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\source-support-v2.receipt.json",
+      "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+    },
+    "inputs/train-teacher-fragments-v1.jsonl": {
+      "bytes": 82626,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v1.jsonl",
+      "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+    },
+    "inputs/train-teacher-fragments-v2.jsonl": {
+      "bytes": 138050,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v2.jsonl",
+      "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+    },
+    "inputs/training-row-pins-v2.json": {
+      "bytes": 6560,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\training-row-pins-v2.json",
+      "physicalSha256": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+    },
+    "lineage.json": {
+      "bytes": 56203,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\lineage.json",
+      "physicalSha256": "7b2291969484aeccb913704e7d88e295f6d7fd26a6cf0de9aea9c87061fb7026"
+    },
+    "policy.json": {
+      "bytes": 3727,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\policy.json",
+      "physicalSha256": "9237baa39a7927e4071054bab4fc080356c4f3123d6ac35717f2da4d3b5a2002"
+    },
+    "scoring-inputs.jsonl": {
+      "bytes": 271577,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\scoring-inputs.jsonl",
+      "physicalSha256": "753533a1c654274316aed6b2f06641d20ad47d73bfc2375ba1d73d6e05e12696"
+    },
+    "system-prompt.txt": {
+      "bytes": 573,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\system-prompt.txt",
+      "physicalSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5"
+    },
+    "train-fragment-rank-v1.jsonl": {
+      "bytes": 72525,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\train-fragment-rank-v1.jsonl",
+      "physicalSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd"
+    }
+  },
+  "version": "student-fragment-rank-fit-code-assignment/1",
+  "workerSettings": {
+    "interpretation": "Dispatch exposes model/effort but no tier. Verify actual supplied permissions; report requested and observed separately, never claim a prompt sets speed.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Consequential binary-loss/parent-accumulation integration must preserve shared numeric/model/guard lifecycle and prevent source/phase leaks.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

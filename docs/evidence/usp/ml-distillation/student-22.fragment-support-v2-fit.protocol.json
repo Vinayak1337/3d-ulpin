@@ -1,0 +1,160 @@
+{
+  "assignment": {
+    "bytes": 14055,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-22.fragment-support-v2-fit.assignment.json",
+    "physicalSha256": "1b720909a6207eb8462366ba9fc0d1bd70ee0192b266287f2a76ef30e661e974"
+  },
+  "branch": "task/ml-association-student-20261002",
+  "callback": "Return exact result/evidence commits and primary receipt pins to coordinator 01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then stop. Review and accepted saved fit precede separate STUDENT-23 freeze. No new chats/subagents/polls/schedules.",
+  "exclusions": "No executable changes, native inference/reload, prompt/policy/hyperparameter sweeps, additional data/installation/acquisition, providers, host configuration/services/Docker/volumes, shared gateway/API/catalogue/frontend/staging/main edits, push/deploy/public activation.",
+  "exclusiveOwner": {
+    "codeEditsAuthorized": false,
+    "gpuAndNativeModel": true,
+    "learnerThread": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+    "teacherIdle": true
+  },
+  "executionHead": "32e661a13e04db23b1cab3f0211b12b372474d38",
+  "expectedGeneratedFreeze": {
+    "interpretation": "Pure exact result for these assignment bytes and learner physical sources. The stage must emit this freeze. The actual stage/profile hashes must be newly generated and accepted, never inferred from disabled plans.",
+    "metadata": {
+      "bytes": 18653,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-21-support-preparation-review-v1-c69ef238074f4d9fa6e179db804b2548\\expected-student-22-fit-freeze.json",
+      "physicalSha256": "6411c2a8d824617056a8bd5214ac0061a6e6d01522eb19edefb4d95e44ec1fbd"
+    },
+    "physicalSha256": "6411c2a8d824617056a8bd5214ac0061a6e6d01522eb19edefb4d95e44ec1fbd"
+  },
+  "inputBoundary": "Copy only runtime/* plus pinned resolved requirements from the retained runtime donor; original model files/common input authorities from the fragment baseline. Fit includes exact v2 ten-row data, unchanged six-row parent, accepted support/row receipts, schema/prompt/family/model/assignment/freeze/requirements. Exclude development requests/contexts/labels, host expectations, held-out/retired corpora, donor code/data/outputs/freezes/adapters and failed v1 adapter.",
+  "literalTokenReceiptLimit": "The unchanged fitter serializes literal token-ID/position arrays for the first update only. All-row native preflight still executes full prompt/target/EOS/prefix/mask assertions and records target hashes/lengths; do not claim or reconstruct unrecorded arrays.",
+  "memoryAndControls": "Reuse accepted 64-token checkpointed head, inter-update/pre-backward reclamation, 128-query attention and existing pre-fit objective controls at the exact frozen tolerances. No repeated unrelated suite, old fit or source campaign.",
+  "outcome": "One fresh admitted stage and one contained exact ten-row original-base LoRA fit; return supervisor/save/resource proof. No inference/reload or quality claim.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-support-v2-fit-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-support-v2-fit-v1.md"
+  ],
+  "phaseAllowance": {
+    "automaticRetry": false,
+    "containedFits": 1,
+    "evaluation": false,
+    "freshStages": 1,
+    "inference": false,
+    "promotion": false,
+    "reload": false
+  },
+  "plannedProfile": {
+    "actualProfileSha256": null,
+    "code": 33,
+    "entries": 19685,
+    "inputs": 13,
+    "model": 9,
+    "runtime": 19630
+  },
+  "preparationAcceptance": {
+    "bytes": 7974,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-support-v2-preparation-acceptance.json",
+    "physicalSha256": "b469f3bba3b5aeb5b199714dbf39f99cbd29c154530d0612ead8aa3192d0d42a"
+  },
+  "privateOutput": "One fresh adapter-fragment-support-v2-fit UUID stage under the existing private student staging parent; retain all outputs, originals and failures. Small return receipts may use one fresh private fragment-support-v2-fit return directory.",
+  "recordedAtUtc": "2026-10-03T23:37:01.906007+05:30",
+  "requiredReturn": [
+    "Exact clean execution HEAD, physical/canonical/Git sources, input/model/runtime/profile/assignment/freeze/output hashes and actual commands/exits.",
+    "Native preflight for all ten unchanged complete prompts and canonical JSON targets plus EOS; all combined sequences <=4096, without truncation, exclusions or target shortening. All-row target hashes/lengths and executed prefix/EOS/assistant-mask assertions; serialize/report only existing first-update literal arrays and retain the known limitation.",
+    "Fixed seed17 six epoch orders, all60 updates, each full row/target supervised-token accounting, finite losses/gradients and original scaler/numerics.",
+    "Original immutable base proof, exact96 saved tensors/540672 trainable parameters, adapter/manifest and one existing accepted_fit(new_stage_root) result after authoritative guard/output completion.",
+    "Existing head-loss/attention objective controls and reclamation observations, actual peak Job commitment and RSS separately, CUDA allocated/reserved/minimum free, and only exposed phase/supervisor/cleanup durations.",
+    "Authoritative supervisor/transport/output acceptance and owned Job/ACL/AppContainer/resource cleanup. Any failure preserves all bytes and returns the exact blocker without retry, recipe or code changes.",
+    "Evidence-only commits, final clean HEAD, dirty-path disclosure, artifact paths and no owned process/tool session pending. No training completion or in-sample loss decrease implies model quality."
+  ],
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "resourceBounds": {
+    "batchSize": 1,
+    "cpuThreads": 2,
+    "maxChildPhaseSeconds": 600,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "maxJobCommittedBytes": 6442450944,
+    "minimumCudaFreeBytes": 1610612736,
+    "recording": "Record Job commitment and RSS separately. Preserve the original guard/resource controls and model/runtime; enforce all bounds during the one authorized fit."
+  },
+  "runCommandAuthority": "Read the newly emitted stage.json command array, then execute that exact command once through its existing guard. Save exact stage/run command, cwd, start/end/exit and output pins. Do not reconstruct or alter command/profile/freeze.",
+  "settings": {
+    "actualModel": null,
+    "actualPerTurnServiceTier": null,
+    "actualReasoning": null,
+    "interpretation": "Dispatch exposes model/effort but no tier; verify supplied permissions, report observable settings honestly and do not claim a speed from a prompt or global preference.",
+    "reason": "Preserve the reviewed versioned ten-row authority and existing source, split, objective and resource controls during one original-base fit.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "stageCommand": [
+    "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+    "-B",
+    "-I",
+    "-S",
+    "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_fragment_support_v2.py",
+    "fit",
+    "--assignment",
+    "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-22.fragment-support-v2-fit.assignment.json"
+  ],
+  "task": "STUDENT-22-FRAGMENT-SUPPORT-V2-FIT",
+  "training": {
+    "combinedSequenceLimit": 4096,
+    "counts": {
+      "candidateAppearances": 57,
+      "emptySelections": 3,
+      "rows": 10,
+      "selectedAppearances": 12
+    },
+    "epochs": 6,
+    "input": {
+      "bytes": 138050,
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/train-teacher-fragments-v2.jsonl",
+      "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+    },
+    "lora": {
+      "alpha": 16,
+      "dropout": 0.05,
+      "modules": [
+        "q_proj",
+        "v_proj"
+      ],
+      "rank": 8
+    },
+    "loss": "All and only canonical assistant JSON plus EOS. Preserve the unchanged request/context/candidate/provenance rows and full target.",
+    "optimizer": "Existing AdamW lr0.0002, original precision/scaler/optimizer settings.",
+    "parent": {
+      "bytes": 82626,
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-fragments-v1.jsonl",
+      "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+    },
+    "qualification": "Teacher supervision is experimental, not independent truth or official operational facts; Sarvam excluded.",
+    "receiptAuthorities": {
+      "coordinatorTrainingRowPinsV2": {
+        "bytes": 6560,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\teacher-06-support-pairs-review-v1-5a1f206ca86c432ea89d363a89194037\\training-row-pins-v2.json",
+        "physicalSha256": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+      },
+      "rowsReceiptV2": {
+        "bytes": 4109,
+        "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/rows-v2.receipt.json",
+        "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+      },
+      "sourceSupportReceiptV2": {
+        "bytes": 33399,
+        "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/source-support-v2.receipt.json",
+        "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+      }
+    },
+    "recipeAuthority": "Exact assignment settings/numerics/trainingPlan/representation/memoryExecutionPolicy; original FIT and NUMERICS remain unchanged.",
+    "reviewState": "needs_independent_review",
+    "seed": 17,
+    "supervisionState": "provisional_synthetic_supervision",
+    "truncationOrRowExclusionOrTargetShortening": false,
+    "updates": 60
+  },
+  "version": "student-fragment-support-v2-fit-protocol/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

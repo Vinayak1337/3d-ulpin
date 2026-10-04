@@ -1,0 +1,148 @@
+{
+  "accepted": {
+    "bytes": 1827,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-a59a4367f3d9400a929eb29af2def58d\\receipts\\association_student-run-accepted.json",
+    "physicalSha256": "a7b95a92f7bf2c63e13582da3855a330d569dd52bdb1b5d54588d7da6da2d8d6"
+  },
+  "cleanup": "Child44504 exit0, guard outputsAccepted=true, Job closed, AppContainer profile deleted, session/scoped ACLs restored; no owned process remaining, retained stage/history.",
+  "consumedWithoutRerun": "Owner one stage, one native guard run and one post-cleanup host comparison; coordinator reviewed saved artifacts/pins/code and proof values only.",
+  "decision": "accept_original_base_native_reference_at_technical_scope_development_quality_failed",
+  "freeze": {
+    "bytes": 10644,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-a59a4367f3d9400a929eb29af2def58d\\inputs\\run-freeze.json",
+    "physicalSha256": "25173e6ab662ed51dea11152239ce7677bc45dbb815c009e77a53a209fb09f43"
+  },
+  "guard": {
+    "bytes": 37521,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-a59a4367f3d9400a929eb29af2def58d\\receipts\\association_student-run-guard.json",
+    "physicalSha256": "024dc6d30ecb0f56fd2ff033c669b60acd62c02cc4e7136d883421c31b6dc770"
+  },
+  "hostComparison": {
+    "bytes": 7553,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-v1-host-181145e2dea4483ab14de8cddd24ec4d\\comparison.json",
+    "physicalSha256": "f9ace6cba14fb2bc2f5bb97b6a6615f50a6262b00f0c3f0d83184a7ab00fb0bb"
+  },
+  "hostReceipt": {
+    "bytes": 1717,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-v1-host-181145e2dea4483ab14de8cddd24ec4d\\host-receipt.json",
+    "physicalSha256": "9188fbd60a5ddfcc552ede2426d3bec3d5f1e0067469490b3e892a538d32251a"
+  },
+  "integratedEvidenceCommit": "8804e8e234ebbc5d5070b358f95f08c08861f032",
+  "integratedReport": {
+    "bytes": 33554,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-baseline-v1.json",
+    "physicalSha256": "03702a2de11eafd0300b4f09b43a653420131adeee5414a2327f8487c70465f4"
+  },
+  "margins": [
+    -0.265625,
+    -0.71875,
+    -0.703125,
+    -0.609375,
+    -1.640625,
+    -2.296875,
+    -2.859375
+  ],
+  "metrics": {
+    "candidates": 7,
+    "contextLimitedEmptyRequests": 2,
+    "exactRequestSets": 1,
+    "expectedPositive": 1,
+    "falsePositives": 0,
+    "families": 1,
+    "misses": 1,
+    "positiveRecall": 0,
+    "precision": null,
+    "requests": 2,
+    "selected": 0,
+    "truePositives": 0,
+    "unsupportedRequestFalsePositives": 0,
+    "validCompleteVectors": 2
+  },
+  "nativeProof": "Seven full prompts, 0/1 token IDs15/16, input lengths1318x4/951x3, logits_to_keep1 shape1x1x151936, both logits cast float32. Isolated CPU float64/CUDA float32 synthetic two-logit NLL/equal-parent weighting/equal-opposite gradients pass. Original pinned Qwen/no adapter, no fitting.",
+  "next": "STUDENT-28 CPU-only fit code/preparation for unchanged57 provisional support pairs. New reviewed-code STUDENT-29 native-fit freeze and accepted-fit separate reload freeze required before execution.",
+  "ownerEvidenceCommit": "971fa41aae40359e2b36be37897cd3e06d106928",
+  "ownerExecutionHead": "8ae5484d21764777466651e95b184ed10d5c267f",
+  "ownerFinalCheckpoint": {
+    "bytes": 3928,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-v1-return-8d894c8e979341bf8dd66f2f07743984\\final-checkpoint.json",
+    "physicalSha256": "468b6f10e7f063a64eedc2549718f307d53760db03ac1f5f62562afd8c3b811e"
+  },
+  "profile": {
+    "bytes": 2700133,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-a59a4367f3d9400a929eb29af2def58d\\profile.json",
+    "physicalSha256": "a20cfe373a99fd2bdbb95b3a3a1f85b2ef8511ccc9afafac738c85c531513006"
+  },
+  "rawScores": {
+    "bytes": 8692,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-a59a4367f3d9400a929eb29af2def58d\\outputs\\baseline\\fragment-rank-raw-outputs.json",
+    "physicalSha256": "04c3416ff30fc7ce0d36338d13b610140d77a0f592d594dc02c90af21df9fc24"
+  },
+  "recordedAtUtc": "2026-10-03T22:21:06.779225+00:00",
+  "resources": {
+    "childPid": 44504,
+    "gpuSamples": 18,
+    "maxCudaAllocatedBytes": 1287305216,
+    "maxCudaReservedBytes": 1342177280,
+    "minimumSampledFreeCudaBytes": 6047137792,
+    "peakJobCommittedBytes": 5226475520,
+    "peakProcessRssBytes": 3214827520,
+    "rssMethod": "50ms actual Job-member RSS/peak working sets"
+  },
+  "result": {
+    "bytes": 19975,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-a59a4367f3d9400a929eb29af2def58d\\outputs\\baseline\\fragment-rank-result.json",
+    "physicalSha256": "47822c59065d0c45c3e894c5e9eac2af9b969e7add9e77ce6fe8d899dd6737a5"
+  },
+  "resultInterpretation": "No selections on either request: supported Name fragment missed; unsupported numerical elevation correctly empty. Precision null at zero selected denominator, positive recall0, exact1/2. Empty is context-limited, not property/source absence.",
+  "review": {
+    "bytes": 28175,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-27-review-v1-e342e2929fab4784b512b2bb69396bc8\\review.json",
+    "physicalSha256": "a916246fbe3701bbff1059cf642fa6706af0687903dec101732ffe85790ab1e1"
+  },
+  "reviewSummary": {
+    "acceptedOutputHashesMatched": 15,
+    "exactExpectedFreezeAndFileMapMatched": true,
+    "executableCodeChanged": false,
+    "findings": [],
+    "matchedReferences": 71,
+    "matchedUniqueReferences": 41,
+    "ownedEvidenceFiles": 2,
+    "profileFiles": 19674,
+    "unchangedExecutionSources": 23
+  },
+  "scope": "Native technical/reference acceptance only. Development criteria failed; no learned quality, independent truth/generalization/evaluation, canonical association, promotion or release claim.",
+  "stagingReadOnlyHead": "31da16fe1f0c16b8ec27cdac2d1fa0c802c3ffee",
+  "task": "STUDENT-27-FRAGMENT-RANK-BASELINE",
+  "technicalAcceptance": {
+    "bytes": 11252,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-v1-return-8d894c8e979341bf8dd66f2f07743984\\technical-acceptance.json",
+    "physicalSha256": "d159b61c505d5bf81f401708c9fd691ad0323ce740ecf6525cf47343e362fbe3"
+  },
+  "technicalProof": {
+    "bytes": 31100,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-a59a4367f3d9400a929eb29af2def58d\\outputs\\baseline\\fragment-rank-technical-proof.json",
+    "physicalSha256": "ba1a83a580b4ad589d7afb3a7d30d695d72a296256b571f90e3c147f5b63ce22"
+  },
+  "timing": {
+    "childOnlySeconds": null,
+    "cleanupOnlySeconds": null,
+    "guardElapsedSeconds": 122.81299999999464,
+    "hostRunWallSeconds": 288.5602560999978,
+    "modelLoadSectionSeconds": 1.1332614999992074,
+    "modelSectionSeconds": 2.2855831000051694,
+    "outsideGuardInterpretation": "derived wall-time difference includes profile/bootstrap validation and return overhead; not a measured child time",
+    "outsideGuardIntervalSeconds": 165.74725610000314,
+    "perFocusForwardSeconds": [
+      0.3358284999994794,
+      0.13384179999411572,
+      0.13171180000063032,
+      0.1321280999982264,
+      0.08337890000257175,
+      0.08289760000479873,
+      0.0822656999953324
+    ],
+    "stageSeconds": 192.472172,
+    "unexposedTimings": "Guard observation does not expose separate child-only or cleanup-only elapsed time; no speedup claim."
+  },
+  "version": "student-fragment-rank-baseline-acceptance/1"
+}

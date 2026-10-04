@@ -1,0 +1,87 @@
+{
+  "version": "ml-distill-teacher-batch/3",
+  "createdDate": "2026-10-02",
+  "status": "provisional_synthetic_supervision",
+  "split": "train",
+  "familyIds": [
+    "in-bihar-magnolia-residency",
+    "in-haryana-rera-2831"
+  ],
+  "contractPins": {
+    "schema": "3ba8fab2958ba93b042493bc4e6c0693f2049bdaa07f260c6639110c87a36a42",
+    "freeze": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+  },
+  "parent": {
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v2.jsonl",
+    "bytes": 70333,
+    "sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+    "manifestPath": "C:/Users/kvina/.codex/worktrees/ml-teacher-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/teacher/batch-v2.manifest.json",
+    "manifestCanonicalLfSha256": "980849555c6f79466a7590fabfb053725981d25f45b34acc763cbcac900696fe"
+  },
+  "augmentationPolicy": "opaque_keys_reverse_evidence/1",
+  "assignment": {
+    "task": "TEACHER-03",
+    "assignmentVersion": "ml-distillation-citation-view-preparation/1",
+    "path": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/teacher-03.citation-view.assignment.json",
+    "gitCommit": "334467e30cd648a83aec3bec84140bf974b0a5f4",
+    "canonicalLfSha256": "e5cfa3cadb6b547ec14d03b24513963e28259f9c3b8efa1a3caa0aa9d1232244",
+    "workerBaseCommit": "59afe9b78b06f6452abbeeba27a73b46653b64d3"
+  },
+  "originalRows": 11,
+  "variantRows": 11,
+  "counts": {
+    "rows": 22,
+    "claimAppearances": 124,
+    "conflictAppearances": 4,
+    "abstentionAppearances": 44,
+    "noCanonicalTargets": 22,
+    "evidenceFragmentAppearances": 78,
+    "claimStates": {
+      "conflicting": 8,
+      "declared": 102,
+      "unknown": 14
+    }
+  },
+  "originalPrefixBytes": 70333,
+  "originalPrefixExact": true,
+  "claimsIndependentOfAugmentation": 62,
+  "inverseRecoveryChecked": 11,
+  "rejectsRetained": 5,
+  "codePins": {
+    "correct_target_policy_v2.py": "d0a176b1effd8a90e1910e481e727453c831077880cf54143901bec8e69adb13",
+    "assemble_batch.py": "d394f27d1af7128e039ffde95e5e19d8852552bea53f1e4434340d3c5ff1621d",
+    "prepare_inventory.py": "4ec63fc3d9fad2630e556e9dbe5a2da8880f2bdafb99dde885e5e11c53078d95",
+    "augment_citation_views_v3.py": "5aaf2f1a999a35e61f814ca7a57034564ad86f36d81839253ef4a257d667a834"
+  },
+  "codeHashConvention": "canonical LF; datasets/artifacts remain raw",
+  "artifacts": [
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-v3.jsonl",
+      "bytes": 157217,
+      "sha256": "d8ee61f09e474069bf4375ac1cc1b24f574ca18a32b4e49721fa9d415df6d1b4"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/citation-view-v3.mapping.json",
+      "bytes": 21839,
+      "sha256": "5613e167d9de0838089596a9318e0230c624a3b1976c759626ae3293965112ee"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/citation-view-v3.receipt.json",
+      "bytes": 15413,
+      "sha256": "7ec28054d645185c6c4426b0faccf3c6d199f2ac4b925445c83fcb6b9765c3f3"
+    }
+  ],
+  "reviewState": "needs_independent_review",
+  "teacher": {
+    "role": "dedicated_ML_teacher",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "max",
+    "observedModelReasoningTier": "unexposed",
+    "requiredSpeed": "default/standard",
+    "method": "task_teacher_authored/1"
+  },
+  "qualification": "provisional train augmentation; no new facts or measured quality improvement",
+  "evaluationAccess": false,
+  "devRawAccess": false,
+  "sourceSpecificLaunchClearance": "unconfirmed; user-authorized public local development only"
+}

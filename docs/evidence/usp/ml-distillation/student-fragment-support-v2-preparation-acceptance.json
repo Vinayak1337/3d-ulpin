@@ -1,0 +1,149 @@
+{
+  "coordinatorBase": "0ead2fa66ac65be07a9bd53348bc1940b7964000",
+  "counts": {
+    "candidateAppearances": 57,
+    "emptySelections": 3,
+    "rows": 10,
+    "selectedAppearances": 12
+  },
+  "parentData": {
+    "bytes": 82626,
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-fragments-v1.jsonl",
+    "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+  },
+  "decision": "accepted_cpu_preparation_only",
+  "integratedCodeCommit": "32727cad0aaff3f1da7fc46913fc6dceb5d3d754",
+  "integratedEvidenceCommit": "99ff8a7b8b0bce0191ba2af179b8a3a5194c890a",
+  "integratedReport": {
+    "bytes": 16208,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-preparation-v1.json",
+    "physicalSha256": "cbbcdf9f10ec931eaab927cfd8af3a9af72f7dc41fa766ea4cc3671f3d75b89b"
+  },
+  "limitations": [
+    "New pairs cover genuinely unsupported unit/current-status qualifications; no new absent/null/withheld native state class is represented or fabricated.",
+    "All labels remain provisional_synthetic_supervision / needs_independent_review, sarvamDerived=false.",
+    "No model quality, generalization, canonical association, independent truth, source requalification or release pass.",
+    "Native ten-row token lengths/full target plus EOS and 4096 ceiling require the separately frozen future phase; no truncation/exclusion is authorized.",
+    "Existing fitter serializes literal token-ID/position arrays for the first update only; no all-row literal array receipt is claimed.",
+    "Future templates are disabled and unresolved; separate review/final execution freeze is required. Reload additionally needs an accepted v2 saved fit; failed v1 adapter is not a starting point.",
+    "Requested model/effort/speed are recorded; actual model/effort/tier remain unexposed."
+  ],
+  "next": "Exactly one separately frozen STUDENT-22 original-base fit; separately reviewed saved-fit acceptance must precede STUDENT-23 reload.",
+  "ownerBase": "8bad2505baa7f9d01eede03de686ae930d1a0695",
+  "ownerCodeCommit": "6b283176ed5f07ce058399e60bae10159fb0be7b",
+  "ownerFinalCheckpoint": {
+    "bytes": 10960,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-preparation-b89504a150d945ceae27b38044ed46ce\\final-checkpoint.json",
+    "physicalSha256": "debdf5c1a66bb2e0d664515ff48defa8f030d86aa2bd25bbb9ca86a9f91547bd"
+  },
+  "ownerFinalHead": "32e661a13e04db23b1cab3f0211b12b372474d38",
+  "ownerReport": {
+    "bytes": 15916,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-support-v2-preparation-v1.json",
+    "physicalSha256": "13c2f689fba83436239c937cfc2bcf741625b41dc67f3a9c887f5e23231f74d5"
+  },
+  "profilePlan": {
+    "code": 33,
+    "fitExpectedEntries": 19685,
+    "inputs": 13,
+    "interpretation": "Planning metadata only; actual fresh profile hash and inventory acceptance occur during the separately authorized stage.",
+    "model": 9,
+    "runtime": 19630
+  },
+  "qualification": {
+    "cpuPreparation": true,
+    "fitOrResourceResult": false,
+    "generalizationOrCanonicalAssociationOrEvaluationOrPromotionOrRelease": false,
+    "qualityOrIndependentTruth": false
+  },
+  "recordedAtUtc": "2026-10-03T18:07:01.883476+00:00",
+  "requestedSettings": {
+    "interpretation": "Dispatch exposes model/effort but no tier. Report observable settings, never claim speed from prompt/global preference.",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Versioned dataset/source/fit/reload authority must retain strict historical admissions and common proof while preserving the ten unchanged targets and existing memory containment.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "reviewAudit": {
+    "bytes": 9392,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-21-support-preparation-review-v1-c69ef238074f4d9fa6e179db804b2548\\audit.json",
+    "physicalSha256": "15c6f20343e8a7cb5c4dc888274806f7615e146b0deee2d7b12ad4765a2f7773"
+  },
+  "reviewExecution": {
+    "bytes": 550,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-21-support-preparation-review-v1-c69ef238074f4d9fa6e179db804b2548\\review.execution.json",
+    "physicalSha256": "8749b709b869d11b216784bad63af78cab9f956905555b2d684b4d4169b6b249"
+  },
+  "reviewHelper": {
+    "bytes": 9699,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-21-support-preparation-review-v1-c69ef238074f4d9fa6e179db804b2548\\review.py",
+    "physicalSha256": "2ce2da7754860e428042188efec447a6b37c0a7b46d1affcba7de9efe834b23d"
+  },
+  "sourcePins": {
+    "bytes": 14636,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-preparation-b89504a150d945ceae27b38044ed46ce\\source-pins.json",
+    "physicalSha256": "ae56225077dffbb963905aef24918c71b271c0c89fc4bc540166a98d7b5a86d4"
+  },
+  "stagingReadOnlyObservation": {
+    "changedByThisTask": false,
+    "head": "a3066771213f6a2d42363decf60ed957a5a00b07",
+    "status": []
+  },
+  "task": "STUDENT-21-FRAGMENT-SUPPORT-V2-PREP",
+  "teacherAcceptance": {
+    "bytes": 7078,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher-qualified-support-pairs-acceptance-v2.json",
+    "physicalSha256": "9d3725a4c519d941c7f9341fa3f51d98746edac2bb74f1975880715482d15aa1"
+  },
+  "trainingComponents": {
+    "bytes": 8405,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-support-v2-preparation-b89504a150d945ceae27b38044ed46ce\\training-component-pins.json",
+    "physicalSha256": "19e978bb783347c2df7b494c0ab0c983541778b7e20d9cd552b2e7cc548fcc81"
+  },
+  "v2Data": {
+    "bytes": 138050,
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/train-teacher-fragments-v2.jsonl",
+    "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+  },
+  "verification": {
+    "completeOwnedCodeReview": true,
+    "componentRows": 10,
+    "disabledTemplatesRemainDisabled": true,
+    "integrationEquality": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "32e661a13e04db23b1cab3f0211b12b372474d38",
+        "99ff8a7b8b0bce0191ba2af179b8a3a5194c890a",
+        "--",
+        "docs/evidence/usp/ml-distillation/student/fragment-support-v2-preparation-v1.json",
+        "docs/evidence/usp/ml-distillation/student/fragment-support-v2-preparation-v1.md",
+        "scripts/usp/learning/association/association_adapter.py",
+        "scripts/usp/learning/association/stage_adapter.py",
+        "scripts/usp/learning/association/stage_fragment_adapter.py",
+        "scripts/usp/learning/association/stage_fragment_support_v2.py",
+        "scripts/usp/learning/association/test_fragment_support_v2.py",
+        "services/geo/geo/usp_learning/association/fragment_adapter.py",
+        "services/geo/geo/usp_learning/association/fragment_support_v2.py",
+        "services/geo/geo/usp_learning/association/student.py"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin",
+      "exitCode": 0
+    },
+    "matchedReferences": 26,
+    "nativeTokenizerOrModelOrStage": false,
+    "outsideAcceptedFitAstUnchanged": true,
+    "ownerEightCompilesAndFiveCpuControlsConsumed": true,
+    "ownerSuiteRerun": false,
+    "parentPairSourceReceiptBindingsMatched": true,
+    "physicalCanonicalGitSources": 33,
+    "positiveFinalHeadAssignmentAndFreezeAdmission": true,
+    "protectedUnchangedSources": 26,
+    "v1ConstantsAndTeacherAdmissionAstUnchanged": true
+  },
+  "version": "student-fragment-support-v2-preparation-acceptance/1"
+}

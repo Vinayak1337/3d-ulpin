@@ -1,0 +1,134 @@
+{
+  "acquisition": {
+    "bytes": 2650,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\rank-fit-timeout-recovery-research-v1-ccd249e8959b460d8a41e6009c48ff64\\acquisition.json",
+    "physicalSha256": "888a6c06b002b1437cbbb761a2847fe277eaf93546c637b28928778ced3e1f26"
+  },
+  "applicability": [
+    {
+      "finding": "GradScaler has five scalar state entries; save after update(), restore using load_state_dict.",
+      "lines": "607-659",
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.8.0/torch/amp/grad_scaler.py",
+      "version": "PyTorch2.8.0, installed version family"
+    },
+    {
+      "finding": "Complete resume includes model, optimizer, scaler, update cursor and Python/NumPy/CPU/CUDA RNG. Use as design guidance; existing implementation uses pickle and is not copied wholesale.",
+      "lines": "save_accelerator_state and load_accelerator_state, especially279-303",
+      "url": "https://raw.githubusercontent.com/huggingface/accelerate/v1.10.1/src/accelerate/checkpointing.py",
+      "version": "Accelerate1.10.1, installed"
+    },
+    {
+      "finding": "Explicitly discusses optimizer/scheduler/RNG/epoch-step continuity. Discovery support only; pinned implementations carry version-specific guidance.",
+      "url": "https://github.com/huggingface/accelerate/issues/285",
+      "version": "Historical issue, discovered in saved public search"
+    },
+    {
+      "finding": "General checkpoint guidance only; no version-specific implementation assumptions.",
+      "url": "https://docs.pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html",
+      "version": "Current tutorial site2.14.0 differs from installed2.8"
+    }
+  ],
+  "attributionAndLaunchGaps": "PyTorch BSD-style and Accelerate Apache2.0 references retained. No upstream code installed/copied in this research. Preserve appropriate attribution if adapting any implementation; launch-specific licensing/redistribution/provider permissions remain deferred. Sarvam outputs excluded.",
+  "boundaries": "Public research already acquired; hashes checked once here. No repeated web discovery, model/runtime/dependency install, native execution, source refresh, inference, expectation/evaluation access or guard/host change.",
+  "changedApproach": {
+    "acceptance": "Every source checkpoint must come from a successful contained phase with accepted output map/completion/resource/cleanup proof, exact file pins and matching experiment/code/data/recipe/phase chain. Failed or incomplete outputs stay immutable and cannot resume.",
+    "nativeProof": "One tiny synthetic dropout/AdamW/GradScaler split-versus-uninterrupted equivalence control using actual serializer, new objects and RNG restore, inside a separately authorized future contained phase; not a model quality claim.",
+    "phaseUpdateRanges": [
+      [
+        0,
+        20
+      ],
+      [
+        20,
+        40
+      ],
+      [
+        40,
+        60
+      ]
+    ],
+    "principalChange": "Safe complete-state checkpoints between independently accepted bounded fit phases",
+    "reason": "Observed first two20-update windows take221.043/221.573 seconds versus332.115 for30 updates, giving more save/guard margin. Worker phase clocks exclude some startup overhead; this is a planning basis, not a runtime guarantee.",
+    "restoreState": "Named fp32 adapter masters; exact AdamW moments/step/parameter groups; GradScaler; complete global update/contribution cursor; fixed permutation binding and loss prefix; torch CPU/single CUDA RNG and Python RNG. No learning-rate scheduler exists; do not add one. Declare any other training RNG actually used.",
+    "serialization": "Installed safetensors plus strict bounded JSON; no pickle, torch.load/save or unrestricted Python objects.",
+    "totalUnchanged": "60 complete-parent updates/342 contributions, six seed17 epochs, same train57 pairs/ten parents, prompts/labels/objective/hyperparameters/base/LoRA/numerics unchanged."
+  },
+  "diagnosis": "Execution/recovery failure: guard TimeoutError after600000ms, 44/60 complete updates and no saved state. Recorded losses/gradients finite and memory samples within caps. No terminal supervisor observation; neither success nor quality failure is established.",
+  "failureEvidence": {
+    "bytes": 6077,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-fit-timeout-acceptance-v1.json",
+    "physicalSha256": "f2ac2cd0110e225154c79f814de79ba3755480a0ac8abcf1667945079da632c3"
+  },
+  "futureQualityComparison": "Only after all60 updates and exact saved final adapter acceptance: separately frozen same-policy development reload versus STUDENT-27 baseline. Criteria remain valid/exact2/2, precision1, positive recall1, unsupportedFP0; held-out unopened.",
+  "hypothesis": "20-update phases can finish and safely publish a full resume checkpoint within unchanged600-second/6GiB bounds while preserving update/dropout continuity.",
+  "maxRecordedParentSeconds": 27.80430429999251,
+  "measuredTimingWindows": [
+    {
+      "contributions": 114,
+      "firstUpdate": 1,
+      "lastUpdate": 20,
+      "recordedUpdateSeconds": 221.0425429000461
+    },
+    {
+      "contributions": 114,
+      "firstUpdate": 21,
+      "lastUpdate": 40,
+      "recordedUpdateSeconds": 221.57290480000665
+    },
+    {
+      "contributions": 171,
+      "firstUpdate": 1,
+      "lastUpdate": 30,
+      "recordedUpdateSeconds": 332.1148994000396
+    },
+    {
+      "contributions": 82,
+      "firstUpdate": 31,
+      "lastUpdate": 44,
+      "recordedUpdateSeconds": 163.79646130000765
+    }
+  ],
+  "nextExperiment": "Not authorized here. Code/CPU review first; then one final-head native phase1. Review saved checkpoint before assigning phase2, then phase3. Stop on first failed proof/guard/save/acceptance; do not raise limits or blindly retry.",
+  "notApplicable": "DDP mt19937 issue190 and multiworker image augmentation issue4191 differ from this single-GPU, fixed-order, no-image-augmentation flow.",
+  "priorHistory": "Retain completed generative v1/v2 over-selection failures and original rank baseline positive recall0. Changing execution durability does not fix or qualify model quality; frozen rank objective/data/base/policy stay the same.",
+  "recordedAtUtc": "2026-10-03T23:53:12.761979+00:00",
+  "references": [
+    {
+      "bytes": 30563,
+      "name": "pytorch-2.8-grad-scaler.py",
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\rank-fit-timeout-recovery-research-v1-ccd249e8959b460d8a41e6009c48ff64\\pytorch-2.8-grad-scaler.py",
+      "resolvedUrl": "https://raw.githubusercontent.com/pytorch/pytorch/v2.8.0/torch/amp/grad_scaler.py",
+      "sha256": "53bdb300c5030c5ead29c8a60a578dcff309777e00cd1b97420530918f6ce5bd",
+      "status": 200,
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.8.0/torch/amp/grad_scaler.py"
+    },
+    {
+      "bytes": 13957,
+      "name": "accelerate-1.10.1-checkpointing.py",
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\rank-fit-timeout-recovery-research-v1-ccd249e8959b460d8a41e6009c48ff64\\accelerate-1.10.1-checkpointing.py",
+      "resolvedUrl": "https://raw.githubusercontent.com/huggingface/accelerate/v1.10.1/src/accelerate/checkpointing.py",
+      "sha256": "0118bc64d1652d05b6bb3f617760f9fb9ad150da18db32fb0527bc1d0281163b",
+      "status": 200,
+      "url": "https://raw.githubusercontent.com/huggingface/accelerate/v1.10.1/src/accelerate/checkpointing.py"
+    },
+    {
+      "bytes": 121988,
+      "name": "pytorch-checkpoint-doc.html",
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\rank-fit-timeout-recovery-research-v1-ccd249e8959b460d8a41e6009c48ff64\\pytorch-checkpoint-doc.html",
+      "resolvedUrl": "https://docs.pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html",
+      "sha256": "b92f6d8b6349926d467955501f014a7d5ddd7aee3a2105aa28b23d9a84136063",
+      "status": 200,
+      "url": "https://docs.pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html"
+    },
+    {
+      "bytes": 27630,
+      "name": "public-issue-search.json",
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\rank-fit-timeout-recovery-research-v1-ccd249e8959b460d8a41e6009c48ff64\\public-issue-search.json",
+      "resolvedUrl": "https://api.github.com/search/issues?q=repo%3Ahuggingface%2Faccelerate+resume+rng+optimizer+is%3Aissue&per_page=3",
+      "sha256": "e32ec7d2bc4a5bba762c676396c1f8673fa639337e6aff3744270f27849829ed",
+      "status": 200,
+      "url": "https://api.github.com/search/issues?q=repo%3Ahuggingface%2Faccelerate+resume+rng+optimizer+is%3Aissue&per_page=3"
+    }
+  ],
+  "version": "association-fragment-rank-timeout-recovery-research/1"
+}

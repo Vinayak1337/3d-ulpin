@@ -1,0 +1,146 @@
+{
+  "version": "student-fragment-baseline-acceptance/1",
+  "recordedAtUtc": "2026-10-03T12:53:09.351486+00:00",
+  "status": "contained_runtime_and_evidence_accepted_development_selection_quality_failed",
+  "ownerEvidenceCommit": "a1f424f7d0496f920388c51c0fc891b3c9a2762e",
+  "executedHead": "04931c584bacc5bb68d6b839173c2a93adbaf25d",
+  "integratedEvidenceCommit": "51a99902be4f8882e096ae7bcf8fd56d6b9e6516",
+  "ownerReceiptPhysicalSha256": "5d7435b244d62756fc74f70ed7ecf6541d35030dcc936f09e9ff6816fd7708d6",
+  "integratedReceipt": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-baseline-v1.json",
+    "physicalSha256": "ae47877ccb6222f256e6544530d325bc54ebd8f805509508e81fda5cbe1d1121",
+    "bytes": 40610
+  },
+  "integratedMarkdown": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-baseline-v1.md",
+    "physicalSha256": "22b77ea99f91a4950e904324a84d0899fcfafa2d1dce65a22f9ae1117475fcee",
+    "bytes": 5388
+  },
+  "inspection": "Evidence-only delta, both complete raw responses, strict unchanged projections and host comparison inspected. Existing source-only contexts and seed/greedy/model/prompt/grammar are unchanged. Nine immutable accepted outputs, protected supervisor/guard, session/profile/freeze/source/input/model-metadata bindings and cleanup match. Runtime success remains separate from failed request-selection quality.",
+  "verification": {
+    "command": [
+      "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-17-baseline-review-v1-6d720173957c4566a0b2e1b235f10ead\\audit.py"
+    ],
+    "exitCode": 0,
+    "audit": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-17-baseline-review-v1-6d720173957c4566a0b2e1b235f10ead\\audit.json",
+      "physicalSha256": "4cc3ec97f43fd44e90c6864bb3b165196e12cd1ecd974a52fd3d00c1c2ccd358",
+      "bytes": 19272
+    },
+    "auditSource": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-17-baseline-review-v1-6d720173957c4566a0b2e1b235f10ead\\audit.py",
+      "physicalSha256": "0cd2e0ef04ed9208e568e3fa3ddfb5709878163e61538ba52c7a436afdd9d8bb",
+      "bytes": 11488
+    },
+    "matchedReferenceFiles": 43,
+    "matchedAcceptedOutputs": 9,
+    "matchedPhysicalCanonicalGitCopiedSources": 20,
+    "matchedInputMetadataFiles": 13,
+    "matchedModelMetadataPins": 9,
+    "pureWholeResponseProjections": 2,
+    "changedWhitespaceCheckExit": 0,
+    "modelRuntimeTokenizerGuardOrSourceCampaignRepeated": false,
+    "newHostModelComparisonPerformed": false,
+    "initialAuditExitCode": 1,
+    "initialAuditCorrection": "Review helper assumed two checked_run_inputs returns; corrected to its existing three-value interface. Both attempts retained; no production code, model run or worker check was repeated.",
+    "initialAuditCommand": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-17-baseline-review-v1-6d720173957c4566a0b2e1b235f10ead\\audit-first-attempt-command.json",
+      "physicalSha256": "1ffbe2d785aebd99950e3ddf695f7d64a3573b416b8fb61b220d658f45513938",
+      "bytes": 493
+    },
+    "initialAuditSource": {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-17-baseline-review-v1-6d720173957c4566a0b2e1b235f10ead\\audit-first-attempt.py",
+      "physicalSha256": "89a5806486a014f0ebea6eae4831e012c7e9306f86614f1c6163b5be794c73e0",
+      "bytes": 11429
+    }
+  },
+  "metrics": {
+    "requests": 2,
+    "families": 1,
+    "candidateFragments": 7,
+    "jsonSyntaxValidResponses": 2,
+    "schemaValidResponses": 2,
+    "validWholeResponses": 2,
+    "exactRequestSelectionSets": 1,
+    "selectedCount": 0,
+    "expectedCount": 1,
+    "acceptedTruePositives": 0,
+    "falsePositives": 0,
+    "misses": 1,
+    "precision": null,
+    "positiveRecall": 0,
+    "unsupportedRequests": 1,
+    "unsupportedRequestFalsePositives": 0,
+    "correctContextLimitedEmptyRetrievals": 1
+  },
+  "resources": {
+    "peakJobCommittedBytes": 5431214080,
+    "peakProcessRssBytes": 3259510784,
+    "cuda": "12.8",
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpuSampleCount": 170,
+    "maxCudaAllocatedBytes": 1291972608,
+    "maxCudaReservedBytes": 1356857344,
+    "minimumSampledFreeCudaBytes": 6030360576,
+    "torch": "2.8.0+cu128",
+    "transformers": "4.57.6"
+  },
+  "timing": {
+    "stageWallSeconds": 158.7348778000014,
+    "guardedCommandWallSeconds": 283.66215619999275,
+    "guardSetupChildCleanupAggregateSeconds": 127.125,
+    "guardSetupSeconds": null,
+    "childOnlySeconds": null,
+    "cleanupSeconds": null,
+    "separatePhaseTimingAvailable": false,
+    "phaseTimingLimitation": "Frozen guard records only setup/child/cleanup aggregate after initial profile verification; separate phase times are not emitted. No child-only time inferred.",
+    "modelLoadSeconds": 1.6905505000031553,
+    "modelSectionSeconds": 6.040705200008233,
+    "perRequestGenerationSeconds": [
+      2.3849428000103217,
+      1.959430600007181
+    ]
+  },
+  "guard": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\receipts\\association_student-run-guard.json",
+    "physicalSha256": "f88716ac6b7f2a8ab5dd80fb0617942543b0ba2861c3e01469c5eb40a0f2e0d0",
+    "bytes": 37175
+  },
+  "acceptedReceipt": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\receipts\\association_student-run-accepted.json",
+    "physicalSha256": "07ee89b643551787fe79abc1baf90d4f4950b5f7f47190622467ccdfba0ac7b8",
+    "bytes": 1133
+  },
+  "profile": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\profile.json",
+    "physicalSha256": "86b0f0b19d4e740f2e6e38f7eea8eaccd24b7b3072883f8b7d22421c39b8ef75",
+    "bytes": 2668470
+  },
+  "freeze": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80\\inputs\\run-freeze.json",
+    "physicalSha256": "9be4dd759c0562ed43c8f599c04c988680711ae044e57d3c3c97ffe2e2ad8ed4",
+    "bytes": 7457
+  },
+  "hostComparison": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-baseline-v1-host-1b930671d67040d08898d805e93e0071\\host-comparison.json",
+    "physicalSha256": "6e60e2f5ea9c4c62990a1413335d0930c8f69ab84fa84bdc39af094b0ccce719",
+    "bytes": 5496
+  },
+  "model": {
+    "name": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "weightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+    "adapter": null
+  },
+  "nextDecision": "One small request-bound fragment LoRA adaptation is justified by the positive building-name miss. Reuse accepted fitting machinery and six provisional train-only cases; prepare code/admission before a separate exact fit freeze and later saved-adapter comparison.",
+  "limitations": [
+    "2/2 valid whole outputs but only 1/2 exact request sets and 0/1 positive recall. Precision is null because zero IDs were selected.",
+    "The unsupported request correctly returned empty with zero false positives; this is supplied-context support only.",
+    "One development family, controller validity and preserved parser fragments do not qualify learned relevance, generalization, source extraction accuracy, canonical association, operational performance or release.",
+    "No adapter fit, held-out/retired evaluation, promotion or shared API/gateway registration follows from runtime acceptance."
+  ]
+}

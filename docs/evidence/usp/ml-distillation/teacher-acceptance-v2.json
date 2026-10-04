@@ -1,0 +1,16 @@
+{
+  "version": "ml-teacher-v2-coordinator-acceptance/1",
+  "teacherCommit": "59afe9b78b06f6452abbeeba27a73b46653b64d3",
+  "v1Sha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+  "v2Sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c",
+  "examples": 11,
+  "claimsUnchanged": 62,
+  "conflictsUnchanged": 2,
+  "existingAbstentionsUnchanged": 11,
+  "appendedPolicyAbstentions": 11,
+  "inputAndOriginalSupervisionPreserved": true,
+  "currentAndReusedArtifactPinsMatched": 5,
+  "correctionCodeInspectedAndGitPinned": true,
+  "sourceInventoryOrModelRun": false,
+  "acceptedUse": "same provisional experimental supervision with deterministic missing-target policy; no new source fact or qualification"
+}

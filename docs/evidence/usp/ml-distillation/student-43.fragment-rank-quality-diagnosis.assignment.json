@@ -1,0 +1,337 @@
+{
+  "acceptedResult": {
+    "bytes": 9636,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-native-acceptance-v1.json",
+    "physicalSha256": "1f3e4fe3cebef0b5dece40761fb0ca91fd69f7012e20a851e9ed47bc749efb3d"
+  },
+  "baseCommit": "9e1782a98252542d02440022f8680535f4ee0080",
+  "boundaries": "No model/GPU/Torch/Transformers/PEFT/tokenizer/safetensors imports or calls, fit/reload/inference/stage/profile/guard/test reruns, checkpoint restore, new acquisition/labels/sources/splits, development contexts/raw scores/original or cached expected selections/closed held-out access, teacher messages, source refresh/relabeling, policy/prompt/threshold/calibration changes, active service/Docker/provider/host/dependency/frontend/shared API/staging/other-worker/storage/move/link/compression/push/deploy/promotion changes. Read acceptedResult only as supplied aggregate failure signal; do not follow its development/private host references. No work outside exclusive private output root.",
+  "branch": "task/ml-association-student-20261002",
+  "callbackTarget": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "codeEditsAllowed": false,
+  "cpuDiagnosisAllowed": true,
+  "failedQualitySignal": {
+    "aggregate": {
+      "candidates": 7,
+      "contextLimitedEmptyRequests": 2,
+      "exactRequestSets": 1,
+      "expectedPositive": 1,
+      "falsePositives": 0,
+      "families": 1,
+      "misses": 1,
+      "positiveRecall": 0.0,
+      "precision": null,
+      "requests": 2,
+      "selected": 0,
+      "truePositives": 0,
+      "unsupportedRequestFalsePositives": 0,
+      "validCompleteVectors": 2
+    },
+    "allDevelopmentMarginsNegative": true,
+    "allMarginsMoreNegativeThanBaseline": true,
+    "developmentDataAccessForThisTask": false
+  },
+  "failureResearch": {
+    "bytes": 3398,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-42-native-reload-quality-review-v1-b0fb2826e7e44d66bcad4962cd17c63f\\failure-recovery-research.json",
+    "physicalSha256": "bfcd04b3b699900b27b5caec30854d1cbad3650dab19253df47fae6bd40c149f"
+  },
+  "gitCommitsAllowed": false,
+  "historicalTraining": {
+    "contributions": 342,
+    "counts": {
+      "emptyParents": 3,
+      "families": 2,
+      "negative": 45,
+      "pairs": 57,
+      "parents": 10,
+      "positive": 12
+    },
+    "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+    "phases": [
+      {
+        "acceptedMap": {
+          "bytes": 2601,
+          "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-c35149db6a8c4a859d1e65cf4c5561a7\\receipts\\association_adapter-fit-accepted.json",
+          "physicalSha256": "feac5c05bd170bacdc88d0cf2bd151fa477592b1cec4af74872febda18af2688"
+        },
+        "independentAcceptance": {
+          "bytes": 10483,
+          "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-1-native-acceptance-v1.json",
+          "physicalSha256": "723631ce0b62d5682ef73abe998671db63c891fa9ab104b92a819f9f52d6c8f7"
+        },
+        "localContributions": 114,
+        "localUpdates": 20,
+        "logs": {
+          "checkpoint/state.json": {
+            "bytes": 29921,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-c35149db6a8c4a859d1e65cf4c5561a7\\outputs\\fit\\checkpoint\\state.json",
+            "physicalSha256": "38bcf07f62734234bf839e76e2924177ef3771f420302fe0881a3bbbc462e587"
+          },
+          "fit-progress.jsonl": {
+            "bytes": 9610,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-c35149db6a8c4a859d1e65cf4c5561a7\\outputs\\fit\\fit-progress.jsonl",
+            "physicalSha256": "a73c705d0c0811135cfdb6aa362b0b23c59506809caf9d9be668635b17e9d8a2"
+          },
+          "fit-result.json": {
+            "bytes": 23895,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-c35149db6a8c4a859d1e65cf4c5561a7\\outputs\\fit\\fit-result.json",
+            "physicalSha256": "d2ccbc75051e243b730d91f9abeb6cdd661951b8a8aa7b89f9083072e969bce0"
+          },
+          "memory-phases.jsonl": {
+            "bytes": 859381,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-c35149db6a8c4a859d1e65cf4c5561a7\\outputs\\fit\\memory-phases.jsonl",
+            "physicalSha256": "0ffb67dcdab04031bed0a41fcd3f9611af22c192dafc7dd031c3b86557dcc0b1"
+          },
+          "token-preflight.json": {
+            "bytes": 56883,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-c35149db6a8c4a859d1e65cf4c5561a7\\outputs\\fit\\token-preflight.json",
+            "physicalSha256": "1a9a7e6c36c3345d015c8bf050995b22d406a19d34b142a335eeb3ddf68f7fc0"
+          }
+        },
+        "number": 1,
+        "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-c35149db6a8c4a859d1e65cf4c5561a7"
+      },
+      {
+        "acceptedMap": {
+          "bytes": 2125,
+          "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4\\receipts\\association_adapter-fit-accepted.json",
+          "physicalSha256": "046ca23c2769750445cef53a97f6bf090b4bcad5465c736b02b87d19d5407ec4"
+        },
+        "independentAcceptance": {
+          "bytes": 10546,
+          "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-2-native-acceptance-v1.json",
+          "physicalSha256": "609e01df8011b2e4ff8748322a694097e91ab0f2bdcfa67def4c8cc8d0209123"
+        },
+        "localContributions": 114,
+        "localUpdates": 20,
+        "logs": {
+          "checkpoint/state.json": {
+            "bytes": 30392,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4\\outputs\\fit\\checkpoint\\state.json",
+            "physicalSha256": "d67361899d1a8d08216c6d3805fdf6da8e0bb19922b7eb60162c51e6c7d21bd4"
+          },
+          "fit-progress.jsonl": {
+            "bytes": 9624,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4\\outputs\\fit\\fit-progress.jsonl",
+            "physicalSha256": "9e746a63110b4a1f6b9e08bbb6b5737a0c826232f3ffe7e64c5dadc4b638012f"
+          },
+          "fit-result.json": {
+            "bytes": 24527,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4\\outputs\\fit\\fit-result.json",
+            "physicalSha256": "383de1f5daafe4a7ca8d1fa4baa9a7383c642dbe6c6afb64faaa62a1d9399dec"
+          },
+          "memory-phases.jsonl": {
+            "bytes": 859175,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4\\outputs\\fit\\memory-phases.jsonl",
+            "physicalSha256": "449a688fd4df0fdfd750cfc014236ba02dd82110a9ce9f461a59f968dc5ee756"
+          },
+          "token-preflight.json": {
+            "bytes": 56882,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4\\outputs\\fit\\token-preflight.json",
+            "physicalSha256": "81c3a3cf40bc16c669589c83803f121530bd3dcb89165d99545e5e62974cef21"
+          }
+        },
+        "number": 2,
+        "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4"
+      },
+      {
+        "acceptedMap": {
+          "bytes": 2442,
+          "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\receipts\\association_adapter-fit-accepted.json",
+          "physicalSha256": "e002a770bd823ac91cd10e2897722cd08a96a7e28f49deeea4916f51e999597b"
+        },
+        "independentAcceptance": {
+          "bytes": 10545,
+          "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-3-native-acceptance-v1.json",
+          "physicalSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c"
+        },
+        "localContributions": 114,
+        "localUpdates": 20,
+        "logs": {
+          "checkpoint/state.json": {
+            "bytes": 30803,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\checkpoint\\state.json",
+            "physicalSha256": "3f5555f58435d801b37d96bc77ef48409ea5ca91d5b41a71a8ce494a7640e41a"
+          },
+          "fit-progress.jsonl": {
+            "bytes": 9634,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\fit-progress.jsonl",
+            "physicalSha256": "365c08e29e3771ab13e5377a4b0db08f604213f194afdc91ece3a761094fe12d"
+          },
+          "fit-result.json": {
+            "bytes": 25084,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\fit-result.json",
+            "physicalSha256": "953a08de35a06ef15fc2c89d2e4aa49d6f6b60c47bce5d7b36741a239a0176cf"
+          },
+          "memory-phases.jsonl": {
+            "bytes": 859256,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\memory-phases.jsonl",
+            "physicalSha256": "f3a41306651951d5e4b7da11fd1b0cc3cedaf9868448565e296d237ee07af580"
+          },
+          "token-preflight.json": {
+            "bytes": 56883,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\token-preflight.json",
+            "physicalSha256": "939f123210ea75f93664be6c5ef99db485e1549c689ea96f04d6b42ffcde29d4"
+          }
+        },
+        "number": 3,
+        "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472"
+      }
+    ],
+    "publication": {
+      "bytes": 11699,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\publication.json",
+      "physicalSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82"
+    },
+    "sourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+    "trainingData": {
+      "counts.json": {
+        "bytes": 84,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\counts.json",
+        "physicalSha256": "3e50dc8a3a1bb35d65da810623261981a094660a69b071d59d874e12c0d6109f"
+      },
+      "inputs/family-freeze.json": {
+        "bytes": 10867,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\family-freeze.json",
+        "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+      },
+      "inputs/fragment-schema-v1.json": {
+        "bytes": 4537,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\fragment-schema-v1.json",
+        "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082"
+      },
+      "inputs/rows-v2.receipt.json": {
+        "bytes": 4109,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\rows-v2.receipt.json",
+        "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+      },
+      "inputs/schema-v1.json": {
+        "bytes": 3966,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\schema-v1.json",
+        "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+      },
+      "inputs/source-support-v2.receipt.json": {
+        "bytes": 33399,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\source-support-v2.receipt.json",
+        "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+      },
+      "inputs/train-teacher-fragments-v1.jsonl": {
+        "bytes": 82626,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v1.jsonl",
+        "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+      },
+      "inputs/train-teacher-fragments-v2.jsonl": {
+        "bytes": 138050,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v2.jsonl",
+        "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+      },
+      "inputs/training-row-pins-v2.json": {
+        "bytes": 6560,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\training-row-pins-v2.json",
+        "physicalSha256": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+      },
+      "lineage.json": {
+        "bytes": 56203,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\lineage.json",
+        "physicalSha256": "7b2291969484aeccb913704e7d88e295f6d7fd26a6cf0de9aea9c87061fb7026"
+      },
+      "policy.json": {
+        "bytes": 3727,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\policy.json",
+        "physicalSha256": "9237baa39a7927e4071054bab4fc080356c4f3123d6ac35717f2da4d3b5a2002"
+      },
+      "scoring-inputs.jsonl": {
+        "bytes": 271577,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\scoring-inputs.jsonl",
+        "physicalSha256": "753533a1c654274316aed6b2f06641d20ad47d73bfc2375ba1d73d6e05e12696"
+      },
+      "system-prompt.txt": {
+        "bytes": 573,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\system-prompt.txt",
+        "physicalSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5"
+      },
+      "train-fragment-rank-v1.jsonl": {
+        "bytes": 72525,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\train-fragment-rank-v1.jsonl",
+        "physicalSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd"
+      }
+    },
+    "updates": 60
+  },
+  "modelExecutionAllowed": false,
+  "ownership": "Only one fresh immutable fragment-rank-quality-diagnosis-v1 UUID directory under E:/BhuAayam-data/task-data/ml-distillation/student. Write CPU helper, concise diagnosis.json/.md, actual commands/exits/logs and receipt-index/finalization there; no repository changes. LearnerHEAD remains fixed for historical native authorities.",
+  "permissionsRequired": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "priorRankResearch": {
+    "bytes": 8149,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-recovery-research-v1.json",
+    "physicalSha256": "5f99f8d680794847ddf986f442e3082309b4123656564f870d7da75fc5fb319a"
+  },
+  "privateOnlyReturn": true,
+  "problem": "STUDENT-42 native reload passed all integrity/resource/cleanup checks but learned selections remain empty and miss one supported fragment. Cause unestablished; original expectation file is sealed again.",
+  "protectedAllRuntimeSources": {
+    "bytes": 11374,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-42-native-reload-quality-review-v1-b0fb2826e7e44d66bcad4962cd17c63f\\protected-runtime-source-pins.json",
+    "physicalSha256": "e2c7ec5cd4001f168e17ad194b44b0f33b776992e924bbacc96793e80a74e3c9"
+  },
+  "readOnlySourcePins": {
+    "services/geo/geo/usp_learning/association/adapter.py": {
+      "bytes": 32356,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\adapter.py",
+      "physicalSha256": "301084077551063fd833ade16d46aa20923e6a091374bb0e6f307eb54a8ff3a1"
+    },
+    "services/geo/geo/usp_learning/association/fragment_rank_adapter.py": {
+      "bytes": 23495,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_adapter.py",
+      "physicalSha256": "55b8f4d90bc33551fb9ae0776b62a60b4bbda7b69ef66956e79f6395a25669ab"
+    },
+    "services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py": {
+      "bytes": 21959,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_checkpoint.py",
+      "physicalSha256": "162901af3fbef48d613fcf69bc4cde8fd55634f31346cd67e3bd8b7bdb0f6706"
+    },
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py": {
+      "bytes": 11313,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_fit.py",
+      "physicalSha256": "b082400d907e1732d8d674870078e76df92780618763390437a23dc6dd2c847c"
+    },
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py": {
+      "bytes": 33147,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_phase_adapter.py",
+      "physicalSha256": "0507c7e23d5b3ff8fc06f49e016166c0fbaef6b9fe8d5faa6ebbfe6ce7f27a45"
+    },
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py": {
+      "bytes": 15098,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_runtime.py",
+      "physicalSha256": "376f1e3d075ecada452c5352199fbee278b09f961f372b50a436068794ca8598"
+    }
+  },
+  "recordedAtUtc": "2026-10-04T14:31:45.692429+00:00",
+  "returnRequirements": "Callback once with fixedHEAD/clean status, actual supplied permissions/requested-vs-observed settings, diagnosis/root/index/finalization paths/hashes,342 join/reconciliation outcome, compact findings/uncertainties and chosen disabled proposal. Preserve originals; coordinator publishes evidence separately. Teacher stays idle/blind; evaluation closed.",
+  "stop": "Stop CPU analysis at first input-pin drift or a contradiction that prevents trustworthy joining; preserve partial diagnostic evidence and callback. Otherwise return once diagnosis/proposal is complete. Do not launch any future proposed experiment.",
+  "success": "Compact evidence-backed diagnosis with a10-parent table and6-epoch class-specific summary, exact joins/counts/reconciliation, concrete supported failure location or remaining gap, and one reviewable changed-factor comparison proposal. A cause may remain uncertain; do not invent certainty or run a model to fill the gap.",
+  "task": "STUDENT-43-FRAGMENT-RANK-QUALITY-DIAGNOSIS",
+  "version": "ml-distill-fragment-rank-quality-diagnosis-assignment/1",
+  "work": [
+    "Consume prior teacher/source-support admission and rank research first. Do not repeat source discovery or label qualification. Audit actual57 pairs/10parents/2families against frozen original teacher rows/support receipts: label0/1,targetText,focus/order/identity and traceable request semantics. Retain needs_independent_review; report concrete discrepancies or gaps without modifying or relabeling inputs.",
+    "Compute per-parent/family positive/negative counts and exact effective weights using rational1/(10*candidateCount), plus empty-parent mass and meaningful repeated request/fragment patterns. Same fragment with different requests is not a contradiction by itself. Count unique original source/fragment/request coverage and characterize train source formats; do not inspect development contexts or expectations to build targeted examples.",
+    "Join exactly one after_loss_before_backward record per(epoch,update,exampleId,focusCandidateId/candidateIndex) from each accepted phase. Do not count after_backward duplicates, technical controls, failed unsaved44updates or inherited prefixes twice. Confirm342=6*57 and60complete parents with114 contributions perphase, and reconcile retained weighted candidate sums against parent stepLosses and six epochSumParentContributions. Final fit-result.json has stepLosses, not losses; checkpoint/state.json cursor.losses is the inherited prefix.",
+    "Report per-epoch positive/negative weighted mass, weighted contribution sum, unweighted NLL and per-parent trends. NLL/weight recovers target probability exp(-NLL), and relative correct-label sign follows comparison to log(2), if finite and safely away from tie. If deriving margins, use stable algebra and label orientation, handle zeros/rounding honestly. These are changing-parameter/dropout training-time observations, not final adapter eval metrics. No new forward/tokenizer/model calls. Distinguish train-positive failure, source/label gaps and transfer/objective limitation only as supported; state remaining uncertainty.",
+    "Source-review the actual historical target index/token IDs, focus prompt, accumulated parent loss, optimizer/scaler/update path and runtime scorer contract. Reuse prior passed native controls; no test campaign or new harness. Identify a concrete implementation mismatch only if evidenced, with location and why it changes the result.",
+    "Choose one justified materially changed next comparison proposal after diagnosis, grounded in retained research/primary documentation. It may address data/weighting/objective/model suitability, but no automatic threshold/prompt/epoch/hyperparameter sweep or unsupported labels. State hypothesis/principalfactor, coupled changes, comparable baseline/output contract, fixed task success criteria and bounded resource/stop conditions. Proposal remains disabled; coordinator reviews and freezes a separate implementation/native assignment."
+  ],
+  "workerSettings": {
+    "observedEffort": null,
+    "observedModel": null,
+    "observedTier": null,
+    "requestedEffort": "xhigh",
+    "requestedModel": "gpt-6.1-sol",
+    "requiredSpeed": "default/standard1x",
+    "tierToolControl": "Unexposed; prompt is not configuration."
+  },
+  "workerThread": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

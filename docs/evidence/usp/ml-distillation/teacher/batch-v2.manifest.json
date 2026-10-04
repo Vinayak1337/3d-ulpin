@@ -1,0 +1,86 @@
+{
+  "version": "ml-distill-teacher-batch/2",
+  "createdDate": "2026-10-02",
+  "status": "provisional_synthetic_supervision",
+  "split": "train",
+  "familyIds": [
+    "in-bihar-magnolia-residency",
+    "in-haryana-rera-2831"
+  ],
+  "contractPins": {
+    "schema": "3ba8fab2958ba93b042493bc4e6c0693f2049bdaa07f260c6639110c87a36a42",
+    "freeze": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+  },
+  "parent": {
+    "dataPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\train-teacher-v1.jsonl",
+    "dataSha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+    "manifestPath": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher\\batch-v1.manifest.json",
+    "bytes": 3119,
+    "sha256": "111238a279fa41bced88daac76cb106c2d2104396a11eb1804409757fc50fe9d"
+  },
+  "targetPolicyCorrection": {
+    "version": "ml-distill-target-policy-correction/2",
+    "parentDataSha256": "71e218b2a13ad26938f0b4ab5f4111125af8530dfbd0a01c0c3b9680f3bfefec",
+    "policy": {
+      "code": "no_canonical_targets",
+      "citations": []
+    },
+    "authority": "ML coordinator TEACHER-02 training-target feedback",
+    "method": "deterministic_contract_policy",
+    "scope": "No canonical targets/crosswalk in this frozen seed; not a new sourced fact."
+  },
+  "examples": 11,
+  "claims": 62,
+  "conflicts": 2,
+  "abstentions": 22,
+  "mandatoryPolicyPresent": 11,
+  "rejects": 5,
+  "codePins": {
+    "correct_target_policy_v2.py": "d0a176b1effd8a90e1910e481e727453c831077880cf54143901bec8e69adb13",
+    "assemble_batch.py": "d394f27d1af7128e039ffde95e5e19d8852552bea53f1e4434340d3c5ff1621d",
+    "prepare_inventory.py": "4ec63fc3d9fad2630e556e9dbe5a2da8880f2bdafb99dde885e5e11c53078d95"
+  },
+  "codeHashConvention": "canonical LF; data/original artifacts remain raw",
+  "artifacts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\train-teacher-v2.jsonl",
+      "bytes": 70333,
+      "sha256": "7510a7040afb7bec2bba9422eb5e14bbf0664c927bd0c2b24989c1af6dc7674c"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\target-policy-v2.receipt.json",
+      "bytes": 9526,
+      "sha256": "37cb37f8154cd452bf8e3a89468d5449383d9a4a1d8622656791f9d8196d2f0e"
+    }
+  ],
+  "reusedUnchangedV1Artifacts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\rejected-interpretations-v1.jsonl",
+      "bytes": 7077,
+      "sha256": "aa9877dc9d6838d132c7bf43e10dcb6b331d45af9c214489d5f0ad7ce722c1f3"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\validation-v1-final.json",
+      "bytes": 8335,
+      "sha256": "d39bca067ac9b977d648a03df578fb1f2f368d208c3dfb411b40b77ba1917092"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\teacher\\spot-check-v1.json",
+      "bytes": 1002,
+      "sha256": "d84888da2910fca90578f94749228412d8a4f453977f47bfc428366cd4b86fec"
+    }
+  ],
+  "reviewState": "needs_independent_review",
+  "teacher": {
+    "role": "dedicated_ML_teacher",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "max",
+    "observedModelReasoningTier": "unexposed",
+    "requiredSpeed": "default/standard",
+    "method": "task_teacher_authored/1"
+  },
+  "qualification": "tiny experimental train seed; neither official records nor independent ground truth",
+  "evaluationAccess": false,
+  "devRawAccess": false,
+  "sourceSpecificLaunchClearance": "unconfirmed; user-authorized public local development only"
+}

@@ -1,0 +1,260 @@
+{
+  "baseCommit": "9e1782a98252542d02440022f8680535f4ee0080",
+  "branch": "task/ml-association-student-20261002",
+  "callbackTarget": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "design": [
+    "Reuse existing shared stage/contained worker/fitter and phase/checkpoint authority. Add one small pure objective module and explicit balanced phase assignment/freeze version or equivalent distinct typed authority. Avoid a competing loader/trainer/stager, module-global mutation/monkeypatch, generic supplied callback or permissive fallback. Balanced mode must be chosen only by separately validated exact authority; prototypes/current code-only assignment cannot stage/load a model.",
+    "Preserve unchanged57 published pair bytes/weights/teacher labels and their existing validation. Compute effective loss weight as original exact rational weight times fixed multiplier175/76 for label1 or175/274 for label0. No per-parent renormalization. Prove positive/negative sums1/2 each,total1 from all57 frozen train pairs; preserve bool/type/index/order/identity/nonfinite refusals. Publish original versus effective weights honestly in native preflight/progress/loss provenance without adding teacher targets to prompts.",
+    "Bind the exact objective record/canonicalSHA to balanced assignment,freeze,training recipe/plan,encoded parent authority where relevant,full-state binding,preflight,result and manifest. Score/retrieval policy and prompt hashes remain unchanged; training objective policy/version is distinct. Refuse missing/altered/extra objective fields, wrong masses/multipliers/dataset/family/source/phase identities and mixed legacy/balanced metadata before imports. An embedded constant authority is sufficient; a new input file is optional only if explicit names/pins/scope are correctly bound. Exact recipe comparison remains strict, not an unchecked flag.",
+    "Preserve legacy v1 default recipe/freeze/binding metadata and sealed historical data/stages/checkpoints. Do not update historical PROTECTED_PINS/accepted receipts to match new sources. New balanced active source closure may exclude only owned edits from inherited protections and must include every actually imported new runtime source. Keep legacy lazy/default paths usable without requiring a missing balanced module in a sealed old profile. New sourceHEAD/experiment identity must be independent; phase1 starts original base with previous=None, never accepted old adapter.",
+    "Carry balanced objective across0->20,20->40,40->60 with independent host acceptance of the immediately prior same-objective checkpoint; reject any old equal-parent checkpoint/acceptance or different objective/experiment/sourceCommit/cursor. Reuse checkpoint full-state schema/serializer and native four-step save/resume control unchanged,386 tensors and manifest-last/durable readback. Keep source/schedule/global-loss-prefix equality,PhaseSession verified_root propagation,host full checks versus child pinned-copy lexical history,all access/reparse/alias refusals and first-failure stop. Only phase3 writes a final adapter.",
+    "Use a narrow explicit validated objective path through existing shared fitter and actual production train_parent/loss/backward accumulator. Keep original weighted_nll,label selection,checked_parent,encoding and accumulation helpers semantically unchanged by default; factor application must affect real fp32 loss and gradient before backward, once per candidate. No second normalization, hidden loss factor, detached-gradient scaling, alternate optimizer loop or default-objective drift. Bind PhaseSession/representation metadata to the admitted objective rather than trusting attributes on an arbitrary representation.",
+    "Implement required new native weighted-loss/gradient equivalence code for a future isolated phase run, using the actual production weighted helper/parent accumulation and independent float64 NLL/analytic gradients across both labels. Reuse existing native tolerances/device/dtype policy rather than loosening it. This proof must be required/hashed/accepted for balanced phases before model fitting; it remains unrun now. Existing attention/reclamation/checkpoint controls,Job/CUDA/headroom/600s bounds are unchanged.",
+    "Future balanced reload support is deferred to a separate code assignment after accepted fit; do not edit current reload sources or claim final native comparison readiness. Return disabled phase1/2/3 prototypes plus exact source closure/recipes/expected freeze metadata for coordinator to build the next positive first-phase packet. No positive native assignment/profile/stage/guard/run command now."
+  ],
+  "disabledProposal": {
+    "bytes": 7341,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-quality-diagnosis-v1-9f07cd0c28ed45798fb3ca3406430dd1\\disabled-next-comparison.json",
+    "physicalSha256": "9e52fcae44c3d90a03d4017d434eded86c11d4a296e3d04e0e66b5ac88a0d036"
+  },
+  "fixedRecipe": "Same frozen original Qwen2.5-0.5B-Instruct revision/weight/base digest/runtime; q/v LoRA r8 alpha16 dropout0.05,AdamW lr0.0002 betas0.9/0.999 eps1e-8 decay0 clip1,GradScaler128/growth60,seed17/six exact epoch orders,60parent updates342contributions,20updates114contributions perphase,batch1 CPU2,prompt-only final0/1 IDs15/16 fp32 binary NLL,no truncation4096fit/2048score. Balanced weights are the sole principal changed factor; objective/binding/proof metadata changes are coupled.",
+  "futureComparison": {
+    "baseline": "Retained original-base and current-rank results; no baseline rerun",
+    "developmentCriteria": {
+      "exactRequestSelectionSets": "2/2",
+      "positiveRecall": 1,
+      "precision": 1,
+      "unsupportedRequestFalsePositives": 0,
+      "validCompleteVectors": "2/2"
+    },
+    "enabled": false,
+    "hostExpectations": "Remain sealed to code/fitting. Later host-only comparison consumes independently retained cached expectation authority only after native reload/resource/cleanup acceptance, without reopening the original or any closed held-out set.",
+    "principalFactor": "fixed class-balanced objective",
+    "qualification": "One tiny development family; no independent source truth/generalization/canonical association/promotion/release claim.",
+    "resourceBounds": {
+      "batchSize": 1,
+      "cpuThreads": 2,
+      "cudaAllocatedBytes": 6442450944,
+      "cudaReservedBytes": 6442450944,
+      "jobCommittedBytes": 6442450944,
+      "maxChildSeconds": 600,
+      "minimumCudaFreeBytes": 1610612736
+    }
+  },
+  "historicalAuthority": {
+    "contributions": 342,
+    "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+    "phaseAcceptances": [
+      {
+        "bytes": 10483,
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-1-native-acceptance-v1.json",
+        "physicalSha256": "723631ce0b62d5682ef73abe998671db63c891fa9ab104b92a819f9f52d6c8f7"
+      },
+      {
+        "bytes": 10546,
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-2-native-acceptance-v1.json",
+        "physicalSha256": "609e01df8011b2e4ff8748322a694097e91ab0f2bdcfa67def4c8cc8d0209123"
+      },
+      {
+        "bytes": 10545,
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-3-native-acceptance-v1.json",
+        "physicalSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c"
+      }
+    ],
+    "sealed": true,
+    "sourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+    "updates": 60
+  },
+  "hypothesis": "A fixed objective with1/2 effective mass per class may improve positive coverage while retaining request-qualified abstention; causation and benefit unestablished. This task implements reviewable code only.",
+  "implementationAllowed": true,
+  "nativeBaselineQualityAcceptance": {
+    "bytes": 9636,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-native-acceptance-v1.json",
+    "physicalSha256": "1f3e4fe3cebef0b5dece40761fb0ca91fd69f7012e20a851e9ed47bc749efb3d"
+  },
+  "nativeExecutionAllowed": false,
+  "objectiveAuthority": {
+    "canonicalJsonSha256": "d4ccb3dd75ec5e47d08f9ccb9d9ab5e043ac177147ec098e5e7aa96226531702",
+    "physicalFile": {
+      "bytes": 1407,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-43-diagnosis-review-balanced-code-v1-baf9545394054b82be881aeb07844638\\balanced-objective-authority.json",
+      "physicalSha256": "17c99382bf3b1c892d9ac2bfd746d9934f781baba53cae75a422ebf915122ec1"
+    },
+    "record": {
+      "classMultipliers": {
+        "0": {
+          "denominator": 274,
+          "numerator": 175
+        },
+        "1": {
+          "denominator": 76,
+          "numerator": 175
+        }
+      },
+      "labels": "0=not directly supported;1=directly supported; provisional supervision unchanged",
+      "negativePairs": 45,
+      "normalization": "Fixed global per-class mass over frozen57 pairs; no per-parent renormalization, sampling or dynamic batch normalization.",
+      "originalCandidateWeight": "1/(10*candidateCount)",
+      "originalNegativeMass": {
+        "denominator": 175,
+        "numerator": 137
+      },
+      "originalPositiveMass": {
+        "denominator": 175,
+        "numerator": 38
+      },
+      "pairs": 57,
+      "parentTotalsEqual": false,
+      "parents": 10,
+      "positivePairs": 12,
+      "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+      "publicationSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82",
+      "selectionPolicySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+      "targetClassMass": {
+        "0": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "1": {
+          "denominator": 2,
+          "numerator": 1
+        }
+      },
+      "totalMass": {
+        "denominator": 1,
+        "numerator": 1
+      },
+      "trainingDataSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd",
+      "version": "association-fragment-rank-balanced-objective/1",
+      "weightDerivationUsesDevelopment": false
+    }
+  },
+  "ownedEvidence": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-code-v1.md"
+  ],
+  "ownedSources": [
+    "services/geo/geo/usp_learning/association/fragment_rank_balance.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py",
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_rank_phase.py",
+    "scripts/usp/learning/association/test_fragment_rank_balance.py"
+  ],
+  "positiveModelStageAllowed": false,
+  "predecessorDiagnosis": {
+    "bytes": 11204,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-quality-diagnosis-acceptance-v1.json",
+    "physicalSha256": "a43324703c47d5a1ab980d7e6c9a5197acd9b51c1100c66f24eb208d95ebe3de"
+  },
+  "privateOutput": "One fresh immutable fragment-rank-balanced-phase-code-v1 UUID root under E:/BhuAayam-data/task-data/ml-distillation/student; retain actual commands/exits/logs,source/input pins,targeted check details,disabled prototypes/index/finalization and all observed failures.",
+  "protectedRuntimeSources": 35,
+  "protectedSourceSnapshot": {
+    "bytes": 10172,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-43-diagnosis-review-balanced-code-v1-baf9545394054b82be881aeb07844638\\protected-source-snapshot.json",
+    "physicalSha256": "abd09be3e3024014c5a9f6d7d88766ed8f9315279dc97ee5e93905af726171cc"
+  },
+  "recordedAtUtc": "2026-10-04T15:08:33.291290+00:00",
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "restrictions": "No model/GPU/native imports or calls,fit/reload/inference/stage/profile/guard/test campaign,new dependency/checkpoint/model/data/source/label/split,teacher/evaluation/development context/raw/expected selections, source refresh/requalification, prompt/threshold/scorer/output contract changes,serializer/guard/ACL/job/environment/pagefile/host/storage/provider/service/shared API/frontend/staging/other worker changes,main/push/deploy/promotion. Staging is read-only. If an unowned source is required, report exact dependency before editing it; proceed independent owned work.",
+  "returnRequirements": "Commit only owned code first, then two owned evidence paths. Callback once with base/code/final commits,clean state,exact changed paths,physical/canonical/Git active-source/protected pins,input preservation,actual CPU command/exits/disclosed doubles,objective and all-phase recipe/binding/proof/prototype hashes. Native behavior/fit/checkpoint/resources/quality remain unrun. Stop for coordinator review; no next experiment,polled wait,schedule,new chat or subagent.",
+  "task": "STUDENT-44-FRAGMENT-RANK-BALANCED-PHASE-CODE",
+  "trainingPayloadPins": {
+    "counts.json": {
+      "bytes": 84,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\counts.json",
+      "physicalSha256": "3e50dc8a3a1bb35d65da810623261981a094660a69b071d59d874e12c0d6109f"
+    },
+    "inputs/family-freeze.json": {
+      "bytes": 10867,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\family-freeze.json",
+      "physicalSha256": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8"
+    },
+    "inputs/fragment-schema-v1.json": {
+      "bytes": 4537,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\fragment-schema-v1.json",
+      "physicalSha256": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082"
+    },
+    "inputs/rows-v2.receipt.json": {
+      "bytes": 4109,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\rows-v2.receipt.json",
+      "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+    },
+    "inputs/schema-v1.json": {
+      "bytes": 3966,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\schema-v1.json",
+      "physicalSha256": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    "inputs/source-support-v2.receipt.json": {
+      "bytes": 33399,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\source-support-v2.receipt.json",
+      "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+    },
+    "inputs/train-teacher-fragments-v1.jsonl": {
+      "bytes": 82626,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v1.jsonl",
+      "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+    },
+    "inputs/train-teacher-fragments-v2.jsonl": {
+      "bytes": 138050,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\train-teacher-fragments-v2.jsonl",
+      "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+    },
+    "inputs/training-row-pins-v2.json": {
+      "bytes": 6560,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\inputs\\training-row-pins-v2.json",
+      "physicalSha256": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+    },
+    "lineage.json": {
+      "bytes": 56203,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\lineage.json",
+      "physicalSha256": "7b2291969484aeccb913704e7d88e295f6d7fd26a6cf0de9aea9c87061fb7026"
+    },
+    "policy.json": {
+      "bytes": 3727,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\policy.json",
+      "physicalSha256": "9237baa39a7927e4071054bab4fc080356c4f3123d6ac35717f2da4d3b5a2002"
+    },
+    "scoring-inputs.jsonl": {
+      "bytes": 271577,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\scoring-inputs.jsonl",
+      "physicalSha256": "753533a1c654274316aed6b2f06641d20ad47d73bfc2375ba1d73d6e05e12696"
+    },
+    "system-prompt.txt": {
+      "bytes": 573,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\system-prompt.txt",
+      "physicalSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5"
+    },
+    "train-fragment-rank-v1.jsonl": {
+      "bytes": 72525,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\train-fragment-rank-v1.jsonl",
+      "physicalSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd"
+    }
+  },
+  "trainingPublication": {
+    "bytes": 11699,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-cpu-v1-02a328e15b844c0b8c14d137a1f041fa\\publication.json",
+    "physicalSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82"
+  },
+  "verification": [
+    "One new targeted stdlib CPU group: exact all57-pair effective mass and real production factor/parent bookkeeping path with disclosed tensor/native doubles; valid balanced phase admission through the actual shared fit to before_imports, with native imports blocked; malformed/mixed objective and legacy/different-objective predecessor checkpoint refusal using real metadata/path/codec checks. These protect wrong-objective training/resume, not a broad arithmetic test matrix. Preserve previous tests/ASTs and do not rerun old suites/native controls.",
+    "Exercise actual isolated -B -I -S stager/worker entry startup and disabled/wrong-version refusal sufficiently to catch the earlier bootstrap failures; no donor/model copy,valid native profile,guard body or model import. Explain any guarded-entry interception or OS/tensor/tokenizer/serializer doubles precisely; do not claim native numerical/resource/checkpoint success.",
+    "Compile only changed Python sources in memory and one source whitespace check. Match current protected35 physical/canonical/Git pins, unchanged training inputs/history and final actual active runtime closure. Do not rehash the full19630 runtime/model inventory or re-review original source/teacher support. Fix observed code/check failures and preserve their command evidence; repeat only the affected changed condition."
+  ],
+  "version": "ml-distill-fragment-rank-balanced-phase-code-assignment/1",
+  "workerSettings": {
+    "observedEffort": null,
+    "observedModel": null,
+    "observedTier": null,
+    "requestedEffort": "xhigh",
+    "requestedModel": "gpt-6.1-sol",
+    "requiredSpeed": "default/standard1x",
+    "tierToolControl": "Unexposed; prompt is not configuration."
+  },
+  "workerThread": "01a0ede2-c009-7972-ae01-fa4545b54fd9",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}

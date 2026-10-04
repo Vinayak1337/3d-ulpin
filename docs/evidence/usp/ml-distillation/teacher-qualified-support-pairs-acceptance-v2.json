@@ -1,0 +1,135 @@
+{
+  "coordinatorBase": "67793c1a8354b8d2cb3d08d87aa8e057e3a7e9a0",
+  "coordinatorTrainingRowPins": {
+    "bytes": 6560,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\teacher-06-support-pairs-review-v1-5a1f206ca86c432ea89d363a89194037\\training-row-pins-v2.json",
+    "physicalSha256": "35f8ff921997cfa26dc0fe61185a758520be31975598a5e3cb45ed66b55f7676"
+  },
+  "counts": {
+    "appendedRows": 4,
+    "chosenOriginalSourceHashes": 2,
+    "excludedJustifications": 20,
+    "newCandidateAppearances": 22,
+    "newQualifiedEmptySelections": 2,
+    "newSelectedAppearances": 2,
+    "newSupportedSelections": 2,
+    "originalRows": 6,
+    "outputRows": 10,
+    "pairs": 2,
+    "selectedJustifications": 2,
+    "totalCandidateAppearances": 57,
+    "totalEmptySelections": 3,
+    "totalSelectedAppearances": 12,
+    "uniqueChosenCandidates": 11
+  },
+  "data": {
+    "bytes": 138050,
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/train-teacher-fragments-v2.jsonl",
+    "physicalSha256": "ff366335b907d13f8128c22788d9bb65ad6c94eac7972052b2be458f90c8c7fd"
+  },
+  "decision": "accepted_provisional_train_only_pairs_codec_compatible",
+  "gaps": [
+    "No new missing/absent/null/withheld state labels are warranted by these chosen fragments",
+    "No square-metre unit or explicit current approval is established in the respective supplied contexts",
+    "Empty selection is context-limited; unobserved original/property contents are not classified",
+    "OCR/native provenance and uncertainty remain; no independent truth, source requalification or model result"
+  ],
+  "integratedCommit": "6b0292be84a4a990b004f5a7b04b9958d5243a77",
+  "integratedMarkdown": {
+    "bytes": 6249,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher\\fragment-support-pairs-v2.md",
+    "physicalSha256": "b5cd6feaaaac04ef29b40ea00324e85ce2c1c7f1dd828433758b31667a2b65b9"
+  },
+  "integratedReport": {
+    "bytes": 8953,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher\\fragment-support-pairs-v2.json",
+    "physicalSha256": "1102af0d5c74f72440d6e84393fcaaf34988a71929135d16f9613b714e310d52"
+  },
+  "next": "CPU-only versioned ten-row fragment fit/reload preparation through the existing learner; exact separately reviewed final head/freeze required before native fitting.",
+  "ownerBase": "2dc90d376343430f9c71d7e3ac614a08ba9e122e",
+  "ownerCheckReceipt": {
+    "bytes": 5911,
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/check-v2.receipt.json",
+    "physicalSha256": "bccf0e62338ba201e1d9cb552be5cb302f8a80eb1a6586d816c28c793e4a5b1c"
+  },
+  "ownerCommit": "36102c8477bb11d34066f912ae1b0511bb53ab16",
+  "ownerReport": {
+    "bytes": 8772,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\teacher\\fragment-support-pairs-v2.json",
+    "physicalSha256": "2bec1ea4d2a04f1183320a8c7e738655c7eddfcfd88f2f58056447fb3cd4b844"
+  },
+  "parent": {
+    "bytes": 82626,
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/train-teacher-fragments-v1.jsonl",
+    "physicalSha256": "32c7fc4071754431f87756d0ebd121539a5357187ef0efb139083f5b86e4d742"
+  },
+  "physicalPinInterpretation": "Separate LF/CRLF checkout receipt hashes; committed/canonical producer/report content matches.",
+  "producerCanonicalLfSha256": "8937c66f93520a202250c189455ef36db032750bed27b9002406b5d1f1c02f16",
+  "qualification": {
+    "evaluationOrPromotionOrRelease": false,
+    "independentTruthOrNewNullStateCoverage": false,
+    "measurementUnitOrCurrentApprovalOrOperationalQualification": false,
+    "modelQualityOrGeneralizationOrCanonicalAssociation": false,
+    "provisionalTrainDataAndCodecCompatibility": true
+  },
+  "recordedAtUtc": "2026-10-03T16:11:42.447466+00:00",
+  "reviewAudit": {
+    "bytes": 2661,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\teacher-06-support-pairs-review-v1-5a1f206ca86c432ea89d363a89194037\\audit.json",
+    "physicalSha256": "13e2245ee689818d24c8e257fa0dc70320e4fb14b93baaa6895880ee12aa6673"
+  },
+  "reviewExecution": {
+    "bytes": 574,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\teacher-06-support-pairs-review-v1-5a1f206ca86c432ea89d363a89194037\\review.execution.json",
+    "physicalSha256": "e1ad28cc9e845d179bc50cf73059d19b2d009beeb74b5c70f06a711312165e3f"
+  },
+  "reviewHelper": {
+    "bytes": 9441,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\teacher-06-support-pairs-review-v1-5a1f206ca86c432ea89d363a89194037\\review_teacher_pairs.py",
+    "physicalSha256": "b49218fc1b29f46490efe8795f6429a1d2ce36b51238412821e3419994962cba"
+  },
+  "reviewState": "needs_independent_review",
+  "rowReceipt": {
+    "bytes": 4109,
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/rows-v2.receipt.json",
+    "physicalSha256": "23e55431848c7c4a771dc33d1d72467d221c66c12791c15d888af80bb716b555"
+  },
+  "sarvamDerived": false,
+  "semanticCheck": "Printed Carpet Area 1557.20 and Floor-02 scope are supported literals. Supplied area has no stated square-metre unit, and supplied caption has no explicit currently-approved status. Empty targets are context-limited; source OCR/native uncertainties remain.",
+  "sourceSupportReceipt": {
+    "bytes": 33399,
+    "path": "E:/BhuAayam-data/task-data/ml-distillation/teacher/fragment-support-pairs-v2-402ba4a9ecb0fc808f3c9534c6318cdf/source-support-v2.receipt.json",
+    "physicalSha256": "a96c15a2b019633c7c2c5afdbf87d57537f0aaf16a08de41db4f7fa201915257"
+  },
+  "status": "provisional_synthetic_supervision",
+  "task": "TEACHER-06-QUALIFIED-SUPPORT-PAIRS",
+  "verification": {
+    "acceptedCodecRows": 10,
+    "allParentContextCandidateSourceQuoteTargetSupervisionPinsMatched": true,
+    "completeProducerAndSourceJustificationReview": true,
+    "integrationEquality": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "36102c8477bb11d34066f912ae1b0511bb53ab16",
+        "6b0292be84a4a990b004f5a7b04b9958d5243a77",
+        "--",
+        "docs/evidence/usp/ml-distillation/teacher/fragment-support-pairs-v2.json",
+        "docs/evidence/usp/ml-distillation/teacher/fragment-support-pairs-v2.md",
+        "docs/evidence/usp/ml-distillation/teacher/prepare_fragment_support_pairs_v2.py"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin",
+      "exitCode": 0
+    },
+    "matchedReferences": 11,
+    "nativeTokenizerOrModelRun": false,
+    "newRowsChecked": 4,
+    "originalPrefixBytesPreserved": 82626,
+    "originalRowsUnchanged": 6,
+    "ownerCommandExit": 0,
+    "ownerCompileAndCpuCheckConsumed": true,
+    "producerOrSourceCampaignRerun": false
+  },
+  "version": "teacher-qualified-support-pairs-acceptance/2"
+}

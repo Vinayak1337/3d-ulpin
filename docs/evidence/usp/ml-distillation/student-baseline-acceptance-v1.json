@@ -1,0 +1,25 @@
+{
+  "version": "ml-student-baseline-coordinator-acceptance/1",
+  "codeCommit": "5df8a978f631192082651270269d747c601bcb93",
+  "baselineReceiptSha256": "31788f1102c680fc26c0512adbe17e86bbcdce7fd1340cc6d9637493f98bb66e",
+  "artifactPinsMatched": 23,
+  "executedPhysicalCodePinsMatched": 9,
+  "codeInspection": "projection, validator, adapter/CLI, fixed containment role extension, acquisition/staging/summary and targeted tests inspected; no consequential blocker found for this experimental baseline",
+  "runtimeAccepted": true,
+  "rawModelOutputsValid": 0,
+  "examples": 2,
+  "expectedClaimsAccepted": 0,
+  "expectedClaims": 6,
+  "qualityAccepted": false,
+  "model": {
+    "id": "Qwen/Qwen2.5-0.5B-Instruct",
+    "license": "apache-2.0",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "safetensorsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+  },
+  "jobPeakCommittedBytes": 5176061952,
+  "sampledPeakRssBytes": 3207282688,
+  "next": "one bounded adaptation targets observed format/citation/state failures; evaluation remains closed",
+  "teacherTargetCorrection": "Mandatory no_canonical_targets abstention missing in some v1 supervision; teacher v2 correction requested before fit",
+  "qualification": "runnable isolated experimental inference and honest rejection only; not model quality or canonical association"
+}

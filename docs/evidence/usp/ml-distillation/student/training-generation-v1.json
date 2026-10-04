@@ -1,0 +1,534 @@
+{
+  "adapterSafetensorsSha256": "4456b00aba8591c751ecfef8ac78f1272eabd3f56e0212266f8b5fc2c508b485",
+  "artifacts": {
+    "host-command-result.json": "5147cbe63c8c868176230c4a3068e54ec0edc2eabf163107246fed66d66af616",
+    "host-stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "host-stdout.log": "931999304585250d7c7d477e9c1c5cc102e9e2d660c9a7db779ff1ccab0b6dbe",
+    "inputs/adapter-manifest.json": "c86f1efc303460e8091275d541580a2a4b7b500cec18585e7afee807f7f9f3c0",
+    "inputs/adapter/README.md": "8d3dc37b7a4dc09c6f0f21112dde0ab9aa7c7b5a716ab227874514a3c016314b",
+    "inputs/adapter/adapter_config.json": "4a903af9fc0a62848fd2776764f90931ccea9e355b194cc0fdbf39b96c67412c",
+    "inputs/adapter/adapter_model.safetensors": "4456b00aba8591c751ecfef8ac78f1272eabd3f56e0212266f8b5fc2c508b485",
+    "inputs/assignment.json": "9b986a49a897476aedbe5e84f6ec3056943f316b220130e096cd7707b35b25b1",
+    "inputs/diagnostic-assignment.json": "1db41c509fc91f42d5e15c90229ca82c93b0224c66185ee56444bfe4445aaf61",
+    "inputs/family-freeze.json": "93c243f28895ac084c3f1853cba80b9e0b5286f881aba44d6cb7ab6e3a164730",
+    "inputs/fit-proof.json": "cafd2233369bf1196d67f90f00771ec8719377cd784f3e836dea0f40c9b8eebb",
+    "inputs/model-acquisition.json": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2",
+    "inputs/run-freeze.json": "b528e1f05353ffcc86cbc9f6c7368fc144156361efa645678549140e4203b223",
+    "inputs/runtime-requirements-resolved.txt": "c27e534e121858d96dfa531e14374642a43bed9544aeef0426b39353280ab4e3",
+    "inputs/schema-v1.json": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af",
+    "inputs/training-inputs.json": "05a6e3dbff102fa52fc0fff387a330318f99ef55232e9cec1184abef696ce816",
+    "outputs/reload/completion.json": "c7e189d99ce1f30d4987dcdd3b3fc5609a73db73eec53b87667ceb7f9edfcb89",
+    "outputs/reload/raw-0.json": "eed095a3422cb28b2e44491ace4a9baee0baf40db98ae1b461bdd1c755291af7",
+    "outputs/reload/raw-1.json": "aad58f8266e099876b3cdeb80332816b1f724f4086807efa7622291eda26dd84",
+    "outputs/reload/raw-outputs.json": "d01b1298a19fcd4802c9641a7cfacf257917a676095339aad7074aec928e4351",
+    "outputs/reload/result.json": "82438d39a0963095f86f35498d0d1426d2d2bf47f113cec24f90883bdb810a59",
+    "profile.json": "b5cc9f63ff7fa76b1e8c642e98e6f68b85b6afc899194176100d7ec08a6ca93a",
+    "receipts/association_adapter-reload-accepted.json": "3ab2f60c82dc559dbe2cd8d32033b8f4cbf707413526fcfd9be183b88fa7ef9f",
+    "receipts/association_adapter-reload-guard.json": "2f82652952699fa44ed982a72c3a33c19d5004c2eae0c670e05ec5959e02dd11",
+    "stage.json": "228ae54cc5b893435997e23db8a6474007ab2216767b6da3a9675ea41b1ff9b9",
+    "state/association_adapter-reload-attempt.json": "4a35a77f35d424f6c90b3937364d8884ada9e0a8060324fb58581a0f90c8ee0d",
+    "state/association_adapter-reload-session.json": "cb2a293c5f83580bd471e17cf52b34e76a1b18d1fa5e6482615489a899b7762c",
+    "training-diagnostic-summary.json": "abcfcf4d8fcb820b1338aa77746eca9a2d658d466be674fb26046ef55a1b5f34"
+  },
+  "authoritativeScope": "train-only in-sample reconstruction against provisional supervision; no independent accuracy or generalization",
+  "boundaries": {
+    "baselineRerun": false,
+    "developmentRerun": false,
+    "evaluationOpened": false,
+    "newFit": false,
+    "promoted": false,
+    "promptOrGenerationChanged": false,
+    "rawOutputRepaired": false,
+    "sharedDependenciesSecurityPrimitivesOrOriginalsChanged": false,
+    "teacherRemainedIdle": true
+  },
+  "branch": "task/ml-association-student-20261002",
+  "cases": [
+    {
+      "exampleId": "teacher-haryana-floor02",
+      "expectedClaims": 6,
+      "familyId": "in-haryana-rera-2831",
+      "inputCanonicalJsonSha256": "d1c6dfeae45355817a1601a65d82c2df5a90dc1cc853e8ee20240668f9f515da",
+      "promptSha256": "05d8574eb69dca6c22fbaf6569b543a19c37396b95ca259a05eaeb81499ece98",
+      "promptTokens": 424,
+      "referenceTargetTokensIncludingEos": 447,
+      "sourceSha256": [
+        "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+      ],
+      "teacherOutputCanonicalJsonSha256": "591b1e9e927f28bd38f09709db58fc755451673e6a5a52c159d03b7976148057"
+    },
+    {
+      "exampleId": "teacher-bihar-unusable-approval-date",
+      "expectedClaims": 1,
+      "familyId": "in-bihar-magnolia-residency",
+      "inputCanonicalJsonSha256": "1e6a5a8e5485b4d9eb4b9e92ea0f1be4ff34752c0c70b49e3233548164c15ba1",
+      "promptSha256": "3bb5aca15d6ff790becc394d01906f5e6c8e15950574622d79e9fabfe7820b0a",
+      "promptTokens": 378,
+      "referenceTargetTokensIncludingEos": 112,
+      "sourceSha256": [
+        "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e"
+      ],
+      "teacherOutputCanonicalJsonSha256": "77fd0df366bfad76a174c6d9f6dd6d58e1a61f371359b76f8394c75659432392"
+    }
+  ],
+  "checks": {
+    "compiledSources": 5,
+    "executedCodePinsMatched": 15,
+    "focusedTests": 3,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\checks-v7\\checks.json",
+    "sha256": "85f34a23fd98341a18ffcf5e2c2d30846bd20da4ee1390ac21da4ca321f5defb"
+  },
+  "codeCommit": "559b2b12fd1e501b9ad1941c00839691ef9f2f35",
+  "containment": {
+    "capabilityCount": 0,
+    "cleanupErrors": [],
+    "cleanupPassed": true,
+    "failure": null,
+    "inheritedHandles": 2,
+    "jobClosed": true,
+    "jobValidatedBeforeResume": true,
+    "outputTruncated": false,
+    "outputsAccepted": true,
+    "tokenValidatedBeforeResume": true
+  },
+  "coordinatorHeadAtStage": "25ab445863bedde2a8d74d7bbcce4d03ed7ba8d9",
+  "developmentStaged": false,
+  "executedPhysicalCodePins": {
+    "code/scripts/usp/learning/association/association_adapter.py": "1d3f4dea582c5b5c4ee2eb0b9c0da48962f1a5067b3e9fab28d961317c2915e4",
+    "code/scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "code/scripts/usp/security/appcontainer_audit.py": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca",
+    "code/services/geo/geo/__init__.py": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+    "code/services/geo/geo/usp_learning/__init__.py": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335",
+    "code/services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "code/services/geo/geo/usp_learning/association/adapter.py": "96acaa029f7852ff1813cd5ca370a62bf317afee9e144243354132889f3e346d",
+    "code/services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "code/services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+    "code/services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+    "code/services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+    "code/services/geo/geo/usp_learning/association/student.py": "a380d21dbfceea8012a979182cb9c2f7956b222e984d5c923025ab9e3d34cc87",
+    "code/services/geo/geo/usp_learning/association/training_generation.py": "4858ed1aab5b3a87ed446e6111e850018783da0729d543e18935d1c459e6d248",
+    "code/services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "code/services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+  },
+  "execution": {
+    "childDeadlineSeconds": 600,
+    "childExitCode": 0,
+    "fitAttempts": 0,
+    "generationsPerCase": 1,
+    "guardSetupChildCleanupSeconds": 263.68700000003446,
+    "host": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\association_adapter.py",
+        "reload",
+        "--schema",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\inputs\\schema-v1.json",
+        "--family-freeze",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\inputs\\family-freeze.json",
+        "--model-receipt",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\inputs\\model-acquisition.json",
+        "--assignment",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\inputs\\assignment.json",
+        "--input-batch",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\inputs\\training-inputs.json",
+        "--adapter-manifest",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\inputs\\adapter-manifest.json",
+        "--fit-proof",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\inputs\\fit-proof.json",
+        "--adapter-dir",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\inputs\\adapter",
+        "--run-freeze",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\inputs\\run-freeze.json",
+        "--output-dir",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\outputs\\reload",
+        "--containment-profile",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397\\profile.json",
+        "--containment-sha256",
+        "b5cc9f63ff7fa76b1e8c642e98e6f68b85b6afc899194176100d7ec08a6ca93a"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-10-02T14:50:45.550839+00:00",
+      "hostSeconds": 475.5513028999558,
+      "startedAt": "2026-10-02T14:42:49.993532+00:00"
+    },
+    "inferenceAttempts": 1,
+    "stageExitCode": 0,
+    "summaryExitCode": 0
+  },
+  "failure": null,
+  "fitProfileSha256": "75c3ebe9d116846026b9924402446ef5d457bd929a324407f899f13ce1a45a45",
+  "fitRoot": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-query-sdpa-fit-f90a65c82dde45ae9c2e0ce4a60dddcd",
+  "helper": {
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\checks-v7\\record-diagnostic.py",
+    "sha256": "a7987316a2dea2b765e5dceb126cd184a6cfa732c2c873121fda0119125d3ea8"
+  },
+  "hostComparison": {
+    "acceptedPrecision": 1.0,
+    "adapterReload": {
+      "explicitLocalBase": true,
+      "remoteBaseLookup": false,
+      "savedTensorsExact": true,
+      "tensorCount": 96
+    },
+    "authoritativeScope": "trainingDiagnostic in run-freeze.json and train-only result.json; no development run",
+    "counts": {
+      "acceptedClaims": 1,
+      "correctAcceptedClaims": 1,
+      "exactClaimObjects": 1,
+      "exactExtractableCitations": 9,
+      "expectedClaims": 7,
+      "extraAcceptedClaims": 0,
+      "extractableCitations": 9,
+      "modelOutputValid": 1,
+      "schemaValid": 2,
+      "syntaxValid": 2
+    },
+    "coverage": 0.14285714285714285,
+    "details": [
+      {
+        "abstentionsExact": false,
+        "acceptedClaims": 0,
+        "canonicalAbstention": false,
+        "citationDenominator": "schema-valid raw output only; rejected malformed output contributes no citations",
+        "conflictsExact": false,
+        "correctAcceptedClaims": 0,
+        "emptyCanonicalLinks": false,
+        "exactClaimObjects": 0,
+        "exactExtractableCitations": 7,
+        "exampleId": "teacher-haryana-floor02",
+        "expectedClaims": 6,
+        "extraAcceptedClaims": 0,
+        "extractableCitations": 7,
+        "familyId": "in-haryana-rera-2831",
+        "missingExpectedClaims": [
+          {
+            "literal": "TOWER03",
+            "role": "building",
+            "state": "declared",
+            "unit": null
+          },
+          {
+            "literal": "TYPICAL FLOOR - 02",
+            "role": "drawing",
+            "state": "declared",
+            "unit": null
+          },
+          {
+            "literal": "13rd",
+            "role": "floor",
+            "state": "declared",
+            "unit": null
+          },
+          {
+            "literal": "21st",
+            "role": "floor",
+            "state": "declared",
+            "unit": null
+          },
+          {
+            "literal": "30th",
+            "role": "floor",
+            "state": "declared",
+            "unit": null
+          },
+          {
+            "literal": "38th",
+            "role": "floor",
+            "state": "declared",
+            "unit": null
+          }
+        ],
+        "modelOutputValid": false,
+        "printed13rdPreserved": false,
+        "rawMetadata": {
+          "exampleId": "teacher-haryana-floor02",
+          "generationSeconds": 24.212979499949142,
+          "inputTokens": 424,
+          "outputTokens": 367,
+          "promptSha256": "05d8574eb69dca6c22fbaf6569b543a19c37396b95ca259a05eaeb81499ece98",
+          "reachedTokenLimit": false
+        },
+        "schemaValid": true,
+        "syntaxSchemaError": null,
+        "syntaxValid": true,
+        "unknownNullClaimsPreserved": null,
+        "validationErrors": [
+          "literal_not_cited"
+        ]
+      },
+      {
+        "abstentionsExact": true,
+        "acceptedClaims": 1,
+        "canonicalAbstention": true,
+        "citationDenominator": "schema-valid raw output only; rejected malformed output contributes no citations",
+        "conflictsExact": true,
+        "correctAcceptedClaims": 1,
+        "emptyCanonicalLinks": true,
+        "exactClaimObjects": 1,
+        "exactExtractableCitations": 2,
+        "exampleId": "teacher-bihar-unusable-approval-date",
+        "expectedClaims": 1,
+        "extraAcceptedClaims": 0,
+        "extractableCitations": 2,
+        "familyId": "in-bihar-magnolia-residency",
+        "missingExpectedClaims": [],
+        "modelOutputValid": true,
+        "printed13rdPreserved": null,
+        "rawMetadata": {
+          "exampleId": "teacher-bihar-unusable-approval-date",
+          "generationSeconds": 7.124555399990641,
+          "inputTokens": 378,
+          "outputTokens": 112,
+          "promptSha256": "3bb5aca15d6ff790becc394d01906f5e6c8e15950574622d79e9fabfe7820b0a",
+          "reachedTokenLimit": false
+        },
+        "schemaValid": true,
+        "syntaxSchemaError": null,
+        "syntaxValid": true,
+        "unknownNullClaimsPreserved": true,
+        "validationErrors": []
+      }
+    ],
+    "developmentOpened": false,
+    "evaluationOpened": false,
+    "examples": 2,
+    "families": 2,
+    "guardSha256": "2f82652952699fa44ed982a72c3a33c19d5004c2eae0c670e05ec5959e02dd11",
+    "jobPeakBytes": 5174374400,
+    "legacyCompletionQualification": "source_native_development_only",
+    "legacyQualificationAuthoritative": false,
+    "newFit": false,
+    "promoted": false,
+    "qualification": "train-only in-sample reconstruction against provisional supervision; no independent accuracy or generalization",
+    "resourcesAndCleanupPassed": true,
+    "rssPeakBytes": 3215663104,
+    "runtime": {
+      "cuda": "12.8",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 483,
+      "maxCudaAllocatedBytes": 1073165312,
+      "maxCudaReservedBytes": 1111490560,
+      "minimumSampledFreeCudaBytes": 6275727360,
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    },
+    "split": "train",
+    "task": "STUDENT-07"
+  },
+  "inputFiles": [
+    "adapter-manifest.json",
+    "adapter/README.md",
+    "adapter/adapter_config.json",
+    "adapter/adapter_model.safetensors",
+    "assignment.json",
+    "diagnostic-assignment.json",
+    "family-freeze.json",
+    "fit-proof.json",
+    "model-acquisition.json",
+    "run-freeze.json",
+    "runtime-requirements-resolved.txt",
+    "schema-v1.json",
+    "training-inputs.json"
+  ],
+  "observedSettings": "actual turn model/effort/tier not exposed; supplied never/danger-full-access; no settings change claimed",
+  "primaryStagingHeadObservedBeforeWork": "bc8e2c3c48b9ec7c707f51c4eb037b8d36234c4e",
+  "profileFileCount": 19667,
+  "profileSha256": "b5cc9f63ff7fa76b1e8c642e98e6f68b85b6afc899194176100d7ec08a6ca93a",
+  "rawInspection": [
+    {
+      "exampleId": "teacher-haryana-floor02",
+      "qualification": "inspection of schema-valid raw output; not accepted claims",
+      "rawAbstentionCodes": [
+        "floor_unknown",
+        "no_canonical_targets"
+      ],
+      "rawAbstentionsEqualTarget": false,
+      "rawCanonicalAbstention": true,
+      "rawCanonicalJsonSha256": "35a75ded090c52140a54b12bfb6c5bb0fc4e68580dae1ca98aa98eccf91fc96e",
+      "rawClaimCount": 6,
+      "rawClaimValueMatchesToProvisionalTargets": 1,
+      "rawConflictsEqualTarget": true,
+      "rawEmptyCanonicalLinks": true,
+      "rawEntireOutputEqualsProvisionalTarget": false,
+      "rawExactClaimObjects": 1,
+      "rawExtraClaimValues": 5,
+      "rawLiteral13rdPresent": true,
+      "rawMissingExpectedClaimValues": 5,
+      "rawNonNullLiteralsAbsentFromOwnCitations": 5,
+      "rawUnknownNullRuleViolations": 4
+    },
+    {
+      "exampleId": "teacher-bihar-unusable-approval-date",
+      "qualification": "inspection of schema-valid raw output; not accepted claims",
+      "rawAbstentionCodes": [
+        "approval_date_unusable",
+        "no_canonical_targets"
+      ],
+      "rawAbstentionsEqualTarget": true,
+      "rawCanonicalAbstention": true,
+      "rawCanonicalJsonSha256": "77fd0df366bfad76a174c6d9f6dd6d58e1a61f371359b76f8394c75659432392",
+      "rawClaimCount": 1,
+      "rawClaimValueMatchesToProvisionalTargets": 1,
+      "rawConflictsEqualTarget": true,
+      "rawEmptyCanonicalLinks": true,
+      "rawEntireOutputEqualsProvisionalTarget": true,
+      "rawExactClaimObjects": 1,
+      "rawExtraClaimValues": 0,
+      "rawLiteral13rdPresent": null,
+      "rawMissingExpectedClaimValues": 0,
+      "rawNonNullLiteralsAbsentFromOwnCitations": 0,
+      "rawUnknownNullRuleViolations": 0
+    }
+  ],
+  "recordedAt": "2026-10-02T14:52:52.001879+00:00",
+  "requestedSettings": {
+    "model": "gpt-6-astra",
+    "reasoning": "xhigh",
+    "speed": "default/standard"
+  },
+  "resources": {
+    "cuda": {
+      "cuda": "12.8",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 483,
+      "maxCudaAllocatedBytes": 1073165312,
+      "maxCudaReservedBytes": 1111490560,
+      "minimumSampledFreeCudaBytes": 6275727360,
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    },
+    "jobAndRssCapBytes": 6442450944,
+    "jobPeakBytes": 5174374400,
+    "rssPeakBytes": 3215663104
+  },
+  "result": {
+    "adapterApplied": true,
+    "adapterReload": {
+      "explicitLocalBase": true,
+      "remoteBaseLookup": false,
+      "savedTensorsExact": true,
+      "tensorCount": 96
+    },
+    "adapterTrainingUpdates": 66,
+    "developmentOpened": false,
+    "elapsedSeconds": 33.89109039993491,
+    "evaluationOpened": false,
+    "exampleCount": 2,
+    "fitPerformed": false,
+    "fitPerformedInThisProcess": false,
+    "legacyCompletionQualification": "source_native_development_only is fixed supervisor metadata, not this diagnostic's scope",
+    "loadSeconds": 2.547328899963759,
+    "modelOutputValidCount": 1,
+    "qualification": "train-only in-sample reconstruction against provisional supervision; no independent accuracy or generalization",
+    "results": [
+      {
+        "acceptedProjection": {
+          "abstentions": [
+            {
+              "citations": [],
+              "code": "invalid_student_output"
+            },
+            {
+              "citations": [],
+              "code": "no_canonical_targets"
+            }
+          ],
+          "canonicalLinks": [],
+          "claims": [],
+          "conflicts": [],
+          "version": "evidence-association-output/1"
+        },
+        "errors": [
+          "literal_not_cited"
+        ],
+        "exampleId": "teacher-haryana-floor02",
+        "modelOutputValid": false,
+        "repairApplied": false
+      },
+      {
+        "acceptedProjection": {
+          "abstentions": [
+            {
+              "citations": [
+                {
+                  "key": "bihar:approval-date",
+                  "quote": "1899-12-30"
+                }
+              ],
+              "code": "approval_date_unusable"
+            },
+            {
+              "citations": [],
+              "code": "no_canonical_targets"
+            }
+          ],
+          "canonicalLinks": [],
+          "claims": [
+            {
+              "citations": [
+                {
+                  "key": "bihar:approval-date",
+                  "quote": "1899-12-30"
+                }
+              ],
+              "literal": null,
+              "role": "revision",
+              "state": "unknown",
+              "unit": null
+            }
+          ],
+          "conflicts": [],
+          "version": "evidence-association-output/1"
+        },
+        "errors": [],
+        "exampleId": "teacher-bihar-unusable-approval-date",
+        "modelOutputValid": true,
+        "repairApplied": false
+      }
+    ],
+    "runtime": {
+      "cuda": "12.8",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 483,
+      "maxCudaAllocatedBytes": 1073165312,
+      "maxCudaReservedBytes": 1111490560,
+      "minimumSampledFreeCudaBytes": 6275727360,
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6"
+    },
+    "settings": {
+      "attention": "sdpa",
+      "batchSize": 1,
+      "cpuThreads": 2,
+      "doSample": false,
+      "dtype": "float16",
+      "evaluationAllowed": false,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "maxFitSeconds": 600,
+      "maxInputTokens": 2048,
+      "maxNewTokens": 768,
+      "maxPeakProcessRssBytes": 6442450944,
+      "maxRunSeconds": 600,
+      "minimumFreeCudaBytes": 1610612736,
+      "seed": 17
+    },
+    "split": "train",
+    "task": "STUDENT-07",
+    "teacherInputsInReload": true,
+    "teacherOutputsUseScope": "prior accepted fit only; diagnostic inference loads no targets",
+    "teacherOutputsUsed": true,
+    "teacherTargetsInPrompt": false,
+    "teacherTargetsInReload": false,
+    "version": "association-training-generation/1"
+  },
+  "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\training-generation-b4e13b7ea0e842e4a8bf84993d53d397",
+  "split": "train",
+  "targetsStaged": false,
+  "task": "STUDENT-07",
+  "version": "association-training-generation-diagnostic-receipt/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
