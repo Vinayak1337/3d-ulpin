@@ -1,0 +1,192 @@
+{
+  "accepted": true,
+  "correctedControls": {
+    "changedCondition": "Final code d34ba144 and corrected fixture; prior controls ran before retained repairs. No unchanged retry.",
+    "command": {
+      "bytes": 743,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-37-reload-code-review-v1-7e5579d4b1614095bea0da68ad372be4\\controls.command.json",
+      "sha256": "585ae9f06cf305ce5703453a097e963ec5ce25a490491e7b9a56812f7207c656"
+    },
+    "exitCode": 0,
+    "groupsAttempted": 3,
+    "groupsPassed": 3,
+    "invocations": 1,
+    "stderr": {
+      "bytes": 465,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-37-reload-code-review-v1-7e5579d4b1614095bea0da68ad372be4\\controls.stderr.txt",
+      "sha256": "a29dc5100425a82827c5f380b4b5a5d5efe617891e27f8126302ef01983979d5"
+    },
+    "stdout": {
+      "bytes": 0,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-37-reload-code-review-v1-7e5579d4b1614095bea0da68ad372be4\\controls.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "decision": "accept_reviewed_code_and_corrected_cpu_controls_only",
+  "doubles": [
+    "Synthetic zero fp32 adapter/checkpoint payloads and their two external hash identities; production header/value validators exercised against those doubles",
+    "PEFT/Qwen/tensor/NumPy bytes/shared native proof/base digest and GPU callbacks planned in group3, unreached beyond closure admission",
+    "Virtual current source filesystem and contained module location; actual checkpoint path validator retained",
+    "Reparse metadata double; fixture OS boundary/profile; donor subset/Git/disk and pre-mkdir intercepts planned in group1",
+    "No native imports; torch/transformers/peft/safetensors/numpy/accelerate/psutil blocked by finder outside explicit test module doubles"
+  ],
+  "exactChangedPaths": [
+    "services/geo/geo/usp_learning/association/fragment_rank_reload.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_baseline.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py",
+    "services/geo/geo/usp_learning/association/student.py",
+    "scripts/usp/learning/association/association_student.py",
+    "scripts/usp/learning/association/stage_selector_baseline.py",
+    "scripts/usp/learning/association/stage_fragment_rank_reload.py",
+    "scripts/usp/learning/association/test_fragment_rank_reload.py",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-code-v1.md"
+  ],
+  "historicalFit": {
+    "acceptedFit": {
+      "acceptancePath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-fragment-rank-phase-3-native-acceptance-v1.json",
+      "acceptanceSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+      "reviewPath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-fragment-rank-phase-3-native-acceptance-review-v1.json",
+      "reviewSha256": "cda8d0f67e1105c98f42b76accc2f2d1aecc20cc6aa9d22aa5a1053c4ba8b310",
+      "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472"
+    },
+    "adapter": {
+      "acceptedFitSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+      "candidateContributions": 342,
+      "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+      "filesSha256": {
+        "README.md": "d58f094333cfc1c4dd7444763d0d4900fa12102545f64c28d5689920da5f1793",
+        "adapter_config.json": "caddd7cee4ba510b73088fa191db872b6a1947f023ae35bc5b6f64a3e5b5b584",
+        "adapter_model.safetensors": "544f198727df29a629cd9ae4540a221adb27cdb390116d8ddb7b03a302da832b"
+      },
+      "trainingSourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+      "updates": 60
+    },
+    "checkpointRebound": false,
+    "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+    "sourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270"
+  },
+  "integratedOwnedCommits": [
+    "56cb51c26fc23464f20d7d20dfd26b4d3753dde7",
+    "bde0572a5ced2a4183fcb9c7d598491155a01405",
+    "b4c4ca9f463ed1cb5e8b2680033701bad5ebc167"
+  ],
+  "integratedOwnedInMemoryCompiles": 8,
+  "next": "STUDENT-38 one separately frozen native reload and one host-only development comparison after technical acceptance.",
+  "originalFailedInvocationPreserved": true,
+  "ownedGitBytesEqual": true,
+  "ownerCodeCommit": "d34ba14480b2e86eb26e28286d1bb1f88c77d1c2",
+  "ownerExecutionHead": "dbddf4951e47b855865d0940850049ee98debf31",
+  "ownerInitialCodeCommit": "da5680953eb8f57b89f3b256146add654f621ec1",
+  "privateReview": {
+    "bytes": 4650,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-37-reload-code-review-v1-7e5579d4b1614095bea0da68ad372be4\\review.json",
+    "physicalSha256": "b0f7febf85f28ab0119df582591e22438043914c79413f5674581c0e626ee31c"
+  },
+  "protectedSourcesUnchanged": 33,
+  "recordedAtUtc": "2026-10-04T12:18:25.899365+00:00",
+  "report": {
+    "bytes": 13464,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-reload-code-v1.json",
+    "physicalSha256": "58d03647a0350b513701f2fc5811156d4f92b55deeba7b8a8ef604cb72e89d76"
+  },
+  "reviewFindings": [
+    "Exact new positive authority and unchanged accepted phase3 fit, independent acceptance/guard/map/completion/checkpoint/adapter pins.",
+    "Host original fit paths/input/code checks; child copied files scoped to actual returned root/profile with historical paths lexical only.",
+    "New 40-source/readonly-input/original model exact maps; arbitrary/mixed loaders and original-base wrapped route refused before native effects.",
+    "Unchanged shared load_local function code/globals/exact captured adapter_dir and proof capability, then actual native PEFT/Qwen/config/frozen tensor/base checks.",
+    "Same seven prompts/float32 margins/complete vectors/strict positive threshold/tie abstention/projection, adapted origin and current-process fit=false.",
+    "Coordinator corrected host phase reader stays distinct from learner protected runtime phase source; native packet derives only from learner closure."
+  ],
+  "runtimeSourceFiles": 40,
+  "sourceCanonicalLfSha256": {
+    "scripts/usp/learning/association/association_adapter.py": "3bf37e002fdba17e8a60d498bd2fc8593c6c935524ea3ff5bc51e7123c1422d4",
+    "scripts/usp/learning/association/association_student.py": "2582abb087e98ce0c8c830f01ff4ddb85a9e7387d4d78793d8bf99fa0fc57d50",
+    "scripts/usp/learning/association/stage_adapter.py": "4293ead8a761c5a7fbe8c9300e642e549bae5c0cc2dbe6d96fbe9d671f239fee",
+    "scripts/usp/learning/association/stage_baseline.py": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93",
+    "scripts/usp/learning/association/stage_fragment_adapter.py": "1ee5a84260d15d07d77dda02ab292bd474863999beb559a9c19b1d916471b776",
+    "scripts/usp/learning/association/stage_fragment_rank_phase.py": "6bd9d6789f76adbcb0c5872d7f319d9b8812da05cd2dd03b21cf9545f1c82662",
+    "scripts/usp/learning/association/stage_fragment_rank_reload.py": "8d7d3e50b4fbc8cadcff40e3d52aae6967e651ff3a9f694a0917bcbefd9e52d6",
+    "scripts/usp/learning/association/stage_selector_baseline.py": "351a1417bacd7de54f76eb799e6635636227642ff4801e11920f22684403ee91",
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f",
+    "services/geo/geo/__init__.py": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09",
+    "services/geo/geo/native_ifc.py": "f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661",
+    "services/geo/geo/usp_learning/__init__.py": "4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "services/geo/geo/usp_learning/association/adapter.py": "301084077551063fd833ade16d46aa20923e6a091374bb0e6f307eb54a8ff3a1",
+    "services/geo/geo/usp_learning/association/candidate_baseline.py": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+    "services/geo/geo/usp_learning/association/candidate_selection.py": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+    "services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "services/geo/geo/usp_learning/association/citation_view.py": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+    "services/geo/geo/usp_learning/association/fragment_adapter.py": "071b171547017f942432105a32cb5303a175d6ec8243c6bf1dd7df1e49e39b4d",
+    "services/geo/geo/usp_learning/association/fragment_baseline.py": "63c923ed5d32593388852aa2e8b7fe6eb96682796295881c5a634c9fc08a778d",
+    "services/geo/geo/usp_learning/association/fragment_rank.py": "292b9922421b5140f80a615df0cf1f24840c33d9757e58a574d6a7bc46a1af20",
+    "services/geo/geo/usp_learning/association/fragment_rank_adapter.py": "55b8f4d90bc33551fb9ae0776b62a60b4bbda7b69ef66956e79f6395a25669ab",
+    "services/geo/geo/usp_learning/association/fragment_rank_baseline.py": "6f09cdb4ac8112d0831dc5206822637e0d0147f390f905643d875291a50ad1c4",
+    "services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py": "162901af3fbef48d613fcf69bc4cde8fd55634f31346cd67e3bd8b7bdb0f6706",
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py": "b082400d907e1732d8d674870078e76df92780618763390437a23dc6dd2c847c",
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py": "0507c7e23d5b3ff8fc06f49e016166c0fbaef6b9fe8d5faa6ebbfe6ce7f27a45",
+    "services/geo/geo/usp_learning/association/fragment_rank_reload.py": "c4ef3046500a04c555cd429e6fca9978aa10cc1fb1f02c2e875ec9f5a8085257",
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py": "376f1e3d075ecada452c5352199fbee278b09f961f372b50a436068794ca8598",
+    "services/geo/geo/usp_learning/association/fragment_selection.py": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0",
+    "services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+    "services/geo/geo/usp_learning/association/native_candidates.py": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+    "services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+    "services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+    "services/geo/geo/usp_learning/association/selector_baseline.py": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+    "services/geo/geo/usp_learning/association/selector_constraints.py": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/student.py": "8cfd44daedbd9c31616198cf31dcd6d76e68d426b5f4735dcb879b16aadf6bc8",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+  },
+  "sourcePhysicalSha256": {
+    "scripts/usp/learning/association/association_adapter.py": "3bf37e002fdba17e8a60d498bd2fc8593c6c935524ea3ff5bc51e7123c1422d4",
+    "scripts/usp/learning/association/association_student.py": "2582abb087e98ce0c8c830f01ff4ddb85a9e7387d4d78793d8bf99fa0fc57d50",
+    "scripts/usp/learning/association/stage_adapter.py": "4293ead8a761c5a7fbe8c9300e642e549bae5c0cc2dbe6d96fbe9d671f239fee",
+    "scripts/usp/learning/association/stage_baseline.py": "926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93",
+    "scripts/usp/learning/association/stage_fragment_adapter.py": "1ee5a84260d15d07d77dda02ab292bd474863999beb559a9c19b1d916471b776",
+    "scripts/usp/learning/association/stage_fragment_rank_phase.py": "6bd9d6789f76adbcb0c5872d7f319d9b8812da05cd2dd03b21cf9545f1c82662",
+    "scripts/usp/learning/association/stage_fragment_rank_reload.py": "8d7d3e50b4fbc8cadcff40e3d52aae6967e651ff3a9f694a0917bcbefd9e52d6",
+    "scripts/usp/learning/association/stage_selector_baseline.py": "351a1417bacd7de54f76eb799e6635636227642ff4801e11920f22684403ee91",
+    "scripts/usp/learning/model_isolation.py": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "scripts/usp/security/appcontainer_audit.py": "5c1f2bc1d3b56caa8ed5d3cfade4799562f290e727e845542e2f91c3656242ca",
+    "services/geo/geo/__init__.py": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+    "services/geo/geo/native_ifc.py": "6372a5009fe23d6f43decb114883d31c9c4db4345196b59734638249ca5d866e",
+    "services/geo/geo/usp_learning/__init__.py": "fd6f37d085ea49b360e1369bf3d758e6588996c7d020a6d2245484f8a5c07335",
+    "services/geo/geo/usp_learning/association/__init__.py": "bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679",
+    "services/geo/geo/usp_learning/association/adapter.py": "301084077551063fd833ade16d46aa20923e6a091374bb0e6f307eb54a8ff3a1",
+    "services/geo/geo/usp_learning/association/candidate_baseline.py": "75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7",
+    "services/geo/geo/usp_learning/association/candidate_selection.py": "c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785",
+    "services/geo/geo/usp_learning/association/chunked_loss.py": "828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7",
+    "services/geo/geo/usp_learning/association/citation_view.py": "06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea",
+    "services/geo/geo/usp_learning/association/fragment_adapter.py": "071b171547017f942432105a32cb5303a175d6ec8243c6bf1dd7df1e49e39b4d",
+    "services/geo/geo/usp_learning/association/fragment_baseline.py": "63c923ed5d32593388852aa2e8b7fe6eb96682796295881c5a634c9fc08a778d",
+    "services/geo/geo/usp_learning/association/fragment_rank.py": "292b9922421b5140f80a615df0cf1f24840c33d9757e58a574d6a7bc46a1af20",
+    "services/geo/geo/usp_learning/association/fragment_rank_adapter.py": "55b8f4d90bc33551fb9ae0776b62a60b4bbda7b69ef66956e79f6395a25669ab",
+    "services/geo/geo/usp_learning/association/fragment_rank_baseline.py": "6f09cdb4ac8112d0831dc5206822637e0d0147f390f905643d875291a50ad1c4",
+    "services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py": "162901af3fbef48d613fcf69bc4cde8fd55634f31346cd67e3bd8b7bdb0f6706",
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py": "b082400d907e1732d8d674870078e76df92780618763390437a23dc6dd2c847c",
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py": "0507c7e23d5b3ff8fc06f49e016166c0fbaef6b9fe8d5faa6ebbfe6ce7f27a45",
+    "services/geo/geo/usp_learning/association/fragment_rank_reload.py": "c4ef3046500a04c555cd429e6fca9978aa10cc1fb1f02c2e875ec9f5a8085257",
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py": "376f1e3d075ecada452c5352199fbee278b09f961f372b50a436068794ca8598",
+    "services/geo/geo/usp_learning/association/fragment_selection.py": "aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0",
+    "services/geo/geo/usp_learning/association/memory_observation.py": "ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d",
+    "services/geo/geo/usp_learning/association/native_candidates.py": "17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df",
+    "services/geo/geo/usp_learning/association/query_attention.py": "715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec",
+    "services/geo/geo/usp_learning/association/reclamation.py": "c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27",
+    "services/geo/geo/usp_learning/association/selector_baseline.py": "7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d",
+    "services/geo/geo/usp_learning/association/selector_constraints.py": "5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064",
+    "services/geo/geo/usp_learning/association/selectors.py": "dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e",
+    "services/geo/geo/usp_learning/association/student.py": "8cfd44daedbd9c31616198cf31dcd6d76e68d426b5f4735dcb879b16aadf6bc8",
+    "services/geo/geo/usp_learning/association/validation.py": "68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2",
+    "services/geo/geo/usp_learning/resources.py": "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+  },
+  "unrun": [
+    "actual stage/AppContainer/native PEFT reload/tensor equality and base stability",
+    "native tokenizer/scores/resources/output/cleanup",
+    "development quality/independent source truth/generalization/evaluation/canonical linkage/promotion"
+  ],
+  "version": "student-fragment-rank-reload-code-acceptance/1"
+}
