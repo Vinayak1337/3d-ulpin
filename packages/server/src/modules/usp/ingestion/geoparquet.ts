@@ -76,6 +76,10 @@ export function geoparquetInput(ctx:Awaited<ReturnType<typeof geoparquetSourceTx
     sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,subject:ctx.binding.subject,
     accessSha256:ctx.binding.access,readerSha256:geoparquetReaderSha(),tools,selection,continuation});
 }
+const currentGeoParquetInput=(ctx:Awaited<ReturnType<typeof geoparquetSourceTx>>,input:GeoParquetInput)=>
+  ctx.latest&&fingerprint(geoparquetInput(ctx,input.jobId,input.selection,input.tools,input.continuation))===fingerprint(input);
+const advancingGeoParquetSelection=(parent:GeoParquetInput,nextRowIndex:number,startRowIndex:number)=>
+  nextRowIndex===startRowIndex&&nextRowIndex>parent.selection.startRowIndex;
 /** Optional caller-owned bounded parent receipt read; old callers retain their
  * existing deadline/reader. SQL authority and parsed result scope stay canonical. */
 export type GeoParquetReadOptions=DbDeadline&{readResult?:typeof readGeoParquetResult};
@@ -86,7 +90,7 @@ function liveReadOptions(options?:GeoParquetReadOptions){
 export async function assertGeoParquetInputTx(client:PoolClient,input:GeoParquetInput,lock=false,readOptions?:GeoParquetReadOptions){
   liveReadOptions(readOptions);
   const ctx=await geoparquetSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||fingerprint(geoparquetInput(ctx,input.jobId,input.selection,input.tools,input.continuation))!==fingerprint(input))
+  if(!currentGeoParquetInput(ctx,input))
     conflict('The GeoParquet original, case, reader or private access context changed. Retry under current pins.');
   if(input.continuation){const parent=await geoparquetContinuationTx(client,ctx,input.continuation,input.selection.startRowIndex,lock,readOptions);
     if(fingerprint(parent)!==fingerprint(input.continuation))conflict('The accepted continuation attempt changed.');}
@@ -134,6 +138,35 @@ export async function geoparquetStatusTx(client:PoolClient,caseId:string,sourceI
   let stale=false;try{await assertGeoParquetInputTx(client,input,lock,readOptions);}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
   return {ctx,job,input,stale};
 }
+/** SQL/input authority only, independent of installed tools or object reads.
+ * The direct parent's full row is retained even when its pins are stale. This
+ * does NOT validate its artifact/window receipt or admit positive metadata. */
+export async function geoparquetStatusAuthorityTx(client:PoolClient,caseId:string,sourceId:string,jobId:string,lock=false){
+  const ctx=await geoparquetSourceTx(client,caseId,sourceId,lock);
+  const capture=async(id:string)=>{
+    const job=(await client.query(`SELECT j.*,m.result_ref,m.input_sha256,m.logical_state,m.accepted_fence,
+      a.state attempt_state,a.fence attempt_fence,a.input_sha256 attempt_input_sha256,a.completion_sha256
+      FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id LEFT JOIN usp_job_attempts a ON a.job_id=j.id AND a.fence=m.accepted_fence
+      WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='geoparquet-native'${lock?' FOR SHARE OF j,m':''}`,
+      [id,caseId,sourceId])).rows[0]??notFound('GeoParquet inspection job not found.');
+    const input=GeoParquetInputSchema.parse(job.payload);assertGeoParquetJobRow(job,input);return {job,input};
+  };
+  const child=await capture(jobId),{job,input}=child;
+  if(job.status==='succeeded'){assertGeoParquetJobRow(job,input,true);geoparquetResultBytes(job.result_ref,jobId);}
+  let stale=!currentGeoParquetInput(ctx,input),parent:Awaited<ReturnType<typeof capture>>|null=null;
+  if(input.continuation){
+    const pin=input.continuation;parent=await capture(pin.jobId);
+    try{
+      assertGeoParquetJobRow(parent.job,parent.input,true);geoparquetResultBytes(parent.job.result_ref,pin.jobId);
+      const currentPin=GeoParquetContinuationPinSchema.parse({...pin,inputSha256:fingerprint(parent.input),
+        acceptedFence:Number(parent.job.accepted_fence)});
+      if(!currentGeoParquetInput(ctx,parent.input)||parent.job.result_ref.sha256!==pin.resultSha256||
+        fingerprint(currentPin)!==fingerprint(pin)||!advancingGeoParquetSelection(parent.input,pin.nextRowIndex,input.selection.startRowIndex))
+        conflict('The accepted continuation source, input, result, fence or selection changed.');
+    }catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
+  }
+  assertIngestionBinding(ctx.binding);return {ctx,job,input,stale,parent};
+}
 /** Pin one exact accepted parent window. Parent publication is immutable; no recursive history scan. */
 export async function geoparquetContinuationTx(client:PoolClient,ctx:Awaited<ReturnType<typeof geoparquetSourceTx>>,
   pin:{jobId:string;resultSha256:string;artifactSha256:string;nextRowIndex:number},startRowIndex:number,lock=false,
@@ -146,7 +179,7 @@ export async function geoparquetContinuationTx(client:PoolClient,ctx:Awaited<Ret
     WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='geoparquet-native'${lock?' FOR SHARE OF j,m':''}`,
     [pin.jobId,ctx.current.id,ctx.source.id])).rows[0]??notFound('Accepted continuation job not found.');
   const input=GeoParquetInputSchema.parse(parent.payload);assertGeoParquetJobRow(parent,input,true);
-  if(!ctx.latest||fingerprint(geoparquetInput(ctx,input.jobId,input.selection,input.tools,input.continuation))!==fingerprint(input)
+  if(!currentGeoParquetInput(ctx,input)
     ||parent.result_ref.sha256!==pin.resultSha256)conflict('The continuation belongs to different source or intake pins.');
   assertGeoParquetReadTools(input.tools,bounds.deadlineAt);
   const result=GeoParquetResultSchema.parse(await (bounds.readResult??readGeoParquetResult)(input,pin.resultSha256,
@@ -155,7 +188,7 @@ export async function geoparquetContinuationTx(client:PoolClient,ctx:Awaited<Ret
   if(fingerprint(result.input)!==fingerprint(input)||result.artifact.key!==geoparquetArtifactKey(input.jobId,result.artifact.sha256))
     throw new AppError(422,'GEOPARQUET_RESULT_SCOPE','The continuation receipt belongs to another original or job.');
   if(result.artifact.sha256!==pin.artifactSha256||result.summary.window.nextRowIndex!==pin.nextRowIndex
-    ||pin.nextRowIndex<=input.selection.startRowIndex||result.summary.window.status!=='available')
+    ||!advancingGeoParquetSelection(input,pin.nextRowIndex,startRowIndex)||result.summary.window.status!=='available')
     conflict('The exact accepted window has no advancing continuation at this row.');
   assertIngestionBinding(ctx.binding);assertGeoParquetReadTools(input.tools,bounds.deadlineAt);
   return GeoParquetContinuationPinSchema.parse({...pin,inputSha256:fingerprint(input),acceptedFence:Number(parent.accepted_fence)});

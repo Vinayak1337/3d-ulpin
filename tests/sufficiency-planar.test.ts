@@ -8,11 +8,12 @@ import {GeoParquetOriginalSchema,GeoParquetResultSchema} from '../packages/contr
 import {SufficiencyPlanarProcessingSchema} from '../packages/contracts/src/usp/sufficiency-planar';
 import {sufficiencyPlanarOriginalTx,sufficiencyPlanarEvidenceTx,planarGeoParquetReceiptCache} from '../packages/server/src/modules/usp/ingestion/sufficiency-planar';
 import {geoparquetSourceTx,geoparquetInput,geoparquetStatusTx,assertGeoParquetInputTx,geoparquetContinuationTx,
-  geoparquetReaderSha} from '../packages/server/src/modules/usp/ingestion/geoparquet';
+  geoparquetReaderSha,geoparquetStatusAuthorityTx} from '../packages/server/src/modules/usp/ingestion/geoparquet';
 import {readFusionObject,type FusionBudget} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
+import {AppError} from '../packages/server/src/infrastructure/errors';
 
 // Real retained test_only originals/producer receipts; disclosed in-memory
 // case/source/job/SQL controls. No current accepted envelope is manufactured.
@@ -39,7 +40,7 @@ function fixture(kind:'dxf'|'geoparquet',retained?:ReturnType<typeof GeoParquetR
         permissionReference:null,geography:null,limitations:['technical in-memory receipt authority over unchanged test_only bytes']}}),
     source:any={id:sourceId,case_id:current.id,family_id:input?.sourceFamilyId??sourceId,revision:input?.sourceRevision??1,
       sha256:marker.sha256,bytes:marker.bytes,profile:kind+'-native-v1',object_key:`sources/${sourceId}/${marker.sha256}`,
-      status:'received',inspection:{[kind+'Original']:marker}},state={calls:[] as string[],reads:0,tools:0,job:null as any};
+      status:'received',inspection:{[kind+'Original']:marker}},state={calls:[] as string[],reads:0,tools:0,job:null as any,parentJob:null as any};
   const client={query:async(sql:string,args:any[]=[])=>{
     state.calls.push(sql);let rows:any[]=[];
     if(sql.includes('pg_advisory_xact_lock')){}
@@ -47,7 +48,8 @@ function fixture(kind:'dxf'|'geoparquet',retained?:ReturnType<typeof GeoParquetR
     else if(sql.includes('SELECT max(revision)'))rows=[{revision:source.revision}];
     else if(sql.includes('FROM sources'))rows=[source];
     else if(sql.startsWith('SELECT id FROM jobs'))rows=state.job?[{id:state.job.id}]:[];
-    else if(sql.includes('FROM jobs j'))rows=state.job&&args[0]===state.job.id?[state.job]:[];
+    else if(sql.includes('FROM jobs j'))rows=state.job&&args[0]===state.job.id?[state.job]
+      :state.parentJob&&args[0]===state.parentJob.id?[state.parentJob]:[];
     else assert.fail('Unexpected planar SQL: '+sql);
     return {rows:structuredClone(rows),rowCount:rows.length};
   }} as PoolClient;
@@ -129,6 +131,41 @@ test('retained producer summaries/windows stay literal; inadmissible raw identit
   save('metadata-stale-fence.json',{qualification:'Retained summaries are schema controls; original accepted envelope remains stale under exact raw reader identity.',
     dxf:drawing.planar,geoparquet:detail.planar,differences,retainedReader:initial.input.readerSha256,currentReader:geoparquetReaderSha(),
     stale:inspected.processing,fenceDrift:'409 before private reads'});
+},'geoparquet-protocol-control'));
+
+test('technical continuation tool outage retains the original without metadata; complete parent/access recapture refuses drift',()=>local(async()=>{
+  const journey=geoJourney(),initial=GeoParquetResultSchema.parse(journey.initialAccepted),continued=GeoParquetResultSchema.parse(journey.continuedAccepted);
+  const job=(result:typeof initial,fence:number,hash:string)=>{
+    const bytes=Buffer.from(JSON.stringify(result));assert.equal(sha256(bytes),hash);const inputHash=fingerprint(result.input);
+    return {id:result.input.jobId,case_id:result.input.caseId,source_id:result.input.sourceId,operation:'geoparquet-native',
+      case_revision:result.input.caseRevision,input_fingerprint:inputHash,input_sha256:inputHash,payload:result.input,
+      status:'succeeded',logical_state:'succeeded',accepted_fence:fence,attempt_state:'accepted',attempt_fence:fence,
+      attempt_input_sha256:inputHash,completion_sha256:hash,result_ref:{assetId:`geoparquet:${result.input.jobId}:${bytes.length}`,sha256:hash,version:1}};
+  };
+  const f=fixture('geoparquet',continued);f.state.job=job(continued,journey.continuedAcceptedFence,journey.continuedResultSha256);
+  f.state.parentJob=job(initial,journey.initialAcceptedFence,journey.initialResultSha256);
+  const actual=await geoparquetStatusAuthorityTx(f.client,f.current.id,f.source.id,f.state.job.id);
+  assert.equal(actual.stale,true);assert.equal(actual.parent?.job.id,initial.input.jobId);
+  let statusCalls=0,captureCalls=0;
+  // Deliberately injected availability-path control: the real retained input
+  // remains unchanged and stale. Only the capture's stale outcome is controlled
+  // to reach the 503 branch; this is NOT current accepted-source qualification.
+  const dependencies={...f.dependencies,geoparquetAuthority:async(...args:Parameters<typeof geoparquetStatusAuthorityTx>)=>{
+    captureCalls++;const captured=await geoparquetStatusAuthorityTx(...args);return {...captured,stale:false};
+  },geoparquetStatus:async()=>{statusCalls++;throw new AppError(503,'GEOPARQUET_TOOL_CHANGED','Injected parent-tool outage.');}};
+  const result=await sufficiencyPlanarEvidenceTx(f.client,f.source,{dependencies});assert(result);
+  assert.equal(result.processing.state,'unavailable');assert.equal(result.processing.planar.tools,'unavailable');
+  assert.equal(result.processing.planar.code,'GEOPARQUET_TOOL_CHANGED');assert.equal(result.processing.planar.summary,null);
+  assert.equal(result.processing.resultSha256,null);assert.deepEqual(result.jobIds,[initial.input.jobId,continued.input.jobId].sort());
+  assert.deepEqual(result.recordPins.map(pin=>pin.id).sort(),result.jobIds);
+  await result.revalidate(true);assert(statusCalls>=3);assert(captureCalls>=3);assert.equal(f.state.reads,0);assert.equal(f.state.tools,0);
+  const saved=structuredClone(f.state.parentJob.result_ref),size=Number(saved.assetId.split(':').at(-1));
+  f.state.parentJob.result_ref.assetId=`geoparquet:${initial.input.jobId}:${size+1}`;
+  await assert.rejects(()=>result.revalidate(true),code(409));f.state.parentJob.result_ref=saved;
+  f.current.archived=true;await assert.rejects(()=>result.revalidate(true),code(403));assert.equal(f.state.reads,0);
+  save('continuation-unavailable-correction.json',{qualification:'Technical capture/status injection only; unchanged retained accepted input remains raw-stale, no current accepted envelope was manufactured.',
+    actualRawStale:actual.stale,processing:result.processing,recordPins:result.recordPins,jobIds:result.jobIds,
+    statusCalls,captureCalls,privateReads:0,parentResultByteDrift:'409',revokedSourceCase:'403'});
 },'geoparquet-protocol-control'));
 
 test('bounded receipt cache uses exact retained pins; cancellation and drift cannot start final I/O',()=>local(async()=>{
