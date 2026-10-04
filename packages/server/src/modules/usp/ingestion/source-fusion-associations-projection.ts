@@ -29,6 +29,8 @@ export function exactIdentifier(text:string,value:string){
 export function associationLiterals(context:SourceFusionContext,unsupportedSources:readonly string[]=[]):AssociationLiteral[]{
   const literals:AssociationLiteral[]=[];
   for(const source of context.sources){
+    if(source.kind==='gltf')throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY',
+      'glTF nodes support source context only; property association proposals are unsupported.');
     if(source.kind==='survey_report')throw new AppError(422,'SOURCE_FUSION_SURVEY_CONTEXT_ONLY',
       'Survey rows support source context only; building/floor association proposals are unsupported.');
     if(source.kind==='point')throw new AppError(422,'SOURCE_FUSION_POINT_CONTEXT_ONLY','Point metadata does not support association proposals.');
@@ -121,6 +123,8 @@ export function associationManualSelection(request:FusionAssociationRequest,cont
   ifcProjection?:AssociationIFCProjection){
   const selected=new Set(keys);
   const candidates=context.sources.flatMap<SourceFusionContext['sources'][number]>(source=>{
+    if(source.kind==='gltf')throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY',
+      'glTF nodes support source context only; reviewed citation attachment is unsupported.');
     if(source.kind==='survey_report')throw new AppError(422,'SOURCE_FUSION_SURVEY_CONTEXT_ONLY',
       'Survey rows support source context only; reviewed citation attachment is unsupported.');
     if(source.kind==='point')throw new AppError(422,'SOURCE_FUSION_POINT_CONTEXT_ONLY','Point metadata does not support association proposals.');

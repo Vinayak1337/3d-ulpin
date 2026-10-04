@@ -29,8 +29,9 @@ import {acceptedFusionCityGMLTx,verifyFusionCityGMLTools} from './source-fusion-
 import {acceptedFusionGeoParquetTx,verifyFusionGeoParquetTools,readFusionGeoParquetResult,type FusionGeoParquetAuthority} from './source-fusion-geoparquet-authority';
 import {acceptedFusionRasterTx,readFusionRasterResult,type FusionRasterAuthority} from './source-fusion-raster-authority';
 import {acceptedFusionPointTx,readFusionPointResult,type FusionPointAuthority} from './source-fusion-point-authority';
+import {acceptedFusionGltfTx,verifyFusionGltfTools,readFusionGltfResult,type FusionGltfAuthority} from './source-fusion-gltf-authority';
 
-export type FusionAuthority=FusionGeoParquetAuthority|FusionRasterAuthority|FusionPointAuthority|{kind:'document';input:DocumentInput;acceptedFence:number}|
+export type FusionAuthority=FusionGltfAuthority|FusionGeoParquetAuthority|FusionRasterAuthority|FusionPointAuthority|{kind:'document';input:DocumentInput;acceptedFence:number}|
   {kind:'cityjson';input:CityJSONInput;acceptedFence:number}|{kind:'ifc';input:IFCInput;acceptedFence:number}|
   {kind:'dxf';input:DXFInput;acceptedFence:number}|{kind:'kml';input:KMLInput;acceptedFence:number}|{kind:'citygml';input:CityGMLInput;acceptedFence:number};
 export type FusionBudget={deadlineAt:number;signal:AbortSignal;reservedBytes:number};
@@ -44,6 +45,7 @@ type AuthorityDependencies={transaction:typeof transaction;document:typeof assoc
   dxf?:typeof acceptedFusionDXFTx;dxfTools?:typeof verifyFusionDXFTools;
   kml?:typeof acceptedFusionKMLTx;kmlTools?:typeof verifyFusionKMLTools;
   citygml?:typeof acceptedFusionCityGMLTx;citygmlTools?:typeof verifyFusionCityGMLTools;
+  gltf?:typeof acceptedFusionGltfTx;gltfTools?:typeof verifyFusionGltfTools;
   geoparquet?:typeof acceptedFusionGeoParquetTx;geoparquetTools?:typeof verifyFusionGeoParquetTools;
   raster?:typeof acceptedFusionRasterTx;point?:typeof acceptedFusionPointTx};
 const defaults:AuthorityDependencies={transaction,document:associationDocumentInputTx,cityjson:acceptedCityJSONTx,gate:lockSourceCaseDestinationTx};
@@ -78,6 +80,8 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
         authority=await (deps.kml??acceptedFusionKMLTx)(client,pin,true);
       }else if(selection.kind==='citygml'){
         authority=await (deps.citygml??acceptedFusionCityGMLTx)(client,pin,true);
+      }else if(selection.kind==='gltf'){
+        authority=await (deps.gltf??acceptedFusionGltfTx)(client,pin,true);
       }else if(selection.kind==='geoparquet'){
         authority=await (deps.geoparquet??acceptedFusionGeoParquetTx)(client,pin,true);
       }else if(selection.kind==='raster'){
@@ -106,6 +110,7 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
     if(authority.kind==='dxf')(deps.dxfTools??verifyFusionDXFTools)(authority.input,budget);
     if(authority.kind==='kml')(deps.kmlTools??verifyFusionKMLTools)(authority.input,budget);
     if(authority.kind==='citygml')(deps.citygmlTools??verifyFusionCityGMLTools)(authority.input,budget);
+    if(authority.kind==='gltf')(deps.gltfTools??verifyFusionGltfTools)(authority.input,budget);
     if(authority.kind==='geoparquet')(deps.geoparquetTools??verifyFusionGeoParquetTools)(authority.input,budget);
   }
   fusionLive(budget);assertLocalUsp(ctx);return captured;
@@ -159,6 +164,10 @@ export function fusionJson(bytes:Uint8Array,budget:Pick<FusionBudget,'deadlineAt
  * conventions over the existing bounded stream; no shared reader is changed. */
 export async function readFusionResult(selection:SourceFusionSelection,authority:FusionAuthority,budget:FusionBudget,
   read:typeof readFusionObject=readFusionObject){
+  if(selection.kind==='gltf'){
+    if(authority.kind!=='gltf')throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
+    return readFusionGltfResult(selection,authority,budget,read);
+  }
   if(selection.kind==='point'){
     if(authority.kind!=='point')throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
     return readFusionPointResult(selection,authority,budget,read);
