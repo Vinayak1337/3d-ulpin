@@ -1,0 +1,101 @@
+{
+  "action": [
+    "Use compact.exe /C /S:<exact verified runtimeDirectory> /A /Q once per ordered scope, one shell end-to-end/literal absolute paths. No /EXE (WOF/reparse), /CompactOs, /windir, /I (ignored errors), /F (forced repeat), global or drive/workspace-root change. Standard NTFS directory/file compression only.",
+    "Record command/output/exit/timing/free allocation/compression counts. After each tree, verify every runtime logical hash/file set equals pinned profile and security/protected non-runtime receipt pins are unchanged. Stop on first failure or once16GiB free; no retry/extra scopes.",
+    "If all three cannot meet target, return measured prerequisite and preserved partial result. Do not delete/move/archive/replace/link files, weaken disk/resource guard or launch phase2. New phase2 authority follows coordinator review."
+  ],
+  "branch": "task/ml-association-student-20261002",
+  "changedCondition": "Phase1 accepted; phase2 stopped at unchanged15GiB disk guard. Current free about8GiB, fresh stage copies8.6GB. Resource recovery first.",
+  "diskBlocker": {
+    "bytes": 697,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-33-host-contract-review-v1-704aea92d9a74f0698755b612ad5eb11\\phase2-disk-admission.json",
+    "physicalSha256": "94dd834c7a32f081cefa5b409587c44a39ef02cc3429254f6242b3804c2a9df8"
+  },
+  "exclusions": "No model/GPU/native imports/fit/inference/stage/guard, source/teacher/evaluation/development access, byte edits/deletions to originals/model/data/checkpoint/code/profile/output/receipt/history, ACL/credentials/global host/pagefile/service changes, Git changes/rebinding, main/push/deploy. Current donors and accepted phase1 stage remain untouched.",
+  "executionHead": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "freeBytesObserved": 8613724160,
+  "orderedExactScopes": [
+    {
+      "classification": "Cold task-owned copied dependency runtime. Preserve logical bytes/paths/profile and all source/failure/output history. No model/data/original or current donor.",
+      "profile": {
+        "bytes": 2702013,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\profile.json",
+        "physicalSha256": "6807fffeb816e89e7944cdb23e443ed05d1a24e2767089ef3ba31ff2b9fb486d"
+      },
+      "runtimeDirectory": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\runtime",
+      "runtimeFiles": 19630
+    },
+    {
+      "classification": "Cold task-owned copied dependency runtime. Preserve logical bytes/paths/profile and all source/failure/output history. No model/data/original or current donor.",
+      "profile": {
+        "bytes": 2701698,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\profile.json",
+        "physicalSha256": "15cc480338548d4cdadf13274b2c6b7417b566f866fff0d4212906a07b2af9cc"
+      },
+      "runtimeDirectory": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-fit-d2eddcc973224e04abd13090b66762d9\\runtime",
+      "runtimeFiles": 19630
+    },
+    {
+      "classification": "Cold task-owned copied dependency runtime. Preserve logical bytes/paths/profile and all source/failure/output history. No model/data/original or current donor.",
+      "profile": {
+        "bytes": 2700133,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-a59a4367f3d9400a929eb29af2def58d\\profile.json",
+        "physicalSha256": "a20cfe373a99fd2bdbb95b3a3a1f85b2ef8511ccc9afafac738c85c531513006"
+      },
+      "runtimeDirectory": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-baseline-a59a4367f3d9400a929eb29af2def58d\\runtime",
+      "runtimeFiles": 19630
+    }
+  ],
+  "outcome": "Recover at least16GiB free on E: with standard NTFS compression of at most these three exact cold runtime trees. Preserve logical bytes, paths and security; no deletion or stage/native run.",
+  "phase1Acceptance": {
+    "bytes": 10483,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-1-native-acceptance-v1.json",
+    "physicalSha256": "723631ce0b62d5682ef73abe998671db63c891fa9ab104b92a819f9f52d6c8f7"
+  },
+  "phase1Review": {
+    "bytes": 10857,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-1-native-acceptance-review-v1.json",
+    "physicalSha256": "11445d76dd435b56c1689bd5d388ee86d1ba0a364f70499a1eff0c33de686163"
+  },
+  "preflight": [
+    "Verify actual supplied permissions, exact clean learnerHEAD and owned native processes absent. No repository edits or new native/stage run.",
+    "Verify each absolute runtime target exactly matches the assigned scope under the private student root. Refuse links/reparse/unknown files; runtime inventory must equal pinned profile runtime/* set. No recursive traversal outside target. NTFS already observed; recheck.",
+    "Hash logical runtime bytes against pinned profile before mutation; capture compression/security attributes and protected non-runtime primary receipts. This is a storage-integrity check, not reopening old model/source/evaluation work."
+  ],
+  "recordedAtUtc": "2026-10-04T09:35:55.610808+00:00",
+  "reference": {
+    "applies": "Windows10/11 NTFS",
+    "reason": "Standard /C compression retains logical bytes and paths; do not use executable/WOF or OS compression.",
+    "updated": "2023-02-03",
+    "url": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/compact"
+  },
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "return": {
+    "callbackThread": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+    "instruction": "One completion/material-blocker callback then end, no polls/schedules/new chats/subagents.",
+    "privateParent": "E:/BhuAayam-data/task-data/ml-distillation/student",
+    "repositoryWritesAuthorized": false,
+    "required": [
+      "report.json",
+      "receipt-index.json",
+      "finalization.json"
+    ],
+    "suggestedUniquePrefix": "cold-runtime-space-recovery-v1-"
+  },
+  "stageRequiredFreeBytes": 16106127360,
+  "targetFreeBytes": 17179869184,
+  "task": "STUDENT-34-COLD-RUNTIME-SPACE-RECOVERY",
+  "version": "association-cold-runtime-space-recovery-assignment/1",
+  "workerSettings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard1x"
+  },
+  "worktree": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin"
+}
