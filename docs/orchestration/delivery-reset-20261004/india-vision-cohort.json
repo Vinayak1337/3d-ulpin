@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "d06-india-vision-cohort/1",
+  "task": "D06-INDIA",
+  "status": "blocked_data",
+  "preparedAtUtc": "2026-10-04T20:44:20.184396+00:00",
+  "baseCommit": "f196cd28a7f54471f2d2bdd5a194061dbcf5075c",
+  "branch": "task/d06-indian-vision-cohort-20261005",
+  "scope": "Bounded Indian development-only vision cohort preparation",
+  "counts": {
+    "familiesChecked": 3,
+    "annotationProbes": 2,
+    "originalImageAnnotationPairs": 0,
+    "eligibleBuildingPairs": 0,
+    "eligibleFloorPairs": 0,
+    "independentIndianGroups": 0
+  },
+  "tasks": {
+    "building": {
+      "status": "needs_geographically_keyed_reviewed_pairs",
+      "items": []
+    },
+    "floor_plan": {
+      "status": "needs_independent_indian_room_annotations",
+      "items": []
+    }
+  },
+  "allocations": {
+    "training": [],
+    "development": [],
+    "finalEvaluation": []
+  },
+  "sourceChecks": [
+    {
+      "id": "openearthmap",
+      "version": "OpenEarthMap v1, Zenodo 7223446, published 2022-10-20",
+      "urls": [
+        "https://zenodo.org/records/7223446",
+        "https://open-earth-map.org/attribution.html",
+        "https://arxiv.org/html/2210.10732v1"
+      ],
+      "labelProvenance": "Paper reports manual annotation and separate QA; regional imagery/label terms apply",
+      "terms": "Region-specific attribution/permissions; no India-specific terms established",
+      "disposition": "not_selected_geography_unproved",
+      "reason": "Publisher attribution has no country entry identified as India. Gorakhpur is listed as Nepal; name alone cannot resolve that geography. No archive acquired."
+    },
+    {
+      "id": "whu-mix-vector",
+      "version": "Publisher WHU-Mix (Vector) page/table checked; release version unspecified",
+      "urls": [
+        "https://gpcv.whu.edu.cn/data/whu-mix%20%28vector%29/whu_mix%28vector%29.html",
+        "https://gpcv.whu.edu.cn/data/whu-mix%20%28vector%29/1.png"
+      ],
+      "labelProvenance": "Publisher describes vector annotation/correction; source table retained and visually inspected",
+      "terms": "Upstream source terms vary; Indian slice and its terms not established",
+      "disposition": "not_selected_geography_unproved",
+      "reason": "Published table does not identify an Indian region; CrowdAI unknown region and WHU East Asia cannot establish India. No dataset archive acquired."
+    },
+    {
+      "id": "south-asia-buildings",
+      "version": {
+        "repositoryCommit": "b952dbeac69f002870f812400774d3eea3af2392",
+        "repositoryTree": "5653cc855ab902817756de579ebcad2a3e230bf9",
+        "paperDoi": "10.1109/JSTARS.2025.3601039"
+      },
+      "urls": [
+        "https://github.com/CVLABLUMS/HouseBoundaryPrediction",
+        "https://drive.google.com/drive/folders/10vQM0Jr1M6HTO3RMKCtdjL6q-NXJD92G",
+        "https://drive.google.com/drive/folders/13B152eacWEMrRfj5IGEju0eOCAAuR1gi",
+        "https://doi.org/10.1109/JSTARS.2025.3601039",
+        "https://www.researchgate.net/publication/394796647_Structural-Constrained_Corner_Point_Prediction_for_Building_Footprint_Extraction"
+      ],
+      "geographyClaim": "Paper/README name New Delhi and Mumbai among six cities; this is dataset-level provenance, not selected-file geography",
+      "labelProvenance": "Paper section IV.A reports OSM vectors, real-estate maps and manual verification using local field reports, plus imagery cross-validation. This was read through the public full-text web tool, not inferred from affiliation.",
+      "terms": "README claims MIT but LICENSE absent from pinned repository tree and linked LICENSE returned 404. Paper CC BY 4.0 does not license dataset imagery or third-party vectors. Dataset/imagery reuse and redistribution terms remain unspecified; record as launch-clearance gap.",
+      "disposition": "not_admitted_pair_geography_and_annotation_contract_unresolved",
+      "listingScope": "One public HTML listing page (50 entries each) for publisher train images, masks and georeferenced images; not an exhaustive inventory. Publisher test folder not opened.",
+      "pairFormatFinding": "Public train layout uses numeric PNG/TIFF and mask_<id>.geojson, unlike repository city/images + city/masks PNG loader; source mask values, buffer fields and roof/base footprint semantics need a pinned transfer policy.",
+      "reason": "Only two small train GeoJSON probes acquired. Both near Lahore, not India. No file-to-Indian-city index found in checked metadata; no eligible image downloaded, no complete pair or alignment claim."
+    }
+  ],
+  "sourceCheckReceipt": {
+    "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/source-check.json",
+    "bytes": 39496,
+    "sha256": "28e197925348e36611b72535358123ae31faa0a760c596363d86b96c8c44e896"
+  },
+  "recordingHelper": {
+    "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/record_source_check.py",
+    "bytes": 13403,
+    "sha256": "c5ddfc72f9a0a911ad612c405888c02c53564f0f3f0c49973f70004c1e256d75"
+  },
+  "evaluatorContract": {
+    "building": "Existing RF-DETR development evaluator requires image and truth/scoring masks in the exact image pixel frame; raw affine, CRS, source polygons, holes/partials and ignore policy must be pinned before admission",
+    "floor_plan": "Existing CubiCasa evaluator uses 12 room/wall classes; native room SVG/vector annotations need exact source pixel frame and justified class mapping. A building polygon or document caption is not a floor-region target",
+    "alignmentCheck": "not_run_no_eligible_pair",
+    "normalAndDifficultImageInspection": "not_run_no_eligible_image"
+  },
+  "minimumRecoveryInputs": [
+    "Publisher index mapping at least two small New Delhi or Mumbai development image/annotation pairs to exact filenames and coordinates, with originals and crop/affine/CRS",
+    "Publisher annotation policy/review lineage for those pairs, resolving OSM/real-estate-derived boundaries, buffer fields, roof/base definition, missing/ambiguous buildings and ignore regions; otherwise independent human boundary review",
+    "For floor route separately: Indian original plans and independent reviewed room/wall vectors with source pixel axes and class mapping"
+  ],
+  "launchClearanceGaps": [
+    "Dataset imagery/vector terms and third-party attribution; repository MIT claim has no LICENSE file; paper licence alone is insufficient"
+  ],
+  "preservation": "Existing 19 foreign D06 development pairs/groups and all training/final/closed holdouts untouched; no pair promoted or resplit",
+  "catalogueUpdateRequests": [],
+  "runtime": {
+    "modelsOrGpuUsed": false,
+    "servicesStarted": false,
+    "dependenciesInstalled": false,
+    "ownedProcessesRemaining": 0,
+    "permissionsObserved": {
+      "approval_policy": "never",
+      "sandbox_mode": "danger-full-access"
+    },
+    "settingsRequested": {
+      "model": "gpt-6.1-sol",
+      "reasoning": "high",
+      "speed": "default/standard 1x"
+    },
+    "settingsObserved": "Actual per-turn model/reasoning/tier metadata unexposed"
+  },
+  "verification": {
+    "sourceCheckCommandExit": 0,
+    "jsonAndPinCheckExit": 0,
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/validation.json",
+      "bytes": 604,
+      "sha256": "d491e4315153bc73fd243f7aa26ed02046d237262dfdb2ffdb8f4d7886c29f92"
+    }
+  }
+}
