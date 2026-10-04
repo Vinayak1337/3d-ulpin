@@ -12,8 +12,24 @@ export function assessSufficiency(ctx:SufficiencyContext,task:string):Assessment
   const unavailable=(reason:string)=>({...park([evidence('supported_task','unsupported','policy')],reason,'inspect_original'),availability:'unavailable' as const});
   if(!ctx.supported)return unavailable('The retained source profile is not supported by this task policy. The original remains retained.');
   if(!ctx.latest)return {...park([evidence('current_source_revision','unknown','source')],'This retained source revision has been superseded. Evaluate its current revision.'),availability:'stale'};
+  if(task==='retain_evidence'&&ctx.mesh)return done([evidence('retained_original_receipt','satisfied','source'),evidence('canonical_original_authority','satisfied','source')],
+    'The canonical private original receipt is verified independently of native inspection. This does not read or qualify mesh geometry.');
   if(task==='retain_evidence')return done([evidence('retained_original_receipt','satisfied','source'),evidence('stored_inspection','satisfied')],
     'The original receipt and stored inspection are available. This task does not qualify geometry or source accuracy.');
+  if(task==='inspect_native_context'){
+    if(!ctx.mesh)return unavailable('Native mesh context inspection is supported only for a canonical retained OBJ or glTF original.');
+    const processing=ctx.mesh.processing,items=[evidence('current_accepted_native_metadata',processing.mesh?.metadata?'satisfied':'unknown','job')];
+    if(processing.mesh?.metadata)return done(items,processing.state==='inspected_partial'?
+      'Current accepted native metadata is useful with partial projection or unfetched companions explicitly retained. This does not qualify placement, geometry, identity, measurements or rights.':
+      'Current accepted local native metadata is available. Its context mesh remains unplaced and unqualified for geometry, identity, measurements, rights or learning.');
+    if(processing.state==='unavailable')return {...park(items,'Strict current native read tools are unavailable or changed. Configure the pinned reader; the original receipt remains useful.','configure_reader'),availability:'unavailable'};
+    if(processing.state==='stale')return {...park(items,'The native job input or reader pins are stale. Request a current canonical inspection; prior outcomes and original remain retained.','retry_extraction'),availability:'stale'};
+    if(processing.state==='failed')return park(items,'The canonical native inspection failed. Inspect the retained failure and retry its supported route. No missing source fact is inferred.','retry_extraction');
+    return park(items,processing.state==='running'?'The canonical native context inspection is running. No missing source facts are inferred.':
+      'Native context inspection has not completed. Use the canonical reader; no missing source facts are inferred.',processing.jobId?'wait_for_extraction':'process_source');
+  }
+  if(ctx.mesh&&task==='context_2d')return park([evidence('qualified_working_frame','unknown','geometry'),evidence('recorded_context_geometry','unknown','geometry')],
+    'Source-local mesh metadata and officer references do not establish a working frame or recorded 2D geometry. A source-backed reviewed conversion is required.','review_conversion');
   if(!['context_2d','neutral_display','building_massing','spatial_analysis'].includes(task))return unavailable('This task is not implemented by the retained-source policy. No success or qualification is implied.');
   if(ctx.document){
     const {state,modelStatus}=ctx.document.processing;
@@ -45,11 +61,14 @@ export function assessSufficiency(ctx:SufficiencyContext,task:string):Assessment
     const actual=ctx.projectedAccepted || ctx.features.length>0 && ctx.features.length<=64 && ctx.features.every(f=>f.has_geometry);
     return actual ? {evidence:[evidence('existing_context_geometry','satisfied','geometry')],outcome:'fill_display',availability:'available',
       nextAction:'neutral_presentation',reason:'Existing context geometry may use neutral presentation. No dimensions, objects, measurements or rights are generated.'} :
-      park([evidence('existing_context_geometry','unknown','geometry')],'There is no current recorded context geometry for neutral presentation. Retain the source and complete its supported conversion.');
+      park([evidence('existing_context_geometry','unknown','geometry')],ctx.mesh?
+        'Local native mesh metadata has no qualified working frame or recorded context geometry for neutral presentation. Retain it and review a source-backed conversion.':
+        'There is no current recorded context geometry for neutral presentation. Retain the source and complete its supported conversion.',ctx.mesh?'review_conversion':'park');
   }
   if(task==='building_massing'){
     if(row.profile!=='geojson-manual-v1')return {evidence:[evidence('building_geometry','unsupported')],outcome:'reject_for_3d',availability:'unavailable',nextAction:'inspect_original',
-      reason:'This source profile supplies administrative or document evidence, not building geometry. Other supported tasks remain available.'};
+      reason:ctx.mesh?'Native mesh context has no qualified building outline, height, frame or object correspondence for massing. Retain the source and native metadata; reject only this 3D task.':
+        'This source profile supplies administrative or document evidence, not building geometry. Other supported tasks remain available.'};
     const height=row.manual.paths?.find((p:{path:string})=>p.path==='/features/*/properties/height_roof');
     const conflicting=ctx.scope.packageBodies.some(p=>p.body.questions.some((q:any)=>q.kind==='conflicting_claims'&&q.property==='building.exteriorHeight'&&!q.answer));
     const heightState=conflicting?'conflicting':height?.values>0?'present_unqualified':height?.explicitNull>0?'null':'unknown';
