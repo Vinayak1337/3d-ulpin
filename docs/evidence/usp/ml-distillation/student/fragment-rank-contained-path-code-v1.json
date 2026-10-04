@@ -1,0 +1,170 @@
+{
+  "assignment": {
+    "bytes": 29309,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-32.fragment-rank-contained-path-code.assignment.json",
+    "physicalSha256": "b207e06aa147df1b3b9285f5159f08c1fa070618cd7d6e97d965bf385d5a4d1b"
+  },
+  "baseCommit": "37fac56393acce067d717d5f259d9bf760396727",
+  "branch": "task/ml-association-student-20261002",
+  "checks": {
+    "diffCheckExitCode": 0,
+    "doubles": [
+      "Actual OS AppContainer/Job verification is doubled with a root returned by require_model_boundary; native imports blocked and shared fit stops at before_imports.",
+      "Worker/source/input filesystem stat/resolve/open/mkdir/iteration is virtualized using retained real payload/code bytes; outside-stage parent and historical host paths raise PermissionError. Revised checked_path and actual authority/state validators stay real.",
+      "Separate checkpoint publish/read and PhaseSession save controls use real temporary files with exists/stat/lstat denied on outside parents; Windows reparse attributes are a metadata double, no actual AppContainer or ACL probe.",
+      "Tensor/device/RNG, optimizer/scaler objects and safetensors codec use existing stdlib doubles. Actual capture/publish/read/restore execute; no native numeric/serialization equivalence claim.",
+      "First-phase native proof execution is replaced with a scoped proof-file writer to check propagation; production run_equivalence I/O propagation is source-reviewed, not natively exercised.",
+      "Phase2 successful predecessor/checkpoint/proof metadata is synthetic; copied hashes/schema/body checks run. Host forged independent-acceptance hash rejects before the protected accepted_outputs call.",
+      "Model-file hash reads in worker are replaced with acquisition metadata pins; no actual model/tokenizer/runtime bytes read."
+    ],
+    "firstInvocationPassed": true,
+    "focusedCommand": {
+      "command": [
+        "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_fragment_rank_checkpoint.py",
+        "ContainedPathControls"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "elapsedSeconds": 2.312000000005355,
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-04T01:19:33.031369+00:00",
+      "startedAtUtc": "2026-10-04T01:19:30.723590+00:00"
+    },
+    "invocations": 1,
+    "originalFailureArtifactsUnchanged": true,
+    "ownedRuntimeSources": 3,
+    "ownedSourcesCompiledInMemory": 4,
+    "protectedPhysicalAndCanonicalSourcesUnchanged": 43,
+    "protectedRuntimeSources": 32,
+    "recipeAndCheckpointSchemaUnchanged": true,
+    "runtimeSources": 35,
+    "targetedControls": 3,
+    "trainAuthoritiesUnchanged": 14
+  },
+  "codeCommit": "81c841b4f01e99ff858b8e14529eb0ad9450fbb2",
+  "execution": {
+    "appContainerProbe": false,
+    "cpuStdlibOnly": true,
+    "developmentExpectationsEvaluation": false,
+    "gpuFitInferenceReload": false,
+    "nativeImports": false,
+    "positiveAssignmentWritten": false,
+    "runtimeModelTokenizerBytesRead": false,
+    "servicesProvidersGlobalHostChanges": false,
+    "stageOrProfile": false,
+    "stagingIntegrationPushDeploy": false,
+    "teacherLabelsPublicationChanges": false
+  },
+  "implementation": [
+    "Actual require_model_boundary(args) return supplies explicit verified_root to rank-phase representation dispatch, input admission and shared-fit authority. No environment marker/path prefix or previous.root establishes child scope.",
+    "checkpoint.checked_path validates absolute canonical/nonalias containment, existing verified root (directory/nonreparse), every in-scope component including root, then stops. Host callers omit scope and retain all-ancestor checks. In-scope access denial propagates; only prospective output paths allow missing components.",
+    "Explicit root propagates through bounded reads, exclusive durable writes, publish/read_checkpoint, PhaseSession controls/initialize/save and future native equivalence proof save/read/result paths. Alias/escape/reparse/size/hash/state/manifest-last checks remain.",
+    "Later phase metadata uses lexical structural validation for original host predecessor/acceptance locations in child. Host freeze/stager/readers still perform full path and original guard/map/independent acceptance checks. Child reads exact frozen readonly acceptance/proof/checkpoint copies only.",
+    "Exact source closure stays35 files; three runtime edits and one test edit. Original recipe/numerics/data/state schema/control criteria match prior phase1 assignment. Isolation/harness/guard/ACLs and shared model lifecycle are unchanged."
+  ],
+  "limitations": [
+    "CPU control success does not establish actual AppContainer/native behavior. No checkpoint proof, training, checkpoint or adapter exists from the consumed phase1 attempt.",
+    "Native safetensors/RNG shape/stochastic continuity, actual phased save/reload/resources and relevance remain unrun. Exact future continuation proof remains mandatory.",
+    "No native retry authorized. Future stage must use separately reviewed final clean HEAD and a new source-bound assignment/profile. Consumed stage and both prior failures remain immutable.",
+    "Task29 lost44 updates cannot resume or count;57 related pairs from ten provisional parents/two train families remain needs_independent_review. Sarvam excluded; no new labels or quality acceptance."
+  ],
+  "observedStagingReadOnlyHead": "1c7701281bcd8e3ed8e875243bd7476530782cc6",
+  "ownedSources": [
+    "services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/test_fragment_rank_checkpoint.py"
+  ],
+  "privateReceiptIndex": {
+    "bytes": 4062,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\receipt-index.json",
+    "physicalSha256": "09598a57848c7e8a2abd56eb78cb161951c82736a1348287ee10d61680ddb6ef"
+  },
+  "receipts": {
+    "checks": {
+      "bytes": 3158,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\checks.json",
+      "physicalSha256": "c34943f678f8c44618c2985dff3c054153b7ba280799335c5ed4039e74ea4762"
+    },
+    "disabledPrototypes": [
+      {
+        "bytes": 33314,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\phase-1-disabled-prototype.json",
+        "physicalSha256": "02df84f60c24a9393ddadda32fb32bd16aea8e82321ef24ae92a62a5696d5f6b"
+      },
+      {
+        "bytes": 33315,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\phase-2-disabled-prototype.json",
+        "physicalSha256": "77235b18228c517b52514481f35f7cc0c5c8dd038c4d3909efd1b72b0afd5ee1"
+      },
+      {
+        "bytes": 33314,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\phase-3-disabled-prototype.json",
+        "physicalSha256": "78ce45c82d669187a92f310418d39595af57a457bb6337eb184ec41697dc4f9a"
+      }
+    ],
+    "failureHistory": {
+      "bytes": 2355,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\failure-history-pins.json",
+      "physicalSha256": "63fea76fe056127911e7435d9b038050aa2ed699f90e2caf004719dd32924f67"
+    },
+    "inputs": {
+      "bytes": 4473,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\input-pins.json",
+      "physicalSha256": "38252e1258915ac23dd90ad3b7a3e5ba54dd02bc9727036b27532ecb8203d7f0"
+    },
+    "rawControlFiles": {
+      "compile-1.json": {
+        "bytes": 966,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\compile-1.json",
+        "physicalSha256": "8a3c5723b3c631e062dc073159e1d961c96f482bf0fa74ac222207a32fc780e5"
+      },
+      "controls-1.command.json": {
+        "bytes": 547,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\controls-1.command.json",
+        "physicalSha256": "c857ccf758b521eb3d470c2d8c26221c1030cf48c4eeaa6c08a7e6bcef60c8e2"
+      },
+      "controls-1.stderr.txt": {
+        "bytes": 564,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\controls-1.stderr.txt",
+        "physicalSha256": "e371ed7dc9c9397249a1daeedb1bfb3df91172bc3868932cedf32d01895cb177"
+      },
+      "controls-1.stdout.txt": {
+        "bytes": 0,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\controls-1.stdout.txt",
+        "physicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "preflight.json": {
+        "bytes": 1956,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\preflight.json",
+        "physicalSha256": "abdb393f7be00fb81c7b258e381ba7361908d3ead9f628ec012d6b271b6115dd"
+      }
+    },
+    "sources": {
+      "bytes": 11250,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\execution-sources.json",
+      "physicalSha256": "55097e8aebb15cc5cb609eda68ad73f3c1c1e59f7e141280aaf3c34ed03f25fa"
+    }
+  },
+  "recordedAtUtc": "2026-10-04T01:22:58.103124+00:00",
+  "settings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Narrow containment/data-path correction includes host-versus-child predecessor authority and every checkpoint I/O callsite. Keep existing sole learner context; dispatch exposes no service tier.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "status": "implemented_targeted_cpu_passed_native_unrun",
+  "suppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "task": "STUDENT-32-FRAGMENT-RANK-CONTAINED-PATH-CODE",
+  "version": "association-rank-contained-path-code-evidence/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
