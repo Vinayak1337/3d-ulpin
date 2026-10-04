@@ -2279,6 +2279,35 @@
       "associationState": "not_assessed",
       "learningLabels": false,
       "stagingObservation": "Integrated controlled checks refuse409 SOURCE_FUSION_STALE: staging CRLF reader781caeec7f81004339455ae8fec8842a8cc59987a76ac40defc9494c0bf0c2e2 differs from retained LF readerc2591f28100a7857db3769313f249193d4e6808103afc8d16504db022bca00a7. Historical execution/final code remain distinct; no normalization or native rerun."
+    },
+    "canonicalHttpObservation": {
+      "handoff": "docs/evidence/usp/obj-http-handoff.md",
+      "receiptSha256": "c36e0ab1ae5e8b52564970dbe840b0bd1c06f4c66d0e6d079da31d057c116f3e",
+      "apiLaunchHead": "c3d15c50838fe2b72ca3467b46e09ef7c80039b9",
+      "helperExecutionHead": "54b259af25736b804f17143d584538f63fb265c3",
+      "profileSha256": "0c3e8b3c8fcb6e38cc8e35dc7ab3e4bdc9a43e2e11b726c2a5d4ff7059b8301b",
+      "canonicalReceipt": {
+        "version": "obj-native/1",
+        "caseId": "b55c19eb-fa7e-484a-a92f-32848b0e7ed2",
+        "caseRevision": 1,
+        "sourceId": "485c39f3-81f9-4c58-b5b4-12c768b721a8",
+        "sourceRevision": 1,
+        "sourceSha256": "a57a1c5b94c28f37b6a049e73d6efe1cb293946e9b727b6dd733cc70dcd1974c",
+        "bytes": 2142,
+        "jobId": "ec2a97fb-1d56-49a3-a06c-057287290293"
+      },
+      "statusAtJourney": "completed",
+      "resultSha256": "e3ea77478329b73926ea001ec3e5314f14369c7af5544053df45c02c79f3f0a3",
+      "acceptedFence": 1,
+      "artifactSha256": "4bea5f798ed652597bcbb3c3ae8ff76b47f7d60919b65ffc97e234499645eaf3",
+      "artifactBytes": 129927,
+      "scope": "Actual local private production HTTP upload and exact canonical worker with SQL/object persistence, isolated populated retained runtime; local Windows process authority, no human-login qualification",
+      "priorRowsPreserved": true,
+      "cleanup": "Owned API/task-started storage stopped; originals/configs/container IDs/volumes intact; Docker engine available",
+      "finalCurrentState": "stale status200/result-null and native409 after second upload advanced the shared case; original200 preserved",
+      "standingInstallation": false,
+      "learningLabels": false,
+      "qualification": "Graphics test_only; units/axes/CRS/height/placement unknown; unresolved materials unfetched. No analytical geometry, property identity, registry admission, rights, accuracy, learning or release qualification."
     }
   },
   {
@@ -2420,6 +2449,35 @@
       "associationState": "not_assessed",
       "learningLabels": false,
       "stagingObservation": "Integrated controlled checks refuse409 SOURCE_FUSION_STALE: staging CRLF reader781caeec7f81004339455ae8fec8842a8cc59987a76ac40defc9494c0bf0c2e2 differs from retained LF readerc2591f28100a7857db3769313f249193d4e6808103afc8d16504db022bca00a7. Historical execution/final code remain distinct; no normalization or native rerun."
+    },
+    "canonicalHttpObservation": {
+      "handoff": "docs/evidence/usp/obj-http-handoff.md",
+      "receiptSha256": "c36e0ab1ae5e8b52564970dbe840b0bd1c06f4c66d0e6d079da31d057c116f3e",
+      "apiLaunchHead": "c3d15c50838fe2b72ca3467b46e09ef7c80039b9",
+      "helperExecutionHead": "54b259af25736b804f17143d584538f63fb265c3",
+      "profileSha256": "0c3e8b3c8fcb6e38cc8e35dc7ab3e4bdc9a43e2e11b726c2a5d4ff7059b8301b",
+      "canonicalReceipt": {
+        "version": "obj-native/1",
+        "caseId": "b55c19eb-fa7e-484a-a92f-32848b0e7ed2",
+        "caseRevision": 2,
+        "sourceId": "c47d3ae4-92b2-496d-9479-314fe3a0f8fa",
+        "sourceRevision": 1,
+        "sourceSha256": "0011861ed58098a3524e973547549c4b73f05e3e00eec02d2e98e450a342e988",
+        "bytes": 2294,
+        "jobId": "b6613a85-710a-4fc8-b55c-2c5d2b12e9e1"
+      },
+      "statusAtJourney": "partial",
+      "resultSha256": "ddcbe1392cb69279ed04d0f6e785562fede26444f26e3f64eaf72152b111e9cc",
+      "acceptedFence": 1,
+      "artifactSha256": "bb1bb9c56f8330aa54146d7240c2bf0670fb5f91bb468634a8f4c51579a9dfd3",
+      "artifactBytes": 138294,
+      "scope": "Actual local private production HTTP upload and exact canonical worker with SQL/object persistence, isolated populated retained runtime; local Windows process authority, no human-login qualification",
+      "priorRowsPreserved": true,
+      "cleanup": "Owned API/task-started storage stopped; originals/configs/container IDs/volumes intact; Docker engine available",
+      "finalCurrentState": "partial at current case revision2; 10 missing material declarations remain unfetched",
+      "standingInstallation": false,
+      "learningLabels": false,
+      "qualification": "Graphics test_only; units/axes/CRS/height/placement unknown; unresolved materials unfetched. No analytical geometry, property identity, registry admission, rights, accuracy, learning or release qualification."
     }
   }
 ]
