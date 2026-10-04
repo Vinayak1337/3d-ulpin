@@ -290,16 +290,25 @@ def checked_phase_result(result, manifest, assignment, state, checkpoint_manifes
     require(manifest["finalAdapter"] is p["final"] and (p["final"] or manifest["files"] == {}), "rank_phase_premature_final_adapter")
 
 
+def checked_output_recipe(preflight, result, manifest):
+    """Shared result writer binds fit/numerics without duplicating those fields."""
+    for record in (preflight, result, manifest):
+        require(same(record["trainingPlan"], training_plan()) and same(record["lossImplementation"], LOSS_POLICY)
+                and same(record["representation"], representation_metadata()), "rank_phase_output_recipe")
+    for record in (preflight, manifest):
+        require(same(record["settings"], FIT) and same(record["numerics"], NUMERICS), "rank_phase_output_recipe")
+    require(same(result["binding"]["fit"], FIT) and same(result["binding"]["numerics"], NUMERICS), "rank_phase_output_recipe")
+    for key, expected in (("settings", FIT), ("numerics", NUMERICS)):
+        require(key not in result or same(result[key], expected), "rank_phase_output_recipe")
+
+
 def checked_output_history(root, assignment, result, manifest, state):
     """Verify phase-specific receipts behind the protected accepted-output map."""
     output = root / "outputs/fit"
     read = lambda name: strict_json(checkpoint.read_bytes(output / name, 8 * 1024**2))
     jsonlines = lambda name: [strict_json(line) for line in checkpoint.read_bytes(output / name, 16 * 1024**2).splitlines()]
     preflight = read("token-preflight.json")
-    for record in (preflight, result, manifest):
-        require(same(record["trainingPlan"], training_plan()) and same(record["settings"], FIT)
-                and same(record["numerics"], NUMERICS) and same(record["lossImplementation"], LOSS_POLICY)
-                and same(record["representation"], representation_metadata()), "rank_phase_output_recipe")
+    checked_output_recipe(preflight, result, manifest)
     require(preflight["epochOrder"] == epoch_orders(training_plan()) and preflight["excludedRows"] == []
             and preflight["truncation"] is False and preflight["maximumCombinedTokens"] <= 4096
             and len(preflight["lengths"]) == 10 and sum(len(p["focuses"]) for p in preflight["lengths"]) == 57,
