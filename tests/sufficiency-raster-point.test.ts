@@ -84,7 +84,8 @@ test('real raster/point originals retain independent authority and queued guidan
     assert.equal(evidence.processing.rasterPoint.tools,'not_checked');assert.equal(evidence.processing.nativeStatus,null);
     assert.equal(evidence.processing.modelStatus,null);assert.equal(evidence.processing.rasterPoint.measuredResultBytes,null);
     assert.deepEqual(evidence.finalLockPlan.jobIds,[f.job.id]);assert.deepEqual(evidence.finalLockPlan.attemptJobIds,[f.job.id]);
-    assert.deepEqual(evidence.finalLockPlan.advisoryKeys,[f.job.operation+'-admission-v1']);
+    assert.deepEqual(evidence.finalLockPlan.caseDestinationIds,[f.current.id]);assert.equal(evidence.finalLockPlan.caseLock,'FOR UPDATE');
+    assert.equal(evidence.finalLockPlan.observations.enqueueAdmissionKey,f.job.operation+'-admission-v1');
     assert(c.sql.some(s=>s.endsWith('FOR SHARE OF j,m')));assert(c.sql.some(s=>s.includes('FROM cases')&&s.endsWith('FOR SHARE')));
     await evidence.revalidate(true);assert.equal(c.budget.reservedBytes,0);assert.equal(c.reads.length,0);
     // A retained original remains useful when there is no job at all.

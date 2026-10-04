@@ -76,8 +76,10 @@ async function receipt(kind:'raster'|'point',input:RasterWindowInput|PointBatchI
 /** Captures retain canonical case/source/job/metadata SHARE locks, including on
  * recapture. The caller owns transaction lifetime and the shared SQL deadline.
  * Before final revalidate(true), acquire the returned COMPLETE lock plan sorted:
- * admission keys first, then cases/sources/jobs/metadata/all job attempts. The
- * admission lock prevents a new latest job; SHARE alone does not block enqueue.
+ * existing source-case destination gate, cases FOR UPDATE, then sources/jobs/
+ * metadata/all job attempts FOR SHARE. The exclusive case lock prevents a new
+ * latest job; canonical SHARE alone does not block enqueue. Do not add an
+ * admission advisory lock after case locking (enqueue takes it before the case).
  * No TIFF/point-record artifact or any additional selection is ever fetched. */
 export async function sufficiencyRasterPointEvidenceTx(client:PoolClient,captured:Record<string,any>,options:SufficiencyRasterPointOptions={}){
   const budget=options.budget??{deadlineAt:Date.now()+SOURCE_FUSION_LIMITS.deadlineMs,
@@ -89,7 +91,7 @@ export async function sufficiencyRasterPointEvidenceTx(client:PoolClient,capture
     latestJob=async()=> (await client.query('SELECT id FROM jobs WHERE case_id=$1 AND source_id=$2 AND operation=$3 ORDER BY created_at DESC,id LIMIT 1',
       [source.current.id,source.source.id,operation])).rows[0],
     latest=await latestJob(),row=latest?await capture(client,source.current.id,source.source.id,latest.id):null;
-  let state:SufficiencyRasterPointEnvelope['state']=!source.latest||row?.stale?'stale':
+  const state:SufficiencyRasterPointEnvelope['state']=!source.latest||row?.stale?'stale':
     !row||row.job.status==='queued'?'pending':row.job.status==='running'?'running':row.job.status==='succeeded'?'inspected_metadata':'failed';
   const error=row?.job.error,code=typeof error==='string'?error.slice(0,100)||null:
     typeof error?.code==='string'?error.code.slice(0,100)||null:null;
@@ -112,9 +114,11 @@ export async function sufficiencyRasterPointEvidenceTx(client:PoolClient,capture
         {...detail,kind,requestedBatch:row?(row.input as PointBatchInput).batch:null,metadata:loaded?.kind==='point'?loaded.result.metadata:null,artifact}}),
     authority={source,row},recordPins=row?[SufficiencyRecordPinSchema.parse({authority:'job',id:row.job.id,
       revision:Number(row.job.accepted_fence??0),sha256:authorityFingerprint(row.job)})]:[],
-    finalLockPlan={advisoryKeys:[operation+'-admission-v1'],caseIds:[source.current.id],sourceIds:[source.source.id],
+    finalLockPlan={caseDestinationIds:[source.current.id],caseIds:[source.current.id],caseLock:'FOR UPDATE' as const,
+      sourceIds:[source.source.id],
       jobIds:row?[row.job.id]:[],metadataJobIds:row?[row.job.id]:[],attemptJobIds:row?[row.job.id]:[],
       observations:{canonicalCaptureUsesShare:Boolean(row),attemptsReadThroughAcceptedFence:true,
+        enqueueAdmissionKey:operation+'-admission-v1',exclusiveCaseLockStabilizesLatestJob:true,
         caseRevision:source.current.revision,familyId:source.source.family_id,sourceRevision:source.source.revision,
         latestSource:source.latest,operation,latestJobId:row?.job.id??null,captureSha256:row?.capture??null,
         inputManifestId:row?.job.input_manifest_id??null,inputSha256:row?.job.input_sha256??null,
