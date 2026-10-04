@@ -20,6 +20,7 @@ const bareKeys=['SystemRoot','WINDIR','PATH','TEMP','TMP','USERPROFILE','APPDATA
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const json=path=>JSON.parse(readFileSync(path,'utf8').replace(/^\uFEFF/,''));
 const pin=path=>{const bytes=readFileSync(path);return {path,bytes:bytes.length,sha256:sha(bytes)};};
+const hostPath=path=>path.replaceAll('\\','/').replace(/^\/run\/desktop\/mnt\/host\/([a-z])\//i,'$1:/').toLowerCase();
 let db,storage,c;
 function clean(){assert.equal(command('git',['status','--porcelain']),'','Commit owned code before starting the pinned runtime.');}
 function redact(value){let text=String(value);for(const key of ['DATABASE_URL','POSTGRES_PASSWORD','S3_SECRET_KEY','GEO_SERVICE_TOKEN'])if(c?.env[key])text=text.replaceAll(c.env[key],'[redacted]');return text;}
@@ -48,11 +49,15 @@ function configure(profile,state){
   assert(!existsSync(join(root,'.env')));const owner=json(join(dir,'ownership.json'));assert.equal(owner.operatorSubject,env.ULPIN_LOCAL_OPERATOR_SUBJECT);assert.equal(owner.project,scope.project);
   c.project=scope.project;c.subject=env.ULPIN_LOCAL_OPERATOR_SUBJECT;
   assert.equal(json(join(dir,'restore-completed.json')).processingStarted,false);
-  assert.deepEqual(Object.keys(json(join(dir,'compose.json')).services).sort(),['minio','postgres','redis']);
+  const services=json(join(dir,'compose.json')).services;assert.deepEqual(Object.keys(services).sort(),['minio','postgres','redis']);
   for(const service of ['postgres','minio','redis']){
     const item=jsonText(docker(['inspect',`${scope.project}-${service}-1`]))[0];
     assert.equal(item.Config.Labels['com.docker.compose.project'],scope.project);assert.equal(item.Config.Labels['com.docker.compose.service'],service);
-    assert.equal(item.Mounts.length,1);assert.equal(item.Mounts[0].Type,'volume');assert.equal(item.Mounts[0].Name,owner.volumes[service]);
+    assert.equal(item.Mounts.filter(m=>m.Type==='volume').length,1);assert.equal(item.Mounts.find(m=>m.Type==='volume').Name,owner.volumes[service]);
+    const declared=services[service].volumes;assert.equal(item.Mounts.length,declared.length);
+    for(const value of declared){const parsed=/^(.*):(\/[^:]+)(?::(ro|rw))?$/.exec(value);assert(parsed,'Unexpected saved mount declaration.');
+      const mount=item.Mounts.find(m=>m.Destination===parsed[2]);assert(mount);assert.equal(mount.RW,parsed[3]!=='ro');
+      if(mount.Type==='volume')assert.equal(mount.Name,parsed[1]);else {assert.equal(mount.Type,'bind');assert.equal(mount.RW,false,'Retained backup mounts must stay read-only.');assert.equal(hostPath(mount.Source),hostPath(parsed[1]));}}
     const ports=service==='postgres'?{'5432/tcp':'25432'}:service==='redis'?{'6379/tcp':'26379'}:{'9000/tcp':'29000','9001/tcp':'29001'};
     assert.deepEqual(Object.keys(item.HostConfig.PortBindings).sort(),Object.keys(ports).sort());
     for(const [port,hostPort] of Object.entries(ports))assert.deepEqual(item.HostConfig.PortBindings[port],[{HostIp:'127.0.0.1',HostPort:hostPort}]);
@@ -69,7 +74,7 @@ function current(){
   assert.equal(item.HostConfig.NanoCpus,1e9);assert(item.HostConfig.CapDrop.includes('ALL'));assert.equal(Object.keys(item.NetworkSettings.Networks).length,1);
   assert.equal(item.Config.User,'10001:10001');assert.equal(item.HostConfig.RestartPolicy.Name,'no');assert(item.HostConfig.SecurityOpt.includes('no-new-privileges'));
   const mount=item.Mounts.find(m=>m.Destination==='/app');assert(mount&&!mount.RW&&mount.Type==='bind');
-  const hostPath=mount.Source.replaceAll('\\','/').replace(/^\/run\/desktop\/mnt\/host\/([a-z])\//i,'$1:/');assert.equal(hostPath.toLowerCase(),join(root,'services/geo').replaceAll('\\','/').toLowerCase());
+  assert.equal(hostPath(mount.Source),hostPath(join(root,'services/geo')));
   const network=jsonText(docker(['network','inspect',record.networkId]))[0];assert(network.Internal);assert.equal(network.Labels['bhu.document-http.owner'],record.owner);
   return {record,item,network};
 }
