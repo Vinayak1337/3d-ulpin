@@ -21,6 +21,10 @@ from geo.usp_learning.association.citation_view import checked_freeze, checked_c
 
 
 def representation_module(freeze, assignment):
+    if freeze.get("version") == "association-fragment-rank-phase-fit-freeze/1":
+        from geo.usp_learning.association import fragment_rank_phase_adapter
+        fragment_rank_phase_adapter.checked_freeze(freeze, assignment)
+        return fragment_rank_phase_adapter
     if freeze.get("version") == "association-fragment-rank-fit-freeze/1":
         from geo.usp_learning.association import fragment_rank_adapter
         fragment_rank_adapter.checked_freeze(freeze, assignment)
@@ -106,7 +110,8 @@ def worker(args):
                 if rank_contract != contract or rank_family != family:
                     raise RuntimeError("rank fit contracts changed")
                 delta = selector.representation_metadata()
-                fit_options = {"rank_authority": {"freeze": freeze, "assignment": assignment, "inputs": args.run_freeze.parent}}
+                authority_key = "rank_phase_authority" if getattr(selector, "IS_RANK_PHASE", False) else "rank_authority"
+                fit_options = {authority_key: {"freeze": freeze, "assignment": assignment, "inputs": args.run_freeze.parent}}
             elif fragment_mode:
                 rows, delta = selector.checked_teacher(args.training_data.read_bytes(), selector_contract, contract, family)
                 fit_options = {"representation": selector.FragmentRepresentation(selector_contract, contract, family)}

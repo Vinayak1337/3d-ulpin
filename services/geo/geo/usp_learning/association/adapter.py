@@ -180,18 +180,24 @@ def _optimizer_step(torch, scaler, optimizer, trainable, frozen, phases, context
     return float(norm)
 
 
-def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write, phases, *, dataset_declaration=None, representation=None, rank_authority=None):
+def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary, write, phases, *, dataset_declaration=None, representation=None, rank_authority=None, rank_phase_authority=None):
     from .citation_view import training_plan, epoch_orders, epoch_means
-    require(sum(value is not None for value in (representation, dataset_declaration, rank_authority)) <= 1,
+    require(sum(value is not None for value in (representation, dataset_declaration, rank_authority, rank_phase_authority)) <= 1,
             "conflicting_training_representations")
     require(not getattr(representation, "is_rank_fit", False), "rank_fit_explicit_authority_required")
-    rank_fit = None
+    rank_fit, phase_session = None, None
     fit_settings, numerics, loss_policy = FIT, NUMERICS, LOSS_POLICY
     if rank_authority is not None:
         from . import fragment_rank_adapter, fragment_rank_fit
         representation = fragment_rank_adapter.admit_fit(rank_authority, rows, contract, family_freeze)
         rank_fit = fragment_rank_fit
         fit_settings, numerics, loss_policy = fragment_rank_adapter.FIT, fragment_rank_adapter.NUMERICS, fragment_rank_adapter.LOSS_POLICY
+    if rank_phase_authority is not None:
+        from . import fragment_rank_phase_adapter, fragment_rank_fit
+        representation = fragment_rank_phase_adapter.admit_fit(rank_phase_authority, rows, contract, family_freeze)
+        phase_session = fragment_rank_phase_adapter.PhaseSession(rank_phase_authority)
+        rank_fit = fragment_rank_fit
+        fit_settings, numerics, loss_policy = fragment_rank_phase_adapter.FIT, fragment_rank_phase_adapter.NUMERICS, fragment_rank_phase_adapter.LOSS_POLICY
     plan = training_plan(dataset_declaration) if representation is None else representation.training_plan
     representation_metadata = {} if representation is None else {"representation": representation.metadata}
     actual_prompt = SYSTEM_PROMPT if representation is None else representation.system_prompt
@@ -232,6 +238,8 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     (run_equivalence if rank_fit is None else rank_fit.run_equivalence)(torch, output_dir, write, phases)
     run_reclamation_control(torch, output_dir, write, phases)
     run_attention_control(torch, output_dir, write, phases)
+    if phase_session is not None:
+        phase_session.controls(torch, output_dir, write, phases)
     phases.sample("before_model_load", torch)
     load_started = time.perf_counter()
     base = AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
@@ -271,10 +279,17 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     setup_reclamation = release_unused_cache(torch)
     phases.sample("setup_after_reclamation", torch, **setup_reclamation)
     updates, supervised_tokens, losses = 0, 0, []
+    if phase_session is not None:
+        # Last RNG-affecting initialization/controls are complete. Restoration
+        # is exact and immediately precedes the next scheduled training parent.
+        updates, supervised_tokens, losses = phase_session.initialize(torch, trainable, optimizer, scaler, base_before)
     fit_started = time.perf_counter()
     with fit_attention_scope(decoder, output_dir) as attention, (output_dir / "fit-progress.jsonl").open("x", encoding="utf-8", newline="\n") as progress:
         for epoch, order in enumerate(orders):
-            for index in order:
+            for offset, index in enumerate(order):
+                global_index = epoch * len(order) + offset
+                if phase_session is not None and not phase_session.start <= global_index < phase_session.end:
+                    continue
                 row, before = encoded[index], time.perf_counter()
                 if rank_fit is not None:
                     parent = row["parent"]
@@ -351,21 +366,27 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 del ids, labels, target, selected, hidden, loss, norm
                 reclamation = release_unused_cache(torch)
                 phases.sample("after_reclamation", torch, **context, **reclamation)
-    require(updates == plan["plannedUpdates"], "incomplete_frozen_fit")
+    require(updates == (plan["plannedUpdates"] if phase_session is None else phase_session.end), "incomplete_frozen_fit")
     if rank_fit is not None:
-        require(supervised_tokens == plan["plannedCandidateContributions"], "incomplete_rank_candidate_contributions")
+        require(supervised_tokens == (plan["plannedCandidateContributions"] if phase_session is None else phase_session.phase["number"] * 114), "incomplete_rank_candidate_contributions")
     require(attention.restored, "fit_attention_scope_not_restored")
     fit_seconds = time.perf_counter() - fit_started
     optimizer.zero_grad(set_to_none=True)
     base_after = _tensor_digest(frozen)
     require(base_before == base_after, "frozen_base_parameters_changed")
+    if phase_session is not None:
+        phase_session.save(torch, trainable, optimizer, scaler, output_dir, updates, supervised_tokens, losses, base_before, base_after)
+        phases.sample("after_phase_checkpoint", torch, globalUpdates=updates, checkpointExact=True, phaseNumber=phase_session.phase["number"])
     model.eval(); model.gradient_checkpointing_disable()
+    final_adapter = phase_session is None or phase_session.phase["final"]
     adapter_dir = output_dir / "adapter"
-    model.save_pretrained(adapter_dir, safe_serialization=True, save_embedding_layers=False)
-    state = get_peft_model_state_dict(model)
-    saved = load_file(str(adapter_dir / "adapter_model.safetensors"), device="cpu")
-    require(set(saved) == set(state) and all(torch.equal(saved[k], state[k].detach().cpu()) for k in saved), "saved_adapter_state_mismatch")
-    manifest = {"files": {p.name: digest_file(p) for p in adapter_dir.iterdir()}, "trainableParameters": 540672,
+    saved = dict(trainable)
+    if final_adapter:
+        model.save_pretrained(adapter_dir, safe_serialization=True, save_embedding_layers=False)
+        state = get_peft_model_state_dict(model)
+        saved = load_file(str(adapter_dir / "adapter_model.safetensors"), device="cpu")
+        require(set(saved) == set(state) and all(torch.equal(saved[k], state[k].detach().cpu()) for k in saved), "saved_adapter_state_mismatch")
+    manifest = {"files": {p.name: digest_file(p) for p in adapter_dir.iterdir()} if final_adapter else {}, "trainableParameters": 540672,
                 "tensorCount": len(saved), "baseParametersBefore": base_before, "baseParametersAfter": base_after,
                 "savedStateMatchesTrainableAdapter": True, "updates": updates, "trainingPlan": plan, "settings": fit_settings, "numerics": numerics,
                 "reclamationImplementation": RECLAMATION_POLICY,
@@ -373,13 +394,16 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 "reclamationControlSha256": digest_file(output_dir / "reclamation-control.json"),
                 "lossImplementation": loss_policy, "lossEquivalenceSha256": digest_file(output_dir / "loss-equivalence.json"),
                 **representation_metadata}
-    verify_adapter_files(adapter_dir, manifest)
+    if phase_session is not None:
+        manifest.update(phase_session.manifest_fields())
+    if final_adapter:
+        verify_adapter_files(adapter_dir, manifest)
     write(output_dir / "adapter-manifest.json", manifest)
     gpu_check()
     phases.sample("after_save_and_base_verification", torch, baseUnchanged=True, savedTensorsExact=True)
     result = {"version": "association-adapter-fit/1", "updates": updates, "supervisedTokens": supervised_tokens,
               **({"epochMeanLoss": epoch_means(losses, plan)} if rank_fit is None else {
-                  "epochSumParentContributions": rank_fit.epoch_sums(losses, plan), "candidateContributions": supervised_tokens,
+                  "epochSumParentContributions": rank_fit.epoch_sums(losses, plan) if phase_session is None else phase_session.result_fields(losses)["epochSumParentContributions"], "candidateContributions": supervised_tokens,
                   "lossScope": "parent contributions at successive parameter states; epoch sum, not a per-step global objective"}),
               "stepLosses": losses, "trainingPlan": plan,
               "modelAndBaseVerificationSeconds": load_seconds, "fitSeconds": fit_seconds,
@@ -394,6 +418,8 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
               "reclamationControlSha256": digest_file(output_dir / "reclamation-control.json"),
               "memoryPhasesSha256": digest_file(output_dir / "memory-phases.jsonl"),
               "evaluationOpened": False, "developmentOpened": False, "fitPerformed": True, **representation_metadata}
+    if phase_session is not None:
+        result.update(phase_session.result_fields(losses))
     write(output_dir / "fit-result.json", result)
     return result
 
