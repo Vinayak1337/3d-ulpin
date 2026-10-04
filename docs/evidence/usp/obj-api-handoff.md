@@ -1,5 +1,7 @@
 # OBJ-02: canonical private OBJ intake
 
+Lead integration, 4 October: leaves/shared/check/handoff integrate as `9490aadc` / `4eb2c218` / `a63fe7e9` / `99ac62da`. Exact11,088-byte proof and8 final physical/Git code plus8 absolute proof pins match. Lead captures pre-OBJ CODEFILES from assigned-base Git/LF, actual staging/plan-worker bytes and disjoint active glTF-worker bytes; glTF aggregate`a50cf2e3` matches its retained canonical receipt. Fresh `lead-read-compatibility-inputs.json` retains observations separately; six code-only aliases preserve strict current code/non-code/runtime/source guards and unchanged writer admission. Integrated retained-output summary and source-code compatibility controls pass1 each/zero skips, without native rerun. Root/module/five-operation/source publication is lead-owned. The post-execution summary correction changes code identity; execution/final aggregates remain distinct, and a fresh current profile/job is required for new native work. Existing historical source/tool/artifact pins are never rebound.
+
 ## Delivery and integration
 
 Exclusive branch `task/desktop-obj-api` at `C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin`, assigned base `1adb4b1af20e693d6357efd3af5a95cfe7518626`. Completed OBJ-01 branch `task/desktop-obj-context@01f5ed0ec63cf72b65d4c6724b251469898b04f1` preserved. Staging read-only; observed clean `d1e8ccaa4ec6833a195ce805725f9839c8f3cb50` at handoff. Requested Sol6.1/xhigh/default-standard1x, per-turn settings unexposed; supplied `never`/`danger-full-access`.

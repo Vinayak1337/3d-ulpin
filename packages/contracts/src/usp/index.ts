@@ -35,3 +35,4 @@ export * from './property-card';
 export * from './citygml-ingestion';
 export * from './geoparquet-ingestion';
 export * from './gltf-ingestion';
+export * from './obj-ingestion';

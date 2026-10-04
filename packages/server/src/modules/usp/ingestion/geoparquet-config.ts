@@ -89,12 +89,16 @@ const prePacketPdfReadCodeSha=new Set(["a0ab2ac38fcd794177ed6c799515243207e4beeb
 // GLTF-02: exact 0311fa08 Git/LF and observed pre-glTF staging physical code.
 // Immutable reads only; full current inventory/non-code pins and strict writers remain.
 const preGltfReadCodeSha=new Set(["d3cbd3d803b71152a09bd00a8918bc593dbb627ffa9453f14b9ba86d71300037","0c543e85652e0ef3f74f46ac44ddd7fcf9464bc01b5f765ef6103193bb16acf5"]);
+// OBJ-02 immutable reads only: exact assigned-base Git/LF and observed pre-OBJ
+// physical CODEFILES in both worker checkouts/staging. Current code/non-code
+// inventory remains mandatory; writers never use these aliases.
+const preObjReadCodeSha=new Set(["15b55b6192ecf8345dfd05c4bc117e4d6f33288886d785e9da781f17ee796eec", "f53fa951e99f578fe39f0b9e5c5b28ec2bc5636617d81f80c3f92df06cb9f2a8", "e138d4b36cbbcb91fd9b38aae35dec86c3923ab9021189829f9ca5b0836717f9"]);
 export function geoparquetReadToolsCompatible(stored:GeoParquetToolPins,current:GeoParquetToolPins){
   const old=GeoParquetToolPinsSchema.safeParse(stored),live=GeoParquetToolPinsSchema.safeParse(current);
   if(!old.success||!live.success)return false;
   if(fingerprint(old.data)===fingerprint(live.data))return true;
   const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
-  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)){
+  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)||preObjReadCodeSha.has(oldCode)){
     const actualCode=fingerprint(GEOPARQUET_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
     return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
   }
