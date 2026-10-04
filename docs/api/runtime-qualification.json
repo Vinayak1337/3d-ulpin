@@ -948,6 +948,50 @@
           ]
         }
       }
+    },
+    {
+      "recordedAt": "2026-10-04T20:21:38.930Z",
+      "receipt": "docs/evidence/usp/nest-migration/runtime-source/d04-source-claims-20261005.json",
+      "receiptSha256": "ea279e572f2c22ac3a03a7b13b2c16985b0f815188b7902555845d91449bbc3e",
+      "servedCodeCommit": "a9d1f960bd1fe10f96bba40dd590ca99f679d0bd",
+      "environment": "Stopped retained isolated local prefix run; API and three task-started storage containers stopped. IDs apply only to that preserved run; no standing URL.",
+      "qualification": "Only two unchanged Haryana RERA 2831 planned PDFs: private manual source-claim save/replay/correction/exact history through real PostgreSQL and current bounded Windows PDF metadata. Quote correctness, extraction, canonical adoption, raster rendering and release are unqualified.",
+      "unqualified": [
+        "Whole-page raster unsupported at retained dimensions; original and metadata routes work",
+        "Manual source claims qualify persistence and citation retention only, not authenticated human truth, current approval/identity/placement/rights/accuracy or ML labels",
+        "Frontend consumption, live concurrent-write stress, OCR/native interpretation and release/deployment gates were not run",
+        "Approval/current drawing revision, canonical identity, horizontal/vertical reference and rights remain unknown.",
+        "Later floor-v2 staging metadata is not the served runtime revision; no floor inference or model qualification."
+      ],
+      "operations": {
+        "POST /api/v1/ingestion/cases/{caseId}/document-claims/reviews": {
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "scope": "201 save/same-key replay and append-only locator correction/replay; independent PostgreSQL history immutable, four request/snapshot rows, no refusal writes. Changed payload/stale pins return409; wrong-source/Origin return403. human_entry/not_machine_verified/local_process; four literal source claims and one unresolved conflict, no canonical adoption.",
+          "evidencePointers": [
+            "/review",
+            "/refusals",
+            "/sources",
+            "/pages",
+            "/attribution",
+            "/preservation"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/document-claims/reviews/{reviewId}": {
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "scope": "200 exact revisions1/2 after correction, with original/source/page authority and immutable revision1. No latest substitution, quote verification or authenticated human truth. Original download/current page metadata work; whole-page raster unsupported.",
+          "evidencePointers": [
+            "/review",
+            "/sources",
+            "/pages",
+            "/attribution",
+            "/cleanup"
+          ]
+        }
+      }
     }
   ]
 }

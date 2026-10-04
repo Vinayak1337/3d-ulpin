@@ -1,0 +1,170 @@
+{
+  "schemaVersion": "ulpin-scoped-runtime-observation/1",
+  "task": "D04-RUNTIME",
+  "recordedAt": "2026-10-04T20:21:38.930Z",
+  "clientDate": "2026-10-05",
+  "servedCodeCommit": "a9d1f960bd1fe10f96bba40dd590ca99f679d0bd",
+  "publication": "Selected metadata from the accepted private proof; no review bodies, credentials or database dump are published.",
+  "privateProof": {
+    "path": "E:/BhuAayam-data/task-data/d04-live-source-claims-20261005-run01/verification.json",
+    "bytes": 16721,
+    "sha256": "a6031b6bc5cf3b37246d00b71872e038b3f251ff3d5da09e1701a89362005b08"
+  },
+  "sources": {
+    "manifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+    "testedOriginals": [
+      {
+        "label": "T3-2",
+        "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+        "sourceRevision": 1,
+        "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+        "bytes": 1630108,
+        "assetId": "haryana-2831-tower3-plan2.pdf"
+      },
+      {
+        "label": "S-001",
+        "sourceId": "dd295d03-6fe7-46d7-ba7c-9eb8bb84ddd6",
+        "sourceRevision": 1,
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "bytes": 3782332,
+        "assetId": "haryana-2831-site-plan.pdf"
+      }
+    ],
+    "originalDownloadHttp": 200,
+    "originalHashesUnchanged": true,
+    "otherManifestAssetsQualified": false
+  },
+  "review": {
+    "saveHttp": 201,
+    "sameKeyReplayHttp": 201,
+    "correctionHttp": 201,
+    "correctionReplayHttp": 201,
+    "exactOldAndNewReadHttp": 200,
+    "revisions": [
+      1,
+      2
+    ],
+    "claimsPerRevision": 4,
+    "unresolvedConflictsPerRevision": 1,
+    "snapshotAndRequestRows": [
+      2,
+      4
+    ],
+    "oldSnapshotImmutable": true,
+    "refusalsAddedRows": 0,
+    "correction": "Only the T3-2 locator region was refined to [1820,750,2130,825]; quote text and unresolved conflict preserved."
+  },
+  "refusals": {
+    "wrongHash": {
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    "staleCase": {
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    "wrongCaseSource": {
+      "status": 403,
+      "code": "DOCUMENT_CLAIMS_SOURCE_DENIED"
+    },
+    "foreignOrigin": {
+      "status": 403,
+      "code": "ORIGIN_DENIED"
+    },
+    "changedReplayPayloadHttp": 409
+  },
+  "pages": {
+    "actualPrivateRouteHttp": 200,
+    "currentFrames": [
+      {
+        "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+        "page": 1,
+        "frame": {
+          "kind": "pdf_display_page_top_left_points",
+          "rotation": 0,
+          "width": 2586,
+          "height": 1694
+        },
+        "renderSupport": "unsupported",
+        "url": null,
+        "calibration": null
+      },
+      {
+        "sourceId": "dd295d03-6fe7-46d7-ba7c-9eb8bb84ddd6",
+        "page": 1,
+        "frame": {
+          "kind": "pdf_display_page_top_left_points",
+          "rotation": 0,
+          "width": 2585,
+          "height": 3390
+        },
+        "renderSupport": "unsupported",
+        "url": null,
+        "calibration": null
+      }
+    ],
+    "backend": "Existing production metadata parser and bounded Windows Job; no transport/SQL/page doubles",
+    "rasterExecuted": false,
+    "limitation": "T3-2 and S-001 exceed existing whole-page raster dimensions; metadata/original/manual review remain usable"
+  },
+  "attribution": {
+    "method": "human_entry",
+    "quotationVerification": "not_machine_verified",
+    "humanAuthenticated": false,
+    "independentGroundTruth": false,
+    "canonicalMatchState": "not_assessed",
+    "qualification": "not_assessed",
+    "actorAttribution": "local_process"
+  },
+  "jobs": {
+    "persistedStatuses": "Both retain-created jobs remain queued in SQL",
+    "httpStatuses": {
+      "T3_2": {
+        "status": "stale",
+        "code": "DOCUMENT_INPUT_STALE"
+      },
+      "S001": {
+        "status": "queued",
+        "code": null
+      }
+    },
+    "attemptsAdded": 0,
+    "extractionCalls": 0,
+    "ocrCalls": 0,
+    "modelCalls": 0,
+    "providerCalls": 0,
+    "explanation": "Both retain-created jobs remain unexecuted and queued in SQL. The second upload makes the first job-input case revision stale for HTTP evidence selection; no retry/status rewrite occurred."
+  },
+  "preservation": {
+    "priorRowsUnchanged": true,
+    "priorCases": 43,
+    "priorSources": 42,
+    "priorJobs": 84,
+    "priorAttempts": 84,
+    "priorOperations": 148,
+    "added": {
+      "cases": 1,
+      "sources": 2,
+      "queuedJobs": 2,
+      "metadata": 2,
+      "operations": 7,
+      "queuedOutboxEvents": 2,
+      "streams": 1
+    }
+  },
+  "cleanup": {
+    "apiStopped": true,
+    "taskStartedStorageStopped": true,
+    "containersPreserved": 24,
+    "volumesPreserved": 14,
+    "profileFilesUnchanged": 8,
+    "ports3192And28000Listeners": 0
+  },
+  "unqualified": [
+    "Whole-page raster unsupported at retained dimensions; original and metadata routes work",
+    "Manual source claims qualify persistence and citation retention only, not authenticated human truth, current approval/identity/placement/rights/accuracy or ML labels",
+    "Frontend consumption, live concurrent-write stress, OCR/native interpretation and release/deployment gates were not run",
+    "Approval/current drawing revision, canonical identity, horizontal/vertical reference and rights remain unknown.",
+    "Later floor-v2 staging metadata is not the served runtime revision; no floor inference or model qualification."
+  ]
+}
