@@ -1,5 +1,7 @@
 # OBJ-01 — bounded source-native polygon context
 
+Lead acceptance, 4 October: code/handoff integrate on staging as `f270851f` / `a6facb38`. Changed-code review, verification receipt and6 physical code/lock/original pins,3 integrated Git pins,4 artifact/receipt pins and3 in-memory compiles pass. Prior focused/native evidence is reused without execution; historical absolute lock is preserved. Both source catalogues/index publish graphics test_only inputs and current limits. Canonical private intake is the separate OBJ-02 assignment; no API/installation or analytical/learning qualification is added here.
+
 Code **`b2a773109b343cb4441be87b5b54b1d97c84a009`**, branch `task/desktop-obj-context`, exact published base `eae946e1b73cebddb351ebd6b181d5d73dc99ab5`. Exclusive worktree: `C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin`. Completed survey-link branch remains at `c51bf55ef047e1287ded0e8f1e942eb4008a636c`; survey work stayed closed. Staging remained read-only and clean at the published base during final verification.
 
 Requested GPT-6.1 Sol/xhigh/default-standard1×; actual per-turn model/effort/tier are unexposed. Supplied permissions: never/danger-full-access. No settings changed.

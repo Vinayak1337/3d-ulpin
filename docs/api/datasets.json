@@ -6178,6 +6178,142 @@
           "Controlled envelopes do not qualify live HTTP/DB persistence/locks, geometry, ownership or release."
         ]
       }
+    },
+    {
+      "id": "tinyobjloader-no-material-obj-20261004",
+      "manifest": "docs/evidence/usp/native-obj/sources.json",
+      "manifestSha256": "4d91849f24d95e375beadc23b1a25f130ffc4fa9b35545d562e2a490c375e461",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "public_upstream_development_sample",
+      "classification": "test_only",
+      "issuer": "TinyObjLoader public graphics/parser regression repository",
+      "sourceFamily": "tinyobjloader-cornell-box-graphics-test-only",
+      "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+      "originalUrl": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/models/no_material.obj",
+      "acquiredAt": "2026-10-04T10:26:57.037940+00:00",
+      "geography": null,
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "axes": null,
+      "units": null,
+      "terms": {
+        "state": "needs_input",
+        "repositoryLicense": "MIT",
+        "reference": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/LICENSE",
+        "attribution": "Repository: Syoyo Fujita and contributors. Both original headers attribute Cornell box OBJ/MTL to Intel Embree; original asset/version grant is not separately qualified.",
+        "assetSpecificPermission": "Not independently qualified beyond published repository/header. Development acquisition authorized; redistribution/operational/training use not qualified."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\no_material.obj",
+        "bytes": 2142,
+        "sha256": "a57a1c5b94c28f37b6a049e73d6efe1cb293946e9b727b6dd733cc70dcd1974c",
+        "format": "obj",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "scope": "Windows local source-native inspection only; no canonical API/job qualification",
+        "handoff": "docs/evidence/usp/native-obj-handoff.md",
+        "codeCommit": "b2a773109b343cb4441be87b5b54b1d97c84a009",
+        "acceptedCodeCommit": "f270851f",
+        "verificationReceiptSha256": "32f93a70e55617a54bb6a72ea1278d3725d0cccd35a4b54fc97db683cb0deab8",
+        "runtimeLockSha256": "41406b6c9f389bf392d91963753c3ec1ec1ed98cd94b71e810804a7f334c078f",
+        "profile": "utf8-literal-polygons/1",
+        "representation": "context_mesh",
+        "status": "inspected_local",
+        "counts": {
+          "vertices": 76,
+          "textures": 0,
+          "normals": 0,
+          "faces": 18,
+          "faceReferences": 72,
+          "eligiblePolygons": 18,
+          "declarations": 9,
+          "unsupported": 0
+        },
+        "unresolvedMaterialDeclarations": 0,
+        "artifact": {
+          "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\complete-run01\\obj.json",
+          "bytes": 129927,
+          "sha256": "4bea5f798ed652597bcbb3c3ae8ff76b47f7d60919b65ffc97e234499645eaf3"
+        },
+        "verifiedOriginalSpans": 556
+      },
+      "limitations": [
+        "Original polygons/index streams and byte spans only; no triangulation, external companion resolution or source defaults.",
+        "Geography, axes, units, CRS, height reference and global placement are unknown; no property identity, measurements, topology/accuracy qualification, registry admission or learning truth.",
+        "Public graphics development samples; asset-specific redistribution/operational/training use and production launch clearance remain unqualified."
+      ]
+    },
+    {
+      "id": "tinyobjloader-missing-material-file-obj-20261004",
+      "manifest": "docs/evidence/usp/native-obj/sources.json",
+      "manifestSha256": "4d91849f24d95e375beadc23b1a25f130ffc4fa9b35545d562e2a490c375e461",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "public_upstream_development_sample",
+      "classification": "test_only",
+      "issuer": "TinyObjLoader public graphics/parser regression repository",
+      "sourceFamily": "tinyobjloader-cornell-box-graphics-test-only",
+      "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+      "originalUrl": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/models/missing_material_file.obj",
+      "acquiredAt": "2026-10-04T10:26:57.403712+00:00",
+      "geography": null,
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "axes": null,
+      "units": null,
+      "terms": {
+        "state": "needs_input",
+        "repositoryLicense": "MIT",
+        "reference": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/LICENSE",
+        "attribution": "Repository: Syoyo Fujita and contributors. Both original headers attribute Cornell box OBJ/MTL to Intel Embree; original asset/version grant is not separately qualified.",
+        "assetSpecificPermission": "Not independently qualified beyond published repository/header. Development acquisition authorized; redistribution/operational/training use not qualified."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\missing_material_file.obj",
+        "bytes": 2294,
+        "sha256": "0011861ed58098a3524e973547549c4b73f05e3e00eec02d2e98e450a342e988",
+        "format": "obj",
+        "repositoryBytesVerified": false
+      },
+      "nativeInspectionEvidence": {
+        "scope": "Windows local source-native inspection only; no canonical API/job qualification",
+        "handoff": "docs/evidence/usp/native-obj-handoff.md",
+        "codeCommit": "b2a773109b343cb4441be87b5b54b1d97c84a009",
+        "acceptedCodeCommit": "f270851f",
+        "verificationReceiptSha256": "32f93a70e55617a54bb6a72ea1278d3725d0cccd35a4b54fc97db683cb0deab8",
+        "runtimeLockSha256": "41406b6c9f389bf392d91963753c3ec1ec1ed98cd94b71e810804a7f334c078f",
+        "profile": "utf8-literal-polygons/1",
+        "representation": "context_mesh",
+        "status": "inspected_partial",
+        "counts": {
+          "vertices": 76,
+          "textures": 0,
+          "normals": 0,
+          "faces": 18,
+          "faceReferences": 72,
+          "eligiblePolygons": 18,
+          "declarations": 19,
+          "unsupported": 0
+        },
+        "unresolvedMaterialDeclarations": 10,
+        "artifact": {
+          "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\partial-run01\\obj.json",
+          "bytes": 138294,
+          "sha256": "bb1bb9c56f8330aa54146d7240c2bf0670fb5f91bb468634a8f4c51579a9dfd3"
+        },
+        "verifiedOriginalSpans": 586
+      },
+      "limitations": [
+        "Original polygons/index streams and byte spans only; no triangulation, external companion resolution or source defaults.",
+        "Geography, axes, units, CRS, height reference and global placement are unknown; no property identity, measurements, topology/accuracy qualification, registry admission or learning truth.",
+        "Public graphics development samples; asset-specific redistribution/operational/training use and production launch clearance remain unqualified."
+      ]
     }
   ],
   "offlineLearningCorpus": {
