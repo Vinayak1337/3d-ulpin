@@ -375,7 +375,8 @@
       "responseSchema": "SufficiencyResultSchema",
       "responseStatus": 200,
       "transportProfile": "json",
-      "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-handoff.md"
+      "runtimeEvidence": "docs/evidence/usp/mesh-sufficiency-handoff.md",
+      "access": "PrivateSpatialGuard; source-pinned tasks include inspect_native_context for OBJ/glTF accepted result metadata only; partial companions/current native tools/job/result/access retained; artifact not read, no geometry/identity/learning qualification"
     },
     {
       "method": "GET",
@@ -388,7 +389,8 @@
       "responseSchema": "NeedsInputSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-handoff.md"
+      "runtimeEvidence": "docs/evidence/usp/mesh-sufficiency-handoff.md",
+      "access": "PrivateSpatialGuard; bounded current decisions including mesh pending/running/failed/stale/unavailable/inspected_local/inspected_partial; canonical case locks and final source/job/attempt/tool/access recapture; no new mesh question class"
     },
     {
       "method": "POST",
