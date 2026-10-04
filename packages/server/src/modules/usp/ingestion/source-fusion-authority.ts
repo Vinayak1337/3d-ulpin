@@ -84,7 +84,7 @@ export async function fusionAuthorityBatch(ctx:RequestContext,selections:SourceF
         authority=await (deps.raster??acceptedFusionRasterTx)(client,pin,true);
       }else if(selection.kind==='point'){
         authority=await (deps.point??acceptedFusionPointTx)(client,pin,true);
-      }else if(selection.kind!=='cityjson'){
+      }else if(selection.kind==='document'||selection.kind==='document_ocr'||selection.kind==='survey_report'){
         const prior=expected?.[index];
         const input=await deps.document(client,ctx,pin,prior?.kind==='document'?prior.input:undefined,true);
         const row=(await client.query('SELECT accepted_fence FROM usp_job_metadata WHERE job_id=$1',[pin.jobId])).rows[0];
@@ -175,7 +175,7 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
   if((selection.kind==='ifc'&&authority.kind!=='ifc')||(selection.kind==='dxf'&&authority.kind!=='dxf')||(selection.kind==='cityjson'&&authority.kind!=='cityjson')||
     (selection.kind==='kml'&&authority.kind!=='kml')||
     (selection.kind==='citygml'&&authority.kind!=='citygml')||
-    ((selection.kind==='document'||selection.kind==='document_ocr')&&authority.kind!=='document'))
+    ((selection.kind==='document'||selection.kind==='document_ocr'||selection.kind==='survey_report')&&authority.kind!=='document'))
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted source kind differs from its selected adapter.');
   if(selection.kind==='ifc'&&pin.resultBytes>IFC_LIMITS.resultBytes)
     throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted IFC result exceeds its receipt profile.');
@@ -189,7 +189,7 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
     selection.kind==='cityjson'?cityjsonResultKey(pin.jobId,pin.resultSha256):documentResultKey(pin.jobId,pin.resultSha256);
   const bytes=await read(key,pin.resultBytes,pin.resultSha256,budget);
   const value=fusionJson(bytes,budget);
-  if((selection.kind==='document'||selection.kind==='document_ocr')&&authority.kind==='document'){
+  if((selection.kind==='document'||selection.kind==='document_ocr'||selection.kind==='survey_report')&&authority.kind==='document'){
     const result=DocumentResultSchema.parse(value);
     if(fingerprint(result.input)!==fingerprint(authority.input)||result.native.readerSha256!==pin.readerSha256)
       throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted document input differs from its pin.');
