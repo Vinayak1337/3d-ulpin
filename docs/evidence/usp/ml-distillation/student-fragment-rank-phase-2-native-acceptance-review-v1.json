@@ -1,0 +1,135 @@
+{
+  "acceptance": {
+    "bytes": 10546,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-2-native-acceptance-v1.json",
+    "physicalSha256": "609e01df8011b2e4ff8748322a694097e91ab0f2bdcfa67def4c8cc8d0209123"
+  },
+  "checkedHostAuthorities": [
+    "protected accepted_outputs",
+    "assignment/freeze/code/input and predecessor admission",
+    "completion supervisor/hash binding",
+    "strict386-tensor checkpoint/phase result",
+    "full recipe/token/loss/attention/reclamation/progress history",
+    "20-loss prefix preserved at global40/228",
+    "exact copied accepted native phase1 proof"
+  ],
+  "checkpoint": {
+    "cursor": {
+      "contributions": 228,
+      "scheduleSha256": "8150b58a5f9a66ada112ca4e62a4a0d238341dc51b4c6398d03f1e359c15be1d",
+      "updates": 40
+    },
+    "files": {
+      "manifest.json": {
+        "bytes": 499,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4\\outputs\\fit\\checkpoint\\manifest.json",
+        "physicalSha256": "58693e5d20c106e1f22e0307f33241c280ba2edc394da9a816d8dcc6342c15df"
+      },
+      "state.json": {
+        "bytes": 30392,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4\\outputs\\fit\\checkpoint\\state.json",
+        "physicalSha256": "d67361899d1a8d08216c6d3805fdf6da8e0bb19922b7eb60162c51e6c7d21bd4"
+      },
+      "tensors.safetensors": {
+        "bytes": 6549296,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4\\outputs\\fit\\checkpoint\\tensors.safetensors",
+        "physicalSha256": "a837fc6fea32ec09c3f4bf434341fe19ab9cc2be163a5f7bac44bd913ecfd251"
+      }
+    },
+    "lossCount": 40,
+    "lossPrefixCount": 20,
+    "masterCount": 96,
+    "rngUnchanged": true,
+    "roundtripExact": true,
+    "scaler": {
+      "_growth_tracker": 40,
+      "backoff_factor": 0.5,
+      "growth_factor": 2.0,
+      "growth_interval": 2000,
+      "scale": 128.0
+    },
+    "tensorCount": 386,
+    "trainableParameters": 540672
+  },
+  "coordinatorReaderCorrection": "First coordinator review-only assertion treated read_checkpoint serialized tensor bytes as a tensor dictionary; inspected return contract and corrected count to validated tensor_specs386. No repository acceptance or native stage/run occurred in failed review; rerun only host metadata review.",
+  "doubles": [],
+  "executionHead": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+  "finalization": {
+    "bytes": 2242,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-2-technical-v1-619af4e2283d4bb1a049a1dff8868c97\\finalization.json",
+    "physicalSha256": "2e76b41d9af6f3dc2b8a7216bc9e49e0b0d9ceb771633480a490c60ee67d57f3"
+  },
+  "frozenRuntimeSourcesVerified": 35,
+  "guardCleanupPassed": true,
+  "hostNativeImports": false,
+  "hostVerification": {
+    "bytes": 3350,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-2-technical-v1-619af4e2283d4bb1a049a1dff8868c97\\host-verification.json",
+    "physicalSha256": "2344ba8c0278f966c43e833a683f8f432880bc88042eb2925465eeb78b6690b9"
+  },
+  "nativeFitOrProofRerun": false,
+  "nextDecision": "Independently accepted state40/228 enables separately frozen final phase3 under same executionHEAD/experiment/source/data/recipe/resource bounds.",
+  "original290TensorBaseUnchanged": true,
+  "ownedChildGone": true,
+  "phase": {
+    "endUpdate": 40,
+    "final": false,
+    "localContributions": 114,
+    "localUpdates": 20,
+    "number": 2,
+    "startUpdate": 20
+  },
+  "physicalReferencesVerified": 65,
+  "qualification": "Partial training durability/native resources only. No final adapter/inference/source truth/quality/generalization/promotion. Provisional57 related pairs/two train families, needs_independent_review; Sarvam excluded.",
+  "readonlyInputCount": 19,
+  "receiptIndex": {
+    "bytes": 7026,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-2-technical-v1-619af4e2283d4bb1a049a1dff8868c97\\receipt-index.json",
+    "physicalSha256": "d66735080ef62627f5e7a4a6137299500d21c3f945dbc1d575a8b1d09e4fdab4"
+  },
+  "recordedAtUtc": "2026-10-04T10:56:28.132936+00:00",
+  "resources": {
+    "bounds": {
+      "batchSize": 1,
+      "cpuThreads": 2,
+      "maxChildPhaseSeconds": 600,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "maxJobCommittedBytes": 6442450944,
+      "maxPromptTokens": 4096,
+      "minimumCudaFreeBytes": 1610612736,
+      "recording": "Job commitment and RSS separate; CUDA allocated/reserved/minimum free, observed native fit/guard/host/stage/cleanup timings and peak phase records. No invented child-only timings or speedup claim. Existing caps remain, no host/pagefile/global resource change.",
+      "truncation": false
+    },
+    "cuda": {
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "gpuSampleCount": 251,
+      "maxCudaAllocatedBytes": 1487851520,
+      "maxCudaReservedBytes": 1639972864,
+      "minimumSampledFreeCudaBytes": 5927600128
+    },
+    "peakJobCommittedBytes": 5854912512,
+    "peakProcessRssBytes": 4098420736,
+    "rssMethod": "50ms actual Job-member RSS/peak working sets"
+  },
+  "stageRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-f9865e22523546bbb4c6d08b7bca98b4",
+  "task": "STUDENT-35-FRAGMENT-RANK-PHASE-2-FIT",
+  "technicalRecovery": {
+    "bytes": 85452,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-2-technical-v1-619af4e2283d4bb1a049a1dff8868c97\\technical-recovery.json",
+    "physicalSha256": "256458de28a7a8e532c0a5e7b3d7e4536de9f008197fb52b3115635a5c252cb1"
+  },
+  "timings": {
+    "exactChildOnlySeconds": null,
+    "exactCleanupOnlySeconds": null,
+    "exactSetupOnlySeconds": null,
+    "fitSeconds": 228.13325590000022,
+    "guardSeconds": 355.76600000000326,
+    "modelAndBaseVerificationSeconds": 1.3150132999871857,
+    "resultElapsedSeconds": 232.21350159999565,
+    "runHostSeconds": 525.1406248999992,
+    "stageHostSeconds": 185.02295529999537
+  },
+  "version": "student-fragment-rank-phase-native-review/1"
+}
