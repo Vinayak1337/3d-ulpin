@@ -1,0 +1,74 @@
+{
+  "decision": "Accept four owned sources at code and targeted CPU scope; actual AppContainer/native checkpoint/fit/resources/quality remain unrun.",
+  "doubles": [
+    "Actual OS AppContainer/Job verification is doubled with a root returned by require_model_boundary; native imports blocked and shared fit stops at before_imports.",
+    "Worker/source/input filesystem stat/resolve/open/mkdir/iteration is virtualized using retained real payload/code bytes; outside-stage parent and historical host paths raise PermissionError. Revised checked_path and actual authority/state validators stay real.",
+    "Separate checkpoint publish/read and PhaseSession save controls use real temporary files with exists/stat/lstat denied on outside parents; Windows reparse attributes are a metadata double, no actual AppContainer or ACL probe.",
+    "Tensor/device/RNG, optimizer/scaler objects and safetensors codec use existing stdlib doubles. Actual capture/publish/read/restore execute; no native numeric/serialization equivalence claim.",
+    "First-phase native proof execution is replaced with a scoped proof-file writer to check propagation; production run_equivalence I/O propagation is source-reviewed, not natively exercised.",
+    "Phase2 successful predecessor/checkpoint/proof metadata is synthetic; copied hashes/schema/body checks run. Host forged independent-acceptance hash rejects before the protected accepted_outputs call.",
+    "Model-file hash reads in worker are replaced with acquisition metadata pins; no actual model/tokenizer/runtime bytes read."
+  ],
+  "implementation": [
+    "Actual require_model_boundary(args) return supplies explicit verified_root to rank-phase representation dispatch, input admission and shared-fit authority. No environment marker/path prefix or previous.root establishes child scope.",
+    "checkpoint.checked_path validates absolute canonical/nonalias containment, existing verified root (directory/nonreparse), every in-scope component including root, then stops. Host callers omit scope and retain all-ancestor checks. In-scope access denial propagates; only prospective output paths allow missing components.",
+    "Explicit root propagates through bounded reads, exclusive durable writes, publish/read_checkpoint, PhaseSession controls/initialize/save and future native equivalence proof save/read/result paths. Alias/escape/reparse/size/hash/state/manifest-last checks remain.",
+    "Later phase metadata uses lexical structural validation for original host predecessor/acceptance locations in child. Host freeze/stager/readers still perform full path and original guard/map/independent acceptance checks. Child reads exact frozen readonly acceptance/proof/checkpoint copies only.",
+    "Exact source closure stays35 files; three runtime edits and one test edit. Original recipe/numerics/data/state schema/control criteria match prior phase1 assignment. Isolation/harness/guard/ACLs and shared model lifecycle are unchanged."
+  ],
+  "integratedCodeCommit": "461d85338d6de592be808a9ae39ad70af80b175a",
+  "integratedEvidenceCommit": "4532d8dd92cb27839c78af67c3647ff0ddff6326",
+  "integratedReport": {
+    "bytes": 11151,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-contained-path-code-v1.json",
+    "physicalSha256": "71e6b59d883a5605c634364abed899d4cf5dbd936ff5ed37d441b60be45dae39"
+  },
+  "limitations": [
+    "CPU control success does not establish actual AppContainer/native behavior. No checkpoint proof, training, checkpoint or adapter exists from the consumed phase1 attempt.",
+    "Native safetensors/RNG shape/stochastic continuity, actual phased save/reload/resources and relevance remain unrun. Exact future continuation proof remains mandatory.",
+    "No native retry authorized. Future stage must use separately reviewed final clean HEAD and a new source-bound assignment/profile. Consumed stage and both prior failures remain immutable.",
+    "Task29 lost44 updates cannot resume or count;57 related pairs from ten provisional parents/two train families remain needs_independent_review. Sarvam excluded; no new labels or quality acceptance."
+  ],
+  "next": "Fresh STUDENT-33 phase1 at fixed final learnerHEAD; one new stage/guard, actual four-step continuation proof before20 updates/114 contributions and full-state checkpoint. No phase2 until independent acceptance.",
+  "ownerBaseCommit": "37fac56393acce067d717d5f259d9bf760396727",
+  "ownerCodeCommit": "81c841b4f01e99ff858b8e14529eb0ad9450fbb2",
+  "ownerEvidenceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "ownerFinalization": {
+    "bytes": 6195,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\finalization.json",
+    "physicalSha256": "1590088988fcf7f24d56aee2064a73798e2a016dfdbc9e9db0fabf07e8d8e0a8"
+  },
+  "receiptIndex": {
+    "bytes": 4062,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-contained-path-code-v1-f3fccf0966dc4be8b7e0e36915227a49\\receipt-index.json",
+    "physicalSha256": "09598a57848c7e8a2abd56eb78cb161951c82736a1348287ee10d61680ddb6ef"
+  },
+  "recordedAtUtc": "2026-10-04T01:32:18.509510+00:00",
+  "review": {
+    "bytes": 43366,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-32-review-v1-4392a484b1e34fb690c059cd3bb1f9ed\\review.json",
+    "physicalSha256": "db1a7f0529f12947f12736773e9b55b3f0ad96bc70344e5f711baa7e9eb356fc"
+  },
+  "reviewSummary": {
+    "automaticTestOrNativeRerun": false,
+    "ownedCompilesConsumed": 4,
+    "ownedSourcesInspected": 4,
+    "physicalReferencesMatched": 38,
+    "protectedPhysicalAndCanonicalSourcesMatched": 43,
+    "runtimeSourcesPhysicalGitAndIntegratedCanonicalMatched": 35,
+    "targetedCpuControlsConsumed": 3,
+    "trainAuthoritiesMatched": 14
+  },
+  "settings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Narrow containment/data-path correction includes host-versus-child predecessor authority and every checkpoint I/O callsite. Keep existing sole learner context; dispatch exposes no service tier.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "stagingReadOnlyHead": "1c7701281bcd8e3ed8e875243bd7476530782cc6",
+  "task": "STUDENT-32-FRAGMENT-RANK-CONTAINED-PATH-CODE",
+  "version": "association-rank-contained-path-code-acceptance/1"
+}
