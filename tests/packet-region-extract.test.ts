@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {EventEmitter} from 'node:events';
+import type {Pool} from 'pg';
 import {crc32,deflateSync} from 'node:zlib';
 import {PacketRegionService,packetRegionTransform,assertCleanRegionPng,type PacketRegionDependencies} from '../packages/server/src/modules/usp/packets/region-extract';
 import {sha256} from '../packages/server/src/infrastructure/storage';
@@ -26,6 +28,29 @@ const error=(status:number,code:string)=>(e:unknown)=>e instanceof AppError&&e.s
 function service(overrides:Partial<PacketRegionDependencies>={}){return new PacketRegionService({
   authorize:async()=>structuredClone(authority),original:async()=>original,
   inspect:async()=>({result:structuredClone(worker),png}),recipe:async()=>recipe,...overrides});}
+
+test('default region authorization selects its transaction mode before the first guarded source query',async()=>{
+  // Production service + actual transaction helper, controlled pg transport.
+  // Stop at source lookup: no DB, object read, profile or native process starts.
+  const globals=globalThis as unknown as {ulpinPool?:Pool},prior=globals.ulpinPool,calls:string[]=[],releases:unknown[]=[];
+  const client=Object.assign(new EventEmitter(),{query:async(sql:string)=>{
+    calls.push(sql);
+    if(sql.startsWith('BEGIN')||sql==='ROLLBACK')return {rows:[]};
+    if(sql.startsWith('SELECT set_config'))return {rows:[{deadline_live:true}]};
+    if(sql.startsWith('SET TRANSACTION'))throw Object.assign(new Error('Late isolation change after guard SELECT'),{code:'25001'});
+    if(sql==='SELECT case_id FROM sources WHERE id=$1')throw new AppError(422,'ROI_SOURCE_LOOKUP_CONTROL','Controlled source lookup boundary reached.');
+    assert.fail(`Unexpected controlled SQL: ${sql}`);
+  },release:(destroy?:boolean)=>releases.push(destroy)});
+  globals.ulpinPool={connect:async()=>client} as unknown as Pool;
+  try{
+    await assert.rejects(new PacketRegionService().extract(sourceId,1,request),error(422,'ROI_SOURCE_LOOKUP_CONTROL'));
+    assert.equal(calls[0],'BEGIN ISOLATION LEVEL REPEATABLE READ, READ ONLY');
+    assert.equal(calls.filter(sql=>sql.startsWith('SELECT set_config')).length,2);
+    assert.equal(calls.some(sql=>sql.startsWith('SET TRANSACTION')),false);
+    assert.equal(calls.at(-2),'SELECT case_id FROM sources WHERE id=$1');assert.equal(calls.at(-1),'ROLLBACK');
+    assert.deepEqual(releases,[undefined]);
+  }finally{if(prior===undefined)delete globals.ulpinPool;else globals.ulpinPool=prior;}
+});
 
 test('private source region rechecks authority and returns only pinned bytes/provenance',async()=>{
   let checks=0;

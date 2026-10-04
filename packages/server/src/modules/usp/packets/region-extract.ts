@@ -19,10 +19,8 @@ async function authorize(id:string,pin:DocumentPagePin,deadline:number){
   const [{transaction},{documentPageAuthorityTx}]=await Promise.all([
     import('../../../infrastructure/db'),import('../ingestion/document-pages')]);
   live(deadline);
-  return transaction(async client=>{
-    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
-    return documentPageAuthorityTx(client,id,pin);
-  },{deadlineAt:deadline});
+  return transaction(client=>documentPageAuthorityTx(client,id,pin),
+    {deadlineAt:deadline},'repeatable_read_only');
 }
 async function original(authority:DocumentPageAuthority,deadline:number){
   const {body}=await openObjectStream(authority.objectKey,authority.sourceBytes,Math.max(1,deadline-Date.now()));
