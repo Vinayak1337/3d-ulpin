@@ -58,6 +58,15 @@ Read this once before any prompt in this folder. Where it disagrees with an olde
 - Use standard tooling (torchvision/RF-DETR/CubiCasa scripts, Hugging Face TRL/PEFT, sentence-transformers, scikit-learn). Don't build custom training frameworks.
 - Hardware: one GPU owner (RTX 3070, ≤6 GiB). Offline weights (`HF_HUB_OFFLINE=1`), safetensors/ONNX only. One plain results JSON per run (git SHA, data hash, model hash, metrics). The heavy containment audit runs once before integration, not per experiment.
 - Sarvam-derived outputs never enter training or evaluation without written permission (H21).
+- **Distillation (teacher → student) is allowed for language tasks only, and only when it's real distillation:**
+  - the teacher runs over **many real, unlabelled inputs**; it doesn't hand-write examples;
+  - every output passes deterministic checks (each quote exists at its locator, units are converted by code);
+  - a person spot-checks a sample;
+  - the teacher first passes the same human-labelled holdout the student will face; the teacher never sees that holdout;
+  - outputs are recorded as `pseudo_label` (`method: model:<teacher>`), never as truth;
+  - the provider's terms allow training on outputs, and private/restricted documents never go to an external provider.
+
+  Pixel tasks (roofprints, room masks) use human labels and pretrained vision models, not LLM teachers. See P4.7.
 
 ## 8. Verification policy (lean)
 

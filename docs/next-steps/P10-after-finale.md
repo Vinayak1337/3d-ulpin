@@ -37,6 +37,9 @@ splits by project. Model: a cross-encoder/reranker (sentence-transformers or a p
 (document span, candidate record summary), fine-tuned with standard tooling; compare with zero-shot strong
 models first. Report wrong-building and wrong-floor accepts separately; the gate is "no critical wrong accept"
 plus useful coverage over rules. Reuse the retained ML-DISTILL history as lessons, not as a codebase.
+To get more training pairs, a strong teacher may pre-label candidate pairs over real documents, following the
+P4.7 recipe (permission check, teacher passes dev first, deterministic citation check, ≥10% human spot-check,
+pseudo_label lineage). Reviewed officer decisions remain the preferred labels.
 ```
 
 **Expect back:** a measured improvement over the rule baseline, or a documented decision to keep rules.

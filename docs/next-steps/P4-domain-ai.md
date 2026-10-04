@@ -158,3 +158,42 @@ Evaluate on whatever reviewed pairs exist (report the denominator even if tiny) 
 ```
 
 **Expect back:** rule-based link proposals in the review flow, the measured precision/recall with the denominator, and the ambiguous cases listed. This becomes the baseline any future ML linker has to beat.
+
+---
+
+## P4.7 Conditional: distil a strong teacher into the local storey extractor
+
+**Gate:** GF-AI support · **Depends:** P4.4 done, and **all three triggers below met** · **Owner:** ML owner
+
+**Run this only if all three hold:**
+1. The local zero-shot model in P4.4 misses its threshold on the dev split.
+2. A strong teacher (e.g. GPT-6.1 Sol at xhigh, or another frontier model) passes the same dev evaluation clearly.
+3. The deployment needs a local, offline or India-resident model.
+
+Otherwise ship the regex baseline or the teacher-assisted review flow and skip this.
+
+```text
+Goal: transfer the teacher's demonstrated storey-extraction ability to a small local model, using real
+documents, not hand-written examples.
+
+0. Permission check (write it down first): (a) the teacher provider's current terms on using outputs to train
+   models; (b) only public documents (RERA/sanction PDFs from P2.2 sources) go to an external teacher; no
+   private or restricted source; (c) never Sarvam outputs (H21). If (a) is unclear, stop and ask the owner.
+1. Ceiling: run the teacher once on the P2.4 DEV split with the same schema and verifier as P4.4. It must
+   beat the local model clearly. Never show the teacher the holdout.
+2. Unlabelled pool: 300–2,000 real public plan/approval pages from >=5 projects/issuers that are NOT in the
+   P2.4 holdout projects (exclude by project ID, not by page).
+3. Teacher pass: structured JSON (same schema as P4.4) with quotes and locators. The deterministic verifier
+   drops any value whose quote isn't found at its locator; abstentions are kept as abstain examples, not dropped.
+4. Human spot-check: a team member reviews a random 10% (minimum 50 items); record the agreement rate. If it
+   is under 90%, fix the prompt/verifier and repeat on a fresh sample. Don't train on unchecked bad batches.
+5. Train the student with standard tooling: QLoRA (TRL SFTTrainer + PEFT), all linear layers, on a 3B–7B
+   instruct model that fits the 3070 in 4-bit; outputs constrained to the JSON schema at inference.
+   Hold out a calibration project for any confidence threshold.
+6. Evaluate the student once on the P2.4 holdout against the regex baseline, the zero-shot local model and the
+   teacher's dev numbers. Keep the student only if it beats the zero-shot local model and the baseline.
+7. Record everything as pseudo_label lineage in the model card (teacher id/version, prompt hash, pool
+   manifest, verifier version, spot-check rate).
+```
+
+**Expect back:** the permission note, the teacher's dev ceiling, the pool manifest, the spot-check agreement rate, the student's holdout result against the three comparisons, and a model card. Or an early stop with the trigger that failed, which is a perfectly good outcome.
