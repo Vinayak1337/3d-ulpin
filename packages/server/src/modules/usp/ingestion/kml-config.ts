@@ -93,12 +93,16 @@ const prePacketPdfReadCodeSha=new Set(["6c1573a0a4ad3dc9561064444681121e73a956b1
 // GLTF-02: exact 0311fa08 Git/LF and observed pre-glTF staging physical code.
 // Immutable reads only; full current inventory/non-code pins and strict writers remain.
 const preGltfReadCodeSha=new Set(["6b06ed791345f3d211f2c6ebb5829698ffa033db9ecacaf673e03d58e71671fa","835f9145d85a167dc601d9ca6371a7a2a5c02a29fcc325adee44f77815f8ed8d"]);
+// OBJ-02 immutable reads only: exact assigned-base Git/LF and observed pre-OBJ
+// physical CODEFILES in both worker checkouts/staging. Current code/non-code
+// inventory remains mandatory; writers never use these aliases.
+const preObjReadCodeSha=new Set(["16e65e18446b132b445eb133dcd67c0019179fc4a02351314a1d6a5c9e5a6e5b", "d010ddefa567afff305aa333458ca50cf5b338f4c6e9a812e5e3a15f54fbd5e4", "a5c1ae4cef4d54664d75a2f7fca03b53a8057025a2a3aa8e5e2f139ba8804df6"]);
 export function kmlReadToolsCompatible(stored:KMLToolPins,current:KMLToolPins){
   const old=KMLToolPinsSchema.safeParse(stored),live=KMLToolPinsSchema.safeParse(current);
   if(!old.success||!live.success)return false;
   if(fingerprint(old.data)===fingerprint(live.data))return true;
   const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
-  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)){
+  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)||preObjReadCodeSha.has(oldCode)){
     const actualCode=fingerprint(KML_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
     return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
   }

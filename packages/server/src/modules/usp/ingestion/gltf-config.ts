@@ -83,4 +83,21 @@ export function assertGltfTools(pins:GltfToolPins|null,deadlineAt?:number){
   if(fingerprint(config.pins)!==fingerprint(pins))gltfUnavailable('GLTF_TOOL_CHANGED');return config;
 }
 
-export function assertGltfReadTools(pins:GltfToolPins|null,deadlineAt?:number):void{assertGltfTools(pins,deadlineAt);}
+// OBJ-02 immutable reads only: exact assigned-base Git/LF and observed pre-OBJ
+// physical CODEFILES in both worker checkouts/staging. Current code/non-code
+// inventory remains mandatory; writers never use these aliases.
+const preObjReadCodeSha=new Set(["a65e70ab797791693b65d0d23c42389fe10248856022a1d9264210301908ba3b", "0dd2070c9001591fad9263e06203bc8d3f316f0277db8fb4552a9464a918514d", "a50cf2e380ad19770783ce9708ff76e10d90f68ab00962706b3a579dbfa060a2"]);
+export function gltfReadToolsCompatible(stored:GltfToolPins,current:GltfToolPins){
+  const old=GltfToolPinsSchema.safeParse(stored),live=GltfToolPinsSchema.safeParse(current);
+  if(!old.success||!live.success)return false;
+  if(fingerprint(old.data)===fingerprint(live.data))return true;
+  const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+  if(!preObjReadCodeSha.has(oldCode))return false;
+  const actualCode=fingerprint(GLTF_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
+  return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
+}
+/** Complete current profile first; comparison only, never launch configuration. */
+export function assertGltfReadTools(pins:GltfToolPins|null,deadlineAt?:number):void{
+  if(!pins)gltfUnavailable();const current=gltfConfig(deadlineAt);
+  if(!gltfReadToolsCompatible(pins,current.pins))gltfUnavailable('GLTF_TOOL_CHANGED');
+}

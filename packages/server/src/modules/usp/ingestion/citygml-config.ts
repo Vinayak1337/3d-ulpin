@@ -91,12 +91,16 @@ const prePacketPdfReadCodeSha=new Set(["bdc3ae2758db333894aed1c4a664829c7e3f67ad
 // GLTF-02: exact 0311fa08 Git/LF and observed pre-glTF staging physical code.
 // Immutable reads only; full current inventory/non-code pins and strict writers remain.
 const preGltfReadCodeSha=new Set(["0d98f4d86b8118a9029d72ecb23e330f28aaa2167424ee7b49b7308e3a0ef181","07ff9352c85b53d5ca2a13df21182e93607e2b93d4ae3e7aa6cf16adcf5518fd"]);
+// OBJ-02 immutable reads only: exact assigned-base Git/LF and observed pre-OBJ
+// physical CODEFILES in both worker checkouts/staging. Current code/non-code
+// inventory remains mandatory; writers never use these aliases.
+const preObjReadCodeSha=new Set(["3ecd27225165fcb1bd5b76e9037c4792a35c9a15c79ad55647002e2026c7e1d5", "8310d1e8abd384dda09ccbdf5ba9d7836f189f34d9d4c250aaa7cf1f6e5fc2a3", "f353a0f10904b4e272660fe9da70005d9419e613581c475b1d08d93a2a221943"]);
 export function citygmlReadToolsCompatible(stored:CityGMLToolPins,current:CityGMLToolPins){
  const old=CityGMLToolPinsSchema.safeParse(stored),live=CityGMLToolPinsSchema.safeParse(current);
  if(!old.success||!live.success)return false;
  if(fingerprint(old.data)===fingerprint(live.data))return true;
  const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
-  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)){
+  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)||preObjReadCodeSha.has(oldCode)){
     const actualCode=fingerprint(CITYGML_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
     return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
   }

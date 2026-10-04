@@ -95,12 +95,16 @@ const prePacketPdfReadCodeSha=new Set(["3908950565f0bf139c38d07c57b21eb5873e6acd
 // GLTF-02: exact 0311fa08 Git/LF and observed pre-glTF staging physical code.
 // Immutable reads only; full current inventory/non-code pins and strict writers remain.
 const preGltfReadCodeSha=new Set(["6443d8f0b3fa7f1a9e5c97a5bcc0df7858e2b29f1808260aca55643e651b6233","357bc91b6b59623dce9162ad5063dbc89244980600632b5f6b00c9a23ea37e4d"]);
+// OBJ-02 immutable reads only: exact assigned-base Git/LF and observed pre-OBJ
+// physical CODEFILES in both worker checkouts/staging. Current code/non-code
+// inventory remains mandatory; writers never use these aliases.
+const preObjReadCodeSha=new Set(["6d317ec105921543d3ce17bff115969ee89d2e4cfaa22477843f9fa173526bbb", "c4192dbadeb7cbb819e97b00b53930577dee77e25b4f5500a4ccc9409de137e7", "ad211965366a915022bc1a1786c1a70b8745a5f02d996b65dcfa93a6fdff657b"]);
 export function dxfReadToolsCompatible(stored:DXFToolPins,current:DXFToolPins){
   const old=DXFToolPinsSchema.safeParse(stored),live=DXFToolPinsSchema.safeParse(current);
   if(!old.success||!live.success)return false;
   if(fingerprint(old.data)===fingerprint(live.data))return true;
   const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
-  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)){
+  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)||preObjReadCodeSha.has(oldCode)){
     const actualCode=fingerprint(DXF_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
     return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
   }

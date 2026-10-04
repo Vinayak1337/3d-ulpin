@@ -2166,7 +2166,62 @@
       "Original polygons/index streams and byte spans only; no triangulation, external companion resolution or source defaults.",
       "Geography, axes, units, CRS, height reference and global placement are unknown; no property identity, measurements, topology/accuracy qualification, registry admission or learning truth.",
       "Public graphics development samples; asset-specific redistribution/operational/training use and production launch clearance remain unqualified."
-    ]
+    ],
+    "canonicalNativeObservation": {
+      "handoff": "docs/evidence/usp/obj-api-handoff.md",
+      "receiptSha256": "e0451a5c8848bff345039ed039bd28b74277b5dd83d32b697ca9b36548e368bb",
+      "executionCodeSha256": "6f12765bcc5a719ce845e263deda9cbc90a1b43c7a9b5aa8e9e28c4ee43d655f",
+      "finalPhysicalCodeSha256": "3da3d08e63159b51d4f173ff0a1593d5edf0cfdf89d95bbcd033460da7120f9d",
+      "profileSha256": "7de737b4d9642395bf3277ecce2a40452079426fa00130f0ced7478235827c40",
+      "scope": "Canonical retain/job/status/artifact/original/replay/retry admission with one actual adapter invocation per original and disclosed SQL/storage controls; live HTTP/persistence unqualified",
+      "representation": "context_mesh",
+      "result": {
+        "summary": {
+          "schemaVersion": "obj-source-context/1",
+          "sourceSha256": "a57a1c5b94c28f37b6a049e73d6efe1cb293946e9b727b6dd733cc70dcd1974c",
+          "sourceBytes": 2142,
+          "status": "inspected_local",
+          "geometryProjectionStatus": "available",
+          "representation": "context_mesh",
+          "vertexCount": 76,
+          "textureCount": 0,
+          "normalCount": 0,
+          "polygonCount": 18,
+          "faceReferenceCount": 72,
+          "eligiblePolygonCount": 18,
+          "declarationCount": 9,
+          "unsupportedStatementCount": 0,
+          "missingCompanionDeclarationCount": 0,
+          "axes": "unknown",
+          "units": "unknown",
+          "crs": "unknown",
+          "heightReference": "unknown",
+          "globalPlacement": "unknown",
+          "accuracy": "not_assessed",
+          "validity": "not_assessed",
+          "canonicalIdentity": "not_assessed",
+          "analyticEligible": false,
+          "registryAdmission": false,
+          "measurements": false,
+          "learningLabels": false,
+          "rights": "not_assessed"
+        },
+        "artifact": {
+          "key": "obj-native/fd408fef-3039-4a82-bd62-1cec23cdc1c9/4bea5f798ed652597bcbb3c3ae8ff76b47f7d60919b65ffc97e234499645eaf3.native.json",
+          "sha256": "4bea5f798ed652597bcbb3c3ae8ff76b47f7d60919b65ffc97e234499645eaf3",
+          "bytes": 129927,
+          "mediaType": "application/json",
+          "profile": "obj-source-context/1"
+        }
+      },
+      "registryAdmission": false,
+      "learningLabels": false,
+      "limitations": [
+        "Final status-parser correction reused exact native outputs without another native run; accepted execution code aggregate and final code aggregate remain separately recorded.",
+        "Each current checkout needs fresh physical native-lock/profile admission; historical locks/receipts and source hashes are unchanged.",
+        "No inferred frames/triangulation/property identity/measurements/accuracy/rights or authentic correspondence."
+      ]
+    }
   },
   {
     "id": "tinyobjloader-missing-material-file-obj-20261004",
@@ -2234,6 +2289,61 @@
       "Original polygons/index streams and byte spans only; no triangulation, external companion resolution or source defaults.",
       "Geography, axes, units, CRS, height reference and global placement are unknown; no property identity, measurements, topology/accuracy qualification, registry admission or learning truth.",
       "Public graphics development samples; asset-specific redistribution/operational/training use and production launch clearance remain unqualified."
-    ]
+    ],
+    "canonicalNativeObservation": {
+      "handoff": "docs/evidence/usp/obj-api-handoff.md",
+      "receiptSha256": "e0451a5c8848bff345039ed039bd28b74277b5dd83d32b697ca9b36548e368bb",
+      "executionCodeSha256": "6f12765bcc5a719ce845e263deda9cbc90a1b43c7a9b5aa8e9e28c4ee43d655f",
+      "finalPhysicalCodeSha256": "3da3d08e63159b51d4f173ff0a1593d5edf0cfdf89d95bbcd033460da7120f9d",
+      "profileSha256": "7de737b4d9642395bf3277ecce2a40452079426fa00130f0ced7478235827c40",
+      "scope": "Canonical retain/job/status/artifact/original/replay/retry admission with one actual adapter invocation per original and disclosed SQL/storage controls; live HTTP/persistence unqualified",
+      "representation": "context_mesh",
+      "result": {
+        "summary": {
+          "schemaVersion": "obj-source-context/1",
+          "sourceSha256": "0011861ed58098a3524e973547549c4b73f05e3e00eec02d2e98e450a342e988",
+          "sourceBytes": 2294,
+          "status": "inspected_partial",
+          "geometryProjectionStatus": "available",
+          "representation": "context_mesh",
+          "vertexCount": 76,
+          "textureCount": 0,
+          "normalCount": 0,
+          "polygonCount": 18,
+          "faceReferenceCount": 72,
+          "eligiblePolygonCount": 18,
+          "declarationCount": 19,
+          "unsupportedStatementCount": 0,
+          "missingCompanionDeclarationCount": 10,
+          "axes": "unknown",
+          "units": "unknown",
+          "crs": "unknown",
+          "heightReference": "unknown",
+          "globalPlacement": "unknown",
+          "accuracy": "not_assessed",
+          "validity": "not_assessed",
+          "canonicalIdentity": "not_assessed",
+          "analyticEligible": false,
+          "registryAdmission": false,
+          "measurements": false,
+          "learningLabels": false,
+          "rights": "not_assessed"
+        },
+        "artifact": {
+          "key": "obj-native/6c33eda6-a1ad-425d-8581-31da18097cf6/bb1bb9c56f8330aa54146d7240c2bf0670fb5f91bb468634a8f4c51579a9dfd3.native.json",
+          "sha256": "bb1bb9c56f8330aa54146d7240c2bf0670fb5f91bb468634a8f4c51579a9dfd3",
+          "bytes": 138294,
+          "mediaType": "application/json",
+          "profile": "obj-source-context/1"
+        }
+      },
+      "registryAdmission": false,
+      "learningLabels": false,
+      "limitations": [
+        "Final status-parser correction reused exact native outputs without another native run; accepted execution code aggregate and final code aggregate remain separately recorded.",
+        "Each current checkout needs fresh physical native-lock/profile admission; historical locks/receipts and source hashes are unchanged.",
+        "No inferred frames/triangulation/property identity/measurements/accuracy/rights or authentic correspondence."
+      ]
+    }
   }
 ]
