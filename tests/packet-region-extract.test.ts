@@ -52,6 +52,45 @@ test('default region authorization selects its transaction mode before the first
   }finally{if(prior===undefined)delete globals.ulpinPool;else globals.ulpinPool=prior;}
 });
 
+test('image authorization and both registry region preflights select their mode before guarded queries',async()=>{
+  const [{authorizePrivateDocumentImage},{amendRegistryDocumentCitations}]=await Promise.all([
+    import('../packages/server/src/modules/usp/ingestion/document-images'),
+    import('../packages/server/src/modules/registry/registry-document-evidence')]);
+  const draftId='8206b7cd-6abc-479d-9c50-a19ef9bc93ab',recordId='16a1fd41-e2b1-49f2-b581-de9d1cdc71df';
+  const document={caseId,caseRevision:1,sourceId,sourceRevision:1,sourceSha256:hash,sourceBytes:original.length};
+  const amendment={requestKey:'96aa2243-b8cd-4d8d-8dbb-61a5c6bc120b',expectedDraftRevision:1,recordId,expectedRecordRevision:1};
+  const imageRegion={frame:{kind:'image_oriented_top_left_pixels',width:2,height:2,
+    orientation:{exifValue:null,applied:1,provenance:'specification_default'}},
+    coordinates:'oriented_original_pixel_edges/1',region:[0,0,2,2],selectionAcknowledged:true};
+  const attempts=[
+    {lookup:'SELECT case_id FROM sources WHERE id=$1',run:()=>authorizePrivateDocumentImage(sourceId,{revision:1,sha256:hash},Date.now()+10_000)},
+    {lookup:'SELECT * FROM registry_drafts WHERE id=$1',run:()=>amendRegistryDocumentCitations(draftId,
+      {...amendment,addImageRegion:{document,region:imageRegion,purpose:'record_evidence'}})},
+    {lookup:'SELECT * FROM registry_drafts WHERE id=$1',run:()=>amendRegistryDocumentCitations(draftId,
+      {...amendment,addRegion:{document,page:1,region:selection,purpose:'record_evidence'}})},
+  ];
+  const globals=globalThis as unknown as {ulpinPool?:Pool},prior=globals.ulpinPool;
+  try{for(const attempt of attempts){
+    const calls:string[]=[],releases:unknown[]=[];
+    const client=Object.assign(new EventEmitter(),{query:async(sql:string)=>{
+      calls.push(sql);
+      if(sql.startsWith('BEGIN')||sql==='ROLLBACK')return {rows:[]};
+      if(sql.startsWith('SELECT set_config'))return {rows:[{deadline_live:true}]};
+      if(sql.startsWith('SET TRANSACTION'))throw Object.assign(new Error('Late isolation change after guard SELECT'),{code:'25001'});
+      if(sql===attempt.lookup)throw new AppError(422,'ROI_SOURCE_LOOKUP_CONTROL','Controlled preflight lookup boundary reached.');
+      assert.fail(`Unexpected controlled SQL: ${sql}`);
+    },release:(destroy?:boolean)=>releases.push(destroy)});
+    globals.ulpinPool={connect:async()=>client} as unknown as Pool;
+    // Actual production caller/helper. Refuse at its first read before native
+    // preparation, object I/O or the later registry mutation transaction.
+    await assert.rejects(attempt.run(),error(422,'ROI_SOURCE_LOOKUP_CONTROL'));
+    assert.equal(calls[0],'BEGIN ISOLATION LEVEL REPEATABLE READ, READ ONLY');
+    assert.equal(calls.filter(sql=>sql.startsWith('SELECT set_config')).length,2);
+    assert.equal(calls.some(sql=>sql.startsWith('SET TRANSACTION')),false);
+    assert.equal(calls.at(-2),attempt.lookup);assert.equal(calls.at(-1),'ROLLBACK');assert.deepEqual(releases,[undefined]);
+  }}finally{if(prior===undefined)delete globals.ulpinPool;else globals.ulpinPool=prior;}
+});
+
 test('private source region rechecks authority and returns only pinned bytes/provenance',async()=>{
   let checks=0;
   const result=await service({authorize:async()=>{checks++;return authority;}}).extract(sourceId,1,request);

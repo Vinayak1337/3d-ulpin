@@ -45,10 +45,8 @@ export async function documentImageAuthorityTx(client:PoolClient,sourceId:string
 }
 export async function authorizePrivateDocumentImage(sourceId:string,pin:DocumentImagePin,deadline:number){
   live(deadline);
-  return transaction(async client=>{
-    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
-    return documentImageAuthorityTx(client,sourceId,pin);
-  },{deadlineAt:deadline});
+  return transaction(client=>documentImageAuthorityTx(client,sourceId,pin),
+    {deadlineAt:deadline},'repeatable_read_only');
 }
 export async function readPrivateDocumentImageOriginal(authority:DocumentImageAuthority,deadline:number){
   live(deadline);
