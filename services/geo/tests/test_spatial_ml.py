@@ -2,6 +2,8 @@
 import hashlib
 import importlib.util
 import io
+import os
+from pathlib import Path
 from copy import deepcopy
 from types import SimpleNamespace
 
@@ -138,6 +140,37 @@ def test_component_cap_reports_omissions_without_truncating_raster():
     assert len(result) == 100
     assert omissions["capacity"] == 10
     assert (labels > 0).sum() == 110 * 16
+
+
+@pytest.mark.skipif(not os.environ.get("ULPIN_FLOOR_MASK_FIXTURE"), reason="retained D07 real-mask regression fixture")
+def test_floor_contours_retain_real_complex_wall_and_holes_without_partial_rooms():
+    from rasterio.features import shapes
+    from shapely.ops import unary_union
+    labels = np.asarray(Image.open(Path(os.environ["ULPIN_FLOOR_MASK_FIXTURE"]))).copy()
+    original = labels.copy()
+    wall = max((shape(g) for g, _ in shapes(labels, mask=labels == 2, connectivity=4)), key=lambda p: p.area)
+    assert sum(len(r.coords) for r in [wall.exterior, *wall.interiors]) > 500
+    scores = np.ones(labels.shape, np.float32)
+    components, omissions, details = ml._floor_components(labels, scores, dict(enumerate(ml.ROOMS)), "c" * 64)
+    parent = next(g for g in details["groups"] if g["className"] == "wall" and g["sourceMaskPixels"] == wall.area)
+    assert parent["representation"] == "partition-context"
+    pieces = [shape(c["geometry"]) for c in components if c["id"] in parent["componentIds"]]
+    recovered = unary_union(pieces)
+    assert recovered.symmetric_difference(wall).area == 0
+    assert len(recovered.interiors) == len(wall.interiors)
+    assert len(components) <= 100 and all(ml._floor_geometry_fits(shape(c["geometry"])) for c in components)
+    assert all(shape(c["geometry"]).is_valid for c in components)
+    assert np.array_equal(labels, original)
+    assert (components, omissions, details) == ml._floor_components(labels, scores, dict(enumerate(ml.ROOMS)), "c" * 64)
+    # The observed high-hole room cannot become independently selectable fragments.
+    room = np.full((90, 90), 7, np.uint8)
+    for y in range(5, 76, 10):
+        for x in range(5, 76, 10):
+            room[y:y + 2, x:x + 2] = 0
+    candidates, _, diagnostic = ml._floor_components(room, np.ones(room.shape, np.float32), dict(enumerate(ml.ROOMS)), "d" * 64)
+    assert candidates == []
+    assert diagnostic["maskOnlyComponents"][0]["className"] == "hallway"
+    assert diagnostic["maskOnlyComponents"][0]["inspection"] == "retained-class-mask"
 
 
 def test_model_readiness_refuses_missing_or_changed_artifacts(tmp_path, monkeypatch):

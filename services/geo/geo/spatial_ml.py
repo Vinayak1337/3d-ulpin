@@ -33,6 +33,10 @@ BUILDING_TILE = 512
 BUILDING_STRIDE = 384
 MAX_COMPONENTS = 100
 MAX_VERTICES = 500
+FLOOR_POLYGON_PROFILE = "cubicasa-rooms-768-bilinear-pad64-contours-v2"
+FLOOR_POLYGON_VERSION = "floor-bounded-contours/2"
+FLOOR_CONTEXT_CLASSES = frozenset(("outdoor", "wall", "railing"))
+MAX_FLOOR_CONTEXT_PARTS = 32
 ROOMS = ["background", "outdoor", "wall", "kitchen", "living_room", "bedroom", "bath", "hallway", "railing", "storage", "garage", "other_room"]
 logger = logging.getLogger(__name__)
 
@@ -357,6 +361,144 @@ def _components(labels, scores, palette, fingerprint):
     return components[:MAX_COMPONENTS], omitted
 
 
+def _floor_geometry_fits(polygon):
+    from shapely.geometry import mapping
+    if polygon.is_empty or not polygon.is_valid or polygon.geom_type not in ("Polygon", "MultiPolygon"):
+        return False
+    mapped = mapping(polygon)
+    polygons = [mapped["coordinates"]] if mapped["type"] == "Polygon" else mapped["coordinates"]
+    return (len(polygons) <= 50 and all(len(rings) <= 50 for rings in polygons)
+            and sum(len(ring) for rings in polygons for ring in rings) <= MAX_VERTICES)
+
+
+def _floor_context_parts(polygon):
+    """Integer-edge partitions are inspection context, never separate rooms."""
+    from shapely.geometry import box
+    pending, parts = [polygon], []
+    while pending:
+        current = pending.pop()
+        if _floor_geometry_fits(current):
+            parts.append(current)
+            continue
+        left, top, right, bottom = current.bounds
+        if right - left <= 1 and bottom - top <= 1:
+            return None
+        if right - left >= bottom - top:
+            middle = math.floor((left + right) / 2)
+            clips = (box(left, top, middle, bottom), box(middle, top, right, bottom))
+        else:
+            middle = math.floor((top + bottom) / 2)
+            clips = (box(left, top, right, middle), box(left, middle, right, bottom))
+        children = []
+        for clip in clips:
+            child = current.intersection(clip)
+            if child.geom_type == "GeometryCollection":
+                from shapely.ops import unary_union
+                child = unary_union([p for p in child.geoms if p.geom_type in ("Polygon", "MultiPolygon")])
+            if child.area:
+                children.append(child)
+        if len(children) < 2 or len(parts) + len(pending) + len(children) > MAX_FLOOR_CONTEXT_PARTS:
+            return None
+        pending.extend(reversed(children))
+    return parts
+
+
+def _floor_components(labels, scores, palette, fingerprint):
+    """Bounded v2 contours; exact context partitions and whole room candidates.
+
+    All source masks remain authoritative for inspection. A partition family is
+    allocated atomically so the cap never masquerades as a complete region.
+    """
+    from rasterio.features import shapes, geometry_mask
+    from rasterio.transform import Affine
+    from shapely.geometry import shape, mapping
+    groups, mask_only = [], []
+    omitted = {"small": 0, "complex": 0, "invalid": 0, "capacity": 0}
+    omitted_pixels = {key: 0 for key in omitted}
+    for geometry, value in shapes(labels, mask=labels > 0, connectivity=4):
+        value = int(value)
+        polygon = shape(geometry)
+        area = int(polygon.area)
+        if area < 16:
+            omitted["small"] += 1
+            omitted_pixels["small"] += area
+            continue
+        raw_json = json.dumps(geometry, sort_keys=True, separators=(",", ":"))
+        raw_hash = _sha(raw_json.encode())
+        source_id = str(uuid.uuid5(uuid.NAMESPACE_URL, fingerprint + ":" + FLOOR_POLYGON_VERSION
+                                  + ":" + str(value) + ":" + raw_hash))
+        provenance = {"sourceComponentId": source_id, "className": palette[value],
+                      "sourceGeometrySha256": raw_hash, "sourceMaskPixels": area,
+                      "bounds": list(polygon.bounds)}
+        reason, representation, parts = None, "whole-exact", [polygon]
+        if not polygon.is_valid:
+            reason = "invalid"
+        elif not _floor_geometry_fits(polygon):
+            if palette[value] in FLOOR_CONTEXT_CLASSES:
+                parts = _floor_context_parts(polygon)
+                representation = "partition-context"
+                if parts is None:
+                    reason = "complex"
+            else:
+                # A fixed contour reduction is admitted only with unchanged
+                # topology and >=99% agreement with this predicted component.
+                # Room partitions cannot enter the ordinary selectable contract.
+                reduced = polygon.simplify(1., preserve_topology=True)
+                left, top, right, bottom = map(int, polygon.bounds)
+                grid = (bottom - top, right - left)
+                transform = Affine.translation(left, top)
+                original_pixels = geometry_mask([geometry], out_shape=grid, transform=transform, invert=True)
+                reduced_pixels = geometry_mask([mapping(reduced)], out_shape=grid, transform=transform, invert=True)
+                intersection = int((original_pixels & reduced_pixels).sum())
+                union = int((original_pixels | reduced_pixels).sum())
+                same_holes = (reduced.geom_type == polygon.geom_type
+                              and len(reduced.interiors) == len(polygon.interiors))
+                if _floor_geometry_fits(reduced) and same_holes and intersection / union >= .99:
+                    representation, parts = "whole-contour-reduced", [reduced]
+                    provenance["predictedComponentIoU"] = intersection / union
+                else:
+                    reason = "complex"
+        if reason:
+            omitted[reason] += 1
+            omitted_pixels[reason] += area
+            mask_only.append({**provenance, "reason": reason, "inspection": "retained-class-mask"})
+            continue
+        candidates = []
+        for part in parts:
+            mapped = json.loads(json.dumps(mapping(part)))
+            identity = str(uuid.uuid5(uuid.NAMESPACE_URL, source_id + ":" + json.dumps(mapped, sort_keys=True)))
+            left, top, right, bottom = part.bounds
+            x0, y0 = max(0, int(math.floor(left))), max(0, int(math.floor(top)))
+            x1, y1 = min(labels.shape[1], int(math.ceil(right))), min(labels.shape[0], int(math.ceil(bottom)))
+            inside = geometry_mask([mapped], out_shape=(y1 - y0, x1 - x0),
+                                   transform=Affine.translation(x0, y0), invert=True)
+            selected = inside & (labels[y0:y1, x0:x1] == value)
+            score = float(scores[y0:y1, x0:x1][selected].mean()) if selected.any() else 0.
+            candidates.append({"id": identity, "className": palette[value], "score": round(score, 6),
+                               "geometry": mapped})
+        groups.append({**provenance, "representation": representation, "candidates": candidates})
+    groups.sort(key=lambda g: (-g["sourceMaskPixels"], g["sourceComponentId"]))
+    components, retained = [], []
+    for group in groups:
+        candidates = group.pop("candidates")
+        if len(components) + len(candidates) > MAX_COMPONENTS:
+            omitted["capacity"] += 1
+            omitted_pixels["capacity"] += group["sourceMaskPixels"]
+            mask_only.append({**group, "reason": "capacity", "inspection": "retained-class-mask"})
+            continue
+        components.extend(candidates)
+        retained.append({**group, "componentIds": [c["id"] for c in candidates]})
+    mask_only.sort(key=lambda g: (-g["sourceMaskPixels"], g["sourceComponentId"]))
+    diagnostics = {"version": FLOOR_POLYGON_VERSION, "groups": retained,
+                   "maskOnlyComponents": mask_only[:MAX_COMPONENTS],
+                   "maskOnlyDetailsTruncated": max(0, len(mask_only) - MAX_COMPONENTS),
+                   "omittedMaskPixels": omitted_pixels, "contextPartitionLimit": MAX_FLOOR_CONTEXT_PARTS,
+                   "roomContourTolerancePixels": 1., "roomMinimumPredictedComponentIoU": .99,
+                   "capacityPolicy": "largest source regions first; whole partition family or retained mask only",
+                   "inspectionArtifact": "mask", "completePolygons": not any(omitted.values())}
+    return components, omitted, diagnostics
+
+
 def _artifact(image):
     stream = io.BytesIO()
     image.save(stream, format="PNG")
@@ -378,7 +520,11 @@ def infer_spatial(payload, s3=None):
     try:
         labels, scores, palette, score_kind = _run_model(model, image)
         elapsed = (time.perf_counter() - started) * 1000
-        components, omissions = _components(labels, scores, palette, payload["inputFingerprint"])
+        floor_diagnostics = None
+        if model["task"] == "floor-plan" and model["profileVersion"] == FLOOR_POLYGON_PROFILE:
+            components, omissions, floor_diagnostics = _floor_components(labels, scores, palette, payload["inputFingerprint"])
+        else:
+            components, omissions = _components(labels, scores, palette, payload["inputFingerprint"])
     except SpatialInferenceError:
         raise
     except Exception as error:
@@ -392,6 +538,11 @@ def infer_spatial(payload, s3=None):
     mask = _artifact(Image.fromarray(labels))
     import onnxruntime as ort
     receipt = {"sourceId": source["id"], "sourceSha256": source["sha256"], "inputFingerprint": payload["inputFingerprint"], "modelSha256": model["sha256"], "profileVersion": model["profileVersion"], "actualInference": True, "inferenceMs": round(elapsed, 3), "backend": "onnxruntime-cpu", "runtimeVersion": ort.__version__, "threads": 2, "preprocessing": model["preprocessing"], "scoreKind": score_kind, "scoresCalibrated": False, "evidenceState": "unresolved", "spatialAuthority": False, "coordinateUnit": "pixel", "maskEncoding": "class" if model["task"] == "floor-plan" else "instance", "maskPalette": palette, "foregroundPixels": int((labels > 0).sum()), "polygonization": {"method": "pixel-edge-4-connected", "simplificationPixels": .5, "minimumPixels": 16, "maxComponents": MAX_COMPONENTS, "maxVertices": MAX_VERTICES}, "omittedComponents": omissions, "quality": model["quality"], "limitations": ["Review every candidate against the source; false positives and missed regions occur.", "A room or roof region does not establish ownership, a legal unit, height, level or metric geometry.", "Named-frame calibration and independent placement evidence are required before metric application."]}
+    if floor_diagnostics is not None:
+        receipt["polygonization"].update(method=FLOOR_POLYGON_VERSION, simplificationPixels=0,
+                                         roomFallbackSimplificationPixels=1., maxRingsPerPolygon=50)
+        receipt["floorRepresentation"] = floor_diagnostics
+        receipt["limitations"].append("Partitioned wall/outdoor/railing regions are inspection context. Partition edges are not room or unit boundaries. Omitted regions remain available in the exact retained class mask; polygons may be incomplete.")
     if model["task"] == "building":
         tiles = _building_layout(image)
         tiled = len(tiles) > 1
