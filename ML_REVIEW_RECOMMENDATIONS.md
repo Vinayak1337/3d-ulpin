@@ -8,7 +8,7 @@
 
 ## 1. Summary
 
-The goal you described is: **accept heterogeneous building and map data, and output normalised records that the Three.js scene can render.** The current ML lane can't reach that goal, even if every planned experiment succeeds. That is not because the model is too small or the loss is wrong. There are three deeper reasons:
+The goal you described is: **accept heterogeneous building and map data, and output normalised records that the Three.js scene can render.** The current ML lane can't reach that goal, even if every planned experiment succeeds. That is not because the model is too small or the loss is wrong. There are three deeper reasons, plus a fourth covered in §1a (the lane addresses none of the AI/ML tasks the problem statement names):
 
 1. **Most of the target schema doesn't need ML.** Footprints, storeys, heights, base features, point clouds and image overlays come from geometry and attributes that readers can convert directly. A model should fill only the gaps that readers can't fill.
 2. **The one learned task now being trained doesn't output any field the scene renders.** A yes/no "does this fragment support the request" score over already-extracted text produces no polygon, height, storey or space.
@@ -17,10 +17,48 @@ The goal you described is: **accept heterogeneous building and map data, and out
 The report's own conclusion is correct: *"execution progress has outpaced evidence of learning progress."* My recommendation:
 
 - **Pause fine-tuning, including STUDENT-45 and its phases.**
+- **Redirect ML effort to the two learned routes that SIH26011 and the GF-AI gate require.** These are building extraction from imagery and floor-plan segmentation. Models for both are already in the repo (see §1a).
 - **Build a hand-labelled evaluation set for the real output schema.**
 - **Make the converters deterministic wherever they can be.**
 - **Use strong pretrained models with no fine-tuning for the remaining semantic and vision gaps.**
 - **Fine-tune only when a measured gap remains and you have hundreds of labelled examples for it.**
+
+---
+
+## 1a. Check against the problem statement (SIH26011)
+
+The original `Problem statement Details.txt` isn't in the repository. This section uses its summary in [H23 §D](docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md) and the release requirements in [H27](docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md).
+
+According to H23, the statement asks for:
+
+- **unique identities** for surface parcels, multi-storey apartments and underground infrastructure;
+- **integration of** drone imagery, LiDAR/point clouds, parcel GIS, floor plans, GNSS/CORS and DEM/DSM;
+- **AI/ML for four named tasks:** building extraction, floor segmentation, vertical delineation and topology validation.
+
+Here's how the current ML lane lines up with those four tasks:
+
+| Task the statement names | Correct method (your own H27) | What the current ML lane does |
+| --- | --- | --- |
+| Building extraction (drone/imagery) | A learned building-mask model on imagery | Nothing |
+| Floor segmentation | A learned plan-segmentation model on floor plans | Nothing |
+| Vertical delineation | Deterministic prisms from reviewed footprints plus level limits | Nothing |
+| Topology validation | Deterministic overlap, contact and hole checks. Learned ranking is optional | Nothing |
+
+**The fragment-support fine-tune addresses none of the four AI/ML tasks the problem statement names.** It's a text-relevance precursor to document association. That's useful product plumbing, but the statement doesn't ask for it.
+
+Your own documents already say this:
+
+- H23: *"Full-product schema learning … does not replace these four domain AI/ML tasks."*
+- H27 sets the release gate **GF-AI**: *"two genuinely learned inference routes: a building-mask extractor and a plan-segmentation model,"* each with pinned weights and an untouched, independently labelled evaluation.
+- H27 also records that **both models already exist in the repo** ([services/geo/ml-models.json](services/geo/ml-models.json), evaluations in [docs/evidence/t061](docs/evidence/t061)):
+  - `cubicasa5k-rooms-onnx-v1`: floor-plan room segmentation. It scored pixel accuracy 0.872 and mean IoU 0.656 on 2 published test plans. Its licence is CC-BY-NC-4.0, so it's for non-commercial use only.
+  - `rfdetr-satellite-buildings-onnx-v1`: building segmentation from satellite imagery, Apache-2.0. Its training set is undocumented, so H27 requires showing that the holdout doesn't overlap it.
+
+So the ML that the problem statement and your release gate actually require is **half-built and has gone unattended**. Meanwhile the dedicated ML lane spent its effort on a task that sits outside both. Of everything in this review, that is the most important correction:
+
+> **Point the ML effort at GF-AI.** Evaluate and, if needed, fine-tune the existing building-mask and plan-segmentation models on independently labelled Indian imagery and floor plans. Make vertical delineation and topology deterministic. Treat document/association models as later product work.
+
+The "normalised schema for the Three.js map" framing still holds: the outputs of those two models are exactly the `FootprintInput.polygons` and `LevelInput.spaces[]` the scene draws.
 
 ---
 
@@ -142,8 +180,8 @@ Use the largest model that fits, with **constrained structured output** (JSON Sc
 | --- | --- | --- |
 | A. Column/attribute mapping | Few-shot prompt to an instruction model, with the column name, sample values and the list of target fields. Keep the Qwen3-Reranker result from V7 as the cheap first-pass ranker | V7 reranker already got 5/7 calibration with no wrong accepts. That's better than any fine-tune so far |
 | B. Document fields (storeys, heights, names) | A 3B–8B instruction model or VLM, 4-bit, on the RTX 3070 (for example Qwen2.5-VL-3B/7B or Qwen3 instruct models), reading OCR text **plus the page image** | Score against Step 2. Report per-field accuracy and abstention |
-| C. Raster floor plans → spaces | Start from a published floor-plan model trained on CubiCasa5K or similar (room/wall segmentation, raster-to-vector), then vectorise and scale using a dimension or scale bar | Check each dataset's licence; CubiCasa5K, for example, is non-commercial. Record it as a launch-clearance gap, as AGENTS.md already allows |
-| C. Footprints from imagery | Use existing public footprint datasets for India and abroad (Google Open Buildings, Microsoft Global ML Building Footprints, OSM) as candidates or priors, rather than training a segmenter | These also give `estimated` heights in some regions. Keep their provenance separate from official records |
+| C. Raster floor plans → spaces (**SIH floor segmentation, GF-AI**) | Use the **existing** `cubicasa5k-rooms-onnx-v1`. Evaluate it on about 30–50 human-labelled Indian sanctioned/RERA plans. Then vectorise and scale using a dimension or scale bar. Fine-tune only if the evaluation shows a gap and labels are permitted | CC-BY-NC-4.0 (non-commercial). Record it as a launch-clearance gap, as AGENTS.md already allows |
+| C. Footprints from imagery (**SIH building extraction, GF-AI**) | Use the **existing** `rfdetr-satellite-buildings-onnx-v1`. Evaluate it on independently labelled Indian tiles (OSM, Google Open Buildings or Microsoft footprints can help build labels and check overlap). Use H27's DeepLabV3 fallback if overlap with its training set can't be ruled out | Imagery outlines are roofprints, not ground footprints (H27). Keep their provenance separate from official records |
 | D. Association | Rules first: spatial overlap, normalised IDs, tower/block names, storey counts. Then a cross-encoder or reranker on the residual hard cases | Measure rule precision and recall on labelled pairs before adding a model |
 
 If policy allows a hosted model for development experiments on public sources, run the same evaluation once with a frontier model. That gives a **ceiling**: if a frontier model can't do a field from the evidence, the evidence is insufficient and no small fine-tune will fix it.
@@ -177,18 +215,33 @@ Then the recipe is ordinary: QLoRA on a 3B–8B model with all linear layers, a 
 6. **Iteration cost:** build the offline environment once (pinned venv, local weights, no-network flag, one results JSON per run). Use the full AppContainer audit only before integration. One writer for the results format.
 7. **Delivery order:**
    1. Normalised schema.
-   2. Labelled evaluation buildings.
-   3. Deterministic converters wired to the scene.
-   4. Zero-shot document extraction for storeys and heights.
-   5. Association rules.
-   6. Plan segmentation.
-   7. Fine-tuning, if still needed.
+   2. Labelled evaluation buildings, plans and imagery tiles.
+   3. **GF-AI: evaluate the existing building-mask and plan-segmentation models on independent Indian labels, and fine-tune if needed.** This is what the problem statement and release gate require.
+   4. Deterministic converters, vertical delineation and topology checks, wired to the scene.
+   5. Zero-shot document extraction for storeys and heights.
+   6. Association rules.
+   7. Fine-tuning of text models, if still needed.
 
    Defer: fragment-support fine-tunes, teacher expansion, harness re-hardening and per-run receipt campaigns.
 
 ---
 
-## 6. One falsifiable experiment to run next
+## 6. Falsifiable experiments to run next
+
+### 6.1 First priority: GF-AI on the existing models
+
+**Question:** are the existing CubiCasa5K and RF-DETR models good enough on Indian inputs to supply `LevelInput.spaces[]` and footprints?
+
+- **Data:**
+  - about 30–50 Indian floor-plan pages (RERA/sanction sets you hold or can acquire), with room polygons labelled by a person;
+  - about 30–50 Indian imagery tiles, with building outlines labelled by a person and checked for overlap with RF-DETR's training data.
+
+  Split by project or area once, before any fine-tuning.
+- **Metrics:** per-class IoU and room-count accuracy for plans. Building-level precision/recall at IoU ≥ 0.5, and boundary F1, for imagery.
+- **Acceptance:** set the thresholds before running, as H27 requires in GF0. Report per class; no pooled score.
+- **If below threshold:** fine-tune on a permitted, labelled Indian training split from different projects (standard torchvision/RF-DETR training scripts, a few hundred labelled images), then re-evaluate on the untouched split. This is the one place where fine-tuning on your 3070 is clearly justified.
+
+### 6.2 Then: document storey extraction
 
 **Question:** can a pretrained model with no fine-tuning extract storey structure from the documents you hold, well enough to fill `storeys[]`?
 
