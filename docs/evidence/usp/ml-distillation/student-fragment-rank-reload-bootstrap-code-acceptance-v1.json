@@ -1,0 +1,145 @@
+{
+  "accepted": true,
+  "broaderEvidenceWhitespace": {
+    "exitCode": 1,
+    "interpretation": "Two trailing spaces are a Markdown hard line break after the base commit. Source-scoped required check passes; immutable owned evidence preserved.",
+    "line": 7,
+    "path": "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-bootstrap-code-v1.md"
+  },
+  "changedPaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-bootstrap-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-bootstrap-code-v1.md",
+    "scripts/usp/learning/association/stage_fragment_rank_reload.py",
+    "scripts/usp/learning/association/test_fragment_rank_reload.py"
+  ],
+  "consumedFocusedControls": {
+    "childDoubles": false,
+    "children": [
+      {
+        "childSysPathImportAdmissionDoubles": false,
+        "command": [
+          "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+          "-B",
+          "-I",
+          "-S",
+          "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_fragment_rank_reload.py",
+          "--help"
+        ],
+        "cwd": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-bootstrap-code-v1-e51d6f9cb292490ca4efd6f12289c6df\\unrelated-cwd",
+        "elapsedSeconds": 0.12156980001600459,
+        "exitCode": 0,
+        "finishedAtUtc": "2026-10-04T12:44:22.855962+00:00",
+        "logs": {
+          "stderr": {
+            "bytes": 0,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-bootstrap-code-v1-e51d6f9cb292490ca4efd6f12289c6df\\isolated-help.stderr.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 236,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-bootstrap-code-v1-e51d6f9cb292490ca4efd6f12289c6df\\isolated-help.stdout.txt",
+            "sha256": "5c0f8e6c861c5f724d122077dc9a23a14a6400303bc8ea87f0f5e9a72dfa1d2b"
+          }
+        },
+        "startedAtUtc": "2026-10-04T12:44:22.734183+00:00"
+      },
+      {
+        "childSysPathImportAdmissionDoubles": false,
+        "command": [
+          "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+          "-B",
+          "-I",
+          "-S",
+          "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\stage_fragment_rank_reload.py",
+          "--assignment",
+          "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-bootstrap-code-v1-e51d6f9cb292490ca4efd6f12289c6df\\unrelated-cwd\\disabled-assignment.json"
+        ],
+        "cwd": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-bootstrap-code-v1-e51d6f9cb292490ca4efd6f12289c6df\\unrelated-cwd",
+        "elapsedSeconds": 0.17062889999942854,
+        "exitCode": 1,
+        "finishedAtUtc": "2026-10-04T12:44:23.026169+00:00",
+        "logs": {
+          "stderr": {
+            "bytes": 1359,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-bootstrap-code-v1-e51d6f9cb292490ca4efd6f12289c6df\\isolated-disabled.stderr.txt",
+            "sha256": "3b6526617844ee6014c060b977ddd2b20e451afcca8b2dd33dafaf8629866a66"
+          },
+          "stdout": {
+            "bytes": 0,
+            "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-bootstrap-code-v1-e51d6f9cb292490ca4efd6f12289c6df\\isolated-disabled.stdout.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "startedAtUtc": "2026-10-04T12:44:22.855962+00:00"
+      }
+    ],
+    "invocations": 1,
+    "parentExitCode": 0,
+    "testsPassed": 1
+  },
+  "coordinatorIntegratedInMemoryCompiles": 2,
+  "decision": "accept_bootstrap_fix_and_actual_isolated_cli_controls_only",
+  "existingReloadCodeAcceptance": {
+    "bytes": 17430,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-code-acceptance-v1.json",
+    "physicalSha256": "0def5581bb068db2683ac1d28f53ec5f3e191e44220afd15426fe377d4b547dc"
+  },
+  "historicalFit": {
+    "acceptedFit": {
+      "acceptancePath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-fragment-rank-phase-3-native-acceptance-v1.json",
+      "acceptanceSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+      "reviewPath": "C:/Users/kvina/.codex/worktrees/ml-orchestrator-20261002/3d-ulpin/docs/evidence/usp/ml-distillation/student-fragment-rank-phase-3-native-acceptance-review-v1.json",
+      "reviewSha256": "cda8d0f67e1105c98f42b76accc2f2d1aecc20cc6aa9d22aa5a1053c4ba8b310",
+      "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472"
+    },
+    "adapter": {
+      "acceptedFitSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+      "candidateContributions": 342,
+      "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+      "filesSha256": {
+        "README.md": "d58f094333cfc1c4dd7444763d0d4900fa12102545f64c28d5689920da5f1793",
+        "adapter_config.json": "caddd7cee4ba510b73088fa191db872b6a1947f023ae35bc5b6f64a3e5b5b584",
+        "adapter_model.safetensors": "544f198727df29a629cd9ae4540a221adb27cdb390116d8ddb7b03a302da832b"
+      },
+      "trainingSourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+      "updates": 60
+    },
+    "checkpointRebound": false,
+    "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+    "sourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270"
+  },
+  "integratedOwnedCommits": [
+    "9007152572d289b398b18b2768e5715f2fc7cfa7",
+    "92d95fd3591d4a28bf6711297fc5d35f0f7112fd"
+  ],
+  "nativeReloadPerformed": false,
+  "next": "STUDENT-40 new positive final-head stage/reload and one technically accepted host-only development comparison. Consumed38 not reused.",
+  "oldControlsAstUnchanged": true,
+  "oldControlsRerun": false,
+  "onlyRuntimeSourceChanged": "scripts/usp/learning/association/stage_fragment_rank_reload.py",
+  "ownedGitBytesEqual": true,
+  "ownerCodeCommit": "13a9e2c90b95ed02cfcad25d870905f7c674598e",
+  "ownerFinalHead": "eb55cacb80840702a30ac662d000a89812031253",
+  "priorFailureAcceptance": {
+    "bytes": 4779,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-reload-bootstrap-failure-acceptance-v1.json",
+    "physicalSha256": "2cacf2affae3bb1cb941171aa44ed56dd37946bbf0fcfd10997f67f7f3fa665d"
+  },
+  "privateReview": {
+    "bytes": 5899,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-39-bootstrap-review-native-packet-v1-59c74aaf74844f028eaea4f41b415e5c\\review.json",
+    "physicalSha256": "f3d68bda94a22f3d9151a5be429be6464b801a8379f07cb5d1624daa90513953"
+  },
+  "protectedRuntimeSourceCount": 39,
+  "protectedUnchanged": true,
+  "qualityComparisonPerformed": false,
+  "recordedAtUtc": "2026-10-04T12:55:57.019022+00:00",
+  "report": {
+    "bytes": 14058,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-reload-bootstrap-code-v1.json",
+    "physicalSha256": "6eec7094e99396514b5bcb35138930a210e9e8be6f92cc9fc803f8572b891376"
+  },
+  "runtimeSourceCount": 40,
+  "sourceWhitespaceExit": 0,
+  "version": "student-fragment-rank-reload-bootstrap-code-acceptance/1"
+}
