@@ -229,6 +229,7 @@ export * from './document-images';
 export * from './packet-image-region';
 export * from './source-fusion';
 export * from './source-fusion-geoparquet';
+export * from './source-fusion-survey';
 export * from './source-fusion-associations';
 export * from './registry-document-evidence';
 export * from './registry-cityjson-draft';

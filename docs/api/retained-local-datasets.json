@@ -1943,6 +1943,28 @@
         "Comparison, accuracy and learning not assessed; foreign test_only family, no Indian/D1/property association.",
         "Historical reader-bound results retain their own code and runtime identity; no claim that another checkout can reuse these jobs."
       ]
+    },
+    "surveySourceFusionObservation": {
+      "handoff": "docs/evidence/usp/source-fusion-survey-handoff.md",
+      "receiptSha256": "17f7caf83fde4ed3c40ddad7f0d9ff493b2a1c7344cdc2cbf5603f3fe817e399",
+      "api": "POST /api/v1/usp/evidence/source-fusion/context",
+      "sourceKind": "survey_report",
+      "scope": "Controlled unchanged-source projection and canonical authority/storage doubles; new fusion HTTP and persistence not qualified",
+      "nva": {
+        "wholeRows": 166,
+        "wholeEnabled": 164,
+        "wholeDisabled": 2,
+        "selectedRows": 3,
+        "selectedEnabled": 1,
+        "selectedDisabled": 2
+      },
+      "mixedWith": "one unchanged PID native text fragment",
+      "verifiedCitations": 193,
+      "binding": "context_only",
+      "limitations": [
+        "Working frame, height linkage, epoch and object correspondence unresolved.",
+        "No building/floor association, controls, accuracy, analytical qualification or learning truth."
+      ]
     }
   }
 ]
