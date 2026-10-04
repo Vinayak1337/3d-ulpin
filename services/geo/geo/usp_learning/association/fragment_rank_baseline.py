@@ -70,6 +70,11 @@ def checked_assignment(value):
 
 def checked_payload(assignment, inputs, artifacts):
     checked_assignment(assignment)
+    return checked_source_payload(inputs, artifacts)
+
+
+def checked_source_payload(inputs, artifacts):
+    """Exact source-only payload shared by separately admitted rank routes."""
     require(set(inputs) == set(INPUT_PINS) and set(artifacts) == set(ARTIFACT_PINS), "rank_input_set_drift")
     for values, pins in ((inputs, INPUT_PINS), (artifacts, ARTIFACT_PINS)):
         for name, digest in pins.items():

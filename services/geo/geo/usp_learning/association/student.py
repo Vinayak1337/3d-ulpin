@@ -33,12 +33,19 @@ def prompt_messages(example):
 
 def run_local(examples, contract, family_freeze, model_path, require_boundary, preserve_raw, *, model_loader=None,
               fragment_route=None, fragment_contract=None, preserve_preflight=None, fragment_adapter_reload=None,
-              rank_authority=None, preserve_technical=None):
-    require_boundary()  # before dependencies, model bytes or GPU initialization
+              rank_authority=None, preserve_technical=None, rank_reload_session=None):
+    boundary = require_boundary()  # before dependencies, model bytes or GPU initialization
     for example in examples:
         validate_input(example, contract, family_freeze, ("development",))
     sources, rank_contexts = None, None
-    if rank_authority is not None:
+    if rank_reload_session is not None:
+        from . import fragment_rank_reload as reload, fragment_rank_runtime as rank_runtime
+        require(type(rank_reload_session) is reload._Session and rank_authority is None and model_loader is None
+            and fragment_route is None and fragment_contract is None and fragment_adapter_reload is None
+            and callable(preserve_preflight) and callable(preserve_technical), "rank_reload_mixed_loader_or_route")
+        rank_schema, rank_contexts = rank_reload_session.admit(examples, contract, family_freeze, boundary)
+        model_loader = rank_reload_session.loader
+    elif rank_authority is not None:
         from . import fragment_rank_baseline as rank_baseline, fragment_rank_runtime as rank_runtime
         require(model_loader is None and fragment_route is None and fragment_contract is None and fragment_adapter_reload is None
                 and callable(preserve_preflight) and callable(preserve_technical), "rank_mixed_loader_or_route_refused")
@@ -58,7 +65,7 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
         else:
             require(fragment_adapter_reload is None, "fragment_reload_loader_required")
         sources = fragment.checked_route(fragment_route, examples, fragment_contract, contract, family_freeze)
-    elif rank_authority is None:
+    elif rank_authority is None and rank_reload_session is None:
         require(fragment_contract is None and preserve_preflight is None and fragment_adapter_reload is None,
                 "explicit_fragment_route_required")
     import torch
@@ -122,14 +129,17 @@ def run_local(examples, contract, family_freeze, model_path, require_boundary, p
     model = (AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
         use_safetensors=True, torch_dtype=torch.float16, attn_implementation=SETTINGS["attention"]).to("cuda").eval()
         if model_loader is None else model_loader(model_path))
+    if rank_reload_session is not None:
+        rank_reload_session.verify_native(model, torch)
     if vocabulary is not None:
         checked_generation_config(model.generation_config)
     torch.cuda.synchronize()
     loaded_seconds = time.perf_counter() - started
     gpu_check()
     if rank_contexts is not None:
+        score_options = {"reload_session": rank_reload_session} if rank_reload_session is not None else {}
         raw_outputs, result = rank_runtime.run_scores(model, tokenizer, rank_prepared, rank_contexts, rank_schema,
-            contract, family_freeze, torch, gpu_check, preserve_raw, preserve_technical)
+            contract, family_freeze, torch, gpu_check, preserve_raw, preserve_technical, **score_options)
         result.update(settings=SETTINGS, loadSeconds=loaded_seconds, elapsedSeconds=time.perf_counter() - started,
             runtime={"torch": torch.__version__, "transformers": transformers.__version__, "cuda": torch.version.cuda,
                      "gpu": torch.cuda.get_device_name(), "gpuSampleCount": len(samples),

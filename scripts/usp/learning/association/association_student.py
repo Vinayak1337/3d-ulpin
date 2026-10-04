@@ -23,9 +23,17 @@ def sha(path):
     return digest.hexdigest()
 
 
-def admitted_runtime(freeze, inputs, preserve_preflight, preserve_technical=None):
+def admitted_runtime(freeze, inputs, preserve_preflight, preserve_technical=None, *, verified_root=None, profile=None):
     """Choose only an admitted representation before touching model bytes."""
     version = freeze.get("version", "")
+    if version == "association-fragment-rank-reload-freeze/1":
+        from geo.usp_learning.association import fragment_rank_reload as reload
+        reload.checked_run_inputs(freeze, inputs, verified_root=verified_root, profile=profile)
+        if not callable(preserve_preflight) or not callable(preserve_technical):
+            raise RuntimeError("rank reload evidence callbacks required")
+        return reload.run, {"rank_reload_authority": {"freeze": freeze, "inputs": inputs,
+            "verified_root": verified_root, "profile": profile}, "preserve_preflight": preserve_preflight,
+            "preserve_technical": preserve_technical}, reload.baseline.rank.SYSTEM_PROMPT
     if version == "association-fragment-rank-baseline-freeze/1":
         from geo.usp_learning.association import fragment_rank_baseline as rank
         rank.checked_run_inputs(freeze, inputs)
@@ -65,24 +73,34 @@ def admitted_runtime(freeze, inputs, preserve_preflight, preserve_technical=None
 
 
 def worker(args):
-    require_model_boundary(args)
+    verified_root, profile, _ = require_model_boundary(args)
     # Refuse unsupported/drifted rank metadata before output or native effects.
     freeze = json.loads(args.run_freeze.read_bytes())
-    preadmit_rank(freeze, args.run_freeze.parent)
+    preadmit_rank(freeze, args.run_freeze.parent, verified_root=verified_root, profile=profile)
+    if freeze.get("version") == "association-fragment-rank-reload-freeze/1":
+        from geo.usp_learning.association import fragment_rank_reload as reload
+        if args.run_freeze != verified_root / "inputs/run-freeze.json" or any(
+                getattr(args, key) != verified_root / "inputs" / name for key, name in reload.INPUT_NAMES.items()):
+            raise RuntimeError("rank reload CLI input scope drift")
     args.output_dir.mkdir(exist_ok=False)
     try:
         candidate_mode = freeze.get("version") == "association-candidate-baseline-freeze/1"
         fragment_mode = freeze.get("version") == "association-fragment-baseline-freeze/1"
-        rank_mode = freeze.get("version") == "association-fragment-rank-baseline-freeze/1"
+        reload_mode = freeze.get("version") == "association-fragment-rank-reload-freeze/1"
+        rank_mode = reload_mode or freeze.get("version") == "association-fragment-rank-baseline-freeze/1"
         structured_mode = candidate_mode or fragment_mode or rank_mode
-        prefix = "fragment-rank" if rank_mode else "fragment" if fragment_mode else "candidate"
+        prefix = "fragment-rank-reload" if reload_mode else "fragment-rank" if rank_mode else "fragment" if fragment_mode else "candidate"
         binding = {}
-        technical = (lambda value: write_json_once(args.output_dir / "fragment-rank-technical-proof.json",
+        technical = (lambda value: write_json_once(args.output_dir / (prefix + "-technical-proof.json"),
                      {**value, "provenance": binding})) if rank_mode else None
         runner, runner_options, system_prompt = admitted_runtime(freeze, args.run_freeze.parent,
             lambda value: write_json_once(args.output_dir / (prefix + "-preflight.json" if structured_mode else "selector-preflight.json"),
-                {**value, **({"provenance": binding} if structured_mode else {})}), technical)
-        if rank_mode:
+                {**value, **({"provenance": binding} if structured_mode else {})}), technical,
+            verified_root=verified_root, profile=profile)
+        if reload_mode:
+            from geo.usp_learning.association.fragment_rank_reload import provenance
+            binding = provenance(freeze, sha(args.run_freeze))
+        elif rank_mode:
             from geo.usp_learning.association.fragment_rank_baseline import provenance
             binding = provenance(freeze, sha(args.run_freeze))
         elif fragment_mode:
@@ -116,7 +134,7 @@ def worker(args):
         if structured_mode:
             result = {**result, "provenance": binding}
             if rank_mode:
-                result["technicalProofSha256"] = sha(args.output_dir / "fragment-rank-technical-proof.json")
+                result["technicalProofSha256"] = sha(args.output_dir / (prefix + "-technical-proof.json"))
         write_json_once(args.output_dir / "raw-outputs.json", raw)
         if structured_mode:
             write_json_once(args.output_dir / (prefix + "-raw-outputs.json"), raw)
@@ -128,7 +146,7 @@ def worker(args):
             # artifact acceptance. This receipt never claims guard acceptance.
             artifacts = (prefix + "-preflight.json", prefix + "-raw-outputs.json", prefix + "-result.json", "raw-outputs.json", "result.json")
             if rank_mode:
-                artifacts += ("fragment-rank-technical-proof.json",)
+                artifacts += (prefix + "-technical-proof.json",)
             write_json_once(args.output_dir / (prefix + "-completion.json"), {
                 "version": "association-" + prefix + "-worker-completion/1", "status": "worker_complete_awaiting_guard",
                 "supervisorAccepted": False, "authoritativeCompletion": "completion.json", "provenance": binding,
@@ -142,12 +160,13 @@ def worker(args):
         raise
 
 
-def preadmit_rank(freeze, inputs):
+def preadmit_rank(freeze, inputs, *, verified_root=None, profile=None):
     """Host and child reject code-only/mixed authority before their first effects."""
     # Normal dispatch is pure until its returned runner is invoked. Reuse it so
     # unknown rank versions cannot fall through to a legacy/default route.
     return admitted_runtime(freeze, inputs, lambda value: None,
-        (lambda value: None) if freeze.get("version") == "association-fragment-rank-baseline-freeze/1" else None)
+        (lambda value: None) if freeze.get("version") in ("association-fragment-rank-baseline-freeze/1",
+            "association-fragment-rank-reload-freeze/1") else None, verified_root=verified_root, profile=profile)
 
 
 def main():

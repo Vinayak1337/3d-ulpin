@@ -37,11 +37,14 @@ ACCEPTED_LATER_SOURCE_SHA256 = {
 }
 
 
-def checked_source_pins(source_bytes, baseline_files, assigned_canonical_pins, *, candidate_mode=False, fragment_mode=False, rank_mode=False):
+def checked_source_pins(source_bytes, baseline_files, assigned_canonical_pins, *, candidate_mode=False, fragment_mode=False, rank_mode=False, rank_reload_mode=False):
     """Pure pre-mkdir check of both assignment and protected-source authorities."""
     paths = SOURCE_PATHS
-    require(sum((candidate_mode, fragment_mode, rank_mode)) <= 1, "mixed_baseline_source_modes_refused")
-    if rank_mode:
+    require(sum((candidate_mode, fragment_mode, rank_mode, rank_reload_mode)) <= 1, "mixed_baseline_source_modes_refused")
+    if rank_reload_mode:
+        from geo.usp_learning.association import fragment_rank_reload as rank
+        paths = rank.SOURCE_PATHS
+    elif rank_mode:
         from geo.usp_learning.association import fragment_rank_baseline as rank
         paths = rank.SOURCE_PATHS
     elif fragment_mode:
@@ -61,7 +64,7 @@ def checked_source_pins(source_bytes, baseline_files, assigned_canonical_pins, *
         require(hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest() == assigned_canonical_pins[relative],
                 "selector_assignment_code_pin_drift:" + relative)
         pins[relative] = hashlib.sha256(raw).hexdigest()
-        if rank_mode:
+        if rank_mode or rank_reload_mode:
             if relative in rank.PROTECTED_PINS:
                 require(assigned_canonical_pins[relative] == rank.PROTECTED_PINS[relative], "rank_protected_source_drift:" + relative)
             continue
@@ -81,6 +84,9 @@ def checked_source_pins(source_bytes, baseline_files, assigned_canonical_pins, *
 
 def checked_stage_assignment(assignment):
     """Pure positive admission, called before donor inspection or stage effects."""
+    if assignment.get("version") == "association-fragment-rank-reload-assignment/1":
+        from geo.usp_learning.association import fragment_rank_reload
+        return fragment_rank_reload.checked_assignment(assignment), "fragment-rank-reload"
     if assignment.get("version") == "association-fragment-rank-baseline-assignment/1":
         from geo.usp_learning.association import fragment_rank_baseline
         return fragment_rank_baseline.checked_assignment(assignment), "fragment-rank"
@@ -122,15 +128,19 @@ def stage(assignment_path):
     assignment_bytes = assignment_path.read_bytes()
     assignment, mode = checked_stage_assignment(strict_json(assignment_bytes))
     candidate_mode, fragment_mode = mode == "candidate", mode == "fragment"
-    rank_mode = mode == "fragment-rank"
+    reload_mode = mode == "fragment-rank-reload"
+    rank_mode = reload_mode or mode == "fragment-rank"
     admission = None
-    if rank_mode:
+    if reload_mode:
+        from geo.usp_learning.association import fragment_rank_reload as admission
+    elif rank_mode:
         from geo.usp_learning.association import fragment_rank_baseline as admission
     elif fragment_mode:
         from geo.usp_learning.association import fragment_baseline as admission
     elif candidate_mode:
         from geo.usp_learning.association import candidate_baseline as admission
     # PREP is refused above before inspecting/copying any runtime or making a stage.
+    fit_plan = admission.accepted_fit_files(assignment) if reload_mode else {}
     if rank_mode:
         donor_plan = rank_donor_plan(admission)
         baseline = {"files": {}}
@@ -175,9 +185,13 @@ def stage(assignment_path):
                 "selector_uncommitted_execution_source:" + relative)
         source_bytes[relative] = raw
     code_pins = checked_source_pins(source_bytes, baseline["files"], assignment.get("runtimeCodeCanonicalLfSha256"),
-                                   candidate_mode=candidate_mode, fragment_mode=fragment_mode, rank_mode=rank_mode)
+                                   candidate_mode=candidate_mode, fragment_mode=fragment_mode,
+                                   rank_mode=rank_mode and not reload_mode, rank_reload_mode=reload_mode)
     # Complete the new authority and freeze before the first stage side effect.
-    freeze = admission.make_freeze(assignment, assignment_bytes, code_pins) if rank_mode else None
+    if reload_mode:
+        freeze = admission.make_freeze(assignment, assignment_bytes, code_pins, {n: p for n, (_, p) in fit_plan.items()})
+    else:
+        freeze = admission.make_freeze(assignment, assignment_bytes, code_pins) if rank_mode else None
     require(shutil.disk_usage(BASELINE.parent).free >= 15 * 1024**3, "selector_staging_disk_headroom")
     root = BASELINE.parent / (mode + "-baseline-" + uuid.uuid4().hex)
     root.mkdir()
@@ -210,6 +224,8 @@ def stage(assignment_path):
         copy(assignment_path, "inputs/" + mode + "-assignment.json", hashlib.sha256(assignment_bytes).hexdigest())
         for name, path in artifact_paths.items():
             copy(path, "inputs/" + name, admission.ARTIFACT_PINS[name])
+        for name, (path, pin) in fit_plan.items():
+            copy(path, "inputs/" + name, pin)
         if not rank_mode:
             freeze = admission.make_freeze(assignment, assignment_bytes, code_pins)
         admission.checked_run_inputs(freeze, root / "inputs")
