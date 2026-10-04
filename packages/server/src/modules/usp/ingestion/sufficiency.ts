@@ -13,12 +13,16 @@ import {assessSufficiency} from './sufficiency-policy';
 import {assertPackageDocumentAuthority} from '../../areas/package-authority';
 import {meshBudget,type SufficiencyMeshDependencies} from './sufficiency-mesh';
 import type {SufficiencyIFCDependencies} from './sufficiency-ifc';
+import type {SufficiencyXMLDependencies} from './sufficiency-xml';
 
 const uuid=z.uuid(),kind='ingestion-sufficiency';
 const same=(a:SufficiencyPins,b:SufficiencyPins)=>fingerprint(a)===fingerprint(b);
 export const questionBudgetAllows=(open:number)=>Number.isSafeInteger(open) && open>=0 && open<SUFFICIENCY_LIMITS.questions;
-async function saveReceipt(client:PoolClient,caseId:string,key:string,digest:string,result:unknown,receiptKind=kind){
+export function assertSufficiencyReceiptSize(result:unknown){
   if(Buffer.byteLength(JSON.stringify(result))>SUFFICIENCY_LIMITS.receiptBytes)throw new AppError(413,'SUFFICIENCY_RECEIPT_LIMIT','Use a smaller task scope.');
+}
+async function saveReceipt(client:PoolClient,caseId:string,key:string,digest:string,result:unknown,receiptKind=kind){
+  assertSufficiencyReceiptSize(result);
   await client.query('INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,$3,$4,$5)',[caseId,key,receiptKind,digest,result]);
 }
 async function priorReceipt(client:PoolClient,caseId:string,key:string,digest:string){
@@ -60,7 +64,7 @@ async function referenceExists(client:PoolClient,ctx:SufficiencyContext,ref:Suff
     return source;
   }
   if(ref.kind==='source_part'){
-    if(source.ifc||source.mesh)throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Native metadata is not a document source part or qualified geometry reference.');
+    if(source.xml||source.ifc||source.mesh)throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Native metadata is not a document source part or qualified geometry reference.');
     const part=source.document?source.document.parts.some(part=>part.id===ref.id):(await client.query(`SELECT 1 FROM sources WHERE id=$1 AND case_id=$2 AND
       jsonb_path_exists(inspection,'$.referenceParts[*] ? (@.id == $part)',jsonb_build_object('part',$3::text))`,[ref.sourceId,ctx.pins.caseId,ref.id])).rowCount;
     if(ref.packageId || ref.revision!==source.row.revision || !part)
@@ -83,26 +87,26 @@ async function referenceExists(client:PoolClient,ctx:SufficiencyContext,ref:Suff
 async function revalidateNativeContexts(client:PoolClient,scope:SufficiencyContext['scope'],contexts:Iterable<SufficiencyContext>){
   // Keep every capture, including repeated references to the same source: a
   // later capture must not conceal drift from an earlier decision's authority.
-  const native=[...contexts].filter(ctx=>ctx.ifc||ctx.mesh).sort((a,b)=>a.pins.sourceId.localeCompare(b.pins.sourceId));
+  const native=[...contexts].filter(ctx=>ctx.xml||ctx.ifc||ctx.mesh).sort((a,b)=>a.pins.sourceId.localeCompare(b.pins.sourceId));
   if(!native.length)return;
   const current=await sufficiencyCaseTx(client,scope.row.id,true);
   if(current.context!==scope.context)conflict('The complete native source case or access context changed.');
-  if(native.some(ctx=>ctx.ifc)){
+  if(native.some(ctx=>ctx.xml||ctx.ifc)){
     await client.query('SELECT id FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE',[[...new Set(native.map(ctx=>ctx.pins.sourceId))].sort()]);
     const jobs=[...new Set(native.flatMap(ctx=>ctx.recordPins.filter(pin=>pin.authority==='job').map(pin=>pin.id)))].sort();
     await client.query('SELECT id FROM jobs WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE',[jobs]);
     await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=ANY($1::uuid[]) ORDER BY job_id FOR SHARE',[jobs]);
     await client.query('SELECT job_id FROM usp_job_attempts WHERE job_id=ANY($1::uuid[]) ORDER BY job_id,number FOR SHARE',[jobs]);
   }
-  for(const ctx of native)await (ctx.ifc??ctx.mesh)!.revalidate(true);
+  for(const ctx of native)await (ctx.xml??ctx.ifc??ctx.mesh)!.revalidate(true);
   assertIngestionBinding(scope.binding);
 }
 export class IngestionSufficiencyService{
-  constructor(private readonly dependencies:{transaction?:typeof transaction;mesh?:SufficiencyMeshDependencies;ifc?:SufficiencyIFCDependencies}={}){}
+  constructor(private readonly dependencies:{transaction?:typeof transaction;mesh?:SufficiencyMeshDependencies;ifc?:SufficiencyIFCDependencies;xml?:SufficiencyXMLDependencies}={}){}
   private run<T>(work:(client:PoolClient)=>Promise<T>,options:SufficiencyNativeOptions){
     return (this.dependencies.transaction??transaction)(work,{deadlineAt:options.budget!.deadlineAt,signal:options.budget!.signal});
   }
-  private options():SufficiencyNativeOptions{return {dependencies:this.dependencies.mesh,ifc:this.dependencies.ifc,budget:meshBudget()};}
+  private options():SufficiencyNativeOptions{return {dependencies:this.dependencies.mesh,ifc:this.dependencies.ifc,xml:this.dependencies.xml,budget:meshBudget()};}
   async evaluate(caseValue:string,sourceValue:string,raw:unknown){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),input=EvaluateSufficiencySchema.parse(raw);
     const options=this.options();return this.run(async client=>{
@@ -148,7 +152,7 @@ export class IngestionSufficiencyService{
         const reason=question?.state==='parked'?'Not sure was recorded for this evidence class. The affected task stays parked until source evidence or its normal approval changes.':
           question?.state==='answered'?'An existing evidence reference is proposed. Officer review has not satisfied the missing task requirements.':
           assessment.gapClass && !question?'The class question is unavailable or the case question budget is occupied. Retain the missing evidence and park this task.':assessment.reason;
-        decisions.push(IngestionSufficiencyDecisionSchema.parse({version:SUFFICIENCY_VERSION,id:randomUUID(),pins:ctx.pins,recordPins:ctx.recordPins,processing:ctx.ifc?.processing??ctx.mesh?.processing??ctx.document?.processing??null,task,
+        decisions.push(IngestionSufficiencyDecisionSchema.parse({version:SUFFICIENCY_VERSION,id:randomUUID(),pins:ctx.pins,recordPins:ctx.recordPins,processing:ctx.xml?.processing??ctx.ifc?.processing??ctx.mesh?.processing??ctx.document?.processing??null,task,
           requirements:assessment.evidence.map(e=>e.requirement),missing,outcome,availability:assessment.availability,evidence:assessment.evidence,
           unlocks:missing.length?[task]:[],questionId:question?.id??null,nextAction:question?.state==='answered'?'review_evidence':
             question?.state==='parked'?'park':assessment.nextAction,reason,createdAt:new Date().toISOString()}));
