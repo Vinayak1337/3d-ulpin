@@ -48,6 +48,9 @@ export function citationReadBudget():FusionBudget{
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string,
   surveyReferences=false){
+  if(request.selection.sources.some(source=>source.kind==='gltf'))
+    throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY',
+      'glTF nodes support source context only; reviewed citation attachment is unsupported.');
   // Only the canonical officer amendment enables survey references. Proposal
   // and generic resolver callers retain the context-only refusal.
   if(request.selection.sources.some(source=>source.kind==='survey_report')&&(!surveyReferences||!siteId))
