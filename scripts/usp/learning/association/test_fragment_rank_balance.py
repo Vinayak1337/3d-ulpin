@@ -166,6 +166,66 @@ class StopBeforeImports(Exception): pass
 
 
 class BalanceControls(unittest.TestCase):
+    def test_emitted_output_recipe(self):
+        """Actual session metadata, writer-shaped envelopes and retained legacy JSON."""
+        legacy_root = Path("E:/BhuAayam-data/task-data/ml-distillation/student/adapter-fragment-rank-phase-fit-c35149db6a8c4a859d1e65cf4c5561a7")
+        read_legacy = lambda name: strict_json((legacy_root / name).read_bytes())
+        legacy_assignment = read_legacy("inputs/assignment.json")
+        legacy_preflight = read_legacy("outputs/fit/token-preflight.json")
+        legacy_result = read_legacy("outputs/fit/fit-result.json")
+        legacy_manifest = read_legacy("outputs/fit/adapter-manifest.json")
+        self.assertNotIn("settings", legacy_result)
+        self.assertNotIn("numerics", legacy_result)
+        phase.checked_output_recipe(legacy_preflight, legacy_result, legacy_manifest, legacy_assignment)
+
+        session = phase.PhaseSession(AUTHORITY, ROWS)
+        # Metadata placeholders only: no native checkpoint/proof was produced.
+        session.manifest_sha = "0" * 64
+        session.proof_sha = "0" * 64
+        recipe = {"trainingPlan": session.config["plan"], "lossImplementation": session.config["loss"],
+            "representation": session.config["representation"], **session.provenance}
+        result = {**recipe, **session.result_fields([0.0] * 20)}
+        manifest = {**recipe, "settings": phase.FIT, "numerics": phase.NUMERICS, **session.manifest_fields()}
+        # Invalid token evidence stops the real history reader immediately
+        # after its recipe gate. It cannot be an accepted native result.
+        preflight = {**recipe, "settings": phase.FIT, "numerics": phase.NUMERICS,
+            "epochOrder": phase.epoch_orders(session.config["plan"]), "excludedRows": [],
+            "truncation": False, "maximumCombinedTokens": 4097, "lengths": []}
+        self.assertNotIn("settings", result)
+        self.assertNotIn("numerics", result)
+        phase.checked_output_recipe(preflight, result, manifest, ASSIGNMENT)
+        matching = {**result, "settings": copy.deepcopy(phase.FIT), "numerics": copy.deepcopy(phase.NUMERICS)}
+        phase.checked_output_recipe(preflight, matching, manifest, ASSIGNMENT)
+        output_root = FIXTURE / "output-recipe-only"
+        write(output_root / "outputs/fit/token-preflight.json", preflight)
+        with self.assertRaisesRegex(InvalidEvidence, "rank_phase_output_tokens"):
+            phase.checked_output_history(output_root, ASSIGNMENT, result, manifest, {})
+
+        refusals = []
+        for change in ("bound fit", "bound numerics", "duplicate settings", "duplicate numerics", "objective"):
+            altered = copy.deepcopy(result)
+            if change == "bound fit": altered["binding"]["fit"]["method"] = "wrong method"
+            if change == "bound numerics": altered["binding"]["numerics"]["logits"] = "wrong numerics"
+            if change == "duplicate settings": altered["settings"] = {**phase.FIT, "method": "wrong duplicate"}
+            if change == "duplicate numerics": altered["numerics"] = {**phase.NUMERICS, "logits": "wrong duplicate"}
+            if change == "objective": altered["objectiveSha256"] = "f" * 64
+            with self.subTest(change=change):
+                with self.assertRaisesRegex(InvalidEvidence, "rank_phase_output_recipe"):
+                    phase.checked_output_recipe(preflight, altered, manifest, ASSIGNMENT)
+            refusals.append(change)
+        with self.assertRaisesRegex(InvalidEvidence, "rank_phase_output_recipe"):
+            phase.checked_output_history(output_root, ASSIGNMENT, {**result, "settings": {}}, manifest, {})
+        missing = dict(manifest); missing.pop("settings")
+        with self.assertRaisesRegex(InvalidEvidence, "rank_phase_output_recipe"):
+            phase.checked_output_recipe(preflight, result, missing, ASSIGNMENT)
+        self.assertEqual(native_attempts, [])
+        write(ROOT / "output-recipe-controls.json", {"legacyRecipeAccepted": True, "writerShapedBalancedRecipeAccepted": True,
+            "actualPhaseSessionResultAndManifestFields": True, "matchingOptionalDuplicatesAccepted": True,
+            "realHistoryReachedNextTokenRefusal": True, "realHistoryRejectsConflictingDuplicate": True,
+            "strictManifestFieldsRetained": True, "refusals": refusals, "nativeImports": native_attempts,
+            "constructedMetadata": "Writer recipe envelope plus real PhaseSession result/manifest fields; dummy0 checkpoint/proof hashes and invalid token4097 sentinel. No native output acceptance,checkpoint/proof/model or optimizer result.",
+            "tensorAutogradDoublesRun": False, "oldControlGroupRun": False})
+
     def test_mass_and_real_parent_loss_path(self):
         pairs = [c["pair"] for r in ROWS for c in r["candidates"]]
         mass = balance.mass_summary(pairs, OBJECTIVE)

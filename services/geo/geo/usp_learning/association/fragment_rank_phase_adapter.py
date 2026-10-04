@@ -364,6 +364,22 @@ def checked_balanced_loss_proof(proof, assignment):
                         for a, b in zip(r["gradient"], reference_gradient, strict=True)), "balanced_native_weighted_proof_values")
 
 
+def checked_output_recipe(preflight, result, manifest, assignment):
+    """Shared result writer binds fit/numerics without duplicating those fields."""
+    require(assignment.get("version") in (VERSIONS["fit"][0], BALANCED_VERSIONS["fit"][0]),
+            "separate_rank_phase_assignment_required")
+    config = _configuration(assignment)
+    for record in (preflight, result, manifest):
+        require(same(record.get("trainingPlan"), config["plan"]) and same(record.get("lossImplementation"), config["loss"])
+                and same(record.get("representation"), config["representation"])
+                and all(same(record.get(k), v) for k, v in config["fields"].items()), "rank_phase_output_recipe")
+    for record in (preflight, manifest):
+        require(same(record.get("settings"), FIT) and same(record.get("numerics"), NUMERICS), "rank_phase_output_recipe")
+    require(same(result["binding"].get("fit"), FIT) and same(result["binding"].get("numerics"), NUMERICS), "rank_phase_output_recipe")
+    for key, expected in (("settings", FIT), ("numerics", NUMERICS)):
+        require(key not in result or same(result[key], expected), "rank_phase_output_recipe")
+
+
 def checked_output_history(root, assignment, result, manifest, state):
     """Verify phase-specific receipts behind the protected accepted-output map."""
     config = _configuration(assignment)
@@ -371,10 +387,7 @@ def checked_output_history(root, assignment, result, manifest, state):
     read = lambda name: strict_json(checkpoint.read_bytes(output / name, 8 * 1024**2))
     jsonlines = lambda name: [strict_json(line) for line in checkpoint.read_bytes(output / name, 16 * 1024**2).splitlines()]
     preflight = read("token-preflight.json")
-    for record in (preflight, result, manifest):
-        require(same(record["trainingPlan"], config["plan"]) and same(record["settings"], FIT)
-                and same(record["numerics"], NUMERICS) and same(record["lossImplementation"], config["loss"])
-                and same(record["representation"], config["representation"]), "rank_phase_output_recipe")
+    checked_output_recipe(preflight, result, manifest, assignment)
     require(preflight["epochOrder"] == epoch_orders(config["plan"]) and preflight["excludedRows"] == []
             and preflight["truncation"] is False and preflight["maximumCombinedTokens"] <= 4096
             and len(preflight["lengths"]) == 10 and sum(len(p["focuses"]) for p in preflight["lengths"]) == 57,
