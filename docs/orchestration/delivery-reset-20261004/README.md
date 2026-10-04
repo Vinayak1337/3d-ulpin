@@ -19,6 +19,30 @@ Read [the delivery queue](EXECUTION.md) for dependencies and concrete completion
 
 The original problem-statement attachment was not reobtained here. Its adopted [H23 summary](../../usp-agent-handoffs/23-india-data-and-delivery-plan.md#d-mapping-to-problem-statement-26011) and [H27 interpretation](../../usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md) are the requirement basis; do not describe them as a fresh independent reading of the original attachment.
 
+## Second review: earlier reports and the executable prompt pack
+
+On the user's follow-up, reread both earlier reports and all 13 files in [the prompt pack at `d4c632be`](https://github.com/Vinayak1337/3d-ulpin/tree/d4c632bee1a591fa51661f467aa730fe8ee3ff41/docs/next-steps). The two earlier reports are unchanged from `389f8b5e`; the new prompts inherit their stale card/declaration, route-count and runtime claims. The corrections below still apply. Do not dispatch the pack verbatim or merge its experimental base into staging to obtain documentation.
+
+The pack adds useful task structure: exact dependencies, reused files, expected outputs, a short handoff, an incremental journey and a claim-to-result record. These are incorporated into [EXECUTION](EXECUTION.md); its ML procedure is corrected in [ML_DATA_PLAN](ML_DATA_PLAN.md).
+
+| External phases | Adopt or change before use |
+| --- | --- |
+| P0 reset/runtime/status | Keep bounded cleanup and compact status. Reuse existing platform health/restart tooling before adding a doctor. No platform migration, always-on service or reboot campaign by default; choose from a reproduced blocker. R0 must not delay independent R1–R3 work. |
+| P1 canonical model | Keep the projection goal: P1 explicitly says no new store, which is useful. Reject the assumption that a new universal `Value<T>`, status enum and two `/canonical` endpoints are already necessary. Inspect and extend existing contracts/projections first. A missing global origin must not exclude valid local-frame work. |
+| P2 sources/labels | Keep a source manifest, an annotation guide and independently checked labels. Site joins, team-label gate eligibility and the 1–2 day estimate are not established. Do not invent a D8 pack or gather every listed family before the first journey. |
+| P3 ingestion/mapping | Keep the real import path and constrained mapping task. Existing `MappingPlan`, gateway and executor code must be reused. A universal model ban on numeric literals is wrong: it applies to the mapping grammar, not pixel polygons or cited document values. Never relabel an unknown vertical datum as building-relative. |
+| P4 models | Keep production preprocessing, per-class results, error inspection and reviewable candidates. Correct train/development/final-evaluation separation. Neither a two-run holdout limit nor a committed preregistration prevents leakage when holdout results choose whether/how to train. OCR text alone cannot authorize metric calibration or geometry snapping. |
+| P5 geometry/identity | Keep supported prisms, explicit topology and real CityJSON geometry. Qualification must satisfy existing source/reference/accuracy requirements, not just valid rings plus a declared CRS. Review identity prerequisites independently; do not make all identity or vector geometry wait for segmentation. Verify actual dependency order: P5.3 uses P5.4 although its Depends line omits it. |
+| P6 governance | Reuse existing readiness/declaration/impact services and add only missing consumers. Unknown survey coverage does not justify drawing invented no-survey polygons or calling the survey absent. Source-supported coverage is required. |
+| P7 cards | Replace implementation-from-scratch prompts with integration of the existing card plan/service and `/usp/property-cards/...` resolver. No second `/cards/{ref}` service, changed QR contract or assumed unit-evidence support. |
+| P8 Studio | Keep Claude ownership and per-action contract reconciliation. Switch the selected journey only after auth, current data and error behavior work; OpenAPI route existence alone is insufficient. No blanket deletion of browser state or local data. |
+| P9 journey/claims | Start a small reusable journey at R4 and grow it. Do not rerun model fitting, issue records, retire identities or tamper with canonical artifacts on every feature handoff. Missing steps mean incomplete scope, never full pass. |
+| P10 later learning | Keep measured-baseline-first learning. Dataset counts are estimates, not universal gates; reviewed model outputs are not automatically training-eligible or independent truth. Retain useful checkpoint/runtime code rather than discarding it wholesale. |
+
+Other blanket standards need narrowing: current APIs use body `requestKey` guards, so a new mandatory `Idempotency-Key` header would change clients; error, revision, ETag and 403/404 behavior must preserve the actual scoped contracts. Do not unify availability, review and qualification states mechanically. Model proposals/results may be durably saved before review; review guards **canonical adoption**, not original receipt, job state or candidate persistence. Five verification categories are a useful checklist, not a prohibition on a targeted test for an affected access or data-loss risk.
+
+The earlier report's direction remains sound after this second pass. Its proposed execution must be adjusted to avoid creating another schema migration, infrastructure project, evaluation leak or serial dependency chain before delivering the first usable flow.
+
 ## Findings and corrections
 
 | Review claim | Assessment and consequence |
