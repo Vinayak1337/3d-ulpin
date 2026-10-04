@@ -76,11 +76,19 @@ export function geoparquetInput(ctx:Awaited<ReturnType<typeof geoparquetSourceTx
     sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,subject:ctx.binding.subject,
     accessSha256:ctx.binding.access,readerSha256:geoparquetReaderSha(),tools,selection,continuation});
 }
-export async function assertGeoParquetInputTx(client:PoolClient,input:GeoParquetInput,lock=false){
+/** Optional caller-owned bounded parent receipt read; old callers retain their
+ * existing deadline/reader. SQL authority and parsed result scope stay canonical. */
+export type GeoParquetReadOptions=DbDeadline&{readResult?:typeof readGeoParquetResult};
+function liveReadOptions(options?:GeoParquetReadOptions){
+  if(options&&(options.signal?.aborted||Date.now()>=options.deadlineAt))
+    throw new AppError(408,'GEOPARQUET_READ_TIMEOUT','The bounded GeoParquet read expired.');
+}
+export async function assertGeoParquetInputTx(client:PoolClient,input:GeoParquetInput,lock=false,readOptions?:GeoParquetReadOptions){
+  liveReadOptions(readOptions);
   const ctx=await geoparquetSourceTx(client,input.caseId,input.sourceId,lock);
   if(!ctx.latest||fingerprint(geoparquetInput(ctx,input.jobId,input.selection,input.tools,input.continuation))!==fingerprint(input))
     conflict('The GeoParquet original, case, reader or private access context changed. Retry under current pins.');
-  if(input.continuation){const parent=await geoparquetContinuationTx(client,ctx,input.continuation,input.selection.startRowIndex,lock);
+  if(input.continuation){const parent=await geoparquetContinuationTx(client,ctx,input.continuation,input.selection.startRowIndex,lock,readOptions);
     if(fingerprint(parent)!==fingerprint(input.continuation))conflict('The accepted continuation attempt changed.');}
   return ctx;
 }
@@ -113,7 +121,8 @@ export async function readGeoParquetResult(input:GeoParquetInput,hash:string,siz
     throw new AppError(422,'GEOPARQUET_RESULT_SCOPE','The inspection receipt belongs to another original or job.');
   return result;
 }
-export async function geoparquetStatusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string,lock=false){
+export async function geoparquetStatusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string,lock=false,readOptions?:GeoParquetReadOptions){
+  liveReadOptions(readOptions);
   const ctx=await geoparquetSourceTx(client,caseId,sourceId,lock);
   const job=(await client.query(`SELECT j.*,m.result_ref,m.input_sha256,m.logical_state,m.accepted_fence,
     a.state attempt_state,a.fence attempt_fence,a.input_sha256 attempt_input_sha256,a.completion_sha256
@@ -122,13 +131,14 @@ export async function geoparquetStatusTx(client:PoolClient,caseId:string,sourceI
   const input=GeoParquetInputSchema.parse(job.payload);
   assertGeoParquetJobRow(job,input);
   if(job.status==='succeeded')assertGeoParquetJobRow(job,input,true);
-  let stale=false;try{await assertGeoParquetInputTx(client,input,lock);}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
+  let stale=false;try{await assertGeoParquetInputTx(client,input,lock,readOptions);}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
   return {ctx,job,input,stale};
 }
 /** Pin one exact accepted parent window. Parent publication is immutable; no recursive history scan. */
 export async function geoparquetContinuationTx(client:PoolClient,ctx:Awaited<ReturnType<typeof geoparquetSourceTx>>,
   pin:{jobId:string;resultSha256:string;artifactSha256:string;nextRowIndex:number},startRowIndex:number,lock=false,
-  bounds:DbDeadline={deadlineAt:Date.now()+GEOPARQUET_LIMITS.readMs}){
+  bounds:GeoParquetReadOptions={deadlineAt:Date.now()+GEOPARQUET_LIMITS.readMs}){
+  liveReadOptions(bounds);
   if(startRowIndex!==pin.nextRowIndex)conflict('Continue from the exact accepted next row.');
   const parent=(await client.query(`SELECT j.*,m.result_ref,m.input_sha256,m.logical_state,m.accepted_fence,
     a.state attempt_state,a.fence attempt_fence,a.input_sha256 attempt_input_sha256,a.completion_sha256
@@ -139,7 +149,11 @@ export async function geoparquetContinuationTx(client:PoolClient,ctx:Awaited<Ret
   if(!ctx.latest||fingerprint(geoparquetInput(ctx,input.jobId,input.selection,input.tools,input.continuation))!==fingerprint(input)
     ||parent.result_ref.sha256!==pin.resultSha256)conflict('The continuation belongs to different source or intake pins.');
   assertGeoParquetReadTools(input.tools,bounds.deadlineAt);
-  const result=await readGeoParquetResult(input,pin.resultSha256,geoparquetResultBytes(parent.result_ref,pin.jobId),bounds.signal);
+  const result=GeoParquetResultSchema.parse(await (bounds.readResult??readGeoParquetResult)(input,pin.resultSha256,
+    geoparquetResultBytes(parent.result_ref,pin.jobId),bounds.signal));
+  liveReadOptions(bounds);
+  if(fingerprint(result.input)!==fingerprint(input)||result.artifact.key!==geoparquetArtifactKey(input.jobId,result.artifact.sha256))
+    throw new AppError(422,'GEOPARQUET_RESULT_SCOPE','The continuation receipt belongs to another original or job.');
   if(result.artifact.sha256!==pin.artifactSha256||result.summary.window.nextRowIndex!==pin.nextRowIndex
     ||pin.nextRowIndex<=input.selection.startRowIndex||result.summary.window.status!=='available')
     conflict('The exact accepted window has no advancing continuation at this row.');
