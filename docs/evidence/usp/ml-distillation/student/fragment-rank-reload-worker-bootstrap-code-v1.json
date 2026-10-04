@@ -1,0 +1,228 @@
+{
+  "assignment": {
+    "bytes": 8447,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-41.fragment-rank-reload-worker-bootstrap-code.assignment.json",
+    "sha256": "c069aeaab82c6ea5f0e398fc1817402e4301e66d0d80f35c3e92e4ffc88efe43"
+  },
+  "baseCommit": "eb55cacb80840702a30ac662d000a89812031253",
+  "callbackTarget": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "checks": {
+    "disabled": {
+      "diagnostic": "separate_positive_rank_reload_required",
+      "guardReached": false,
+      "harnessExitCode": 1,
+      "nativeModulesLoaded": []
+    },
+    "exactChildCommandsAndCwdAndLogsReceipt": {
+      "bytes": 15707,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\isolated-worker-controls.json",
+      "sha256": "01affc31b5412c8d8f23721e4c6d86d6f07acce3071674ea288f8bc97eec0dad"
+    },
+    "groups": 1,
+    "invocations": 1,
+    "oldClassesAstUnchanged": [
+      "Controls",
+      "IsolatedEntryControls"
+    ],
+    "oldClassesExecuted": false,
+    "parentCommand": [
+      "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+      "-B",
+      "-I",
+      "-S",
+      "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_fragment_rank_reload.py",
+      "IsolatedWorkerAdmissionControls"
+    ],
+    "parentCwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+    "parentElapsedSeconds": 7.573708500014618,
+    "parentExitCode": 0,
+    "positive": {
+      "acceptedFitReturnedAuthorities": 17,
+      "elapsedSeconds": 6.951304299989715,
+      "exactProtectedGuardReached": true,
+      "guardBodyExecuted": false,
+      "harnessExitCode": 0,
+      "isolatedRunpyActualWorkerMain": true,
+      "nativeModulesLoaded": [],
+      "preadmitReturned": true
+    },
+    "soleDouble": "Profiling exception at call entry to exact unchanged geo.usp_learning.resources.guarded_run, before body. No product import/sys.path/admission/source/tensor/loader doubles; no product modules preloaded by harness.",
+    "sourceWhitespaceCheckExitCode": 0,
+    "testsPassed": 1,
+    "twoInMemoryCompiles": [
+      {
+        "bytes": 12760,
+        "canonicalLfSha256": "e1d844d0bde0663714331df0da922bcc695a5e9855c27a58a9b3d2faea8aa140",
+        "compiledInMemory": true,
+        "path": "scripts/usp/learning/association/association_student.py",
+        "physicalSha256": "e1d844d0bde0663714331df0da922bcc695a5e9855c27a58a9b3d2faea8aa140"
+      },
+      {
+        "bytes": 36735,
+        "canonicalLfSha256": "f3298a315b4e731c16828266ea6d6f33ae07708814dcf39bc315a4e6312c5e9d",
+        "compiledInMemory": true,
+        "path": "scripts/usp/learning/association/test_fragment_rank_reload.py",
+        "physicalSha256": "f3298a315b4e731c16828266ea6d6f33ae07708814dcf39bc315a4e6312c5e9d"
+      }
+    ]
+  },
+  "codeCommit": "3bb064a80a2106bbd2f9f262ce19083c39e9eafc",
+  "finalCommit": "exact evidence/final commit retained in private finalization",
+  "finalizationPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\finalization.json",
+  "fixture": {
+    "bytes": 4711,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\fixture-pins.json",
+    "sha256": "5703e9d18e6664649a6553ea123443518bfdc8fcd92d7bd7fa4a9f75eb383afc"
+  },
+  "historicalAdapter": {
+    "acceptedFitSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+    "candidateContributions": 342,
+    "experimentId": "4415b7cc039c4e3a853682297f0ed28e",
+    "filesSha256": {
+      "README.md": "d58f094333cfc1c4dd7444763d0d4900fa12102545f64c28d5689920da5f1793",
+      "adapter_config.json": "caddd7cee4ba510b73088fa191db872b6a1947f023ae35bc5b6f64a3e5b5b584",
+      "adapter_model.safetensors": "544f198727df29a629cd9ae4540a221adb27cdb390116d8ddb7b03a302da832b"
+    },
+    "trainingSourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+    "updates": 60
+  },
+  "historicalAuthoritiesRebound": false,
+  "historicalFitSource": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "implementation": "Add only the fixed resolved association sibling root to the worker bootstrap; existing learning/geo roots and preadmission/guard/child/legacy routes unchanged.",
+  "importAudit": {
+    "child": "model_isolation.bootstrap fixed stage code/services/geo and code/scripts/usp/learning; staged association_student derives its own association sibling root from resolved __file__. Relative geo package/native package imports use existing runtime boundary paths; no additional bare script imports identified in reload route.",
+    "host": "association_student -> preadmit_rank -> fragment_rank_reload.accepted_fit_files -> stage_adapter -> stage_baseline; fixed association sibling root covers both lazy siblings. model_isolation remains on fixed scripts/usp/learning root.",
+    "nativeChildExecuted": false
+  },
+  "limitations": "CPU proof qualifies full real host admission only. Guard/child/native reload/resources/cleanup/quality remain unrun. A separately reviewed coordinator final-head native packet is required. Real sealed adapter/checkpoint bytes were parsed by unchanged stdlib validators; no native load or tensor doubles.",
+  "observedSettings": {
+    "model": null,
+    "reasoning": null,
+    "tier": null
+  },
+  "ownedEvidence": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-worker-bootstrap-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-worker-bootstrap-code-v1.md"
+  ],
+  "ownedSources": [
+    "scripts/usp/learning/association/association_student.py",
+    "scripts/usp/learning/association/test_fragment_rank_reload.py"
+  ],
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca",
+  "receiptIndexPath": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\receipt-index.json",
+  "receipts": {
+    "code-checks.json": {
+      "bytes": 31883,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\code-checks.json",
+      "sha256": "438bd602447da7cbaa15b68630a6512d4119f9299282be7628d71d1123cad56b"
+    },
+    "controls-1.command.json": {
+      "bytes": 1598,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\controls-1.command.json",
+      "sha256": "d19065ae43ece138a481179c84f8c7039a355f105690b8cd15d32b0289122abf"
+    },
+    "controls-1.stderr.txt": {
+      "bytes": 267,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\controls-1.stderr.txt",
+      "sha256": "6eeb59b33e5877c29e4a74ad3bc21e759d8234d33d0782b3d926dc54d7a7a27c"
+    },
+    "controls-1.stdout.txt": {
+      "bytes": 0,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\controls-1.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "disabled-boundary.json": {
+      "bytes": 2031,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\disabled-boundary.json",
+      "sha256": "2c94a5f44f695cf4d5697822f3a3e61570ffa631150ecd7a240ff61f71eba975"
+    },
+    "disabled.stderr.txt": {
+      "bytes": 2202,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\disabled.stderr.txt",
+      "sha256": "22ff9e8b2c0a0cf9ba141ab4dadcf184adf5c2c1fd98cdba9f8dabeeb1183bc7"
+    },
+    "disabled.stdout.txt": {
+      "bytes": 0,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\disabled.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "isolated-worker-controls.json": {
+      "bytes": 15707,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\isolated-worker-controls.json",
+      "sha256": "01affc31b5412c8d8f23721e4c6d86d6f07acce3071674ea288f8bc97eec0dad"
+    },
+    "positive-boundary.json": {
+      "bytes": 2994,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\positive-boundary.json",
+      "sha256": "eebbcbc132f7fac9641007b589f821638369372a2924d97ee5affbc6edd47c76"
+    },
+    "positive.stderr.txt": {
+      "bytes": 0,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\positive.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "positive.stdout.txt": {
+      "bytes": 0,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\positive.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "preflight.json": {
+      "bytes": 15953,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\preflight.json",
+      "sha256": "74cf5ec7bf5deca549b8f93b0b0a71673b3db619026797f968092ee19ab11f64"
+    },
+    "worker-main-boundary.py": {
+      "bytes": 2937,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\worker-main-boundary.py",
+      "sha256": "a3c42489fcbc8ae45fcd1c2f1fe9303613b596635d8cf048adffe1769033bf97"
+    }
+  },
+  "recordedAtUtc": "2026-10-04T13:28:25.160405+00:00",
+  "requestedSettings": {
+    "model": "gpt-6.1-sol",
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Same isolated-bootstrap failure family recurred in worker positive admission; existing sole learner retains ownership and must verify the full affected route.",
+    "reasoning": "xhigh",
+    "requiredSpeed": "default/standard1x"
+  },
+  "retainedStageAuthorities": {
+    "retained-freeze": {
+      "bytes": 15458,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\inputs\\run-freeze.json",
+      "physicalSha256": "0f31863e0c3dd30a316c6d84401909fbb8cb25e5897f9132b40ed358c4d2a1b8"
+    },
+    "retained-profile": {
+      "bytes": 2704501,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\profile.json",
+      "physicalSha256": "a954f3d12ab76f72b84f9a13b96fb8e8720a4edfca48ffd49cad2cf8a7684487"
+    },
+    "retained-stageJson": {
+      "bytes": 7340,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\stage.json",
+      "physicalSha256": "b86508712772c3cec9ff75632230f3af5f84e4f4f0d89fb18b4a77b6a733fbb9"
+    }
+  },
+  "retainedStageUnchanged": true,
+  "runtimeSourcePins": {
+    "bytes": 17642,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-worker-bootstrap-code-v1-0b32376fc78c4278adff7e95d4ba2dca\\execution-sources.json",
+    "sha256": "f8c722af20305c3de45f5c875ae0ed281cb3580d0041a536551afc09015043f1"
+  },
+  "scope": {
+    "aclJobPerformed": false,
+    "expectationsEvaluationTeacherOpened": false,
+    "fitOptimizerScoresComparison": false,
+    "guardBodyPerformed": false,
+    "nativeModelGpuPerformed": false,
+    "positiveNativePacketAuthored": false,
+    "stagePerformed": false
+  },
+  "suppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "task": "STUDENT-41-FRAGMENT-RANK-RELOAD-WORKER-BOOTSTRAP-CODE",
+  "version": "student-fragment-rank-reload-worker-bootstrap-code-evidence/1"
+}
