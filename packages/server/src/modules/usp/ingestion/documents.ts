@@ -58,8 +58,8 @@ function receipt(ctx:Awaited<ReturnType<typeof documentSourceTx>>,jobId:string){
   return DocumentReceiptSchema.parse({version:DOCUMENT_VERSION,caseId:ctx.current.id,caseRevision:ctx.current.revision,
     sourceId:ctx.source.id,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,bytes:Number(ctx.source.bytes),jobId});
 }
-export async function readDocumentResult(input:DocumentInput,resultHash:string):Promise<DocumentResult>{
-  const bytes=await readObject(documentResultKey(input.jobId,resultHash));
+export async function readDocumentResult(input:DocumentInput,resultHash:string,read:typeof readObject=readObject):Promise<DocumentResult>{
+  const bytes=await read(documentResultKey(input.jobId,resultHash));
   if(bytes.length>DOCUMENT_LIMITS.resultBytes || sha256(bytes)!==resultHash)throw new AppError(422,'DOCUMENT_RESULT_INTEGRITY','The stored extraction result failed its exact hash/size check.');
   const result=DocumentResultSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
   if(fingerprint(result.input)!==fingerprint(input))throw new AppError(422,'DOCUMENT_RESULT_SCOPE','The extraction result has different source/job pins.');
