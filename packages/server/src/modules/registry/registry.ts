@@ -997,4 +997,4 @@ export async function registryQuery(
   };
 }
 // Called by the explicit import flow; the caller already owns the site lock.
-export { reserveRecord, siteFrom };
+export { reserveRecord, siteFrom, recordFrom };
