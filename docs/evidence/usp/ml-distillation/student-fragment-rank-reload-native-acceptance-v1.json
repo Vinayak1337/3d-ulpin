@@ -1,0 +1,203 @@
+{
+  "aggregate": {
+    "candidates": 7,
+    "contextLimitedEmptyRequests": 2,
+    "exactRequestSets": 1,
+    "expectedPositive": 1,
+    "falsePositives": 0,
+    "families": 1,
+    "misses": 1,
+    "positiveRecall": 0.0,
+    "precision": null,
+    "requests": 2,
+    "selected": 0,
+    "truePositives": 0,
+    "unsupportedRequestFalsePositives": 0,
+    "validCompleteVectors": 2
+  },
+  "baselineMargins": [
+    -0.265625,
+    -0.71875,
+    -0.703125,
+    -0.609375,
+    -1.640625,
+    -2.296875,
+    -2.859375
+  ],
+  "cachedExpectations": {
+    "bytes": 2663,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-v1-host-87df6028012d4c24b9518e1e502e4b0f\\expectations-read-once.json",
+    "physicalSha256": "e16c759d13c00f963e9d602900a0566bb5f620f2f3cc1553c426f6580eed378b"
+  },
+  "cause": "Unestablished. Decreasing six-epoch training NLL and more-negative development margins warrant class-specific train-loss/data/objective diagnosis; not a proven imbalance, label or optimization cause.",
+  "checkedReferences": {
+    "bytes": 17322,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-42-native-reload-quality-review-v1-b0fb2826e7e44d66bcad4962cd17c63f\\checked-references.json",
+    "physicalSha256": "3ddd4fbf7a6590c86f64d9f33addcee1be2fdb405103ab9d4aff4548dc8bd44b"
+  },
+  "consumedChecks": {
+    "acceptedOutputArtifacts": 15,
+    "adapterParameters": 540672,
+    "completeProfileMap": 19708,
+    "coordinatorModelRuns": 0,
+    "coordinatorTests": 0,
+    "freshStages": 1,
+    "fullRuntimeModelInventoryRepeated": false,
+    "guardsResourcesCleanupPassed": true,
+    "hostComparisons": 1,
+    "identicalBaselineFocuses": 7,
+    "nativeExactAdapterTensors": 96,
+    "nativeRuns": 1,
+    "originalExpectationsReadsByCoordinator": 0,
+    "originalExpectationsReadsByOwner": 1,
+    "originalInputPins": 29,
+    "physicalAndGitSourceEquality": true,
+    "references": 60,
+    "sourceFiles": 40,
+    "unchangedOriginalBaseTensors": 290
+  },
+  "coordinatorReview": {
+    "bytes": 19425,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-42-native-reload-quality-review-v1-b0fb2826e7e44d66bcad4962cd17c63f\\review.json",
+    "physicalSha256": "e7d7a3eeab6773bd6f03851e8ccb0aedad20386d6f1fbd1763e339a8466afa5f"
+  },
+  "evaluationOpened": false,
+  "executionHead": "9e1782a98252542d02440022f8680535f4ee0080",
+  "failureRecoveryResearch": {
+    "bytes": 3398,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-42-native-reload-quality-review-v1-b0fb2826e7e44d66bcad4962cd17c63f\\failure-recovery-research.json",
+    "physicalSha256": "bfcd04b3b699900b27b5caec30854d1cbad3650dab19253df47fae6bd40c149f"
+  },
+  "finalization": {
+    "bytes": 3439,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-16aa04f3861d47cfb5352a5508da7532\\finalization.json",
+    "physicalSha256": "26b07ce6251ae0958b46255535d08d3af62a7ce79a2faf2054e5828da83a0664"
+  },
+  "historicalTrainingSourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "hostComparison": {
+    "bytes": 13027,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-v1-host-87df6028012d4c24b9518e1e502e4b0f\\comparison.json",
+    "physicalSha256": "408d5ac5047021d7cce58e073461110230ef05cd85fc3e259244ea8d58309392"
+  },
+  "hostIndex": {
+    "bytes": 1912,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-v1-host-87df6028012d4c24b9518e1e502e4b0f\\receipt-index.json",
+    "physicalSha256": "91c2bb218a97183e9b3fe856df94374654a00af3c49b5191c634c22df93be5ff"
+  },
+  "hostReceipt": {
+    "bytes": 8035,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-v1-host-87df6028012d4c24b9518e1e502e4b0f\\host-receipt.json",
+    "physicalSha256": "d8381b911049a2b8e0dd861a65b0daacea73c283b530f48a35f0b361e2bac207"
+  },
+  "interpretation": "Exact adapter/base/token/scorer/guard/output/resource/cleanup integrity passes. Both requests produce valid empty selections; one supported fragment is missed, exactsets1/2,precision null,recall0,unsupportedFP0. Declared quality target fails; technical success does not authorize promotion.",
+  "margins": [
+    -8.15625,
+    -7.171875,
+    -8.140625,
+    -1.625,
+    -8.109375,
+    -8.578125,
+    -9.125
+  ],
+  "nativeProof": {
+    "acceptedFitSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c",
+    "adapterFilesSha256": {
+      "README.md": "d58f094333cfc1c4dd7444763d0d4900fa12102545f64c28d5689920da5f1793",
+      "adapter_config.json": "caddd7cee4ba510b73088fa191db872b6a1947f023ae35bc5b6f64a3e5b5b584",
+      "adapter_model.safetensors": "544f198727df29a629cd9ae4540a221adb27cdb390116d8ddb7b03a302da832b"
+    },
+    "adapterMerged": false,
+    "allParametersFrozen": true,
+    "baseAfter": {
+      "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+      "tensorCount": 290
+    },
+    "baseBefore": {
+      "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44",
+      "tensorCount": 290
+    },
+    "baseUnchanged": true,
+    "evalOnly": true,
+    "fitPerformedInThisProcess": false,
+    "loadedEqualsSavedEqualsCheckpointMasters": true,
+    "native": true,
+    "optimizerCreated": false,
+    "passed": true,
+    "savedTensorsExact": true,
+    "tensorCount": 96,
+    "trainableParameters": 540672,
+    "trainingSourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+    "version": "association-fragment-rank-native-reload-proof/1"
+  },
+  "nextDecision": "STUDENT-43 CPU-only retained-evidence diagnosis; no further fit/reload/inference or original expectation read authorized.",
+  "observedSettings": {
+    "effort": null,
+    "model": null,
+    "tier": null
+  },
+  "originalTechnicalAcceptance": {
+    "bytes": 13753,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-16aa04f3861d47cfb5352a5508da7532\\technical-acceptance.json",
+    "physicalSha256": "64eabfd7118ef33eac79b02138297bca592f7c67618a6ef6109c1c2d3e28b132"
+  },
+  "preserved": "All original inputs/stages/labels/source hashes/splits/base/60-update342-contribution fit/checkpoints/adapter/failure history, frozen guards and limits. ML source remains off staging.",
+  "promotionAuthorized": false,
+  "qualification": "Two development requests/seven candidates from one tiny family only, after training on provisional labels marked needs_independent_review. No generalization, independent truth, official association, canonical linkage, held-out evaluation, promotion or release qualification. Deterministic vector/threshold/projection validity does not establish learned relevance. Empty means no_support_in_supplied_context, never property-wide absence.",
+  "qualityAccepted": false,
+  "recordedAtUtc": "2026-10-04T14:31:45.692429+00:00",
+  "reportingRecovery": "Two owner report/display checks failed and were corrected against unchanged results. Coordinator exploratory read used a nonexistent descriptive fit filename, then corrected to actual fit-result.json; no native/test repetition. A separate packet-scope inspection also guessed the baseline receipt prefix for a historical fit. Directory inventory identified association_adapter-fit; corrected without model execution or receipt edits.",
+  "requestedSettings": {
+    "effort": "xhigh",
+    "model": "gpt-6.1-sol",
+    "speed": "default/standard1x"
+  },
+  "resources": {
+    "boundsPassed": true,
+    "childOnlySeconds": null,
+    "childPid": 43764,
+    "childPidAbsentConfirmedByTool": true,
+    "cleanupOnlySeconds": null,
+    "gpuSamples": 18,
+    "guardElapsedSeconds": 130.14100000000326,
+    "hostRunWallSeconds": 300.3065721000021,
+    "maxCudaAllocatedBytes": 1289467904,
+    "maxCudaReservedBytes": 1344274432,
+    "minimumSampledFreeCudaBytes": 6045040640,
+    "modelLoadSectionSeconds": 1.997531800006982,
+    "modelSectionSeconds": 3.646534600004088,
+    "outsideGuardInterpretation": "derived wall difference includes host admission/profile verification and return overhead; not a separately measured phase",
+    "outsideGuardIntervalSeconds": 170.16557209999883,
+    "peakJobCommittedBytes": 5004173312,
+    "peakProcessRssBytes": 3225501696,
+    "perFocusForwardSeconds": [
+      0.3933521999861114,
+      0.14167319997795857,
+      0.14330729999346659,
+      0.1431620999937877,
+      0.0909444999997504,
+      0.09001889999490231,
+      0.0885755000053905
+    ],
+    "rssMethod": "50ms actual Job-member RSS/peak working sets",
+    "stageSeconds": 137.16008699999657,
+    "unexposedTimings": "Child-only and cleanup-only durations unexposed; no inferred speedup."
+  },
+  "suppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "task": "STUDENT-42-FRAGMENT-RANK-RELOAD",
+  "teacher": "Idle/blind; no development/evaluation material or task sent.",
+  "technicalAccepted": true,
+  "technicalIndex": {
+    "bytes": 13014,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-16aa04f3861d47cfb5352a5508da7532\\receipt-index.json",
+    "physicalSha256": "12a3956b22cc8eb032213c29f7ead829633ad25ea9ca238b3c74e036e0ec2324"
+  },
+  "technicalRecovery": {
+    "bytes": 31016,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-16aa04f3861d47cfb5352a5508da7532\\technical-recovery.json",
+    "physicalSha256": "ca8405e4f812f591fd84ef205c2c10f0660546c97ebd368d0a8e9fc930c4465e"
+  },
+  "version": "student-fragment-rank-native-reload-acceptance/1"
+}
