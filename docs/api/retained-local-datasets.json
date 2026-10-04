@@ -1109,7 +1109,31 @@
       "Later release workstream must retain model-specific attribution and assess the intended use; these observations qualify local parser development only.",
       "No analytical geometry, operational truth, learning labels or release qualification."
     ],
-    "acquisitionTimeBasis": "retained file write timestamp; acquisition command succeeded, HTTP headers not retained"
+    "acquisitionTimeBasis": "retained file write timestamp; acquisition command succeeded, HTTP headers not retained",
+    "canonicalNativeObservation": {
+      "handoff": "docs/evidence/usp/gltf-api-handoff.md",
+      "receiptSha256": "7e745251f11e42eb63852137d6133f36b39b53f70a54a23c58d10ac8cbdc5f52",
+      "executionCommit": "1c6abd4ac3d1c5df202c4ec147129fb659664d04",
+      "profile": "gltf-local-inspection/1",
+      "scope": "Canonical retain/job/status/artifact/original/replay/retry with actual bounded native execution and disclosed SQL/storage doubles; live HTTP/persistence unqualified",
+      "representation": "context_mesh",
+      "registryAdmission": false,
+      "learningLabels": false,
+      "limitations": [
+        "Graphics test_only samples, no operational property facts.",
+        "No composed world transform/global placement, canonical identity, measurements, accuracy or rights.",
+        "Original missing external companions remain unfetched; no universal-format or release qualification."
+      ],
+      "result": {
+        "status": "completed",
+        "nodes": 2,
+        "primitives": 1,
+        "positions": 24,
+        "indices": 36,
+        "artifactBytes": 5775,
+        "artifactSha256": "3640eeb9cdeb91cef30caa9af3e94f89fddaf6000e2c685ebac250d8d0329ebe"
+      }
+    }
   },
   {
     "id": "khronos-cesium-box-gltf-20261001",
@@ -1155,7 +1179,31 @@
       "Later release workstream must retain model-specific attribution and assess the intended use; these observations qualify local parser development only.",
       "No analytical geometry, operational truth, learning labels or release qualification."
     ],
-    "acquisitionTimeBasis": "retained file write timestamp; acquisition command succeeded, HTTP headers not retained"
+    "acquisitionTimeBasis": "retained file write timestamp; acquisition command succeeded, HTTP headers not retained",
+    "canonicalNativeObservation": {
+      "handoff": "docs/evidence/usp/gltf-api-handoff.md",
+      "receiptSha256": "7e745251f11e42eb63852137d6133f36b39b53f70a54a23c58d10ac8cbdc5f52",
+      "executionCommit": "1c6abd4ac3d1c5df202c4ec147129fb659664d04",
+      "profile": "gltf-local-inspection/1",
+      "scope": "Canonical retain/job/status/artifact/original/replay/retry with actual bounded native execution and disclosed SQL/storage doubles; live HTTP/persistence unqualified",
+      "representation": "context_mesh",
+      "registryAdmission": false,
+      "learningLabels": false,
+      "limitations": [
+        "Graphics test_only samples, no operational property facts.",
+        "No composed world transform/global placement, canonical identity, measurements, accuracy or rights.",
+        "Original missing external companions remain unfetched; no universal-format or release qualification."
+      ],
+      "result": {
+        "status": "partial",
+        "positions": 0,
+        "indices": 0,
+        "missingCompanion": "Box0.bin",
+        "companionFetched": false,
+        "artifactBytes": 4532,
+        "artifactSha256": "992c6ad19fb4c4e7efc23a5cd24babde2cde3acb7889a71ff30fcd2af553a8bb"
+      }
+    }
   },
   {
     "id": "retained-document-image-png-20261001",

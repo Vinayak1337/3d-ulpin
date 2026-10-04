@@ -92,12 +92,15 @@ const preGeoParquetReadCodeSha=new Set(["d6ff578327b1edc6906f862fb559f0d573507a6
 // PACK1-PDF-04: exact 1c024959 Git/LF and captured physical code aggregates.
 // Immutable reads only; current full inventory/non-code pins and strict writers remain mandatory.
 const prePacketPdfReadCodeSha=new Set(["3908950565f0bf139c38d07c57b21eb5873e6acd60798457374f4e699b13c670","0dbd6d0f053968be658d456cdfb1d521e36d096244ef8bb926d91276d4d0b384"]);
+// GLTF-02: exact 0311fa08 Git/LF and observed pre-glTF staging physical code.
+// Immutable reads only; full current inventory/non-code pins and strict writers remain.
+const preGltfReadCodeSha=new Set(["6443d8f0b3fa7f1a9e5c97a5bcc0df7858e2b29f1808260aca55643e651b6233","357bc91b6b59623dce9162ad5063dbc89244980600632b5f6b00c9a23ea37e4d"]);
 export function dxfReadToolsCompatible(stored:DXFToolPins,current:DXFToolPins){
   const old=DXFToolPinsSchema.safeParse(stored),live=DXFToolPinsSchema.safeParse(current);
   if(!old.success||!live.success)return false;
   if(fingerprint(old.data)===fingerprint(live.data))return true;
   const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
-  if(prePacketPdfReadCodeSha.has(oldCode)){
+  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)){
     const actualCode=fingerprint(DXF_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
     return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
   }
