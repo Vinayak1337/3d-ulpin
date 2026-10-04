@@ -6,14 +6,15 @@ import {GEOPARQUET_LIMITS,GeoParquetResultSchema,type GeoParquetInput,type GeoPa
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {isDXFProtectedSource,dxfSourceTx,dxfStatusTx,dxfResultKey,dxfResultBytes,dxfArtifactKey} from './dxf';
-import {isGeoParquetProtectedSource,geoparquetSourceTx,geoparquetStatusTx,geoparquetResultKey,
+import {isGeoParquetProtectedSource,geoparquetSourceTx,geoparquetStatusTx,geoparquetStatusAuthorityTx,geoparquetResultKey,
   geoparquetResultBytes,geoparquetArtifactKey,type GeoParquetReadOptions} from './geoparquet';
 import {assertDXFReadTools} from './dxf-config';
 import {assertGeoParquetReadTools} from './geoparquet-config';
 import {readFusionObject,fusionJson,fusionLive,type FusionBudget} from './source-fusion-authority';
 
 export type SufficiencyPlanarDependencies={read?:typeof readFusionObject;dxfTools?:typeof assertDXFReadTools;
-  geoparquetTools?:typeof assertGeoParquetReadTools};
+  geoparquetTools?:typeof assertGeoParquetReadTools;geoparquetStatus?:typeof geoparquetStatusTx;
+  geoparquetAuthority?:typeof geoparquetStatusAuthorityTx};
 export type SufficiencyPlanarOptions={dependencies?:SufficiencyPlanarDependencies;budget?:FusionBudget};
 const budgetForRead=():FusionBudget=>({deadlineAt:Date.now()+SUFFICIENCY_PLANAR_LIMITS.readMs,
   signal:AbortSignal.timeout(SUFFICIENCY_PLANAR_LIMITS.readMs),reservedBytes:0});
@@ -21,6 +22,22 @@ const budgetForRead=():FusionBudget=>({deadlineAt:Date.now()+SUFFICIENCY_PLANAR_
 const authorityFingerprint=(value:unknown)=>fingerprint(JSON.parse(JSON.stringify(value,(_key,item)=>typeof item==='bigint'?item.toString():item)));
 const otherMarkers=['documentOriginal','ifcOriginal','objOriginal','gltfOriginal','cityjsonOriginal','kmlOriginal','citygmlOriginal','rasterOriginal','pointOriginal'];
 const otherProfiles=new Set(['ifc-native-v1','obj-native-v1','gltf-native-v1','cityjson-native-v1','kml-native-v1','citygml-native-v1']);
+type GeoParquetStatus=Awaited<ReturnType<typeof geoparquetStatusTx>>;
+/** Only an independently captured SQL/input authority can support this outage
+ * outcome. No result is admitted when canonical status cannot verify tools. */
+async function planarGeoParquetStatus<T extends GeoParquetStatus>(captured:T,validate:()=>Promise<GeoParquetStatus>){
+  if(captured.stale)return {row:captured,unavailableCode:null};
+  try{
+    const current=await validate(),base={ctx:captured.ctx,job:captured.job,input:captured.input};
+    if(authorityFingerprint({ctx:current.ctx,job:current.job,input:current.input})!==authorityFingerprint(base))
+      conflict('The GeoParquet authority changed during status validation.');
+    return {row:{...captured,stale:current.stale},unavailableCode:null};
+  }catch(error){
+    if(error instanceof AppError&&error.status===503&&error.code.startsWith('GEOPARQUET_'))
+      return {row:captured,unavailableCode:error.code};
+    throw error;
+  }
+}
 /** Cache verified receipt data, never SQL authority. After capture closes a new
  * parent/input/hash/size refuses instead of starting I/O under final locks. */
 export function planarGeoParquetReceiptCache(budget:FusionBudget,read:typeof readFusionObject=readFusionObject){
@@ -73,10 +90,15 @@ export async function sufficiencyPlanarEvidenceTx(client:PoolClient,captured:Rec
     deadlineAt:budget.deadlineAt,signal:budget.signal,readResult:receiptCache.read};
   const latestJob=async()=> (await client.query(`SELECT id FROM jobs WHERE case_id=$1 AND source_id=$2 AND operation=$3 ORDER BY created_at DESC,id LIMIT 1`,
     [source.current.id,source.source.id,kind+'-native'])).rows[0];
-  const status=async(jobId:string,lock=false)=>kind==='dxf'
-    ?dxfStatusTx(client,source.current.id,source.source.id,jobId,lock)
-    :geoparquetStatusTx(client,source.current.id,source.source.id,jobId,lock,readOptions);
-  const latest=await latestJob(),row=latest?await status(latest.id):null;
+  const status=async(jobId:string,lock=false)=>{
+    if(kind==='dxf')return {row:await dxfStatusTx(client,source.current.id,source.source.id,jobId,lock),unavailableCode:null};
+    fusionLive(budget);
+    const captured=await (deps.geoparquetAuthority??geoparquetStatusAuthorityTx)(client,source.current.id,source.source.id,jobId,lock);
+    fusionLive(budget);
+    return planarGeoParquetStatus(captured,()=>
+      (deps.geoparquetStatus??geoparquetStatusTx)(client,source.current.id,source.source.id,jobId,lock,readOptions));
+  };
+  const latest=await latestJob(),statusResult=latest?await status(latest.id):null,row=statusResult?.row??null;
   const toolCheck=()=>{fusionLive(budget);if(row){if(kind==='dxf')
     (deps.dxfTools??assertDXFReadTools)(row.input.tools,budget.deadlineAt);
     else (deps.geoparquetTools??assertGeoParquetReadTools)(row.input.tools,budget.deadlineAt);}fusionLive(budget);};
@@ -86,7 +108,8 @@ export async function sufficiencyPlanarEvidenceTx(client:PoolClient,captured:Rec
   if(row){
     const error=row.job.error;code=typeof error==='string'?error.slice(0,100):typeof error?.code==='string'?error.code.slice(0,100):null;
     state=row.stale?'stale':row.job.status==='queued'?'pending':row.job.status==='running'?'running':row.job.status==='succeeded'?'inspected_metadata':'failed';
-    if(!row.stale&&row.job.status==='succeeded'){
+    if(statusResult?.unavailableCode){state='unavailable';tools='unavailable';code=statusResult.unavailableCode;}
+    else if(!row.stale&&row.job.status==='succeeded'){
       try{toolCheck();tools='current';}catch(error){
         if(error instanceof AppError&&error.status===503){state='unavailable';tools='unavailable';code=error.code;}else throw error;
       }
@@ -107,19 +130,19 @@ export async function sufficiencyPlanarEvidenceTx(client:PoolClient,captured:Rec
         sourceUnits:'native_artifact_not_read'}});
   if(Buffer.byteLength(JSON.stringify(processing))>SUFFICIENCY_PLANAR_LIMITS.receiptBytes)
     throw new AppError(413,'SUFFICIENCY_PLANAR_METADATA_LIMIT','The complete planar metadata exceeds the sufficiency receipt ceiling. No fields were omitted.');
-  const authority={source,row},recordPins=row?[SufficiencyPlanarJobPinSchema.parse({authority:'job',id:row.job.id,
-    revision:Number(row.job.accepted_fence??0),sha256:fingerprint(row.job)})]:[];
+  const parent=row&&'parent' in row?row.parent:null,authority={source,statusResult},
+    recordPins=[row?.job,parent?.job].filter(Boolean).map(job=>SufficiencyPlanarJobPinSchema.parse({authority:'job',id:job.id,
+      revision:Number(job.accepted_fence??0),sha256:fingerprint(job)}));
   const revalidate=async(lock=false)=>{
     fusionLive(budget);
     const currentSource=await sufficiencyPlanarOriginalTx(client,captured,lock),currentLatest=await latestJob(),
-      currentRow=currentLatest?await status(currentLatest.id,lock):null;
-    if(authorityFingerprint({source:currentSource,row:currentRow})!==authorityFingerprint(authority))
+      currentStatus=currentLatest?await status(currentLatest.id,lock):null;
+    if(authorityFingerprint({source:currentSource,statusResult:currentStatus})!==authorityFingerprint(authority))
       conflict('The planar case, source, latest job, result or accepted attempt changed during inspection.');
     if(tools==='current')toolCheck();fusionLive(budget);
   };
   receiptCache.close();await revalidate();
   // Lead takes these complete job locks in sorted order before revalidate(true).
-  const parent=kind==='geoparquet'?(row?.input as GeoParquetInput|undefined)?.continuation?.jobId:undefined,
-    jobIds=[...new Set([row?.job.id,parent].filter((id):id is string=>typeof id==='string'))].sort();
+  const jobIds=[...new Set(recordPins.map(pin=>pin.id))].sort();
   return {processing,recordPins,jobIds,evidenceSha256:authorityFingerprint({authority,processing}),revalidate};
 }
