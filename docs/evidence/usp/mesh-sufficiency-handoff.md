@@ -1,5 +1,7 @@
 # SUFFICIENCY-MESH-01 — retained OBJ/glTF task decisions
 
+Lead acceptance, 4 October: code/handoff integrate as `e98f0b84` / `fa8532b9`. Review checks protected original markers, accepted job/result/attempt/tool bounds, metadata-only coverage, final case/source recapture, canonical locks and unchanged geometry/question policies;23 exact physical references and6 separate Git/LF code representations match. Worker3/3 focused controls are reused without another known stale-reader/native campaign. Lead publishes controller/operation wording, both source catalogues and API/client schemas; final publication checks are recorded in the migration ledger. glTF current-success metadata remains unqualified; OBJ positive journeys and glTF stale retention remain disclosed controls.
+
 Delivered from exact published base `d7474442bc1378c7d68791d3e3e57533a4ba659a` in exclusive `C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin`, branch `task/desktop-mesh-sufficiency`. Code/check commit `e31a4dfc2668a1e67d7734e1bc98bb8191e3f0d8`. Completed `task/desktop-reviewed-obj-citations@211bc3893cfe94efb125bbfb225de3778fd24a2c` is preserved. Staging remained read-only. Requested GPT-6.1 Sol/xhigh/default-standard1x; supplied never/danger-full-access. Actual per-turn model/effort/tier are unexposed.
 
 ## Delivered behavior

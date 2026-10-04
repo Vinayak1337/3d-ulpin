@@ -1643,6 +1643,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/registry-records/{recordId}/revisions/{revision}/document-citations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read exact committed citations under current private source and target authority */
+        get: operations["GET_api_v1_registry_records_recordId_revisions_revision_document_citations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/evidence/survey-report/context": {
         parameters: {
             query?: never;
@@ -3310,7 +3327,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Evaluate bounded source-pinned tasks without qualifying geometry or rights */
+        /** Evaluate bounded source-pinned tasks including retained OBJ/glTF originals and inspect_native_context accepted metadata; preserve partial companions and unavailable/stale readers without qualifying geometry or rights */
         post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_sufficiency"];
         delete?: never;
         options?: never;
@@ -3325,7 +3342,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read bounded current decisions and class questions from retained evidence receipts */
+        /** Read bounded current decisions and class questions from retained evidence receipts, including native mesh metadata states and current source/job/access revalidation */
         get: operations["GET_api_v1_ingestion_cases_caseId_needs_input"];
         put?: never;
         post?: never;
@@ -30595,6 +30612,2569 @@ export interface components {
             /** @enum {string} */
             learningQualification: "not_assessed";
         };
+        GET_registry_records_recordId_revisions_revision_document_citations_Response_200_application_json: {
+            /** @enum {string} */
+            version: "registry-record-evidence/1";
+            /** Format: uuid */
+            recordId: string;
+            /** Format: uuid */
+            siteId: string;
+            /** @enum {string} */
+            recordKind: "building" | "floor" | "space";
+            recordRevision: number;
+            recordBodySha256: string;
+            siteRevision: number;
+            currentRecordRevision: number;
+            currentSiteRevision: number;
+            /** @enum {string} */
+            snapshotState: "current" | "historical";
+            citations: ({
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-document-citation/1";
+                    /** Format: uuid */
+                    partId: string;
+                    partSha256: string;
+                    locator: {
+                        label: string;
+                        page?: number;
+                        row?: number;
+                        line?: number;
+                        lineEnd?: number;
+                        paragraph?: number;
+                        table?: number;
+                        column?: number;
+                        headerRow?: number;
+                        sheet?: string;
+                        sheetIndex?: number;
+                        sheetId?: number;
+                        cell?: string;
+                        /** @enum {string} */
+                        cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                        cellType?: string;
+                        /** Format: uuid */
+                        unitId?: string;
+                        unitSha256?: string;
+                        segmentIndex?: number;
+                        segmentCount?: number;
+                        characterStart: number;
+                        characterEnd: number;
+                    };
+                };
+                part: {
+                    /** Format: uuid */
+                    id: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    text: string;
+                    sha256: string;
+                    locator: {
+                        label: string;
+                        page?: number;
+                        row?: number;
+                        line?: number;
+                        lineEnd?: number;
+                        paragraph?: number;
+                        table?: number;
+                        column?: number;
+                        headerRow?: number;
+                        sheet?: string;
+                        sheetIndex?: number;
+                        sheetId?: number;
+                        cell?: string;
+                        /** @enum {string} */
+                        cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                        cellType?: string;
+                        /** Format: uuid */
+                        unitId?: string;
+                        unitSha256?: string;
+                        segmentIndex?: number;
+                        segmentCount?: number;
+                        characterStart: number;
+                        characterEnd: number;
+                    };
+                    /** @enum {string} */
+                    method: "native_text";
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-document-ocr-citation/1";
+                    resultBytes: number;
+                    ocrSelection: {
+                        page: number;
+                        region?: (number)[];
+                    };
+                    ocrConfigSha256: string;
+                    itemOrdinal: number;
+                    itemSha256: string;
+                    itemLocator: {
+                        label: string;
+                        /** @enum {string} */
+                        method: "ocr:docling-tesseract-cli-full-page" | "ocr:tesseract-cli-sparse-tsv";
+                        sourcePageBoxes: {
+                            pageNumber: number;
+                            /** @enum {string} */
+                            frame: "pdf_display_page_top_left_points";
+                            box: (number)[];
+                            /** @enum {string} */
+                            derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
+                        }[];
+                    };
+                    ocr: {
+                        sourceSha256: string;
+                        sourceRevision: number;
+                        sourcePage: number;
+                        requestedRegion: (number)[] | null;
+                        sourcePageFrame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            /** @enum {number} */
+                            rotation: 0;
+                            width: number;
+                            height: number;
+                        } | null;
+                        /** @enum {string} */
+                        method: "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned" | "ocr:tesseract-cli-5.5.1:sparse-tsv-v1";
+                        /** @enum {string} */
+                        toolStatus: "complete" | "partial" | "failed" | "unavailable";
+                        /** @enum {string} */
+                        outputStatus: "complete" | "partial" | "failed";
+                        /** @enum {string} */
+                        textCompleteness: "unverified";
+                        issues: string[];
+                        execution?: {
+                            maxSeconds: number;
+                            exitCode: number | null;
+                            receiptSha256: string | null;
+                            candidateSha256: string | null;
+                            worker: {
+                                exitCode: number;
+                                stopReason: string | null;
+                                elapsedSeconds: number;
+                                peakObservedRssBytes: number;
+                                peakJobPrivateBytes: number | null;
+                                /** @enum {boolean} */
+                                gatedStart: true;
+                                logSha256: string;
+                            } | null;
+                        };
+                    };
+                };
+                item: {
+                    text: string;
+                    label: string;
+                    /** @enum {string} */
+                    method: "ocr:docling-tesseract-cli-full-page" | "ocr:tesseract-cli-sparse-tsv";
+                    sourcePageBoxes: {
+                        pageNumber: number;
+                        /** @enum {string} */
+                        frame: "pdf_display_page_top_left_points";
+                        box: (number)[];
+                        /** @enum {string} */
+                        derivedFrom: "docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin" | "tesseract_tsv_pixels_via_mupdf_pixel_origin";
+                    }[];
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-ifc-citation/1";
+                    identityAssertion?: {
+                        globalId: string;
+                        attributeSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        attributeLocator: {
+                            [key: string]: unknown;
+                        };
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        confirmedAt: string;
+                    };
+                    resultBytes: number;
+                    ifc: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "ulpin-native-ifc/1";
+                        stepId: number;
+                        /** @enum {string} */
+                        entityType: "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        locator: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        attributeLocators: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
+                };
+                record: {
+                    stepId: number;
+                    entityType: string;
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    locator: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    attributes: {
+                        [key: string]: unknown;
+                    };
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-dxf-citation/1";
+                    resultBytes: number;
+                    dxf: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "dxf-native-inspection/1";
+                        selectionSha256: string;
+                        entityOrdinal: number;
+                        entityType: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        handle: {
+                            [key: string]: unknown;
+                        };
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        locator: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
+                };
+                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                entity: {
+                    [key: string]: unknown;
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-kml-citation/1";
+                    resultBytes: number;
+                    kml: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "kml-native-inspection/1";
+                        selectionSha256: string;
+                        /** @enum {string} */
+                        container: "kml" | "kmz";
+                        member: {
+                            path: string;
+                            ordinal: number;
+                            sha256: string;
+                            bytes: number;
+                        } | null;
+                        xmlSha256: string;
+                        /** @enum {string} */
+                        inspectionStatus: "inspected" | "partial";
+                        /** @enum {string} */
+                        documentProfile: "kml_2_2" | "unnamespaced_feature_fragment";
+                        /** @enum {string} */
+                        horizontalReference: "kml_specification" | "unknown";
+                        featureOrdinal: number;
+                        featureType: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        sourceId: {
+                            [key: string]: unknown;
+                        };
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        locator: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
+                };
+                /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                feature: {
+                    [key: string]: unknown;
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-citygml-citation/1";
+                    resultBytes: number;
+                    citygml: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "ulpin-native-citygml/1";
+                        selectionSha256: string;
+                        sourceContextSha256: string;
+                        /** @enum {string} */
+                        inspectionStatus: "available" | "partial";
+                        buildingOrdinal: number;
+                        elementOrdinal: number;
+                        sourceKey: string;
+                        /** @enum {string} */
+                        buildingType: "Building" | "BuildingPart";
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        nativeId: {
+                            [key: string]: unknown;
+                        };
+                        recordPointer: string;
+                        recordSha256: string;
+                        fragmentSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        locator: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
+                };
+                fragment: {
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    kind: "citygml";
+                    summary: {
+                        /** @enum {string} */
+                        schemaVersion: "ulpin-native-citygml/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        citygmlVersion: "2.0";
+                        /** @enum {string} */
+                        encodingProfile: "XML 1.0 UTF-8";
+                        /** @enum {string} */
+                        scope: "source_native_literal_inventory";
+                        /** @enum {string} */
+                        status: "available" | "partial";
+                        elementCount: number;
+                        buildingAndPartCount: number;
+                        coordinateDeclarationCount: number;
+                        decodedCoordinateValueCount: number;
+                        referenceCount: number;
+                        unsupportedElementCount: number;
+                        unresolvedReferenceCount: number;
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {string} */
+                        validity: "not_assessed";
+                        /** @enum {string} */
+                        canonicalIdentity: "not_assessed";
+                        /** @enum {boolean} */
+                        analyticEligible: false;
+                        /** @enum {boolean} */
+                        registryAdmission: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_and_sorted_building_ordinals";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    source: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    parser: {
+                        [key: string]: unknown;
+                    };
+                    namespaces: {
+                        [key: string]: unknown;
+                    }[];
+                    sourceContext: {
+                        elements: {
+                            [key: string]: unknown;
+                        }[];
+                        coordinates: {
+                            [key: string]: unknown;
+                        }[];
+                        identifiers: {
+                            [key: string]: unknown;
+                        }[];
+                        references: {
+                            [key: string]: unknown;
+                        }[];
+                    };
+                    buildings: {
+                        elements: {
+                            [key: string]: unknown;
+                        }[];
+                        coordinates: {
+                            [key: string]: unknown;
+                        }[];
+                        identifiers: {
+                            [key: string]: unknown;
+                        }[];
+                        references: {
+                            [key: string]: unknown;
+                        }[];
+                        ordinal: number;
+                        key: string;
+                        pointer: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                        recordSha256: string;
+                        fragmentSha256: string;
+                    }[];
+                    findings: {
+                        [key: string]: unknown;
+                    }[];
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    semantics: {
+                        [key: string]: unknown;
+                    };
+                    coverage: {
+                        selectedBuildings: number;
+                        availableNativeBuildings: number;
+                        /** @enum {string} */
+                        scope: "selected_building_literal_subtrees_and_separate_nonbuilding_source_context";
+                        /** @enum {string} */
+                        unselectedBuildings: "not_expanded";
+                        /** @enum {string} */
+                        opaqueContent: "literal_only";
+                        /** @enum {string} */
+                        referenceResolution: "not_performed";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-geoparquet-citation/1";
+                    resultBytes: number;
+                    geoparquet: {
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        /** @enum {string} */
+                        profile: "usp-native-geoparquet/1";
+                        selectionSha256: string;
+                        sourceContextSha256: string;
+                        fragmentSha256: string;
+                        /** @enum {string} */
+                        inspectionStatus: "available" | "partial" | "unsupported";
+                        window: {
+                            totalRows: number;
+                            requestedStartRowIndex: number;
+                            requestedRows: number;
+                            returnedRows: number;
+                            coordinateValues: number;
+                            /** @enum {string} */
+                            status: "available" | "unsupported";
+                            nextRowIndex: number | null;
+                            truncated: boolean;
+                            prefixRowsOmitted: number;
+                            scannedBatchRows?: number;
+                            prefixRowsScannedInSelectedGroups?: number;
+                            /** @enum {string} */
+                            stopReason?: "row_window" | "coordinate_budget" | "end_of_file";
+                        };
+                        enrolledSelection: {
+                            startRowIndex: number;
+                            rowCount: number;
+                        };
+                        continuation: {
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            artifactSha256: string;
+                            nextRowIndex: number;
+                            inputSha256: string;
+                            acceptedFence: number;
+                        } | null;
+                        rowIndex: number;
+                        ordinal: number;
+                        rowGroupIndex: number;
+                        rowIndexInGroup: number;
+                        sourceKey: string;
+                        recordPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        columnLocators: {
+                            [key: string]: unknown;
+                        };
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                    };
+                };
+                fragment: {
+                    /** @enum {string} */
+                    kind: "geoparquet";
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    summary: {
+                        /** @enum {string} */
+                        format: "usp-native-geoparquet/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        scope: "source_native_literal_inventory";
+                        /** @enum {string} */
+                        profileStatus: "supported" | "unsupported";
+                        profileReasons: string[];
+                        /** @enum {string} */
+                        geoMetadataState: "absent" | "null" | "declared" | "conflicting" | "unsupported";
+                        /** @enum {string} */
+                        status: "available" | "partial" | "unsupported";
+                        window: {
+                            totalRows: number;
+                            requestedStartRowIndex: number;
+                            requestedRows: number;
+                            returnedRows: number;
+                            coordinateValues: number;
+                            /** @enum {string} */
+                            status: "available" | "unsupported";
+                            nextRowIndex: number | null;
+                            truncated: boolean;
+                            prefixRowsOmitted: number;
+                            scannedBatchRows?: number;
+                            prefixRowsScannedInSelectedGroups?: number;
+                            /** @enum {string} */
+                            stopReason?: "row_window" | "coordinate_budget" | "end_of_file";
+                        };
+                        columnCount: number;
+                        rowGroupCount: number;
+                        unsupportedGeometryCells: number;
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {string} */
+                        validity: "not_assessed";
+                        /** @enum {string} */
+                        canonicalIdentity: "not_assessed";
+                        /** @enum {boolean} */
+                        analyticEligible: false;
+                        /** @enum {boolean} */
+                        registryAdmission: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_window_parent_and_sorted_row_indices";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    enrolledSelection: {
+                        startRowIndex: number;
+                        rowCount: number;
+                    };
+                    continuation: {
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        artifactSha256: string;
+                        nextRowIndex: number;
+                        inputSha256: string;
+                        acceptedFence: number;
+                    } | null;
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    source: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    reader: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    schema: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    geoMetadata: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    profile: {
+                        [key: string]: unknown;
+                    };
+                    rowGroups: {
+                        [key: string]: unknown;
+                    }[];
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    semantics: {
+                        [key: string]: unknown;
+                    };
+                    rows: {
+                        rowIndex: number;
+                        ordinal: number;
+                        rowGroupIndex: number;
+                        rowIndexInGroup: number;
+                        key: string;
+                        pointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    coverage: {
+                        selectedRows: number;
+                        availableNativeRows: number;
+                        totalSourceRows: number;
+                        /** @enum {string} */
+                        scope: "explicit_row_records_and_exact_window_metadata";
+                        /** @enum {string} */
+                        unselectedRows: "not_expanded";
+                        /** @enum {string} */
+                        continuationRowsFetch: "not_performed";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-raster-metadata-citation/1";
+                    resultBytes: number;
+                    raster: {
+                        /** @enum {string} */
+                        profile: "raster-window/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        window: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                        };
+                        metadataSha256: string;
+                        selectionSha256: string;
+                        fragmentSha256: string;
+                        /** @enum {string} */
+                        metadataPointer: "/metadata";
+                        coverage: {
+                            /** @enum {number} */
+                            selectedWindows: 1;
+                            /** @enum {string} */
+                            scope: "exact_accepted_window_metadata";
+                            /** @enum {string} */
+                            pixelContent: "not_read";
+                            /** @enum {string} */
+                            otherWindows: "not_fetched";
+                            /** @enum {string} */
+                            artifactVerification: "accepted_receipt_reference_only";
+                            /** @enum {string} */
+                            geometryQualification: "not_assessed";
+                            /** @enum {string} */
+                            propertyMatching: "unsupported";
+                        };
+                    };
+                };
+                fragment: {
+                    /** @enum {string} */
+                    kind: "raster";
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    key: string;
+                    /** @enum {string} */
+                    pointer: "/metadata";
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    metadataSha256: string;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_window_and_metadata";
+                    metadata: {
+                        sourceWidth: number;
+                        sourceHeight: number;
+                        sourceBands: number;
+                        sourceTransform: (number)[];
+                        windowTransform: (number)[];
+                        sourceCrsWkt: string | null;
+                        sourceCrsAuthority: string | null;
+                        verticalReference: string | null;
+                        /** @enum {string} */
+                        verticalReferenceStatus: "known" | "unknown";
+                        resolution: (number)[];
+                        window: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                        };
+                        nativeBounds: (number)[];
+                        bands: {
+                            index: number;
+                            dtype: string;
+                            nodata: number | null;
+                            /** @enum {string} */
+                            nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
+                            maskedPixels: number;
+                            validPixels: number;
+                        }[];
+                        /** @enum {string} */
+                        globalPlacement: "not_qualified";
+                    };
+                    coverage: {
+                        /** @enum {number} */
+                        selectedWindows: 1;
+                        /** @enum {string} */
+                        scope: "exact_accepted_window_metadata";
+                        /** @enum {string} */
+                        pixelContent: "not_read";
+                        /** @enum {string} */
+                        otherWindows: "not_fetched";
+                        /** @enum {string} */
+                        artifactVerification: "accepted_receipt_reference_only";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                };
+            } | {
+                pin: {
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-point-metadata-citation/1";
+                    resultBytes: number;
+                    point: {
+                        /** @enum {string} */
+                        profile: "point-batch/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        batch: {
+                            start: number;
+                            count: number;
+                        };
+                        metadataSha256: string;
+                        selectionSha256: string;
+                        fragmentSha256: string;
+                        /** @enum {string} */
+                        metadataPointer: "/metadata";
+                        coverage: {
+                            /** @enum {number} */
+                            selectedBatches: 1;
+                            /** @enum {string} */
+                            scope: "exact_accepted_batch_metadata";
+                            /** @enum {string} */
+                            pointRecords: "not_read";
+                            /** @enum {string} */
+                            otherBatches: "not_fetched";
+                            /** @enum {string} */
+                            artifactVerification: "accepted_receipt_reference_only";
+                            /** @enum {string} */
+                            geometryQualification: "not_assessed";
+                            /** @enum {string} */
+                            propertyMatching: "unsupported";
+                        };
+                    };
+                };
+                fragment: {
+                    /** @enum {string} */
+                    kind: "point";
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    key: string;
+                    /** @enum {string} */
+                    pointer: "/metadata";
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    metadataSha256: string;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_batch_and_metadata";
+                    metadata: {
+                        /** @enum {string} */
+                        lasVersion: "1.4";
+                        /** @enum {number} */
+                        pointFormatId: 6;
+                        /** @enum {number} */
+                        recordLength: 30;
+                        /** @enum {string} */
+                        recordEncoding: "las-1.4-point-format-6-le";
+                        dimensions: string[];
+                        sourcePointCount: number;
+                        scale: (number)[];
+                        offset: (number)[];
+                        sourceBounds: (number)[];
+                        crsWkt: string | null;
+                        horizontalAuthority: string | null;
+                        verticalReference: string | null;
+                        /** @enum {string} */
+                        verticalReferenceStatus: "known" | "unknown";
+                        /** @enum {string} */
+                        gpsTimeType: "standard" | "week_time";
+                        batch: {
+                            start: number;
+                            count: number;
+                        };
+                        recordFields: {
+                            name: string;
+                            offset: number;
+                            dtype: string;
+                            bytes: number;
+                        }[];
+                        /** @enum {string} */
+                        globalPlacement: "not_qualified";
+                    };
+                    coverage: {
+                        /** @enum {number} */
+                        selectedBatches: 1;
+                        /** @enum {string} */
+                        scope: "exact_accepted_batch_metadata";
+                        /** @enum {string} */
+                        pointRecords: "not_read";
+                        /** @enum {string} */
+                        otherBatches: "not_fetched";
+                        /** @enum {string} */
+                        artifactVerification: "accepted_receipt_reference_only";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                };
+            } | {
+                pin: {
+                    resultBytes: number;
+                    survey: {
+                        /** @enum {string} */
+                        purpose: "source_reference_only";
+                        /** @enum {string} */
+                        profile: "lp360-control-point-table19/1";
+                        key: string;
+                        rowSha256: string;
+                        fragmentSha256: string;
+                        row: {
+                            ordinal: number;
+                            pointIdentifier: string;
+                            /** @enum {string} */
+                            pointType: "nva" | "pid";
+                            enabled: boolean;
+                            /** @enum {string|null} */
+                            statusLiteral: "Turned Off" | null;
+                            statusCitation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            } | null;
+                            quote: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            };
+                            fields: {
+                                literal: string;
+                                /** @enum {string} */
+                                state: "stated" | "unavailable";
+                                value: number | string | (null);
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                                /** @enum {string} */
+                                field: "Name" | "Description" | "Type" | "Control X" | "Control Y" | "Control Z" | "H Offset" | "Accuracy X" | "Accuracy Y" | "Accuracy Z" | "Measured X" | "Measured Y" | "Surface Z" | "Z Location" | "Delta X" | "Delta Y" | "Delta XY" | "Delta Z" | "Delta XYZ";
+                                /** @enum {string} */
+                                role: "identity" | "survey_control" | "source_offset" | "published_control_error" | "product_coordinate" | "source_location" | "published_residual";
+                                /** @enum {string} */
+                                unitAxis: "none" | "horizontal" | "vertical" | "combined";
+                            }[];
+                        };
+                        partSha256: string;
+                        locator: {
+                            label: string;
+                            page?: number;
+                            row?: number;
+                            line?: number;
+                            lineEnd?: number;
+                            paragraph?: number;
+                            table?: number;
+                            column?: number;
+                            headerRow?: number;
+                            sheet?: string;
+                            sheetIndex?: number;
+                            sheetId?: number;
+                            cell?: string;
+                            /** @enum {string} */
+                            cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                            cellType?: string;
+                            /** Format: uuid */
+                            unitId?: string;
+                            unitSha256?: string;
+                            segmentIndex?: number;
+                            segmentCount?: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                        horizontalUnits: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        verticalUnits: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        /** @enum {string} */
+                        tableStatus: "complete" | "incomplete";
+                        qualification: {
+                            /** @enum {string} */
+                            coordinateFrame: "needs_input";
+                            /** @enum {string} */
+                            heightLinkage: "needs_input";
+                            /** @enum {string} */
+                            surveyEpoch: "needs_input";
+                            /** @enum {string} */
+                            objectCorrespondence: "needs_input";
+                            /** @enum {string} */
+                            comparison: "not_assessed";
+                            /** @enum {string} */
+                            accuracy: "not_assessed";
+                            /** @enum {string} */
+                            learningSplit: "not_assessed";
+                        };
+                        warnings: string[];
+                    };
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-survey-row-citation/1";
+                };
+                fragment: {
+                    /** @enum {string} */
+                    kind: "survey_report";
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    binding: "context_only";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @enum {string} */
+                    capability: "selected_survey_rows";
+                    /** @enum {string} */
+                    state: "needs_input";
+                    /** @enum {string} */
+                    profile: "lp360-control-point-table19/1";
+                    /** @enum {string} */
+                    characterOffsets: "part-local-utf16-end-exclusive";
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_and_sorted_row_ordinals";
+                    /** @enum {string} */
+                    rowHashBasis: "accepted_pin_and_exact_typed_row";
+                    report: {
+                        title: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        };
+                        lp360Version: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        };
+                        generatedTime: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        surfaceMethod: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        horizontalUnits: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        verticalUnits: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                    };
+                    table: {
+                        /** @enum {string} */
+                        status: "complete" | "incomplete";
+                        header: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        end: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        declaredTotal: number | null;
+                        observedRows: number;
+                        parsedRows: number;
+                        parsedEnabledRows: number;
+                        parsedDisabledRows: number;
+                        unparsedRowCount: number;
+                    };
+                    rows: {
+                        key: string;
+                        rowSha256: string;
+                        row: {
+                            ordinal: number;
+                            pointIdentifier: string;
+                            /** @enum {string} */
+                            pointType: "nva" | "pid";
+                            enabled: boolean;
+                            /** @enum {string|null} */
+                            statusLiteral: "Turned Off" | null;
+                            statusCitation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            } | null;
+                            quote: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            };
+                            fields: {
+                                literal: string;
+                                /** @enum {string} */
+                                state: "stated" | "unavailable";
+                                value: number | string | (null);
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                                /** @enum {string} */
+                                field: "Name" | "Description" | "Type" | "Control X" | "Control Y" | "Control Z" | "H Offset" | "Accuracy X" | "Accuracy Y" | "Accuracy Z" | "Measured X" | "Measured Y" | "Surface Z" | "Z Location" | "Delta X" | "Delta Y" | "Delta XY" | "Delta Z" | "Delta XYZ";
+                                /** @enum {string} */
+                                role: "identity" | "survey_control" | "source_offset" | "published_control_error" | "product_coordinate" | "source_location" | "published_residual";
+                                /** @enum {string} */
+                                unitAxis: "none" | "horizontal" | "vertical" | "combined";
+                            }[];
+                        };
+                    }[];
+                    coverage: {
+                        requestedRows: number;
+                        selectedRows: number;
+                        selectedEnabledRows: number;
+                        selectedDisabledRows: number;
+                        unselectedParsedRows: number;
+                        /** @enum {string} */
+                        scope: "explicit_row_ordinals_and_cited_report_metadata";
+                        /** @enum {string} */
+                        wholeTable: "inspected_for_completeness";
+                        /** @enum {string} */
+                        unselectedRows: "not_expanded";
+                        /** @enum {string} */
+                        unparsedRows: "not_expanded; inspect_full_survey_report_context";
+                    };
+                    publishedSummary: {
+                        horizontalMeasured: number | null;
+                        verticalMeasured: number | null;
+                        withheld: number | null;
+                        total: number | null;
+                        quotes: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        }[];
+                    };
+                    publishedStatistics: {
+                        /** @enum {string} */
+                        section: "First Component Error" | "Second Component Error" | "Product Accuracy";
+                        /** @enum {string} */
+                        label: "RMSE" | "Max" | "Min" | "Mean" | "Median" | "StdDev" | "#CPs Used";
+                        axes: ("X" | "Y" | "Z" | "R(XY)" | "3D(XYZ)")[];
+                        values: {
+                            literal: string;
+                            /** @enum {string} */
+                            state: "stated" | "unavailable";
+                            value: number | string | (null);
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        }[];
+                        header: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        };
+                        quote: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        };
+                    }[];
+                    statements: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                        /** @enum {string} */
+                        kind: "disclaimer" | "source_role" | "withholding";
+                    }[];
+                    gaps: {
+                        code: string;
+                        action: string;
+                    }[];
+                    qualification: {
+                        /** @enum {string} */
+                        coordinateFrame: "needs_input";
+                        /** @enum {string} */
+                        heightLinkage: "needs_input";
+                        /** @enum {string} */
+                        surveyEpoch: "needs_input";
+                        /** @enum {string} */
+                        objectCorrespondence: "needs_input";
+                        /** @enum {string} */
+                        comparison: "not_assessed";
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {string} */
+                        learningSplit: "not_assessed";
+                    };
+                    parts: {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        text: string;
+                        sha256: string;
+                        locator: {
+                            label: string;
+                            page?: number;
+                            row?: number;
+                            line?: number;
+                            lineEnd?: number;
+                            paragraph?: number;
+                            table?: number;
+                            column?: number;
+                            headerRow?: number;
+                            sheet?: string;
+                            sheetIndex?: number;
+                            sheetId?: number;
+                            cell?: string;
+                            /** @enum {string} */
+                            cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                            cellType?: string;
+                            /** Format: uuid */
+                            unitId?: string;
+                            unitSha256?: string;
+                            segmentIndex?: number;
+                            segmentCount?: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                        /** @enum {string} */
+                        method: "native_text";
+                    }[];
+                    warnings: string[];
+                };
+            } | {
+                pin: {
+                    resultBytes: number;
+                    gltf: {
+                        /** @enum {string} */
+                        purpose: "source_reference_only";
+                        /** @enum {string} */
+                        profile: "gltf-local-inspection/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        nodeIndex: number;
+                        sourceKey: string;
+                        recordPointer: string;
+                        recordSha256: string;
+                        fragmentSha256: string;
+                        selectionSha256: string;
+                        selectedNodeIndices: number[];
+                        sourceSelectionSha256: string;
+                        /** @description Exact full combined context verified at the original officer amendment; subsequent disclosure revalidates attached source references, not an association or continued applicability of uncited context. */
+                        combinedContextSha256: string;
+                        /** @enum {string} */
+                        representation: "context_mesh";
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @enum {string} */
+                        placement: "unknown";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {boolean} */
+                        measurements: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                    };
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-gltf-node-citation/1";
+                };
+                fragment: {
+                    /** @enum {string} */
+                    kind: "gltf";
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    representation: "context_mesh";
+                    summary: {
+                        /** @enum {string} */
+                        schemaVersion: "gltf-local-inspection/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        status: "inspected_local" | "inspected_partial";
+                        /** @enum {string} */
+                        geometryProjectionStatus: "available" | "partial" | "unavailable";
+                        /** @enum {string} */
+                        representation: "context_mesh";
+                        selectedSceneIndex: number | null;
+                        /** @enum {string} */
+                        selectedSceneOrigin: "source" | "caller" | "absent";
+                        nodeCount: number;
+                        primitiveCount: number;
+                        projectedPositions: number;
+                        projectedIndices: number;
+                        missingCompanionCount: number;
+                        unsupportedPrimitiveCount: number;
+                        /** @enum {string} */
+                        globalPlacement: "unknown";
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {string} */
+                        validity: "not_assessed";
+                        /** @enum {string} */
+                        canonicalIdentity: "not_assessed";
+                        /** @enum {boolean} */
+                        analyticEligible: false;
+                        /** @enum {boolean} */
+                        registryAdmission: false;
+                        /** @enum {boolean} */
+                        measurements: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_and_sorted_node_indices";
+                    /** @enum {string} */
+                    recordHashBasis: "canonical_json_of_exact_native_artifact_record";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    asset: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    jsonLocator: {
+                        [key: string]: unknown;
+                    };
+                    chunks: {
+                        [key: string]: unknown;
+                    }[];
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    selectedScene: {
+                        [key: string]: unknown;
+                    };
+                    selectedSceneDeclaration: {
+                        /** @enum {string} */
+                        state: "absent";
+                    } | {
+                        /** @enum {string} */
+                        state: "declared";
+                        scene: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                    nodes: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                        index: number;
+                        key: string;
+                        parentReferences: {
+                            nodeIndex: number;
+                            pointer: string;
+                            childOrdinal: number;
+                            childIndex: number;
+                        }[];
+                    }[];
+                    meshes: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    primitives: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        metadata: {
+                            [key: string]: unknown;
+                        };
+                        metadataSha256: string;
+                        omittedArrays: {
+                            /** @enum {string} */
+                            role: "POSITION" | "indices";
+                            artifactPointer: string;
+                            /** @enum {string} */
+                            state: "present" | "absent" | "null";
+                            count: number | null;
+                            valueSha256: string | null;
+                        }[];
+                    }[];
+                    accessors: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    bufferViews: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    buffers: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    resources: {
+                        materials: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        textures: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        images: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        samplers: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        skins: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        cameras: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        animationChannels: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        animationSamplers: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                    };
+                    extensions: {
+                        required: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                        used: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                        inventory: {
+                            [key: string]: unknown;
+                        }[];
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    qualification: {
+                        [key: string]: unknown;
+                    };
+                    coverage: {
+                        selectedNodes: number;
+                        availableNativeNodes: number;
+                        /** @enum {string} */
+                        scope: "explicit_nodes; incident_core_declarations_and_reference_literals";
+                        /** @enum {string} */
+                        unselectedNodes: "not_expanded";
+                        /** @enum {string} */
+                        geometryArrays: "omitted; exact artifact pointers and canonical array hashes retained";
+                        /** @enum {string} */
+                        transformComposition: "not_performed";
+                        /** @enum {string} */
+                        externalResources: "not_fetched";
+                        /** @enum {string} */
+                        opaqueContent: "literal_only; extension_references_not_resolved";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                };
+            } | {
+                pin: {
+                    resultBytes: number;
+                    obj: {
+                        /** @enum {string} */
+                        purpose: "source_reference_only";
+                        /** @enum {string} */
+                        profile: "utf8-literal-polygons/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        polygonIndex: number;
+                        sourceKey: string;
+                        recordPointer: string;
+                        recordSha256: string;
+                        span: {
+                            byteStart: number;
+                            byteEnd: number;
+                            lineStart: number;
+                            lineEnd: number;
+                            spanSha256: string;
+                        };
+                        fragmentSha256: string;
+                        selectionSha256: string;
+                        selectedPolygonIndices: number[];
+                        sourceSelectionSha256: string;
+                        /** @description Exact full combined context verified at the original officer amendment; subsequent disclosure revalidates attached references, not continued applicability of uncited context. */
+                        combinedContextSha256: string;
+                        /** @enum {string} */
+                        representation: "context_mesh";
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @enum {string} */
+                        placement: "unknown";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {boolean} */
+                        measurements: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                    };
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-obj-polygon-citation/1";
+                };
+                fragment: {
+                    /** @enum {string} */
+                    kind: "obj";
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    representation: "context_mesh";
+                    summary: {
+                        /** @enum {string} */
+                        schemaVersion: "obj-source-context/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        status: "inspected_local" | "inspected_partial";
+                        /** @enum {string} */
+                        geometryProjectionStatus: "available" | "partial" | "unavailable";
+                        /** @enum {string} */
+                        representation: "context_mesh";
+                        vertexCount: number;
+                        textureCount: number;
+                        normalCount: number;
+                        polygonCount: number;
+                        faceReferenceCount: number;
+                        eligiblePolygonCount: number;
+                        declarationCount: number;
+                        unsupportedStatementCount: number;
+                        missingCompanionDeclarationCount: number;
+                        /** @enum {string} */
+                        axes: "unknown";
+                        /** @enum {string} */
+                        units: "unknown";
+                        /** @enum {string} */
+                        crs: "unknown";
+                        /** @enum {string} */
+                        heightReference: "unknown";
+                        /** @enum {string} */
+                        globalPlacement: "unknown";
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {string} */
+                        validity: "not_assessed";
+                        /** @enum {string} */
+                        canonicalIdentity: "not_assessed";
+                        /** @enum {boolean} */
+                        analyticEligible: false;
+                        /** @enum {boolean} */
+                        registryAdmission: false;
+                        /** @enum {boolean} */
+                        measurements: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_and_sorted_polygon_indices";
+                    /** @enum {string} */
+                    recordHashBasis: "canonical_json_of_exact_native_artifact_record";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @enum {string} */
+                    profile: "utf8-literal-polygons/1";
+                    /** @enum {string} */
+                    encoding: "utf8" | "utf8_bom";
+                    /** @enum {string} */
+                    locatorBasis: "original-file-bytes-zero-based-end-exclusive; physical-lines-one-based";
+                    polygons: {
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                        index: number;
+                        key: string;
+                    }[];
+                    vertices: {
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                        index: number;
+                    }[];
+                    textures: {
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                        index: number;
+                    }[];
+                    normals: {
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                        index: number;
+                    }[];
+                    declarations: {
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                        declarationIndex: number;
+                    }[];
+                    resources: {
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    unsupported: {
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    qualification: {
+                        [key: string]: unknown;
+                    };
+                    coverage: {
+                        selectedPolygons: number;
+                        availableNativePolygons: number;
+                        selectedCoordinateRecords: number;
+                        selectedResourceDeclarations: number;
+                        /** @enum {string} */
+                        scope: "explicit_polygons; incident_coordinates_and_active_declarations; global_material_libraries_and_unsupported_inventory";
+                        /** @enum {string} */
+                        unselectedPolygons: "not_expanded";
+                        /** @enum {string} */
+                        externalResources: "not_fetched";
+                        /** @enum {string} */
+                        triangulation: "not_performed";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
+                };
+            } | {
+                pin: {
+                    /** @enum {string} */
+                    version: "registry-document-region-citation/1";
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        sourceBytes: number;
+                    };
+                    page: number;
+                    region: {
+                        frame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            rotation: number;
+                            width: number;
+                            height: number;
+                        };
+                        mediaBox: (number)[];
+                        cropBox: (number)[];
+                        /** @enum {string} */
+                        boxConvention: "pymupdf_page_rectangles/1";
+                        /** @enum {string} */
+                        coordinates: "displayed_cropbox_normalized_top_left/1";
+                        region: (number)[];
+                        /** @enum {boolean} */
+                        selectionAcknowledged: true;
+                    };
+                    /** @enum {string} */
+                    purpose: "record_evidence";
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    authoritySha256: string;
+                    validation: {
+                        /** @enum {string} */
+                        version: "packet-region-local/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        page: number;
+                        selection: {
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            mediaBox: (number)[];
+                            cropBox: (number)[];
+                            /** @enum {string} */
+                            boxConvention: "pymupdf_page_rectangles/1";
+                            /** @enum {string} */
+                            coordinates: "displayed_cropbox_normalized_top_left/1";
+                            region: (number)[];
+                            /** @enum {boolean} */
+                            selectionAcknowledged: true;
+                        };
+                        recipeSha256: string;
+                        renderer: {
+                            /** @enum {string} */
+                            pypdfium2: "5.13.0";
+                            /** @enum {string} */
+                            pdfium: "153.0.7999.0";
+                            /** @enum {string} */
+                            pymupdf: "1.25.5";
+                            /** @enum {string} */
+                            pillow: "12.3.0";
+                            /** @enum {string} */
+                            pdfiumSha256: "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e";
+                        };
+                        transform: {
+                            canvasPixels: (number)[];
+                            pixelRegion: (number)[];
+                            pixelToDisplay: (number)[];
+                            includedNormalizedRegion: (number)[];
+                            /** @enum {string} */
+                            rounding: "inward_complete_pixels/1";
+                        };
+                        output: {
+                            sha256: string;
+                            bytes: number;
+                            pixels: (number)[];
+                            /** @enum {string} */
+                            format: "png";
+                            /** @enum {string} */
+                            metadataPolicy: "fresh_rgb_pixels_only/1";
+                            /** @enum {string} */
+                            annotations: "excluded";
+                            /** @enum {string} */
+                            applicability: "not_assessed";
+                        };
+                    };
+                    /** @enum {string} */
+                    applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                };
+            } | {
+                pin: {
+                    /** @enum {string} */
+                    version: "registry-image-region-citation/1";
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        sourceBytes: number;
+                    };
+                    region: {
+                        frame: {
+                            /** @enum {string} */
+                            kind: "image_oriented_top_left_pixels";
+                            width: number;
+                            height: number;
+                            orientation: {
+                                exifValue: number | null;
+                                applied: number;
+                                /** @enum {string} */
+                                provenance: "source_exif" | "specification_default";
+                            };
+                        };
+                        /** @enum {string} */
+                        coordinates: "oriented_original_pixel_edges/1";
+                        region: (number)[];
+                        /** @enum {boolean} */
+                        selectionAcknowledged: true;
+                    };
+                    /** @enum {string} */
+                    purpose: "record_evidence";
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    authoritySha256: string;
+                    validation: {
+                        /** @enum {string} */
+                        version: "packet-image-region-local/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        sourceImage: {
+                            /** @enum {string} */
+                            format: "png" | "jpeg";
+                            mode: string;
+                            frame: {
+                                /** @enum {string} */
+                                kind: "image_source_top_left_pixels";
+                                width: number;
+                                height: number;
+                            };
+                            /** @enum {number} */
+                            frameCount: 1;
+                            orientation: {
+                                exifValue: number | null;
+                                applied: number;
+                                /** @enum {string} */
+                                provenance: "source_exif" | "specification_default";
+                            };
+                            densityDeclarations: {
+                                /** @enum {string} */
+                                kind: "png_phys" | "jpeg_jfif" | "exif_resolution";
+                                unitCode: number | null;
+                                x: (number)[] | null;
+                                y: (number)[] | null;
+                                /** @enum {string} */
+                                status: "supplied" | "unsupported";
+                                /** @enum {string} */
+                                qualification: "not_calibrated";
+                            }[];
+                            color: {
+                                embeddedIcc: boolean;
+                                declaredSrgb: boolean | null;
+                                /** @enum {string} */
+                                transparency: "absent" | "supplied";
+                            };
+                            /** @enum {string|null} */
+                            unsupportedReason: null;
+                        };
+                        selection: {
+                            frame: {
+                                /** @enum {string} */
+                                kind: "image_oriented_top_left_pixels";
+                                width: number;
+                                height: number;
+                                orientation: {
+                                    exifValue: number | null;
+                                    applied: number;
+                                    /** @enum {string} */
+                                    provenance: "source_exif" | "specification_default";
+                                };
+                            };
+                            /** @enum {string} */
+                            coordinates: "oriented_original_pixel_edges/1";
+                            region: (number)[];
+                            /** @enum {boolean} */
+                            selectionAcknowledged: true;
+                        };
+                        recipe: {
+                            /** @enum {string} */
+                            version: "packet-image-region-recipe/1";
+                            workerSha256: string;
+                            decoderSha256: string;
+                            supervisorSha256: string;
+                            /** @enum {string} */
+                            crop: "oriented_original_before_resampling/1";
+                            /** @enum {string} */
+                            rounding: "inward_complete_pixels/1";
+                            /** @enum {string} */
+                            metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
+                        };
+                        runtime: {
+                            python: string;
+                            pillow: string;
+                            jpegCodec: string | null;
+                            libjpegTurbo: string | null;
+                            zlibCodec: string | null;
+                            pythonSha256: string;
+                            launcherSha256: string;
+                            pillowImageSha256: string;
+                            imagingSha256: string;
+                        };
+                        transform: {
+                            includedPixelBounds: (number)[];
+                            includedOrientedRegion: (number)[];
+                            sourceToOriented: (number)[];
+                            orientedToOutput: (number)[];
+                            sourceToOutput: (number)[];
+                            outputToOriented: (number)[];
+                            /** @enum {string} */
+                            coordinateConvention: "pixel_edges/1";
+                            /** @enum {string} */
+                            rounding: "inward_complete_pixels/1";
+                            /** @enum {string} */
+                            resampling: "none" | "lanczos";
+                        };
+                        output: {
+                            sha256: string;
+                            bytes: number;
+                            pixels: (number)[];
+                            /** @enum {string} */
+                            format: "png";
+                            /** @enum {string} */
+                            mode: "RGB" | "RGBA";
+                            /** @enum {string} */
+                            colorInterpretation: "encoded_samples_unmanaged";
+                            /** @enum {string} */
+                            metadataPolicy: "fresh_rgb_or_rgba_pixels_only/1";
+                        };
+                    };
+                    /** @enum {string} */
+                    applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                };
+            })[];
+            /** @enum {string} */
+            associationState: "operator_selected";
+            /** @enum {string} */
+            qualification: "not_assessed";
+        };
         POST_usp_evidence_survey_report_context_Request_application_json: {
             document: {
                 /** Format: uuid */
@@ -56723,12 +59303,117 @@ export interface components {
                 }[];
                 processing: {
                     /** @enum {string} */
-                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required";
+                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required" | "unavailable" | "inspected_local" | "inspected_partial";
                     /** Format: uuid */
                     jobId: string | null;
                     resultSha256: string | null;
                     /** @enum {string|null} */
-                    nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error" | null;
+                    nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error" | "inspected_local" | "inspected_partial" | null;
+                    mesh?: {
+                        /** @enum {string} */
+                        kind: "obj" | "gltf";
+                        inputSha256: string | null;
+                        readerSha256: string | null;
+                        acceptedFence: number | null;
+                        /** @enum {string} */
+                        tools: "not_checked" | "current" | "unavailable";
+                        code: string | null;
+                        metadata: ({
+                            /** @enum {string} */
+                            kind: "obj";
+                            summary: {
+                                /** @enum {string} */
+                                schemaVersion: "obj-source-context/1";
+                                sourceSha256: string;
+                                sourceBytes: number;
+                                /** @enum {string} */
+                                status: "inspected_local" | "inspected_partial";
+                                /** @enum {string} */
+                                geometryProjectionStatus: "available" | "partial" | "unavailable";
+                                /** @enum {string} */
+                                representation: "context_mesh";
+                                vertexCount: number;
+                                textureCount: number;
+                                normalCount: number;
+                                polygonCount: number;
+                                faceReferenceCount: number;
+                                eligiblePolygonCount: number;
+                                declarationCount: number;
+                                unsupportedStatementCount: number;
+                                missingCompanionDeclarationCount: number;
+                                /** @enum {string} */
+                                axes: "unknown";
+                                /** @enum {string} */
+                                units: "unknown";
+                                /** @enum {string} */
+                                crs: "unknown";
+                                /** @enum {string} */
+                                heightReference: "unknown";
+                                /** @enum {string} */
+                                globalPlacement: "unknown";
+                                /** @enum {string} */
+                                accuracy: "not_assessed";
+                                /** @enum {string} */
+                                validity: "not_assessed";
+                                /** @enum {string} */
+                                canonicalIdentity: "not_assessed";
+                                /** @enum {boolean} */
+                                analyticEligible: false;
+                                /** @enum {boolean} */
+                                registryAdmission: false;
+                                /** @enum {boolean} */
+                                measurements: false;
+                                /** @enum {boolean} */
+                                learningLabels: false;
+                                /** @enum {string} */
+                                rights: "not_assessed";
+                            };
+                        } | {
+                            /** @enum {string} */
+                            kind: "gltf";
+                            summary: {
+                                /** @enum {string} */
+                                schemaVersion: "gltf-local-inspection/1";
+                                sourceSha256: string;
+                                sourceBytes: number;
+                                /** @enum {string} */
+                                status: "inspected_local" | "inspected_partial";
+                                /** @enum {string} */
+                                geometryProjectionStatus: "available" | "partial" | "unavailable";
+                                /** @enum {string} */
+                                representation: "context_mesh";
+                                selectedSceneIndex: number | null;
+                                /** @enum {string} */
+                                selectedSceneOrigin: "source" | "caller" | "absent";
+                                nodeCount: number;
+                                primitiveCount: number;
+                                projectedPositions: number;
+                                projectedIndices: number;
+                                missingCompanionCount: number;
+                                unsupportedPrimitiveCount: number;
+                                /** @enum {string} */
+                                globalPlacement: "unknown";
+                                /** @enum {string} */
+                                accuracy: "not_assessed";
+                                /** @enum {string} */
+                                validity: "not_assessed";
+                                /** @enum {string} */
+                                canonicalIdentity: "not_assessed";
+                                /** @enum {boolean} */
+                                analyticEligible: false;
+                                /** @enum {boolean} */
+                                registryAdmission: false;
+                                /** @enum {boolean} */
+                                measurements: false;
+                                /** @enum {boolean} */
+                                learningLabels: false;
+                                /** @enum {string} */
+                                rights: "not_assessed";
+                            };
+                        }) | null;
+                        /** @enum {string} */
+                        coverage: "accepted_result_metadata_only; native_artifact_not_read";
+                    };
                     /** @enum {string|null} */
                     modelStatus: "not_requested" | "disabled" | "unavailable" | "blocked" | "needs_input" | "proposed" | null;
                 } | null;
@@ -56753,7 +59438,7 @@ export interface components {
                 /** Format: uuid */
                 questionId: string | null;
                 /** @enum {string} */
-                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion";
+                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion" | "configure_reader";
                 reason: string;
                 /** Format: date-time */
                 createdAt: string;
@@ -56841,12 +59526,117 @@ export interface components {
                 }[];
                 processing: {
                     /** @enum {string} */
-                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required";
+                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required" | "unavailable" | "inspected_local" | "inspected_partial";
                     /** Format: uuid */
                     jobId: string | null;
                     resultSha256: string | null;
                     /** @enum {string|null} */
-                    nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error" | null;
+                    nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error" | "inspected_local" | "inspected_partial" | null;
+                    mesh?: {
+                        /** @enum {string} */
+                        kind: "obj" | "gltf";
+                        inputSha256: string | null;
+                        readerSha256: string | null;
+                        acceptedFence: number | null;
+                        /** @enum {string} */
+                        tools: "not_checked" | "current" | "unavailable";
+                        code: string | null;
+                        metadata: ({
+                            /** @enum {string} */
+                            kind: "obj";
+                            summary: {
+                                /** @enum {string} */
+                                schemaVersion: "obj-source-context/1";
+                                sourceSha256: string;
+                                sourceBytes: number;
+                                /** @enum {string} */
+                                status: "inspected_local" | "inspected_partial";
+                                /** @enum {string} */
+                                geometryProjectionStatus: "available" | "partial" | "unavailable";
+                                /** @enum {string} */
+                                representation: "context_mesh";
+                                vertexCount: number;
+                                textureCount: number;
+                                normalCount: number;
+                                polygonCount: number;
+                                faceReferenceCount: number;
+                                eligiblePolygonCount: number;
+                                declarationCount: number;
+                                unsupportedStatementCount: number;
+                                missingCompanionDeclarationCount: number;
+                                /** @enum {string} */
+                                axes: "unknown";
+                                /** @enum {string} */
+                                units: "unknown";
+                                /** @enum {string} */
+                                crs: "unknown";
+                                /** @enum {string} */
+                                heightReference: "unknown";
+                                /** @enum {string} */
+                                globalPlacement: "unknown";
+                                /** @enum {string} */
+                                accuracy: "not_assessed";
+                                /** @enum {string} */
+                                validity: "not_assessed";
+                                /** @enum {string} */
+                                canonicalIdentity: "not_assessed";
+                                /** @enum {boolean} */
+                                analyticEligible: false;
+                                /** @enum {boolean} */
+                                registryAdmission: false;
+                                /** @enum {boolean} */
+                                measurements: false;
+                                /** @enum {boolean} */
+                                learningLabels: false;
+                                /** @enum {string} */
+                                rights: "not_assessed";
+                            };
+                        } | {
+                            /** @enum {string} */
+                            kind: "gltf";
+                            summary: {
+                                /** @enum {string} */
+                                schemaVersion: "gltf-local-inspection/1";
+                                sourceSha256: string;
+                                sourceBytes: number;
+                                /** @enum {string} */
+                                status: "inspected_local" | "inspected_partial";
+                                /** @enum {string} */
+                                geometryProjectionStatus: "available" | "partial" | "unavailable";
+                                /** @enum {string} */
+                                representation: "context_mesh";
+                                selectedSceneIndex: number | null;
+                                /** @enum {string} */
+                                selectedSceneOrigin: "source" | "caller" | "absent";
+                                nodeCount: number;
+                                primitiveCount: number;
+                                projectedPositions: number;
+                                projectedIndices: number;
+                                missingCompanionCount: number;
+                                unsupportedPrimitiveCount: number;
+                                /** @enum {string} */
+                                globalPlacement: "unknown";
+                                /** @enum {string} */
+                                accuracy: "not_assessed";
+                                /** @enum {string} */
+                                validity: "not_assessed";
+                                /** @enum {string} */
+                                canonicalIdentity: "not_assessed";
+                                /** @enum {boolean} */
+                                analyticEligible: false;
+                                /** @enum {boolean} */
+                                registryAdmission: false;
+                                /** @enum {boolean} */
+                                measurements: false;
+                                /** @enum {boolean} */
+                                learningLabels: false;
+                                /** @enum {string} */
+                                rights: "not_assessed";
+                            };
+                        }) | null;
+                        /** @enum {string} */
+                        coverage: "accepted_result_metadata_only; native_artifact_not_read";
+                    };
                     /** @enum {string|null} */
                     modelStatus: "not_requested" | "disabled" | "unavailable" | "blocked" | "needs_input" | "proposed" | null;
                 } | null;
@@ -56871,7 +59661,7 @@ export interface components {
                 /** Format: uuid */
                 questionId: string | null;
                 /** @enum {string} */
-                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion";
+                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion" | "configure_reader";
                 reason: string;
                 /** Format: date-time */
                 createdAt: string;
@@ -69502,6 +72292,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_control_assessment_reviews_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_registry_records_recordId_revisions_revision_document_citations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                revision: number;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_registry_records_recordId_revisions_revision_document_citations_Response_200_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */

@@ -8,9 +8,11 @@ import { OfficerService } from './officer.service';
 import { BuildingLedgerController } from './building-ledger.controller';
 import { CityJSONControlAssessmentController } from './cityjson-control-assessment.controller';
 import { CityJSONControlAssessmentService } from '@ulpin/server/modules/registry/cityjson-control-assessment';
+import { RegistryRecordEvidenceController } from './record-evidence.controller';
+import { RegistryRecordEvidenceService } from '@ulpin/server/modules/registry/registry-record-evidence';
 
 @Module({
-  controllers: [RegisterController, OfficerController, BuildingLedgerController, CityJSONControlAssessmentController, CityJSONControlReviewController],
-  providers: [RegisterService, OfficerService, CityJSONControlAssessmentService, CityJSONControlReviewService],
+  controllers: [RegisterController, OfficerController, BuildingLedgerController, CityJSONControlAssessmentController, CityJSONControlReviewController, RegistryRecordEvidenceController],
+  providers: [RegisterService, OfficerService, CityJSONControlAssessmentService, CityJSONControlReviewService, RegistryRecordEvidenceService],
 })
 export class RegisterModule {}

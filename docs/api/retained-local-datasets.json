@@ -1197,6 +1197,16 @@
       "standingInstallation": false,
       "learningLabels": false,
       "qualification": "KhronosGroup/Cesium Box graphics test_only, CC BY4.0, unchanged original bytes. Source-local hierarchy/transforms/defaults remain declarations; global placement unknown. Partial Box0.bin unfetched. No measurements, property identity, rights/accuracy/learning/registry/rendering/release qualification."
+    },
+    "committedRecordEvidence": {
+      "handoff": "docs/evidence/usp/record-evidence-handoff.md",
+      "proofPath": "E:/BhuAayam-data/task-data/record-evidence-20261004-run01/verification.json",
+      "proofBytes": 5585,
+      "proofSha256": "3164c028dca36b8c3750365fdac67add74f3e9f9c2240b67fb043c0fa9282a1a",
+      "scope": "private exact committed revision disclosure; native document plus two reviewed mesh references; disclosed target/source/SQL/storage/tool controls",
+      "historicalSelection": "requested revision2 preserved after current revision3; eligible current empty",
+      "associationState": "operator_selected",
+      "qualification": "not_assessed; no live persistence/current tool/property/geometry/accuracy/rights/learning claim"
     }
   },
   {
@@ -1331,6 +1341,26 @@
       "standingInstallation": false,
       "learningLabels": false,
       "qualification": "KhronosGroup/Cesium Box graphics test_only, CC BY4.0, unchanged original bytes. Source-local hierarchy/transforms/defaults remain declarations; global placement unknown. Partial Box0.bin unfetched. No measurements, property identity, rights/accuracy/learning/registry/rendering/release qualification."
+    },
+    "taskSufficiencyEvidence": {
+      "handoff": "docs/evidence/usp/mesh-sufficiency-handoff.md",
+      "proofPath": "E:/BhuAayam-data/task-data/mesh-sufficiency-20261004-run01/verification.json",
+      "proofBytes": 9663,
+      "proofSha256": "0c95a69bf78989b95af931319224d6773dac2d63ac703ccf6f5d656fbf31a822",
+      "scope": "retained exact sources/results with disclosed SQL/storage/tool controls; no live installation/persistence",
+      "retainedOriginalTask": "complete",
+      "nativeInspectionTask": "stale under current raw reader; zero result/tool reads",
+      "qualification": "no geometry/frame/property/accuracy/rights/learning promotion"
+    },
+    "committedRecordEvidence": {
+      "handoff": "docs/evidence/usp/record-evidence-handoff.md",
+      "proofPath": "E:/BhuAayam-data/task-data/record-evidence-20261004-run01/verification.json",
+      "proofBytes": 5585,
+      "proofSha256": "3164c028dca36b8c3750365fdac67add74f3e9f9c2240b67fb043c0fa9282a1a",
+      "scope": "private exact committed revision disclosure; native document plus two reviewed mesh references; disclosed target/source/SQL/storage/tool controls",
+      "historicalSelection": "requested revision2 preserved after current revision3; eligible current empty",
+      "associationState": "operator_selected",
+      "qualification": "not_assessed; no live persistence/current tool/property/geometry/accuracy/rights/learning claim"
     }
   },
   {
@@ -2384,6 +2414,16 @@
       "qualification": "not_assessed",
       "learningLabels": false,
       "stagingObservation": "Known staging CRLF/retained LF reader and historical execution/final code differences remain; strict tools, original profiles/receipts unchanged, successful worker proof reused without native rerun."
+    },
+    "taskSufficiencyEvidence": {
+      "handoff": "docs/evidence/usp/mesh-sufficiency-handoff.md",
+      "proofPath": "E:/BhuAayam-data/task-data/mesh-sufficiency-20261004-run01/verification.json",
+      "proofBytes": 9663,
+      "proofSha256": "0c95a69bf78989b95af931319224d6773dac2d63ac703ccf6f5d656fbf31a822",
+      "scope": "retained exact sources/results with disclosed SQL/storage/tool controls; no live installation/persistence",
+      "retainedOriginalTask": "complete",
+      "nativeInspectionTask": "controlled accepted metadata; native artifact not read",
+      "qualification": "no geometry/frame/property/accuracy/rights/learning promotion"
     }
   },
   {
@@ -2574,6 +2614,16 @@
       "qualification": "not_assessed",
       "learningLabels": false,
       "stagingObservation": "Known staging CRLF/retained LF reader and historical execution/final code differences remain; strict tools, original profiles/receipts unchanged, successful worker proof reused without native rerun."
+    },
+    "taskSufficiencyEvidence": {
+      "handoff": "docs/evidence/usp/mesh-sufficiency-handoff.md",
+      "proofPath": "E:/BhuAayam-data/task-data/mesh-sufficiency-20261004-run01/verification.json",
+      "proofBytes": 9663,
+      "proofSha256": "0c95a69bf78989b95af931319224d6773dac2d63ac703ccf6f5d656fbf31a822",
+      "scope": "retained exact sources/results with disclosed SQL/storage/tool controls; no live installation/persistence",
+      "retainedOriginalTask": "complete",
+      "nativeInspectionTask": "controlled accepted metadata; native artifact not read",
+      "qualification": "no geometry/frame/property/accuracy/rights/learning promotion"
     }
   }
 ]
