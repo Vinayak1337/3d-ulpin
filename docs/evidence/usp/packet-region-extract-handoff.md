@@ -1,5 +1,41 @@
 # PACK1-CROP-01 — private selected PDF region
 
+## D04-ROI — large Haryana sheet inspection, 5 October 2026
+
+Code **`8cfa33d781caf98b31cfdb8fdef81de91b48129c`**, base `f1df80fe2e757db54c35e803b77ffba5220747ef`, branch `task/d04-large-sheet-region-preview-20261005`, same exclusive worker checkout. The existing renderer already admits these large source frames and allocates only selected-region pixels. The correction selects the accepted internal `repeatable_read_only` transaction mode in **BEGIN**, before the deadline helper's first guard SELECT. The previous late `SET TRANSACTION` failed with PostgreSQL `25001`. No renderer, controller, contract, endpoint, store or bound changed.
+
+The new regression uses the actual default service and production transaction helper with a controlled pg transport, stopping at the first source lookup before object/profile/native I/O. Its pre-correction run failed at late SET; corrected service/controller checks pass **8/8**. Existing stale/access recapture, hash/recipe/PNG/deadline and admission controls are included. `pnpm --filter @ulpin/api typecheck` and staged whitespace check exit **0**.
+
+One real caption and one actual table selection were rendered offline from unchanged retained originals:
+
+| Source / page 1 | Actual display frame (points; rotation 0) | Manual ROI (points) | PNG pixels / bytes | PNG SHA-256 |
+| --- | --- | --- | --- | --- |
+| T3-2 | 2586 × 1694 | `[1820,750,2130,825]` | 930 × 225 / 56,570 | `8bddda9ca939102e984cbf5e24f20e8debb9fbfca4e5c152c27e433bb3cc58c0` |
+| S-001 | 2585 × 3390 | `[335,980,575,1540]` | 598 × 1397 / 383,473 | `e6538342892151a8166ab6e9b13ad6f24582ea8439ea11605682d8a7517fd374` |
+
+T3-2 reuses the retained exact manual caption locator. S-001 is a **new manual selection** grounded in the retained unrotated 2136 × 2800 source preview and current source display frame; older site locators had labels and `box:null`. The actual crop visibly includes the complete UNIT DETAIL table and TOWER 3 / NO. OF FLOOR `G + 42`. Source content remains sideways despite PDF rotation 0. This observation preserves the existing conflict with central T-3 graphic `G+41`; it does not choose a winner. The caption visibly preserves `TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)`. These are manual visual observations, not OCR quote or object identity qualification.
+
+Both crops use the actual `PacketRegionService` plus the unchanged isolated loader, CLI, PDFium helper and Windows Job supervisor. The source/access authority and storage transport are **controlled from retained historical HTTP page envelopes / local original files**; the current database, private access and HTTP region route were not exercised. Gated children complete in 1.812 / 1.797 seconds, peak Job private 161,837,056 / 161,411,072 bytes; all three child receipts (including one genuine bad-frame refusal) confirm cleanup. The frame control refuses `PACKET_REGION_FRAME_MISMATCH`; selected-side cap and initial access controls stop before object/native I/O. No task-owned Python process remains. Originals and frozen runtime assets retain their exact hashes.
+
+Private outputs: `E:/BhuAayam-data/task-data/d04-large-sheet-region-preview-20261005/`. `final-proof.json` is **12,940 bytes**, SHA **`4a9634aeb4ed29c8f7ae653cf84082c2e7212a9074bcb1e60ae89ee6f438d95d`**; separate `cleanup-observation.json` records no owned process. Literal invocations/exits, supervised receipts, source/code/artifact hashes, requests, PNGs, full transforms and visual observations are retained. Source hashes remain T3-2 `2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1` and S-001 `26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9`.
+
+### Existing API and frontend handoff
+
+Use the existing **POST `/api/v1/usp/packets/sources/{sourceId}/pages/1/region`**, with `request-T3-2.json` / `request-S-001.json` in that private root as concrete bodies. They pin revision `"1"`, exact source hash, purpose `private_source_preview`, actual frame/MediaBox/CropBox, normalized region and explicit selection acknowledgement. Source IDs are `a124fb03-6ee4-4ced-8450-c67eb68dc950` / `dd295d03-6fe7-46d7-ba7c-9eb8bb84ddd6`, recorded at historical served `a9d1f960`; refresh current private metadata and authority before runtime use. A currently unsupported whole-page raster / null URL does not prevent this selected-region operation.
+
+The unchanged controller returns private/no-store RGB PNG, `X-Region-Sha256` and base64url JSON `X-Region-Provenance`. Read actual output dimensions and `transform.includedNormalizedRegion`, respecting inward complete-pixel rounding. Pixel-to-display affine `[a,b,c,d,e,f]` is:
+
+- T3-2: `[1/3,0,0,1/3,1820,750]`.
+- S-001: `[0.40052680508211963,0,0,0.4005671747607231,335.24093585373413,980.1878766394894]`.
+
+Calibration remains null; crop selection establishes neither physical measurement nor official building/floor identity, applicability, rights or learning labels. No frontend code changed.
+
+Fresh task-local native profile `owner-profile.json` is **282,995 bytes**, SHA **`9cbfd6ac113819c46c6fcbc0a0c321be1c128c070f89c0a1831c7919be19a7ac`**, 1,286 files / 117,889,236 asset bytes. It pins this physical checkout and the existing read-only interpreter `E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Scripts/python.exe`. Native versions remain pypdfium2 5.13.0 / PDFium 153.0.7999.0 / PyMuPDF 1.25.5 / Pillow 12.3.0; no dependency/cache/environment installation or mutation. Integration needs a **fresh exact integrated-checkout profile**, private scratch and the existing four `ULPIN_PACKET_REGIONS_*` configuration values. Lead owns API/source pin publication and later current HTTP/private PostgreSQL qualification. No new OpenAPI/client schema is needed for this caller-only correction.
+
+The requested bounded SET inventory reports two additional unsafe paths / three deadline scopes: `document-images.ts:49` and `registry-document-evidence.ts:891,:897`. Each uses late SET inside the same guarded deadline helper. They were returned to the lead **before extra edits** and remain outside this commit's ownership. Legitimate unbounded SET-before-first-query and SET LOCAL scopes are excluded; no database-helper redesign or project audit follows.
+
+Supplied permissions: never/danger-full-access. Sol6.1/xhigh/default-standard 1× requested, actual per-turn model/effort/tier unexposed. Staging and shared/generated files stayed read-only. No services/DB/HTTP writes, provider/model/GPU work, source acquisition, worker launch, polling/schedule, push or deployment. Task-private proof/derivatives are deliberately retained; historical branches and originals remain preserved.
+
 3 October dependency correction: lead `6b9df073` includes installed optional `defusedxml` and its distribution metadata in frozen runtime inventories. Pillow's optional import previously failed closed before the supervisor returned; no render child ran. Defusedxml 0.7.1, Christian Heimes, https://github.com/tiran/defusedxml, PSFL/retained PSF v2 licence; 26 package/cache/metadata entries are pinned. A fresh profile successfully imports the supervisor without calling it; a separate profile omitting ElementTree.py still refuses unpinned imports. Proof `E:/BhuAayam-data/task-data/packet-region-defusedxml-fix-20261003/verification.json`, SHA256 `00135b2ec16c07b974a3e98964ebe9550d62514dac300f25249032aa9be88086`. Runtime files/caps/import validation and historical profiles are unchanged. The full native/security campaign was not repeated; a real second crop remains pending the packet owner's scoped corrected attempt.
 
 2 October 2026. Code `9e74109fb74420cc6360bbcf5c0b85e18b844861` implements a **PDF-only, source-authorized extraction leaf**. An acknowledged normalized displayed-CropBox region produces a freshly encoded RGB PNG and source/hash/frame/recipe/transform provenance. The original, whole-source viewers and OCR paths are unchanged. This is PACK1's extraction prerequisite; applicability, immutable packet plans, persistence, assembly, cards/QR and release remain separate.
