@@ -10,6 +10,35 @@ Requested Sol6.1/xhigh/default-standard1×; actual per-turn model/effort/tier
 unexposed. Supplied permissions: `never` / `danger-full-access`. Staging remained
 read-only. Completed `task/desktop-record-evidence-export@ebb8fed5` is preserved.
 
+## Focused correction before integration
+
+Correction code `de8ad79996c467db649cb3ebd2a2d62a9a99f284` follows the preserved
+first return `5a37b150` → `b908a342`. Lead review at `bd0ef129` found that a
+continuation parent's tool503 occurs inside canonical status, before the leaf's
+original unavailable mapping. The lead explicitly authorized an additive
+`geoparquetStatusAuthorityTx` in the same canonical module. It captures complete
+source/case/child/direct-parent SQL/input/accepted-attempt/result authority without
+tools or object I/O; it does not validate a parent artifact/window or admit metadata.
+Raw-current and advancing-selection predicates are shared with the existing
+functions; default status/continuation readers and positive predicates remain.
+
+The leaf captures this authority before canonical status and maps only a
+GeoParquet503 to `unavailable`, unavailable tools/code and null result/summary.
+Original retention stays useful. Complete captured SQL and availability outcome
+are requeried/compared during final validation. Both child and parent now have job
+record pins and sorted lock IDs. Cached receipts never replace database authority.
+
+One targeted regression passes (1 pass,0 skip), plus server types and whitespace,
+all exit0. It uses explicitly injected capture/status availability over unchanged
+retained inputs: the actual capture remains raw-stale; only that stale outcome is
+controlled to reach the503 branch. No current accepted envelope or successful
+metadata was manufactured. Parent result-byte drift refuses409, archived source
+case refuses403, with zero receipt/artifact reads. Prior checks/proof are preserved.
+Correction proof: `E:/BhuAayam-data/task-data/planar-sufficiency-20261004-correction01/verification.json`,
+**5824 bytes**, SHA256
+`e3d84088af407162bfa17eaf40b2f9de94ec3b4603c8983246790cdcbe961d95`.
+The code digest below is updated; workflow composition/publication stays pending.
+
 ## Delivered; workflow wiring pending
 
 New independent contract `usp/sufficiency-planar.ts` provides discriminated DXF
@@ -27,7 +56,7 @@ continuation pins. Its source CRS/units remain `native_artifact_not_read`.
 Neither adapter reads artifacts, records or coordinate arrays, joins windows,
 qualifies a working frame, infers property/floor identity, or creates accuracy,
 rights, geometry or learning facts. An unavailable canonical continuation parent
-tool propagates its existing 503 refusal before disclosure.
+tool now produces unavailable processing with no parent/child metadata admission.
 
 Canonical status/input/continuation functions accept optional deadline/signal
 and typed parent-result reader; existing positional arguments/default readers
@@ -85,7 +114,7 @@ qualify schema preservation; controlled cache reads qualify bounded receipt
 handling independently of current source/reader admission.
 
 `geoparquet.ts` is a `GEOPARQUET_CODE_FILES` constituent. Actual physical current
-code digest is `939e93cfccbfb59d4d9e9e92c7bac408844f8f270247ed6c0a5ea1efbb96174c`;
+code digest after correction is `8bc17b2df2a41edfe0bb7604f3215b29cc54853e827fb058c6d946187f31284d`;
 remeasure in the integration checkout. Native reader/runtime/config files,
 strict writer identity and existing immutable-read compatibility remain unchanged;
 no hash aliases, allowlists, profile edits or native reruns. SQL/source/job/access
