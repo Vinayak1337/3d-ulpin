@@ -120,7 +120,7 @@
     },
     "settingsRequested": {
       "model": "gpt-6.1-sol",
-      "reasoning": "high",
+      "reasoning": "xhigh",
       "speed": "default/standard 1x"
     },
     "settingsObserved": "Actual per-turn model/reasoning/tier metadata unexposed"
@@ -156,6 +156,15 @@
         "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/rgb-attempt/attempt.json",
         "bytes": 10196,
         "sha256": "b087a1e741796a6942ded2533595045c66d457fe150cdfd6935d2af8c01b962b"
+      }
+    },
+    {
+      "id": "D06-RGB-PARQUET",
+      "outcome": "exact_target_not_found_in_declared_train_subset",
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/parquet-attempt/attempt.json",
+        "bytes": 24492,
+        "sha256": "cfb7b2924646ea779452bde6ea1e4114ac5419e0c9a748e6808e54476ff9c096"
       }
     }
   ],
@@ -243,6 +252,36 @@
       "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/rgb-attempt/validation.json",
       "bytes": 712,
       "sha256": "cc432551018befdb3ff59650b1db839cffe4f4f1d9a836962dad318b1b93e632"
+    },
+    "exit": 0
+  },
+  "rgbParquetRecovery": {
+    "target": "nepal-flooding_00000070_pre_disaster.png",
+    "pinnedMirrorRevision": "079adbab22aa09633dfd50ece0dd0137431a9780",
+    "datasetBytesRead": 152829,
+    "trainShardsRead": 16,
+    "filenameRowsRead": 2635,
+    "imageAcquired": false,
+    "exactTargetMatches": 0,
+    "coverage": "Seventeenth train shard and all other splits were not opened. This does not prove dataset-wide absence or justify changing the target, using another event/image, or weakening pair identity.",
+    "prerequisite": "Permitted publisher acquisition of nepal-flooding_00000070_pre_disaster.png, or an authoritative exact training-shard/row/blob index or traceable single-file original copy. No RGB obtained, so registration, class/ambiguity policy and source-copy identity remain unchecked.",
+    "privateReaderDependency": {
+      "name": "pyarrow",
+      "version": "21.0.0",
+      "scope": "private attempt packages only",
+      "wheel": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/parquet-attempt/pyarrow-21.0.0-cp312-cp312-win_amd64.whl",
+        "bytes": 26203175,
+        "sha256": "cf56ec8b0a5c8c9d7021d6fd754e688104f9ebebf1bf4449613c9531f5346a18",
+        "url": "https://files.pythonhosted.org/packages/71/30/f3795b6e192c3ab881325ffe172e526499eb3780e306a15103a2764916a2/pyarrow-21.0.0-cp312-cp312-win_amd64.whl"
+      }
+    }
+  },
+  "parquetAttemptVerification": {
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/parquet-attempt/validation.json",
+      "bytes": 1717,
+      "sha256": "b01653f9ef71d470693ce227befbc0734fdcc9d0f687f3f0464b38a1c237ba26"
     },
     "exit": 0
   }
