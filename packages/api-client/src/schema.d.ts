@@ -60616,6 +60616,7 @@ export interface components {
                 responseSha256: string;
                 modelId: string;
             } | null;
+            replayed?: boolean;
             /** @enum {string} */
             validation: "mechanics_only";
             /** @enum {boolean} */
@@ -60837,6 +60838,7 @@ export interface components {
                     responseSha256: string;
                     modelId: string;
                 } | null;
+                replayed?: boolean;
                 /** @enum {string} */
                 validation: "mechanics_only";
                 /** @enum {boolean} */
