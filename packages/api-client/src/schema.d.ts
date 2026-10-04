@@ -2332,7 +2332,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF/KML/CityGML/GeoParquet/raster-metadata/point-metadata fragments without establishing an association */
+        /** Assemble private explicitly selected accepted native document/OCR/CityJSON/IFC/DXF/KML/CityGML/GeoParquet/raster-metadata/point-metadata/survey-report fragments without establishing an association */
         post: operations["POST_api_v1_usp_evidence_source_fusion_context"];
         delete?: never;
         options?: never;
@@ -13851,6 +13851,26 @@ export interface components {
                 contextSha256: string;
                 selection: {
                     sources: ({
+                        /** @enum {string} */
+                        kind: "survey_report";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        rowOrdinals: number[];
+                    } | {
                         /** @enum {string} */
                         kind: "document";
                         pin: {
@@ -41096,6 +41116,26 @@ export interface components {
         POST_usp_evidence_source_fusion_context_Request_application_json: {
             sources: ({
                 /** @enum {string} */
+                kind: "survey_report";
+                pin: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    readerSha256: string;
+                    inputSha256: string;
+                    acceptedFence: number;
+                    resultBytes: number;
+                };
+                rowOrdinals: number[];
+            } | {
+                /** @enum {string} */
                 kind: "document";
                 pin: {
                     /** Format: uuid */
@@ -42410,6 +42450,324 @@ export interface components {
                         /** @enum {string} */
                         propertyMatching: "unsupported";
                     };
+                } | {
+                    /** @enum {string} */
+                    kind: "survey_report";
+                    pin: {
+                        caseId: unknown;
+                        caseRevision: number;
+                        sourceId: unknown;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        jobId: unknown;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    binding: "context_only";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @enum {string} */
+                    capability: "selected_survey_rows";
+                    /** @enum {string} */
+                    state: "needs_input";
+                    /** @enum {string} */
+                    profile: "lp360-control-point-table19/1";
+                    /** @enum {string} */
+                    characterOffsets: "part-local-utf16-end-exclusive";
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_and_sorted_row_ordinals";
+                    /** @enum {string} */
+                    rowHashBasis: "accepted_pin_and_exact_typed_row";
+                    report: {
+                        title: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        };
+                        lp360Version: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        };
+                        generatedTime: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        surfaceMethod: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        horizontalUnits: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        verticalUnits: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                    };
+                    table: {
+                        /** @enum {string} */
+                        status: "complete" | "incomplete";
+                        header: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        end: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        } | null;
+                        declaredTotal: number | null;
+                        observedRows: number;
+                        parsedRows: number;
+                        parsedEnabledRows: number;
+                        parsedDisabledRows: number;
+                        unparsedRowCount: number;
+                    };
+                    rows: {
+                        key: string;
+                        rowSha256: string;
+                        row: {
+                            ordinal: number;
+                            pointIdentifier: string;
+                            /** @enum {string} */
+                            pointType: "nva" | "pid";
+                            enabled: boolean;
+                            /** @enum {string|null} */
+                            statusLiteral: "Turned Off" | null;
+                            statusCitation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            } | null;
+                            quote: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            };
+                            fields: {
+                                literal: string;
+                                /** @enum {string} */
+                                state: "stated" | "unavailable";
+                                value: number | string | (null);
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                                /** @enum {string} */
+                                field: "Name" | "Description" | "Type" | "Control X" | "Control Y" | "Control Z" | "H Offset" | "Accuracy X" | "Accuracy Y" | "Accuracy Z" | "Measured X" | "Measured Y" | "Surface Z" | "Z Location" | "Delta X" | "Delta Y" | "Delta XY" | "Delta Z" | "Delta XYZ";
+                                /** @enum {string} */
+                                role: "identity" | "survey_control" | "source_offset" | "published_control_error" | "product_coordinate" | "source_location" | "published_residual";
+                                /** @enum {string} */
+                                unitAxis: "none" | "horizontal" | "vertical" | "combined";
+                            }[];
+                        };
+                    }[];
+                    coverage: {
+                        requestedRows: number;
+                        selectedRows: number;
+                        selectedEnabledRows: number;
+                        selectedDisabledRows: number;
+                        unselectedParsedRows: number;
+                        /** @enum {string} */
+                        scope: "explicit_row_ordinals_and_cited_report_metadata";
+                        /** @enum {string} */
+                        wholeTable: "inspected_for_completeness";
+                        /** @enum {string} */
+                        unselectedRows: "not_expanded";
+                        /** @enum {string} */
+                        unparsedRows: "not_expanded; inspect_full_survey_report_context";
+                    };
+                    publishedSummary: {
+                        horizontalMeasured: number | null;
+                        verticalMeasured: number | null;
+                        withheld: number | null;
+                        total: number | null;
+                        quotes: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        }[];
+                    };
+                    publishedStatistics: {
+                        /** @enum {string} */
+                        section: "First Component Error" | "Second Component Error" | "Product Accuracy";
+                        /** @enum {string} */
+                        label: "RMSE" | "Max" | "Min" | "Mean" | "Median" | "StdDev" | "#CPs Used";
+                        axes: ("X" | "Y" | "Z" | "R(XY)" | "3D(XYZ)")[];
+                        values: {
+                            literal: string;
+                            /** @enum {string} */
+                            state: "stated" | "unavailable";
+                            value: number | string | (null);
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        }[];
+                        header: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        };
+                        quote: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                        };
+                    }[];
+                    statements: {
+                        literal: string;
+                        citation: {
+                            /** Format: uuid */
+                            partId: string;
+                            line: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                        /** @enum {string} */
+                        kind: "disclaimer" | "source_role" | "withholding";
+                    }[];
+                    gaps: {
+                        code: string;
+                        action: string;
+                    }[];
+                    qualification: {
+                        /** @enum {string} */
+                        coordinateFrame: "needs_input";
+                        /** @enum {string} */
+                        heightLinkage: "needs_input";
+                        /** @enum {string} */
+                        surveyEpoch: "needs_input";
+                        /** @enum {string} */
+                        objectCorrespondence: "needs_input";
+                        /** @enum {string} */
+                        comparison: "not_assessed";
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {string} */
+                        learningSplit: "not_assessed";
+                    };
+                    parts: {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        text: string;
+                        sha256: string;
+                        locator: {
+                            label: string;
+                            page?: number;
+                            row?: number;
+                            line?: number;
+                            lineEnd?: number;
+                            paragraph?: number;
+                            table?: number;
+                            column?: number;
+                            headerRow?: number;
+                            sheet?: string;
+                            sheetIndex?: number;
+                            sheetId?: number;
+                            cell?: string;
+                            /** @enum {string} */
+                            cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                            cellType?: string;
+                            /** Format: uuid */
+                            unitId?: string;
+                            unitSha256?: string;
+                            segmentIndex?: number;
+                            segmentCount?: number;
+                            characterStart: number;
+                            characterEnd: number;
+                        };
+                        /** @enum {string} */
+                        method: "native_text";
+                    }[];
+                    warnings: string[];
                 })[];
                 association: {
                     /** @enum {string} */
@@ -42468,6 +42826,26 @@ export interface components {
                 contextSha256: string;
                 selection: {
                     sources: ({
+                        /** @enum {string} */
+                        kind: "survey_report";
+                        pin: {
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        rowOrdinals: number[];
+                    } | {
                         /** @enum {string} */
                         kind: "document";
                         pin: {
@@ -43810,6 +44188,324 @@ export interface components {
                             /** @enum {string} */
                             propertyMatching: "unsupported";
                         };
+                    } | {
+                        /** @enum {string} */
+                        kind: "survey_report";
+                        pin: {
+                            caseId: unknown;
+                            caseRevision: number;
+                            sourceId: unknown;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            jobId: unknown;
+                            resultSha256: string;
+                            readerSha256: string;
+                            inputSha256: string;
+                            acceptedFence: number;
+                            resultBytes: number;
+                        };
+                        namespace: string;
+                        /** @enum {string} */
+                        sourceSetRole: "operator_selected_fragment";
+                        /** @enum {string} */
+                        binding: "context_only";
+                        /** @enum {string} */
+                        nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @enum {string} */
+                        capability: "selected_survey_rows";
+                        /** @enum {string} */
+                        state: "needs_input";
+                        /** @enum {string} */
+                        profile: "lp360-control-point-table19/1";
+                        /** @enum {string} */
+                        characterOffsets: "part-local-utf16-end-exclusive";
+                        selectionSha256: string;
+                        /** @enum {string} */
+                        selectionHashBasis: "accepted_source_result_input_reader_fence_and_sorted_row_ordinals";
+                        /** @enum {string} */
+                        rowHashBasis: "accepted_pin_and_exact_typed_row";
+                        report: {
+                            title: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            };
+                            lp360Version: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            };
+                            generatedTime: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            } | null;
+                            surfaceMethod: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            } | null;
+                            horizontalUnits: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            } | null;
+                            verticalUnits: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            } | null;
+                        };
+                        table: {
+                            /** @enum {string} */
+                            status: "complete" | "incomplete";
+                            header: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            } | null;
+                            end: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            } | null;
+                            declaredTotal: number | null;
+                            observedRows: number;
+                            parsedRows: number;
+                            parsedEnabledRows: number;
+                            parsedDisabledRows: number;
+                            unparsedRowCount: number;
+                        };
+                        rows: {
+                            key: string;
+                            rowSha256: string;
+                            row: {
+                                ordinal: number;
+                                pointIdentifier: string;
+                                /** @enum {string} */
+                                pointType: "nva" | "pid";
+                                enabled: boolean;
+                                /** @enum {string|null} */
+                                statusLiteral: "Turned Off" | null;
+                                statusCitation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                } | null;
+                                quote: {
+                                    literal: string;
+                                    citation: {
+                                        /** Format: uuid */
+                                        partId: string;
+                                        line: number;
+                                        characterStart: number;
+                                        characterEnd: number;
+                                    };
+                                };
+                                fields: {
+                                    literal: string;
+                                    /** @enum {string} */
+                                    state: "stated" | "unavailable";
+                                    value: number | string | (null);
+                                    citation: {
+                                        /** Format: uuid */
+                                        partId: string;
+                                        line: number;
+                                        characterStart: number;
+                                        characterEnd: number;
+                                    };
+                                    /** @enum {string} */
+                                    field: "Name" | "Description" | "Type" | "Control X" | "Control Y" | "Control Z" | "H Offset" | "Accuracy X" | "Accuracy Y" | "Accuracy Z" | "Measured X" | "Measured Y" | "Surface Z" | "Z Location" | "Delta X" | "Delta Y" | "Delta XY" | "Delta Z" | "Delta XYZ";
+                                    /** @enum {string} */
+                                    role: "identity" | "survey_control" | "source_offset" | "published_control_error" | "product_coordinate" | "source_location" | "published_residual";
+                                    /** @enum {string} */
+                                    unitAxis: "none" | "horizontal" | "vertical" | "combined";
+                                }[];
+                            };
+                        }[];
+                        coverage: {
+                            requestedRows: number;
+                            selectedRows: number;
+                            selectedEnabledRows: number;
+                            selectedDisabledRows: number;
+                            unselectedParsedRows: number;
+                            /** @enum {string} */
+                            scope: "explicit_row_ordinals_and_cited_report_metadata";
+                            /** @enum {string} */
+                            wholeTable: "inspected_for_completeness";
+                            /** @enum {string} */
+                            unselectedRows: "not_expanded";
+                            /** @enum {string} */
+                            unparsedRows: "not_expanded; inspect_full_survey_report_context";
+                        };
+                        publishedSummary: {
+                            horizontalMeasured: number | null;
+                            verticalMeasured: number | null;
+                            withheld: number | null;
+                            total: number | null;
+                            quotes: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            }[];
+                        };
+                        publishedStatistics: {
+                            /** @enum {string} */
+                            section: "First Component Error" | "Second Component Error" | "Product Accuracy";
+                            /** @enum {string} */
+                            label: "RMSE" | "Max" | "Min" | "Mean" | "Median" | "StdDev" | "#CPs Used";
+                            axes: ("X" | "Y" | "Z" | "R(XY)" | "3D(XYZ)")[];
+                            values: {
+                                literal: string;
+                                /** @enum {string} */
+                                state: "stated" | "unavailable";
+                                value: number | string | (null);
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            }[];
+                            header: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            };
+                            quote: {
+                                literal: string;
+                                citation: {
+                                    /** Format: uuid */
+                                    partId: string;
+                                    line: number;
+                                    characterStart: number;
+                                    characterEnd: number;
+                                };
+                            };
+                        }[];
+                        statements: {
+                            literal: string;
+                            citation: {
+                                /** Format: uuid */
+                                partId: string;
+                                line: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                            /** @enum {string} */
+                            kind: "disclaimer" | "source_role" | "withholding";
+                        }[];
+                        gaps: {
+                            code: string;
+                            action: string;
+                        }[];
+                        qualification: {
+                            /** @enum {string} */
+                            coordinateFrame: "needs_input";
+                            /** @enum {string} */
+                            heightLinkage: "needs_input";
+                            /** @enum {string} */
+                            surveyEpoch: "needs_input";
+                            /** @enum {string} */
+                            objectCorrespondence: "needs_input";
+                            /** @enum {string} */
+                            comparison: "not_assessed";
+                            /** @enum {string} */
+                            accuracy: "not_assessed";
+                            /** @enum {string} */
+                            learningSplit: "not_assessed";
+                        };
+                        parts: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            text: string;
+                            sha256: string;
+                            locator: {
+                                label: string;
+                                page?: number;
+                                row?: number;
+                                line?: number;
+                                lineEnd?: number;
+                                paragraph?: number;
+                                table?: number;
+                                column?: number;
+                                headerRow?: number;
+                                sheet?: string;
+                                sheetIndex?: number;
+                                sheetId?: number;
+                                cell?: string;
+                                /** @enum {string} */
+                                cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
+                                cellType?: string;
+                                /** Format: uuid */
+                                unitId?: string;
+                                unitSha256?: string;
+                                segmentIndex?: number;
+                                segmentCount?: number;
+                                characterStart: number;
+                                characterEnd: number;
+                            };
+                            /** @enum {string} */
+                            method: "native_text";
+                        }[];
+                        warnings: string[];
                     })[];
                     association: {
                         /** @enum {string} */
@@ -44044,6 +44740,23 @@ export interface components {
                         selection: {
                             sources: ({
                                 /** @enum {string} */
+                                kind: "survey_report";
+                                pin: {
+                                    caseId: unknown;
+                                    caseRevision: number;
+                                    sourceId: unknown;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    jobId: unknown;
+                                    resultSha256: string;
+                                    readerSha256: string;
+                                    inputSha256: string;
+                                    acceptedFence: number;
+                                    resultBytes: number;
+                                };
+                                rowOrdinals: number[];
+                            } | {
+                                /** @enum {string} */
                                 kind: "document";
                                 pin: {
                                     caseId: unknown;
@@ -44244,6 +44957,23 @@ export interface components {
                     contextSha256: string;
                     selection: {
                         sources: ({
+                            /** @enum {string} */
+                            kind: "survey_report";
+                            pin: {
+                                caseId: unknown;
+                                caseRevision: number;
+                                sourceId: unknown;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                jobId: unknown;
+                                resultSha256: string;
+                                readerSha256: string;
+                                inputSha256: string;
+                                acceptedFence: number;
+                                resultBytes: number;
+                            };
+                            rowOrdinals: number[];
+                        } | {
                             /** @enum {string} */
                             kind: "document";
                             pin: {
