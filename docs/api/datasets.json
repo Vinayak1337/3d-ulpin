@@ -6963,6 +6963,173 @@
         "Named storeys and decomposition are source declarations; no canonical IDs, geometry, frame, heights, rights, accuracy, operational or learning qualification.",
         "Require valid unchanged companion bytes and explicit named-storey/version correspondence; no inferred crosswalk."
       ]
+    },
+    {
+      "id": "d06-cubicasa5k-2019-development-20261005",
+      "classification": "test_only",
+      "originKind": "public_research_dataset_slice",
+      "issuer": "Aalto University / CubiCasa; Kalervo, Ylioinas, Haikio, Karhu, Kannala (2019)",
+      "originalUrl": "https://zenodo.org/records/2613548",
+      "sourcePaper": "https://arxiv.org/html/1904.01920v1",
+      "version": "Zenodo record 2613548; upstream code c34440266665a11f4484eb06cd2e4b7d72ad76c1",
+      "preparedAt": "2026-10-04T18:57:56.538777+00:00",
+      "geography": "Mostly Finnish marketing floorplans; individual sites undisclosed, no Indian applicability established",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": "Source-image pixels; no independent metric or survey qualification",
+      "manifest": "docs/orchestration/delivery-reset-20261004/vision-cohort.json",
+      "manifestSha256": "7ccda85dff6ade2163f5f9c8efdcf5ee3ea8ec4b954e6d3a24b608e4cb2b2885",
+      "manifestBytes": 62239,
+      "manifestHashScope": "UTF-8 metadata with LF line endings; private originals/derivatives retain exact-byte hashes.",
+      "manifestDatasetPointer": "/datasets/0",
+      "guide": "docs/orchestration/delivery-reset-20261004/VISION_COHORT.md",
+      "terms": {
+        "state": "publisher_metadata_observed",
+        "license": "CC-BY-NC-SA-4.0",
+        "reference": "https://zenodo.org/records/2613548",
+        "evidence": {
+          "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/zenodo-record-2613548.json",
+          "bytes": 5019,
+          "sha256": "2ddc15e31dc7d43e2f044f8581b8ab266e31965b7d9fb443a3dbf8b4c830d0cf"
+        },
+        "attribution": "Aalto University / CubiCasa; Kalervo, Ylioinas, Haikio, Karhu, Kannala (2019)",
+        "scope": "Test-only noncommercial development diagnostics; retain attribution and dataset share-alike conditions. No operational admission, later commercial/distribution clearance or model promotion asserted.",
+        "codeLicense": "CC-BY-NC-4.0",
+        "codeEvidence": {
+          "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/upstream-cubicasa/LICENSE",
+          "bytes": 253,
+          "sha256": "abb20326fa72589cde781457dbe51f7d69f376d167254e95c36f338923669303"
+        },
+        "distinction": "Zenodo dataset CC-BY-NC-SA-4.0 is distinct from pinned repository CODE CC-BY-NC-4.0; historical receipts and model byte/profile authorities remain unchanged."
+      },
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005",
+        "itemsPointer": "/tasks/floor_plan/items",
+        "originalPairsRetained": 12,
+        "eligibleDevelopmentPairs": 12,
+        "formats": [
+          "PNG image",
+          "publisher SVG",
+          "derived class-mask PNG"
+        ],
+        "repositoryBytesVerified": false,
+        "pins": "Exact per-item private source/derivative bytes and SHA-256, source URLs/archive members and acquisition receipts are in the linked manifest."
+      },
+      "partition": {
+        "developmentItems": 12,
+        "trainingItems": 0,
+        "finalEvaluationItems": 0,
+        "conservativeLeakageGroups": [
+          "cubicasa5k-2019-anonymous-collection"
+        ],
+        "protectedOrRetiredEvaluationReopened": false
+      },
+      "labelProvenance": {
+        "origin": "Publisher human annotators and independent second QA person; deterministic raster transfer of their SVGs, no model/agent-drawn targets",
+        "selection": "First four paths in each of three categories, publisher val.txt order; absent from publisher train.txt; historical T061 1191/2536 not selected",
+        "derivation": "Deterministic raster transfer of unchanged publisher annotations; no model/agent-drawn targets.",
+        "ownerVerificationReceipt": {
+          "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/validation.json",
+          "bytes": 2766,
+          "sha256": "645620bc64e168c7ec108ae79261ece72387df9378e943a453e171f0cab95780"
+        },
+        "verificationScope": "Owner loader/source/derivative pins and reference raster-transfer parity consumed; no validation or acquisition campaign repeated by integration."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "modelInferenceRun": false,
+      "limitations": [
+        "Published val membership is not independent of checkpoint selection; upstream training code uses validation. Exact checkpoint population/template/site overlap unaudited; development only",
+        "No fitting or final allocation; inspected development items and historical/closed evaluations must never become a fresh final holdout.",
+        "No Indian accuracy, official property/label qualification, legal units, rights, calibrated measurements or release gate.",
+        "Individual plan sites/templates are unknown; all 12 plans remain one conservative collection group, not 12 independent sites."
+      ]
+    },
+    {
+      "id": "d06-spacenet2-2017-development-20261005",
+      "classification": "test_only",
+      "originKind": "public_research_dataset_slice",
+      "issuer": "SpaceNet partners CosmiQ Works, DigitalGlobe/Radiant Solutions, NVIDIA",
+      "originalUrl": "https://spacenet.ai/spacenet-buildings-dataset-v2/",
+      "sourcePaper": "https://arxiv.org/html/1807.01232v3",
+      "version": "SpaceNet 2 building dataset, S3 selected objects modified November 2019; per-object ETag/Last-Modified in acquisition receipt",
+      "preparedAt": "2026-10-04T18:57:56.538777+00:00",
+      "geography": "Las Vegas, Nevada, USA and Paris, France; foreign research imagery",
+      "horizontalCrs": "GeoTIFF EPSG:4326; GeoJSON CRS84 longitude/latitude; exact per-item affine retained",
+      "verticalReference": null,
+      "units": "Source-image pixels; no independent metric or survey qualification",
+      "manifest": "docs/orchestration/delivery-reset-20261004/vision-cohort.json",
+      "manifestSha256": "7ccda85dff6ade2163f5f9c8efdcf5ee3ea8ec4b954e6d3a24b608e4cb2b2885",
+      "manifestBytes": 62239,
+      "manifestHashScope": "UTF-8 metadata with LF line endings; private originals/derivatives retain exact-byte hashes.",
+      "manifestDatasetPointer": "/datasets/1",
+      "guide": "docs/orchestration/delivery-reset-20261004/VISION_COHORT.md",
+      "terms": {
+        "state": "publisher_metadata_observed",
+        "license": "CC-BY-SA-4.0",
+        "reference": "https://spacenet.ai/spacenet-buildings-dataset-v2/",
+        "evidence": {
+          "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/spacenet2-dataset.html",
+          "bytes": 61985,
+          "sha256": "9df5dfe6bb046bac06be9ac23bad29e87c1c12d711e0e1f67f46457ff165fb5c"
+        },
+        "attribution": "SpaceNet partners CosmiQ Works, DigitalGlobe/Radiant Solutions, NVIDIA",
+        "scope": "Test-only noncommercial development diagnostics; retain attribution and dataset share-alike conditions. No operational admission, later commercial/distribution clearance or model promotion asserted."
+      },
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005",
+        "itemsPointer": "/tasks/building/items",
+        "originalPairsRetained": 8,
+        "eligibleDevelopmentPairs": 7,
+        "formats": [
+          "original uint16 GeoTIFF",
+          "publisher GeoJSON",
+          "derived RGB/mask PNG"
+        ],
+        "repositoryBytesVerified": false,
+        "pins": "Exact per-item private source/derivative bytes and SHA-256, source URLs/archive members and acquisition receipts are in the linked manifest.",
+        "excludedItemsPointer": "/excludedItems",
+        "excludedPairs": 1,
+        "emptyLabelScenes": 2
+      },
+      "partition": {
+        "developmentItems": 7,
+        "trainingItems": 0,
+        "finalEvaluationItems": 0,
+        "conservativeLeakageGroups": [
+          "spacenet2-AOI_2_Vegas",
+          "spacenet2-AOI_3_Paris"
+        ],
+        "protectedOrRetiredEvaluationReopened": false
+      },
+      "labelProvenance": {
+        "origin": "Publisher GIS experts manually annotated SN2 scenes; second expert validated all areas; source reports approximate five-pixel corner tolerance, not survey truth",
+        "selection": "First four listed PS-RGB training objects per AOI in S3 lexicographic order, exact matching GeoJSON; no model predictions used; one nonpolygon pair retained/excluded",
+        "derivation": "Deterministic raster transfer of unchanged publisher annotations; no model/agent-drawn targets.",
+        "ownerVerificationReceipt": {
+          "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/validation.json",
+          "bytes": 2766,
+          "sha256": "645620bc64e168c7ec108ae79261ece72387df9378e943a453e171f0cab95780"
+        },
+        "verificationScope": "Owner loader/source/derivative pins and reference raster-transfer parity consumed; no validation or acquisition campaign repeated by integration."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "modelInferenceRun": false,
+      "limitations": [
+        "Publisher train partition is reassigned only to this development pilot. RF-DETR card names merve/satellite-building-segmentation, but exact underlying source/training membership is not supplied; non-overlap unproved",
+        "No fitting or final allocation; inspected development items and historical/closed evaluations must never become a fresh final holdout.",
+        "No Indian accuracy, official property/label qualification, legal units, rights, calibrated measurements or release gate.",
+        "RF-DETR training-population overlap is unresolved; two AOIs are not an independently held-out population."
+      ],
+      "excludedCase": {
+        "id": "spacenet2/AOI_2_Vegas/img1",
+        "reason": "One publisher Point feature has no boundary: do not convert it to a mask or background truth",
+        "recovery": "Publisher polygon correction or independent expert source-image boundary review under an agreed annotation policy."
+      },
+      "scoringPolicy": "Use scoringMask == 1; all-zero source RGB pixels are a conservative analysis ignore mask, not authoritative missing-data truth. Preserve empty scenes, holes/partial buildings and ignored/positive pixel counts."
     }
   ],
   "offlineLearningCorpus": {
