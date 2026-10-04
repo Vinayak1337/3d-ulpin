@@ -5332,6 +5332,22 @@
         "historicalSelection": "requested revision2 preserved after current revision3; eligible current empty",
         "associationState": "operator_selected",
         "qualification": "not_assessed; no live persistence/current tool/property/geometry/accuracy/rights/learning claim"
+      },
+      "committedEvidenceExportEvidence": {
+        "guide": "docs/evidence/usp/record-evidence-export-handoff.md",
+        "codeCommit": "e559e01ea9fd08e06ca7cce606686dbbf08617c7",
+        "proofSha256": "80f5862742d2e859c9edc13b3c2d796e498c35d11db6b620fa8cd49f51c78488",
+        "scope": "Lossless text/CSV formatting over unchanged previously validated native-plus-mesh committed evidence responses only; no current mesh admission or live export qualification.",
+        "currentMeshAdmissionVerified": false,
+        "httpPersistenceVerified": false,
+        "formatting": [
+          "readable-json/1",
+          "csv-json-string-cells/1"
+        ],
+        "limitations": [
+          "Retained/current physical reader mismatch remains stale; no current envelope reconstruction, raw aliases or native rerun.",
+          "Export preserves operator_selected/not_assessed references, not authentic building/floor correspondence or qualified learning labels."
+        ]
       }
     },
     {
@@ -5486,6 +5502,22 @@
         "historicalSelection": "requested revision2 preserved after current revision3; eligible current empty",
         "associationState": "operator_selected",
         "qualification": "not_assessed; no live persistence/current tool/property/geometry/accuracy/rights/learning claim"
+      },
+      "committedEvidenceExportEvidence": {
+        "guide": "docs/evidence/usp/record-evidence-export-handoff.md",
+        "codeCommit": "e559e01ea9fd08e06ca7cce606686dbbf08617c7",
+        "proofSha256": "80f5862742d2e859c9edc13b3c2d796e498c35d11db6b620fa8cd49f51c78488",
+        "scope": "Lossless text/CSV formatting over unchanged previously validated native-plus-mesh committed evidence responses only; no current mesh admission or live export qualification.",
+        "currentMeshAdmissionVerified": false,
+        "httpPersistenceVerified": false,
+        "formatting": [
+          "readable-json/1",
+          "csv-json-string-cells/1"
+        ],
+        "limitations": [
+          "Retained/current physical reader mismatch remains stale; no current envelope reconstruction, raw aliases or native rerun.",
+          "Export preserves operator_selected/not_assessed references, not authentic building/floor correspondence or qualified learning labels."
+        ]
       }
     },
     {

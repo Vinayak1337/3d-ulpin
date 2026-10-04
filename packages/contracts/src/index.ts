@@ -235,6 +235,7 @@ export * from './source-fusion-obj';
 export * from './source-fusion-associations';
 export * from './registry-document-evidence';
 export * from './registry-record-evidence';
+export * from './registry-record-evidence-export';
 export * from './registry-survey-reference';
 export * from './registry-gltf-reference';
 export * from './registry-obj-reference';

@@ -1660,6 +1660,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/registry-records/{recordId}/revisions/{revision}/document-citations/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download exact reviewed committed citations as private bounded text or encoded CSV */
+        get: operations["GET_api_v1_registry_records_recordId_revisions_revision_document_citations_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/evidence/survey-report/context": {
         parameters: {
             query?: never;
@@ -72778,6 +72795,34 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_registry_records_recordId_revisions_revision_document_citations_export: {
+        parameters: {
+            query: {
+                format: "text" | "csv";
+            };
+            header?: never;
+            path: {
+                revision: number;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Complete private attachment; CSV data cells are JSON strings before CSV escaping. No formulas or inferred source facts. */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": components["schemas"]["GET_buildings_buildingId_register_Response_200_text_csv"];
+                    "text/csv": components["schemas"]["GET_buildings_buildingId_register_Response_200_text_csv"];
                 };
             };
         };
