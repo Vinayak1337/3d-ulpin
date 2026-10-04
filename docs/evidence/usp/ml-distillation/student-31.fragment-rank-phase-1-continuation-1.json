@@ -1,0 +1,157 @@
+{
+  "admissionBlockerAcceptance": {
+    "bytes": 4449,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-1-admission-blocker-acceptance-v1.json",
+    "physicalSha256": "4d4dbe9710beb507421632c249659ce3ff1e41c679e6fa8ef46bcd27439be428"
+  },
+  "authorization": {
+    "additionalStageAttempts": 0,
+    "executableSourceEdits": false,
+    "firstFailureStopStillApplies": true,
+    "guardAttemptsAllowedNow": 1,
+    "nativeGuardsAlreadyRun": 0,
+    "phases2Or3": false,
+    "repositoryWrites": false
+  },
+  "branch": "task/ml-association-student-20261002",
+  "continuation": 1,
+  "correctedHostCheck": "After matching pinned profile/stage/assignment/freeze and parsed expected map, compute checkpoint.sha(checkpoint.canonical(profile[\"files\"])) using services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py; it must equal1ab91ff470c356d3cb4bafebac033496d55b6c6144685d5aa45ca0d62a57b58d. This existing stdlib helper sorts keys and uses compact separators/UTF8; do not hash serialized indented JSON. The coordinator has independently verified it.",
+  "dataAndQualityBoundary": {
+    "developmentReference": {
+      "bytes": 7759,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-baseline-acceptance-v1.json",
+      "physicalSha256": "089902a634551261b09fa2af2f64e1494284e8a9dc18d855468ac62188fb4951"
+    },
+    "futureReload": "Do not reload/infer now or choose an adapter using training loss. Coordinator reviews accepted native fit, then scopes/finalizes one unchanged-policy development reload. Exact-set2/2/precision1/positive recall1/unsupportedFP0 criteria remain frozen; no threshold/sweep.",
+    "history": "Original-base rank reference valid2/2/exact1/2/positive recall0/unsupportedFP0, zero selections. Old generative failures preserved separately. Training is justified by that observed miss and previously pinned pointwise loss research; cause/benefit unproven.",
+    "hostExpectations": "Do not read/reconstruct/evaluate expectations or development source requests during fit, even after technical acceptance. They are not in this task; separate accepted-fit/reload code and frozen comparison will follow. Teacher remains idle/blind, held-out evaluation closed.",
+    "qualification": "57 related pairs from ten provisional synthetic parents/two train families; needs_independent_review, Sarvam excluded. No independent truth, official operational/absence, generalized learning or canonical link qualification."
+  },
+  "executionHead": "37fac56393acce067d717d5f259d9bf760396727",
+  "experimentId": "882b48da40ef411581463d188a77ae28",
+  "generatedGuardCommand": [
+    "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+    "-B",
+    "-I",
+    "-S",
+    "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\association_adapter.py",
+    "fit",
+    "--schema",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\schema-v1.json",
+    "--family-freeze",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\family-freeze.json",
+    "--model-receipt",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\model-acquisition.json",
+    "--assignment",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\assignment.json",
+    "--teacher-v1",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\train-fragment-rank-v1.jsonl",
+    "--training-data",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\train-fragment-rank-v1.jsonl",
+    "--run-freeze",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\run-freeze.json",
+    "--output-dir",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\outputs\\fit",
+    "--containment-profile",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\profile.json",
+    "--containment-sha256",
+    "6807fffeb816e89e7944cdb23e443ed05d1a24e2767089ef3ba31ff2b9fb486d"
+  ],
+  "nativeAcceptanceInheritedFrom": {
+    "bytes": 16937,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-31.fragment-rank-phase-1-fit.protocol.json",
+    "physicalSha256": "2e36b31332eb5c5dcfcf4227f6e18334c737a210f4d18d47c7902082cf379aae"
+  },
+  "originalAssignment": {
+    "bytes": 33303,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-31.fragment-rank-phase-1-fit.assignment.json",
+    "physicalSha256": "06519a8dbef71c6632abd330f6acbd16b73e07aadfe9b57c9c701c25a76353b5"
+  },
+  "originalProtocol": {
+    "bytes": 16937,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-31.fragment-rank-phase-1-fit.protocol.json",
+    "physicalSha256": "2e36b31332eb5c5dcfcf4227f6e18334c737a210f4d18d47c7902082cf379aae"
+  },
+  "outcome": "Complete the first still-unrun guard/native portion of the frozen phase1 on the exact retained successful stage.",
+  "phase": {
+    "endUpdate": 20,
+    "final": false,
+    "localContributions": 114,
+    "localUpdates": 20,
+    "number": 1,
+    "startUpdate": 0
+  },
+  "recordedAtUtc": "2026-10-04T00:53:36.784464+00:00",
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "resourceBounds": {
+    "batchSize": 1,
+    "cpuThreads": 2,
+    "maxChildPhaseSeconds": 600,
+    "maxCudaAllocatedBytes": 6442450944,
+    "maxCudaReservedBytes": 6442450944,
+    "maxJobCommittedBytes": 6442450944,
+    "maxPromptTokens": 4096,
+    "minimumCudaFreeBytes": 1610612736,
+    "recording": "Job commitment and RSS separate; CUDA allocated/reserved/minimum free, observed native fit/guard/host/stage/cleanup timings and peak phase records. No invented child-only timings or speedup claim. Existing caps remain, no host/pagefile/global resource change.",
+    "truncation": false
+  },
+  "retainedStage": {
+    "assignment": {
+      "bytes": 33303,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\assignment.json",
+      "physicalSha256": "06519a8dbef71c6632abd330f6acbd16b73e07aadfe9b57c9c701c25a76353b5"
+    },
+    "counts": {
+      "code": 35,
+      "inputs": 14,
+      "model": 9,
+      "runtime": 19630
+    },
+    "fileCount": 19688,
+    "freeze": {
+      "bytes": 44590,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\inputs\\run-freeze.json",
+      "physicalSha256": "d22fd3c50d27da1bd107954e4078661aaa63901765aff668efc2419a7313d7f3"
+    },
+    "mapSha256": "1ab91ff470c356d3cb4bafebac033496d55b6c6144685d5aa45ca0d62a57b58d",
+    "profile": {
+      "bytes": 2702013,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\profile.json",
+      "physicalSha256": "6807fffeb816e89e7944cdb23e443ed05d1a24e2767089ef3ba31ff2b9fb486d"
+    },
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6",
+    "stageJson": {
+      "bytes": 7167,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\stage.json",
+      "physicalSha256": "a887c2b2b117e2c49a8e7f29c2cd5430fe22c002dc4fb53f4d97a820aafc4557"
+    }
+  },
+  "return": "One result or material-blocker callback to coordinator01a0fbd1-c2aa-75c0-8a52-4c4f662f3759, then end. No new chats/subagents/polling/schedules; no source/label/model/data/provider/service/host/frontend/API/catalogue/main/push/deploy changes. Teacher idle/blind, held-out unopened, prior lost44 updates remain excluded.",
+  "review": {
+    "bytes": 10473,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-31-admission-review-v1-2a3ddd497f4f426d8c07230f4a710dbc\\review.json",
+    "physicalSha256": "b5a36dfae66ae25c69b3b96f992ccbbc0307173137f90bc51eb3ffa551f8a2ff"
+  },
+  "steps": [
+    "Read this continuation and original positive assignment/protocol/code acceptance. Verify supplied never/danger-full-access, clean fixed learnerHEAD37fac563, exact retained stage/profile/stageJson/assignment/freeze/map pins. Confirm outputs/receipts/scratch/state still empty; any unexpected existing guard/output stops continuation. Preserve original wrapper failure/report/index/finalization.",
+    "Reuse the successful stage and its completed bounded copy checks. Do not execute original protocol.stageCommand or create/copy another profile. Required existing guard preflight checks runtime/model/source/input bytes at launch; do not add a repeated independent runtime/weight hashing campaign.",
+    "Execute exactly once the retained stage.json command array, unchanged, through existing guard. Actual checkpoint native four-step proof must pass before20-update originalbase fit. Same original phase acceptance/checkpoint/resource/cleanup/data/exclusion rules in original protocol remain binding.",
+    "On first admission/native/control/token/fit/save/resource/cleanup failure, preserve outputs and return precise first failure/partial/unrun evidence; no retries/code/recipe/limit changes or fallback. Success requires protected accepted_outputs/completion plus explicit phase/checkpoint acceptance; no phase2/3 or finaladapter/quality claim.",
+    "Create a NEW immutable private technical receipt root for this continuation, outside stage outputs; link original failed host wrapper receipt root and continuation pins. Return commands/exits/UTC times, source/map/guard/accepted/completion/proof/checkpoint/base/token/progress/resource/cleanup pins or failure states. Keep learnerGitHEAD unchanged; coordinator owns repository publication."
+  ],
+  "task": "STUDENT-31-FRAGMENT-RANK-PHASE-FIT",
+  "version": "student-rank-phase-retained-stage-continuation/1",
+  "workerSettings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Sole existing GPU owner performs actual safetensors/dropout/optimizer/scaler/state equivalence and one bounded phase; dispatch has no tier argument.",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
