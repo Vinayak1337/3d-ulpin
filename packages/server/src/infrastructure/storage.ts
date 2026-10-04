@@ -78,12 +78,15 @@ export async function readObjectBounded(key:string,maxBytes:number,deadlineAt:nu
     const result=await s3().send(new GetObjectCommand({Bucket:settings.s3Bucket,Key:key}),{abortSignal:controller.signal});
     body=result.Body instanceof Readable?result.Body:undefined;check();
     const advertised=result.ContentLength;
-    if(!body||!Number.isSafeInteger(advertised)||advertised!<1||advertised!>maxBytes)
+    if(!body||typeof advertised!=='number'||!Number.isSafeInteger(advertised)||advertised<1||advertised>maxBytes)
       throw new AppError(422,'SOURCE_INTEGRITY','Stored object size or streaming metadata exceeds its bounded read profile.');
     const chunks:Buffer[]=[];let count=0;
     for await(const chunk of body){
-      check();count+=chunk.length;
-      if(count>maxBytes||count>advertised!)
+      check();
+      if(typeof chunk!=='string'&&!(chunk instanceof Uint8Array))
+        throw new AppError(422,'SOURCE_INTEGRITY','Stored object returned an unsupported byte stream.');
+      count+=typeof chunk==='string'?Buffer.byteLength(chunk):chunk.byteLength;
+      if(count>maxBytes||count>advertised)
         throw new AppError(422,'SOURCE_INTEGRITY','Stored object exceeds its advertised private read size.');
       chunks.push(Buffer.from(chunk));
     }
