@@ -82,7 +82,7 @@ function current(){
 }
 async function ready(){const {record,item}=current();assert(item.State.Running,'Owned processor is stopped.');assert(Date.now()+120000<record.deadlineAt,'Start a fresh owned processor before queuing work.');
   assert.equal(record.head,command('git',['rev-parse','HEAD']));assert.deepEqual(record.helper,pin(self));assert.deepEqual(record.api,pin(join(root,'services/geo/geo/api.py')));assert.deepEqual(record.area,pin(join(root,'services/geo/geo/area.py')));
-  const response=await fetch(c.env.GEO_URL+'health',{signal:AbortSignal.timeout(2000)});assert.equal(response.status,200);assert.equal((await response.json()).ok,true);return record;
+  const response=await fetch(new URL('health',c.env.GEO_URL),{signal:AbortSignal.timeout(2000)});assert.equal(response.status,200);assert.equal((await response.json()).ok,true);return record;
 }
 async function start(){
   clean();assert(!existsSync(join(c.state,'processor-ownership.json')),'Use a fresh private state directory.');await free(28000);
@@ -111,12 +111,12 @@ async function start(){
       lifetimeSeconds:600,limits:{memoryBytes:768*1024**2,cpus:1,pids:64,readOnly:true,network:'owned bridge; outbound IP masquerading disabled'},pythonStartup:python});
     current();let healthy=false;const deadline=Date.now()+15000;
     while(Date.now()<deadline){const owned=current();if(!owned.item.State.Running)break;
-      try{const response=await fetch(c.env.GEO_URL+'health',{signal:AbortSignal.timeout(2000)});if(response.ok&&(await response.json()).ok===true){healthy=true;break;}}catch{}
+      try{const response=await fetch(new URL('health',c.env.GEO_URL),{signal:AbortSignal.timeout(2000)});if(response.ok&&(await response.json()).ok===true){healthy=true;break;}}catch{}
       await new Promise(resolve=>setTimeout(resolve,300));}
     if(!healthy){const failed=jsonText(docker(['inspect',containerId]))[0];save('processor-start-failure.json',{running:failed.State.Running,exit:failed.State.ExitCode,requestedPorts:failed.HostConfig.PortBindings,actualPorts:failed.NetworkSettings.Ports});
       writeFileSync(join(c.state,'processor-start.log'),logs(containerId),{flag:'wx'});throw new Error('Owned production processor did not start; inspect private processor-start.log.');}
     const actual=jsonText(docker(['inspect',containerId]))[0];assert.deepEqual(actual.NetworkSettings.Ports['8000/tcp'],[{HostIp:'127.0.0.1',HostPort:'28000'}]);
-    save('processor-started.json',{at:new Date().toISOString(),containerId,networkId,health:200,processorUrl:c.env.GEO_URL,defaultEndpoint:c.env.GEO_URL+'internal/area/extract',image});
+    save('processor-started.json',{at:new Date().toISOString(),containerId,networkId,health:200,processorUrl:c.env.GEO_URL,defaultEndpoint:new URL('internal/area/extract',c.env.GEO_URL).href,image});
     console.log(JSON.stringify({started:true,containerId,port:28000,lifetimeSeconds:600}));
   }catch(error){
     // Only resources created by this invocation, identified by immutable IDs/labels.
@@ -144,7 +144,7 @@ async function queue(id){
   let requestKey;if(existsSync(join(c.state,'queue-intent.json'))){const prior=load('queue-intent.json');assert.equal(prior.priorJobId,id);assert.deepEqual(prior.input,input);requestKey=prior.requestKey;}
   else {requestKey=randomUUID();save('queue-intent.json',{requestKey,priorJobId:id,input,head:processor.head,subject:c.subject});}
   const {DocumentReceiptSchema}=await import(pathToFileURL(join(root,'packages/contracts/src/usp/document-ingestion.ts')));
-  const response=await fetch(c.env.ULPIN_TEST_URL+`api/v1/ingestion/cases/${input.caseId}/sources/${input.sourceId}/documents/retry`,{method:'POST',headers:{'Content-Type':'application/json'},
+  const response=await fetch(new URL(`api/v1/ingestion/cases/${input.caseId}/sources/${input.sourceId}/documents/retry`,c.env.ULPIN_TEST_URL),{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({requestKey,expectedCaseRevision:input.caseRevision,expectedSourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,mode:'native_only'}),signal:AbortSignal.timeout(15000)});
   const value=await response.json();assert.equal(response.status,201,redact(JSON.stringify(value)));const receipt=DocumentReceiptSchema.parse(value);
   for(const key of ['caseId','caseRevision','sourceId','sourceRevision','sourceSha256'])assert.equal(receipt[key],input[key]);assert.notEqual(receipt.jobId,id);assert.equal(receipt.bytes,input.sourceBytes);
