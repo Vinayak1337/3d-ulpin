@@ -2,6 +2,8 @@
 
 **Every floor. Every flat. One verifiable record.**
 
+**External technical review:** [Product goal, current ML approach, results, failures and remaining plan](PROJECT_AND_ML_REVIEW.md). This branch includes experimental worker checkpoints for inspection; the report distinguishes them from accepted staging code.
+
 BhuAayam is an evidence-linked 3D property workbench for India. It gives flats, basements and elevated spaces an identity of their own, ties every fact to the document it came from, and helps officers check, decide and issue a record that anyone can verify.
 
 Smart India Hackathon 2026 · Problem statement SIH26011 · Team Tech Builders
