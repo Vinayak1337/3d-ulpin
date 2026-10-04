@@ -1155,10 +1155,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row and PDF/PNG/JPEG region citations through current private source and draft authority; preserve survey field roles, exclusions and unresolved qualifications */
+        /** Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node and PDF/PNG/JPEG region citations through current private source and draft authority; preserve source field roles, exclusions, local declarations and unresolved qualifications */
         get: operations["GET_api_v1_registry_drafts_draftId_document_citations"];
         put?: never;
-        /** Amend exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row or validated PDF/PNG/JPEG region citations; survey rows are building/floor source references with correspondence unassessed; inclusion takes effect after canonical review/commit; explicitly confirm IFC identity */
+        /** Amend exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node or validated PDF/PNG/JPEG region citations; explicit glTF references and survey rows support building/floor source references with correspondence unassessed; inclusion takes effect after canonical review/commit; explicitly confirm IFC identity */
         post: operations["POST_api_v1_registry_drafts_draftId_document_citations"];
         delete?: never;
         options?: never;
@@ -11204,6 +11204,72 @@ export interface components {
                     qualification: "not_assessed";
                     /** @enum {string} */
                     version: "registry-survey-row-citation/1";
+                } | {
+                    resultBytes: number;
+                    gltf: {
+                        /** @enum {string} */
+                        purpose: "source_reference_only";
+                        /** @enum {string} */
+                        profile: "gltf-local-inspection/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        nodeIndex: number;
+                        sourceKey: string;
+                        recordPointer: string;
+                        recordSha256: string;
+                        fragmentSha256: string;
+                        selectionSha256: string;
+                        selectedNodeIndices: number[];
+                        sourceSelectionSha256: string;
+                        /** @description Exact full combined context verified at the original officer amendment; subsequent disclosure revalidates attached source references, not an association or continued applicability of uncited context. */
+                        combinedContextSha256: string;
+                        /** @enum {string} */
+                        representation: "context_mesh";
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @enum {string} */
+                        placement: "unknown";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {boolean} */
+                        measurements: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                    };
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-gltf-node-citation/1";
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -14064,6 +14130,72 @@ export interface components {
                     qualification: "not_assessed";
                     /** @enum {string} */
                     version: "registry-survey-row-citation/1";
+                } | {
+                    resultBytes: number;
+                    gltf: {
+                        /** @enum {string} */
+                        purpose: "source_reference_only";
+                        /** @enum {string} */
+                        profile: "gltf-local-inspection/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        nodeIndex: number;
+                        sourceKey: string;
+                        recordPointer: string;
+                        recordSha256: string;
+                        fragmentSha256: string;
+                        selectionSha256: string;
+                        selectedNodeIndices: number[];
+                        sourceSelectionSha256: string;
+                        /** @description Exact full combined context verified at the original officer amendment; subsequent disclosure revalidates attached source references, not an association or continued applicability of uncited context. */
+                        combinedContextSha256: string;
+                        /** @enum {string} */
+                        representation: "context_mesh";
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @enum {string} */
+                        placement: "unknown";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {boolean} */
+                        measurements: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                    };
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-gltf-node-citation/1";
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -14585,6 +14717,8 @@ export interface components {
                         };
                     })[];
                 };
+                /** @enum {boolean} */
+                gltfReferences?: true;
             };
             addRegion?: {
                 document: {
@@ -16330,6 +16464,359 @@ export interface components {
                         method: "native_text";
                     }[];
                     warnings: string[];
+                };
+            } | {
+                pin: {
+                    resultBytes: number;
+                    gltf: {
+                        /** @enum {string} */
+                        purpose: "source_reference_only";
+                        /** @enum {string} */
+                        profile: "gltf-local-inspection/1";
+                        artifactSha256: string;
+                        artifactBytes: number;
+                        nodeIndex: number;
+                        sourceKey: string;
+                        recordPointer: string;
+                        recordSha256: string;
+                        fragmentSha256: string;
+                        selectionSha256: string;
+                        selectedNodeIndices: number[];
+                        sourceSelectionSha256: string;
+                        /** @description Exact full combined context verified at the original officer amendment; subsequent disclosure revalidates attached source references, not an association or continued applicability of uncited context. */
+                        combinedContextSha256: string;
+                        /** @enum {string} */
+                        representation: "context_mesh";
+                        /** @enum {string} */
+                        identifierScope: "source_native_only; not_canonical_registry_ids";
+                        /** @enum {string} */
+                        placement: "unknown";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {boolean} */
+                        measurements: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                    };
+                    id: string;
+                    document: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                    };
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                    /** @enum {string} */
+                    version: "registry-gltf-node-citation/1";
+                };
+                fragment: {
+                    /** @enum {string} */
+                    kind: "gltf";
+                    pin: {
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        readerSha256: string;
+                        inputSha256: string;
+                        acceptedFence: number;
+                        resultBytes: number;
+                    };
+                    namespace: string;
+                    /** @enum {string} */
+                    sourceSetRole: "operator_selected_fragment";
+                    /** @enum {string} */
+                    representation: "context_mesh";
+                    summary: {
+                        /** @enum {string} */
+                        schemaVersion: "gltf-local-inspection/1";
+                        sourceSha256: string;
+                        sourceBytes: number;
+                        /** @enum {string} */
+                        status: "inspected_local" | "inspected_partial";
+                        /** @enum {string} */
+                        geometryProjectionStatus: "available" | "partial" | "unavailable";
+                        /** @enum {string} */
+                        representation: "context_mesh";
+                        selectedSceneIndex: number | null;
+                        /** @enum {string} */
+                        selectedSceneOrigin: "source" | "caller" | "absent";
+                        nodeCount: number;
+                        primitiveCount: number;
+                        projectedPositions: number;
+                        projectedIndices: number;
+                        missingCompanionCount: number;
+                        unsupportedPrimitiveCount: number;
+                        /** @enum {string} */
+                        globalPlacement: "unknown";
+                        /** @enum {string} */
+                        accuracy: "not_assessed";
+                        /** @enum {string} */
+                        validity: "not_assessed";
+                        /** @enum {string} */
+                        canonicalIdentity: "not_assessed";
+                        /** @enum {boolean} */
+                        analyticEligible: false;
+                        /** @enum {boolean} */
+                        registryAdmission: false;
+                        /** @enum {boolean} */
+                        measurements: false;
+                        /** @enum {boolean} */
+                        learningLabels: false;
+                        /** @enum {string} */
+                        rights: "not_assessed";
+                    };
+                    artifactSha256: string;
+                    artifactBytes: number;
+                    selectionSha256: string;
+                    /** @enum {string} */
+                    selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_and_sorted_node_indices";
+                    /** @enum {string} */
+                    recordHashBasis: "canonical_json_of_exact_native_artifact_record";
+                    /** @enum {string} */
+                    nativeIdentifierScope: "source_native_only; not_canonical_registry_ids";
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    asset: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    jsonLocator: {
+                        [key: string]: unknown;
+                    };
+                    chunks: {
+                        [key: string]: unknown;
+                    }[];
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    selectedScene: {
+                        [key: string]: unknown;
+                    };
+                    selectedSceneDeclaration: {
+                        /** @enum {string} */
+                        state: "absent";
+                    } | {
+                        /** @enum {string} */
+                        state: "declared";
+                        scene: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                    nodes: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                        index: number;
+                        key: string;
+                        parentReferences: {
+                            nodeIndex: number;
+                            pointer: string;
+                            childOrdinal: number;
+                            childIndex: number;
+                        }[];
+                    }[];
+                    meshes: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    primitives: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        metadata: {
+                            [key: string]: unknown;
+                        };
+                        metadataSha256: string;
+                        omittedArrays: {
+                            /** @enum {string} */
+                            role: "POSITION" | "indices";
+                            artifactPointer: string;
+                            /** @enum {string} */
+                            state: "present" | "absent" | "null";
+                            count: number | null;
+                            valueSha256: string | null;
+                        }[];
+                    }[];
+                    accessors: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    bufferViews: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    buffers: {
+                        pointer: string;
+                        artifactPointer: string;
+                        recordSha256: string;
+                        /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                        record: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    resources: {
+                        materials: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        textures: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        images: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        samplers: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        skins: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        cameras: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        animationChannels: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        animationSamplers: {
+                            pointer: string;
+                            artifactPointer: string;
+                            recordSha256: string;
+                            /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                            record: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                    };
+                    extensions: {
+                        required: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                        used: (string | number | boolean | (null) | unknown[] | {
+                            [key: string]: unknown;
+                        })[];
+                        inventory: {
+                            [key: string]: unknown;
+                        }[];
+                    };
+                    /** @description Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values */
+                    qualification: {
+                        [key: string]: unknown;
+                    };
+                    coverage: {
+                        selectedNodes: number;
+                        availableNativeNodes: number;
+                        /** @enum {string} */
+                        scope: "explicit_nodes; incident_core_declarations_and_reference_literals";
+                        /** @enum {string} */
+                        unselectedNodes: "not_expanded";
+                        /** @enum {string} */
+                        geometryArrays: "omitted; exact artifact pointers and canonical array hashes retained";
+                        /** @enum {string} */
+                        transformComposition: "not_performed";
+                        /** @enum {string} */
+                        externalResources: "not_fetched";
+                        /** @enum {string} */
+                        opaqueContent: "literal_only; extension_references_not_resolved";
+                        /** @enum {string} */
+                        geometryQualification: "not_assessed";
+                        /** @enum {string} */
+                        propertyMatching: "unsupported";
+                    };
                 };
             } | {
                 pin: {

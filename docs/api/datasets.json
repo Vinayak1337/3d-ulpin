@@ -5260,6 +5260,26 @@
         "registryAdmission": false,
         "learningLabels": false,
         "stagingObservation": "Retained worker LF reader SHA aec092270367ee5eefe9464e310978cfe84c2e3f0c5aa373cc4484e963b78255 differs from observed staging CRLF reader SHA 92035c6c891d4e7c0e7a74a7c1980e9f0489d29f7046eadb639d9b6311ed9097; strict current-reader recapture refuses retained envelopes with409; historical pins remain unchanged."
+      },
+      "reviewedReferenceEvidence": {
+        "handoff": "docs/evidence/usp/gltf-reference-link-handoff.md",
+        "receiptSha256": "f90ad026704db30390dc6e0297292b3c28df721bdec31dc9fa14c16f27ff5168",
+        "executionCommit": "323495560edd0bdb8bc8d7e4dab9429fa6475a29",
+        "profile": "registry-gltf-node-citation/1",
+        "purpose": "source_reference_only",
+        "scope": "Controlled site-bound source/target/SQL/storage/tool envelopes over unchanged real native artifacts; amendment/read/replay/review/commit/historical read, no real source-target correspondence or live persistence qualification",
+        "contextSha256": "f48a780d2a93153b376b9f40360766c07294432276ca11ba2dcce6d387e8f201",
+        "responseBytes": 20353,
+        "counts": {
+          "draftWrites": 1,
+          "operationReceipts": 1,
+          "reviewWrites": 1
+        },
+        "partialBufferStatus": "available",
+        "associationState": "operator_selected",
+        "qualification": "not_assessed",
+        "learningLabels": false,
+        "stagingObservation": "Exact retained LF recipe differs from staging CRLF; current-reader refusal and prior source/native/profile/receipt hashes remain unchanged."
       }
     },
     {
@@ -5346,6 +5366,26 @@
         "registryAdmission": false,
         "learningLabels": false,
         "stagingObservation": "Retained worker LF reader SHA aec092270367ee5eefe9464e310978cfe84c2e3f0c5aa373cc4484e963b78255 differs from observed staging CRLF reader SHA 92035c6c891d4e7c0e7a74a7c1980e9f0489d29f7046eadb639d9b6311ed9097; strict current-reader recapture refuses retained envelopes with409; historical pins remain unchanged."
+      },
+      "reviewedReferenceEvidence": {
+        "handoff": "docs/evidence/usp/gltf-reference-link-handoff.md",
+        "receiptSha256": "f90ad026704db30390dc6e0297292b3c28df721bdec31dc9fa14c16f27ff5168",
+        "executionCommit": "323495560edd0bdb8bc8d7e4dab9429fa6475a29",
+        "profile": "registry-gltf-node-citation/1",
+        "purpose": "source_reference_only",
+        "scope": "Controlled site-bound source/target/SQL/storage/tool envelopes over unchanged real native artifacts; amendment/read/replay/review/commit/historical read, no real source-target correspondence or live persistence qualification",
+        "contextSha256": "3b44d6cad70d51eadcc21e200e40b91f109cfe58c412805e6ba2b54fb9c04ecf",
+        "responseBytes": 19026,
+        "counts": {
+          "draftWrites": 1,
+          "operationReceipts": 1,
+          "reviewWrites": 1
+        },
+        "partialBufferStatus": "needs_input",
+        "associationState": "operator_selected",
+        "qualification": "not_assessed",
+        "learningLabels": false,
+        "stagingObservation": "Exact retained LF recipe differs from staging CRLF; current-reader refusal and prior source/native/profile/receipt hashes remain unchanged."
       }
     },
     {
