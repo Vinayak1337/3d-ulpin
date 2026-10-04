@@ -1,0 +1,209 @@
+{
+  "assignment": {
+    "bytes": 29248,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-30.fragment-rank-checkpoint-code.assignment.json",
+    "physicalSha256": "c185415e06b2c8b6c076c0e925369c645e10509ac01c68d32b4e8c98511c92a2"
+  },
+  "baseCommit": "7a42a9e3d70b816612def13dec7125b9215d4dc7",
+  "branch": "task/ml-association-student-20261002",
+  "checks": {
+    "actualScope": "Real retained source/train/donor metadata and admission, exact safe-format/schema/state helpers with stdlib doubles; positive phase1/phase2 stager stops at first mkdir; worker/shared-fit pre-native boundary and forged predecessor refusal. No old suite or native proof rerun.",
+    "controlsPassed": 4,
+    "diffCheckExitCode": 0,
+    "doublesDisclosure": [
+      "Tensor/autograd/device/RNG byte arrays and modeled optimizer/scaler/dropout behavior; not native float/device equivalence",
+      "Safetensors codec double writes/reads the format using stdlib struct; actual production validators/capture/publish/read/restore execute; native safetensors unrun",
+      "Virtual read-only assignment/freeze/preceding outputs/acceptance/checkpoint files, Path stat/iteration and checked_path double for admission fixtures; alias rejection separately uses real paths",
+      "Clean future Git replies and disk headroom for actual stage paths; first mkdir interrupted before any real stage/copy",
+      "Protected accepted_outputs guard result doubled for complete phase2 admission; native prior progress/token/control/state are synthetic metadata fixtures",
+      "Worker boundary and pre-native phase observation intercepted; v1 rank freeze validation doubled for affected historical dispatch"
+    ],
+    "firstInvocationPassed": true,
+    "focusedCommand": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_fragment_rank_checkpoint.py"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "exitCode": 0
+    },
+    "futureSourceSetMatchesPacket": 35,
+    "historicalTimeoutArtifactsUnchanged": true,
+    "ownedRuntimeSources": 6,
+    "ownedSourcesCompiledInMemory": 7,
+    "protectedRuntimeSources": 29,
+    "protectedSourcesPhysicalAndCanonicalUnchanged": 40,
+    "trainAuthoritiesUnchanged": 14
+  },
+  "codeCommit": "d98903f7cee2fdf7e82b12c785f5445978c309c9",
+  "codeDiffCheck": {
+    "bytes": 205,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\code-diff-check.json",
+    "physicalSha256": "257060d4884ca0366962f4e6aabb115d97b107ebf7aa1b3008477bd820cad4c1"
+  },
+  "execution": {
+    "actualStageOrProfile": false,
+    "cpuStdlibOnly": true,
+    "developmentOrExpectationsOrEvaluationOpened": false,
+    "gpuFitInferenceReload": false,
+    "nativeImports": false,
+    "newChatsSubagentsPollingSchedules": false,
+    "positiveExecutionAssignmentWritten": false,
+    "prototypeExecutable": false,
+    "runtimeModelTokenizerBytesRead": false,
+    "servicesProvidersHostChanges": false,
+    "stagingModifiedPushDeployPromotion": false,
+    "teacherTrainPublicationChanged": false
+  },
+  "implementation": [
+    "Separate exact STUDENT-31 phase assignment/freeze authority; fixed ranges 0->20,20->40,40->60; same global seed17 schedule and original model/data/prompt/loss/LoRA/numerics.",
+    "Named 96 fp32 masters/540672 parameters; AdamW named group order/settings and all96 moments/steps; five GradScaler entries; complete cursor/contribution/loss/order binding; torch CPU/single CUDA and Python RNG.386 tensors including two RNG tensors.",
+    "Strict bounded JSON and safetensors only. Byte-level header/extents/shape/dtype/finite/step checks before native deserialization; exact file sets/hashes. Exclusive durable flushed/fsynced closed files, exact readback and RNG neutrality; manifest last. Partial save is not resumable.",
+    "Later phase accepts only separately pinned successful predecessor with protected accepted_outputs guard/map, completion and explicit phase history/proof/base/state binding plus independent acceptance. Readonly staged copies use existing containment paths.",
+    "Fresh original-model/shared PEFT loader and optimizer/scaler retained. Restore exact state and RNG after initialization/controls immediately before next parent. Shared loop keeps global updates/epochs and complete loss history; local phase has20 updates/114 contributions.",
+    "Each phase verifies original290-tensor base unchanged and full checkpoint equality, then emits explicit phase manifest/result through existing supervisor completion. Phases1/2 emit no final adapter and fitPerformed=false; phase3 alone uses shared adapter save/equality and final60-update result.",
+    "Tiny future native proof uses actual serializer, dropout/AdamW/GradScaler and fresh objects with exact next-loss/gradient/master/optimizer/scaler/RNG/cursor comparison. Proof isolates/restores real training RNG; later phases inherit the accepted first-phase proof."
+  ],
+  "limitations": [
+    "Native safetensors serialization, declared5056-byte CPU/16-byte CUDA RNG state shape, exact stochastic optimizer continuity and full model phase completion remain unrun. The future native gate fails closed on mismatch.",
+    "CPU tensor/device/codec/optimizer models and synthetic successful-run metadata are technical doubles, not native correctness, resource, relevance or learning qualification.",
+    "STUDENT29 timed out without adapter/checkpoint; its44 completed updates remain immutable historical evidence and cannot resume or count toward the new experiment.",
+    "Each phase needs an independent positive final-clean-head assignment; phases2/3 also need separately reviewed successful preceding checkpoint acceptance. No phase runs in Task30.",
+    "Frozen57 pairs from ten provisional parents/two train families retain needs_independent_review. No new labels or quality comparison; Sarvam excluded."
+  ],
+  "nativeProofPlan": {
+    "actualSerializer": true,
+    "device": "cuda",
+    "dropout": 0.05,
+    "exactComparisons": true,
+    "freshModelOptimizerScaler": true,
+    "requiredIn": "first independently assigned contained phase before model fitting",
+    "splitAfter": 2,
+    "status": "unrun",
+    "trainingRngIsolation": true,
+    "updates": 4
+  },
+  "observedStagingReadOnlyHead": "d4bdbbe75ae3d2a5aedcb2b7fb1a9dde5dc571d6",
+  "ownedSources": [
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py",
+    "scripts/usp/learning/association/stage_fragment_rank_phase.py",
+    "scripts/usp/learning/association/test_fragment_rank_checkpoint.py"
+  ],
+  "phaseInputContract": {
+    "newContainmentCliCapability": false,
+    "newReadonlyFiles": [
+      "previous-state.json",
+      "previous-tensors.safetensors",
+      "previous-manifest.json",
+      "previous-acceptance.json",
+      "previous-checkpoint-proof.json"
+    ],
+    "phase1Files": 14,
+    "phase2And3Files": 19
+  },
+  "privateReceiptIndex": {
+    "bytes": 3998,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\receipt-index.json",
+    "physicalSha256": "bdc09ad257ebac868f5bc854abe19de0cfc23aad5f2108cc98484e110b695389"
+  },
+  "receipts": {
+    "checkpointSchema": {
+      "bytes": 74108,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\checkpoint-schema.json",
+      "physicalSha256": "095891e208344e8133f98fe819dda9b2082293e4cf7950da36ae3ae5081ffbcd"
+    },
+    "checks": {
+      "bytes": 2204,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\checks.json",
+      "physicalSha256": "05d9335fc183d44d4d6f3a055fc0a21aeb9676cb603f2601a4a4996dceef490a"
+    },
+    "disabledPrototypes": [
+      {
+        "bytes": 33314,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\phase-1-disabled-prototype.json",
+        "physicalSha256": "acefe1797bd4e6be06f6594fc9e8b7ba3a2170d8598e2a29dd39c1fffcf9b4a1"
+      },
+      {
+        "bytes": 33315,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\phase-2-disabled-prototype.json",
+        "physicalSha256": "04d1c38c3c87e952ecccbd29983d30213c40620720cac26d01f92fd04a2bc9d6"
+      },
+      {
+        "bytes": 33314,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\phase-3-disabled-prototype.json",
+        "physicalSha256": "d3f77f359c417216e667998885f37c91bba4dfbb2948b974f9da44e0a6eaf56d"
+      }
+    ],
+    "inputs": {
+      "bytes": 6931,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\input-pins.json",
+      "physicalSha256": "c0b0ba1feb81a719cede0aa56f19895bbde660a1284a6ad141052ff65d5b0a85"
+    },
+    "phasePlan": {
+      "bytes": 14636,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\phase-plan.json",
+      "physicalSha256": "f3f192c91ac88e03fca8b42df0cd2723e0b22079a3dab66c5ce2fd701eef7b8d"
+    },
+    "rawControlFiles": {
+      "compile-1.json": {
+        "bytes": 1410,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\compile-1.json",
+        "physicalSha256": "6ca74aaf739d2d95aae892838c45cf15626523dce3bbeb033b4d8e361ec9e58b"
+      },
+      "controls-1.command.json": {
+        "bytes": 374,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\controls-1.command.json",
+        "physicalSha256": "be6a3f08f988f5c5704510ea05c2d73f23ba5c1937753310436e82ce5bbf39e9"
+      },
+      "controls-1.stderr.txt": {
+        "bytes": 643,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\controls-1.stderr.txt",
+        "physicalSha256": "d20d933e3bf72f94bae919c0af66463d250dd921b5b693280b8834d56413f9b4"
+      },
+      "controls-1.stdout.txt": {
+        "bytes": 0,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\controls-1.stdout.txt",
+        "physicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "sources": {
+      "bytes": 11326,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-checkpoint-code-v1-f2403b84dc2249caa8f7663b523fdc58\\execution-sources.json",
+      "physicalSha256": "b8f6261bdd99ce4648868435f9f86962b59f591a96bea9a66bc35897189b4291"
+    }
+  },
+  "recordedAtUtc": "2026-10-04T00:26:54.040320+00:00",
+  "researchReuse": {
+    "attribution": "BSD-style / Apache-2.0 references; no upstream serialization implementation copied, no new dependency.",
+    "receipt": {
+      "bytes": 8993,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-timeout-recovery-research-v1.json",
+      "physicalSha256": "a043d0427ffcadc56ff6275e5368353fd8e3024ae581b06c4f7fb182831f73d0"
+    },
+    "versions": [
+      "PyTorch2.8.0 GradScaler.state_dict",
+      "Accelerate1.10.1 checkpointing coverage"
+    ]
+  },
+  "settings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard",
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandboxMode": "danger-full-access"
+  },
+  "status": "implemented_cpu_controls_passed_native_unrun",
+  "task": "STUDENT-30-FRAGMENT-RANK-CHECKPOINT-CODE",
+  "version": "association-rank-checkpoint-code-evidence/1",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
