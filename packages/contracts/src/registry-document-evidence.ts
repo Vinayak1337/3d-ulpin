@@ -16,6 +16,7 @@ import {PacketRegionSelectionSchema,PacketRegionPageSchema,PacketRegionWorkerSch
 import {PacketImageRegionSelectionSchema,PacketImageRegionWorkerSchema} from './packet-image-region';
 import {RegistrySurveyReferenceFieldsSchema,RegistrySurveyFragmentSchema} from './registry-survey-reference';
 import {RegistryGltfReferenceFieldsSchema,RegistryGltfFragmentSchema} from './registry-gltf-reference';
+import {RegistryObjReferenceFieldsSchema,RegistryObjFragmentSchema} from './registry-obj-reference';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),revision=z.number().int().positive();
 const citationBase={id:hash,document:DocumentAssociationSourceSchema,
@@ -28,6 +29,8 @@ export const RegistryNativeDocumentCitationSchema=z.strictObject({...citationBas
   version:z.literal('registry-document-citation/1'),partId:z.uuid(),partSha256:hash,locator:DocumentLocatorSchema});
 export const RegistrySurveyCitationSchema=RegistrySurveyReferenceFieldsSchema.extend({...citationBase,
   version:z.literal('registry-survey-row-citation/1')});
+export const RegistryObjCitationSchema=RegistryObjReferenceFieldsSchema.extend({...citationBase,
+  version:z.literal('registry-obj-polygon-citation/1')});
 export const RegistryGltfCitationSchema=RegistryGltfReferenceFieldsSchema.extend({...citationBase,
   version:z.literal('registry-gltf-node-citation/1')});
 export const RegistryOcrDocumentCitationSchema=z.strictObject({...citationBase,
@@ -143,7 +146,7 @@ export const RegistryImageRegionCitationSchema=z.strictObject({
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
 export const RegistryDocumentCitationSchema=z.discriminatedUnion('version',[
-  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,RegistryImageRegionCitationSchema,RegistryDXFCitationSchema,RegistryKMLCitationSchema,RegistryCityGMLCitationSchema,RegistryGeoParquetCitationSchema,RegistryRasterCitationSchema,RegistryPointCitationSchema,RegistrySurveyCitationSchema,RegistryGltfCitationSchema]);
+  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,RegistryImageRegionCitationSchema,RegistryDXFCitationSchema,RegistryKMLCitationSchema,RegistryCityGMLCitationSchema,RegistryGeoParquetCitationSchema,RegistryRasterCitationSchema,RegistryPointCitationSchema,RegistrySurveyCitationSchema,RegistryGltfCitationSchema,RegistryObjCitationSchema]);
 export const RegistryDocumentCitationsSchema=z.array(RegistryDocumentCitationSchema).max(25)
   .superRefine((items,ctx)=>{
     if(new Set(items.map(item=>item.id)).size!==items.length)
@@ -152,7 +155,7 @@ export const RegistryDocumentCitationsSchema=z.array(RegistryDocumentCitationSch
 export const RegistryDocumentAmendmentSchema=z.strictObject({requestKey:z.uuid(),expectedDraftRevision:revision,
   recordId:z.uuid(),expectedRecordRevision:revision,
   add:z.strictObject({document:DocumentAssociationSourceSchema,partIds:z.array(z.uuid()).min(1).max(25)}).optional(),
-  addFusion:z.strictObject({contextSha256:hash,selection:SourceFusionRequestSchema,gltfReferences:z.literal(true).optional()}).optional(),
+  addFusion:z.strictObject({contextSha256:hash,selection:SourceFusionRequestSchema,gltfReferences:z.literal(true).optional(),objReferences:z.literal(true).optional()}).optional(),
   addRegion:RegistryRegionAdditionSchema.optional(),
   addImageRegion:RegistryImageRegionAdditionSchema.optional(),
   assertIFCIdentity:hash.optional(),
@@ -164,7 +167,9 @@ export const RegistryDocumentAmendmentSchema=z.strictObject({requestKey:z.uuid()
     ctx.addIssue({code:'custom',message:'Confirm one existing exact IFC citation as a separate amendment. Withdraw it by removing the citation.'});
   if([value.add,value.addFusion,value.addRegion,value.addImageRegion].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Use one explicit addition per amendment.'});
   if(value.addFusion&&!value.addFusion.selection.sources.some(s=>s.kind==='obj'?s.polygonIndices.length:s.kind==='gltf'?s.nodeIndices.length:s.kind==='survey_report'?s.rowOrdinals.length:s.kind==='document'?s.partIds.length:s.kind==='document_ocr'?s.itemOrdinals.length:s.kind==='ifc'?s.stepIds.length:s.kind==='dxf'?s.entityOrdinals.length:s.kind==='kml'?s.featureOrdinals.length:s.kind==='citygml'?s.buildingOrdinals.length:s.kind==='geoparquet'?s.rowIndices.length:s.kind==='raster'||s.kind==='point'))
-    ctx.addIssue({code:'custom',message:'Select at least one survey row, native document, OCR observation, IFC record, DXF entity, KML feature, CityGML building, GeoParquet row, raster metadata window or point metadata batch to cite.'});
+    ctx.addIssue({code:'custom',message:'Select at least one OBJ polygon, glTF node, survey row, native document, OCR observation, IFC record, DXF entity, KML feature, CityGML building, GeoParquet row, raster metadata window or point metadata batch to cite.'});
+  if(value.addFusion?.objReferences&&!value.addFusion.selection.sources.some(source=>source.kind==='obj'))
+    ctx.addIssue({code:'custom',message:'Select an explicit OBJ polygon source for the OBJ reference option.'});
   if(value.clearAll&&(value.add||value.addFusion||value.addRegion||value.addImageRegion||value.remove.length))
     ctx.addIssue({code:'custom',message:'Clear all citations as a separate amendment.'});
   if(value.add && new Set(value.add.partIds).size!==value.add.partIds.length)
@@ -185,6 +190,7 @@ export const RegistryDocumentEvidenceSchema=z.strictObject({draftId:z.uuid(),dra
     z.strictObject({pin:RegistryPointCitationSchema,fragment:RegistryPointFragmentSchema}),
     z.strictObject({pin:RegistrySurveyCitationSchema,fragment:RegistrySurveyFragmentSchema}),
     z.strictObject({pin:RegistryGltfCitationSchema,fragment:RegistryGltfFragmentSchema}),
+    z.strictObject({pin:RegistryObjCitationSchema,fragment:RegistryObjFragmentSchema}),
     z.strictObject({pin:RegistryRegionCitationSchema}),z.strictObject({pin:RegistryImageRegionCitationSchema})])).max(25),
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
@@ -196,6 +202,7 @@ export const RegistryDocumentReviewContextSchema=z.strictObject({subject:z.strin
 export type RegistryDocumentCitation=z.infer<typeof RegistryDocumentCitationSchema>;
 export type RegistryNativeDocumentCitation=z.infer<typeof RegistryNativeDocumentCitationSchema>;
 export type RegistrySurveyCitation=z.infer<typeof RegistrySurveyCitationSchema>;
+export type RegistryObjCitation=z.infer<typeof RegistryObjCitationSchema>;
 export type RegistryGltfCitation=z.infer<typeof RegistryGltfCitationSchema>;
 export type RegistryOcrDocumentCitation=z.infer<typeof RegistryOcrDocumentCitationSchema>;
 export type RegistryIFCCitation=z.infer<typeof RegistryIFCCitationSchema>;
