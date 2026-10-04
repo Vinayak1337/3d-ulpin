@@ -16,6 +16,7 @@ export * from './private-mvt';
 export * from './semantic-chunks';
 export * from './sufficiency';
 export * from './document-ingestion';
+export * from './document-claims';
 export * from './streaming-vector';
 export * from './chunk-mapping';
 export * from './streamed-profile';
