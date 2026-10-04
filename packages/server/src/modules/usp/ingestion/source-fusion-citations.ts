@@ -46,8 +46,11 @@ export function citationReadBudget():FusionBudget{
  * Its complete case gate set must already be acquired before destination locks.
  * No independent transaction, write or trusted caller-supplied context exists. */
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
-  request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string){
-  if(request.selection.sources.some(source=>source.kind==='survey_report'))
+  request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string,
+  surveyReferences=false){
+  // Only the canonical officer amendment enables survey references. Proposal
+  // and generic resolver callers retain the context-only refusal.
+  if(request.selection.sources.some(source=>source.kind==='survey_report')&&(!surveyReferences||!siteId))
     throw new AppError(422,'SOURCE_FUSION_SURVEY_CONTEXT_ONLY',
       'Survey rows support source context only; typed survey binding requires a separately supported reviewed workflow.');
   if(request.selection.sources.some(source=>source.kind==='point')&&!siteId)
@@ -111,11 +114,10 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       if(loaded.kind==='point')points.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       return loaded;
     }});
-  // Preserve every supported fragment and the exact context hash. Refuse an
-  // unexpected survey projection instead of letting legacy writers treat it as
-  // OCR, and express that checked boundary in the returned TypeScript type.
+  // Preserve every supported fragment and the exact context hash. Survey rows
+  // reach only the explicit typed reference branch in the canonical writer.
   const context={...assembled,sources:assembled.sources.map(source=>{
-    if(source.kind==='survey_report')throw new AppError(422,'SOURCE_FUSION_SURVEY_CONTEXT_ONLY',
+    if(source.kind==='survey_report'&&!surveyReferences)throw new AppError(422,'SOURCE_FUSION_SURVEY_CONTEXT_ONLY',
       'Survey rows cannot enter the reviewed registry citation workflow.');
     return source;
   })};
