@@ -6372,6 +6372,24 @@
           "Each current checkout needs fresh physical native-lock/profile admission; historical locks/receipts and source hashes are unchanged.",
           "No inferred frames/triangulation/property identity/measurements/accuracy/rights or authentic correspondence."
         ]
+      },
+      "sourceFusionEvidence": {
+        "handoff": "docs/evidence/usp/source-fusion-obj-handoff.md",
+        "receiptSha256": "2eea286a964d43260254022a5dde81f24f25b751c972335cbd279c57e9e05419",
+        "executionCommit": "303bad2867f7f237fe069160913ce6e197a549ca",
+        "scope": "Retained real native artifacts and document bytes over disclosed SQL/storage/document/tool controls; no live persistence or current profile admission",
+        "contextSha256": "3d76c868e3ce54f5f4e7db566227d68d217f52774581f81a138c2d1925be8c1f",
+        "responseBytes": 21778,
+        "selectedPolygons": [
+          0,
+          17
+        ],
+        "coordinateRecords": 8,
+        "unresolvedSelectedResourceDeclarations": 0,
+        "representation": "context_mesh",
+        "associationState": "not_assessed",
+        "learningLabels": false,
+        "stagingObservation": "Integrated controlled checks refuse409 SOURCE_FUSION_STALE: staging CRLF reader781caeec7f81004339455ae8fec8842a8cc59987a76ac40defc9494c0bf0c2e2 differs from retained LF readerc2591f28100a7857db3769313f249193d4e6808103afc8d16504db022bca00a7. Historical execution/final code remain distinct; no normalization or native rerun."
       }
     },
     {
@@ -6495,6 +6513,24 @@
           "Each current checkout needs fresh physical native-lock/profile admission; historical locks/receipts and source hashes are unchanged.",
           "No inferred frames/triangulation/property identity/measurements/accuracy/rights or authentic correspondence."
         ]
+      },
+      "sourceFusionEvidence": {
+        "handoff": "docs/evidence/usp/source-fusion-obj-handoff.md",
+        "receiptSha256": "2eea286a964d43260254022a5dde81f24f25b751c972335cbd279c57e9e05419",
+        "executionCommit": "303bad2867f7f237fe069160913ce6e197a549ca",
+        "scope": "Retained real native artifacts and document bytes over disclosed SQL/storage/document/tool controls; no live persistence or current profile admission",
+        "contextSha256": "008f782991dc8be3e70ff0a3486703bb8060995563316d8f3fc845657ec454ff",
+        "responseBytes": 24002,
+        "selectedPolygons": [
+          0,
+          17
+        ],
+        "coordinateRecords": 8,
+        "unresolvedSelectedResourceDeclarations": 2,
+        "representation": "context_mesh",
+        "associationState": "not_assessed",
+        "learningLabels": false,
+        "stagingObservation": "Integrated controlled checks refuse409 SOURCE_FUSION_STALE: staging CRLF reader781caeec7f81004339455ae8fec8842a8cc59987a76ac40defc9494c0bf0c2e2 differs from retained LF readerc2591f28100a7857db3769313f249193d4e6808103afc8d16504db022bca00a7. Historical execution/final code remain distinct; no normalization or native rerun."
       }
     }
   ],

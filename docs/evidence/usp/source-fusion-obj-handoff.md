@@ -1,5 +1,7 @@
 # FUSION-OBJ-01: selected source-native polygons in combined evidence
 
+Lead acceptance, 4 October: code/handoff integrate as `9484fd76` / `b29e4ae2`. Bounded code review,28 physical receipt/input/code and12 integrated Git code pins match; backend/client types and API/source-pin/handoff/whitespace checks pass,273 operations/307 schemas. The integrated two journey checks refuse409 under staging's exact CRLF reader`781caeec7f81004339455ae8fec8842a8cc59987a76ac40defc9494c0bf0c2e2`, distinct from retained/worker LF recipe`c2591f28100a7857db3769313f249193d4e6808103afc8d16504db022bca00a7`. Worker successful controlled proof is reused; no native rerun, fabricated envelope or normalization. Lead publishes root export, existing controller/operation wording, catalogues and generated API/client. Fresh runtime qualification remains OBJ-HTTP-01; [LINK-OBJ-01](../../orchestration/PARALLEL_20261003.md) is a separate explicit reference feature.
+
 Delivered from accepted base `5cc9892f2228f98deea0323bb178a4fff8106fde` in exclusive `C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin`, branch `task/desktop-fusion-obj`. Implementation/check commit `303bad2867f7f237fe069160913ce6e197a549ca`. Completed `task/desktop-obj-api@8a9a6ce6dc8295ea158fb819cf374f3c4ac28e17` and its originals/receipts remain preserved. Staging read-only. Requested Sol6.1/xhigh/default-standard1x; supplied `never`/`danger-full-access`, actual per-turn model/effort/tier unexposed.
 
 ## Implemented flow
