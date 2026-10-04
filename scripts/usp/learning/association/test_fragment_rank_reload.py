@@ -152,8 +152,9 @@ class Logits:
 
 class InputTensor:
     shape = (1, 1)
+    def __init__(self, value=101): self.value = value
     def __getitem__(self, key): return self
-    def tolist(self): return [101]
+    def tolist(self): return [self.value]
     def to(self, device): return self
 
 
@@ -287,7 +288,7 @@ class Controls(unittest.TestCase):
         f = self.fixture
         torch = types.SimpleNamespace(float32="float32-double", inference_mode=contextlib.nullcontext,
             cuda=types.SimpleNamespace(synchronize=lambda: None))
-        tokenizer = lambda *args, **kwargs: {"input_ids": InputTensor(), "attention_mask": InputTensor()}
+        tokenizer = lambda *args, **kwargs: {"input_ids": InputTensor(), "attention_mask": InputTensor(1)}
         model = PeftModel(f)
         fake_peft = types.ModuleType("peft"); fake_peft.PeftModel = PeftModel; fake_peft.get_peft_model_state_dict = lambda m: m.saved
         fake_transformers = types.ModuleType("transformers"); fake_transformers.Qwen2ForCausalLM = Qwen2ForCausalLM
