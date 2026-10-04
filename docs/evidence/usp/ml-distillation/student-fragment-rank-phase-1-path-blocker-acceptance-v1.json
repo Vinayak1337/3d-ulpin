@@ -1,0 +1,111 @@
+{
+  "additionalAffectedCallsites": "Also review phase2/3 checked_execution metadata validation of previous.root/acceptancePath. Host-only absolute predecessor/acceptance locations must not be stat/opened inside the current child; child validates structural frozen bindings then reads only profile-pinned copied inputs.",
+  "analogue": {
+    "locations": "safe_path lines63-74; load_profile(host) lines90-125; require_model_boundary lines138-167",
+    "origin": "retained inspected project containment authority, protected unchanged",
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\model_isolation.py",
+    "physicalSha256": "69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676",
+    "reusableDesign": "Host full-ancestor validation; child walks only within independently verified boundary including root. Do not use untrusted environment/input path as security proof."
+  },
+  "containedChild": {
+    "acceptedMapAbsent": true,
+    "actualAppContainerAndJobVerified": true,
+    "capabilityCount": 0,
+    "childExitCode": 1,
+    "cleanupPassed": true,
+    "jobClosed": true,
+    "outputsAccepted": false,
+    "outputsEmpty": true
+  },
+  "continuation": 1,
+  "decision": "Accept immutable consumed guard failure evidence only; no native/checkpoint/fit/phase/quality acceptance.",
+  "diagnosis": "New checkpoint checked_path walks all ancestors. Its actual AppContainer worker reaches stage inputs, then parent.exists() outside allowed stage raises WinError5 before native import. Existing model_isolation.safe_path stops at verified stage root; load_profile(host=True) inspects outside ancestors on host only. Fix path validation scope, not ACL/resource/model/loss settings.",
+  "executionHead": "37fac56393acce067d717d5f259d9bf760396727",
+  "failure": {
+    "diagnosisScope": "Direct traceback and source inspection. No modified code, reproduction, retry, permission broadening or native launch beyond this one guarded child.",
+    "failureArtifactAbsentReason": "Failure occurred before output directory creation and the worker try/except; primary traceback is preserved in protected guard observation.",
+    "guardFailure": {
+      "message": "Qwen containment: child exit/output rejected",
+      "type": "RuntimeError"
+    },
+    "message": "[WinError 5] Access is denied: 'E:/BhuAayam-data/task-data/ml-distillation/student'",
+    "outputTruncated": false,
+    "sequence": "AppContainer bootstrap reached association_adapter.worker; phase.checked_inputs called checkpoint.checked_path(inputs) before output_dir.mkdir and before native imports. checked_path iterates input path and all ancestors; Path.exists/stat on the outside-stage student parent is denied.",
+    "sourceLocations": {
+      "ancestorInspection": "services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py:55",
+      "phaseAdmission": "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py:190",
+      "worker": "scripts/usp/learning/association/association_adapter.py:63"
+    },
+    "traceback": "Traceback (most recent call last):\r\n  File \"E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\code\\scripts\\usp\\learning\\model_isolation.py\", line 404, in <module>\r\n    bootstrap()\r\n  File \"E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\code\\scripts\\usp\\learning\\model_isolation.py\", line 399, in bootstrap\r\n    runpy.run_path(session[\"script\"], run_name=\"__main__\")\r\n  File \"<frozen runpy>\", line 291, in run_path\r\n  File \"<frozen runpy>\", line 98, in _run_module_code\r\n  File \"<frozen runpy>\", line 88, in _run_code\r\n  File \"E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\code\\scripts\\usp\\learning\\association\\association_adapter.py\", line 233, in <module>\r\n    main()\r\n  File \"E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\code\\scripts\\usp\\learning\\association\\association_adapter.py\", line 216, in main\r\n    worker(args)\r\n  File \"E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\code\\scripts\\usp\\learning\\association\\association_adapter.py\", line 63, in worker\r\n    selector.checked_inputs(freeze, assignment, args.run_freeze.parent)\r\n  File \"E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\code\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_phase_adapter.py\", line 190, in checked_inputs\r\n    checked_freeze(freeze, assignment); inputs = checkpoint.checked_path(inputs)\r\n                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\code\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_checkpoint.py\", line 55, in checked_path\r\n    if part.exists():\r\n       ^^^^^^^^^^^^^\r\n  File \"E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\runtime\\Lib\\pathlib.py\", line 1235, in exists\r\n    self.stat()\r\n  File \"E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\runtime\\Lib\\pathlib.py\", line 1013, in stat\r\n    return os.stat(self, follow_symlinks=follow_symlinks)\r\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\nPermissionError: [WinError 5] Access is denied: 'E:\\\\BhuAayam-data\\\\task-data\\\\ml-distillation\\\\student'\r\n",
+    "type": "PermissionError"
+  },
+  "guard": {
+    "bytes": 40973,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-1f6706ada7cb4d7ab2704f3ae324d9d6\\receipts\\association_adapter-fit-guard.json",
+    "physicalSha256": "23e88f08024bc2adb6afa12bc0e61fe22cb90bcfa74bc008222f58dc2e9d21c8"
+  },
+  "learnerClean": true,
+  "next": "STUDENT-32 code-only explicit stage-bound path correction; no ACL widening/catching-and-ignoring/no unchanged guard retry. Reviewed code/new clean-head frozen profile precede any native attempt.",
+  "ownerFinalization": {
+    "bytes": 2757,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-1-continuation-1-technical-v1-aee467799b2c489c8f24d83671af9d81\\finalization.json",
+    "physicalSha256": "f6ab74282067d16f7513f81464d13519a437ecac05d03a9eb6400999d37a62bb"
+  },
+  "phase": {
+    "endUpdate": 20,
+    "final": false,
+    "localContributions": 114,
+    "localUpdates": 20,
+    "number": 1,
+    "startUpdate": 0
+  },
+  "privateReceiptIndex": {
+    "bytes": 9241,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-1-continuation-1-technical-v1-aee467799b2c489c8f24d83671af9d81\\receipt-index.json",
+    "physicalSha256": "b6c075d55cf0fa993a783a45c3483a54d587ae008bbf15405f3c193bd3f0f1b0"
+  },
+  "privateTechnicalRecovery": {
+    "bytes": 23519,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-phase-1-continuation-1-technical-v1-aee467799b2c489c8f24d83671af9d81\\technical-recovery.json",
+    "physicalSha256": "afebe15d226562a9a17c1a637d22ac7294385d557b3e6c36489b8af1030a7bcd"
+  },
+  "qualification": "AppContainer worker bootstrap/admission failure only. Original model/tokenization/checkpoint split proof and phase fitting remain unrun; recorded Job/RSS values describe this failed bootstrap, not a completed model phase.",
+  "recordedAtUtc": "2026-10-04T01:09:05.526262+00:00",
+  "repositoryWrites": false,
+  "resources": {
+    "childElapsedSeconds": null,
+    "childFailure": "exit1 with PermissionError",
+    "childTimedOut": false,
+    "cleanupElapsedSeconds": null,
+    "cudaAllocatedPeakBytes": null,
+    "cudaReservedPeakBytes": null,
+    "cudaState": "native/CUDA imports unrun",
+    "effectiveJobMemoryLimitBytes": 6442450944,
+    "guardElapsedSeconds": 120.67199999999139,
+    "guardTimingScope": "Recorded guard elapsed includes guard setup, child and cleanup; does not include preceding load_profile admission. No exact child-only or cleanup-only elapsed was recorded.",
+    "hostCommandElapsedSeconds": 284.2820000000065,
+    "limitsChanged": false,
+    "minimumCudaFreeBytes": null,
+    "peakJobCommittedBytes": 86818816,
+    "peakProcessRssBytes": 94736384,
+    "rssMethod": "50ms actual Job-member RSS/peak working sets"
+  },
+  "review": {
+    "bytes": 16728,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-31-path-blocker-review-v1-305f508133754c639637e993b6f10770\\review.json",
+    "physicalSha256": "4766c6039a92940af62642d5b9c50413f3a1953c80c2b7c76cde70b6d03671cc"
+  },
+  "reviewSummary": {
+    "allRecordedAclMetadataCommandsExitZero": true,
+    "contributions": 0,
+    "guardOutputTracebackExact": true,
+    "implicatedStagedAndCurrentSourcesMatched": 4,
+    "nativeImports": false,
+    "outputsEmpty": true,
+    "physicalReferencesMatched": 29,
+    "updates": 0
+  },
+  "stagingReadOnlyHead": "11e1b591db6433550ab26fec7a649b099de2a2e0",
+  "task": "STUDENT-31-FRAGMENT-RANK-PHASE-FIT",
+  "version": "association-rank-phase-contained-path-blocker-acceptance/1"
+}
