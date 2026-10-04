@@ -20,10 +20,10 @@ from geo.usp_learning.association.query_attention import ATTENTION_POLICY, ATTEN
 from geo.usp_learning.association.citation_view import checked_freeze, checked_citation_teacher, checked_reload_counts
 
 
-def representation_module(freeze, assignment):
+def representation_module(freeze, assignment, *, verified_root=None):
     if freeze.get("version") == "association-fragment-rank-phase-fit-freeze/1":
         from geo.usp_learning.association import fragment_rank_phase_adapter
-        fragment_rank_phase_adapter.checked_freeze(freeze, assignment)
+        fragment_rank_phase_adapter.checked_freeze(freeze, assignment, verified_root=verified_root)
         return fragment_rank_phase_adapter
     if freeze.get("version") == "association-fragment-rank-fit-freeze/1":
         from geo.usp_learning.association import fragment_rank_adapter
@@ -52,21 +52,24 @@ def representation_module(freeze, assignment):
 
 
 def worker(args):
-    require_model_boundary(args)
+    verified_root, _, _ = require_model_boundary(args)
     freeze = json.loads(args.run_freeze.read_bytes())
     assignment = json.loads(args.assignment.read_bytes())
-    selector = representation_module(freeze, assignment)
+    selector = representation_module(freeze, assignment, verified_root=verified_root)
     fragment_mode = bool(selector and getattr(selector, "IS_FRAGMENT", False))
     rank_mode = bool(selector and getattr(selector, "IS_RANK_FIT", False))
+    phase_scope = {"verified_root": verified_root} if selector and getattr(selector, "IS_RANK_PHASE", False) else {}
     if fragment_mode:
         selector.checked_cli(args, freeze)
-        selector.checked_inputs(freeze, assignment, args.run_freeze.parent)
+        selector.checked_inputs(freeze, assignment, args.run_freeze.parent, **phase_scope)
+    if phase_scope:
+        selector.checkpoint.checked_path(args.output_dir, verified_root=verified_root, allow_missing=True)
     args.output_dir.mkdir(exist_ok=False)
     phases = None
     try:
         freeze = json.loads(args.run_freeze.read_bytes())
         assignment = json.loads(args.assignment.read_bytes())
-        selector = representation_module(freeze, assignment)
+        selector = representation_module(freeze, assignment, verified_root=verified_root)
         actual_prompt = SYSTEM_PROMPT if selector is None else selector.SYSTEM_PROMPT
         if not fragment_mode and (assignment["settings"] != FIT or assignment["teacherV2Sha256"] != V2_SHA
                 or freeze["fitSettings"] != FIT or freeze["numerics"] != NUMERICS
@@ -87,8 +90,8 @@ def worker(args):
         for option, digest in freeze["inputSha256"].items():
             if digest_file(getattr(args, option)) != digest:
                 raise RuntimeError("frozen input drift: " + option)
-        plan = checked_freeze(freeze, assignment) if selector is None else selector.checked_freeze(freeze, assignment)
-        selector_contract = None if selector is None else selector.checked_inputs(freeze, assignment, args.run_freeze.parent)
+        plan = checked_freeze(freeze, assignment) if selector is None else selector.checked_freeze(freeze, assignment, **phase_scope)
+        selector_contract = None if selector is None else selector.checked_inputs(freeze, assignment, args.run_freeze.parent, **phase_scope)
         family = json.loads(args.family_freeze.read_bytes())
         schema_bytes = args.schema.read_bytes()
         if hashlib.sha256(schema_bytes.replace(b"\r\n", b"\n")).hexdigest() != family["schemaSha256"]:
@@ -112,6 +115,8 @@ def worker(args):
                 delta = selector.representation_metadata()
                 authority_key = "rank_phase_authority" if getattr(selector, "IS_RANK_PHASE", False) else "rank_authority"
                 fit_options = {authority_key: {"freeze": freeze, "assignment": assignment, "inputs": args.run_freeze.parent}}
+                if phase_scope:
+                    fit_options[authority_key].update(phase_scope)
             elif fragment_mode:
                 rows, delta = selector.checked_teacher(args.training_data.read_bytes(), selector_contract, contract, family)
                 fit_options = {"representation": selector.FragmentRepresentation(selector_contract, contract, family)}

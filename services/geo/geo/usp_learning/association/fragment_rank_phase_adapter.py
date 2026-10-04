@@ -112,7 +112,7 @@ def digest(value):
     return type(value) is str and re.fullmatch(r"[a-f0-9]{64}", value)
 
 
-def checked_execution(value, action):
+def checked_execution(value, action, *, verified_root=None):
     expected = recipe()
     checkpoint.exact(value, (*expected, "version", "task", "action", "executable", "executionAllowance", "studentCodeCommit",
                              "runtimeCodeCanonicalLfSha256", "experimentId", "phase", "previous"), "rank_phase_assignment_fields")
@@ -137,9 +137,13 @@ def checked_execution(value, action):
         require(all(digest(previous[k]) for k in previous if k.endswith("Sha256")), "rank_phase_previous_hash")
         checkpoint.exact(previous["checkpointFiles"], checkpoint.FILES, "rank_phase_previous_file_set")
         require(all(digest(v) for v in previous["checkpointFiles"].values()), "rank_phase_previous_file_pins")
-        root = checkpoint.checked_path(previous["root"])
+        # Original predecessor locations are host metadata in a contained child.
+        # The stager validates their filesystem authority before copying; child
+        # admission reads only the exact pinned copies in its verified profile.
+        location = checkpoint.checked_path if verified_root is None else checkpoint.metadata_path
+        root = location(previous["root"])
         require(root.parent == rank.PUBLICATION_ROOT.parent and root.name.startswith(STAGE_PREFIX + "fit-"), "rank_phase_previous_root")
-        receipt = checkpoint.checked_path(previous["acceptancePath"])
+        receipt = location(previous["acceptancePath"])
         require(receipt != root and root not in receipt.parents, "rank_phase_independent_acceptance_required")
         old = previous["binding"]; prior_hash = old.get("previousCheckpointManifestSha256")
         require((number == 2 and prior_hash is None or number == 3 and digest(prior_hash))
@@ -159,8 +163,8 @@ def previous_input_pins(assignment):
                                        "previous-checkpoint-proof.json": previous["checkpointProofSha256"]}
 
 
-def make_freeze(assignment, assignment_bytes, physical_pins):
-    checked_execution(assignment, "fit")
+def make_freeze(assignment, assignment_bytes, physical_pins, *, verified_root=None):
+    checked_execution(assignment, "fit", verified_root=verified_root)
     require(same(strict_json(assignment_bytes), assignment) and set(physical_pins) == set(SOURCE_PATHS)
             and all(digest(v) for v in physical_pins.values()), "rank_phase_freeze_sources")
     return {"version": VERSIONS["fit"][1], "action": "fit", "sourceCommit": assignment["studentCodeCommit"],
@@ -174,9 +178,9 @@ def make_freeze(assignment, assignment_bytes, physical_pins):
         "developmentInputsPresent": False, "hostTargetsPresent": False, "evaluationAllowed": False, "promotionAuthorized": False}
 
 
-def checked_freeze(freeze, assignment):
-    checked_execution(assignment, "fit")
-    expected = make_freeze(assignment, serialized(assignment), freeze.get("sourcePhysicalSha256", {}))
+def checked_freeze(freeze, assignment, *, verified_root=None):
+    checked_execution(assignment, "fit", verified_root=verified_root)
+    expected = make_freeze(assignment, serialized(assignment), freeze.get("sourcePhysicalSha256", {}), verified_root=verified_root)
     expected["inputSha256"]["assignment"] = freeze.get("inputSha256", {}).get("assignment")
     require(digest(expected["inputSha256"]["assignment"]) and same(freeze, expected), "rank_phase_freeze_drift")
     return training_plan()
@@ -186,28 +190,33 @@ def checked_cli(args, freeze):
     rank.checked_cli(args, freeze)
 
 
-def checked_inputs(freeze, assignment, inputs, *, source_root=None):
-    checked_freeze(freeze, assignment); inputs = checkpoint.checked_path(inputs)
+def checked_inputs(freeze, assignment, inputs, *, source_root=None, verified_root=None):
+    checked_freeze(freeze, assignment, verified_root=verified_root)
+    inputs = checkpoint.checked_path(inputs, verified_root=verified_root)
+    if verified_root is not None:
+        require(inputs == Path(verified_root) / "inputs", "rank_phase_contained_inputs")
     names = {*rank.PAYLOAD_PINS, "assignment.json", "runtime-requirements-resolved.txt", "run-freeze.json", *previous_input_pins(assignment)}
     require({p.name for p in inputs.iterdir()} == names, "rank_phase_input_set")
-    for name in names: checkpoint.checked_path(inputs / name)
+    for name in names: checkpoint.checked_path(inputs / name, verified_root=verified_root)
     require(sha((inputs / "assignment.json").read_bytes()) == freeze["inputSha256"]["assignment"]
             and same(strict_json((inputs / "assignment.json").read_bytes()), assignment)
             and same(strict_json((inputs / "run-freeze.json").read_bytes()), freeze)
             and sha((inputs / "runtime-requirements-resolved.txt").read_bytes()) == REQUIREMENTS_SHA, "rank_phase_input_authority")
     source_root = Path(__file__).resolve().parents[5] if source_root is None else Path(source_root)
+    if verified_root is not None:
+        require(source_root == Path(verified_root) / "code", "rank_phase_contained_sources")
     for name, pin in freeze["sourcePhysicalSha256"].items():
-        raw = (source_root / name).read_bytes()
+        raw = checkpoint.checked_path(source_root / name, verified_root=verified_root).read_bytes()
         require(sha(raw) == pin and sha(raw.replace(b"\r\n", b"\n")) == assignment["runtimeCodeCanonicalLfSha256"][name], "rank_phase_source_drift")
     if assignment["previous"] is not None:
         previous = assignment["previous"]
-        proof_raw = checkpoint.read_bytes(inputs / "previous-acceptance.json", checkpoint.MAX_JSON)
+        proof_raw = checkpoint.read_bytes(inputs / "previous-acceptance.json", checkpoint.MAX_JSON, verified_root=verified_root)
         require(sha(proof_raw) == previous["acceptanceSha256"] and same(strict_json(proof_raw), acceptance_body(previous)), "rank_phase_acceptance_copy")
-        control_raw = checkpoint.read_bytes(inputs / "previous-checkpoint-proof.json", checkpoint.MAX_JSON)
+        control_raw = checkpoint.read_bytes(inputs / "previous-checkpoint-proof.json", checkpoint.MAX_JSON, verified_root=verified_root)
         require(sha(control_raw) == previous["checkpointProofSha256"], "rank_phase_checkpoint_proof_pin")
         checked_proof(strict_json(control_raw))
         state, _, _ = checkpoint.read_checkpoint({n: inputs / CHECKPOINT_INPUTS[n] for n in checkpoint.FILES},
-            binding=previous["binding"], shapes=checkpoint.production_shapes(), schedule=schedule(), boundaries=(20, 40), expected_pins=previous["checkpointFiles"])
+            binding=previous["binding"], shapes=checkpoint.production_shapes(), schedule=schedule(), boundaries=(20, 40), expected_pins=previous["checkpointFiles"], verified_root=verified_root)
         require(state["cursor"]["updates"] == assignment["phase"]["startUpdate"], "rank_phase_resume_cursor")
     return rank.checked_payload({name: (inputs / name).read_bytes() for name in rank.PAYLOAD_PINS})
 
@@ -348,8 +357,9 @@ def checked_output_history(root, assignment, result, manifest, state):
 
 
 def admit_fit(authority, rows, contract, family):
-    checkpoint.exact(authority, ("freeze", "assignment", "inputs"), "rank_phase_loader_authority")
-    _, c, f, expected = checked_inputs(authority["freeze"], authority["assignment"], authority["inputs"])
+    checkpoint.exact(authority, ("freeze", "assignment", "inputs", "verified_root"), "rank_phase_loader_authority")
+    require(authority["verified_root"] is not None, "rank_phase_verified_root_required")
+    _, c, f, expected = checked_inputs(authority["freeze"], authority["assignment"], authority["inputs"], verified_root=authority["verified_root"])
     require(same(rows, expected) and same(contract, c) and same(family, f), "rank_phase_loader_payload")
     return rank.RankRepresentation(expected)
 
@@ -366,6 +376,7 @@ class PhaseSession:
     def __init__(self, authority):
         self.assignment = authority["assignment"]
         self.inputs = Path(authority["inputs"])
+        self.verified_root = authority["verified_root"]
         self.phase = self.assignment["phase"]
         self.binding = binding(self.assignment)
         self.start, self.end = self.phase["startUpdate"], self.phase["endUpdate"]
@@ -373,11 +384,11 @@ class PhaseSession:
 
     def controls(self, torch, output_dir, write, phases):
         if self.start == 0:
-            checkpoint.run_equivalence(torch, output_dir, write, phases)
+            checkpoint.run_equivalence(torch, output_dir, write, phases, verified_root=self.verified_root)
             path = Path(output_dir) / "checkpoint-equivalence.json"
         else:
             path = self.inputs / "previous-checkpoint-proof.json"
-        raw = checkpoint.read_bytes(path, checkpoint.MAX_JSON)
+        raw = checkpoint.read_bytes(path, checkpoint.MAX_JSON, verified_root=self.verified_root)
         checked_proof(strict_json(raw)); self.proof_sha = sha(raw)
 
     def initialize(self, torch, trainable, optimizer, scaler, base):
@@ -386,7 +397,7 @@ class PhaseSession:
             return 0, 0, []
         previous = self.assignment["previous"]
         state, raw, _ = checkpoint.read_checkpoint({n: self.inputs / CHECKPOINT_INPUTS[n] for n in checkpoint.FILES},
-            binding=previous["binding"], shapes=checkpoint.production_shapes(), schedule=schedule(), boundaries=(20, 40), expected_pins=previous["checkpointFiles"])
+            binding=previous["binding"], shapes=checkpoint.production_shapes(), schedule=schedule(), boundaries=(20, 40), expected_pins=previous["checkpointFiles"], verified_root=self.verified_root)
         restored = checkpoint.restore(state, raw, torch=torch, trainable=trainable, optimizer=optimizer, scaler=scaler,
             binding=previous["binding"], shapes=checkpoint.production_shapes(), schedule=schedule(), boundaries=(20, 40))
         require(restored["updates"] == self.start, "rank_phase_start_cursor")
@@ -400,7 +411,7 @@ class PhaseSession:
         state, tensors = checkpoint.capture(torch, trainable, optimizer, scaler, self.binding, cursor,
             checkpoint.production_shapes(), schedule(), (20, 40, 60))
         self.checkpoint_manifest = checkpoint.publish(Path(output_dir) / "checkpoint", state, tensors, torch=torch,
-            binding=self.binding, shapes=checkpoint.production_shapes(), schedule=schedule(), boundaries=(20, 40, 60))
+            binding=self.binding, shapes=checkpoint.production_shapes(), schedule=schedule(), boundaries=(20, 40, 60), verified_root=self.verified_root)
         self.manifest_sha = sha(checkpoint.canonical(self.checkpoint_manifest))
 
     def manifest_fields(self):

@@ -48,19 +48,43 @@ def finite(value):
     return value
 
 
-def checked_path(path):
+def metadata_path(path):
+    """Lexical host location only; child never probes historical host paths."""
     path = Path(path)
-    require(path.is_absolute() and path == path.resolve(), "checkpoint_path_alias")
-    for part in (path, *path.parents):
-        if part.exists():
-            info = part.lstat()
-            require(not part.is_symlink() and not getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT,
-                    "checkpoint_reparse_refused")
+    require(path.is_absolute() and ".." not in path.parts, "checkpoint_path_alias")
     return path
 
 
-def read_bytes(path, maximum):
-    path = checked_path(path)
+def checked_path(path, *, verified_root=None, allow_missing=False):
+    """Scope comes only from the caller's verified require_model_boundary result.
+
+    Host callers omit it and inspect every ancestor. Contained callers inspect
+    the verified root too, but never require access to its outside parents.
+    """
+    path = metadata_path(path)
+    if verified_root is not None:
+        verified_root = metadata_path(verified_root)
+        require(path.is_relative_to(verified_root), "checkpoint_path_escape")
+        info = verified_root.lstat()
+        require(not stat.S_ISLNK(info.st_mode) and not getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT,
+                "checkpoint_reparse_refused")
+        require(stat.S_ISDIR(info.st_mode) and verified_root == verified_root.resolve(), "checkpoint_root_alias")
+    require(path == path.resolve(), "checkpoint_path_alias")
+    for part in (path, *path.parents):
+        try:
+            info = part.lstat()
+        except FileNotFoundError:
+            require(verified_root is None or allow_missing, "checkpoint_missing_path")
+        else:
+            require(not stat.S_ISLNK(info.st_mode) and not getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT,
+                    "checkpoint_reparse_refused")
+        if part == verified_root:
+            break
+    return path
+
+
+def read_bytes(path, maximum, *, verified_root=None):
+    path = checked_path(path, verified_root=verified_root)
     require(path.is_file() and 0 < path.stat().st_size <= maximum, "checkpoint_file_bound")
     with path.open("rb") as stream:
         raw = stream.read(maximum + 1)
@@ -68,8 +92,8 @@ def read_bytes(path, maximum):
     return raw
 
 
-def durable_write(path, raw):
-    checked_path(path)
+def durable_write(path, raw, *, verified_root=None):
+    checked_path(path, verified_root=verified_root, allow_missing=True)
     with Path(path).open("xb") as stream:
         stream.write(raw); stream.flush(); os.fsync(stream.fileno())
 
@@ -208,30 +232,31 @@ def native_codec():
     return save, load
 
 
-def publish(directory, state, tensors, *, torch, binding, shapes, schedule, boundaries, codec=None):
+def publish(directory, state, tensors, *, torch, binding, shapes, schedule, boundaries, codec=None, verified_root=None):
     """Exclusive durable files; manifest appears only after exact native readback."""
     before = rng_snapshot(torch)
     checked_state(state, binding, shapes, schedule, boundaries)
     save, load = native_codec() if codec is None else codec
     raw = save(tensors); checked_tensor_bytes(raw, shapes, state["cursor"]["updates"])
     metadata = canonical(state); require(len(metadata) <= MAX_JSON, "checkpoint_json_bound")
-    directory = checked_path(directory); directory.mkdir()
-    durable_write(directory / FILES[0], metadata); durable_write(directory / FILES[1], raw)
-    back = read_bytes(directory / FILES[1], MAX_TENSORS); restored = load(back)
-    require(read_bytes(directory / FILES[0], MAX_JSON) == metadata and back == raw
+    directory = checked_path(directory, verified_root=verified_root, allow_missing=True); directory.mkdir()
+    durable_write(directory / FILES[0], metadata, verified_root=verified_root)
+    durable_write(directory / FILES[1], raw, verified_root=verified_root)
+    back = read_bytes(directory / FILES[1], MAX_TENSORS, verified_root=verified_root); restored = load(back)
+    require(read_bytes(directory / FILES[0], MAX_JSON, verified_root=verified_root) == metadata and back == raw
             and set(restored) == set(tensors) and all(torch.equal(restored[k], tensors[k]) for k in tensors), "checkpoint_roundtrip_not_exact")
     require(rng_equal(torch, before, rng_snapshot(torch)), "checkpoint_save_changed_rng")
     manifest = {"version": VERSION, "files": {FILES[0]: {"bytes": len(metadata), "sha256": sha(metadata)},
         FILES[1]: {"bytes": len(raw), "sha256": sha(raw)}}, "bindingSha256": sha(canonical(binding)),
         "tensorSpecsSha256": sha(canonical(tensor_specs(shapes))), "updates": state["cursor"]["updates"],
         "roundtripExact": True, "rngUnchanged": True}
-    durable_write(directory / FILES[2], canonical(manifest))
+    durable_write(directory / FILES[2], canonical(manifest), verified_root=verified_root)
     return manifest
 
 
-def read_checkpoint(paths, *, binding, shapes, schedule, boundaries, expected_pins=None):
-    require(set(paths) == set(FILES) and len({str(checked_path(p)).casefold() for p in paths.values()}) == 3, "checkpoint_file_map")
-    raw = {name: read_bytes(path, MAX_TENSORS if name == FILES[1] else MAX_JSON) for name, path in paths.items()}
+def read_checkpoint(paths, *, binding, shapes, schedule, boundaries, expected_pins=None, verified_root=None):
+    require(set(paths) == set(FILES) and len({str(checked_path(p, verified_root=verified_root)).casefold() for p in paths.values()}) == 3, "checkpoint_file_map")
+    raw = {name: read_bytes(path, MAX_TENSORS if name == FILES[1] else MAX_JSON, verified_root=verified_root) for name, path in paths.items()}
     if expected_pins is not None:
         require(set(expected_pins) == set(FILES) and all(sha(raw[n]) == expected_pins[n] for n in FILES), "checkpoint_external_pins")
     manifest = strict_json(raw[FILES[2]])
@@ -269,7 +294,7 @@ def restore(state, raw, *, torch, trainable, optimizer, scaler, binding, shapes,
     return copy.deepcopy(state["cursor"])
 
 
-def run_equivalence(torch, output_dir, write, phases):
+def run_equivalence(torch, output_dir, write, phases, *, verified_root=None):
     """Future native four-step proof; serialize and restore fresh stochastic objects."""
     before = rng_snapshot(torch); result = {"passed": False, "policy": PROOF_POLICY}
     shapes = {"proof.weight": [4, 4]}
@@ -304,13 +329,13 @@ def run_equivalence(torch, output_dir, write, phases):
         reference = fresh(); losses = [step(reference)[0] for _ in range(2)]
         state, tensors = capture(torch, *reference[1:], binding, cursor(losses), shapes, schedule, (2, 4))
         directory = Path(output_dir) / "checkpoint-equivalence-state"
-        publish(directory, state, tensors, torch=torch, binding=binding, shapes=shapes, schedule=schedule, boundaries=(2, 4))
+        publish(directory, state, tensors, torch=torch, binding=binding, shapes=shapes, schedule=schedule, boundaries=(2, 4), verified_root=verified_root)
         reference_tail = [step(reference) for _ in range(2)]
         expected, expected_tensors = capture(torch, *reference[1:], binding,
             cursor(losses + [v for v, _ in reference_tail]), shapes, schedule, (2, 4))
         resumed = fresh()
         saved, raw, _ = read_checkpoint({name: directory / name for name in FILES}, binding=binding, shapes=shapes,
-                                       schedule=schedule, boundaries=(2, 4))
+                                       schedule=schedule, boundaries=(2, 4), verified_root=verified_root)
         restored = restore(saved, raw, torch=torch, trainable=resumed[1], optimizer=resumed[2], scaler=resumed[3],
             binding=binding, shapes=shapes, schedule=schedule, boundaries=(2, 4))
         resumed_tail = [step(resumed) for _ in range(2)]
@@ -328,7 +353,7 @@ def run_equivalence(torch, output_dir, write, phases):
     finally:
         rng_restore(torch, before)
         result["trainingRngRestored"] = rng_equal(torch, before, rng_snapshot(torch))
-        write(Path(output_dir) / "checkpoint-equivalence.json", result)
+        write(checked_path(Path(output_dir) / "checkpoint-equivalence.json", verified_root=verified_root, allow_missing=True), result)
     require(result["trainingRngRestored"], "checkpoint_control_rng_restore")
     phases.sample("checkpoint_equivalence_passed", torch)
     return result
