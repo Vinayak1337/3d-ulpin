@@ -1,0 +1,350 @@
+{
+  "schemaVersion": "ulpin-scoped-runtime-observation/1",
+  "task": "D05-RUNTIME",
+  "recordedAt": "2026-10-04T21:10:16.354Z",
+  "clientDate": "2026-10-05",
+  "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+  "publication": "Selected metadata from the accepted private proof; functional observations and failed ordered preflight are recorded separately.",
+  "privateProof": {
+    "path": "E:/BhuAayam-data/task-data/d05-live-constrained-mapping-20261005-run01/verification.json",
+    "bytes": 19950,
+    "sha256": "71af930af7db4d6020c4de95c2a415907ab4485aae587e9e24f8b05f3285c5cb"
+  },
+  "source": {
+    "manifest": "fixtures/real-nyc/provenance.json",
+    "original": "fixtures/real-nyc/original.geojson",
+    "bytes": 1763,
+    "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+    "geographyQualification": "foreign test_only; no Indian or real-property association",
+    "literalSourceKey": "353927"
+  },
+  "intake": {
+    "caseCreateHttp": 201,
+    "sourceAdmissionAndSameKeyReplayHttp": 201,
+    "profileHttp": 200,
+    "conversionInventoryHttp": 200,
+    "sourceRevision": 1
+  },
+  "adaptive": {
+    "status": "disabled",
+    "code": "MODEL_DISABLED",
+    "plan": null,
+    "call": null,
+    "validation": "mechanics_only",
+    "reviewRequired": true,
+    "replayAttributionReturned": false,
+    "modelInferenceQualified": false
+  },
+  "manual": {
+    "authorAndSameKeyReplayHttp": 201,
+    "approveAndSameKeyReplayHttp": 200,
+    "executeAndSameKeyReplayHttp": 200,
+    "approvalAttribution": "server_configured_local_operator",
+    "humanLoginQualified": false,
+    "recipesCreated": 1,
+    "decisionRevisionsCreated": 3,
+    "packagesCreated": 1,
+    "newModelCalls": 0
+  },
+  "readBack": {
+    "recipePackageAndAreaHttp": 200,
+    "originalDownload": "200/private/exact original bytes checked",
+    "candidateCount": 1,
+    "height": {
+      "state": "unknown",
+      "value": null
+    },
+    "geometryRole": "unknown",
+    "name": "source literal null retained",
+    "reportedRoofText": "unmapped",
+    "sourceGeometry": "exact original geometry equality checked"
+  },
+  "refusals": {
+    "wrongSourceHash": {
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    "staleExecuteRevision": {
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    "unapprovedExecute": {
+      "status": 409,
+      "code": "RECIPE_STATE"
+    },
+    "differentKeyRepeatExecute": {
+      "status": 409,
+      "code": "RECIPE_STATE"
+    },
+    "foreignOriginConversionRead": {
+      "status": 403,
+      "code": "CROSS_ORIGIN_READ"
+    }
+  },
+  "processor": {
+    "observations": [
+      {
+        "path": "/internal/area/inspect-gis",
+        "status": 200
+      },
+      {
+        "path": "/internal/area/normalize",
+        "status": 200
+      },
+      {
+        "path": "/internal/area/inspect-gis",
+        "authenticated": false,
+        "status": 401
+      }
+    ],
+    "scope": "Authenticated canonical GIS inspect/normalize, plus one unauthenticated inspect refusal; internal routes are not public OpenAPI qualification."
+  },
+  "httpObservations": [
+    {
+      "method": "POST",
+      "path": "/api/v1/source-cases",
+      "status": 201,
+      "code": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources",
+      "status": 201,
+      "code": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources",
+      "status": 201,
+      "code": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile",
+      "status": 200,
+      "code": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/mapping-proposals",
+      "status": 200,
+      "code": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/conversions",
+      "status": 200,
+      "code": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/conversions",
+      "status": 403,
+      "code": "CROSS_ORIGIN_READ"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes",
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes",
+      "status": 201,
+      "code": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes",
+      "status": 201,
+      "code": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/execute",
+      "status": 409,
+      "code": "RECIPE_STATE"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve",
+      "status": 200,
+      "code": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve",
+      "status": 200,
+      "code": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/execute",
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/execute",
+      "status": 200,
+      "code": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/execute",
+      "status": 200,
+      "code": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/execute",
+      "status": 409,
+      "code": "RECIPE_STATE"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}",
+      "status": 200,
+      "code": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}",
+      "status": 200,
+      "code": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/areas/{areaId}/context",
+      "status": 200,
+      "code": null
+    }
+  ],
+  "protocol": {
+    "orderedPreflightPassed": false,
+    "initialReadinessExit": 1,
+    "correctedReadOnlyReadinessExit": 0,
+    "nativeJourneyReruns": 0,
+    "initialFailure": {
+      "path": "E:/BhuAayam-data/task-data/d05-live-constrained-mapping-20261005-run01/ready-first-failure.json",
+      "bytes": 1044,
+      "sha256": "31d87ab6c776aed808cfdd18c238cc2a86416ac6e91efd43f89e7b66aa7f3c93"
+    },
+    "failure": "The orchestration cell continued to the mapping runner after readiness exit1. The exact pinned-image public GPG fingerprint was subsequently classified by a read-only correction. Functional HTTP evidence remains valid; ordered preflight did not pass.",
+    "guardRecovery": {
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/d05-live-constrained-mapping-20261005-run01/guard-fix-receipt.json",
+        "bytes": 4481,
+        "sha256": "b80f460353045e04cedadddb52a4fa19792439f8c9e50a9a23779fbc5237fa7b"
+      },
+      "wrapper": {
+        "path": "E:/BhuAayam-data/task-data/d05-live-constrained-mapping-20261005-run01/guarded-journey.mjs",
+        "bytes": 5027,
+        "sha256": "4a3122a556bac82fe340e73fa01979bbd5261dabb385e6a6fd846efa8aa52b42"
+      },
+      "failedInertReadinessExit": 23,
+      "domainSentinelCalledAfterFailure": false,
+      "passedInertReadinessExit": 0,
+      "inertSentinelCalledAfterSuccess": true,
+      "newNativeRuns": 0,
+      "rule": "Every required child must exit0 without signal or spawn error before the next stage. No blanket credential-name exemption; the public fingerprint must equal the exact pinned image.",
+      "futureUse": "Completed D05 proof is sealed; use fresh explicitly assigned paths/head for any later authorized journey. Already-started resources still require identity-checked owned cleanup after failure.",
+      "retroactivePreflightPass": false
+    }
+  },
+  "preservation": {
+    "scope": "small global counts, exact NYC-source family, four D04 operation rows, two full RERA job rows, D04 API claims/sources/snapshot hashes; no full historical-table audit",
+    "before": {
+      "cases": 44,
+      "sources": 44,
+      "jobs": 86,
+      "attempts": 84,
+      "recipes": 5,
+      "decisions": 14,
+      "packages": 0,
+      "model_calls": 0,
+      "operations": 155
+    },
+    "after": {
+      "cases": 46,
+      "sources": 45,
+      "jobs": 86,
+      "attempts": 84,
+      "recipes": 6,
+      "decisions": 17,
+      "packages": 1,
+      "model_calls": 0,
+      "operations": 160
+    },
+    "deltas": {
+      "cases": 2,
+      "sources": 1,
+      "jobs": 0,
+      "attempts": 0,
+      "recipes": 1,
+      "decisions": 3,
+      "packages": 1,
+      "model_calls": 0,
+      "operations": 5
+    },
+    "caseDeltaExplanation": "one new source case and one canonical package case",
+    "d04OperationRowsExactlyUnchanged": 4,
+    "d04Reads": [
+      {
+        "revision": 1,
+        "status": 200,
+        "currentCaseRevision": 2,
+        "snapshotSha256": "3278966c32569049b2ea93b6c5cb60717c577f81b162c4ae8766f65dd91c6302",
+        "exactPriorClaimsAndSources": true
+      },
+      {
+        "revision": 2,
+        "status": 200,
+        "currentCaseRevision": 2,
+        "snapshotSha256": "34c68aec0883b026ecda53376caafcee6393c839a22c39d35f749f44c97b94e4",
+        "exactPriorClaimsAndSources": true
+      }
+    ],
+    "reraJobIds": [
+      "44116424-96c9-4f1d-a4e0-36e71bdd6758",
+      "c12699ee-d2fd-48ff-8a7c-eb1809d2cd4a"
+    ],
+    "reraJobsExactlyUnchangedAndQueued": true,
+    "newJobs": 0,
+    "newAttempts": 0,
+    "newModelCalls": 0
+  },
+  "cleanup": {
+    "observationScope": "Snapshot at completion of this D05 run; no claim about later owners.",
+    "ownedApiPid": 44036,
+    "apiProcessAbsent": true,
+    "ports3192And28000Absent": true,
+    "ownedProcessorContainerAndNetworkRemoved": true,
+    "originalContainerIdsPreserved": 24,
+    "runningContainers": 0,
+    "exactPriorVolumeNamesPreserved": 14,
+    "profileFilePinsUnchanged": 8,
+    "taskStartedStorageStopped": true,
+    "dockerEngine": {
+      "version": "29.8.0",
+      "os": "linux",
+      "arch": "amd64"
+    },
+    "engineLeftAvailable": true,
+    "standingUrl": false
+  },
+  "limitations": [
+    "Other formats or target concepts",
+    "Unit/height conversions",
+    "Revised-source row reconciliation",
+    "Queued streaming, split recovery and scale",
+    "Model proposals, per-batch caps, held-out accuracy, injection and PII egress",
+    "Indian operational qualification",
+    "GF-AGENT, full INGEST-03 and release-gate completion",
+    "Old chunk-mapping bindings intentionally change authority at D05 integration: no historical hash alias and no old-chunk runtime denial was witnessed here; fresh normal admission is required.",
+    "Approval is server-configured local-operator attribution; human login/production access is unqualified.",
+    "Readiness helper order error retained: the runner continued after the first helper failure; corrected read-only audit did not replay the native journey.",
+    "Owner controls/typechecks and accepted independent review reused without a repeated campaign. No provider, ML, OCR, GPU, dispatcher or Celery worker launched."
+  ]
+}

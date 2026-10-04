@@ -4028,6 +4028,34 @@
               "Runtime reference-answer path used Not sure; legitimate approved evidence references/qualified target-linked document conversion not independently runtime-qualified.",
               "NWIC sufficiency reuses canonical acceptedProjectedTx; no repeat import/tile/scale campaign."
             ]
+          },
+          {
+            "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+            "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+            "operations": {
+              "POST /api/v1/source-cases": "201 create one source case from retained NYC input.",
+              "POST /api/v1/ingestion/cases/{caseId}/sources": "201 unchanged original admission and same-key replay; one source, revision1.",
+              "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile": "200 current source-derived inventory preserving absent/null/unknown values.",
+              "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/mapping-proposals": "200 disabled/MODEL_DISABLED, plan:null/call:null and no replay attribution; no model proposal or inference.",
+              "GET /api/v1/ingestion/conversions": "200 conversion inventory; foreign-Origin read refused403 CROSS_ORIGIN_READ.",
+              "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes": "201 manual author/same-key replay; wrong source hash refused409 STALE_REVISION.",
+              "POST /api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve": "200 explicit server-configured local-operator approval and same-key replay; not human-login qualification.",
+              "POST /api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/execute": "200 deterministic execute/same-key replay with one package; unapproved, stale revision and different-key repeat refused409.",
+              "GET /api/v1/ingestion/cases/{caseId}/recipes/{recipeId}": "200 persisted proposed/approved/executed decision history for this source-bound recipe.",
+              "GET /api/v1/import-packages/{packageId}": "200 one persisted package/candidate with exact literal353927, source geometry and unknown height/role; source null name retained.",
+              "GET /api/v1/areas/{areaId}/context": "200 area context for the same persisted package/candidate; no qualified property identity or measurements.",
+              "GET /api/v1/sources/{sourceId}/file": "200 private download equals the exact unchanged1,763-byte original."
+            },
+            "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+            "qualification": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification.",
+            "unqualified": [
+              "Ordered preflight did not pass; retained initial exit1/order error, corrected read-only exit0 and no native journey rerun.",
+              "Model proposal, gateway replay attribution, provider inference and source-semantic accuracy were not observed; mapping-proposals qualified only for MODEL_DISABLED/null plan/null call.",
+              "Server-configured local operator is not authenticated human review or independent source truth.",
+              "Foreign test_only; no Indian/property association, height/unit/rights/geometry accuracy, learning or held-out qualification.",
+              "Other formats, revised-source reconciliation, queued streaming, split recovery, scale, frontend and release/deployment gates remain unqualified.",
+              "No old chunk-job stale denial witnessed; changed converter authorities require fresh normal admission, with no historical hash alias."
+            ]
           }
         ]
       },

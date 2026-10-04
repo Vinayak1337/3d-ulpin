@@ -848,6 +848,23 @@
               "servedCodeCommit": "f642cf4ed81bf9509d108a6b48f64591c77941f7",
               "environment": "Populated retained isolated prefix profile; API-only loopback3192 and storage stopped after observation; Docker remains available.",
               "limitation": "Current isolated API source read and additive metadata migration only; no processing/queue/recovery/geometry/learning/scale/release pass."
+            },
+            {
+              "scope": "200 private download equals the exact unchanged1,763-byte original.",
+              "sourceManifests": [
+                "fixtures/real-nyc/provenance.json"
+              ],
+              "evidencePointers": [
+                "/readBack",
+                "/protocol",
+                "/httpObservations",
+                "/preservation",
+                "/cleanup"
+              ],
+              "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+              "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+              "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+              "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
             }
           ]
         },
@@ -3433,7 +3450,26 @@
             "project": "ulpin-usptest-b050544f3d2cb99e",
             "url": "http://127.0.0.1:3192/api/v1"
           },
-          "limitation": "Two source-only reference document enrollments, exact native literal text parts, replay and original reads; earlier geometry/registry/validation history preserved."
+          "limitation": "Two source-only reference document enrollments, exact native literal text parts, replay and original reads; earlier geometry/registry/validation history preserved.",
+          "additionalReceipts": [
+            {
+              "scope": "201 create one source case from retained NYC input.",
+              "sourceManifests": [
+                "fixtures/real-nyc/provenance.json"
+              ],
+              "evidencePointers": [
+                "/intake",
+                "/protocol",
+                "/httpObservations",
+                "/preservation",
+                "/cleanup"
+              ],
+              "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+              "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+              "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+              "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/intake/operation-manifest.json",
         "x-transport-profile": "json",
@@ -4645,7 +4681,26 @@
           "receipt": "docs/evidence/usp/nest-migration/runtime-source/phase-2b-2026-09-26.json",
           "servedCodeCommit": "5d80dd869c62dfed1bf39c2594cd1e080c9045fb",
           "environment": "Stopped isolated local run; volumes preserved. Returned IDs belong only to that run.",
-          "limitation": "Only the listed input/profile/behavior was observed at the served commit; not every branch or dataset accepted by an operation."
+          "limitation": "Only the listed input/profile/behavior was observed at the served commit; not every branch or dataset accepted by an operation.",
+          "additionalReceipts": [
+            {
+              "scope": "200 area context for the same persisted package/candidate; no qualified property identity or measurements.",
+              "sourceManifests": [
+                "fixtures/real-nyc/provenance.json"
+              ],
+              "evidencePointers": [
+                "/readBack",
+                "/protocol",
+                "/httpObservations",
+                "/preservation",
+                "/cleanup"
+              ],
+              "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+              "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+              "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+              "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/intake/operation-manifest.json",
         "x-transport-profile": "none",
@@ -6372,7 +6427,26 @@
           "receipt": "docs/evidence/usp/nest-migration/runtime-source/phase-2b-2026-09-26.json",
           "servedCodeCommit": "5d80dd869c62dfed1bf39c2594cd1e080c9045fb",
           "environment": "Stopped isolated local run; volumes preserved. Returned IDs belong only to that run.",
-          "limitation": "Only the listed input/profile/behavior was observed at the served commit; not every branch or dataset accepted by an operation."
+          "limitation": "Only the listed input/profile/behavior was observed at the served commit; not every branch or dataset accepted by an operation.",
+          "additionalReceipts": [
+            {
+              "scope": "200 one persisted package/candidate with exact literal353927, source geometry and unknown height/role; source null name retained.",
+              "sourceManifests": [
+                "fixtures/real-nyc/provenance.json"
+              ],
+              "evidencePointers": [
+                "/readBack",
+                "/protocol",
+                "/httpObservations",
+                "/preservation",
+                "/cleanup"
+              ],
+              "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+              "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+              "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+              "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/intake/operation-manifest.json",
         "x-transport-profile": "none",
@@ -32468,8 +32542,24 @@
         "x-batch": "INGEST-02A",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "200 conversion inventory; foreign-Origin read refused403 CROSS_ORIGIN_READ.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/intake",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+          "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+          "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+          "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "none",
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -32680,8 +32770,24 @@
         "x-batch": "INGEST-02A",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "201 unchanged original admission and same-key replay; one source, revision1.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/intake",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+          "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+          "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+          "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "multipart",
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -32891,8 +32997,24 @@
         "x-batch": "INGEST-02A",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "200 current source-derived inventory preserving absent/null/unknown values.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/intake",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+          "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+          "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+          "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "none",
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -33112,8 +33234,24 @@
         "x-batch": "INGEST-02A",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "201 manual author/same-key replay; wrong source hash refused409 STALE_REVISION.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/manual",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+          "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+          "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+          "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "json",
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -33323,8 +33461,24 @@
         "x-batch": "INGEST-02A",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "200 persisted proposed/approved/executed decision history for this source-bound recipe.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/readBack",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+          "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+          "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+          "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "none",
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -33544,8 +33698,24 @@
         "x-batch": "INGEST-02A",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "200 explicit server-configured local-operator approval and same-key replay; not human-login qualification.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/manual",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+          "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+          "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+          "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "json",
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -33765,8 +33935,24 @@
         "x-batch": "INGEST-02A",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "200 deterministic execute/same-key replay with one package; unapproved, stale revision and different-key repeat refused409.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/manual",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+          "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+          "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+          "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "json",
         "x-dataset-catalogue": "/api/docs/datasets.json"
@@ -41874,8 +42060,24 @@
         "x-batch": "AI-01B",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "200 disabled/MODEL_DISABLED, plan:null/call:null and no replay attribution; no model proposal or inference.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/adaptive",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+          "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+          "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+          "limitation": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "json",
         "x-dataset-catalogue": "/api/docs/datasets.json"
