@@ -21,6 +21,11 @@ from geo.usp_learning.association.citation_view import checked_freeze, checked_c
 
 
 def representation_module(freeze, assignment, *, verified_root=None):
+    if freeze.get("version") == "association-fragment-rank-balanced-phase-fit-freeze/1":
+        from geo.usp_learning.association import fragment_rank_phase_adapter
+        authority = fragment_rank_phase_adapter.BALANCED_AUTHORITY
+        authority.checked_freeze(freeze, assignment, verified_root=verified_root)
+        return authority
     if freeze.get("version") == "association-fragment-rank-phase-fit-freeze/1":
         from geo.usp_learning.association import fragment_rank_phase_adapter
         fragment_rank_phase_adapter.checked_freeze(freeze, assignment, verified_root=verified_root)

@@ -57,9 +57,40 @@ PROTECTED_PINS = {
 BASE = {"tensorCount": 290, "sha256": "7c651c8be4013651138142820f0e895a170054851eb3edd6ed3fcd64027b0c44"}
 CHECKPOINT_INPUTS = {name: "previous-" + name for name in checkpoint.FILES}
 
+BALANCED_VERSIONS = {"fit": ("association-fragment-rank-balanced-phase-fit-assignment/1", "association-fragment-rank-balanced-phase-fit-freeze/1")}
+BALANCED_TASK = "STUDENT-45-FRAGMENT-RANK-BALANCED-PHASE-FIT"
+BALANCED_STAGE_PREFIX = "adapter-fragment-rank-balanced-phase-"
+BALANCED_SOURCE_PATHS = tuple(sorted((*SOURCE_PATHS, "services/geo/geo/usp_learning/association/fragment_rank_balance.py")))
+# Separate current authority. Historical PROTECTED_PINS are preserved verbatim.
+BALANCED_PROTECTED_PINS = {'scripts/usp/learning/association/association_student.py': 'e1d844d0bde0663714331df0da922bcc695a5e9855c27a58a9b3d2faea8aa140', 'scripts/usp/learning/association/stage_adapter.py': '4293ead8a761c5a7fbe8c9300e642e549bae5c0cc2dbe6d96fbe9d671f239fee', 'scripts/usp/learning/association/stage_baseline.py': '926b01c8c85aae962b1699c0e35a07c144993da2846b1016608a350bd1bb2b93', 'scripts/usp/learning/association/stage_fragment_adapter.py': '1ee5a84260d15d07d77dda02ab292bd474863999beb559a9c19b1d916471b776', 'scripts/usp/learning/association/stage_fragment_rank_reload.py': '81ade8c724cccb1d783d773c6c09e9a7298c13b8c4994bfcd01c03c4e6dffe52', 'scripts/usp/learning/association/stage_selector_baseline.py': '351a1417bacd7de54f76eb799e6635636227642ff4801e11920f22684403ee91', 'scripts/usp/learning/model_isolation.py': '69e51fd895697f224960226cdc1f99499d2b43d0b17ac76638e20cdfa8787676', 'scripts/usp/security/appcontainer_audit.py': '4a59a18e04cd6fe76590ba929f424271f3dacdfb19ccf5e65fc2ec8048fbdc7f', 'services/geo/geo/__init__.py': 'd10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09', 'services/geo/geo/native_ifc.py': 'f6e8e646987879b238fc91137d26f18c45775ecf6b9ffc312a3639f32a7fb661', 'services/geo/geo/usp_learning/__init__.py': '4b2c1e31b9af2699de2380323db9775e9fc96dd4fab0d6ed5b67b5eeec20a05a', 'services/geo/geo/usp_learning/association/__init__.py': 'bc1a6b2a7a5190bc971e518cce5557a01abf8611c95b2d5e9e463a5abd2c7679', 'services/geo/geo/usp_learning/association/candidate_baseline.py': '75b231cb665a0301f37568d1a5e4fe3d97385fc6875bf55d055cce6840d210d7', 'services/geo/geo/usp_learning/association/candidate_selection.py': 'c0475f9156f379cf9c3269e01892d1034699115655139930edfdea40a2b09785', 'services/geo/geo/usp_learning/association/chunked_loss.py': '828a30334bca366299d9b52c88d0968bdfde202bb0505f074e9e570566e3bda7', 'services/geo/geo/usp_learning/association/citation_view.py': '06d17f65230dfab966b1644d8ee75f8e0394615645c6bcc635a70f6d7ffc2cea', 'services/geo/geo/usp_learning/association/fragment_adapter.py': '071b171547017f942432105a32cb5303a175d6ec8243c6bf1dd7df1e49e39b4d', 'services/geo/geo/usp_learning/association/fragment_baseline.py': '63c923ed5d32593388852aa2e8b7fe6eb96682796295881c5a634c9fc08a778d', 'services/geo/geo/usp_learning/association/fragment_rank.py': '292b9922421b5140f80a615df0cf1f24840c33d9757e58a574d6a7bc46a1af20', 'services/geo/geo/usp_learning/association/fragment_rank_adapter.py': '55b8f4d90bc33551fb9ae0776b62a60b4bbda7b69ef66956e79f6395a25669ab', 'services/geo/geo/usp_learning/association/fragment_rank_baseline.py': '6f09cdb4ac8112d0831dc5206822637e0d0147f390f905643d875291a50ad1c4', 'services/geo/geo/usp_learning/association/fragment_rank_checkpoint.py': '162901af3fbef48d613fcf69bc4cde8fd55634f31346cd67e3bd8b7bdb0f6706', 'services/geo/geo/usp_learning/association/fragment_rank_reload.py': 'c4ef3046500a04c555cd429e6fca9978aa10cc1fb1f02c2e875ec9f5a8085257', 'services/geo/geo/usp_learning/association/fragment_rank_runtime.py': '376f1e3d075ecada452c5352199fbee278b09f961f372b50a436068794ca8598', 'services/geo/geo/usp_learning/association/fragment_selection.py': 'aa8be20c61fe94eb0c19e5e4c611a1378e7201ec11fbaca605c06bd349af88a0', 'services/geo/geo/usp_learning/association/memory_observation.py': 'ca17af790211021a8ccf7374ae16cc4d714d55f05145f1bd541655d2cf6d143d', 'services/geo/geo/usp_learning/association/native_candidates.py': '17ce40d8ccb6852edb12986c0ae7a73da7db198f750aa6ed433d28229ac7e1df', 'services/geo/geo/usp_learning/association/query_attention.py': '715c322f6e4a5383fa42a002292010d6e235f3b5afedb05274f7cb088fb04cec', 'services/geo/geo/usp_learning/association/reclamation.py': 'c1c301bc10f3c59848b2c7e66ed2fa387ad97f500bd948d12f53f7760db00d27', 'services/geo/geo/usp_learning/association/selector_baseline.py': '7d453d9ddb795f27d17dc8096c0ed9606bb48283e2fa5a61ff03f5c5d3a2cd5d', 'services/geo/geo/usp_learning/association/selector_constraints.py': '5099dd66c7df12e8799fd4bf65515855e45068c278274c814e80f0ba34fd7064', 'services/geo/geo/usp_learning/association/selectors.py': 'dcb83b6352c8c5972607c616866b11f91767235052cbac8b9606215b80b6863e', 'services/geo/geo/usp_learning/association/student.py': '8cfd44daedbd9c31616198cf31dcd6d76e68d426b5f4735dcb879b16aadf6bc8', 'services/geo/geo/usp_learning/association/validation.py': '68ebee3f5ca0b6273862003b17db73dcd25495d1623732917467d12ff9ea18c2', 'services/geo/geo/usp_learning/resources.py': 'c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54'}
 
-def training_plan():
-    return rank.training_plan()
+
+def _configuration(assignment=None):
+    if assignment is None or assignment.get("version") != BALANCED_VERSIONS["fit"][0]:
+        return {"versions": VERSIONS, "task": TASK, "sources": SOURCE_PATHS, "protected": PROTECTED_PINS,
+                "prefix": STAGE_PREFIX, "plan": rank.training_plan(), "representation": rank.representation_metadata(),
+                "loss": LOSS_POLICY, "fields": {}, "objective": None}
+    from . import fragment_rank_balance as balance
+    objective = balance.admit(assignment.get("objective"), assignment.get("objectiveSha256"))
+    fields = balance.fields(objective)
+    plan = {**rank.training_plan(), "version": "association-fragment-rank-balanced-training-plan/1",
+            "weighting": "original rational times fixed class multiplier; no per-parent renormalization", **fields}
+    representation = {**rank.representation_metadata(), "version": "association-fragment-rank-balanced-training/1",
+                      "trainingPlan": plan, **fields}
+    return {"versions": BALANCED_VERSIONS, "task": BALANCED_TASK, "sources": BALANCED_SOURCE_PATHS,
+            "protected": BALANCED_PROTECTED_PINS, "prefix": BALANCED_STAGE_PREFIX, "plan": plan,
+            "representation": representation, "loss": balance.loss_policy(LOSS_POLICY), "fields": fields, "objective": objective}
+
+
+def balanced_metadata_assignment():
+    """Constant metadata only; deliberately lacks every execution identity/allowance."""
+    from . import fragment_rank_balance as balance
+    return {"version": BALANCED_VERSIONS["fit"][0], **balance.fields(balance.admit(balance.record(), balance.OBJECTIVE_SHA256))}
+
+
+
+def training_plan(assignment=None):
+    return _configuration(assignment)["plan"]
 
 
 def schedule():
@@ -75,8 +106,8 @@ def phase(value):
             "localUpdates": 20, "localContributions": 114, "final": value == 3}
 
 
-def representation_metadata():
-    return rank.representation_metadata()
+def representation_metadata(assignment=None):
+    return _configuration(assignment)["representation"]
 
 
 def memory_policy():
@@ -88,6 +119,7 @@ def input_names(action):
 
 
 def binding(assignment, number=None, previous_hash=None):
+    config = _configuration(assignment)
     n = assignment["phase"]["number"] if number is None else number
     previous_hash = (None if assignment["previous"] is None else assignment["previous"]["checkpointFiles"]["manifest.json"]) if number is None else previous_hash
     return {"experimentId": assignment["experimentId"], "phase": phase(n), "previousCheckpointManifestSha256": previous_hash,
@@ -95,17 +127,18 @@ def binding(assignment, number=None, previous_hash=None):
         "model": MODEL, "revision": REVISION, "weightsSha256": WEIGHTS_SHA, "base": BASE,
         "publicationSha256": rank.PUBLICATION_SHA, "inputPins": rank.PAYLOAD_PINS,
         "policySha256": codec.canonical_sha(rank.rank.POLICY), "promptSha256": rank.rank.PROMPT_SHA,
-        "fit": FIT, "numerics": NUMERICS, "loss": LOSS_POLICY, "scheduleSha256": checkpoint.sha(checkpoint.canonical(schedule()))}
+        "fit": FIT, "numerics": NUMERICS, "loss": config["loss"], "scheduleSha256": checkpoint.sha(checkpoint.canonical(schedule())), **config["fields"]}
 
 
-def recipe():
+def recipe(assignment=None):
+    config = _configuration(assignment)
     return {"model": MODEL, "revision": REVISION, "modelWeightsSha256": WEIGHTS_SHA,
         "runtimeProfileSha256": RUNTIME_SHA, "modelProfileSha256": MODEL_PROFILE_SHA,
         "publicationSha256": rank.PUBLICATION_SHA, "inputArtifactSha256": rank.PAYLOAD_PINS,
         "settings": FIT, "numerics": NUMERICS, "inferenceSettings": SETTINGS,
-        "representation": representation_metadata(), "trainingPlan": training_plan(),
+        "representation": config["representation"], "trainingPlan": config["plan"],
         "memoryExecutionPolicy": memory_policy(), "attentionControlBeforeFit": ATTENTION_CONTROL,
-        "lossImplementation": LOSS_POLICY, "checkpointSchema": checkpoint.schema(), "checkpointProof": checkpoint.PROOF_POLICY}
+        "lossImplementation": config["loss"], "checkpointSchema": checkpoint.schema(), "checkpointProof": checkpoint.PROOF_POLICY, **config["fields"]}
 
 
 def digest(value):
@@ -113,18 +146,19 @@ def digest(value):
 
 
 def checked_execution(value, action, *, verified_root=None):
-    expected = recipe()
+    config = _configuration(value)
+    expected = recipe(value)
     checkpoint.exact(value, (*expected, "version", "task", "action", "executable", "executionAllowance", "studentCodeCommit",
                              "runtimeCodeCanonicalLfSha256", "experimentId", "phase", "previous"), "rank_phase_assignment_fields")
-    require(action == value["action"] == "fit" and value["version"] == VERSIONS["fit"][0] and value["task"] == TASK,
+    require(action == value["action"] == "fit" and value["version"] == config["versions"]["fit"][0] and value["task"] == config["task"],
             "separate_rank_phase_assignment_required")
     require(value["executable"] is True and same(value["executionAllowance"], rank.allowance("fit"))
             and all(same(value[k], v) for k, v in expected.items()), "rank_phase_recipe_or_authority")
     require(type(value["studentCodeCommit"]) is str and re.fullmatch(r"[a-f0-9]{40}", value["studentCodeCommit"])
             and type(value["experimentId"]) is str and re.fullmatch(r"[a-f0-9]{32}", value["experimentId"]), "rank_phase_identity")
     pins = value["runtimeCodeCanonicalLfSha256"]
-    require(type(pins) is dict and set(pins) == set(SOURCE_PATHS) and all(digest(v) for v in pins.values())
-            and all(pins[k] == v for k, v in PROTECTED_PINS.items()), "rank_phase_source_pins")
+    require(type(pins) is dict and set(pins) == set(config["sources"]) and all(digest(v) for v in pins.values())
+            and all(pins[k] == v for k, v in config["protected"].items() if k in config["sources"]), "rank_phase_source_pins")
     number = value["phase"].get("number")
     require(same(value["phase"], phase(number)), "rank_phase_range")
     previous = value["previous"]
@@ -142,17 +176,21 @@ def checked_execution(value, action, *, verified_root=None):
         # admission reads only the exact pinned copies in its verified profile.
         location = checkpoint.checked_path if verified_root is None else checkpoint.metadata_path
         root = location(previous["root"])
-        require(root.parent == rank.PUBLICATION_ROOT.parent and root.name.startswith(STAGE_PREFIX + "fit-"), "rank_phase_previous_root")
+        require(root.parent == rank.PUBLICATION_ROOT.parent and root.name.startswith(config["prefix"] + "fit-"), "rank_phase_previous_root")
         receipt = location(previous["acceptancePath"])
         require(receipt != root and root not in receipt.parents, "rank_phase_independent_acceptance_required")
         old = previous["binding"]; prior_hash = old.get("previousCheckpointManifestSha256")
         require((number == 2 and prior_hash is None or number == 3 and digest(prior_hash))
                 and same(old, binding(value, number - 1, prior_hash)), "rank_phase_chain_binding")
-    return training_plan()
+    return config["plan"]
 
 
 def acceptance_body(previous):
-    return {"version": "association-rank-phase-acceptance/1", "accepted": True,
+    balanced = "objective" in previous["binding"]
+    if balanced:
+        from . import fragment_rank_balance as balance
+        balance.admit(previous["binding"]["objective"], previous["binding"].get("objectiveSha256"))
+    return {"version": "association-rank-balanced-phase-acceptance/1" if balanced else "association-rank-phase-acceptance/1", "accepted": True,
             **{k: v for k, v in previous.items() if k not in ("acceptancePath", "acceptanceSha256")}}
 
 
@@ -165,17 +203,18 @@ def previous_input_pins(assignment):
 
 def make_freeze(assignment, assignment_bytes, physical_pins, *, verified_root=None):
     checked_execution(assignment, "fit", verified_root=verified_root)
-    require(same(strict_json(assignment_bytes), assignment) and set(physical_pins) == set(SOURCE_PATHS)
+    config = _configuration(assignment)
+    require(same(strict_json(assignment_bytes), assignment) and set(physical_pins) == set(config["sources"])
             and all(digest(v) for v in physical_pins.values()), "rank_phase_freeze_sources")
-    return {"version": VERSIONS["fit"][1], "action": "fit", "sourceCommit": assignment["studentCodeCommit"],
+    return {"version": config["versions"]["fit"][1], "action": "fit", "sourceCommit": assignment["studentCodeCommit"],
         "sourcePhysicalSha256": dict(physical_pins), "binding": binding(assignment), "phase": assignment["phase"],
-        "fitSettings": FIT, "numerics": NUMERICS, "inferenceSettings": SETTINGS, "representation": representation_metadata(),
-        "trainingPlan": training_plan(), "memoryExecutionPolicy": memory_policy(), "lossImplementation": LOSS_POLICY,
+        "fitSettings": FIT, "numerics": NUMERICS, "inferenceSettings": SETTINGS, "representation": config["representation"],
+        "trainingPlan": config["plan"], "memoryExecutionPolicy": memory_policy(), "lossImplementation": config["loss"],
         "reclamationImplementation": rank.legacy.RECLAMATION_POLICY, "attentionImplementation": rank.legacy.ATTENTION_POLICY,
         "systemPromptSha256": rank.rank.PROMPT_SHA, "inputSha256": {**COMMON_PINS, "assignment": sha(assignment_bytes),
         "teacher_v1": DATA_SHA, "training_data": DATA_SHA}, "auxiliaryInputSha256": {**rank.AUXILIARY, **previous_input_pins(assignment)},
         "checkpointSchema": checkpoint.schema(), "checkpointProof": checkpoint.PROOF_POLICY,
-        "developmentInputsPresent": False, "hostTargetsPresent": False, "evaluationAllowed": False, "promotionAuthorized": False}
+        "developmentInputsPresent": False, "hostTargetsPresent": False, "evaluationAllowed": False, "promotionAuthorized": False, **config["fields"]}
 
 
 def checked_freeze(freeze, assignment, *, verified_root=None):
@@ -183,7 +222,7 @@ def checked_freeze(freeze, assignment, *, verified_root=None):
     expected = make_freeze(assignment, serialized(assignment), freeze.get("sourcePhysicalSha256", {}), verified_root=verified_root)
     expected["inputSha256"]["assignment"] = freeze.get("inputSha256", {}).get("assignment")
     require(digest(expected["inputSha256"]["assignment"]) and same(freeze, expected), "rank_phase_freeze_drift")
-    return training_plan()
+    return training_plan(assignment)
 
 
 def checked_cli(args, freeze):
@@ -276,48 +315,90 @@ def checked_proof(proof):
 
 
 def checked_phase_result(result, manifest, assignment, state, checkpoint_manifest):
-    p = assignment["phase"]
-    require(result["version"] == "association-rank-phase-result/1" and result["phase"] == p and result["updates"] == p["endUpdate"]
+    p = assignment["phase"]; config = _configuration(assignment)
+    balanced = config["objective"] is not None
+    require(result["version"] == ("association-rank-balanced-phase-result/1" if balanced else "association-rank-phase-result/1") and result["phase"] == p and result["updates"] == p["endUpdate"]
             and result["localUpdates"] == 20 and result["localContributions"] == 114 and result["candidateContributions"] == p["number"] * 114
             and result["fitPerformed"] is p["final"] and result["phaseCompleted"] is True and result["baseUnchanged"] is True
             and same(result["binding"], binding(assignment)) and result["stepLosses"] == state["cursor"]["losses"]
             and result["checkpointManifestSha256"] == sha(checkpoint.canonical(checkpoint_manifest)), "rank_phase_result_binding")
-    require(manifest["version"] == "association-rank-phase-manifest/1" and manifest["phase"] == p
+    require(manifest["version"] == ("association-rank-balanced-phase-manifest/1" if balanced else "association-rank-phase-manifest/1") and manifest["phase"] == p
             and manifest["baseParametersBefore"] == manifest["baseParametersAfter"] == BASE
             and manifest["checkpointManifestSha256"] == result["checkpointManifestSha256"]
             and manifest["savedStateMatchesTrainableAdapter"] is True and manifest["trainableParameters"] == 540672
             and manifest["tensorCount"] == 96 and same(manifest["binding"], binding(assignment)), "rank_phase_manifest_binding")
+    for record in (result, manifest):
+        require(all(same(record.get(k), v) for k, v in config["fields"].items()), "balanced_phase_output_objective")
     require(manifest["finalAdapter"] is p["final"] and (p["final"] or manifest["files"] == {}), "rank_phase_premature_final_adapter")
 
 
-def checked_output_recipe(preflight, result, manifest):
-    """Shared result writer binds fit/numerics without duplicating those fields."""
-    for record in (preflight, result, manifest):
-        require(same(record["trainingPlan"], training_plan()) and same(record["lossImplementation"], LOSS_POLICY)
-                and same(record["representation"], representation_metadata()), "rank_phase_output_recipe")
-    for record in (preflight, manifest):
-        require(same(record["settings"], FIT) and same(record["numerics"], NUMERICS), "rank_phase_output_recipe")
-    require(same(result["binding"]["fit"], FIT) and same(result["binding"]["numerics"], NUMERICS), "rank_phase_output_recipe")
-    for key, expected in (("settings", FIT), ("numerics", NUMERICS)):
-        require(key not in result or same(result[key], expected), "rank_phase_output_recipe")
+def checked_balanced_loss_proof(proof, assignment):
+    config = _configuration(assignment)
+    require(config["objective"] is not None, "balanced_loss_proof_authority")
+    from . import fragment_rank_balance as balance
+    from .fragment_rank_runtime import analytic_gradient
+    cases = [(2.0, -3.0, 0), (2.0, -3.0, 1), (0.0, 0.0, 1), (-1000.0, 1000.0, 0)]
+    weight = lambda label: balance.effective_weight(label, {"numerator": 1, "denominator": 40}, config["objective"])
+    factor = lambda label: weight(label)["numerator"] / weight(label)["denominator"]
+    reference_loss = math.fsum(rank.rank.binary_loss(a, b, label) * factor(label) for a, b, label in cases)
+    reference_gradient = [math.fsum(analytic_gradient(a, b, label)[i] * factor(label) for a, b, label in cases) for i in (0, 1)]
+    records = proof.get("records")
+    require(proof.get("passed") is True and proof.get("syntheticOnly") is True
+            and proof.get("actualLossAndAccumulationHelpers") is True and same(proof.get("lossImplementation"), config["loss"])
+            and all(same(proof.get(k), v) for k, v in config["fields"].items())
+            and type(records) is list and len(records) == 4
+            and [(r.get("device"), r.get("nativeLogitsDtype")) for r in records]
+                == [(d, t) for d in ("cpu", "cuda") for t in ("torch.float32", "torch.float16")],
+            "balanced_native_weighted_proof_required")
+    close = lambda a, b, absolute, relative: type(a) in (float, int) and math.isfinite(a) and math.isclose(a, b, abs_tol=absolute, rel_tol=relative)
+    require(close(proof.get("referenceLoss"), reference_loss, 1e-6, 1e-6)
+            and type(proof.get("referenceGradient")) is list and len(proof["referenceGradient"]) == 2
+            and all(close(a, b, 1e-6, 1e-6) for a, b in zip(proof["referenceGradient"], reference_gradient, strict=True)),
+            "balanced_native_reference_drift")
+    for r in records:
+        half = r["nativeLogitsDtype"] == "torch.float16"
+        require(r.get("contributions") == 4 and r.get("completions") == 1 and r.get("gradientScale") == 128
+                and r.get("lossDtype") == "float32" and close(r.get("loss"), reference_loss, 1e-6, 1e-6)
+                and type(r.get("gradient")) is list and len(r["gradient"]) == 2
+                and all(close(a, b, 1e-4 if half else 1e-6, 1e-3 if half else 1e-6)
+                        for a, b in zip(r["gradient"], reference_gradient, strict=True)), "balanced_native_weighted_proof_values")
 
 
 def checked_output_history(root, assignment, result, manifest, state):
     """Verify phase-specific receipts behind the protected accepted-output map."""
+    config = _configuration(assignment)
     output = root / "outputs/fit"
     read = lambda name: strict_json(checkpoint.read_bytes(output / name, 8 * 1024**2))
     jsonlines = lambda name: [strict_json(line) for line in checkpoint.read_bytes(output / name, 16 * 1024**2).splitlines()]
     preflight = read("token-preflight.json")
-    checked_output_recipe(preflight, result, manifest)
-    require(preflight["epochOrder"] == epoch_orders(training_plan()) and preflight["excludedRows"] == []
+    for record in (preflight, result, manifest):
+        require(same(record["trainingPlan"], config["plan"]) and same(record["settings"], FIT)
+                and same(record["numerics"], NUMERICS) and same(record["lossImplementation"], config["loss"])
+                and same(record["representation"], config["representation"]), "rank_phase_output_recipe")
+    require(preflight["epochOrder"] == epoch_orders(config["plan"]) and preflight["excludedRows"] == []
             and preflight["truncation"] is False and preflight["maximumCombinedTokens"] <= 4096
             and len(preflight["lengths"]) == 10 and sum(len(p["focuses"]) for p in preflight["lengths"]) == 57,
             "rank_phase_output_tokens")
-    require(same(read("teacher-delta.json"), representation_metadata()) and result["developmentOpened"] is False
+    require(same(read("teacher-delta.json"), config["representation"]) and result["developmentOpened"] is False
             and result["evaluationOpened"] is False and read("attention-scope.json")["restored"] is True,
             "rank_phase_output_scope")
     for filename in ("loss-equivalence.json", "attention-control.json", "reclamation-control.json"):
         require(read(filename)["passed"] is True, "rank_phase_native_control_failed")
+    if config["objective"] is not None:
+        from . import fragment_rank_balance as balance
+        _, _, _, rows = rank.checked_payload({n: (root / "inputs" / n).read_bytes() for n in rank.PAYLOAD_PINS})
+        pairs = {r["exampleId"]: [c["pair"] for c in r["candidates"]] for r in rows}
+        mass = balance.mass_summary([p for values in pairs.values() for p in values], config["objective"])
+        for record in (preflight, result, manifest):
+            require(all(same(record.get(k), v) for k, v in config["fields"].items())
+                    and same(record.get("objectiveMassSummary"), mass), "balanced_output_mass_provenance")
+        for parent in preflight["lengths"]:
+            require(len(parent["focuses"]) == len(pairs[parent["exampleId"]]), "balanced_preflight_candidate_count")
+            for focus, pair in zip(parent["focuses"], pairs[parent["exampleId"]], strict=True):
+                require(focus["candidateIndex"] == pair["candidateIndex"] and focus["pairSha256"] == codec.canonical_sha(pair)
+                        and all(same(focus.get(k), v) for k, v in balance.weight_fields(pair["label"], pair["weight"], config["objective"]).items()),
+                        "balanced_preflight_weight_provenance")
+        checked_balanced_loss_proof(read("loss-equivalence.json"), assignment)
     for record in (result, manifest):
         for key, filename in (("lossEquivalenceSha256", "loss-equivalence.json"), ("attentionControlSha256", "attention-control.json"),
                               ("reclamationControlSha256", "reclamation-control.json")):
@@ -334,6 +415,12 @@ def checked_output_history(root, assignment, result, manifest, state):
                 and record["loss"] == state["cursor"]["losses"][record["update"] - 1]
                 and math.isfinite(record["gradientNormBeforeClip"]) and record["gradientNormBeforeClip"] > 0
                 and record["gradientScale"] == 128, "rank_phase_progress_drift")
+        if config["objective"] is not None:
+            current = pairs[scheduled["exampleId"]]
+            require(all(same(record.get(k), v) for k, v in config["fields"].items())
+                    and same(record.get("originalCandidateWeights"), [p["weight"] for p in current])
+                    and same(record.get("effectiveCandidateWeights"), [balance.effective_weight(p["label"], p["weight"], config["objective"]) for p in current]),
+                    "balanced_progress_weight_provenance")
     history = jsonlines("memory-phases.jsonl")
     identity = lambda row: (row["update"], row["epoch"], row["exampleId"], row["candidateIndex"])
     expected_candidates = [(r["update"], r["epoch"], r["exampleId"], c) for r in expected for c in range(r["candidates"])]
@@ -341,6 +428,12 @@ def checked_output_history(root, assignment, result, manifest, state):
                  "after_backward_reclamation", "after_backward", "after_candidate_reclamation"):
         selected = [r for r in history if r["phase"] == name]
         require([identity(r) for r in selected] == expected_candidates, "rank_phase_candidate_history")
+        if config["objective"] is not None:
+            for record in selected:
+                pair = pairs[record["exampleId"]][record["candidateIndex"]]
+                require(all(same(record.get(k), v) for k, v in config["fields"].items())
+                        and all(same(record.get(k), v) for k, v in balance.weight_fields(pair["label"], pair["weight"], config["objective"]).items()),
+                        "balanced_candidate_weight_provenance")
         if name == "after_candidate_reclamation":
             require(all(r["accumulatedGradientsRetained"] is True and r["peaksReset"] is False for r in selected), "rank_phase_gradient_reclamation")
     steps = [r for r in history if r["phase"] in ("first_before_optimizer_step", "before_optimizer_step")]
@@ -370,6 +463,10 @@ def admit_fit(authority, rows, contract, family):
     require(authority["verified_root"] is not None, "rank_phase_verified_root_required")
     _, c, f, expected = checked_inputs(authority["freeze"], authority["assignment"], authority["inputs"], verified_root=authority["verified_root"])
     require(same(rows, expected) and same(contract, c) and same(family, f), "rank_phase_loader_payload")
+    config = _configuration(authority["assignment"])
+    if config["objective"] is not None:
+        from . import fragment_rank_balance as balance
+        balance.mass_summary([c["pair"] for r in expected for c in r["candidates"]], config["objective"])
     return rank.RankRepresentation(expected)
 
 
@@ -382,8 +479,15 @@ def disabled_prototype(number, code_checkpoint, source_pins):
 
 class PhaseSession:
     """Bookkeeping hooks only; shared adapter owns loading, updates and final save."""
-    def __init__(self, authority):
+    def __init__(self, authority, rows=None):
         self.assignment = authority["assignment"]
+        checked_execution(self.assignment, "fit", verified_root=authority["verified_root"])
+        self.config = _configuration(self.assignment)
+        self.objective = self.config["objective"]
+        self.provenance = dict(self.config["fields"])
+        if self.objective is not None:
+            from . import fragment_rank_balance as balance
+            self.provenance["objectiveMassSummary"] = balance.mass_summary([c["pair"] for r in rows for c in r["candidates"]], self.objective)
         self.inputs = Path(authority["inputs"])
         self.verified_root = authority["verified_root"]
         self.phase = self.assignment["phase"]
@@ -424,13 +528,62 @@ class PhaseSession:
         self.manifest_sha = sha(checkpoint.canonical(self.checkpoint_manifest))
 
     def manifest_fields(self):
-        return {"version": "association-rank-phase-manifest/1", "phase": self.phase, "binding": self.binding,
+        return {"version": "association-rank-balanced-phase-manifest/1" if self.objective is not None else "association-rank-phase-manifest/1", **self.provenance, "phase": self.phase, "binding": self.binding,
             "checkpointManifestSha256": self.manifest_sha, "checkpointProofSha256": self.proof_sha,
             "finalAdapter": self.phase["final"], "localUpdates": 20, "localContributions": 114}
 
     def result_fields(self, losses):
-        return {"version": "association-rank-phase-result/1", "phase": self.phase, "binding": self.binding,
+        return {"version": "association-rank-balanced-phase-result/1" if self.objective is not None else "association-rank-phase-result/1", **self.provenance, "phase": self.phase, "binding": self.binding,
             "checkpointManifestSha256": self.manifest_sha, "checkpointProofSha256": self.proof_sha,
             "checkpointProofOrigin": "this_phase" if self.start == 0 else "accepted_first_phase",
             "phaseCompleted": True, "fitPerformed": self.phase["final"], "localUpdates": 20, "localContributions": 114,
             "epochSumParentContributions": [math.fsum(losses[i:i + 10]) for i in range(0, len(losses), 10)]}
+
+
+class _BalancedAuthority:
+    """Closed stager/worker view. Every operation requires the exact distinct assignment."""
+    IS_FRAGMENT = IS_RANK_FIT = IS_RANK_PHASE = True
+    VERSIONS, TASK, STAGE_PREFIX = BALANCED_VERSIONS, BALANCED_TASK, BALANCED_STAGE_PREFIX
+    SOURCE_PATHS, PROTECTED_PINS = BALANCED_SOURCE_PATHS, BALANCED_PROTECTED_PINS
+    SYSTEM_PROMPT, RUNTIME_SHA, MODEL_PROFILE_SHA, REQUIREMENTS_SHA = SYSTEM_PROMPT, RUNTIME_SHA, MODEL_PROFILE_SHA, REQUIREMENTS_SHA
+    COMMON_PINS, DATA_SHA, sha, checkpoint = COMMON_PINS, DATA_SHA, staticmethod(sha), checkpoint
+    input_names, checked_cli = staticmethod(input_names), staticmethod(checked_cli)
+
+    @staticmethod
+    def checked_execution(assignment, action, **scope):
+        require(assignment.get("version") == BALANCED_VERSIONS["fit"][0], "balanced_phase_assignment_required")
+        return checked_execution(assignment, action, **scope)
+
+    @staticmethod
+    def checked_freeze(freeze, assignment, **scope):
+        require(freeze.get("version") == BALANCED_VERSIONS["fit"][1] and assignment.get("version") == BALANCED_VERSIONS["fit"][0], "balanced_phase_freeze_required")
+        return checked_freeze(freeze, assignment, **scope)
+
+    @staticmethod
+    def checked_inputs(freeze, assignment, inputs, **scope):
+        _BalancedAuthority.checked_freeze(freeze, assignment, **{k: v for k, v in scope.items() if k == "verified_root"})
+        return checked_inputs(freeze, assignment, inputs, **scope)
+
+    @staticmethod
+    def make_freeze(assignment, raw, pins, **scope):
+        _BalancedAuthority.checked_execution(assignment, "fit", **scope)
+        return make_freeze(assignment, raw, pins, **scope)
+
+    @staticmethod
+    def stage_sources(assignment_path, raw, baseline, runtime):
+        _BalancedAuthority.checked_execution(strict_json(raw), "fit")
+        return stage_sources(assignment_path, raw, baseline, runtime)
+
+    @staticmethod
+    def representation_metadata():
+        return representation_metadata(balanced_metadata_assignment())
+
+
+BALANCED_AUTHORITY = _BalancedAuthority()
+
+
+def disabled_balanced_prototype(number, code_checkpoint, source_pins):
+    return {"version": "association-rank-balanced-phase-prototype/1", "executable": False, "futureTask": BALANCED_TASK,
+        "futureAssignmentVersion": BALANCED_VERSIONS["fit"][0], "codeCheckpoint": code_checkpoint,
+        "runtimeCodeCanonicalLfSha256": source_pins, "phase": phase(number), **recipe(balanced_metadata_assignment()),
+        "unresolved": "Separate positive final-clean-head identity/experiment assignment; phases2/3 need independently accepted immediate same-objective checkpoint. Balanced native loss/gradient and all phase work unrun. Balanced reload deferred."}
