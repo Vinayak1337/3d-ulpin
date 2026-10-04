@@ -5244,6 +5244,22 @@
           "artifactBytes": 5775,
           "artifactSha256": "3640eeb9cdeb91cef30caa9af3e94f89fddaf6000e2c685ebac250d8d0329ebe"
         }
+      },
+      "sourceFusionEvidence": {
+        "handoff": "docs/evidence/usp/source-fusion-gltf-handoff.md",
+        "receiptSha256": "03ef9b2b7c5ccb8463d3af34679aeaeb79f45d4ddb7bb5708d14153dd8a1fcaa",
+        "executionCommit": "144dd21c6fe195b26822e947d2aac5334d068655",
+        "scope": "Selected native node metadata plus retained document over disclosed SQL/storage/tool controls; no live HTTP/persistence/tool-inventory qualification",
+        "contextBytes": 11781,
+        "contextSha256": "87cd513eab72b7a0e1f769d2f9ad7e5f518ea3aaf0884aa9423b4ced4958d571",
+        "selectionSha256": "e926ffa71ba8f95df72fb52b05e114a08814d2f110e722e8d9ae3508d8c211bd",
+        "selectedNodes": 1,
+        "representation": "context_mesh",
+        "externalResources": "unfetched",
+        "propertyMatching": "unsupported",
+        "registryAdmission": false,
+        "learningLabels": false,
+        "stagingObservation": "Retained worker LF reader SHA aec092270367ee5eefe9464e310978cfe84c2e3f0c5aa373cc4484e963b78255 differs from observed staging CRLF reader SHA 92035c6c891d4e7c0e7a74a7c1980e9f0489d29f7046eadb639d9b6311ed9097; strict current-reader recapture refuses retained envelopes with409; historical pins remain unchanged."
       }
     },
     {
@@ -5314,6 +5330,22 @@
           "artifactBytes": 4532,
           "artifactSha256": "992c6ad19fb4c4e7efc23a5cd24babde2cde3acb7889a71ff30fcd2af553a8bb"
         }
+      },
+      "sourceFusionEvidence": {
+        "handoff": "docs/evidence/usp/source-fusion-gltf-handoff.md",
+        "receiptSha256": "03ef9b2b7c5ccb8463d3af34679aeaeb79f45d4ddb7bb5708d14153dd8a1fcaa",
+        "executionCommit": "144dd21c6fe195b26822e947d2aac5334d068655",
+        "scope": "Selected native node metadata plus retained document over disclosed SQL/storage/tool controls; no live HTTP/persistence/tool-inventory qualification",
+        "contextBytes": 10903,
+        "contextSha256": "8701ebfe1d7321bd5045590cdec3e81fccb53f799998bbadd429d08ae0a5f98a",
+        "selectionSha256": "78f30f2cfbcf5772e4fdffa1d8cd3a0d53e5fc1652f757034f090d876b01f940",
+        "selectedNodes": 1,
+        "representation": "context_mesh",
+        "externalResources": "unfetched",
+        "propertyMatching": "unsupported",
+        "registryAdmission": false,
+        "learningLabels": false,
+        "stagingObservation": "Retained worker LF reader SHA aec092270367ee5eefe9464e310978cfe84c2e3f0c5aa373cc4484e963b78255 differs from observed staging CRLF reader SHA 92035c6c891d4e7c0e7a74a7c1980e9f0489d29f7046eadb639d9b6311ed9097; strict current-reader recapture refuses retained envelopes with409; historical pins remain unchanged."
       }
     },
     {
