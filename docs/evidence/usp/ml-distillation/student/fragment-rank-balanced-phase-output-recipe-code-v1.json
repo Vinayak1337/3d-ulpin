@@ -1,0 +1,209 @@
+{
+  "activeRuntimeSources": 36,
+  "allPhaseContracts": {
+    "bytes": 378757,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\phase-contracts.json",
+    "physicalSha256": "7b6a0a20bc589679d3c87370955769a7ac46929d06d3b0f3a4fc821a5d41e3e5"
+  },
+  "allPhaseMetadataHashes": {
+    "bytes": 1534,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\phase-metadata-hashes.json",
+    "physicalSha256": "f6ec5c606e33ff75d179a30f80fd32db98feb1ee648b91a42dfdb48a5362994d"
+  },
+  "assignment": {
+    "bytes": 18411,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-44.continuation-1.fragment-rank-balanced-phase-output-recipe-code.assignment.json",
+    "physicalSha256": "7535b5700b41934abe4659f840b0e75c1584b0db23938ed870987efc5a1e9444"
+  },
+  "baseCommit": "116c0a9eb2b7681e0ed24935277ba05fc2d83b91",
+  "branch": "task/ml-association-student-20261002",
+  "callbackTarget": "01a0fbd1-c2aa-75c0-8a52-4c4f662f3759",
+  "checks": {
+    "accepted": "Actual PhaseSession result/manifest fields in constructed shared-writer recipe envelopes,without duplicate result settings/numerics; matching duplicates; unchanged retained legacy metadata.",
+    "actualHistory": "Recipe-valid constructed evidence reaches next rank_phase_output_tokens refusal on deliberately invalid4097 sentinel; conflicting duplicate fails earlier with rank_phase_output_recipe. No full/native phase acceptance.",
+    "codeCommitCommands": {
+      "bytes": 2964,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\code-commit.commands.json",
+      "physicalSha256": "0df90ca6d415e4b01a987badc872697c6e8ee65d777ddada951e7e65937f9d45"
+    },
+    "command": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_fragment_rank_balance.py",
+        "--receipt-root",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d",
+        "--assignment",
+        "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-44.continuation-1.fragment-rank-balanced-phase-output-recipe-code.assignment.json",
+        "BalanceControls.test_emitted_output_recipe"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "exitCode": 0,
+      "scope": "Only new emitted-output-recipe control; no old group or native campaign"
+    },
+    "compileExit": 0,
+    "compileReceipt": {
+      "bytes": 449,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\compile-1.json",
+      "physicalSha256": "9b62b94d1423c2d6f195ed310e5ead6545230acf02c2c4702d7a5d584f9666dc"
+    },
+    "compiledSources": 2,
+    "controlsPassed": 1,
+    "details": {
+      "bytes": 768,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\output-recipe-controls.json",
+      "physicalSha256": "65cffd75e0b6b339229d35c391880b6c7370985dc265eb528c788be1ba4388ae"
+    },
+    "doubles": "Constructed recipe envelope,zero placeholder checkpoint/proof hashes and loss values,invalid token sentinel. Actual session/config/source/path/codec/payload/helper/history functions execute. No tensor/autograd/model/GPU/optimizer/guard/boundary doubles run in this continuation.",
+    "firstTry": true,
+    "nativeImports": [],
+    "observedNewFailures": [],
+    "oldGroupRerun": false,
+    "refused": "Wrong binding.fit or binding.numerics,conflicting duplicate settings/numerics,wrong objective and missing mandatory manifest settings.",
+    "whitespaceCommand": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "whitespaceExit": 0
+  },
+  "codeCommit": "0dc8197eceb4a130f5666afc683e8ed5a8ba8b77",
+  "disabledPrototypes": {
+    "1": {
+      "bytes": 42254,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\phase-1-disabled-prototype.json",
+      "physicalSha256": "c812ba2859ddf78f224a9f371edad5a12c73d768bc776762c2f5d080cfcdd6eb"
+    },
+    "2": {
+      "bytes": 42255,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\phase-2-disabled-prototype.json",
+      "physicalSha256": "c91f97e9bc0bb59c94eaa7d10e89e9db9e80a1dd99e178b378d43684b033e726"
+    },
+    "3": {
+      "bytes": 42254,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\phase-3-disabled-prototype.json",
+      "physicalSha256": "f3810a2349e13ae121fdcfaf3098f494bc32ddd1d84d193def687d8c2d91532e"
+    }
+  },
+  "failure": {
+    "qualification": "Pre-existing host reader/writer mismatch; not a native weighted loss failure.",
+    "reproduction": {
+      "bytes": 904,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-44-balanced-recipe-review-v1-9c8424112ded4d53bfbb30a221d795f7\\host-recipe-reproduction.json",
+      "physicalSha256": "e4089fa3596322f06f8bbc6391d195413c02a6e61f113057ff498a8e8893f78d"
+    },
+    "review": {
+      "bytes": 5033,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-balanced-phase-code-review-v1.json",
+      "physicalSha256": "ccb22f6925571842fdf1ec8529c1567ebde928383e547a4aee659b35d05bb3d0"
+    },
+    "signature": "KeyError: settings in checked_output_history"
+  },
+  "finalizationReceipt": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\finalization.json",
+  "futurePhases": [
+    {
+      "contributions": 114,
+      "endUpdate": 20,
+      "finalAdapter": false,
+      "number": 1,
+      "startUpdate": 0
+    },
+    {
+      "contributions": 114,
+      "endUpdate": 40,
+      "finalAdapter": false,
+      "number": 2,
+      "startUpdate": 20
+    },
+    {
+      "contributions": 114,
+      "endUpdate": 60,
+      "finalAdapter": true,
+      "number": 3,
+      "startUpdate": 40
+    }
+  ],
+  "implementation": {
+    "preservation": "Writer/result schemas,full binding/objective/mass/native-proof/guard/map/checkpoint/source/input/continuity controls preserved. Other40 current runtime texts unchanged. Original four control function ASTs unchanged and tests consumed without rerun.",
+    "reader": "checked_output_history delegates to checked_output_recipe with assignment-derived legacy/balanced configuration. Strict plan/loss/representation/objective checks apply to all three outputs. Preflight/manifest require top-level settings/numerics; result requires binding.fit/numerics. Optional duplicate result settings/numerics must match.",
+    "reuse": {
+      "coordinatorHead": "7625acf2ba977d0744dfcf869b294c22354420e5",
+      "function": "checked_output_recipe",
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\services\\geo\\geo\\usp_learning\\association\\fragment_rank_phase_adapter.py"
+    },
+    "scaler": "init_scale128,growth_interval2000; tracker ends60; no runtime recipe change."
+  },
+  "inheritedChecks": {
+    "bytes": 893,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\inherited-checks.json",
+    "physicalSha256": "70890067ad1ba06259c47080d348e131223be198cabdf23cc486764ab8bfb6e9"
+  },
+  "next": "Coordinator review; separately freeze any STUDENT-45 native first-phase authority at final clean learner HEAD. Native weighted proof/checkpoint/fit/resources/quality still unrun. Balanced reload needs later separate code assignment.",
+  "objectiveCanonicalSha256": "d4ccb3dd75ec5e47d08f9ccb9d9ab5e043ac177147ec098e5e7aa96226531702",
+  "originalPreservation": {
+    "bytes": 34046,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\original-preservation.json",
+    "physicalSha256": "4d4ba1d02d55c3e0e95f665eaf3f5b38bea6805465e39ad99f84c0b3a0092d18"
+  },
+  "ownedEvidence": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-output-recipe-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-output-recipe-code-v1.md"
+  ],
+  "ownedSources": [
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py",
+    "scripts/usp/learning/association/test_fragment_rank_balance.py"
+  ],
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d",
+  "protectedRuntimeSources": 40,
+  "receiptIndex": {
+    "bytes": 7831,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\receipt-index.json",
+    "physicalSha256": "3d23f704d82ee265b96b079112d0f46eca0b681bc8be003cc2ddc8f8fd68eeed"
+  },
+  "recordedAtUtc": "2026-10-04T16:16:18.832683+00:00",
+  "retainedReferences": 69,
+  "scope": {
+    "GPU": false,
+    "developmentExpectations": false,
+    "evaluation": false,
+    "fit": false,
+    "guard": false,
+    "inference": false,
+    "modelRuntimeProfile": false,
+    "nativeExecution": false,
+    "originalArtifactsWritten": false,
+    "positivePacket": false,
+    "qualityClaim": false,
+    "reload": false,
+    "resourceAcceptance": false,
+    "stage": false,
+    "stagingWritten": false,
+    "teacher": false
+  },
+  "sourcePins": {
+    "bytes": 41854,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\execution-sources.json",
+    "physicalSha256": "496e3b5696c1c796cad04dcce1ece558a21c30ba9134be1bf0023a173bdaba30"
+  },
+  "stagingReadOnlyObservedHead": "bd0ef1296bc30e9d9893431bc5d786ba105e4ad3",
+  "suppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "task": "STUDENT-44-CONTINUATION-1-BALANCED-PHASE-OUTPUT-RECIPE",
+  "trainAuthorities": 14,
+  "version": "association-balanced-phase-output-recipe-code-evidence/1",
+  "workerSettings": {
+    "observedEffort": null,
+    "observedModel": null,
+    "observedTier": null,
+    "requestedEffort": "xhigh",
+    "requestedModel": "gpt-6.1-sol",
+    "requiredSpeed": "default/standard1x",
+    "tierToolControl": "Unexposed; prompt is not configuration."
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
