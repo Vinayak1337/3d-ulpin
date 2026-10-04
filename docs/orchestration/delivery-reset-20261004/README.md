@@ -45,6 +45,8 @@ The earlier report's direction remains sound after this second pass. Its propose
 
 ## Findings and corrections
 
+**Distillation addendum, 4 October:** incorporated the user's pasted P4.7/standards/P10.2 update into [conditional D08D](../WORK_ITEMS.md#d08d--conditional-storey-extraction-distillation-external-p47), [the ML procedure](ML_DATA_PLAN.md#conditional-language-distillation) and AGENTS/orchestrator rules. This incorporation uses the supplied text; it does not assert a newly fetched reviewer commit. Teacher-labelled real inputs, source checks, human spot-audit, grouped splits and a local-serving justification are useful additions. Corrected its overstatements: teacher performance is not a ceiling; dataset size does not define distillation; quote presence does not prove meaning; and a 3B–7B fit or narrow-task provider exemption is not automatic. The recorded earlier cohort counts/authorization history remain unchanged. The 300–2,000-page/five-project proposal and 10%/90% audit screen are explicit planning criteria, not achieved coverage or release qualification. Training and workers remain paused.
+
 | Review claim | Assessment and consequence |
 | --- | --- |
 | Work is not converging on release outcomes | Supported. Select the next task by the missing step in a usable journey. The lead must own shared integration, rather than reserving it while allocating more leaves. |

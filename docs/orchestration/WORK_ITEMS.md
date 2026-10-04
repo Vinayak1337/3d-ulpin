@@ -16,6 +16,7 @@ Use with [ORCHESTRATOR.md](ORCHESTRATOR.md). Each task below becomes one short a
 | D06 Label cohort | parked | D02; eligible annotation route | data / high | Grouped, independently reviewed development/evaluation data |
 | D07 Domain baselines | parked | D06; frozen comparison | model / xhigh | Measured building/plan candidates using existing models |
 | D08 Document/link baseline | parked | D04; eligible reviewed examples | backend/model / xhigh | Cited fields and explicit candidate building/floor links |
+| D08D Conditional language distillation | parked; conditional | D08 measured gap; task-specific D06 labels; eligibility/teacher comparison before corpus generation or fit | existing teacher and model owners / xhigh; independent human label review | Measured local storey extractor, or explicit no-fit decision |
 | D09 Geometry | parked | D02/D03; source frames and levels | geometry / xhigh | Supported reviewed prism/vector qualification |
 | D10 Identity/exchange | parked | reviewed identity inputs; D09 for geometry export | backend / xhigh | Existing P3 flow and nonempty supported CityJSON |
 | D11 Governance | parked | applicable D04/D09 outputs and source instruments | backend / xhigh | Readiness and supported checks with honest gaps |
@@ -64,6 +65,16 @@ Reuse `services/geo/ml-models.json`, `services/geo/geo/spatial_ml.py`, `packages
 ### D08 — Extract and link useful document facts
 
 Reuse the current native/OCR/fusion/citation readers and `source-fusion-associations.ts` / document-association authorities. Compare exact/regex extraction with one suitable pretrained model only where needed. Propose literal floor labels, values, units, citations and conflicts. Candidate links use scoped IDs and supported references; name/overlap/count compatibility alone does not accept identity. Measure retrieval separately from ranking, wrong-building/wrong-floor accepts and useful abstention. Keep rejected values in results with reasons. No speculative fragment-support fitting.
+
+### D08D — Conditional storey-extraction distillation (external P4.7)
+
+Use [the exact ML procedure](delivery-reset-20261004/ML_DATA_PLAN.md#conditional-language-distillation). Do not resume the old fragment-support experiment. First return the baseline/teacher development comparison, local-serving reason and provider/data eligibility; if a prerequisite fails, stop this branch with `not_run` and the specific next decision. The teacher is GPT-6.1 Sol/xhigh/standard when available through a permitted route; worker model and target student are different choices.
+
+If eligible, pilot labels on real public source pages, then collect toward 300–2,000 unique pages from at least five independent projects, grouped away from development/final projects. Validate quote, field meaning, units and target scope; keep rejected outputs and coverage counts. Arrange an independent human audit of at least 10%, stratified across projects and difficult cases, with at least 90% measured field agreement and no observed critical unsupported/wrong-target accepted labels. A missing reviewer pauses training, not other tasks. These are provisional-label screening criteria, not a release accuracy pass.
+
+Assign one bounded local student adaptation using existing scripts/environment and standard PEFT/QLoRA only if suitable; a 3B–7B model is a candidate, subject to measured RTX 3070 capacity. Tune on training data, select/calibrate on development, then freeze the candidate and run one independent final comparison against regex and the unchanged local baseline. The teacher never receives final-test pages or labels. Return product metrics, errors, correction effort, latency/memory, actual teacher usage and a useful integration decision in the existing result location. No new experiment-harness tree or unconditional fit.
+
+For later P10.1/P10.2 work, use the same procedure for column mappings or document–building/floor pairs only after that task's own measured gap. Prefer independently qualified officer decisions. A pair needs supported public evidence on both sides and scoped candidate references; private registry context cannot be sent to the external teacher. Do not make document association itself wait for distillation or move the user's existing linking requirement out of D08.
 
 ### D09 — Close one geometry qualification path
 
