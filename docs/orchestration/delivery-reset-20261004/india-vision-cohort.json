@@ -120,7 +120,7 @@
     },
     "settingsRequested": {
       "model": "gpt-6.1-sol",
-      "reasoning": "xhigh",
+      "reasoning": "high",
       "speed": "default/standard 1x"
     },
     "settingsObserved": "Actual per-turn model/reasoning/tier metadata unexposed"
@@ -165,6 +165,15 @@
         "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/parquet-attempt/attempt.json",
         "bytes": 24492,
         "sha256": "cfb7b2924646ea779452bde6ea1e4114ac5419e0c9a748e6808e54476ff9c096"
+      }
+    },
+    {
+      "id": "D06-RGB-LAST-SHARD",
+      "outcome": "exact_target_absent_from_final_known_train_shard",
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/last-shard-attempt/attempt.json",
+        "bytes": 6638,
+        "sha256": "9529bbe7422a981efd89d398afce31a44d0879a3bb884beeae2c806c37094cca"
       }
     }
   ],
@@ -282,6 +291,37 @@
       "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/parquet-attempt/validation.json",
       "bytes": 1717,
       "sha256": "b01653f9ef71d470693ce227befbc0734fdcc9d0f687f3f0464b38a1c237ba26"
+    },
+    "exit": 0
+  },
+  "rgbLastShardRecovery": {
+    "target": "nepal-flooding_00000070_pre_disaster.png",
+    "pinnedMirrorRevision": "079adbab22aa09633dfd50ece0dd0137431a9780",
+    "actual": {
+      "newTrainShards": 1,
+      "filenameRows": 164,
+      "httpRangeResponses": 4,
+      "metadataBytes": 9502,
+      "elapsedSeconds": 5.64100000000326,
+      "peakWorkingSetBytes": 55705600,
+      "exactSceneMatches": 0,
+      "imageBytesRead": 0,
+      "labelBytesRead": 0,
+      "eligiblePairs": 0
+    },
+    "knownTrainIndex": {
+      "shards": 17,
+      "filenameRows": 2799
+    },
+    "imageAcquired": false,
+    "coverage": "Known mirror train index completed: prior preserved 16-shard/2635-name result plus this 164-name shard = 17 shards/2799 names. Other splits remain uninspected; this is not dataset-wide absence or evidence that the publisher original is unavailable.",
+    "prerequisite": "Permitted publisher acquisition of nepal-flooding_00000070_pre_disaster.png, or an authoritative exact original/pre-disaster training-copy row/blob index or traceable single-file original copy. Then verify source-copy/encoding lineage, pixel registration and OEM class/ambiguity/ignore policy before admission."
+  },
+  "lastShardAttemptVerification": {
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/last-shard-attempt/validation.json",
+      "bytes": 1153,
+      "sha256": "793adf50e6a21f402da3e2f1c991826833b38ade575b8543601d9e3a20b343ad"
     },
     "exit": 0
   }
