@@ -30,6 +30,9 @@ import {registryRasterCitationSourceTx} from '../../registry/registry-raster-cit
 import {RegistryPointFragmentSchema,type RegistryPointCitation} from '../../../../../contracts/src/registry-document-evidence';
 import type {PointBatchInput} from '@ulpin/contracts/usp';
 import {registryPointCitationSourceTx} from '../../registry/registry-point-citation-source';
+import type {GltfInput} from '../../../../../contracts/src/usp/gltf-ingestion';
+import {registryGltfCitationSourceTx} from '../../registry/registry-gltf-citation-source';
+import {verifyFusionGltfTools} from './source-fusion-gltf-authority';
 
 export type FusionCitationDependencies={source:typeof associationDocumentInputTx;
   fusionResult?:typeof readFusionResult;cityjson?:typeof acceptedCityJSONTx;
@@ -37,6 +40,7 @@ export type FusionCitationDependencies={source:typeof associationDocumentInputTx
   dxfSource?:typeof registryDXFCitationSourceTx;dxfTools?:typeof verifyFusionDXFTools;
   kmlSource?:typeof registryKMLCitationSourceTx;kmlTools?:typeof verifyFusionKMLTools;
   citygmlSource?:typeof registryCityGMLCitationSourceTx;citygmlTools?:typeof verifyFusionCityGMLTools;
+  gltfSource?:typeof registryGltfCitationSourceTx;gltfTools?:typeof verifyFusionGltfTools;
   geoparquetSource?:typeof registryGeoParquetCitationSourceTx;geoparquetTools?:typeof verifyFusionGeoParquetTools;
   rasterSource?:typeof registryRasterCitationSourceTx;pointSource?:typeof registryPointCitationSourceTx};
 export function citationReadBudget():FusionBudget{
@@ -47,8 +51,8 @@ export function citationReadBudget():FusionBudget{
  * No independent transaction, write or trusted caller-supplied context exists. */
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string,
-  surveyReferences=false){
-  if(request.selection.sources.some(source=>source.kind==='gltf'))
+  surveyReferences=false,gltfReferences=false){
+  if(request.selection.sources.some(source=>source.kind==='gltf')&&(!gltfReferences||!siteId))
     throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY',
       'glTF nodes support source context only; reviewed citation attachment is unsupported.');
   // Only the canonical officer amendment enables survey references. Proposal
@@ -85,6 +89,9 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
     citygml:async(client:PoolClient,pin:SourceFusionPin,lock=false)=>
       (await (dependencies.citygmlSource??registryCityGMLCitationSourceTx)(client,siteId!,pin,lock)).authority,
     citygmlTools:dependencies.citygmlTools??verifyFusionCityGMLTools,
+    gltf:async(client:PoolClient,pin:SourceFusionPin,lock=false)=>
+      (await (dependencies.gltfSource??registryGltfCitationSourceTx)(client,siteId!,pin,lock)).authority,
+    gltfTools:dependencies.gltfTools??verifyFusionGltfTools,
     geoparquet:async(client:PoolClient,pin:SourceFusionPin,lock=false)=>
       (await (dependencies.geoparquetSource??registryGeoParquetCitationSourceTx)(client,siteId!,pin,lock)).authority,
     geoparquetTools:dependencies.geoparquetTools??verifyFusionGeoParquetTools,
@@ -97,6 +104,7 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
   const dxfs=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'dxf'}>}>();
   const kmls=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'kml'}>}>();
   const citygmls=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'citygml'}>}>();
+  const gltfs=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'gltf'}>}>();
   const geoparquets=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'geoparquet'}>}>();
   const rasters=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'raster'}>}>();
   const points=new Map<string,{pin:SourceFusionPin;loaded:Extract<Awaited<ReturnType<typeof readFusionResult>>,{kind:'point'}>}>();
@@ -112,6 +120,7 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       if(loaded.kind==='dxf')dxfs.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='kml')kmls.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='citygml')citygmls.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
+      if(loaded.kind==='gltf')gltfs.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='geoparquet')geoparquets.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='raster')rasters.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       if(loaded.kind==='point')points.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
@@ -135,6 +144,7 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
   const dxfInputs=new Map<string,DXFInput>();
   const kmlInputs=new Map<string,KMLInput>();
   const citygmlInputs=new Map<string,CityGMLInput>();
+  const gltfInputs=new Map<string,GltfInput>();
   const geoparquetInputs=new Map<string,GeoParquetInput>();
   const rasterInputs=new Map<string,RasterWindowInput>();
   const pointInputs=new Map<string,PointBatchInput>();
@@ -144,11 +154,12 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
     if(authority.kind==='dxf')dxfInputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='kml')kmlInputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='citygml')citygmlInputs.set(selection.pin.sourceId,authority.input);
+    if(authority.kind==='gltf')gltfInputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='geoparquet')geoparquetInputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='raster')rasterInputs.set(selection.pin.sourceId,authority.input);
     if(authority.kind==='point')pointInputs.set(selection.pin.sourceId,authority.input);
   }
-  return {context,inputs,ifcInputs,dxfInputs,kmlInputs,citygmlInputs,geoparquetInputs,rasterInputs,pointInputs,documents,ifcs,dxfs,kmls,citygmls,geoparquets,rasters,points,revalidate:async()=>{
+  return {context,inputs,ifcInputs,dxfInputs,kmlInputs,citygmlInputs,gltfInputs,geoparquetInputs,rasterInputs,pointInputs,documents,ifcs,dxfs,kmls,citygmls,gltfs,geoparquets,rasters,points,revalidate:async()=>{
     fusionLive(finalBudget);await fusionAuthorityBatch(ctx,selected,finalBudget,captured,authorityDependencies);
   }};
 }
