@@ -102,9 +102,7 @@ function view(stored:Stored,authority:Authority){
 export class DocumentClaimsService{
   constructor(private readonly dependencies:Dependencies=defaults){}
   private async readTx<T>(deadline:number,action:(client:PoolClient)=>Promise<T>){
-    live(deadline);return this.dependencies.transaction(async client=>{
-      await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');return action(client);
-    },{deadlineAt:deadline});
+    live(deadline);return this.dependencies.transaction(action,{deadlineAt:deadline},'repeatable_read_only');
   }
   private async publish(caseId:string,reviewId:string,revision:number,deadline:number){
     const before=await this.readTx(deadline,async client=>{
