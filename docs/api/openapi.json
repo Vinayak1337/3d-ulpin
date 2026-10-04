@@ -14292,7 +14292,7 @@
             }
           }
         },
-        "summary": "Amend exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node or validated PDF/PNG/JPEG region citations; explicit glTF references and survey rows support building/floor source references with correspondence unassessed; inclusion takes effect after canonical review/commit; explicitly confirm IFC identity",
+        "summary": "Amend exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node/OBJ-polygon or validated PDF/PNG/JPEG region citations; explicit glTF/OBJ references and survey rows support building/floor source references with correspondence unassessed; inclusion takes effect after canonical review/commit; explicitly confirm IFC identity",
         "tags": [
           "registry"
         ],
@@ -14488,7 +14488,7 @@
             }
           }
         },
-        "summary": "Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node and PDF/PNG/JPEG region citations through current private source and draft authority; preserve source field roles, exclusions, local declarations and unresolved qualifications",
+        "summary": "Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node/OBJ-polygon and PDF/PNG/JPEG region citations through current private source and draft authority; preserve source field roles, exclusions, local declarations and unresolved qualifications",
         "tags": [
           "registry"
         ],
@@ -88173,6 +88173,339 @@
                         "version"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 524288
+                        },
+                        "obj": {
+                          "type": "object",
+                          "properties": {
+                            "purpose": {
+                              "type": "string",
+                              "enum": [
+                                "source_reference_only"
+                              ]
+                            },
+                            "profile": {
+                              "type": "string",
+                              "enum": [
+                                "utf8-literal-polygons/1"
+                              ]
+                            },
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "artifactBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "polygonIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 99999
+                            },
+                            "sourceKey": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1024
+                            },
+                            "recordPointer": {
+                              "type": "string",
+                              "pattern": "^\\/faces\\/\\d+$"
+                            },
+                            "recordSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "span": {
+                              "type": "object",
+                              "properties": {
+                                "byteStart": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 16777216
+                                },
+                                "byteEnd": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 16777216
+                                },
+                                "lineStart": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "lineEnd": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "spanSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                }
+                              },
+                              "required": [
+                                "byteStart",
+                                "byteEnd",
+                                "lineStart",
+                                "lineEnd",
+                                "spanSha256"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "fragmentSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedPolygonIndices": {
+                              "minItems": 1,
+                              "maxItems": 25,
+                              "type": "array",
+                              "items": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 99999
+                              }
+                            },
+                            "sourceSelectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "combinedContextSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$",
+                              "description": "Exact full combined context verified at the original officer amendment; subsequent disclosure revalidates attached references, not continued applicability of uncited context."
+                            },
+                            "representation": {
+                              "type": "string",
+                              "enum": [
+                                "context_mesh"
+                              ]
+                            },
+                            "identifierScope": {
+                              "type": "string",
+                              "enum": [
+                                "source_native_only; not_canonical_registry_ids"
+                              ]
+                            },
+                            "placement": {
+                              "type": "string",
+                              "enum": [
+                                "unknown"
+                              ]
+                            },
+                            "geometryQualification": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "measurements": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "learningLabels": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          },
+                          "required": [
+                            "purpose",
+                            "profile",
+                            "artifactSha256",
+                            "artifactBytes",
+                            "polygonIndex",
+                            "sourceKey",
+                            "recordPointer",
+                            "recordSha256",
+                            "span",
+                            "fragmentSha256",
+                            "selectionSha256",
+                            "selectedPolygonIndices",
+                            "sourceSelectionSha256",
+                            "combinedContextSha256",
+                            "representation",
+                            "identifierScope",
+                            "placement",
+                            "geometryQualification",
+                            "measurements",
+                            "learningLabels"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        },
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-obj-polygon-citation/1"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "resultBytes",
+                        "obj",
+                        "id",
+                        "document",
+                        "inputSha256",
+                        "readerSha256",
+                        "acceptedFence",
+                        "target",
+                        "selection",
+                        "associationState",
+                        "qualification",
+                        "version"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -102874,6 +103207,339 @@
                         "version"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 524288
+                        },
+                        "obj": {
+                          "type": "object",
+                          "properties": {
+                            "purpose": {
+                              "type": "string",
+                              "enum": [
+                                "source_reference_only"
+                              ]
+                            },
+                            "profile": {
+                              "type": "string",
+                              "enum": [
+                                "utf8-literal-polygons/1"
+                              ]
+                            },
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "artifactBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "polygonIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 99999
+                            },
+                            "sourceKey": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1024
+                            },
+                            "recordPointer": {
+                              "type": "string",
+                              "pattern": "^\\/faces\\/\\d+$"
+                            },
+                            "recordSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "span": {
+                              "type": "object",
+                              "properties": {
+                                "byteStart": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 16777216
+                                },
+                                "byteEnd": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 16777216
+                                },
+                                "lineStart": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "lineEnd": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "spanSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                }
+                              },
+                              "required": [
+                                "byteStart",
+                                "byteEnd",
+                                "lineStart",
+                                "lineEnd",
+                                "spanSha256"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "fragmentSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedPolygonIndices": {
+                              "minItems": 1,
+                              "maxItems": 25,
+                              "type": "array",
+                              "items": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 99999
+                              }
+                            },
+                            "sourceSelectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "combinedContextSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$",
+                              "description": "Exact full combined context verified at the original officer amendment; subsequent disclosure revalidates attached references, not continued applicability of uncited context."
+                            },
+                            "representation": {
+                              "type": "string",
+                              "enum": [
+                                "context_mesh"
+                              ]
+                            },
+                            "identifierScope": {
+                              "type": "string",
+                              "enum": [
+                                "source_native_only; not_canonical_registry_ids"
+                              ]
+                            },
+                            "placement": {
+                              "type": "string",
+                              "enum": [
+                                "unknown"
+                              ]
+                            },
+                            "geometryQualification": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "measurements": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "learningLabels": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          },
+                          "required": [
+                            "purpose",
+                            "profile",
+                            "artifactSha256",
+                            "artifactBytes",
+                            "polygonIndex",
+                            "sourceKey",
+                            "recordPointer",
+                            "recordSha256",
+                            "span",
+                            "fragmentSha256",
+                            "selectionSha256",
+                            "selectedPolygonIndices",
+                            "sourceSelectionSha256",
+                            "combinedContextSha256",
+                            "representation",
+                            "identifierScope",
+                            "placement",
+                            "geometryQualification",
+                            "measurements",
+                            "learningLabels"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        },
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-obj-polygon-citation/1"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "resultBytes",
+                        "obj",
+                        "id",
+                        "document",
+                        "inputSha256",
+                        "readerSha256",
+                        "acceptedFence",
+                        "target",
+                        "selection",
+                        "associationState",
+                        "qualification",
+                        "version"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -105643,6 +106309,12 @@
                 "additionalProperties": false
               },
               "gltfReferences": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              },
+              "objReferences": {
                 "type": "boolean",
                 "enum": [
                   true
@@ -115282,6 +115954,1026 @@
                         "buffers",
                         "resources",
                         "extensions",
+                        "qualification",
+                        "coverage"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "pin",
+                    "fragment"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "pin": {
+                      "type": "object",
+                      "properties": {
+                        "resultBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 524288
+                        },
+                        "obj": {
+                          "type": "object",
+                          "properties": {
+                            "purpose": {
+                              "type": "string",
+                              "enum": [
+                                "source_reference_only"
+                              ]
+                            },
+                            "profile": {
+                              "type": "string",
+                              "enum": [
+                                "utf8-literal-polygons/1"
+                              ]
+                            },
+                            "artifactSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "artifactBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "polygonIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 99999
+                            },
+                            "sourceKey": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1024
+                            },
+                            "recordPointer": {
+                              "type": "string",
+                              "pattern": "^\\/faces\\/\\d+$"
+                            },
+                            "recordSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "span": {
+                              "type": "object",
+                              "properties": {
+                                "byteStart": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 16777216
+                                },
+                                "byteEnd": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 16777216
+                                },
+                                "lineStart": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "lineEnd": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "spanSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                }
+                              },
+                              "required": [
+                                "byteStart",
+                                "byteEnd",
+                                "lineStart",
+                                "lineEnd",
+                                "spanSha256"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "fragmentSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedPolygonIndices": {
+                              "minItems": 1,
+                              "maxItems": 25,
+                              "type": "array",
+                              "items": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 99999
+                              }
+                            },
+                            "sourceSelectionSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "combinedContextSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$",
+                              "description": "Exact full combined context verified at the original officer amendment; subsequent disclosure revalidates attached references, not continued applicability of uncited context."
+                            },
+                            "representation": {
+                              "type": "string",
+                              "enum": [
+                                "context_mesh"
+                              ]
+                            },
+                            "identifierScope": {
+                              "type": "string",
+                              "enum": [
+                                "source_native_only; not_canonical_registry_ids"
+                              ]
+                            },
+                            "placement": {
+                              "type": "string",
+                              "enum": [
+                                "unknown"
+                              ]
+                            },
+                            "geometryQualification": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "measurements": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "learningLabels": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          },
+                          "required": [
+                            "purpose",
+                            "profile",
+                            "artifactSha256",
+                            "artifactBytes",
+                            "polygonIndex",
+                            "sourceKey",
+                            "recordPointer",
+                            "recordSha256",
+                            "span",
+                            "fragmentSha256",
+                            "selectionSha256",
+                            "selectedPolygonIndices",
+                            "sourceSelectionSha256",
+                            "combinedContextSha256",
+                            "representation",
+                            "identifierScope",
+                            "placement",
+                            "geometryQualification",
+                            "measurements",
+                            "learningLabels"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "document": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "inputSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "readerSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "acceptedFence": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "recordId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "bodySha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "recordId",
+                            "revision",
+                            "bodySha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "selection": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "accessSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "selectedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "subject",
+                            "accessSha256",
+                            "selectedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "associationState": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected"
+                          ]
+                        },
+                        "qualification": {
+                          "type": "string",
+                          "enum": [
+                            "not_assessed"
+                          ]
+                        },
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "registry-obj-polygon-citation/1"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "resultBytes",
+                        "obj",
+                        "id",
+                        "document",
+                        "inputSha256",
+                        "readerSha256",
+                        "acceptedFence",
+                        "target",
+                        "selection",
+                        "associationState",
+                        "qualification",
+                        "version"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "fragment": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "obj"
+                          ]
+                        },
+                        "pin": {
+                          "type": "object",
+                          "properties": {
+                            "caseId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "caseRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "resultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "readerSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "inputSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "acceptedFence": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "resultBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 4194304
+                            }
+                          },
+                          "required": [
+                            "caseId",
+                            "caseRevision",
+                            "sourceId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "jobId",
+                            "resultSha256",
+                            "readerSha256",
+                            "inputSha256",
+                            "acceptedFence",
+                            "resultBytes"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "namespace": {
+                          "type": "string"
+                        },
+                        "sourceSetRole": {
+                          "type": "string",
+                          "enum": [
+                            "operator_selected_fragment"
+                          ]
+                        },
+                        "representation": {
+                          "type": "string",
+                          "enum": [
+                            "context_mesh"
+                          ]
+                        },
+                        "summary": {
+                          "type": "object",
+                          "properties": {
+                            "schemaVersion": {
+                              "type": "string",
+                              "enum": [
+                                "obj-source-context/1"
+                              ]
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "inspected_local",
+                                "inspected_partial"
+                              ]
+                            },
+                            "geometryProjectionStatus": {
+                              "type": "string",
+                              "enum": [
+                                "available",
+                                "partial",
+                                "unavailable"
+                              ]
+                            },
+                            "representation": {
+                              "type": "string",
+                              "enum": [
+                                "context_mesh"
+                              ]
+                            },
+                            "vertexCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "textureCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "normalCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "polygonCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "faceReferenceCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 500000
+                            },
+                            "eligiblePolygonCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "declarationCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 250000
+                            },
+                            "unsupportedStatementCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 250000
+                            },
+                            "missingCompanionDeclarationCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 250000
+                            },
+                            "axes": {
+                              "type": "string",
+                              "enum": [
+                                "unknown"
+                              ]
+                            },
+                            "units": {
+                              "type": "string",
+                              "enum": [
+                                "unknown"
+                              ]
+                            },
+                            "crs": {
+                              "type": "string",
+                              "enum": [
+                                "unknown"
+                              ]
+                            },
+                            "heightReference": {
+                              "type": "string",
+                              "enum": [
+                                "unknown"
+                              ]
+                            },
+                            "globalPlacement": {
+                              "type": "string",
+                              "enum": [
+                                "unknown"
+                              ]
+                            },
+                            "accuracy": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "validity": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "canonicalIdentity": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "analyticEligible": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "registryAdmission": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "measurements": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "learningLabels": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "rights": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "schemaVersion",
+                            "sourceSha256",
+                            "sourceBytes",
+                            "status",
+                            "geometryProjectionStatus",
+                            "representation",
+                            "vertexCount",
+                            "textureCount",
+                            "normalCount",
+                            "polygonCount",
+                            "faceReferenceCount",
+                            "eligiblePolygonCount",
+                            "declarationCount",
+                            "unsupportedStatementCount",
+                            "missingCompanionDeclarationCount",
+                            "axes",
+                            "units",
+                            "crs",
+                            "heightReference",
+                            "globalPlacement",
+                            "accuracy",
+                            "validity",
+                            "canonicalIdentity",
+                            "analyticEligible",
+                            "registryAdmission",
+                            "measurements",
+                            "learningLabels",
+                            "rights"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "artifactSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "artifactBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 16777216
+                        },
+                        "selectionSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "selectionHashBasis": {
+                          "type": "string",
+                          "enum": [
+                            "accepted_source_result_input_reader_fence_artifact_and_sorted_polygon_indices"
+                          ]
+                        },
+                        "recordHashBasis": {
+                          "type": "string",
+                          "enum": [
+                            "canonical_json_of_exact_native_artifact_record"
+                          ]
+                        },
+                        "nativeIdentifierScope": {
+                          "type": "string",
+                          "enum": [
+                            "source_native_only; not_canonical_registry_ids"
+                          ]
+                        },
+                        "profile": {
+                          "type": "string",
+                          "enum": [
+                            "utf8-literal-polygons/1"
+                          ]
+                        },
+                        "encoding": {
+                          "type": "string",
+                          "enum": [
+                            "utf8",
+                            "utf8_bom"
+                          ]
+                        },
+                        "locatorBasis": {
+                          "type": "string",
+                          "enum": [
+                            "original-file-bytes-zero-based-end-exclusive; physical-lines-one-based"
+                          ]
+                        },
+                        "polygons": {
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "artifactPointer": {
+                                "type": "string"
+                              },
+                              "recordSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "record": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              },
+                              "index": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 99999
+                              },
+                              "key": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "artifactPointer",
+                              "recordSha256",
+                              "record",
+                              "index",
+                              "key"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "vertices": {
+                          "maxItems": 100000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "artifactPointer": {
+                                "type": "string"
+                              },
+                              "recordSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "record": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              },
+                              "index": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 99999
+                              }
+                            },
+                            "required": [
+                              "artifactPointer",
+                              "recordSha256",
+                              "record",
+                              "index"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "textures": {
+                          "maxItems": 100000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "artifactPointer": {
+                                "type": "string"
+                              },
+                              "recordSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "record": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              },
+                              "index": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 99999
+                              }
+                            },
+                            "required": [
+                              "artifactPointer",
+                              "recordSha256",
+                              "record",
+                              "index"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "normals": {
+                          "maxItems": 100000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "artifactPointer": {
+                                "type": "string"
+                              },
+                              "recordSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "record": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              },
+                              "index": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 99999
+                              }
+                            },
+                            "required": [
+                              "artifactPointer",
+                              "recordSha256",
+                              "record",
+                              "index"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "declarations": {
+                          "maxItems": 250000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "artifactPointer": {
+                                "type": "string"
+                              },
+                              "recordSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "record": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              },
+                              "declarationIndex": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 249999
+                              }
+                            },
+                            "required": [
+                              "artifactPointer",
+                              "recordSha256",
+                              "record",
+                              "declarationIndex"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "resources": {
+                          "maxItems": 250000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "artifactPointer": {
+                                "type": "string"
+                              },
+                              "recordSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "record": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              }
+                            },
+                            "required": [
+                              "artifactPointer",
+                              "recordSha256",
+                              "record"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "unsupported": {
+                          "maxItems": 250000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "artifactPointer": {
+                                "type": "string"
+                              },
+                              "recordSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "record": {
+                                "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                                "type": "object",
+                                "additionalProperties": true
+                              }
+                            },
+                            "required": [
+                              "artifactPointer",
+                              "recordSha256",
+                              "record"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "qualification": {
+                          "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "coverage": {
+                          "type": "object",
+                          "properties": {
+                            "selectedPolygons": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 25
+                            },
+                            "availableNativePolygons": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "selectedCoordinateRecords": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "selectedResourceDeclarations": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 250000
+                            },
+                            "scope": {
+                              "type": "string",
+                              "enum": [
+                                "explicit_polygons; incident_coordinates_and_active_declarations; global_material_libraries_and_unsupported_inventory"
+                              ]
+                            },
+                            "unselectedPolygons": {
+                              "type": "string",
+                              "enum": [
+                                "not_expanded"
+                              ]
+                            },
+                            "externalResources": {
+                              "type": "string",
+                              "enum": [
+                                "not_fetched"
+                              ]
+                            },
+                            "triangulation": {
+                              "type": "string",
+                              "enum": [
+                                "not_performed"
+                              ]
+                            },
+                            "geometryQualification": {
+                              "type": "string",
+                              "enum": [
+                                "not_assessed"
+                              ]
+                            },
+                            "propertyMatching": {
+                              "type": "string",
+                              "enum": [
+                                "unsupported"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "selectedPolygons",
+                            "availableNativePolygons",
+                            "selectedCoordinateRecords",
+                            "selectedResourceDeclarations",
+                            "scope",
+                            "unselectedPolygons",
+                            "externalResources",
+                            "triangulation",
+                            "geometryQualification",
+                            "propertyMatching"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "pin",
+                        "namespace",
+                        "sourceSetRole",
+                        "representation",
+                        "summary",
+                        "artifactSha256",
+                        "artifactBytes",
+                        "selectionSha256",
+                        "selectionHashBasis",
+                        "recordHashBasis",
+                        "nativeIdentifierScope",
+                        "profile",
+                        "encoding",
+                        "locatorBasis",
+                        "polygons",
+                        "vertices",
+                        "textures",
+                        "normals",
+                        "declarations",
+                        "resources",
+                        "unsupported",
                         "qualification",
                         "coverage"
                       ],

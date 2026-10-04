@@ -230,7 +230,7 @@ export class RegisterController {
 
   @Post('registry-drafts/:draftId/document-citations') @HttpCode(200)
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
-  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_document_citations',summary:'Amend exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node or validated PDF/PNG/JPEG region citations; explicit glTF references and survey rows support building/floor source references with correspondence unassessed; inclusion takes effect after canonical review/commit; explicitly confirm IFC identity'})
+  @ApiOperation({operationId:'POST_api_v1_registry_drafts_draftId_document_citations',summary:'Amend exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node/OBJ-polygon or validated PDF/PNG/JPEG region citations; explicit glTF/OBJ references and survey rows support building/floor source references with correspondence unassessed; inclusion takes effect after canonical review/commit; explicitly confirm IFC identity'})
   @doc.ApiContract(200,doc.requestSchema(RegistryDocumentAmendmentReceiptSchema),RegistryDocumentAmendmentSchema)
   async amendDocumentCitations(@Param('draftId') draftId:string,@Req() req:Request){
     if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)
@@ -241,7 +241,7 @@ export class RegisterController {
 
   @Get('registry-drafts/:draftId/document-citations')
   @UseGuards(PrivateSpatialGuard) @Header('Cache-Control','private, no-store')
-  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_document_citations',summary:'Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node and PDF/PNG/JPEG region citations through current private source and draft authority; preserve source field roles, exclusions, local declarations and unresolved qualifications'})
+  @ApiOperation({operationId:'GET_api_v1_registry_drafts_draftId_document_citations',summary:'Read exact native/OCR/IFC/DXF/KML/CityGML/GeoParquet/raster/point/survey-row/glTF-node/OBJ-polygon and PDF/PNG/JPEG region citations through current private source and draft authority; preserve source field roles, exclusions, local declarations and unresolved qualifications'})
   @doc.ApiContract(200,doc.requestSchema(RegistryDocumentEvidenceSchema))
   documentCitations(@Param('draftId') draftId:string,@Req() req:Request){
     if(new URL(req.originalUrl??req.url,'http://localhost').searchParams.size)

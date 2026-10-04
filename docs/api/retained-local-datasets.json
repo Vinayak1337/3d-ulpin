@@ -1169,6 +1169,34 @@
       "qualification": "not_assessed",
       "learningLabels": false,
       "stagingObservation": "Exact retained LF recipe differs from staging CRLF; current-reader refusal and prior source/native/profile/receipt hashes remain unchanged."
+    },
+    "canonicalHttpObservation": {
+      "handoff": "docs/evidence/usp/gltf-http-handoff.md",
+      "receiptSha256": "9f53746618c16ed4cd14b6e94bf5e9fb63af246a5786f6ee723bfa2b39163453",
+      "executionCommit": "fcdabe2041811e0de414991636c9a7daa67c2b6c",
+      "profileSha256": "57060246fb2c8b0bee74399a7d6879174a8a45632483a8681f5045ca759c04c0",
+      "canonicalReceipt": {
+        "version": "gltf-native/1",
+        "caseId": "ba9e2004-3eff-4680-99be-db5f81c2fa1f",
+        "caseRevision": 1,
+        "sourceId": "4c80b2d5-965f-4713-9902-09b917163f7a",
+        "sourceRevision": 1,
+        "sourceSha256": "ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e",
+        "bytes": 1664,
+        "jobId": "761f8141-02df-4010-b218-996994e15aa6"
+      },
+      "statusAtJourney": "completed",
+      "resultSha256": "6549d268b01d13a011bb05d450413ef8e7d93d824e15dde98aec4a23ca8b9125",
+      "acceptedFence": 1,
+      "artifactSha256": "3640eeb9cdeb91cef30caa9af3e94f89fddaf6000e2c685ebac250d8d0329ebe",
+      "artifactBytes": 5775,
+      "scope": "Actual local private production HTTP retain and exact canonical worker with SQL/object persistence, isolated populated runtime; local Windows process authority, no human-login qualification",
+      "priorRowsPreserved": true,
+      "cleanup": "Owned API/task-started storage stopped; originals/profile/history/container IDs/volumes intact; engine available",
+      "finalCurrentState": "stale status200/result-null and native409 after second upload advanced the case; original200 preserved",
+      "standingInstallation": false,
+      "learningLabels": false,
+      "qualification": "KhronosGroup/Cesium Box graphics test_only, CC BY4.0, unchanged original bytes. Source-local hierarchy/transforms/defaults remain declarations; global placement unknown. Partial Box0.bin unfetched. No measurements, property identity, rights/accuracy/learning/registry/rendering/release qualification."
     }
   },
   {
@@ -1275,6 +1303,34 @@
       "qualification": "not_assessed",
       "learningLabels": false,
       "stagingObservation": "Exact retained LF recipe differs from staging CRLF; current-reader refusal and prior source/native/profile/receipt hashes remain unchanged."
+    },
+    "canonicalHttpObservation": {
+      "handoff": "docs/evidence/usp/gltf-http-handoff.md",
+      "receiptSha256": "9f53746618c16ed4cd14b6e94bf5e9fb63af246a5786f6ee723bfa2b39163453",
+      "executionCommit": "fcdabe2041811e0de414991636c9a7daa67c2b6c",
+      "profileSha256": "57060246fb2c8b0bee74399a7d6879174a8a45632483a8681f5045ca759c04c0",
+      "canonicalReceipt": {
+        "version": "gltf-native/1",
+        "caseId": "ba9e2004-3eff-4680-99be-db5f81c2fa1f",
+        "caseRevision": 2,
+        "sourceId": "030c94df-41fb-4aaf-af37-c773c746fce0",
+        "sourceRevision": 1,
+        "sourceSha256": "4a0d69eecfce0672a50b71dc218cbacec6c53fe2445040c235c6314b1b2c41b9",
+        "bytes": 2898,
+        "jobId": "fca32ed7-9746-48a4-95a1-0a7c94670669"
+      },
+      "statusAtJourney": "partial",
+      "resultSha256": "f3abbce5b38331ec21240fef84df75c21bd359b698b0ecb2e8a225b317463b5d",
+      "acceptedFence": 1,
+      "artifactSha256": "992c6ad19fb4c4e7efc23a5cd24babde2cde3acb7889a71ff30fcd2af553a8bb",
+      "artifactBytes": 4532,
+      "scope": "Actual local private production HTTP retain and exact canonical worker with SQL/object persistence, isolated populated runtime; local Windows process authority, no human-login qualification",
+      "priorRowsPreserved": true,
+      "cleanup": "Owned API/task-started storage stopped; originals/profile/history/container IDs/volumes intact; engine available",
+      "finalCurrentState": "partial at case revision2; one unfetched buffer, no projected positions/indices",
+      "standingInstallation": false,
+      "learningLabels": false,
+      "qualification": "KhronosGroup/Cesium Box graphics test_only, CC BY4.0, unchanged original bytes. Source-local hierarchy/transforms/defaults remain declarations; global placement unknown. Partial Box0.bin unfetched. No measurements, property identity, rights/accuracy/learning/registry/rendering/release qualification."
     }
   },
   {
@@ -2308,6 +2364,26 @@
       "standingInstallation": false,
       "learningLabels": false,
       "qualification": "Graphics test_only; units/axes/CRS/height/placement unknown; unresolved materials unfetched. No analytical geometry, property identity, registry admission, rights, accuracy, learning or release qualification."
+    },
+    "reviewedReferenceEvidence": {
+      "handoff": "docs/evidence/usp/obj-reference-link-handoff.md",
+      "receiptSha256": "7357043d76a22f6dc75c3d7f9b0df9f9b2a3a78f6b3276ac0684d72552b4fb3b",
+      "executionCommit": "0d49f769d937876fd28d3dfa8043b861e3001945",
+      "profile": "registry-obj-polygon-citation/1",
+      "purpose": "source_reference_only",
+      "scope": "Retained original/native/document bytes and historical tools/supervision; site-bound input/result/attempt and target/SQL/storage/review/tool envelopes are disclosed in-memory controls, not authentic current jobs/live persistence/genuine correspondence",
+      "contextSha256": "2260cb62ef119babcfb4f241d2133fce2dfea1e8232af5bb5ce58fd17b2b8446",
+      "responseBytes": 29227,
+      "unresolvedSourceMaterials": 0,
+      "counts": {
+        "draftWrites": 1,
+        "operationReceipts": 1,
+        "reviewWrites": 1
+      },
+      "associationState": "operator_selected",
+      "qualification": "not_assessed",
+      "learningLabels": false,
+      "stagingObservation": "Known staging CRLF/retained LF reader and historical execution/final code differences remain; strict tools, original profiles/receipts unchanged, successful worker proof reused without native rerun."
     }
   },
   {
@@ -2478,6 +2554,26 @@
       "standingInstallation": false,
       "learningLabels": false,
       "qualification": "Graphics test_only; units/axes/CRS/height/placement unknown; unresolved materials unfetched. No analytical geometry, property identity, registry admission, rights, accuracy, learning or release qualification."
+    },
+    "reviewedReferenceEvidence": {
+      "handoff": "docs/evidence/usp/obj-reference-link-handoff.md",
+      "receiptSha256": "7357043d76a22f6dc75c3d7f9b0df9f9b2a3a78f6b3276ac0684d72552b4fb3b",
+      "executionCommit": "0d49f769d937876fd28d3dfa8043b861e3001945",
+      "profile": "registry-obj-polygon-citation/1",
+      "purpose": "source_reference_only",
+      "scope": "Retained original/native/document bytes and historical tools/supervision; site-bound input/result/attempt and target/SQL/storage/review/tool envelopes are disclosed in-memory controls, not authentic current jobs/live persistence/genuine correspondence",
+      "contextSha256": "ed376f29cb55e3d8734fab63e63124bdf8311a43a1608dd950efc00151f7389d",
+      "responseBytes": 31454,
+      "unresolvedSourceMaterials": 10,
+      "counts": {
+        "draftWrites": 1,
+        "operationReceipts": 1,
+        "reviewWrites": 1
+      },
+      "associationState": "operator_selected",
+      "qualification": "not_assessed",
+      "learningLabels": false,
+      "stagingObservation": "Known staging CRLF/retained LF reader and historical execution/final code differences remain; strict tools, original profiles/receipts unchanged, successful worker proof reused without native rerun."
     }
   }
 ]
