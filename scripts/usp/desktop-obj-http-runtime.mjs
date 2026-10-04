@@ -111,8 +111,28 @@ async function http(label,path,options={},expected=200,binary=false){
   if(binary){assert.equal(response.headers.get('x-content-sha256'),sha(bytes));writeFileSync(join(c.state,label+'.bin'),bytes,{flag:'wx'});}return binary?bytes:value;
 }
 async function ready(){clean();const record=load('api-ownership.json');assert(apiIdentity(record),'Owned API absent.');
-  const intent=load('start-intent.json');assert.equal(command('git',['rev-parse','HEAD']),intent.head);assert.deepEqual(pin(self),intent.helper);
+  const intent=has('helper-continuation.json')?load('helper-continuation.json'):load('start-intent.json');
+  assert.equal(command('git',['rev-parse','HEAD']),intent.head);assert.deepEqual(pin(self),intent.helper);
   assert(c.storage.every(s=>s.running),'Retained storage stopped.');return record;
+}
+async function continueHelper(){
+  clean();assert(!has('helper-continuation.json'),'One evidenced helper recovery only.');
+  const prior=load('start-intent.json'),head=command('git',['rev-parse','HEAD']);assert.notEqual(head,prior.head);
+  assert.equal(command('git',['diff','--name-only',prior.head,head]),'scripts/usp/desktop-obj-http-runtime.mjs','Production code changed; fresh startup required.');
+  assert(apiIdentity(load('api-ownership.json')));assert(c.storage.every(s=>s.running));
+  const old=load('case.json');assert.equal(old.path,'api/v1/cases');assert.equal(old.method,'POST');assert.equal(old.status,201);
+  const body=load('case-intent.json');assert.equal(old.body.name,body.name);assert.equal(old.body.description,body.description);
+  assert(!load('database-before.json').tables.cases.some(r=>r.id===old.body.id));await modules();
+  const current=(await db.query('SELECT id,name,description,revision FROM cases WHERE id=$1',[old.body.id])).rows[0];
+  assert.equal(current?.name,body.name);assert.equal(current.description,body.description);assert.equal(current.revision,0);
+  assert.equal(Number((await db.query('SELECT count(*) n FROM sources WHERE case_id=$1',[current.id])).rows[0].n),0);
+  save('case-record.json',old.body);
+  save('helper-continuation.json',{at:new Date().toISOString(),head,helper:pin(self),priorHead:prior.head,priorHelper:prior.helper,
+    apiLaunchHead:load('api-ownership.json').head,productionCodeUnchanged:true,nativeProfileUnchanged:true,
+    failure:'Private helper EEXIST after HTTP201: case.json response/record filename collision. No source/job created.',
+    correction:'Separate case-response.json and case-record.json; preserve prior HTTP receipt and authoritatively reuse its case.',
+    preservedReceipt:pin(join(c.state,'case.json')),reusedCaseId:current.id});
+  console.log(JSON.stringify({helperRecovered:true,reusedCaseId:current.id,productionCodeUnchanged:true}));
 }
 async function start(){
   clean();assert.equal(readdirSync(c.state).length,0,'Use a fresh empty private state.');await free(3192);
@@ -174,12 +194,12 @@ async function runOne(name){
   const original=manifest.originals.find(o=>basename(o.path)===name);assert(original&&original.classification==='test_only','Only the two retained manifest originals are authorized.');
   assert.equal(manifest.originals.length,2);const bytes=readFileSync(original.path);assert.equal(bytes.length,original.bytes);assert.equal(sha(bytes),original.sha256);
   assert(!has(name+'.journey.json'),'Completed original stays closed.');
-  if(!has('case.json')){
+  if(!has('case-record.json')){
     assert(!has('case-intent.json'),'Uncertain prior case creation requires authoritative reconciliation; do not duplicate.');
     const body={name:'TinyObjLoader retained OBJ context research',description:`test_only; ${original.sourceFamily}; ${manifest.publisher}; revision ${manifest.revision}; geography/reference frame unknown; no property or learning qualification.`};save('case-intent.json',body);
-    const created=await http('case','api/v1/cases',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},201);save('case.json',created);
+    const created=await http('case-response','api/v1/cases',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},201);save('case-record.json',created);
   }
-  const caseRecord=load('case.json');let intent;
+  const caseRecord=load('case-record.json');let intent;
   if(has(name+'.intent.json'))intent=load(name+'.intent.json');
   else {await modules();const current=(await db.query('SELECT revision,description FROM cases WHERE id=$1',[caseRecord.id])).rows[0];assert(current?.description.includes(original.sourceFamily));
     intent={requestKey:randomUUID(),caseId:caseRecord.id,expectedCaseRevision:current.revision,source:original,
@@ -213,7 +233,7 @@ async function runOne(name){
   console.log(JSON.stringify({completed:true,jobId:receipt.jobId,status:status.status,vertices:76,polygons:18,missingCompanions:parsed.resources.length}));
 }
 function preservation(after){
-  const before=load('database-before.json').tables,receipts=readdirSync(c.state).filter(n=>n.endsWith('.receipt.json')).map(load),ownedCase=has('case.json')?load('case.json').id:null;
+  const before=load('database-before.json').tables,receipts=readdirSync(c.state).filter(n=>n.endsWith('.receipt.json')).map(load),ownedCase=has('case-record.json')?load('case-record.json').id:null;
   const jobIds=receipts.map(r=>r.receipt.jobId),sourceIds=receipts.map(r=>r.receipt.sourceId),operations=receipts.map(r=>'obj-retain:'+r.requestKey),deltas={};
   assert(receipts.length<=2,'More than two owned intakes.');
   assert.deepEqual(Object.keys(after),Object.keys(before));
@@ -255,8 +275,8 @@ async function stop(){
   console.log(JSON.stringify({stopped:true,priorHistoryUnchanged:!failure,containers:intent.containerIds.length,volumes:intent.volumeNames.length}));if(failure)throw failure;
 }
 try{
-  const [action,profile,state,value]=process.argv.slice(2);assert(['start','run-one','stop','_execute'].includes(action)&&profile&&state);
+  const [action,profile,state,value]=process.argv.slice(2);assert(['start','run-one','stop','_execute','continue-helper'].includes(action)&&profile&&state);
   assert.equal(process.argv.length,['run-one','_execute'].includes(action)?6:5);configure(profile,state);
-  if(action==='start')await start();if(action==='run-one')await runOne(value);if(action==='stop')await stop();if(action==='_execute')await execute(value);
+  if(action==='start')await start();if(action==='run-one')await runOne(value);if(action==='stop')await stop();if(action==='_execute')await execute(value);if(action==='continue-helper')await continueHelper();
 }catch(error){console.error(redact(error.stack??error));process.exitCode=1;}
 finally{if(db)await db.closePool();storage?.closeStorageClient();}
