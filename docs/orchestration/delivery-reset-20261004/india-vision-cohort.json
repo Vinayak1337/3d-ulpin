@@ -20,7 +20,7 @@
   },
   "tasks": {
     "building": {
-      "status": "needs_matched_original_rgb_then_annotation_transfer_review",
+      "status": "needs_permitted_exact_original_rgb_access_then_pair_review",
       "items": []
     },
     "floor_plan": {
@@ -120,7 +120,7 @@
     },
     "settingsRequested": {
       "model": "gpt-6.1-sol",
-      "reasoning": "xhigh",
+      "reasoning": "high",
       "speed": "default/standard 1x"
     },
     "settingsObserved": "Actual per-turn model/reasoning/tier metadata unexposed"
@@ -147,6 +147,15 @@
         "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/index-attempt/attempt.json",
         "bytes": 20245,
         "sha256": "1d33c288aab9ec97a9f90978cf81c3b2431148d9c4c4877311e7b08f7e081741"
+      }
+    },
+    {
+      "id": "D06-INDIA-RGB",
+      "outcome": "blocked_exact_original_rgb_access",
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/rgb-attempt/attempt.json",
+        "bytes": 10196,
+        "sha256": "b087a1e741796a6942ded2533595045c66d457fe150cdfd6935d2af8c01b962b"
       }
     }
   ],
@@ -218,6 +227,22 @@
       "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/index-attempt/validation.json",
       "bytes": 1082,
       "sha256": "25920fea4424413d46419742bb90a54bf43654f4af116ceb3fc3c55d8c47b75b"
+    },
+    "exit": 0
+  },
+  "rgbAcquisitionStatus": {
+    "target": "nepal-flooding_00000070_pre_disaster.png",
+    "localCopyFound": false,
+    "distributionLocationsChecked": 3,
+    "imageAcquired": false,
+    "sourceOriginalIdentity": "No PNG acquired; filename/mirror card alone does not establish same bytes or pixels",
+    "accessPrerequisite": "Supply permitted publisher-route acquisition of nepal-flooding_00000070_pre_disaster.png, or a traceable exact single-file training-copy distribution/index. Then establish image-byte/copy lineage, source pixel registration, OEM class mapping and ambiguity/ignore policy before development admission."
+  },
+  "rgbAttemptVerification": {
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/rgb-attempt/validation.json",
+      "bytes": 712,
+      "sha256": "cc432551018befdb3ff59650b1db839cffe4f4f1d9a836962dad318b1b93e632"
     },
     "exit": 0
   }
