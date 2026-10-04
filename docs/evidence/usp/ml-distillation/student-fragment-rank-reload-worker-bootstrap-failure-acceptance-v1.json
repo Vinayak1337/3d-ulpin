@@ -1,0 +1,90 @@
+{
+  "acceptedAtEvidenceScope": true,
+  "actualInputPinsChecked": 29,
+  "cause": "association_student bootstrap omits association directory. Positive preadmit_run calls accepted_fit_files, which imports protected sibling stage_adapter before guarded_run. Exact traceback proves failure before guard.",
+  "changedInvestigation": "STUDENT41 checks actual worker main through full positive original-fit admission to a fail-closed interception at entry to guarded_run, rather than another help-only or early-negative startup check.",
+  "checkpointOrStageAuthoritiesRewritten": false,
+  "comparisonPerformed": false,
+  "currentAndStagedSourcePhysicalCanonicalGitPinsChecked": 40,
+  "decision": "accept_successful_stage_and_pre_guard_host_import_failure_no_native_result",
+  "diagnosis": {
+    "bytes": 6405,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-6e77a84c01f44d019c510d7c357dfc69\\failure-diagnosis.json",
+    "physicalSha256": "1466daad865e6a1f578fb4158520cd7b1604a76b18837951abefaed89ffaa061"
+  },
+  "executionHead": "eb55cacb80840702a30ac662d000a89812031253",
+  "expectationsOpened": false,
+  "finalization": {
+    "bytes": 4180,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-6e77a84c01f44d019c510d7c357dfc69\\finalization.json",
+    "physicalSha256": "9e068c118d98846e5f3ed62bfff5bdef4aabe21319ffa0941938b2b19df5755c"
+  },
+  "freeze": {
+    "bytes": 15458,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\inputs\\run-freeze.json",
+    "physicalSha256": "0f31863e0c3dd30a316c6d84401909fbb8cb25e5897f9132b40ed358c4d2a1b8"
+  },
+  "generatedGuardInvocations": 0,
+  "generatedHostCommand": [
+    "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+    "-B",
+    "-I",
+    "-S",
+    "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\association_student.py",
+    "run",
+    "--input-batch",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\inputs\\development.json",
+    "--schema",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\inputs\\legacy-schema-v1.json",
+    "--family-freeze",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\inputs\\family-freeze.json",
+    "--model-receipt",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\inputs\\model-acquisition.json",
+    "--run-freeze",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\inputs\\run-freeze.json",
+    "--output-dir",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\outputs\\baseline",
+    "--containment-profile",
+    "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\profile.json",
+    "--containment-sha256",
+    "a954f3d12ab76f72b84f9a13b96fb8e8720a4edfca48ffd49cad2cf8a7684487"
+  ],
+  "generatedHostExitCode": 1,
+  "generatedHostSeconds": 0.8119306000007782,
+  "guardResourcesAndCleanupQualified": false,
+  "historicalTraining": "Accepted60 updates/342 contributions/full checkpoint/final adapter/sourceCommit7a7b6eb5 untouched; quality and native reload still unrun.",
+  "learnerClean": true,
+  "nativeReloadPerformed": false,
+  "next": "Bootstrap-only worker/test fix. Review changed source and positive isolated admission before a new final-head native packet; consumed40 stage/receipts preserved, no unchanged retry.",
+  "ownedOutputStateReceiptScratchEmpty": true,
+  "plannedActualProfileFiles": 19708,
+  "protectedSourceCount": 39,
+  "receiptIndex": {
+    "bytes": 10456,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-6e77a84c01f44d019c510d7c357dfc69\\receipt-index.json",
+    "physicalSha256": "c6923802ff47b471effc5603200609c2a8c9e275b05be146cc4a08a8f9e876f7"
+  },
+  "recordedAtUtc": "2026-10-04T13:16:25.902693+00:00",
+  "recurrence": "Second isolated entry with the same missing-sibling-root assumption. STUDENT39 thin entry correction worked; its help/negative check never exercised worker positive host admission.",
+  "reusedResearch": "https://docs.python.org/3.11/using/cmdline.html#cmdoption-I",
+  "reviewedReferences": 23,
+  "stageExitCode": 0,
+  "stageJson": {
+    "bytes": 7340,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\stage.json",
+    "physicalSha256": "b86508712772c3cec9ff75632230f3af5f84e4f4f0d89fb18b4a77b6a733fbb9"
+  },
+  "stageProfile": {
+    "bytes": 2704501,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511\\profile.json",
+    "physicalSha256": "a954f3d12ab76f72b84f9a13b96fb8e8720a4edfca48ffd49cad2cf8a7684487"
+  },
+  "stageRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511",
+  "stageSeconds": 159.69882969997707,
+  "technicalReport": {
+    "bytes": 30381,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-technical-v1-6e77a84c01f44d019c510d7c357dfc69\\technical-recovery.json",
+    "physicalSha256": "fb664251d21599eb61d117153917d39a052ae4edfcd8e7fefe7fb31f47fd7f72"
+  },
+  "version": "student-fragment-rank-reload-worker-bootstrap-failure-acceptance/1"
+}
