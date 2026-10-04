@@ -399,5 +399,153 @@ class IsolatedEntryControls(unittest.TestCase):
                 json.dump(evidence, stream, sort_keys=True, indent=2); stream.write("\n"); stream.flush(); os.fsync(stream.fileno())
 
 
+class IsolatedWorkerAdmissionControls(unittest.TestCase):
+    """Real positive host admission; the sole double stops the guard body."""
+
+    def test_worker_main_positive_admission_and_disabled_refusal(self):
+        private = Path(os.environ["USP_RELOAD_WORKER_BOOTSTRAP_RECEIPTS"]).resolve()
+        self.assertTrue(private.is_dir())
+        retained = Path("E:/BhuAayam-data/task-data/ml-distillation/student/fragment-rank-reload-baseline-844ccde389194f36857de3b4c7fdb511")
+        profile_raw = (retained / "profile.json").read_bytes()
+        self.assertEqual(hashlib.sha256(profile_raw).hexdigest(), "a954f3d12ab76f72b84f9a13b96fb8e8720a4edfca48ffd49cad2cf8a7684487")
+        profile = json.loads(profile_raw)
+        input_names = sorted(n.removeprefix("inputs/") for n in profile["files"] if n.startswith("inputs/"))
+        self.assertEqual(len(input_names), 29)
+        fixture = private / "cpu-fixture"
+        inputs = fixture / "inputs"
+        inputs.mkdir(parents=True)
+        original_pins = {}
+        for name in input_names:
+            raw = (retained / "inputs" / name).read_bytes()
+            self.assertEqual(hashlib.sha256(raw).hexdigest(), profile["files"]["inputs/" + name])
+            target = inputs / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(raw)
+            original_pins[name] = hashlib.sha256(raw).hexdigest()
+        code_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
+        self.assertFalse(subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO, text=True).strip())
+        source_bytes = {n: (REPO / n).read_bytes() for n in reload.SOURCE_PATHS}
+        physical = {n: hashlib.sha256(b).hexdigest() for n, b in source_bytes.items()}
+        canonical = {n: hashlib.sha256(b.replace(b"\r\n", b"\n")).hexdigest() for n, b in source_bytes.items()}
+        assignment = json.loads((inputs / reload.ASSIGNMENT_NAME).read_bytes())
+        assignment.update(studentCodeCommit=code_head, runtimeCodeCanonicalLfSha256=canonical)
+        original_freeze = json.loads((inputs / "run-freeze.json").read_bytes())
+        fit_pins = {n: p for n, p in original_freeze["auxiliaryInputSha256"].items() if n.startswith("accepted-fit/")}
+        assignment_raw = checkpoint.canonical(assignment)
+        freeze = reload.make_freeze(assignment, assignment_raw, physical, fit_pins)
+        (inputs / reload.ASSIGNMENT_NAME).write_bytes(assignment_raw)
+        (inputs / "run-freeze.json").write_bytes(checkpoint.canonical(freeze))
+        (private / "positive-fixture-assignment.json").write_bytes(assignment_raw)
+        (private / "positive-fixture-freeze.json").write_bytes(checkpoint.canonical(freeze))
+        cwd = private / "unrelated-cwd"
+        cwd.mkdir()
+        entry = REPO / "scripts/usp/learning/association/association_student.py"
+        harness = private / "worker-main-boundary.py"
+        harness.write_text(r'''import hashlib, json, os, runpy, sys, traceback
+from pathlib import Path
+entry, receipt_path = Path(sys.argv[1]).resolve(), Path(sys.argv[2])
+repo = entry.parents[4]
+guard_path = repo / "services/geo/geo/usp_learning/resources.py"
+reload_path = repo / "services/geo/geo/usp_learning/association/fragment_rank_reload.py"
+assert hashlib.sha256(guard_path.read_bytes().replace(b"\r\n", b"\n")).hexdigest() == "c46095c1a537208ececcf3b9e8c791fea05020dc73b74e74c350412c66bf9f54"
+state = {"acceptedFitReturns": [], "preadmitReturned": False, "guardBoundaryReached": False,
+         "guardBodyExecuted": False, "soleDouble": "profiling exception at exact guarded_run call entry"}
+class GuardBodyBlocked(BaseException): pass
+def observe(frame, event, arg):
+    name = frame.f_code.co_name
+    if event == "return" and name == "accepted_fit_files" and arg is not None:
+        assert Path(frame.f_code.co_filename).resolve() == reload_path
+        assert frame.f_globals["accepted_fit_files"].__code__ is frame.f_code
+        state["acceptedFitReturns"].append({"fileCount": len(arg), "names": sorted(arg),
+            "trainingSourceCommit": frame.f_globals["FIT_COMMIT"]})
+    if event == "return" and name == "preadmit_rank" and arg is not None:
+        assert Path(frame.f_code.co_filename).resolve() == entry
+        state["preadmitReturned"] = True
+    if event == "call" and name == "guarded_run":
+        state["guardBoundaryReached"] = True
+        state["exactProtectedGuard"] = (Path(frame.f_code.co_filename).resolve() == guard_path
+            and frame.f_globals.get("__name__") == "geo.usp_learning.resources"
+            and frame.f_globals["guarded_run"].__code__ is frame.f_code)
+        state["guardFile"] = frame.f_code.co_filename
+        state["guardFirstLine"] = frame.f_code.co_firstlineno
+        raise GuardBodyBlocked()
+sys.argv = [str(entry), *sys.argv[3:]]
+state["workerArgv"] = sys.argv[:]
+exit_code = 2
+try:
+    sys.setprofile(observe)
+    runpy.run_path(str(entry), run_name="__main__")
+    state["status"] = "unexpected_worker_return"
+except GuardBodyBlocked:
+    state["status"] = "guard_body_blocked"
+    exit_code = 0 if state.get("exactProtectedGuard") and state["preadmitReturned"] and len(state["acceptedFitReturns"]) == 1 else 2
+except BaseException as error:
+    state.update(status="admission_refused", errorType=type(error).__name__, message=str(error))
+    traceback.print_exc()
+    exit_code = 1
+finally:
+    sys.setprofile(None)
+    state["nativeModulesLoaded"] = sorted(n for n in sys.modules if n.split(".")[0] in {"torch", "peft", "transformers", "numpy", "safetensors", "accelerate", "psutil"})
+    if state["nativeModulesLoaded"]: exit_code = 2
+    state["exitCode"] = exit_code
+    with receipt_path.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(state, stream, indent=2, sort_keys=True); stream.write("\n"); stream.flush(); os.fsync(stream.fileno())
+sys.exit(exit_code)
+''', encoding="utf-8", newline="\n")
+        cli = ["run", "--input-batch", str(inputs / "development.json"), "--schema", str(inputs / "legacy-schema-v1.json"),
+            "--family-freeze", str(inputs / "family-freeze.json"), "--model-receipt", str(inputs / "model-acquisition.json"),
+            "--run-freeze", str(inputs / "run-freeze.json"), "--output-dir", str(fixture / "would-run"),
+            "--containment-profile", str(private / "unreachable-containment/profile.json"), "--containment-sha256", "0" * 64]
+        records = []
+        def child(name):
+            receipt_path = private / (name + "-boundary.json")
+            command = [sys.executable, "-B", "-I", "-S", str(harness), str(entry), str(receipt_path), *cli]
+            started = datetime.datetime.now(datetime.timezone.utc).isoformat(); tick = time.perf_counter()
+            result = subprocess.run(command, cwd=cwd, capture_output=True, timeout=120)
+            logs = {}
+            for kind, raw in (("stdout", result.stdout), ("stderr", result.stderr)):
+                path = private / (name + "." + kind + ".txt")
+                with path.open("xb") as stream:
+                    stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+                logs[kind] = {"path": str(path), "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+            records.append({"command": command, "cwd": str(cwd), "startedAtUtc": started,
+                "finishedAtUtc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "elapsedSeconds": time.perf_counter() - tick, "exitCode": result.returncode, "logs": logs,
+                "boundary": json.loads(receipt_path.read_bytes())})
+            return result, records[-1]["boundary"]
+        passed = False
+        try:
+            positive, proof = child("positive")
+            self.assertEqual(positive.returncode, 0, positive.stderr.decode(errors="replace"))
+            self.assertTrue(proof["exactProtectedGuard"] and proof["preadmitReturned"])
+            self.assertEqual(proof["acceptedFitReturns"][0]["fileCount"], 17)
+            self.assertFalse(proof["nativeModulesLoaded"])
+            assignment["executable"] = False
+            disabled_raw = checkpoint.canonical(assignment)
+            freeze["auxiliaryInputSha256"][reload.ASSIGNMENT_NAME] = checkpoint.sha(disabled_raw)
+            (inputs / reload.ASSIGNMENT_NAME).write_bytes(disabled_raw)
+            (inputs / "run-freeze.json").write_bytes(checkpoint.canonical(freeze))
+            disabled, proof = child("disabled")
+            self.assertEqual(disabled.returncode, 1, disabled.stderr.decode(errors="replace"))
+            self.assertEqual(proof["message"], "separate_positive_rank_reload_required")
+            self.assertFalse(proof["guardBoundaryReached"] or proof["acceptedFitReturns"] or proof["nativeModulesLoaded"])
+            self.assertFalse((fixture / "would-run").exists() or (private / "unreachable-containment").exists())
+            self.assertEqual({p.relative_to(fixture).parts[0] for p in fixture.rglob("*")}, {"inputs"})
+            for name, digest in original_pins.items():
+                self.assertEqual(hashlib.sha256((retained / "inputs" / name).read_bytes()).hexdigest(), digest)
+                if name not in {reload.ASSIGNMENT_NAME, "run-freeze.json"}:
+                    self.assertEqual(hashlib.sha256((inputs / name).read_bytes()).hexdigest(), digest)
+            passed = True
+        finally:
+            value = {"version": "association-rank-reload-worker-admission-controls/1", "passed": passed,
+                "codeHead": code_head, "children": records, "retainedInputPins": original_pins,
+                "copiedInputCount": 29, "changedFixtureInputs": [reload.ASSIGNMENT_NAME, "run-freeze.json"],
+                "soleDouble": "profiling exception at exact protected guarded_run call entry, before body",
+                "childProductImportPathAdmissionTensorDoubles": False, "stageNativeGuardEffects": False,
+                "oldControlsExecuted": False, "harnessSha256": hashlib.sha256(harness.read_bytes()).hexdigest()}
+            with (private / "isolated-worker-controls.json").open("x", encoding="utf-8", newline="\n") as stream:
+                json.dump(value, stream, indent=2, sort_keys=True); stream.write("\n"); stream.flush(); os.fsync(stream.fileno())
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

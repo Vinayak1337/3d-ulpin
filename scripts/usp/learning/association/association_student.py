@@ -9,7 +9,7 @@ import sys
 import traceback
 
 REPO = Path(__file__).resolve().parents[4]
-sys.path[:0] = [str(REPO / "scripts/usp/learning"), str(REPO / "services/geo")]
+sys.path[:0] = [str(Path(__file__).resolve().parent), str(REPO / "scripts/usp/learning"), str(REPO / "services/geo")]
 from model_isolation import require_model_boundary, local_model_path
 from geo.usp_learning.resources import guarded_run, write_json_once
 from geo.usp_learning.association.student import SETTINGS, SYSTEM_PROMPT, run_local
