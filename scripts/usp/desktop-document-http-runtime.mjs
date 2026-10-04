@@ -5,7 +5,7 @@
  * run-job accepts only that returned job. No queue scan or extractor injection.
  */
 import assert from 'node:assert/strict';
-import {execFileSync} from 'node:child_process';
+import {execFileSync,spawnSync} from 'node:child_process';
 import {createHash,randomUUID} from 'node:crypto';
 import {existsSync,readFileSync,writeFileSync,realpathSync} from 'node:fs';
 import {createServer} from 'node:net';
@@ -29,6 +29,8 @@ function command(file,args,timeout=15000){
   catch(error){throw new Error(redact(`${basename(file)} failed (${error.status??error.code}): ${error.stderr||error.message}`));}
 }
 const docker=args=>command(dockerFile,['--context','desktop-linux',...args],20000);
+function logs(id){const result=spawnSync(dockerFile,['--context','desktop-linux','logs','--tail','100',id],{env:c.processEnv,encoding:'utf8',timeout:10000,windowsHide:true,maxBuffer:1024**2});
+  assert.equal(result.status,0,'Could not preserve owned processor logs.');return redact((result.stdout??'')+(result.stderr??''));}
 const save=(name,value)=>writeFileSync(join(c.state,name),JSON.stringify(value,null,2)+'\n',{flag:'wx',mode:0o600});
 const load=name=>json(join(c.state,name));
 function configure(profile,state){
@@ -75,7 +77,7 @@ function current(){
   assert.equal(item.Config.User,'10001:10001');assert.equal(item.HostConfig.RestartPolicy.Name,'no');assert(item.HostConfig.SecurityOpt.includes('no-new-privileges'));
   const mount=item.Mounts.find(m=>m.Destination==='/app');assert(mount&&!mount.RW&&mount.Type==='bind');
   assert.equal(hostPath(mount.Source),hostPath(join(root,'services/geo')));
-  const network=jsonText(docker(['network','inspect',record.networkId]))[0];assert(network.Internal);assert.equal(network.Labels['bhu.document-http.owner'],record.owner);
+  const network=jsonText(docker(['network','inspect',record.networkId]))[0];assert.equal(network.Internal,false);assert.equal(network.Options['com.docker.network.bridge.enable_ip_masquerade'],'false');assert.equal(network.Labels['bhu.document-http.owner'],record.owner);
   return {record,item,network};
 }
 async function ready(){const {record,item}=current();assert(item.State.Running,'Owned processor is stopped.');assert(Date.now()+120000<record.deadlineAt,'Start a fresh owned processor before queuing work.');
@@ -90,7 +92,10 @@ async function start(){
     api:pin(join(root,'services/geo/geo/api.py')),area:pin(join(root,'services/geo/geo/area.py'))};save('processor-intent.json',intent);
   let networkId,containerId;
   try {
-    networkId=docker(['network','create','--internal','--label',`bhu.document-http.owner=${owner}`,networkName]);
+    // Internal-only bridges do not publish host ports on Docker Engine29.
+    // Use a dedicated bridge with outbound IP masquerading disabled; do not
+    // connect it to the retained service networks or pass provider credentials.
+    networkId=docker(['network','create','--opt','com.docker.network.bridge.enable_ip_masquerade=false','--label',`bhu.document-http.owner=${owner}`,networkName]);
     save('network-ownership.json',{networkId,owner,networkName});
     // Startup wrapper only: the unchanged production FastAPI app handles extraction.
     // SIGALRM supplies an independent finite service lifetime even after CLI exit.
@@ -103,12 +108,14 @@ async function start(){
       '--mount',`type=bind,source=${join(root,'services/geo')},target=/app,readonly`,'--tmpfs','/tmp:rw,noexec,nosuid,size=16m,uid=10001,gid=10001',
       '--entrypoint','python',image,'-I','-B','-c',python]);
     const item=jsonText(docker(['inspect',containerId]))[0];save('processor-ownership.json',{...intent,networkId,containerId,created:item.Created,startedAt:began,deadlineAt:began+600000,
-      lifetimeSeconds:600,limits:{memoryBytes:768*1024**2,cpus:1,pids:64,readOnly:true,network:'owned internal bridge'},pythonStartup:python});
+      lifetimeSeconds:600,limits:{memoryBytes:768*1024**2,cpus:1,pids:64,readOnly:true,network:'owned bridge; outbound IP masquerading disabled'},pythonStartup:python});
     current();let healthy=false;const deadline=Date.now()+15000;
     while(Date.now()<deadline){const owned=current();if(!owned.item.State.Running)break;
       try{const response=await fetch(c.env.GEO_URL+'health',{signal:AbortSignal.timeout(2000)});if(response.ok&&(await response.json()).ok===true){healthy=true;break;}}catch{}
       await new Promise(resolve=>setTimeout(resolve,300));}
-    if(!healthy){writeFileSync(join(c.state,'processor-start.log'),docker(['logs','--tail','80',containerId]),{flag:'wx'});throw new Error('Owned production processor did not start; inspect private processor-start.log.');}
+    if(!healthy){const failed=jsonText(docker(['inspect',containerId]))[0];save('processor-start-failure.json',{running:failed.State.Running,exit:failed.State.ExitCode,requestedPorts:failed.HostConfig.PortBindings,actualPorts:failed.NetworkSettings.Ports});
+      writeFileSync(join(c.state,'processor-start.log'),logs(containerId),{flag:'wx'});throw new Error('Owned production processor did not start; inspect private processor-start.log.');}
+    const actual=jsonText(docker(['inspect',containerId]))[0];assert.deepEqual(actual.NetworkSettings.Ports['8000/tcp'],[{HostIp:'127.0.0.1',HostPort:'28000'}]);
     save('processor-started.json',{at:new Date().toISOString(),containerId,networkId,health:200,processorUrl:c.env.GEO_URL,defaultEndpoint:c.env.GEO_URL+'internal/area/extract',image});
     console.log(JSON.stringify({started:true,containerId,port:28000,lifetimeSeconds:600}));
   }catch(error){
@@ -168,7 +175,7 @@ async function run(id){
   console.log(output);
 }
 async function stop(){
-  const {record,item}=current();writeFileSync(join(c.state,'processor.log'),docker(['logs','--tail','100',record.containerId]),{flag:'wx'});
+  const {record,item}=current();writeFileSync(join(c.state,'processor.log'),logs(record.containerId),{flag:'wx'});
   if(item.State.Running)docker(['stop','--time','5',record.containerId]);docker(['rm',record.containerId]);docker(['network','rm',record.networkId]);
   save('processor-cleanup.json',{at:new Date().toISOString(),containerId:record.containerId,networkId:record.networkId,ownedContainerAndNetworkRemoved:true,engineStopped:false});console.log(JSON.stringify({stopped:true,removedOwnedContainer:record.containerId}));
 }
