@@ -7,7 +7,7 @@
       "filename": "floor.onnx",
       "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
       "bytes": 69471289,
-      "profileVersion": "cubicasa-rooms-768-bilinear-pad64-v1",
+      "profileVersion": "cubicasa-rooms-768-bilinear-pad64-contours-v2",
       "license": "CC-BY-NC-4.0; retain CubiCasa5K attribution; noncommercial scope",
       "source": "https://github.com/CubiCasa/CubiCasa5k/tree/c34440266665a11f4484eb06cd2e4b7d72ad76c1",
       "weights": {
