@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "gltf-adapter-runtime/1",
+  "python": "CPython3.13.7 standard library, no dependencies installed",
+  "origin": "docs/evidence/usp/native-gltf/runtime-lock.json",
+  "acceptedCli": "scripts/usp/desktop-gltf-read.py",
+  "acceptedReader": "services/geo/geo/native_gltf.py",
+  "bounds": {
+    "seconds": 45,
+    "memoryBytes": 2147483648,
+    "nativeProcesses": 1
+  },
+  "externalResourcesResolved": false
+}
