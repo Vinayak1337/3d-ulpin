@@ -7,6 +7,7 @@ import {isIFCProtectedSource} from './ifc';
 import {isDXFProtectedSource} from './dxf';
 import {isKMLProtectedSource} from './kml';
 import {isCityGMLProtectedSource} from './citygml';
+import {isObjProtectedSource} from './obj';
 import {isGltfProtectedSource} from './gltf';
 import {isGeoParquetProtectedSource} from './geoparquet';
 
@@ -20,6 +21,8 @@ export async function documentAuthorityTx(client:PoolClient,captured:SourceRow,m
   if(typeof captured.id!=='string')denied();
   if(seen.has(captured.id)||seen.size>=8)denied();seen.add(captured.id);
   const current=(await client.query('SELECT * FROM sources WHERE id=$1',[captured.id])).rows[0];
+  if(isObjProtectedSource(captured)||current&&isObjProtectedSource(current))
+    throw new AppError(409,'OBJ_CANONICAL_SOURCE_REQUIRED','Use private OBJ original/job authority; legacy snapshot and copy admission are unsupported.');
   if(isGltfProtectedSource(captured)||current&&isGltfProtectedSource(current))
     throw new AppError(409,'GLTF_CANONICAL_SOURCE_REQUIRED','Use private glTF original/job authority; legacy snapshot and copy admission are unsupported.');
   if(isKMLProtectedSource(captured)||current&&isKMLProtectedSource(current))

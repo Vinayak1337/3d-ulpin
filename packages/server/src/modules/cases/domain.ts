@@ -64,6 +64,10 @@ export function caseFrom(row: Row): CaseRecord {
 }
 export function sourceFrom(row: Row): SourceRevision {
   let inspection=row.inspection;
+  if(row.profile==='obj-native-v1'||inspection&&typeof inspection==='object'&&Object.hasOwn(inspection,'objOriginal')){
+    const {objOriginal:_objOriginal,objAccepted:_objAccepted,referenceParts:_objParts,...metadata}=inspection??{};
+    inspection=metadata;
+  }
   if(row.profile==='gltf-native-v1'||inspection&&typeof inspection==='object'&&Object.hasOwn(inspection,'gltfOriginal')){
     const {gltfOriginal:_gltfOriginal,gltfAccepted:_gltfAccepted,referenceParts:_gltfParts,...metadata}=inspection??{};
     inspection=metadata;
@@ -909,6 +913,8 @@ export async function retryJob(jobId: string) {
       throw new AppError(422,'DXF_CANONICAL_RETRY_REQUIRED','Retry through the source-bound DXF retry operation with current case/source/access pins; generic job copying is unsupported.');
     if(original.operation==='kml-native')
       throw new AppError(422,'KML_CANONICAL_RETRY_REQUIRED','Retry through the source-bound KML operation with current source/access and exact member pins; generic job copying is unsupported.');
+    if(original.operation==='obj-native')
+      throw new AppError(422,'OBJ_CANONICAL_RETRY_REQUIRED','Retry through the source-bound OBJ operation with current source/access and unchanged original pins; generic job copying is unsupported.');
     if(original.operation==='gltf-native')
       throw new AppError(422,'GLTF_CANONICAL_RETRY_REQUIRED','Retry through the source-bound glTF operation with current source/access, scene and unchanged original pins; generic job copying is unsupported.');
     if(original.operation==='citygml-native')
@@ -916,6 +922,13 @@ export async function retryJob(jobId: string) {
     if(original.operation==='geoparquet-native')
       throw new AppError(422,'GEOPARQUET_CANONICAL_RETRY_REQUIRED','Retry through the source-bound GeoParquet operation with current source/access and unchanged original and explicit row-selection pins; generic job copying is unsupported.');
     const current = await lockCase(client, original.case_id);
+    // An older generic job cannot copy a captured or currently protected OBJ source.
+    const objMarked=(source:Record<string,any>|undefined)=>source?.profile==='obj-native-v1'||Boolean(source?.inspection
+      &&typeof source.inspection==='object'&&Object.hasOwn(source.inspection,'objOriginal'));
+    const retrySource=original.source_id
+      ?(await client.query('SELECT * FROM sources WHERE id=$1 FOR SHARE',[original.source_id])).rows[0]:undefined;
+    if(objMarked(original.payload)||objMarked(retrySource))
+      throw new AppError(422,'OBJ_CANONICAL_RETRY_REQUIRED','Use the source-bound OBJ retry operation with current original and access pins.');
     if(original.operation==='projected-vector')
       throw new AppError(422,'PROJECTED_VECTOR_RETRY_REQUIRED','Retry this retained source through its scoped projected-vector admission operation.');
     if(original.operation==='private-mvt')
