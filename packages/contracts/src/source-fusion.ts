@@ -4,6 +4,8 @@ import {SourceFusionRasterSelectionSchema,SourceFusionRasterSchema} from './sour
 import {SourceFusionPointSelectionSchema,SourceFusionPointSchema} from './source-fusion-point';
 import {SourceFusionSurveySelectionSchema,SourceFusionSurveySchema} from './source-fusion-survey';
 import {SourceFusionGltfSelectionSchema,SourceFusionGltfSchema} from './source-fusion-gltf';
+import {SourceFusionObjSelectionSchema,SourceFusionObjSchema} from './source-fusion-obj';
+import {OBJ_LIMITS} from './usp/obj-ingestion';
 import {GLTF_LIMITS} from './usp/gltf-ingestion';
 import {SourceFusionPinSchema,SourceFusionLiteralJsonSchema,SourceFusionLiteralObjectSchema} from './source-fusion-common';
 export {SourceFusionPinSchema,SourceFusionLiteralJsonSchema,SourceFusionLiteralObjectSchema,type SourceFusionJsonValue} from './source-fusion-common';
@@ -19,6 +21,7 @@ export const SOURCE_FUSION_LIMITS=Object.freeze({sources:8,selections:25,request
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
 const id=z.uuid().transform(value=>value.toLowerCase());
 export const SourceFusionSelectionSchema=z.discriminatedUnion('kind',[
+  SourceFusionObjSelectionSchema,
   SourceFusionGltfSelectionSchema,
   SourceFusionSurveySelectionSchema,
   z.strictObject({kind:z.literal('document'),pin:SourceFusionPinSchema,partIds:z.array(id).max(25)}),
@@ -41,7 +44,7 @@ export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFus
     let count=0;
     for(const source of value.sources){
       if(source.kind==='raster'||source.kind==='point'){count++;continue;}
-      const ids=source.kind==='gltf'?source.nodeIndices:source.kind==='survey_report'?source.rowOrdinals:source.kind==='document'?source.partIds:source.kind==='cityjson'?source.objectIds:
+      const ids=source.kind==='obj'?source.polygonIndices:source.kind==='gltf'?source.nodeIndices:source.kind==='survey_report'?source.rowOrdinals:source.kind==='document'?source.partIds:source.kind==='cityjson'?source.objectIds:
         source.kind==='ifc'?source.stepIds:source.kind==='dxf'?source.entityOrdinals:
           source.kind==='kml'?source.featureOrdinals:source.kind==='citygml'?source.buildingOrdinals:source.kind==='geoparquet'?source.rowIndices:source.itemOrdinals;count+=ids.length;
       const uniqueIds=source.kind==='document'?source.partIds.map(id=>id.toLowerCase()):ids;
@@ -59,6 +62,8 @@ export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFus
         ctx.addIssue({code:'custom',message:'GeoParquet result receipts have a 512 KiB profile.'});
       if(source.kind==='citygml'&&source.pin.resultBytes>CITYGML_LIMITS.resultBytes)
         ctx.addIssue({code:'custom',message:'CityGML result receipts have a 512 KiB profile.'});
+      if(source.kind==='obj'&&source.pin.resultBytes>OBJ_LIMITS.resultBytes)
+        ctx.addIssue({code:'custom',message:'OBJ result receipts have a 512 KiB profile.'});
       if(source.kind==='gltf'&&source.pin.resultBytes>GLTF_LIMITS.resultBytes)
         ctx.addIssue({code:'custom',message:'glTF result receipts have a 512 KiB profile.'});
     }
@@ -172,7 +177,7 @@ export const SourceFusionCityGMLSchema=z.strictObject({...base,kind:z.literal('c
     unselectedBuildings:z.literal('not_expanded'),opaqueContent:z.literal('literal_only'),
     referenceResolution:z.literal('not_performed'),geometryQualification:z.literal('not_assessed'),propertyMatching:z.literal('unsupported')})});
 export const SourceFusionContextSchema=z.strictObject({version:z.literal(SOURCE_FUSION_VERSION),contextSha256:hash,
-  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema,SourceFusionDXFSchema,SourceFusionKMLSchema,SourceFusionCityGMLSchema,SourceFusionGeoParquetSchema,SourceFusionRasterSchema,SourceFusionPointSchema,SourceFusionSurveySchema,SourceFusionGltfSchema])).min(2).max(8),
+  sources:z.array(z.union([SourceFusionDocumentSchema,SourceFusionCityJSONSchema,SourceFusionOcrSchema,SourceFusionIFCSchema,SourceFusionDXFSchema,SourceFusionKMLSchema,SourceFusionCityGMLSchema,SourceFusionGeoParquetSchema,SourceFusionRasterSchema,SourceFusionPointSchema,SourceFusionSurveySchema,SourceFusionGltfSchema,SourceFusionObjSchema])).min(2).max(8),
   association:z.strictObject({state:z.literal('not_assessed'),membership:z.literal('operator_selection'),
     reason:z.literal('source_set_membership_does_not_establish_relationships'),
     canonicalTargets:z.array(z.never()).max(0),crossSourceFrameAlignment:z.literal('not_assessed'),

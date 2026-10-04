@@ -575,6 +575,8 @@ export type RegistryImageRegionAmendmentPrepared=RegistryImageRegionPrepared&{dr
 export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId:string,raw:unknown,dependencies:Dependencies=defaults,
   prepared?:RegistryRegionAmendmentPrepared|RegistryImageRegionAmendmentPrepared){
   const request=RegistryDocumentAmendmentSchema.parse(raw);
+  if(request.addFusion?.selection.sources.some(source=>source.kind==='obj'))
+    throw new AppError(422,'SOURCE_FUSION_OBJ_CONTEXT_ONLY','OBJ polygons support source context only; citation attachment is unsupported.');
   if(request.addFusion?.selection.sources.some(source=>source.kind==='gltf')&&!request.addFusion.gltfReferences)
     throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY','glTF nodes support source context only; reviewed citation attachment is unsupported.');
   if(request.addFusion&&Buffer.byteLength(JSON.stringify(request))>32*1024)
@@ -586,7 +588,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   if(draft.status!=='draft'||record.revision!==request.expectedRecordRevision)conflict('Use the exact active correction and recorded target revision.');
   const target=await currentTargetTx(client,draft.site_id,record,true,dependencies),ctx=context();
   if(record.kind==='space'&&(request.add||request.addImageRegion||request.addFusion?.selection.sources.some(source=>
-    source.kind==='gltf'?source.nodeIndices.length:source.kind==='survey_report'?source.rowOrdinals.length:source.kind==='document'?source.partIds.length:source.kind==='document_ocr'?source.itemOrdinals.length:source.kind==='dxf'?source.entityOrdinals.length:source.kind==='kml'?source.featureOrdinals.length:source.kind==='citygml'?source.buildingOrdinals.length:source.kind==='geoparquet'?source.rowIndices.length:source.kind==='raster'||source.kind==='point')))
+    source.kind==='obj'?source.polygonIndices.length:source.kind==='gltf'?source.nodeIndices.length:source.kind==='survey_report'?source.rowOrdinals.length:source.kind==='document'?source.partIds.length:source.kind==='document_ocr'?source.itemOrdinals.length:source.kind==='dxf'?source.entityOrdinals.length:source.kind==='kml'?source.featureOrdinals.length:source.kind==='citygml'?source.buildingOrdinals.length:source.kind==='geoparquet'?source.rowIndices.length:source.kind==='raster'||source.kind==='point')))
     throw new AppError(422,'REGISTRY_DOCUMENT_TARGET','Space corrections support explicit IFC or source-region citations only.');
   const operationKey=`registry-document-citations:${draftId}:${request.requestKey}`;
   const digest=fingerprint({request,subject:ctx.principal.subject,reviewContext:documentReviewContext()});
@@ -658,6 +660,7 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     const targetPin={recordId:record.id,revision:record.revision,bodySha256:fingerprint(target.body)};
     const attribution=(input:Pick<DocumentInput,'accessSha256'>)=>({subject:ctx.principal.subject,accessSha256:input.accessSha256,selectedAt:new Date().toISOString()});
     for(const source of fusion.context.sources){
+      if(source.kind==='obj')throw new AppError(422,'SOURCE_FUSION_OBJ_CONTEXT_ONLY','OBJ polygons support source context only; citation attachment is unsupported.');
       if(source.kind==='gltf'){
         if(!request.addFusion.gltfReferences)throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY','Select the explicit glTF source-reference workflow.');
         const input=fusion.gltfInputs.get(source.pin.sourceId)!,loaded=fusion.gltfs.get(`${source.pin.jobId}/${source.pin.resultSha256}`)!.loaded;
@@ -832,6 +835,8 @@ export async function registryImageRegionAmendmentPreflightTx(client:PoolClient,
 }
 export const amendRegistryDocumentCitations=async(draftId:string,raw:unknown)=>{
   const request=RegistryDocumentAmendmentSchema.parse(raw);
+  if(request.addFusion?.selection.sources.some(source=>source.kind==='obj'))
+    throw new AppError(422,'SOURCE_FUSION_OBJ_CONTEXT_ONLY','OBJ polygons support source context only; citation attachment is unsupported.');
   if(request.addFusion?.selection.sources.some(source=>source.kind==='gltf')&&!request.addFusion.gltfReferences)
     throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY','glTF nodes support source context only; reviewed citation attachment is unsupported.');
   let prepared:RegistryRegionAmendmentPrepared|RegistryImageRegionAmendmentPrepared|undefined;
