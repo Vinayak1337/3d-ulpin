@@ -39,7 +39,7 @@
     }
   },
   "owners": {
-    "LEAD": "Integration and independent acceptance",
+    "LEAD": "Coordinates delegated implementation, independent review and integration",
     "FND": "Shared contracts, storage, transactions and lifecycle",
     "INGEST": "Readers, constrained mappings, progressive conversion",
     "DOMAIN": "Domain candidate and quantity leaves",
@@ -1343,23 +1343,33 @@
     },
     "execution": {
       "scope": "backend_only",
-      "currentAssignment": "lead_normalization_then_assigned_backend_plan_tasks",
+      "currentAssignment": "lead_personal_prompt_and_cleanup_audit; product_and_ML_workers_paused",
       "featureImplementationAuthorized": true,
-      "frontendOwner": "user; frontend technology unchanged",
+      "frontendOwner": "Claude; React_Vite_TypeScript_Threejs_3d_tiles_renderer",
       "delegation": "ordinary_codex_tasks_not_subagents",
-      "leadMayExecuteAssignedWork": true,
-      "speedPreference": "Fast",
-      "configuredServiceTier": "priority",
+      "leadMayExecuteAssignedWork": false,
+      "currentLeadException": "user_assigned_personal_prompt_and_cleanup_audit",
+      "orchestratorPrompt": "docs/orchestration/ORCHESTRATOR.md",
+      "taskQueue": "docs/orchestration/WORK_ITEMS.md",
+      "speedPreference": "standard_default_1x",
+      "configuredServiceTier": null,
+      "requiredServiceTier": "default",
       "observedTurnServiceTier": null,
-      "newProductFeaturesScheduled": true,
+      "newProductFeaturesScheduled": false,
       "workerCheckoutPolicy": "separate_worktree_and_branch_per_model_task_from_pinned_accepted_staging",
-      "planHardeningOwner": "lead_direct",
-      "lunaReasoning": [
+      "planHardeningOwner": "assigned_planner_worker_after_current_lead_authored_reset",
+      "integrationOwner": "assigned_worker_exclusive_staging_window",
+      "workerModel": "gpt-6.1-sol",
+      "workerReasoning": [
+        "high",
+        "xhigh",
         "max"
       ],
+      "maxReasoningPolicy": "specific_hard_problem_with_stated_benefit",
       "firstTasks": [
-        "API-DOC-01",
-        "DATA-10"
+        "D01",
+        "D02",
+        "D03"
       ]
     },
     "architecture": {
