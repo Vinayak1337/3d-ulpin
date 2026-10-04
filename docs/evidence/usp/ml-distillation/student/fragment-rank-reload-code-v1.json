@@ -1,0 +1,221 @@
+{
+  "assignment": {
+    "bytes": 15832,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-37.fragment-rank-reload-code.assignment.json",
+    "sha256": "8e69ec6666d54d0721c811a0c3c2f2ade7561a3a89dd07ae9690450f401bc464"
+  },
+  "baseCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "checkpointSourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "codeCommit": "d34ba14480b2e86eb26e28286d1bb1f88c77d1c2",
+  "immutableFitAuthority": {
+    "acceptance": {
+      "bytes": 10545,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-3-native-acceptance-v1.json",
+      "physicalSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c"
+    },
+    "checkpointRebound": false,
+    "finalAdapterFiles": {
+      "README.md": {
+        "bytes": 5396,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\adapter\\README.md",
+        "physicalSha256": "d58f094333cfc1c4dd7444763d0d4900fa12102545f64c28d5689920da5f1793"
+      },
+      "adapter_config.json": {
+        "bytes": 997,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\adapter\\adapter_config.json",
+        "physicalSha256": "caddd7cee4ba510b73088fa191db872b6a1947f023ae35bc5b6f64a3e5b5b584"
+      },
+      "adapter_model.safetensors": {
+        "bytes": 2175168,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\adapter\\adapter_model.safetensors",
+        "physicalSha256": "544f198727df29a629cd9ae4540a221adb27cdb390116d8ddb7b03a302da832b"
+      }
+    },
+    "finalFitRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472",
+    "historicalStageBytesWritten": false,
+    "review": {
+      "bytes": 6768,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-3-native-acceptance-review-v1.json",
+      "physicalSha256": "cda8d0f67e1105c98f42b76accc2f2d1aecc20cc6aa9d22aa5a1053c4ba8b310"
+    },
+    "serializedAdapterCheckpointCheck": {
+      "bytes": 1344,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-36-final-fit-review-v1-71fda6ce670a4c31b7487a0580d424c0\\adapter-checkpoint-value-check.json",
+      "physicalSha256": "b84d63324d84ad9a68a6b30ef675043b5fbbb33b5f260006b340ad904ad969a0"
+    }
+  },
+  "implementation": {
+    "authority": {
+      "assignmentVersion": "association-fragment-rank-reload-assignment/1",
+      "currentCodePacketExecutable": false,
+      "freezeVersion": "association-fragment-rank-reload-freeze/1",
+      "futureTask": "STUDENT-FRAGMENT-RANK-RELOAD",
+      "positiveAssignmentRequired": true
+    },
+    "childAdmission": "Actual require_model_boundary root/profile propagated through copied fit/input/source/checkpoint admission. Historical paths are lexical only. Exact readonly input/source/model profile maps, no training labels/expectations/evaluation material copied.",
+    "closure": {
+      "files": 40,
+      "ownedRuntime": 7,
+      "pins": {
+        "bytes": 11318,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-code-v1-ab83852610d64916807eb4a0e21a35da\\execution-sources-final.json",
+        "sha256": "57b04bde0e0014fcae8e50096ddff44739857eba058a9b813f349d992adc4e90"
+      },
+      "protectedUnchanged": 33,
+      "testExcluded": true
+    },
+    "disabledPrototype": {
+      "bytes": 7148,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-code-v1-ab83852610d64916807eb4a0e21a35da\\disabled-reload-prototype-final.json",
+      "sha256": "da87b5921a60e105d16505eed0887693266e144be0a1e687fb5492a3ba479c7e"
+    },
+    "hostAdmission": "Pinned independent phase3 acceptance/review and original guard/accepted output map; exact assignment/freeze/result/manifest/completion/proof/config/full-state identities; result.binding and mandatory preflight/manifest recipe; all historical input/code hashes. No generic accepted_fit or duplicate result.settings requirement.",
+    "nativeFutureChecks": "Only exact shared load_local closure may enter rank reload. Actual PEFT/Qwen identity/default active unmerged enabled adapter,48 LoRA layers,96 fp32 adapter tensors/540672 parameters, all frozen/no-grad/eval. Loaded saved tensor bytes equal accepted checkpoint masters under bijective .default. normalization. Original290-tensor base digest checked before/after seven scores.",
+    "provenance": "Execution commit distinct from historical fit7a7b6eb5 and experiment4415b7cc039c4e3a853682297f0ed28e; adapterApplied/accepted fit/tensor pins/current-process fitPerformed=false/training history and provisional teacher provenance.",
+    "reuse": [
+      "Existing stage_selector_baseline donor/copy/profile/command route and association_student protected guarded run",
+      "Unchanged adapter.reload_and_compare and shared verify_adapter_files/check_adapter_config",
+      "Existing source-only rank payload checks, tokenizer label boundary, scoring and projection",
+      "Unchanged bounded checkpoint reader/path validator and accepted_outputs"
+    ],
+    "scoreContract": "Same two source-only requests and seven ordered focuses, label boundary, last-position logits, float32 margin>0 and tie abstention, complete vectors and unchanged projection. Adapted score origin and actual reload proof are separate from base scores. No synthetic loss proof campaign rerun in adapted route."
+  },
+  "initialCodeCommit": "da5680953eb8f57b89f3b256146add654f621ec1",
+  "next": "Independent code review with a separately authorized focused CPU repair verification before accepting code; native reload/comparison requires a subsequent positive final-head assignment. Learner stops after one callback.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-code-v1.md"
+  ],
+  "ownedPaths": [
+    "services/geo/geo/usp_learning/association/fragment_rank_reload.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_baseline.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py",
+    "services/geo/geo/usp_learning/association/student.py",
+    "scripts/usp/learning/association/association_student.py",
+    "scripts/usp/learning/association/stage_selector_baseline.py",
+    "scripts/usp/learning/association/stage_fragment_rank_reload.py",
+    "scripts/usp/learning/association/test_fragment_rank_reload.py"
+  ],
+  "privateReceipts": {
+    "index": {
+      "bytes": 3830,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-code-v1-ab83852610d64916807eb4a0e21a35da\\receipt-index-final.json",
+      "sha256": "3ef1afb7da826b9ad6174fa8ca4e3cdbdfb2e4085708d508940b91758443812f"
+    },
+    "root": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-code-v1-ab83852610d64916807eb4a0e21a35da"
+  },
+  "recordedAtUtc": "2026-10-04T12:02:17.395914+00:00",
+  "resourceLimitsUnchanged": {
+    "batchSize": 1,
+    "childSeconds": 600,
+    "cpuThreads": 2,
+    "jobCudaAllocatedReservedRssBytes": 6442450944,
+    "minimumFreeCudaBytes": 1610612736
+  },
+  "settings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "requested": {
+      "observedModel": null,
+      "observedReasoning": null,
+      "observedServiceTier": null,
+      "reason": "Demanding accepted-fit/containment/LoRA identity and scorer integration; existing sole learner retains exclusive ownership. Dispatch exposes no tier field.",
+      "requestedModel": "gpt-6.1-sol",
+      "requestedReasoning": "xhigh",
+      "requiredSpeed": "default/standard1x"
+    },
+    "suppliedPermissions": {
+      "approvalPolicy": "never",
+      "sandboxMode": "danger-full-access"
+    }
+  },
+  "sourceQuality": {
+    "development": "No expectations read, comparison or threshold/prompt/labels changed. Retained base reference not rerun.",
+    "qualification": "Training/serialization and code controls do not qualify relevance, independent source truth, generalization, canonical/official association or deployment.",
+    "training": "57 teacher-related pairs/10 provisional parents/two training families remain needs_independent_review; Sarvam excluded."
+  },
+  "status": "code_committed_cpu_controls_failed_repairs_not_reexecuted",
+  "task": "STUDENT-37-FRAGMENT-RANK-RELOAD-CODE",
+  "unrun": {
+    "developmentComparison": true,
+    "guardOutputCleanupAcceptance": true,
+    "heldOutEvaluation": true,
+    "loadedAdapterEqualityOnNativeRuntime": true,
+    "nativeReload": true,
+    "resourceMeasurement": true,
+    "stageCopyGuard": true
+  },
+  "verification": {
+    "doubles": [
+      "Synthetic zero fp32 adapter/checkpoint payloads and their two external hash identities; production header/value validators exercised against those doubles",
+      "PEFT/Qwen/tensor/NumPy bytes/shared native proof/base digest and GPU callbacks planned in group3, unreached beyond closure admission",
+      "Virtual current source filesystem and contained module location; actual checkpoint path validator retained",
+      "Reparse metadata double; fixture OS boundary/profile; donor subset/Git/disk and pre-mkdir intercepts planned in group1",
+      "No native imports; torch/transformers/peft/safetensors/numpy/accelerate/psutil blocked by finder outside explicit test module doubles"
+    ],
+    "exitCode": 1,
+    "finalStaticChecks": {
+      "cachedWhitespaceExit": 0,
+      "closureMatchesCodeGitBlobs": 40,
+      "codeCleanAfterCommit": true,
+      "ownedInMemoryCompiles": 8,
+      "protectedPhysicalCanonicalUnchanged": 33,
+      "receipt": {
+        "bytes": 5128,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-code-v1-ab83852610d64916807eb4a0e21a35da\\code-finalization.json",
+        "sha256": "f409c8bcad497279c70bbf93255c6aa4320f9a281ab4873bb4165bf240826840"
+      }
+    },
+    "focusedInvocation": {
+      "command": [
+        "C:/Users/kvina/AppData/Roaming/uv/python/cpython-3.11-windows-x86_64-none/python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin/scripts/usp/learning/association/test_fragment_rank_reload.py"
+      ],
+      "cwd": "C:/Users/kvina/.codex/worktrees/56f9/3d-ulpin",
+      "elapsedSeconds": 1.0714528000098653,
+      "exitCode": 1,
+      "finishedAtUtc": "2026-10-04T11:55:58.851403+00:00",
+      "groups": 3,
+      "nativeEffects": false,
+      "startedAtUtc": "2026-10-04T11:55:57.779649+00:00"
+    },
+    "freshCpuReviewRequired": true,
+    "groupsAttempted": 3,
+    "groupsPassed": 0,
+    "limit": "One invocation, at most three CPU groups, per STUDENT37 assignment.",
+    "observed": "Metadata fixture setup and in-memory compilation completed. The three groups stopped at the retained error traces. In group3 the complete production fit-bundle reader passed using real sealed fit metadata plus synthetic tensor bytes/hash transport; actual native/scorer/projection controls were not reached.",
+    "repairedControlsReexecuted": false,
+    "repairs": [
+      {
+        "change": "Negative leaf checks now accept the existing ValueError/RuntimeError rejection families; product validation semantics are unchanged.",
+        "failure": "test_1 expected RuntimeError but the shared validation.require raised InvalidEvidence (ValueError) for the correctly refused arbitrary loader."
+      },
+      {
+        "change": "The test double supplies a virtual module location under the fixture root/code. Production root scoping is retained.",
+        "failure": "test_2 virtual code-filesystem double used the host module __file__ while claiming a contained fixture root; the real path validator correctly rejected checkpoint_path_escape."
+      },
+      {
+        "change": "Production capability checks now require the exact shared function code/globals, those two closure cells, the admitted adapter directory and the actual proof dictionary. Manifest remains fully validated before calling the shared lifecycle.",
+        "failure": "test_3 _Session expected manifest in load_local closure, but the unchanged shared loader captures only adapter_dir and verified."
+      },
+      {
+        "change": "Static review added host-only historical input hash admission and overrode inherited adapter:null provenance with the actual accepted adapter identity.",
+        "failure": null
+      }
+    ],
+    "staticFixtureCorrection": {
+      "behavioralControlsReexecuted": false,
+      "change": "Tokenizer mask double emits1, not token101; test compiled in memory.",
+      "receipt": {
+        "bytes": 1892,
+        "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-reload-code-v1-ab83852610d64916807eb4a0e21a35da\\fixture-finalization.json",
+        "sha256": "da3d110a1f118f8db30df2357882fa76492855a584715c70054200ed9546e583"
+      }
+    }
+  },
+  "version": "student-fragment-rank-reload-code-evidence/1"
+}
