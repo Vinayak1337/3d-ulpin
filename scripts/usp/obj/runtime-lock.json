@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "obj-adapter-runtime/1",
+  "python": "CPython3.13.7 standard library; no installed dependencies",
+  "acceptedCli": "scripts/usp/desktop-obj-read.py",
+  "acceptedReader": "services/geo/geo/native_obj.py",
+  "supervisionReuse": "scripts/usp/desktop-gltf-read.py (unchanged)",
+  "native": {"seconds": 45, "memoryBytes": 536870912, "activeProcesses": 1},
+  "host": {"seconds": 75, "processMemoryBytes": 1073741824, "treeMemoryBytes": 1073741824, "activeProcesses": 2},
+  "externalResourcesResolved": false
+}
