@@ -139,6 +139,7 @@ async function currentTargetTx(client:PoolClient,siteId:string,record:RegistryRe
   for(const id of ids)await dependencies.registrySource(client,siteId,id);
   return row;
 }
+export {currentTargetTx as assertRegistryCurrentCitationTargetTx};
 export function literalCitationParts(result:DocumentResult,input:DocumentInput,ids:readonly string[]){
   if(fingerprint(result.input)!==fingerprint(input))conflict('The exact document result input changed.');
   if(result.native.status!=='extracted'||result.native.readerSha256!==input.readerSha256||input.archiveSelection)
