@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { createHash } from 'node:crypto';
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { createHash, randomUUID } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { settings } from '@ulpin/server/infrastructure/config';
 import { AppModule } from '../src/app.module';
@@ -19,7 +19,19 @@ function emit(path: string, value: unknown) {
   const text = JSON.stringify(value, null, 2) + '\n';
   if (check) {
     if (readFileSync(join(root, path), 'utf8').replace(/\r\n/g, '\n') !== text) throw new Error(`${path} is stale; regenerate the native OpenAPI catalogue.`);
-  } else writeFileSync(join(root, path), text);
+  } else {
+    const destination = join(root, path);
+    if (existsSync(destination) && readFileSync(destination, 'utf8') === text) return;
+    // Publish complete derived files without truncating the existing catalogue.
+    const temporary = `${destination}.${randomUUID()}.tmp`;
+    try {
+      writeFileSync(temporary, text, {flag: 'wx', flush: true});
+      renameSync(temporary, destination);
+    } catch (error) {
+      try { unlinkSync(temporary); } catch { /* Preserve the publication error. */ }
+      throw error;
+    }
+  }
 }
 const app = await NestFactory.create(AppModule, {logger: false, bodyParser: false, abortOnError: false});
 try {

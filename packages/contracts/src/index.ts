@@ -236,6 +236,7 @@ export * from './source-fusion-associations';
 export * from './registry-document-evidence';
 export * from './registry-survey-reference';
 export * from './registry-gltf-reference';
+export * from './registry-obj-reference';
 export * from './registry-cityjson-draft';
 export * from './registry-cityjson-validation';
 export * from './registry-cityjson-admission';
