@@ -2,15 +2,18 @@
 
 Use with [ORCHESTRATOR.md](ORCHESTRATOR.md). Each task below becomes one short assignment with an exact base/worktree, resource owner and return destination. The integration worker updates this board after returns; detailed historical results stay in their existing handoffs.
 
-**Current mode, 4 October:** this lead personally authored the prompt and cleanup decisions. Product/ML delivery remains paused. Do not dispatch the tasks below until resumed. The mistakenly delegated ORCH-PLAN-01 returned stopped and clean, with no new files, commits or branch; its unused checkout remains because the app refused archival under pinned-task/workspace protection.
+**Current mode, 5 October:** the user explicitly resumed delivery on 4 October and required delegation and completion callbacks. D00–D03 are new assignments from accepted staging `1eb836b58fceecbfcaa8b331405838d07bca8a02`; old assignments are retired. D01–D03 are dispatched, with execution/settings verification and usable results due in their returns. D04 is the immediate next implementation priority when they provide the necessary accepted slice. D04–D14 remain parked/dependency-bound, including conditional D08D; they are not canceled. The old fragment-support fit and dirty learner checkpoints stay parked. This board records the resume; earlier paused activation/header wording describes the pre-resume state, not a competing assignment queue.
+
+The prior lead-authored prompt/cleanup and stopped, clean ORCH-PLAN-01 return remain history. No old worker task, evaluation or cleanup operation resumes through this update.
 
 ## Queue
 
 | Task | State | Dependencies | Worker / effort | Next usable result |
 | --- | --- | --- | --- | --- |
-| D01 Runtime | parked | resume; preserved runtime/checkpoints | runtime / xhigh | One normal source-to-result API path |
-| D02 Source scope | parked | resume | data / high | One supported building/source context, explicit unresolved links |
-| D03 API/scene contract | parked | resume | contracts / xhigh | Exact existing endpoints/fields for the first UI journey |
+| D00 Integration board | integrated in this staging change | user resume; clean accepted base | integration / xhigh role default | Current ownership/queue; exact commit in completion callback |
+| D01 Runtime | running (dispatched) | preserved runtime/checkpoints | runtime / xhigh | One normal source-to-result API path; result pending |
+| D02 Source scope | running (dispatched) | retained-source index and catalogues | data / high | One supported building/source context, explicit unresolved links; result pending |
+| D03 API/scene contract | running (dispatched) | accepted API/scene contracts | contracts / xhigh | Exact existing endpoints/fields for the first UI journey; result pending |
 | D04 First journey | parked | D01–D03 | backend / xhigh | Import/extract → cited review → saved read-back |
 | D05 Mapping agent | parked | D02/D03; usable import path | backend / xhigh | Constrained mapping and manual fallback |
 | D06 Label cohort | parked | D02; eligible annotation route | data / high | Grouped, independently reviewed development/evaluation data |
@@ -25,6 +28,19 @@ Use with [ORCHESTRATOR.md](ORCHESTRATOR.md). Each task below becomes one short a
 | D14 Rehearsal | parked | selected integrated D04–D13 scope | integration / high | Recorded journey and evidence-backed claims |
 
 There is no requirement to finish all formats, train a new model or obtain complete geometry before D04. D06/D07 may proceed independently of D09/D10. Formal GF0–GF5 acceptance still follows the release manifest; the board does not waive it.
+
+## Current ownership and callback window
+
+All four assignments start from the accepted base above. Requested model is `gpt-6.1-sol`; requested efforts are shown below. D00 uses the integration-role xhigh default; its per-turn effort was not exposed in the assignment metadata. Required speed is default/standard 1×. No per-turn tier control or actual model/effort/tier observation was supplied, so these are requirements, not claims about running requests. D00 verified its turn-supplied `approval_policy=never` / `sandbox_mode=danger-full-access` before writes; each other owner must verify its own supplied permissions before implementation and report observations in its callback.
+
+| Task / owner chat | Exclusive checkout / branch | Owned paths or resources | Return / next action |
+| --- | --- | --- | --- |
+| D00 — `01a0fbd1-c2aa-75c0-8a52-4c4f662f3759`, integration / xhigh role default | `E:/Projects/3d-ulpin`, `staging` | This board and stale current operating metadata in `AGENTS.md`, H00, `release-plan.json` and the operating guide; primary index/write window. No runtime/DB/GPU. | Resume metadata committed here; clean accepted head and availability returned to lead. Further integrations require a new exact accepted-commit assignment. |
+| D01 — `01a0f810-a9ec-73b2-9a47-dc2884e09c2d`, runtime / xhigh | `C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin`, `task/d01-runtime-20261004` | Runtime-only scripts and private runtime; exact modified files, served revision and owned process/start/stop receipts due in return. Primary staging read-only. | Runtime/source/result/read-back slice or concrete blocker; stop owned temporary resources unless explicitly handed off. |
+| D02 — `01a0fbd5-4561-7692-b366-ebd123380593`, data / high | `C:/Users/kvina/.codex/worktrees/ml-teacher-20261002/3d-ulpin`, `task/d02-source-scope-20261004` | `docs/orchestration/delivery-reset-20261004/SOURCE_SCOPE.md` only. Source selection, no teacher generation/training/runtime ownership. Primary staging read-only. | Supported source context and exact unresolved joins for D04; commit/result pending. |
+| D03 — `01a0ee2d-5889-7ac3-a75d-2d2248265c26`, contracts / xhigh | `C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin`, `task/d03-first-journey-contract-20261004` | `docs/api/first-journey-contract.md` only; existing endpoint/auth/ID/revision/frame/error handoff. No frontend/runtime ownership. Primary staging read-only. | First-journey contract and concrete gaps for D04; commit/result pending. |
+
+Every owner sends `TASK / WORKS / SEE IT / INPUTS / GAPS`, exact commits/checks, dirty paths and owned-resource cleanup to lead chat `01a0ed8a-4383-79c3-a0ae-35c1e969ef66` on host `local` using the authorized task callback. The orchestrator ends after dispatch and routes returned work; it does not poll workers. D00's staging window ends with its callback. Preserve detached historical HEADs and create only the explicitly assigned new task branches after cleanliness checks; do not push them or bulk-merge experimental history. Frontend remains with Claude and receives a later precise contract handoff.
 
 ## How to allocate the first work
 
@@ -102,7 +118,7 @@ Extend the D04 journey, reusing accepted results. Record exact live, retained, r
 
 ## Integration return
 
-For every accepted task, the integration worker confirms exact owned commits and a clean/coordinated staging window, integrates only those changes, runs relevant checks once, republishes changed API contracts when needed, and updates the board. Report `integrated` only with an actual staging commit and usable scope. The user's subsequent branch cleanup integrated the completed planar/raster leaves and preserved experimental ML/review history separately; see [the cleanup record](CLEANUP_20261004.md#subsequent-branch-cleanup). Only `staging` and `main` remain as branches. Reusing a paused worker requires an explicit new branch assignment from the accepted base; do not assume its old branch still exists.
+For every accepted task, the integration worker confirms exact owned commits and a clean/coordinated staging window, integrates only those changes, runs relevant checks once, republishes changed API contracts when needed, and updates the board. Report `integrated` only with an actual staging commit and usable scope. The user's subsequent branch cleanup integrated the completed planar/raster leaves and preserved experimental ML/review history separately; see [the cleanup record](CLEANUP_20261004.md#subsequent-branch-cleanup). That cleanup retained only `staging` and `main`; resumed D01–D03 have explicit new local task-branch assignments from the accepted base. Do not recreate retired branch names or assume an old branch still exists.
 
 ## Parked checkpoints and later product work
 

@@ -1,6 +1,6 @@
 # 3D ULPIN orchestration operating guide
 
-Engineering guide, reconciled 4 October 2026. [ORCHESTRATOR.md](ORCHESTRATOR.md) governs the delegation-only coordinator and worker settings; [WORK_ITEMS.md](WORK_ITEMS.md) is the current queue. This guide supplies engineering, verification and preview rules. Product/ML delivery remains paused until resumed. Historical plans do not override current user direction.
+Engineering guide, reconciled 5 October 2026. [ORCHESTRATOR.md](ORCHESTRATOR.md) governs the delegation-only coordinator and worker settings; [WORK_ITEMS.md](WORK_ITEMS.md) is the current queue. This guide supplies engineering, verification and preview rules. The user resumed bounded D00–D03 delivery; D04 follows the accepted prerequisite slice. Old assignments and fragment-support training remain parked. Historical plans do not override current user direction.
 
 ## Usage monitoring revoked
 
@@ -20,7 +20,7 @@ Research returns a short evidence-backed comparison tied to the current gap and 
 
 ## Coordination and execution
 
-The future orchestrator selects and routes work; workers execute implementation, technical review, verification, integration and documentation. Use the exact assignment/return procedure in [ORCHESTRATOR.md](ORCHESTRATOR.md). The user explicitly assigned the present lead to author that prompt and personally audit/list cleanup targets; this does not authorize the future orchestrator to take over implementation.
+The orchestrator selects and routes work; workers execute implementation, technical review, verification, integration and documentation. Use the exact assignment/return procedure in [ORCHESTRATOR.md](ORCHESTRATOR.md). The earlier lead-owned prompt and cleanup audit are retained history; resumed delivery assigns execution and the exclusive staging window to workers.
 
 Do not repeatedly rewrite plans. Improvise within the selected task to make it correct and practical. Record a material interpretation briefly; do not silently drop a requirement or change a gate. Ask only for a material unresolved decision or genuinely missing authorization/data. Read the migration ledger only for the relevant accepted implementation/history, not as a live dispatch queue.
 
