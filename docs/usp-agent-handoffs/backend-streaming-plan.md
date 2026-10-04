@@ -1,5 +1,7 @@
 # Backend architecture and streaming decisions
 
+4 October ML capacity decision: retain models/data/checkpoint and games in their current locations. User-freed E: space now exceeds unchanged15GiB staging guard by hundreds of GiB; scoped read-speed samples do not justify storage migration. No move/link/cutover or guard change. Close STUDENT-34 at verified two-scope compression integrity with historical target unmet; assign [STUDENT-35 phase2](../evidence/usp/ml-distillation/student-35.fragment-rank-phase-2-fit.protocol.json) only to existing Sol6.1/xhigh learner at fixed7a7b6eb5, independent accepted predecessor20/114 to40/228, default/standard required and tier unexposed. No final adapter, development/evaluation access, quality/promotion or backend ownership change.
+
 Owner: LEAD; implementation: FND, INGEST and DATA. Adopted from the user's 26 September 2026 answers. This document resolves conflicts in the supplied hardening review and pasted suggestions; it does not turn their historical claims into verified results. Read it with H01, H14, H22, H28 and H29.
 
 Current execution order is superseded by the [NestJS migration ledger](../orchestration/NESTJS_MIGRATION.md), authorized later on 26 September. It retains these data/streaming/scale requirements and resumes their dependency-ready work after migration. Next.js is no longer the target backend.

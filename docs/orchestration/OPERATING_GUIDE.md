@@ -1,5 +1,7 @@
 # 3D ULPIN orchestration operating guide
 
+4 October storage/ML continuation: user capacity recovery leaves hundreds of GiB free on E:. Retain existing model/data/checkpoint/game paths; no relocation or compatibility links. Keep unchanged15GiB admission and frozen learner7a7b6eb5 across phases; corrected host-only predecessor reader stays coordinator-owned. STUDENT-34 closes with two scoped standard NTFS compression successes and unchanged logical/path/security snapshots, historical free-space target unmet/cause unqualified; no third retry. [STUDENT-35 phase2](../evidence/usp/ml-distillation/student-35.fragment-rank-phase-2-fit.protocol.json) permits one fresh contained continuation20/114 to40/228, same sole Sol6.1/xhigh learner/default-standard1x, private receipts/no Git writes, no phase3 before independent acceptance. Tier remains unexposed. Callback-only orchestration; no new chats/polls/schedules, final adapter/inference/quality claim or shared backend storage cutover.
+
 User direction, 26 September 2026. Read this before every assignment, review, continuation and integration decision. This guide overrides older orchestration/model/testing instructions; backend requirements and release qualification remain intact; the 26 September backend-only scope supersedes older UI implementation plans.
 
 ## Usage monitoring revoked
