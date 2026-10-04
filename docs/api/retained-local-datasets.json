@@ -1965,6 +1965,31 @@
         "Working frame, height linkage, epoch and object correspondence unresolved.",
         "No building/floor association, controls, accuracy, analytical qualification or learning truth."
       ]
+    },
+    "normalDocumentHttpObservation": {
+      "handoff": "docs/evidence/usp/document-http-handoff.md",
+      "receiptSha256": "9d7830c9e6919d5d540522aca29d40b47f1ee3eaae7f4af03cff4dfe29a5fde2",
+      "apiServedCommit": "83f88a06dc82c1d98badb5b54c9cb07df18feee1",
+      "helperExecutionCommit": "ffbcd2ab9e83507ca0c04132bae695c358c67939",
+      "scope": "One unchanged retained PID native TEXT original: canonical retry, default authenticated production HTTP processor, private completed status/result read",
+      "sourceId": "c9d5efbe-a149-4ab9-a678-694d8dcb4456",
+      "jobId": "22762bc0-5b20-42e7-9529-3e682fbb87ae",
+      "sourceSha256": "6a185639d8775640a5103136f536b345bc886560a5baef0ef19a5d529740aff2",
+      "sourceBytes": 6458,
+      "readerSha256": "ecd90d83f147c60ce9eba0f5c38b12df6531ad42af539ab74e0aabcbe811d183",
+      "resultSha256": "be6e51a544f50d9fa1d9d1c5ef1d05857bb69abe7373e5c7a46d71b27385a8bc",
+      "nativeParts": 70,
+      "sourceCautionPreserved": true,
+      "modelCalls": 0,
+      "authenticationDenialHttp": 401,
+      "unrelatedJobRefused": true,
+      "environment": "Retained isolated prefix profile; owned processor/network/API removed and task-started storage stopped; Docker Engine left running",
+      "limitations": [
+        "Native TEXT only; PDF, OCR, archive, models and generic dispatcher/full-stack qualification remain outside this observation.",
+        "Dedicated bridge with outbound masquerading disabled is not general egress isolation.",
+        "Working frame, height linkage, survey epoch, object correspondence, accuracy, learning and release remain unqualified; foreign test_only family.",
+        "Historical physical reader and execution pins remain unchanged; another checkout needs its own current authority."
+      ]
     }
   }
 ]
