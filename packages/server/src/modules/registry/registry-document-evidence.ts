@@ -540,6 +540,8 @@ export type RegistryImageRegionAmendmentPrepared=RegistryImageRegionPrepared&{dr
 export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId:string,raw:unknown,dependencies:Dependencies=defaults,
   prepared?:RegistryRegionAmendmentPrepared|RegistryImageRegionAmendmentPrepared){
   const request=RegistryDocumentAmendmentSchema.parse(raw);
+  if(request.addFusion?.selection.sources.some(source=>source.kind==='gltf'))
+    throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY','glTF nodes support source context only; reviewed citation attachment is unsupported.');
   if(request.addFusion&&Buffer.byteLength(JSON.stringify(request))>32*1024)
     throw new AppError(413,'REGISTRY_DOCUMENT_REQUEST_LIMIT','Select a smaller explicit citation amendment.');
   const {draft,record}=await lockedDraftTx(client,draftId,request.recordId,true,
@@ -619,6 +621,8 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
     const targetPin={recordId:record.id,revision:record.revision,bodySha256:fingerprint(target.body)};
     const attribution=(input:Pick<DocumentInput,'accessSha256'>)=>({subject:ctx.principal.subject,accessSha256:input.accessSha256,selectedAt:new Date().toISOString()});
     for(const source of fusion.context.sources){
+      if(source.kind==='gltf')throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY',
+        'glTF nodes support source context only; reviewed citation attachment is unsupported.');
       if(source.kind==='cityjson')continue;
       if(source.kind==='survey_report'){
         const input=fusion.inputs.get(source.pin.sourceId)!;
@@ -783,6 +787,8 @@ export async function registryImageRegionAmendmentPreflightTx(client:PoolClient,
 }
 export const amendRegistryDocumentCitations=async(draftId:string,raw:unknown)=>{
   const request=RegistryDocumentAmendmentSchema.parse(raw);
+  if(request.addFusion?.selection.sources.some(source=>source.kind==='gltf'))
+    throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY','glTF nodes support source context only; reviewed citation attachment is unsupported.');
   let prepared:RegistryRegionAmendmentPrepared|RegistryImageRegionAmendmentPrepared|undefined;
   if(request.addImageRegion){
     const captured=await transaction(async client=>{
