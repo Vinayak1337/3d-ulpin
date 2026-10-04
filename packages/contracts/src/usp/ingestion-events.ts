@@ -31,6 +31,8 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
     status:z.enum(['queued','running','completed','failed','stale'])}),
   z.strictObject({kind:z.literal('citygml-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','failed','stale'])}),
+  z.strictObject({kind:z.literal('obj-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','partial','failed','stale'])}),
   z.strictObject({kind:z.literal('gltf-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','partial','failed','stale'])}),
   z.strictObject({kind:z.literal('geoparquet-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,

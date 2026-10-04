@@ -20,6 +20,7 @@ import {runIFCJob} from '../usp/ingestion/ifc-worker';
 import {runDXFJob} from '../usp/ingestion/dxf-worker';
 import {runKMLJob} from '../usp/ingestion/kml-worker';
 import {runCityGMLJob} from '../usp/ingestion/citygml-worker';
+import {runObjJob} from '../usp/ingestion/obj-worker';
 import {runGltfJob} from '../usp/ingestion/gltf-worker';
 import {runGeoParquetJob} from '../usp/ingestion/geoparquet-worker';
 import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
@@ -35,6 +36,7 @@ let ifcWorker:Promise<void>|undefined;
 let dxfWorker:Promise<void>|undefined;
 let kmlWorker:Promise<void>|undefined;
 let citygmlWorker:Promise<void>|undefined;
+let objWorker:Promise<void>|undefined;
 let gltfWorker:Promise<void>|undefined;
 let geoparquetWorker:Promise<void>|undefined;
 let cityjsonWorker:Promise<void>|undefined;
@@ -260,6 +262,12 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
         if(!citygmlWorker)citygmlWorker=runCityGMLJob(job.id)
           .catch(()=>{/* Canonical fenced state owns recovery; native retries are explicit. */})
           .finally(()=>{citygmlWorker=undefined;});
+        return;
+      }
+      if(job.operation==='obj-native'){
+        if(!objWorker)objWorker=runObjJob(job.id)
+          .catch(()=>{/* Canonical fenced state owns recovery; native retries are explicit. */})
+          .finally(()=>{objWorker=undefined;});
         return;
       }
       if(job.operation==='gltf-native'){
