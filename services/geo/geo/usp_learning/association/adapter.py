@@ -195,11 +195,14 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     if rank_phase_authority is not None:
         from . import fragment_rank_phase_adapter, fragment_rank_fit
         representation = fragment_rank_phase_adapter.admit_fit(rank_phase_authority, rows, contract, family_freeze)
-        phase_session = fragment_rank_phase_adapter.PhaseSession(rank_phase_authority)
+        phase_session = fragment_rank_phase_adapter.PhaseSession(rank_phase_authority, rows)
         rank_fit = fragment_rank_fit
-        fit_settings, numerics, loss_policy = fragment_rank_phase_adapter.FIT, fragment_rank_phase_adapter.NUMERICS, fragment_rank_phase_adapter.LOSS_POLICY
+        fit_settings, numerics, loss_policy = fragment_rank_phase_adapter.FIT, fragment_rank_phase_adapter.NUMERICS, phase_session.config["loss"]
     plan = training_plan(dataset_declaration) if representation is None else representation.training_plan
     representation_metadata = {} if representation is None else {"representation": representation.metadata}
+    if phase_session is not None:
+        plan = phase_session.config["plan"]
+        representation_metadata = {"representation": phase_session.config["representation"], **phase_session.provenance}
     actual_prompt = SYSTEM_PROMPT if representation is None else representation.system_prompt
     require(len(rows) == plan["teacherExamples"], "admitted_training_row_count_drift")
     require_boundary()
@@ -224,7 +227,8 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
         encoded, lengths = encode_training(tokenizer, rows, representation=representation)
     else:
         encoded, lengths = rank_fit.encode_training(tokenizer, rows, representation,
-            lambda failed: write(output_dir / "token-preflight.json", failed))
+            lambda failed: write(output_dir / "token-preflight.json", failed),
+            **({} if phase_session is None or phase_session.objective is None else {"objective": phase_session.objective}))
     orders = epoch_orders(plan)
     proof = {"lengths": lengths, "maximumCombinedTokens": max(row["combinedTokens"] for row in lengths),
              "sequenceLimit": 4096, "truncation": False, "excludedRows": [], "epochOrder": orders,
@@ -235,7 +239,8 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
     require(proof["maximumCombinedTokens"] <= 4096, "teacher_sequence_exceeds_frozen_4096_bound")
     torch, gpu_check, gpu_report = _gpu_runtime(output_dir)
     phases.sample("after_cuda_initialization", torch)
-    (run_equivalence if rank_fit is None else rank_fit.run_equivalence)(torch, output_dir, write, phases)
+    proof_options = {} if phase_session is None or phase_session.objective is None else {"objective": phase_session.objective}
+    (run_equivalence if rank_fit is None else rank_fit.run_equivalence)(torch, output_dir, write, phases, **proof_options)
     run_reclamation_control(torch, output_dir, write, phases)
     run_attention_control(torch, output_dir, write, phases)
     if phase_session is not None:
@@ -294,13 +299,15 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                 if rank_fit is not None:
                     parent = row["parent"]
                     context = {"update": updates + 1, "exampleId": parent["exampleId"], "epoch": epoch + 1}
+                    if phase_session is not None:
+                        context.update(phase_session.config["fields"])
                     # Clear only at a parent boundary; candidate graphs release independently.
                     optimizer.zero_grad(set_to_none=True)
                     norms = []
                     def complete_parent(total):
                         norms.append(_optimizer_step(torch, scaler, optimizer, trainable, frozen, phases, context, first=updates == 0))
                     numeric_loss = rank_fit.train_parent(row, model=model, decoder=decoder, head=head, torch=torch,
-                        scaler=scaler, attention=attention, phases=phases, gpu_check=gpu_check, context=context, complete=complete_parent)
+                        scaler=scaler, attention=attention, phases=phases, gpu_check=gpu_check, context=context, complete=complete_parent, **proof_options)
                     updates += 1
                     supervised_tokens += len(parent["candidates"])
                     losses.append(numeric_loss)
@@ -308,6 +315,9 @@ def fit(rows, contract, family_freeze, model_path, output_dir, require_boundary,
                         "lossScope": "sum of exact weighted candidate NLL for this parent",
                         "parentEncodingSha256": row["sha256"], "gradientNormBeforeClip": norms[0],
                         "gradientScale": scaler.get_scale(), "seconds": time.perf_counter() - before, "gpu": gpu_check()}
+                    if proof_options:
+                        facts.update(originalCandidateWeights=[c["weight"] for c in parent["candidates"]],
+                                     effectiveCandidateWeights=[c["record"]["effectiveWeight"] for c in parent["candidates"]])
                     progress.write(json.dumps(facts, sort_keys=True) + "\n"); progress.flush()
                     phases.sample("update_completed", torch, **context, loss=numeric_loss, completeParent=True)
                     optimizer.zero_grad(set_to_none=True)

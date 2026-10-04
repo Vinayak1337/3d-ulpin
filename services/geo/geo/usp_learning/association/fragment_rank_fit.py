@@ -12,7 +12,7 @@ from .reclamation import release_unused_cache
 from .validation import require
 
 
-def encode_training(tokenizer, rows, representation, preserve_failure):
+def encode_training(tokenizer, rows, representation, preserve_failure, *, objective=None):
     encoded, lengths = [], []
     try:
         require([r["parentIndex"] for r in rows] == list(range(10)), "rank_train_parent_order")
@@ -27,10 +27,15 @@ def encode_training(tokenizer, rows, representation, preserve_failure):
                 record = {"candidateIndex": pair["candidateIndex"], "focusCandidateId": pair["focusCandidateId"],
                     "scoringInputSha256": pair["scoringInputSha256"], "pairSha256": rank.codec.canonical_sha(pair),
                     **boundary}
+                if objective is not None:
+                    from . import fragment_rank_balance as balance
+                    record.update(balance.weight_fields(pair["label"], pair["weight"], objective))
                 candidates.append({"record": record, "inputIds": ids, "label": pair["label"], "weight": pair["weight"]})
                 proofs.append(record)
             parent = {"exampleId": row["exampleId"], "parentIndex": row["parentIndex"],
                 "parentLineageSha256": row["parentLineageSha256"], "candidates": candidates}
+            if objective is not None:
+                parent.update(balance.fields(objective))
             encoded.append({"parent": parent, "sha256": rank.codec.canonical_sha(parent)})
             lengths.append({"exampleId": row["exampleId"], "candidateCount": len(candidates), "focuses": proofs,
                 "combinedTokens": max(len(c["inputIds"]) for c in candidates), "promptOnly": True,
@@ -43,8 +48,13 @@ def encode_training(tokenizer, rows, representation, preserve_failure):
     return encoded, lengths
 
 
-def checked_parent(parent, expected_sha):
+def checked_parent(parent, expected_sha, *, objective=None):
     require(rank.codec.canonical_sha(parent) == expected_sha, "rank_encoded_parent_drift")
+    if objective is not None:
+        from . import fragment_rank_balance as balance
+        require(all(rank.codec.canonical_sha(parent.get(k)) == rank.codec.canonical_sha(v) for k, v in balance.fields(objective).items()), "balanced_encoded_parent_objective")
+    else:
+        require("objective" not in parent and "objectiveSha256" not in parent, "balanced_parent_requires_authority")
     candidates = parent["candidates"]
     require(type(candidates) is list and 1 <= len(candidates) <= 7, "rank_complete_parent_required")
     for index, candidate in enumerate(candidates):
@@ -56,13 +66,18 @@ def checked_parent(parent, expected_sha):
                 and record["inputTokens"] == len(ids) and record["lastPromptPosition"] == len(ids) - 1
                 and record["prefixIdsSha256"] == rank.codec.canonical_sha(ids)
                 and record["completePrefixAndSingleTokenVerified"] is True, "rank_complete_prompt_drift")
+        if objective is not None:
+            require(all(rank.codec.canonical_sha(record.get(k)) == rank.codec.canonical_sha(v)
+                        for k, v in balance.weight_fields(candidate["label"], candidate["weight"], objective).items()), "balanced_encoded_weight_drift")
+        else:
+            require("objectiveSha256" not in record, "balanced_focus_requires_authority")
         labels = record["labelIds"]
         require(set(labels) == {"0", "1"} and labels["0"] != labels["1"]
                 and all(type(i) is int and i >= 0 for i in labels.values()), "rank_label_ids_drift")
     return candidates
 
 
-def weighted_nll(logits, label_ids, label, weight, torch):
+def weighted_nll(logits, label_ids, label, weight, torch, *, objective=None):
     """Select two native head logits from the final prompt position, then cast."""
     require(len(logits.shape) == 3 and tuple(logits.shape[:2]) == (1, 1), "rank_training_last_position_shape")
     require(set(label_ids) == {"0", "1"} and label_ids["0"] != label_ids["1"]
@@ -74,17 +89,22 @@ def weighted_nll(logits, label_ids, label, weight, torch):
     require(bool(torch.isfinite(pair).all()), "rank_nonfinite_label_logits")
     # log_softmax subtracts the maximum before logsumexp, including equal large logits.
     loss = -torch.nn.functional.log_softmax(pair, dim=0)[label] * (weight["numerator"] / weight["denominator"])
+    if objective is not None:
+        from . import fragment_rank_balance as balance
+        balance.effective_weight(label, weight, objective)
+        multiplier = balance.record()["classMultipliers"][str(label)]
+        loss = loss * (multiplier["numerator"] / multiplier["denominator"])
     require(loss.dtype == torch.float32 and bool(torch.isfinite(loss)), "rank_nonfinite_weighted_loss")
     return loss
 
 
-def accumulate_parent(parent, expected_sha, contribution, complete):
+def accumulate_parent(parent, expected_sha, contribution, complete, *, objective=None):
     """No update until every bound candidate has contributed exactly once.
 
     contribution owns one forward/backward graph and returns only a scalar.
     complete owns the shared unscale/check/clip/step. Neither runs on a bad vector.
     """
-    candidates = checked_parent(parent, expected_sha)
+    candidates = checked_parent(parent, expected_sha, objective=objective)
     losses = []
     for candidate in candidates:
         losses.append(rank.finite(contribution(candidate)))
@@ -93,11 +113,14 @@ def accumulate_parent(parent, expected_sha, contribution, complete):
     return total
 
 
-def train_parent(encoded, *, model, decoder, head, torch, scaler, attention, phases, gpu_check, context, complete):
+def train_parent(encoded, *, model, decoder, head, torch, scaler, attention, phases, gpu_check, context, complete, objective=None):
     """Sequential graphs, unchanged accumulated adapter gradients between focuses."""
     def contribution(candidate):
         record = candidate["record"]
         facts = {**context, "candidateIndex": record["candidateIndex"], "focusCandidateId": record["focusCandidateId"]}
+        if objective is not None:
+            from . import fragment_rank_balance as balance
+            facts.update(balance.weight_fields(candidate["label"], candidate["weight"], objective))
         attention.begin(facts, len(candidate["inputIds"]))
         ids = torch.tensor([candidate["inputIds"]], dtype=torch.long, device="cuda")
         phases.sample("before_decoder", torch, **facts, promptTokens=ids.shape[1])
@@ -106,7 +129,7 @@ def train_parent(encoded, *, model, decoder, head, torch, scaler, attention, pha
                 hidden = decoder(input_ids=ids, attention_mask=torch.ones_like(ids), use_cache=False).last_hidden_state
             phases.sample("after_decoder", torch, **facts, attentionBlocks=attention.snapshot("decoder"))
             logits = head(hidden[:, -1:, :])
-            loss = weighted_nll(logits, record["labelIds"], candidate["label"], candidate["weight"], torch)
+            loss = weighted_nll(logits, record["labelIds"], candidate["label"], candidate["weight"], torch, objective=objective)
         numeric = float(loss.detach())
         phases.sample("after_loss_before_backward", torch, **facts, weightedCandidateNll=numeric, headTokens=1)
         gpu_check()
@@ -121,7 +144,7 @@ def train_parent(encoded, *, model, decoder, head, torch, scaler, attention, pha
         gpu_check()
         return numeric
 
-    return accumulate_parent(encoded["parent"], encoded["sha256"], contribution, complete)
+    return accumulate_parent(encoded["parent"], encoded["sha256"], contribution, complete, objective=objective)
 
 
 def epoch_sums(losses, plan):
@@ -131,20 +154,29 @@ def epoch_sums(losses, plan):
     return [math.fsum(values[i:i + count]) for i in range(0, len(values), count)]
 
 
-def run_equivalence(torch, output_dir, write, phases):
+def run_equivalence(torch, output_dir, write, phases, *, objective=None):
     """Future native gate at the actual NLL and parent accumulator boundary.
 
     Four synthetic candidates share two trainable logits; independent CPU math
     gives the sum of weighted losses/gradients. No model/data is used here.
     """
     from .fragment_rank_adapter import LOSS_POLICY
+    if objective is not None:
+        from . import fragment_rank_balance as balance
+        balance.checked(objective)
+        LOSS_POLICY = balance.loss_policy(LOSS_POLICY)
+    factor = lambda label: 1.0 if objective is None else balance.record()["classMultipliers"][str(label)]["numerator"] / balance.record()["classMultipliers"][str(label)]["denominator"]
     cases = [(2.0, -3.0, 0), (2.0, -3.0, 1), (0.0, 0.0, 1), (-1000.0, 1000.0, 0)]
-    reference_loss = math.fsum(rank.binary_loss(a, b, label) / 40 for a, b, label in cases)
-    reference_gradient = [math.fsum(analytic_gradient(a, b, label)[i] / 40 for a, b, label in cases) for i in (0, 1)]
+    reference_loss = math.fsum(rank.binary_loss(a, b, label) / 40 * factor(label) for a, b, label in cases)
+    reference_gradient = [math.fsum(analytic_gradient(a, b, label)[i] / 40 * factor(label) for a, b, label in cases) for i in (0, 1)]
     parent = {"candidates": [{"inputIds": [8, 9], "label": label, "weight": {"numerator": 1, "denominator": 40},
         "record": {"candidateIndex": i, "focusCandidateId": f"c{i}", "inputTokens": 2, "lastPromptPosition": 1,
             "prefixIdsSha256": rank.codec.canonical_sha([8, 9]), "completePrefixAndSingleTokenVerified": True,
             "labelIds": {"0": 2, "1": 0}}} for i, (_, _, label) in enumerate(cases)]}
+    if objective is not None:
+        parent.update(balance.fields(objective))
+        for candidate in parent["candidates"]:
+            candidate["record"].update(balance.weight_fields(candidate["label"], candidate["weight"], objective))
     records = []
     try:
         for device, native_dtype in ((d, t) for d in ("cpu", "cuda") for t in (torch.float32, torch.float16)):
@@ -154,12 +186,12 @@ def run_equivalence(torch, output_dir, write, phases):
             def contribution(candidate):
                 a, b, _ = cases[candidate["record"]["candidateIndex"]]
                 logits = torch.stack([theta[1] + b, theta[0] * 0 + 13, theta[0] + a]).reshape(1, 1, 3).to(dtype=native_dtype)
-                loss = weighted_nll(logits, candidate["record"]["labelIds"], candidate["label"], candidate["weight"], torch)
+                loss = weighted_nll(logits, candidate["record"]["labelIds"], candidate["label"], candidate["weight"], torch, objective=objective)
                 numeric = float(loss.detach())
                 (loss * 128).backward()
                 return numeric
 
-            total = accumulate_parent(parent, rank.codec.canonical_sha(parent), contribution, completions.append)
+            total = accumulate_parent(parent, rank.codec.canonical_sha(parent), contribution, completions.append, objective=objective)
             gradient = (theta.grad / 128).detach().cpu().tolist()
             require(len(completions) == 1 and completions[0] == total, "rank_proof_parent_completion_drift")
             require(math.isclose(total, reference_loss, abs_tol=1e-6, rel_tol=1e-6)
@@ -171,7 +203,8 @@ def run_equivalence(torch, output_dir, write, phases):
                 "gradientScale": 128, "lossDtype": "float32", "nativeLogitsDtype": str(native_dtype)})
             del theta
         result = {"passed": True, "syntheticOnly": True, "actualLossAndAccumulationHelpers": True,
-            "lossImplementation": LOSS_POLICY, "referenceLoss": reference_loss, "referenceGradient": reference_gradient, "records": records}
+            "lossImplementation": LOSS_POLICY, "referenceLoss": reference_loss, "referenceGradient": reference_gradient, "records": records,
+            **({} if objective is None else balance.fields(objective))}
     except Exception as error:
         write(output_dir / "loss-equivalence.json", {"passed": False, "records": records, "error": str(error), "lossImplementation": LOSS_POLICY})
         raise

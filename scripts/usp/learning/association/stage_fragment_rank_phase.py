@@ -9,10 +9,13 @@ REPO = Path(__file__).resolve().parents[4]
 sys.path[:0] = [str(Path(__file__).resolve().parent), str(REPO / "services/geo")]
 from stage_fragment_adapter import stage as shared_stage
 from geo.usp_learning.association import fragment_rank_phase_adapter as phase
+from geo.usp_learning.association.validation import strict_json
 
 
 def stage(assignment):
-    return shared_stage("fit", assignment, fragment=phase)
+    record = strict_json(Path(assignment).read_bytes())
+    authority = phase.BALANCED_AUTHORITY if record.get("version") == phase.BALANCED_VERSIONS["fit"][0] else phase
+    return shared_stage("fit", assignment, fragment=authority)
 
 
 if __name__ == "__main__":
