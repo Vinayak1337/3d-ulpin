@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
 
+REPO = Path(__file__).resolve().parents[4]
+sys.path[:0] = [str(Path(__file__).resolve().parent), str(REPO / "services/geo")]
 from stage_selector_baseline import stage as shared_stage, checked_stage_assignment
 from geo.usp_learning.association.validation import require, strict_json
 

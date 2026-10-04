@@ -9,14 +9,18 @@ from __future__ import annotations
 
 import contextlib
 import copy
+import datetime
 import hashlib
 import importlib.abc
 import json
+import os
 from pathlib import Path
 import struct
+import subprocess
 import sys
 import tempfile
 import types
+import time
 import unittest
 from unittest.mock import patch
 
@@ -331,6 +335,68 @@ class Controls(unittest.TestCase):
             session.proof = None
             with self.assertRaisesRegex(REJECTED, "native_proof"): runtime.run_scores(model, tokenizer, prepared, contexts, schema, f.contract, f.family, torch, lambda: None, lambda *a: None, lambda _: None, reload_session=session)
         self.assertTrue(all(n not in sys.modules for n in BLOCKED))
+
+
+class IsolatedEntryControls(unittest.TestCase):
+    """Real isolated subprocess startup; select alone for the bootstrap repair."""
+
+    def test_isolated_cli_help_and_disabled_admission(self):
+        private = Path(os.environ["USP_RELOAD_BOOTSTRAP_RECEIPTS"]).resolve()
+        self.assertTrue(private.is_dir())
+        entry = REPO / "scripts/usp/learning/association/stage_fragment_rank_reload.py"
+        previous = COORDINATOR / "student-38.fragment-rank-reload.assignment.json"
+        raw = previous.read_bytes()
+        self.assertEqual(len(raw), 14130)
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), "cfce18c2ac9f842488973b929cccd961e907ecc1dd88160144e7b586feaebc36")
+        positive = json.loads(raw)
+        self.assertIs(positive["executable"], True)
+        disabled = {**positive, "executable": False}
+        self.assertEqual({k: v for k, v in disabled.items() if k != "executable"},
+            {k: v for k, v in positive.items() if k != "executable"})
+        cwd = private / "unrelated-cwd"
+        cwd.mkdir()
+        fixture = cwd / "disabled-assignment.json"
+        fixture.write_bytes(checkpoint.canonical(disabled))
+        self.assertNotEqual(cwd, entry.parent)
+        records = []
+
+        def child(name, options):
+            command = [sys.executable, "-B", "-I", "-S", str(entry), *options]
+            started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            tick = time.perf_counter()
+            result = subprocess.run(command, cwd=cwd, capture_output=True, timeout=30)
+            log_pins = {}
+            for kind, data in (("stdout", result.stdout), ("stderr", result.stderr)):
+                path = private / ("isolated-" + name + "." + kind + ".txt")
+                with path.open("xb") as stream:
+                    stream.write(data); stream.flush(); os.fsync(stream.fileno())
+                log_pins[kind] = {"path": str(path), "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+            records.append({"command": command, "cwd": str(cwd), "startedAtUtc": started,
+                "finishedAtUtc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "elapsedSeconds": time.perf_counter() - tick, "exitCode": result.returncode, "logs": log_pins,
+                "childSysPathImportAdmissionDoubles": False})
+            return result
+
+        passed = False
+        try:
+            help_result = child("help", ["--help"])
+            self.assertEqual(help_result.returncode, 0, help_result.stderr.decode(errors="replace"))
+            self.assertIn(b"--assignment", help_result.stdout)
+            refused = child("disabled", ["--assignment", str(fixture)])
+            self.assertEqual(refused.returncode, 1, refused.stderr.decode(errors="replace"))
+            self.assertIn(b"separate_positive_rank_reload_required", refused.stderr)
+            self.assertNotIn(b"ModuleNotFoundError", refused.stderr)
+            self.assertEqual({p.name for p in cwd.iterdir()}, {"disabled-assignment.json"})
+            self.assertFalse(refused.stdout)
+            passed = True
+        finally:
+            evidence = {"version": "association-rank-reload-isolated-entry-controls/1", "passed": passed,
+                "parentArgv": sys.argv, "children": records, "fixture": {"path": str(fixture),
+                    "bytes": fixture.stat().st_size, "sha256": hashlib.sha256(fixture.read_bytes()).hexdigest(),
+                    "sourceSha256": hashlib.sha256(raw).hexdigest(), "onlyChangedField": "executable", "value": False},
+                "doubles": [], "stageNativeGuardModelEffects": False, "oldControlsExecuted": False}
+            with (private / "isolated-entry-controls.json").open("x", encoding="utf-8", newline="\n") as stream:
+                json.dump(evidence, stream, sort_keys=True, indent=2); stream.write("\n"); stream.flush(); os.fsync(stream.fileno())
 
 
 if __name__ == "__main__":
