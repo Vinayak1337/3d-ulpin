@@ -1990,6 +1990,34 @@
         "Working frame, height linkage, survey epoch, object correspondence, accuracy, learning and release remain unqualified; foreign test_only family.",
         "Historical physical reader and execution pins remain unchanged; another checkout needs its own current authority."
       ]
+    },
+    "surveyReferenceLinkObservation": {
+      "handoff": "docs/evidence/usp/survey-reference-link-handoff.md",
+      "receiptSha256": "6c8fb1d73b55e0e9727a2755ad8c15de284799903e4be8341605e77f2381dc14",
+      "citationProfile": "registry-survey-row-citation/1",
+      "scope": "Canonical save/private read/replay/review over unchanged real NVA/PID text and disclosed technical target/SQL/storage controls; no live enrollment or persistence run",
+      "selectedRow": {
+        "ordinal": 164,
+        "pointId": "gs_240",
+        "enabled": false,
+        "horizontalMeasurements": "unavailable"
+      },
+      "wholeTable": {
+        "rows": 166,
+        "enabled": 164,
+        "disabled": 2
+      },
+      "privateResponseBytes": 70222,
+      "purpose": "source_reference_only",
+      "associationState": "operator_selected",
+      "qualification": "not_assessed",
+      "wrongRowDenied": true,
+      "revokedSourceDenied": true,
+      "limitations": [
+        "Authentic surveyed point-to-building/floor correspondence, working frame, height linkage and epoch remain needs_input.",
+        "Comparison, accuracy and learning split remain not_assessed; foreign test_only family.",
+        "Controlled envelopes do not qualify live HTTP/DB persistence/locks, geometry, ownership or release."
+      ]
     }
   }
 ]
