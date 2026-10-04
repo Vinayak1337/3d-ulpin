@@ -232,6 +232,7 @@ export * from './source-fusion-geoparquet';
 export * from './source-fusion-survey';
 export * from './source-fusion-associations';
 export * from './registry-document-evidence';
+export * from './registry-survey-reference';
 export * from './registry-cityjson-draft';
 export * from './registry-cityjson-validation';
 export * from './registry-cityjson-admission';
