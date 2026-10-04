@@ -337725,6 +337725,9 @@
             ],
             "additionalProperties": false
           },
+          "replayed": {
+            "type": "boolean"
+          },
           "validation": {
             "type": "string",
             "enum": [
@@ -338739,6 +338742,9 @@
                   "modelId"
                 ],
                 "additionalProperties": false
+              },
+              "replayed": {
+                "type": "boolean"
               },
               "validation": {
                 "type": "string",
