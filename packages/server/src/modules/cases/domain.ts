@@ -64,6 +64,10 @@ export function caseFrom(row: Row): CaseRecord {
 }
 export function sourceFrom(row: Row): SourceRevision {
   let inspection=row.inspection;
+  if(row.profile==='gltf-native-v1'||inspection&&typeof inspection==='object'&&Object.hasOwn(inspection,'gltfOriginal')){
+    const {gltfOriginal:_gltfOriginal,gltfAccepted:_gltfAccepted,referenceParts:_gltfParts,...metadata}=inspection??{};
+    inspection=metadata;
+  }
   if(row.profile==='kml-native-v1'||inspection&&typeof inspection==='object'&&Object.hasOwn(inspection,'kmlOriginal')){
     const {kmlOriginal:_kmlOriginal,kmlAccepted:_kmlAccepted,referenceParts:_kmlParts,...metadata}=inspection??{};
     inspection=metadata;
@@ -905,6 +909,8 @@ export async function retryJob(jobId: string) {
       throw new AppError(422,'DXF_CANONICAL_RETRY_REQUIRED','Retry through the source-bound DXF retry operation with current case/source/access pins; generic job copying is unsupported.');
     if(original.operation==='kml-native')
       throw new AppError(422,'KML_CANONICAL_RETRY_REQUIRED','Retry through the source-bound KML operation with current source/access and exact member pins; generic job copying is unsupported.');
+    if(original.operation==='gltf-native')
+      throw new AppError(422,'GLTF_CANONICAL_RETRY_REQUIRED','Retry through the source-bound glTF operation with current source/access, scene and unchanged original pins; generic job copying is unsupported.');
     if(original.operation==='citygml-native')
       throw new AppError(422,'CITYGML_CANONICAL_RETRY_REQUIRED','Retry through the source-bound CityGML operation with current source/access and unchanged original pins; generic job copying is unsupported.');
     if(original.operation==='geoparquet-native')
