@@ -1,0 +1,167 @@
+{
+  "baseCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "baselineProtocol": {
+    "bytes": 10978,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-27.fragment-rank-baseline.protocol.json",
+    "physicalSha256": "cf7a8efd6f31cfb2252bcc15adfab71fda220295029fd41a27786a2a37e54e64"
+  },
+  "branch": "task/ml-association-student-20261002",
+  "checkpointRebindingAuthorized": false,
+  "checkpointSourceCommit": "7a7b6eb5c6fd0ed2f63eb03197e7f5f6999ed270",
+  "diagnosis": {
+    "cause": "Missing separately admitted rank-adapter reload authority/loader route, not failed training or native serializer.",
+    "existingComponents": "Reuse source-only payload/context validation, original Qwen loader, shared adapter.reload_and_compare/verify_adapter_files, safe checkpoint/paths, rank prompt/binary scoring/projection and existing guarded association_student run supervisor. Avoid copying a new complete loader/stager/guard.",
+    "history": "Final phase60/342 accepted with unchanged290-tensor base,386 fullstate and96 adapter tensors/540672 parameters byte-equal to checkpoint masters. Original rank baseline valid2/2/exact1/2/positive recall0/selected0/unsupportedFP0. Generic stage_adapter.accepted_fit and old fit/reload recipe are intentionally inapplicable to this phase route; do not bypass/reuse them as final-fit authority.",
+    "signature": "Existing rank loader intentionally refuses model_loader/fragment_adapter_reload, scorer requires bare Qwen2ForCausalLM and records original-base score origin; dispatcher/stager admit only original-base rank versions."
+  },
+  "exclusions": "No model/native/GPU/Peft/Torch import, stage/guard/copy/reload/inference/comparison/fitting now; no development expectations/held-out/training labels/teacher/source refresh or model/data/recipe/policy/threshold changes. No model_isolation/appcontainer/resources/shared adapter/checkpoint/phase/fit/stage_adapter/stage_baseline/guards or other unowned paths changed. No coordinator/staging/other-worker edits, ACL/global host/service/Docker/credential/provider/dependency install, storage compression/migration/link, main/push/deploy/promotion.",
+  "finalAdapterFiles": {
+    "README.md": {
+      "bytes": 5396,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\adapter\\README.md",
+      "physicalSha256": "d58f094333cfc1c4dd7444763d0d4900fa12102545f64c28d5689920da5f1793"
+    },
+    "adapter_config.json": {
+      "bytes": 997,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\adapter\\adapter_config.json",
+      "physicalSha256": "caddd7cee4ba510b73088fa191db872b6a1947f023ae35bc5b6f64a3e5b5b584"
+    },
+    "adapter_model.safetensors": {
+      "bytes": 2175168,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472\\outputs\\fit\\adapter\\adapter_model.safetensors",
+      "physicalSha256": "544f198727df29a629cd9ae4540a221adb27cdb390116d8ddb7b03a302da832b"
+    }
+  },
+  "finalFitAcceptance": {
+    "bytes": 10545,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-3-native-acceptance-v1.json",
+    "physicalSha256": "15c91a03e316c67570e4b34a200c9ae268fd2de0ef7adf75e4fc62a204a4f00c"
+  },
+  "finalFitReview": {
+    "bytes": 6768,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-phase-3-native-acceptance-review-v1.json",
+    "physicalSha256": "cda8d0f67e1105c98f42b76accc2f2d1aecc20cc6aa9d22aa5a1053c4ba8b310"
+  },
+  "finalFitRoot": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\adapter-fragment-rank-phase-fit-cca373df707d4380a020a933b0811472",
+  "futureQualityCriteria": {
+    "baseline": "valid2/2, exact1/2, positive recall0, zero selected, unsupportedFP0",
+    "comparison": "Separate reviewed-code positive native reload on identical two source-only requests/seven scores; preserve retained baseline without model rerun. Only after guard/output/resource/cleanup acceptance may host open existing pinned development expectations for one comparison. No sweep/evaluation now.",
+    "qualification": "Development comparison alone is not independent source truth/generalization/official operational/absence/canonical link qualification;57 teacher-related pairs remain needs_independent_review and Sarvam excluded.",
+    "tunedTarget": "valid2/2, exact2/2, precision1, positive recall1, unsupportedFP0"
+  },
+  "implementation": [
+    "Add a strict versioned rank reload leaf authority with exact accepted phase3 fit references, historical training sourceCommit/source map/experiment/model/data/recipe/60/342/checkpoint/adapter hashes and independent coordinator acceptance. Separate new reload executionHEAD/source closure from retained7a7b6eb5 fit identity; never rewrite checkpoint/sourceCommit/acceptance or claim new code trained the adapter.",
+    "Host admission before mkdir/copy/native effects rechecks protected accepted_outputs and exact independent accepted phase3 body plus guard/map/completion/fit/manifest/checkpoint/proof/adapter/config identities. Use final result recipe.binding plus mandatory preflight/manifest fields, as accepted actual writer does; no generic accepted_fit or assumed duplicate result.settings/numerics. Technical review/acceptance seals the existing full output history; preserve hashes, do not reopen native proof campaigns.",
+    "Contained child uses require_model_boundary returned verified_root, checks in-scope copied fit/adapter/acceptance/source/input files and exact profile pins. Historical outer fit/acceptance paths are lexical metadata only in child; host checks original paths. Propagate explicit root through any checkpoint/path reads; preserve escape/alias/reparse/in-scope-denial protections and host full ancestry. No permission widening or blanket path acceptance.",
+    "Reuse current source-only two development requests/seven candidate focuses, frozen prompt/label boundary/native final-position two logits, float32 margin and strict complete ordered vectors. Preserve threshold margin>0, tie abstention, original candidate order/context/provenance and unchanged projection. No top-K/fallback/filter/calibration/token/seed/bound change or labels/targets in prompt.",
+    "Extend current shared run_local and rank scorer through a separately verified reload authority. Keep bare original-base route and all legacy versions/refusals semantically intact. Admit PEFT wrapper only after exact accepted reload authority, original-base Qwen identity, named adapter config/tensor equality/96 tensors/540672params and all frozen/no-grad/eval state checks; arbitrary caller model_loader/wrapper/mixed/default authorities remain refused before native imports/effects. Reuse unchanged shared PEFT reload lifecycle instead of cloning it. Do not merge adapter into base.",
+    "Before scoring in future native run, actual loaded saved tensors must equal the accepted safetensors and accepted checkpoint master values under explicit bijective default-name mapping; base290 digest stays pinned and no optimizer/fit occurs. Add honest adapted score origin/adapterApplied/native reload proof/accepted fit/source/data provenance, distinct from original-base raw records. Current-process fitPerformed false or explicit fitPerformedInThisProcess false; actual training history/provisional teacher usage remains accurately linked.",
+    "Extend existing stage_selector_baseline and association_student explicit version dispatch/guarded run route; optional new stage_fragment_rank_reload.py is a thin delegation only. Reuse donor subsets and exclusive verified copy/profile/generated command recipe. Copy only accepted adapter/fit authority plus existing source-only development material to readonly inputs, excluding training labels and all expectations/evaluation/teacher material. No new arbitrary command/argument or alternate loader/stager/guard capability. Unknown/PREP/mixed versions refused before first effects.",
+    "If reuse needs a pure source-payload helper factored from fragment_rank_baseline, preserve its original checked_assignment/run semantics and protected baseline behavior. Declare complete transitive new reload runtime closure and exact final-head physical/canonical pins; unchanged shared adapter/checkpoint/fit/guard code remains protected. Disabled non-executable prototype only; final positive native packet comes after coordinator code review."
+  ],
+  "nativeExecutionAuthorized": false,
+  "originalBaseDevelopmentReference": {
+    "bytes": 7759,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-baseline-acceptance-v1.json",
+    "physicalSha256": "089902a634551261b09fa2af2f64e1494284e8a9dc18d855468ac62188fb4951"
+  },
+  "originalRecipe": {
+    "developmentArtifactPins": {
+      "context-0.json": "d25e7d4ecde0223c1fc250e60604f3ef059eb614bb7886c3a3725e855c40b0f5",
+      "context-1.json": "d688e27b96e484ea36d4cd7b39c5f67f0955d358a791af1960ffd455786ed90c",
+      "fragment-route.json": "cd2af2b714a4bea4d60ea176454d2c843dcf09c4645b237e5eaabb3dff3f471d",
+      "fragment-schema-v1.json": "a7f289ea272e933b20cd9b5e06fae53c6f0d77daeaf878bb8a2aad65ee7d9082",
+      "preparation.json": "eef78431d063df9a2b9e337b74fe6ce7d6b40a63783a9e5eb7b583688bc41bc4"
+    },
+    "developmentSourceInputPins": {
+      "family_freeze": "387fdc7ecf3758cd25989109a8d0bb987a90a34ddd00ac3d1362e3bfa10a8fe8",
+      "input_batch": "a89a7eaa4917a398b78ac0457eb7fa55223fd877b12306f03ca7801939f4e536",
+      "model_receipt": "4fe6c79e0f4f93fc1552482b9b3e77143492c0bb7f4b9b4f7b84b8c30e9c3ff2",
+      "schema": "b3a3a64f403d7a5ee0a2ea6ed22c5d418b9af089f75fd9aca8aa0f9a00ab09af"
+    },
+    "donors": {
+      "model": {
+        "profileSha256": "86b0f0b19d4e740f2e6e38f7eea8eaccd24b7b3072883f8b7d22421c39b8ef75",
+        "root": "E:/BhuAayam-data/task-data/ml-distillation/student/fragment-baseline-6d2a6e03ea684bdcb30fabb45d4dbe80"
+      },
+      "runtime": {
+        "profileSha256": "a09ee7907b8dc207b01712d84ec33245218773f479cf91301957ee76b32ae503",
+        "root": "E:/BhuAayam-data/task-data/ml-distillation/student/adapter-citation-view-fit-fffafce9835d4f59bef71f4377bb5619"
+      }
+    },
+    "inferenceSettings": {
+      "attention": "sdpa",
+      "batchSize": 1,
+      "cpuThreads": 2,
+      "doSample": false,
+      "dtype": "float16",
+      "evaluationAllowed": false,
+      "maxCudaAllocatedBytes": 6442450944,
+      "maxCudaReservedBytes": 6442450944,
+      "maxFitSeconds": 600,
+      "maxInputTokens": 2048,
+      "maxNewTokens": 768,
+      "maxPeakProcessRssBytes": 6442450944,
+      "maxRunSeconds": 600,
+      "minimumFreeCudaBytes": 1610612736,
+      "seed": 17
+    },
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "policySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+    "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "weightsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+  },
+  "outcome": "Implement an explicit accepted phase3 adapter reload/scoring authority by extending the existing contained rank runner/stager and shared PEFT reload lifecycle. Reviewed code/CPU controls only; no native run now. A separately frozen final-head reload/development comparison assignment follows.",
+  "ownedEvidencePaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-reload-code-v1.md"
+  ],
+  "ownedPaths": [
+    "services/geo/geo/usp_learning/association/fragment_rank_reload.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_baseline.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_runtime.py",
+    "services/geo/geo/usp_learning/association/student.py",
+    "scripts/usp/learning/association/association_student.py",
+    "scripts/usp/learning/association/stage_selector_baseline.py",
+    "scripts/usp/learning/association/stage_fragment_rank_reload.py",
+    "scripts/usp/learning/association/test_fragment_rank_reload.py"
+  ],
+  "protectedSourceSnapshot": {
+    "bytes": 9313,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-36-final-fit-review-v1-71fda6ce670a4c31b7487a0580d424c0\\student-37-protected-source-snapshot.json",
+    "physicalSha256": "770f3abdafe14d1b7037aa8c4111576232effd7b5dee83a32b1e99fd07c1997f"
+  },
+  "recordedAtUtc": "2026-10-04T11:33:09.379190+00:00",
+  "requiredSuppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "returnRequirements": {
+    "callback": "One material/completion callback to01a0fbd1-c2aa-75c0-8a52-4c4f662f3759 then end; no poll/schedule/new chat/subagent.",
+    "codeCommit": "Commit only owned executable paths, then evidence commit; return exact base/code/final hashes and changed-path list. Training is complete, so your new codeHEAD may advance for reload, while retained fit sourceCommit7a7b6eb5 and all stage bytes stay immutable.",
+    "evidence": "Compact report with commands/exits, focused checks/limits/doubles, new closure/old protected pins, immutable final-fit refs, versions/disabled prototype and unresolved actual native reload/resource/output/quality work. Private scripts/logs/index/finalization outside guarded outputs; hashes/bytes in owned JSON/Markdown."
+  },
+  "serializedAdapterCheckpointCheck": {
+    "bytes": 1344,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-36-final-fit-review-v1-71fda6ce670a4c31b7487a0580d424c0\\adapter-checkpoint-value-check.json",
+    "physicalSha256": "b84d63324d84ad9a68a6b30ef675043b5fbbb33b5f260006b340ad904ad969a0"
+  },
+  "targetedChecks": [
+    "One focused CPU-only invocation, at most three groups, with explicit disclosed tokenizer/model/PEFT/tensor/fs/native-boundary doubles. Verify unknown/code-only/mixed/forged-or-stale accepted-fit authority is refused before effects and original-base route cannot acquire an adapter or arbitrary loader.",
+    "Verify child root scope propagation with denied outside ancestors/historical locations plus in-scope copied adapter/receipt admission; reject in-scope access denial, escape/reparse/alias/tampered fit/model/recipe/source/tensor identity. Keep real path validator when meaningful; no ACL/guard/native changes.",
+    "Verify admitted adapted-wrapper score/projection records keep complete seven-focus identity/order, unchanged margins/threshold/tie behavior and honest adapter origin; default original-base route remains strict. Reject saved/loaded/checkpoint tensor mismatch and incomplete/forged proof. Compile changed/new sources in memory and one whitespace/protected-source diff check. No old suite/runtime/serializer/control/benchmark campaign."
+  ],
+  "task": "STUDENT-37-FRAGMENT-RANK-RELOAD-CODE",
+  "version": "student-fragment-rank-reload-code-assignment/1",
+  "workerSettings": {
+    "observedModel": null,
+    "observedReasoning": null,
+    "observedServiceTier": null,
+    "reason": "Demanding accepted-fit/containment/LoRA identity and scorer integration; existing sole learner retains exclusive ownership. Dispatch exposes no tier field.",
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requiredSpeed": "default/standard1x"
+  },
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin"
+}
