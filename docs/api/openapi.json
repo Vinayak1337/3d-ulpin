@@ -332822,6 +332822,544 @@
                       ],
                       "additionalProperties": false
                     },
+                    "xml": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "inputSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                            },
+                            "readerSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                            },
+                            "acceptedFence": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "tools": {
+                              "type": "string",
+                              "enum": [
+                                "not_checked",
+                                "current",
+                                "unavailable"
+                              ]
+                            },
+                            "code": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[^\\u0000-\\u001f\\u007f]{1,100}(?![\\s\\S])"
+                            },
+                            "sourceUnits": {
+                              "type": "string",
+                              "enum": [
+                                "native_artifact_not_read"
+                              ]
+                            },
+                            "coverage": {
+                              "type": "string",
+                              "enum": [
+                                "accepted_result_metadata_only; native_artifact_not_read"
+                              ]
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "kml"
+                              ]
+                            },
+                            "requestedMember": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "path": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 1024,
+                                  "pattern": "^[^\\\\:\\u0000-\\u001f\\u007f]+$"
+                                },
+                                "ordinal": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 255
+                                },
+                                "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "bytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 67108864
+                                }
+                              },
+                              "required": [
+                                "path",
+                                "ordinal",
+                                "sha256",
+                                "bytes"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "summary": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "schemaVersion": {
+                                  "type": "string",
+                                  "enum": [
+                                    "kml-native-inspection/1"
+                                  ]
+                                },
+                                "sourceSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceBytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 16777216
+                                },
+                                "container": {
+                                  "type": "string",
+                                  "enum": [
+                                    "kml",
+                                    "kmz"
+                                  ]
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inspected",
+                                    "partial",
+                                    "needs_input"
+                                  ]
+                                },
+                                "xmlSha256": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "member": {
+                                  "nullable": true,
+                                  "type": "object",
+                                  "properties": {
+                                    "path": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1024,
+                                      "pattern": "^[^\\\\:\\u0000-\\u001f\\u007f]+$"
+                                    },
+                                    "ordinal": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 255
+                                    },
+                                    "sha256": {
+                                      "type": "string",
+                                      "pattern": "^[a-f0-9]{64}$"
+                                    },
+                                    "bytes": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 67108864
+                                    }
+                                  },
+                                  "required": [
+                                    "path",
+                                    "ordinal",
+                                    "sha256",
+                                    "bytes"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "members": {
+                                  "maxItems": 256,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "path": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 1024,
+                                        "pattern": "^[^\\\\:\\u0000-\\u001f\\u007f]+$"
+                                      },
+                                      "ordinal": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 255
+                                      },
+                                      "sha256": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{64}$"
+                                      },
+                                      "bytes": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 67108864
+                                      }
+                                    },
+                                    "required": [
+                                      "path",
+                                      "ordinal",
+                                      "sha256",
+                                      "bytes"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "selectionCode": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "enum": [
+                                    "KML_MEMBER_SELECTION_REQUIRED",
+                                    "NO_KML_MEMBER"
+                                  ]
+                                },
+                                "documentProfile": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "enum": [
+                                    "kml_2_2",
+                                    "unnamespaced_feature_fragment"
+                                  ]
+                                },
+                                "horizontalReference": {
+                                  "type": "string",
+                                  "enum": [
+                                    "kml_specification",
+                                    "unknown"
+                                  ]
+                                },
+                                "featureCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 10000
+                                },
+                                "coordinateCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "unsupportedCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "unresolvedReferenceCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "accuracy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                },
+                                "analyticEligible": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "registryAdmission": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "learningLabels": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "rights": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "schemaVersion",
+                                "sourceSha256",
+                                "sourceBytes",
+                                "container",
+                                "status",
+                                "xmlSha256",
+                                "member",
+                                "members",
+                                "selectionCode",
+                                "documentProfile",
+                                "horizontalReference",
+                                "featureCount",
+                                "coordinateCount",
+                                "unsupportedCount",
+                                "unresolvedReferenceCount",
+                                "accuracy",
+                                "analyticEligible",
+                                "registryAdmission",
+                                "learningLabels",
+                                "rights"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "inputSha256",
+                            "readerSha256",
+                            "acceptedFence",
+                            "tools",
+                            "code",
+                            "sourceUnits",
+                            "coverage",
+                            "kind",
+                            "requestedMember",
+                            "summary"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "inputSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                            },
+                            "readerSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                            },
+                            "acceptedFence": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "tools": {
+                              "type": "string",
+                              "enum": [
+                                "not_checked",
+                                "current",
+                                "unavailable"
+                              ]
+                            },
+                            "code": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[^\\u0000-\\u001f\\u007f]{1,100}(?![\\s\\S])"
+                            },
+                            "sourceUnits": {
+                              "type": "string",
+                              "enum": [
+                                "native_artifact_not_read"
+                              ]
+                            },
+                            "coverage": {
+                              "type": "string",
+                              "enum": [
+                                "accepted_result_metadata_only; native_artifact_not_read"
+                              ]
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "citygml"
+                              ]
+                            },
+                            "summary": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "schemaVersion": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ulpin-native-citygml/1"
+                                  ]
+                                },
+                                "sourceSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceBytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 33554432
+                                },
+                                "citygmlVersion": {
+                                  "type": "string",
+                                  "enum": [
+                                    "2.0"
+                                  ]
+                                },
+                                "encodingProfile": {
+                                  "type": "string",
+                                  "enum": [
+                                    "XML 1.0 UTF-8"
+                                  ]
+                                },
+                                "scope": {
+                                  "type": "string",
+                                  "enum": [
+                                    "source_native_literal_inventory"
+                                  ]
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "available",
+                                    "partial"
+                                  ]
+                                },
+                                "elementCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 25000
+                                },
+                                "buildingAndPartCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "coordinateDeclarationCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "decodedCoordinateValueCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "referenceCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "unsupportedElementCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "unresolvedReferenceCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "findingCodes": {
+                                  "maxItems": 4,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "UNSUPPORTED_CONTENT",
+                                      "REFERENCES_NOT_COMPOSED",
+                                      "DIMENSION_ABSENT",
+                                      "COORDINATE_DECLARATION_INCOMPLETE"
+                                    ]
+                                  }
+                                },
+                                "accuracy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                },
+                                "validity": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                },
+                                "canonicalIdentity": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                },
+                                "analyticEligible": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "registryAdmission": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "learningLabels": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "rights": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "schemaVersion",
+                                "sourceSha256",
+                                "sourceBytes",
+                                "citygmlVersion",
+                                "encodingProfile",
+                                "scope",
+                                "status",
+                                "elementCount",
+                                "buildingAndPartCount",
+                                "coordinateDeclarationCount",
+                                "decodedCoordinateValueCount",
+                                "referenceCount",
+                                "unsupportedElementCount",
+                                "unresolvedReferenceCount",
+                                "findingCodes",
+                                "accuracy",
+                                "validity",
+                                "canonicalIdentity",
+                                "analyticEligible",
+                                "registryAdmission",
+                                "learningLabels",
+                                "rights"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "inputSha256",
+                            "readerSha256",
+                            "acceptedFence",
+                            "tools",
+                            "code",
+                            "sourceUnits",
+                            "coverage",
+                            "kind",
+                            "summary"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
                     "modelStatus": {
                       "nullable": true,
                       "type": "string",
@@ -332978,7 +333516,8 @@
                     "run_ocr",
                     "configure_provider",
                     "review_conversion",
-                    "configure_reader"
+                    "configure_reader",
+                    "select_native_member"
                   ]
                 },
                 "reason": {
@@ -334080,6 +334619,544 @@
                       ],
                       "additionalProperties": false
                     },
+                    "xml": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "inputSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                            },
+                            "readerSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                            },
+                            "acceptedFence": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "tools": {
+                              "type": "string",
+                              "enum": [
+                                "not_checked",
+                                "current",
+                                "unavailable"
+                              ]
+                            },
+                            "code": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[^\\u0000-\\u001f\\u007f]{1,100}(?![\\s\\S])"
+                            },
+                            "sourceUnits": {
+                              "type": "string",
+                              "enum": [
+                                "native_artifact_not_read"
+                              ]
+                            },
+                            "coverage": {
+                              "type": "string",
+                              "enum": [
+                                "accepted_result_metadata_only; native_artifact_not_read"
+                              ]
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "kml"
+                              ]
+                            },
+                            "requestedMember": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "path": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 1024,
+                                  "pattern": "^[^\\\\:\\u0000-\\u001f\\u007f]+$"
+                                },
+                                "ordinal": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 255
+                                },
+                                "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "bytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 67108864
+                                }
+                              },
+                              "required": [
+                                "path",
+                                "ordinal",
+                                "sha256",
+                                "bytes"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "summary": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "schemaVersion": {
+                                  "type": "string",
+                                  "enum": [
+                                    "kml-native-inspection/1"
+                                  ]
+                                },
+                                "sourceSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceBytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 16777216
+                                },
+                                "container": {
+                                  "type": "string",
+                                  "enum": [
+                                    "kml",
+                                    "kmz"
+                                  ]
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "inspected",
+                                    "partial",
+                                    "needs_input"
+                                  ]
+                                },
+                                "xmlSha256": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "member": {
+                                  "nullable": true,
+                                  "type": "object",
+                                  "properties": {
+                                    "path": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1024,
+                                      "pattern": "^[^\\\\:\\u0000-\\u001f\\u007f]+$"
+                                    },
+                                    "ordinal": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 255
+                                    },
+                                    "sha256": {
+                                      "type": "string",
+                                      "pattern": "^[a-f0-9]{64}$"
+                                    },
+                                    "bytes": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 67108864
+                                    }
+                                  },
+                                  "required": [
+                                    "path",
+                                    "ordinal",
+                                    "sha256",
+                                    "bytes"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "members": {
+                                  "maxItems": 256,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "path": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 1024,
+                                        "pattern": "^[^\\\\:\\u0000-\\u001f\\u007f]+$"
+                                      },
+                                      "ordinal": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 255
+                                      },
+                                      "sha256": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{64}$"
+                                      },
+                                      "bytes": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 67108864
+                                      }
+                                    },
+                                    "required": [
+                                      "path",
+                                      "ordinal",
+                                      "sha256",
+                                      "bytes"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "selectionCode": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "enum": [
+                                    "KML_MEMBER_SELECTION_REQUIRED",
+                                    "NO_KML_MEMBER"
+                                  ]
+                                },
+                                "documentProfile": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "enum": [
+                                    "kml_2_2",
+                                    "unnamespaced_feature_fragment"
+                                  ]
+                                },
+                                "horizontalReference": {
+                                  "type": "string",
+                                  "enum": [
+                                    "kml_specification",
+                                    "unknown"
+                                  ]
+                                },
+                                "featureCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 10000
+                                },
+                                "coordinateCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "unsupportedCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "unresolvedReferenceCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "accuracy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                },
+                                "analyticEligible": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "registryAdmission": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "learningLabels": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "rights": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "schemaVersion",
+                                "sourceSha256",
+                                "sourceBytes",
+                                "container",
+                                "status",
+                                "xmlSha256",
+                                "member",
+                                "members",
+                                "selectionCode",
+                                "documentProfile",
+                                "horizontalReference",
+                                "featureCount",
+                                "coordinateCount",
+                                "unsupportedCount",
+                                "unresolvedReferenceCount",
+                                "accuracy",
+                                "analyticEligible",
+                                "registryAdmission",
+                                "learningLabels",
+                                "rights"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "inputSha256",
+                            "readerSha256",
+                            "acceptedFence",
+                            "tools",
+                            "code",
+                            "sourceUnits",
+                            "coverage",
+                            "kind",
+                            "requestedMember",
+                            "summary"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "inputSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                            },
+                            "readerSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                            },
+                            "acceptedFence": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "tools": {
+                              "type": "string",
+                              "enum": [
+                                "not_checked",
+                                "current",
+                                "unavailable"
+                              ]
+                            },
+                            "code": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[^\\u0000-\\u001f\\u007f]{1,100}(?![\\s\\S])"
+                            },
+                            "sourceUnits": {
+                              "type": "string",
+                              "enum": [
+                                "native_artifact_not_read"
+                              ]
+                            },
+                            "coverage": {
+                              "type": "string",
+                              "enum": [
+                                "accepted_result_metadata_only; native_artifact_not_read"
+                              ]
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "citygml"
+                              ]
+                            },
+                            "summary": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "schemaVersion": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ulpin-native-citygml/1"
+                                  ]
+                                },
+                                "sourceSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceBytes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 33554432
+                                },
+                                "citygmlVersion": {
+                                  "type": "string",
+                                  "enum": [
+                                    "2.0"
+                                  ]
+                                },
+                                "encodingProfile": {
+                                  "type": "string",
+                                  "enum": [
+                                    "XML 1.0 UTF-8"
+                                  ]
+                                },
+                                "scope": {
+                                  "type": "string",
+                                  "enum": [
+                                    "source_native_literal_inventory"
+                                  ]
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "available",
+                                    "partial"
+                                  ]
+                                },
+                                "elementCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 25000
+                                },
+                                "buildingAndPartCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "coordinateDeclarationCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "decodedCoordinateValueCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "referenceCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "unsupportedElementCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "unresolvedReferenceCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 25000
+                                },
+                                "findingCodes": {
+                                  "maxItems": 4,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "UNSUPPORTED_CONTENT",
+                                      "REFERENCES_NOT_COMPOSED",
+                                      "DIMENSION_ABSENT",
+                                      "COORDINATE_DECLARATION_INCOMPLETE"
+                                    ]
+                                  }
+                                },
+                                "accuracy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                },
+                                "validity": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                },
+                                "canonicalIdentity": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                },
+                                "analyticEligible": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "registryAdmission": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "learningLabels": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "rights": {
+                                  "type": "string",
+                                  "enum": [
+                                    "not_assessed"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "schemaVersion",
+                                "sourceSha256",
+                                "sourceBytes",
+                                "citygmlVersion",
+                                "encodingProfile",
+                                "scope",
+                                "status",
+                                "elementCount",
+                                "buildingAndPartCount",
+                                "coordinateDeclarationCount",
+                                "decodedCoordinateValueCount",
+                                "referenceCount",
+                                "unsupportedElementCount",
+                                "unresolvedReferenceCount",
+                                "findingCodes",
+                                "accuracy",
+                                "validity",
+                                "canonicalIdentity",
+                                "analyticEligible",
+                                "registryAdmission",
+                                "learningLabels",
+                                "rights"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "inputSha256",
+                            "readerSha256",
+                            "acceptedFence",
+                            "tools",
+                            "code",
+                            "sourceUnits",
+                            "coverage",
+                            "kind",
+                            "summary"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
                     "modelStatus": {
                       "nullable": true,
                       "type": "string",
@@ -334236,7 +335313,8 @@
                     "run_ocr",
                     "configure_provider",
                     "review_conversion",
-                    "configure_reader"
+                    "configure_reader",
+                    "select_native_member"
                   ]
                 },
                 "reason": {
