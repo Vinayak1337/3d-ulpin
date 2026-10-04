@@ -1,0 +1,302 @@
+{
+  "accepted": true,
+  "checkedReferences": {
+    "bytes": 17895,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-43-diagnosis-review-balanced-code-v1-baf9545394054b82be881aeb07844638\\checked-references.json",
+    "physicalSha256": "883382a8936617c5ed12d1f556f4f13fa87628a807702aa0849832ec0cf92efc"
+  },
+  "codeChanges": false,
+  "codeImplementationDecision": "Authorize STUDENT-44 bounded class-balanced phase code and CPU checks; native fit/reload requires separate final-head review/freeze.",
+  "comparisonDecision": "Accept one fixed class-balanced training-objective factor for code-only implementation next; positive/negative global masses equal1/2. Parent totals change explicitly. Future native comparison remains disabled and requires a separately reviewed/frozen positive packet.",
+  "conclusion": "Late/incomplete positive training signs improve0/12 to10/12, negatives42/45 at epoch6. Blanket persistent all-negative training collapse is unsupported. Training-time dropout observations are not final eval metrics; cause of failed development transfer remains unestablished.",
+  "consumedChecks": {
+    "auditCommandExit": 0,
+    "auditCommands": 1,
+    "contributions": 342,
+    "coordinatorAuditReruns": 0,
+    "coordinatorModelOrTestRuns": 0,
+    "epochs": 6,
+    "exactParentEpochSumsAndCursorPrefixes": true,
+    "inputReferences": 47,
+    "pairTargetsAndSourceAdmissionMatched": true,
+    "protectedRuntimeSources": 40,
+    "reportCommandExit": 0,
+    "reviewedReferences": 64,
+    "updates": 60
+  },
+  "coordinatorReview": {
+    "bytes": 6672,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-43-diagnosis-review-balanced-code-v1-baf9545394054b82be881aeb07844638\\review.json",
+    "physicalSha256": "613e1327a7349fabe437fa9e531b85b88dadb37893aa09de90a7727ba42dde34"
+  },
+  "coupledChange": "Objective/recipe/source/checkpoint bindings and required native weighted-gradient proof change. Training inputs/labels/source families/prompt/score threshold/base/optimizer/scaler/schedule/resource limits remain fixed. More positive mass may worsen qualifier/unsupported abstention.",
+  "coverage": {
+    "containers": [
+      {
+        "method": "Container inferred from retained original-path metadata; original bytes not opened",
+        "retainedOriginalPathExtensions": [
+          ".pdf"
+        ],
+        "sourceSha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a"
+      },
+      {
+        "method": "Container inferred from retained original-path metadata; original bytes not opened",
+        "retainedOriginalPathExtensions": [
+          ".pdf"
+        ],
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9"
+      },
+      {
+        "method": "Container inferred from retained original-path metadata; original bytes not opened",
+        "retainedOriginalPathExtensions": [
+          ".pdf"
+        ],
+        "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+      },
+      {
+        "method": "Container inferred from retained original-path metadata; original bytes not opened",
+        "retainedOriginalPathExtensions": [
+          ".pdf"
+        ],
+        "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+      },
+      {
+        "method": "Container inferred from retained original-path metadata; original bytes not opened",
+        "retainedOriginalPathExtensions": [
+          ".html"
+        ],
+        "sourceSha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e"
+      },
+      {
+        "method": "Container inferred from retained original-path metadata; original bytes not opened",
+        "retainedOriginalPathExtensions": [
+          ".pdf"
+        ],
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3"
+      }
+    ],
+    "exactRequestFragmentLabelContradictions": 0,
+    "labelQualification": "All57 remain provisional synthetic supervision/needs_independent_review; Sarvam excluded. Six original rows reused unchanged; four appended rows join admitted support/row receipts. No fresh source truth qualification.",
+    "methods": [
+      {
+        "methods": [
+          "source_supported_annotation"
+        ],
+        "readerMethods": [
+          ""
+        ],
+        "sourceSha256": "1fed768fa33b3fa249bbfe84805903f8d1e16a06d839afcbd0ca6d86b0108b6a",
+        "uniqueFragments": 1
+      },
+      {
+        "methods": [
+          "source_supported_annotation"
+        ],
+        "readerMethods": [
+          ""
+        ],
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "uniqueFragments": 3
+      },
+      {
+        "methods": [
+          "ocr_observation"
+        ],
+        "readerMethods": [
+          "ocr:docling-tesseract-cli-full-page"
+        ],
+        "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+        "uniqueFragments": 4
+      },
+      {
+        "methods": [
+          "source_supported_annotation"
+        ],
+        "readerMethods": [
+          ""
+        ],
+        "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+        "uniqueFragments": 3
+      },
+      {
+        "methods": [
+          "native_text"
+        ],
+        "readerMethods": [
+          "utf8-simple-html-span/1",
+          "utf8-simple-html-table/1"
+        ],
+        "sourceSha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+        "uniqueFragments": 8
+      },
+      {
+        "methods": [
+          "source_supported_annotation"
+        ],
+        "readerMethods": [
+          ""
+        ],
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "uniqueFragments": 4
+      }
+    ],
+    "originalSources": 6,
+    "repeatedPatternsIn": {
+      "bytes": 132805,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-quality-diagnosis-v1-9f07cd0c28ed45798fb3ca3406430dd1\\loss-audit.json",
+      "sha256": "df358b9dd604a13dc6fdd0c307a2814b2a45644ebe2977882238ee97a1b236b6"
+    },
+    "requestSemanticPatterns": [
+      "Two positive literal floor02 requests and one qualified-current-approval negative share the same caption fragment.",
+      "Two positive literal Carpet Area requests and one explicit-square-metres negative share the same printed value without source-supported units.",
+      "Conflict-preserving G+ floor-count retrieval, grouped plot/Khesra identifiers and source-limited official-ULPIN absence are distinct request semantics."
+    ],
+    "uniqueExactRequestFragmentPairs": 57,
+    "uniqueFragments": 23,
+    "uniqueRequests": 10
+  },
+  "developmentOrEvaluationOpened": false,
+  "diagnosis": {
+    "bytes": 39838,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-quality-diagnosis-v1-9f07cd0c28ed45798fb3ca3406430dd1\\diagnosis.json",
+    "physicalSha256": "a2b80df7ab22243c7e96e3f3f2f34139907fb710a82911332a8cc214ae0c7630"
+  },
+  "disabledProposal": {
+    "bytes": 7341,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-quality-diagnosis-v1-9f07cd0c28ed45798fb3ca3406430dd1\\disabled-next-comparison.json",
+    "physicalSha256": "9e52fcae44c3d90a03d4017d434eded86c11d4a296e3d04e0e66b5ac88a0d036"
+  },
+  "effectiveMass": {
+    "negative": "137/175",
+    "negativeToPositiveRatio": "137/38",
+    "positive": "38/175"
+  },
+  "epochClassSummary": [
+    {
+      "epoch": 1,
+      "negative": {
+        "correctSigns": 40,
+        "count": 45,
+        "meanNll": 0.23391536513291714,
+        "ties": 1
+      },
+      "positive": {
+        "correctSigns": 0,
+        "count": 12,
+        "meanNll": 2.312074170137445,
+        "ties": 0
+      }
+    },
+    {
+      "epoch": 2,
+      "negative": {
+        "correctSigns": 45,
+        "count": 45,
+        "meanNll": 0.19503718009218574,
+        "ties": 0
+      },
+      "positive": {
+        "correctSigns": 0,
+        "count": 12,
+        "meanNll": 1.809699481818825,
+        "ties": 0
+      }
+    },
+    {
+      "epoch": 3,
+      "negative": {
+        "correctSigns": 45,
+        "count": 45,
+        "meanNll": 0.2564762843151887,
+        "ties": 0
+      },
+      "positive": {
+        "correctSigns": 0,
+        "count": 12,
+        "meanNll": 1.2709239373604457,
+        "ties": 0
+      }
+    },
+    {
+      "epoch": 4,
+      "negative": {
+        "correctSigns": 44,
+        "count": 45,
+        "meanNll": 0.24520086418164688,
+        "ties": 0
+      },
+      "positive": {
+        "correctSigns": 0,
+        "count": 12,
+        "meanNll": 1.1287442167910438,
+        "ties": 1
+      }
+    },
+    {
+      "epoch": 5,
+      "negative": {
+        "correctSigns": 45,
+        "count": 45,
+        "meanNll": 0.1681237332522869,
+        "ties": 0
+      },
+      "positive": {
+        "correctSigns": 5,
+        "count": 12,
+        "meanNll": 1.0234885569661856,
+        "ties": 0
+      }
+    },
+    {
+      "epoch": 6,
+      "negative": {
+        "correctSigns": 42,
+        "count": 45,
+        "meanNll": 0.21943845752351385,
+        "ties": 0
+      },
+      "positive": {
+        "correctSigns": 10,
+        "count": 12,
+        "meanNll": 0.33747964752061915,
+        "ties": 0
+      }
+    }
+  ],
+  "finalization": {
+    "bytes": 2679,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-quality-diagnosis-v1-9f07cd0c28ed45798fb3ca3406430dd1\\finalization.json",
+    "physicalSha256": "cdbb27768677e872cc20bedb4ce09d66eaf6b12193f2573e5cedb063f39faf21"
+  },
+  "learnerHead": "9e1782a98252542d02440022f8680535f4ee0080",
+  "markdown": {
+    "bytes": 7747,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-quality-diagnosis-v1-9f07cd0c28ed45798fb3ca3406430dd1\\diagnosis.md",
+    "physicalSha256": "7c6302f9fc5c8d1930e09f38fd3e9cdf59d46652c5fe457134cee37f8d8ead51"
+  },
+  "nativeExecutionAuthorized": false,
+  "originalExperimentsSealed": true,
+  "qualification": "Training-time/dropout observations only; labels remain provisional synthetic/needs_independent_review and Sarvam excluded. No final eval train accuracy, independent source truth, generalization, canonical association, promotion or release claim.",
+  "receiptIndex": {
+    "bytes": 6533,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-quality-diagnosis-v1-9f07cd0c28ed45798fb3ca3406430dd1\\receipt-index.json",
+    "physicalSha256": "dc9c2d9b4c6bdcd066a4e6f7591f84d098c1d49502aea550d2d96ae053a1238a"
+  },
+  "recordedAtUtc": "2026-10-04T15:08:33.291290+00:00",
+  "settings": {
+    "observedEffort": null,
+    "observedModel": null,
+    "observedTier": null,
+    "requestedEffort": "xhigh",
+    "requestedModel": "gpt-6.1-sol",
+    "requiredSpeed": "default/standard1x",
+    "tierToolControl": "Unexposed; prompt is not configuration."
+  },
+  "suppliedPermissions": {
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "task": "STUDENT-43-FRAGMENT-RANK-QUALITY-DIAGNOSIS",
+  "teacherIdleBlind": true,
+  "version": "student-fragment-rank-quality-diagnosis-acceptance/1"
+}
