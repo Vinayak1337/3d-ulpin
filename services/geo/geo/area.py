@@ -620,11 +620,18 @@ def extract_document(data):
                     if data["format"] == "archive":
                         return archive_inventory()
                     raise InputError("NATIVE_ARCHIVE_LIMIT")
+                from .native_ods import is_ods_archive, extract_native_ods
+                ods_candidate = is_ods_archive(archive)
                 if any(info.flag_bits & 1 for info in entries):
                     ooxml_candidate = ("xl/workbook.xml" in names) != ("word/document.xml" in names)
-                    if data["format"] == "archive" and not ooxml_candidate:
+                    if data["format"] == "archive" and not (ooxml_candidate or ods_candidate):
                         return archive_inventory()
                     raise InputError("Encrypted document archive is unsupported.")
+                if ods_candidate:
+                    native_format = "ods"
+                    result = extract_native_ods(archive)
+                    result["sourceSha256"] = hashlib.sha256(raw).hexdigest()
+                    return result
                 if data["format"] == "archive" and not (
                         ("xl/workbook.xml" in names) != ("word/document.xml" in names)):
                     return archive_inventory()
@@ -700,7 +707,7 @@ def extract_document(data):
         except (zipfile.BadZipFile, ElementTree.ParseError, KeyError, RuntimeError):
             if data["format"] == "archive" and native_format == "archive":
                 return archive_inventory()
-            raise InputError("NATIVE_WORKBOOK_INVALID" if native_format == "xlsx" else "DOCX native text could not be parsed.") from None
+            raise InputError("NATIVE_ODS_INVALID" if native_format == "ods" else "NATIVE_WORKBOOK_INVALID" if native_format == "xlsx" else "DOCX native text could not be parsed.") from None
     warnings.append("Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.")
     return {"format": native_format, "method": "native_parse", "status": "ready" if parts else "needs_input",
             "sourceSha256": hashlib.sha256(raw).hexdigest(), "parts": parts, "warnings": warnings, "characterCount": total_text}

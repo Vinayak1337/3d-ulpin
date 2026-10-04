@@ -10,7 +10,7 @@ const ocrBox=z.tuple([z.number().finite(),z.number().finite(),z.number().finite(
 export const DocumentOcrSelectionSchema=z.strictObject({page:z.number().int().min(1).max(8),region:ocrBox.optional()});
 export const DocumentArchiveSelectionSchema=z.strictObject({ordinal:z.number().int().min(0).max(255),
   memberSha256:hash,memberBytes:z.number().int().min(1).max(8*1024*1024)});
-export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','png','jpeg','archive','unsupported']);
+export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','ods','png','jpeg','archive','unsupported']);
 export const DocumentOriginalSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),subject:z.string().min(1).max(256),
   format:DocumentFormatSchema,sha256:hash,bytes:z.number().int().positive(),receivedAt:z.iso.datetime()});
 export const DocumentInputSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),jobId:id,caseId:id,caseRevision:rev,
@@ -30,6 +30,11 @@ export const DocumentLocatorSchema=z.strictObject({label:z.string().min(1).max(5
   cell:z.string().regex(/^[A-Z]{1,3}[1-9][0-9]{0,6}$/).optional(),
   cellState:z.enum(['literal','empty','empty_string','whitespace','formula_cached','formula_uncached','error','unsupported']).optional(),
   cellType:z.string().min(1).max(20).optional(),
+  // ODF has source table ordinals, not OOXML sheet IDs. Repeats are unexpanded source ranges.
+  ods:z.strictObject({rowElement:z.number().int().min(1).max(2000),cellElement:z.number().int().min(1).max(2000),
+    rowRepeat:z.number().int().min(1).max(1048576),columnRepeat:z.number().int().min(1).max(16384),
+    valueSource:z.enum(['value','boolean-value','date-value','time-value','string-value','text','none']),
+    formula:z.string().min(1).max(4096).optional()}).optional(),
   // Present on newly partitioned parts. Older native receipts remain readable.
   unitId:id.optional(),unitSha256:hash.optional(),segmentIndex:rev.optional(),segmentCount:z.number().int().positive().optional(),
   characterStart:rev,characterEnd:rev}).superRefine((value,ctx)=>{
@@ -41,11 +46,17 @@ export const DocumentLocatorSchema=z.strictObject({label:z.string().min(1).max(5
       ctx.addIssue({code:'custom',message:'A continuation needs its complete native-unit pin.'});
     if(value.segmentIndex!==undefined && value.segmentCount!==undefined && value.segmentIndex>=value.segmentCount)
       ctx.addIssue({code:'custom',message:'Continuation index exceeds its native unit.'});
-    const workbook=[value.sheet,value.sheetIndex,value.sheetId,value.cell,value.cellState];
-    if(workbook.some(item=>item!==undefined) && workbook.some(item=>item===undefined))
+    const workbook=[value.sheet,value.sheetIndex,value.cell,value.cellState];
+    if((workbook.some(item=>item!==undefined) || value.sheetId!==undefined || value.ods!==undefined) &&
+      (workbook.some(item=>item===undefined) || (value.ods===undefined && value.sheetId===undefined)))
       ctx.addIssue({code:'custom',message:'A workbook citation needs its sheet, index, cell and value state.'});
     if(value.sheet!==undefined && (value.row===undefined || value.column===undefined))
       ctx.addIssue({code:'custom',message:'A workbook citation needs its source row and column.'});
+    if(value.ods && (value.sheetId!==undefined || value.row===undefined || value.column===undefined ||
+      value.row+value.ods.rowRepeat-1>1048576 || value.column+value.ods.columnRepeat-1>16384 ||
+      (value.ods.formula!==undefined && value.cellState==='literal') ||
+      ((value.cellState==='formula_cached' || value.cellState==='formula_uncached') && value.ods.formula===undefined)))
+      ctx.addIssue({code:'custom',message:'An ODS citation needs bounded source ranges, no OOXML ID, and explicit formula state.'});
   });
 export const DocumentPartSchema=z.strictObject({id,sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
   text:z.string().min(1).max(DOCUMENT_LIMITS.partCharacters),sha256:hash,locator:DocumentLocatorSchema,method:z.literal('native_text')})
@@ -186,7 +197,8 @@ export const DocumentResultSchema=z.strictObject({version:z.literal(DOCUMENT_VER
       (value.native.archiveInventory!==undefined && (value.native.archiveInventory.sourceSha256!==value.input.sourceSha256 ||
         value.native.format!=='archive' || value.native.parts.length!==0 || value.native.status!=='unsupported' || value.model.candidates.length!==0)) ||
       value.native.parts.some(p=>p.sourceId!==value.input.sourceId ||
-      p.sourceRevision!==value.input.sourceRevision || p.sourceSha256!==value.input.sourceSha256) ||
+      p.sourceRevision!==value.input.sourceRevision || p.sourceSha256!==value.input.sourceSha256 ||
+      ((value.native.format==='ods') !== (p.locator.ods!==undefined))) ||
       new Set(value.native.parts.map(p=>p.id)).size!==value.native.parts.length ||
       value.model.candidates.some(c=>{const p=value.native.parts.find(p=>p.id===c.partId);return !p ||
         (p.locator.cellState!==undefined && p.locator.cellState!=='literal') ||
