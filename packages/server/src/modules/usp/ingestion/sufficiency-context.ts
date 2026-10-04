@@ -12,6 +12,9 @@ import {acceptedProjectedTx} from './projected-vector';
 import {documentProfileFormats} from '../../../shared/document-formats';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {sufficiencyMeshOriginalTx,sufficiencyMeshEvidenceTx,type SufficiencyMeshOptions} from './sufficiency-mesh';
+import {sufficiencyIFCOriginalTx,sufficiencyIFCEvidenceTx,type SufficiencyIFCDependencies} from './sufficiency-ifc';
+
+export type SufficiencyNativeOptions=SufficiencyMeshOptions&{ifc?:SufficiencyIFCDependencies};
 
 const digest=(column:string)=>`encode(sha256(convert_to(COALESCE(${column}::text,'null'),'UTF8')),'hex')`;
 export async function sufficiencyCaseTx(client:PoolClient,caseId:string,lock=false){
@@ -23,11 +26,11 @@ export async function sufficiencyCaseTx(client:PoolClient,caseId:string,lock=fal
   if(row.archived)throw new AppError(403,'SUFFICIENCY_DENIED','This source context is unavailable.');
   const sources=(await client.query(`SELECT *,
     ${digest('inspection')} inspection_sha,${digest('object_key')} object_sha,
-    COALESCE(inspection->>'actor',inspection#>>'{largeOriginal,operatorSubject}',inspection#>>'{documentOriginal,subject}',inspection#>>'{objOriginal,subject}',inspection#>>'{gltfOriginal,subject}') owner
+    COALESCE(inspection->>'actor',inspection#>>'{largeOriginal,operatorSubject}',inspection#>>'{documentOriginal,subject}',inspection#>>'{objOriginal,subject}',inspection#>>'{gltfOriginal,subject}',inspection#>>'{ifcOriginal,subject}') owner
     FROM sources WHERE case_id=$1 ORDER BY id LIMIT 257`,[caseId])).rows;
   if(sources.some(s=>s.owner && s.owner!==binding.subject))throw new AppError(403,'SUFFICIENCY_DENIED','This source context is unavailable.');
   if(sources.length>256)throw new AppError(422,'SUFFICIENCY_SCOPE_LIMIT','Use a source case with at most 256 retained revisions.');
-  for(const source of sources)if(!await sufficiencyMeshOriginalTx(client,source))await documentAuthorityTx(client,source,'original');
+  for(const source of sources)if(!await sufficiencyIFCOriginalTx(client,source)&&!await sufficiencyMeshOriginalTx(client,source))await documentAuthorityTx(client,source,'original');
   const recipes=(await client.query(`SELECT id,source_id,revision,state,${digest('body')} body_sha FROM usp_mapping_recipes WHERE case_id=$1 ORDER BY id LIMIT 33`,[caseId])).rows;
   const packageBodies=(await client.query(`SELECT id,revision,state,area_id,body,${digest('body')} body_sha FROM import_packages WHERE case_id=$1 ORDER BY id LIMIT 33`,[caseId])).rows;
   const packages=packageBodies.map(({body,...pin})=>pin);
@@ -43,7 +46,7 @@ export async function sufficiencyCaseTx(client:PoolClient,caseId:string,lock=fal
   assertIngestionBinding(binding);
   return {row,sources,recipes,packages,packageBodies,areas,binding,context:fingerprint({row,sources,recipes,packages,areas,associations})};
 }
-export async function sufficiencySourceTx(client:PoolClient,scope:Awaited<ReturnType<typeof sufficiencyCaseTx>>,sourceId:string,meshOptions:SufficiencyMeshOptions={}){
+export async function sufficiencySourceTx(client:PoolClient,scope:Awaited<ReturnType<typeof sufficiencyCaseTx>>,sourceId:string,options:SufficiencyNativeOptions={}){
   const pin=scope.sources.find(s=>s.id===sourceId);if(!pin)notFound('Source not found in this context.');
   const row=(await client.query(`SELECT id,family_id,revision,sha256,profile,status,bytes,
     inspection->'manualProfile' manual,inspection->'projectedVector' projected,
@@ -51,7 +54,8 @@ export async function sufficiencySourceTx(client:PoolClient,scope:Awaited<Return
     inspection ? 'referenceParts' has_parts
     FROM sources WHERE case_id=$1 AND id=$2`,[scope.row.id,sourceId])).rows[0];
   if(!row)notFound('Source not found in this context.');
-  const meshOriginal=await sufficiencyMeshOriginalTx(client,pin),staged=meshOriginal?false:await documentAuthorityTx(client,pin,'original');
+  const ifcOriginal=await sufficiencyIFCOriginalTx(client,pin),meshOriginal=ifcOriginal?null:await sufficiencyMeshOriginalTx(client,pin),
+    staged=ifcOriginal||meshOriginal?false:await documentAuthorityTx(client,pin,'original');
   const latest=scope.sources.filter(s=>s.family_id===row.family_id).every(s=>s.revision<=row.revision);
   const parsedRecipe=(await client.query('SELECT body FROM usp_mapping_recipes WHERE case_id=$1 AND source_id=$2',[scope.row.id,sourceId])).rows[0]?.body;
   const recipeResult=MappingReceiptSchema.safeParse(parsedRecipe),recipe=recipeResult.success?recipeResult.data:null;
@@ -78,7 +82,8 @@ export async function sufficiencySourceTx(client:PoolClient,scope:Awaited<Return
   if(projectedAccepted)try{await acceptedProjectedTx(client,scope.row.id,sourceId,undefined,'immutable_read');}catch(error){
     if(error instanceof AppError&&error.status===409)projectedAccepted=false;else throw error;
   }
-  const mesh=meshOriginal?await sufficiencyMeshEvidenceTx(client,pin,meshOptions):null;
+  const mesh=meshOriginal?await sufficiencyMeshEvidenceTx(client,pin,options):null;
+  const ifc=ifcOriginal?await sufficiencyIFCEvidenceTx(client,pin,{dependencies:options.ifc,budget:options.budget}):null;
   const document=staged?await documentEvidenceTx(client,scope.row.id,pin):null;
   const features=(await client.query(`SELECT id,revision,${digest('body')} body_sha,
     geometry IS NOT NULL has_geometry,body->'height' height,
@@ -90,8 +95,9 @@ export async function sufficiencySourceTx(client:PoolClient,scope:Awaited<Return
   const allQualified=features.length>0 && features.length<=64 && features.every(f=>qualified.some(q=>q.id===f.id && q.revision===f.revision));
   const recordPins=zRecordPins([
     ...(recipe?[{authority:'recipe',id:recipe.id,revision:recipe.revision,sha256:fingerprint(recipe)}]:[]),
-    ...jobs.filter(j=>!mesh?.recordPins.some(pin=>pin.id===j.id)).map(j=>({authority:'job',id:j.id,revision:Number(j.accepted_fence??0),sha256:fingerprint(j)})),
+    ...jobs.filter(j=>!(ifc??mesh)?.recordPins.some(pin=>pin.id===j.id)).map(j=>({authority:'job',id:j.id,revision:Number(j.accepted_fence??0),sha256:fingerprint(j)})),
     ...(mesh?.recordPins??[]),
+    ...(ifc?.recordPins??[]),
     ...scope.packages.map(p=>({authority:'package',id:p.id,revision:p.revision,sha256:p.body_sha})),
     ...scope.areas.flatMap(a=>[{authority:'area',id:a.id,revision:a.revision,sha256:a.reference_sha},
       {authority:'frame',id:a.site_id,revision:a.site_revision,sha256:a.frame_sha}]),
@@ -100,11 +106,11 @@ export async function sufficiencySourceTx(client:PoolClient,scope:Awaited<Return
   ]);
   const pins:SufficiencyPins={caseId:scope.row.id,caseRevision:scope.row.revision,sourceId,familyId:row.family_id,
     sourceRevision:row.revision,sourceSha256:row.sha256,profile:row.profile,contextSha256:scope.context,
-    evidenceSha256:fingerprint({pin,recipe,exactRecipe,jobs,features,qualified,document:document?.processing??null,...(mesh?{mesh:mesh.evidenceSha256}:{})}),accessSha256:scope.binding.access,policyVersion:SUFFICIENCY_POLICY};
+    evidenceSha256:fingerprint({pin,recipe,exactRecipe,jobs,features,qualified,document:document?.processing??null,...(mesh?{mesh:mesh.evidenceSha256}:{}),...(ifc?{ifc:ifc.evidenceSha256}:{})}),accessSha256:scope.binding.access,policyVersion:SUFFICIENCY_POLICY};
   const supported=row.profile==='geojson-manual-v1' && Boolean(row.manual) ||
     row.profile==='large-original-v1' && row.sha256===PROJECTED_VECTOR_PROFILE.zipSha256 ||
-    Boolean(meshOriginal) || staged || Object.hasOwn(documentProfileFormats,row.profile) && row.has_parts;
-  return {scope,row,pins,recordPins,latest,recipe,exactRecipe,jobs,projectedAccepted,features,allQualified,supported,document,mesh};
+    Boolean(ifcOriginal||meshOriginal) || staged || Object.hasOwn(documentProfileFormats,row.profile) && row.has_parts;
+  return {scope,row,pins,recordPins,latest,recipe,exactRecipe,jobs,projectedAccepted,features,allQualified,supported,document,mesh,ifc};
 }
 /** Read only current canonical extraction derivatives; never inspection mirrors. */
 async function documentEvidenceTx(client:PoolClient,caseId:string,source:Record<string,any>){
