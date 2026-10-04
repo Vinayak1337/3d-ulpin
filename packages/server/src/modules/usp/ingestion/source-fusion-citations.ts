@@ -47,6 +47,9 @@ export function citationReadBudget():FusionBudget{
  * No independent transaction, write or trusted caller-supplied context exists. */
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string){
+  if(request.selection.sources.some(source=>source.kind==='survey_report'))
+    throw new AppError(422,'SOURCE_FUSION_SURVEY_CONTEXT_ONLY',
+      'Survey rows support source context only; typed survey binding requires a separately supported reviewed workflow.');
   if(request.selection.sources.some(source=>source.kind==='point')&&!siteId)
     throw new AppError(422,'SOURCE_FUSION_POINT_TARGET_REQUIRED','Point metadata citation selection requires its exact canonical building/floor target site.');
   if(request.selection.sources.some(source=>source.kind==='raster')&&!siteId)
@@ -108,7 +111,14 @@ export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestCont
       if(loaded.kind==='point')points.set(`${selection.pin.jobId}/${selection.pin.resultSha256}`,{pin:selection.pin,loaded});
       return loaded;
     }});
-  const context=assembled;
+  // Preserve every supported fragment and the exact context hash. Refuse an
+  // unexpected survey projection instead of letting legacy writers treat it as
+  // OCR, and express that checked boundary in the returned TypeScript type.
+  const context={...assembled,sources:assembled.sources.map(source=>{
+    if(source.kind==='survey_report')throw new AppError(422,'SOURCE_FUSION_SURVEY_CONTEXT_ONLY',
+      'Survey rows cannot enter the reviewed registry citation workflow.');
+    return source;
+  })};
   // All supported source variants stay in the exact context hash; no selected
   // fragment is silently dropped before the amendment is accepted.
   if(context.contextSha256!==request.contextSha256)conflict('The explicitly selected fusion context changed.');
