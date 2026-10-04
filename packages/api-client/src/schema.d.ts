@@ -59697,6 +59697,118 @@ export interface components {
                         /** @enum {string} */
                         coverage: "accepted_result_metadata_only; native_artifact_not_read";
                     };
+                    xml?: {
+                        inputSha256: string | null;
+                        readerSha256: string | null;
+                        acceptedFence: number | null;
+                        /** @enum {string} */
+                        tools: "not_checked" | "current" | "unavailable";
+                        code: string | null;
+                        /** @enum {string} */
+                        sourceUnits: "native_artifact_not_read";
+                        /** @enum {string} */
+                        coverage: "accepted_result_metadata_only; native_artifact_not_read";
+                        /** @enum {string} */
+                        kind: "kml";
+                        requestedMember: {
+                            path: string;
+                            ordinal: number;
+                            sha256: string;
+                            bytes: number;
+                        } | null;
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "kml-native-inspection/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            container: "kml" | "kmz";
+                            /** @enum {string} */
+                            status: "inspected" | "partial" | "needs_input";
+                            xmlSha256: string | null;
+                            member: {
+                                path: string;
+                                ordinal: number;
+                                sha256: string;
+                                bytes: number;
+                            } | null;
+                            members: {
+                                path: string;
+                                ordinal: number;
+                                sha256: string;
+                                bytes: number;
+                            }[];
+                            /** @enum {string|null} */
+                            selectionCode: "KML_MEMBER_SELECTION_REQUIRED" | "NO_KML_MEMBER" | null;
+                            /** @enum {string|null} */
+                            documentProfile: "kml_2_2" | "unnamespaced_feature_fragment" | null;
+                            /** @enum {string} */
+                            horizontalReference: "kml_specification" | "unknown";
+                            featureCount: number;
+                            coordinateCount: number;
+                            unsupportedCount: number;
+                            unresolvedReferenceCount: number;
+                            /** @enum {string} */
+                            accuracy: "not_assessed";
+                            /** @enum {boolean} */
+                            analyticEligible: false;
+                            /** @enum {boolean} */
+                            registryAdmission: false;
+                            /** @enum {boolean} */
+                            learningLabels: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        } | null;
+                    } | {
+                        inputSha256: string | null;
+                        readerSha256: string | null;
+                        acceptedFence: number | null;
+                        /** @enum {string} */
+                        tools: "not_checked" | "current" | "unavailable";
+                        code: string | null;
+                        /** @enum {string} */
+                        sourceUnits: "native_artifact_not_read";
+                        /** @enum {string} */
+                        coverage: "accepted_result_metadata_only; native_artifact_not_read";
+                        /** @enum {string} */
+                        kind: "citygml";
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "ulpin-native-citygml/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            citygmlVersion: "2.0";
+                            /** @enum {string} */
+                            encodingProfile: "XML 1.0 UTF-8";
+                            /** @enum {string} */
+                            scope: "source_native_literal_inventory";
+                            /** @enum {string} */
+                            status: "available" | "partial";
+                            elementCount: number;
+                            buildingAndPartCount: number;
+                            coordinateDeclarationCount: number;
+                            decodedCoordinateValueCount: number;
+                            referenceCount: number;
+                            unsupportedElementCount: number;
+                            unresolvedReferenceCount: number;
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            /** @enum {string} */
+                            accuracy: "not_assessed";
+                            /** @enum {string} */
+                            validity: "not_assessed";
+                            /** @enum {string} */
+                            canonicalIdentity: "not_assessed";
+                            /** @enum {boolean} */
+                            analyticEligible: false;
+                            /** @enum {boolean} */
+                            registryAdmission: false;
+                            /** @enum {boolean} */
+                            learningLabels: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        } | null;
+                    };
                     /** @enum {string|null} */
                     modelStatus: "not_requested" | "disabled" | "unavailable" | "blocked" | "needs_input" | "proposed" | null;
                 } | null;
@@ -59721,7 +59833,7 @@ export interface components {
                 /** Format: uuid */
                 questionId: string | null;
                 /** @enum {string} */
-                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion" | "configure_reader";
+                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion" | "configure_reader" | "select_native_member";
                 reason: string;
                 /** Format: date-time */
                 createdAt: string;
@@ -59961,6 +60073,118 @@ export interface components {
                         /** @enum {string} */
                         coverage: "accepted_result_metadata_only; native_artifact_not_read";
                     };
+                    xml?: {
+                        inputSha256: string | null;
+                        readerSha256: string | null;
+                        acceptedFence: number | null;
+                        /** @enum {string} */
+                        tools: "not_checked" | "current" | "unavailable";
+                        code: string | null;
+                        /** @enum {string} */
+                        sourceUnits: "native_artifact_not_read";
+                        /** @enum {string} */
+                        coverage: "accepted_result_metadata_only; native_artifact_not_read";
+                        /** @enum {string} */
+                        kind: "kml";
+                        requestedMember: {
+                            path: string;
+                            ordinal: number;
+                            sha256: string;
+                            bytes: number;
+                        } | null;
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "kml-native-inspection/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            container: "kml" | "kmz";
+                            /** @enum {string} */
+                            status: "inspected" | "partial" | "needs_input";
+                            xmlSha256: string | null;
+                            member: {
+                                path: string;
+                                ordinal: number;
+                                sha256: string;
+                                bytes: number;
+                            } | null;
+                            members: {
+                                path: string;
+                                ordinal: number;
+                                sha256: string;
+                                bytes: number;
+                            }[];
+                            /** @enum {string|null} */
+                            selectionCode: "KML_MEMBER_SELECTION_REQUIRED" | "NO_KML_MEMBER" | null;
+                            /** @enum {string|null} */
+                            documentProfile: "kml_2_2" | "unnamespaced_feature_fragment" | null;
+                            /** @enum {string} */
+                            horizontalReference: "kml_specification" | "unknown";
+                            featureCount: number;
+                            coordinateCount: number;
+                            unsupportedCount: number;
+                            unresolvedReferenceCount: number;
+                            /** @enum {string} */
+                            accuracy: "not_assessed";
+                            /** @enum {boolean} */
+                            analyticEligible: false;
+                            /** @enum {boolean} */
+                            registryAdmission: false;
+                            /** @enum {boolean} */
+                            learningLabels: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        } | null;
+                    } | {
+                        inputSha256: string | null;
+                        readerSha256: string | null;
+                        acceptedFence: number | null;
+                        /** @enum {string} */
+                        tools: "not_checked" | "current" | "unavailable";
+                        code: string | null;
+                        /** @enum {string} */
+                        sourceUnits: "native_artifact_not_read";
+                        /** @enum {string} */
+                        coverage: "accepted_result_metadata_only; native_artifact_not_read";
+                        /** @enum {string} */
+                        kind: "citygml";
+                        summary: {
+                            /** @enum {string} */
+                            schemaVersion: "ulpin-native-citygml/1";
+                            sourceSha256: string;
+                            sourceBytes: number;
+                            /** @enum {string} */
+                            citygmlVersion: "2.0";
+                            /** @enum {string} */
+                            encodingProfile: "XML 1.0 UTF-8";
+                            /** @enum {string} */
+                            scope: "source_native_literal_inventory";
+                            /** @enum {string} */
+                            status: "available" | "partial";
+                            elementCount: number;
+                            buildingAndPartCount: number;
+                            coordinateDeclarationCount: number;
+                            decodedCoordinateValueCount: number;
+                            referenceCount: number;
+                            unsupportedElementCount: number;
+                            unresolvedReferenceCount: number;
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            /** @enum {string} */
+                            accuracy: "not_assessed";
+                            /** @enum {string} */
+                            validity: "not_assessed";
+                            /** @enum {string} */
+                            canonicalIdentity: "not_assessed";
+                            /** @enum {boolean} */
+                            analyticEligible: false;
+                            /** @enum {boolean} */
+                            registryAdmission: false;
+                            /** @enum {boolean} */
+                            learningLabels: false;
+                            /** @enum {string} */
+                            rights: "not_assessed";
+                        } | null;
+                    };
                     /** @enum {string|null} */
                     modelStatus: "not_requested" | "disabled" | "unavailable" | "blocked" | "needs_input" | "proposed" | null;
                 } | null;
@@ -59985,7 +60209,7 @@ export interface components {
                 /** Format: uuid */
                 questionId: string | null;
                 /** @enum {string} */
-                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion" | "configure_reader";
+                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion" | "configure_reader" | "select_native_member";
                 reason: string;
                 /** Format: date-time */
                 createdAt: string;

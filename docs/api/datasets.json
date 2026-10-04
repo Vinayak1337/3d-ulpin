@@ -5815,6 +5815,20 @@
         "scope": "Officer-selected accepted features through controlled amendment/review/commit/private historical reads; current HTTP/SQL/storage and authentic applicability unqualified",
         "automaticMatching": false,
         "sourceOriginalsUnchanged": true
+      },
+      "taskSufficiencyEvidence": {
+        "guide": "docs/evidence/usp/xml-sufficiency-handoff.md",
+        "codeCommit": "5056fabb9799901a31f10664623825f1406b1e0b",
+        "proofSha256": "6be8d3b3db96bed307d95c45a87e86bcaf5ab0ab4ce9ec4b9f17a88f44cf62d6",
+        "scope": "Canonical retained-original/accepted partial-result sufficiency evaluate/read/replay and explicit KMZ member selection, using unchanged retained input/result objects and disclosed SQL/source/case/fence/storage/tool controls.",
+        "installedToolInventoryVerified": false,
+        "httpPersistenceVerified": false,
+        "nativeArtifactRead": false,
+        "sourceUnits": "native_artifact_not_read",
+        "limitations": [
+          "Both accepted raw reader pins match the worker physical checkout; current installed tool inventory/profile remains unrun.",
+          "Complete producer findings/counts/member inventories are retained without source facts, geometry/frame/property/floor/rights/accuracy/learning qualification."
+        ]
       }
     },
     {
@@ -5879,6 +5893,20 @@
         "scope": "Officer-selected accepted features through controlled amendment/review/commit/private historical reads; current HTTP/SQL/storage and authentic applicability unqualified",
         "automaticMatching": false,
         "sourceOriginalsUnchanged": true
+      },
+      "taskSufficiencyEvidence": {
+        "guide": "docs/evidence/usp/xml-sufficiency-handoff.md",
+        "codeCommit": "5056fabb9799901a31f10664623825f1406b1e0b",
+        "proofSha256": "6be8d3b3db96bed307d95c45a87e86bcaf5ab0ab4ce9ec4b9f17a88f44cf62d6",
+        "scope": "Canonical retained-original/accepted partial-result sufficiency evaluate/read/replay and explicit KMZ member selection, using unchanged retained input/result objects and disclosed SQL/source/case/fence/storage/tool controls.",
+        "installedToolInventoryVerified": false,
+        "httpPersistenceVerified": false,
+        "nativeArtifactRead": false,
+        "sourceUnits": "native_artifact_not_read",
+        "limitations": [
+          "Both accepted raw reader pins match the worker physical checkout; current installed tool inventory/profile remains unrun.",
+          "Complete producer findings/counts/member inventories are retained without source facts, geometry/frame/property/floor/rights/accuracy/learning qualification."
+        ]
       }
     },
     {
@@ -5960,6 +5988,20 @@
         "sourceOriginalsUnchanged": true,
         "nativeExecutionRepeated": false,
         "automaticMatching": false
+      },
+      "taskSufficiencyEvidence": {
+        "guide": "docs/evidence/usp/xml-sufficiency-handoff.md",
+        "codeCommit": "5056fabb9799901a31f10664623825f1406b1e0b",
+        "proofSha256": "6be8d3b3db96bed307d95c45a87e86bcaf5ab0ab4ce9ec4b9f17a88f44cf62d6",
+        "scope": "Canonical retained-original/accepted partial-result sufficiency evaluate/read/replay and explicit KMZ member selection, using unchanged retained input/result objects and disclosed SQL/source/case/fence/storage/tool controls.",
+        "installedToolInventoryVerified": false,
+        "httpPersistenceVerified": false,
+        "nativeArtifactRead": false,
+        "sourceUnits": "native_artifact_not_read",
+        "limitations": [
+          "Both accepted raw reader pins match the worker physical checkout; current installed tool inventory/profile remains unrun.",
+          "Complete producer findings/counts/member inventories are retained without source facts, geometry/frame/property/floor/rights/accuracy/learning qualification."
+        ]
       }
     },
     {
