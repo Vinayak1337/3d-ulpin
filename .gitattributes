@@ -57,3 +57,6 @@ services/geo/geo/cityjson_processing.py text eol=lf
 
 # Exact bytes of the scoped D04 metadata receipt survive Windows checkouts.
 docs/evidence/usp/nest-migration/runtime-source/d04-source-claims-20261005.json -text
+
+# Exact bytes of the scoped D05 metadata receipt survive Windows checkouts.
+docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json -text
