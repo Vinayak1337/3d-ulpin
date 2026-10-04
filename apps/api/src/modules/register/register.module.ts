@@ -10,9 +10,11 @@ import { CityJSONControlAssessmentController } from './cityjson-control-assessme
 import { CityJSONControlAssessmentService } from '@ulpin/server/modules/registry/cityjson-control-assessment';
 import { RegistryRecordEvidenceController } from './record-evidence.controller';
 import { RegistryRecordEvidenceService } from '@ulpin/server/modules/registry/registry-record-evidence';
+import { RegistryRecordEvidenceExportController } from './record-evidence-export.controller';
+import { RegistryRecordEvidenceExportService } from '@ulpin/server/modules/registry/registry-record-evidence-export';
 
 @Module({
-  controllers: [RegisterController, OfficerController, BuildingLedgerController, CityJSONControlAssessmentController, CityJSONControlReviewController, RegistryRecordEvidenceController],
-  providers: [RegisterService, OfficerService, CityJSONControlAssessmentService, CityJSONControlReviewService, RegistryRecordEvidenceService],
+  controllers: [RegisterController, OfficerController, BuildingLedgerController, CityJSONControlAssessmentController, CityJSONControlReviewController, RegistryRecordEvidenceController, RegistryRecordEvidenceExportController],
+  providers: [RegisterService, OfficerService, CityJSONControlAssessmentService, CityJSONControlReviewService, RegistryRecordEvidenceService, RegistryRecordEvidenceExportService],
 })
 export class RegisterModule {}

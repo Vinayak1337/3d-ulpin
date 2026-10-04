@@ -20188,6 +20188,83 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/registry-records/{recordId}/revisions/{revision}/document-citations/export": {
+      "get": {
+        "operationId": "GET_api_v1_registry_records_recordId_revisions_revision_document_citations_export",
+        "parameters": [
+          {
+            "name": "format",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "text",
+                "csv"
+              ]
+            }
+          },
+          {
+            "name": "revision",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          },
+          {
+            "name": "recordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete private attachment; CSV data cells are JSON strings before CSV escaping. No formulas or inferred source facts.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_buildings_buildingId_register_Response_200_text_csv"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_buildings_buildingId_register_Response_200_text_csv"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Download exact reviewed committed citations as private bounded text or encoded CSV",
+        "tags": [
+          "private committed registry evidence"
+        ],
+        "x-source-file": "apps/api/src/modules/register/record-evidence-export.controller.ts",
+        "x-batch": "RECORD-EVIDENCE-EXPORT-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/register/operation-manifest.json",
+        "x-max-body-bytes": null,
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/evidence/survey-report/context": {
       "post": {
         "operationId": "POST_api_v1_usp_evidence_survey_report_context",
