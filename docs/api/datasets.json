@@ -4844,6 +4844,32 @@
         "operations": [
           "POST /api/v1/ingestion/cases/{caseId}/document-claims/reviews",
           "GET /api/v1/ingestion/cases/{caseId}/document-claims/reviews/{reviewId}"
+        ],
+        "additionalReceipts": [
+          {
+            "receipt": "docs/evidence/usp/nest-migration/runtime-source/d04-private-roi-20261005.json",
+            "servedCodeCommit": "e8a407ab0e73d97f13ccd040ca87e218aa470030",
+            "recordedAt": "2026-10-04T23:26:12.401Z",
+            "environment": "Stopped retained isolated local prefix run02; API/native workers/task storage stopped, original containers/volumes/profiles preserved. IDs apply only to this run; no standing URL.",
+            "qualification": "PRIVATE_INSPECTION only: two named unchanged Haryana planned PDFs, manually selected caption/table regions, actual private HTTP200/native PNG with current source/frame/selection/affine/recipe lineage at exact served code. Wrong-original-hash409 and foreign-Origin403, prior D04 review1/2 read-back200 and scoped read-only PostgreSQL preservation observed. No quote/calibration/approved revision/canonical identity/rights/learning/Indian accuracy/frontend/release qualification.",
+            "unqualified": [
+              "Whole-page raster remains unsupported with URL/calibration null.",
+              "Manual caption/table selection and visual observations only; G+42 is not chosen over the existing G+41 conflict.",
+              "No quote accuracy, physical calibration, approved revision, canonical object/floor identity, rights, learning, Indian accuracy, human login or release-gate claim.",
+              "No ingestion/registry/job mutation, source acquisition/extraction, OCR/model/provider/GPU/dispatcher/Celery work. No frontend changes.",
+              "Other four assets in this six-original acquisition manifest and other page/region/input profiles are not qualified by this run.",
+              "D04 e05/run01 failed before region-native execution; the new e8/run02 is distinct, with no retrospective pass or profile/receipt alias."
+            ],
+            "operations": [
+              "POST /api/v1/usp/packets/sources/{sourceId}/pages/{page}/region"
+            ],
+            "testedAssetIds": [
+              "haryana-2831-tower3-plan2.pdf",
+              "haryana-2831-site-plan.pdf"
+            ],
+            "otherManifestAssetsQualified": false,
+            "role": "PRIVATE_INSPECTION"
+          }
         ]
       },
       "installationObservation": {

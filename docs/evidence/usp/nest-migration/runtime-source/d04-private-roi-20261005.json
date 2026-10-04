@@ -1,0 +1,382 @@
+{
+  "schemaVersion": "ulpin-scoped-runtime-observation/1",
+  "task": "D04-ROI-RUNTIME",
+  "recordedAt": "2026-10-04T23:26:12.401Z",
+  "clientDate": "2026-10-05",
+  "servedCodeCommit": "e8a407ab0e73d97f13ccd040ca87e218aa470030",
+  "role": "PRIVATE_INSPECTION",
+  "privateProof": {
+    "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/verification.json",
+    "bytes": 18546,
+    "sha256": "3757c1342820716dff95279554a6f6bb7290b2a4518af0c2437209c45763e1ec"
+  },
+  "publication": "Selected safe metadata only; no request bodies, credentials, full SQL rows or native/model assets are published.",
+  "sources": {
+    "manifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+    "testedAssetIds": [
+      "haryana-2831-tower3-plan2.pdf",
+      "haryana-2831-site-plan.pdf"
+    ],
+    "otherManifestAssetsQualified": false
+  },
+  "regions": {
+    "T3_2": {
+      "assetId": "haryana-2831-tower3-plan2.pdf",
+      "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+      "sourceRevision": 1,
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "sourceBytes": 1630108,
+      "page": 1,
+      "currentFrame": {
+        "kind": "pdf_display_page_top_left_points",
+        "rotation": 0,
+        "width": 2586,
+        "height": 1694
+      },
+      "request": {
+        "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/request-T3-2.json",
+        "bytes": 700,
+        "sha256": "ee232d0b2622b08c362f60c56730798b48eaddad80aa242502411d746a3ee250"
+      },
+      "httpStatus": 200,
+      "png": {
+        "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/region-T3-2.png",
+        "bytes": 56570,
+        "sha256": "8bddda9ca939102e984cbf5e24f20e8debb9fbfca4e5c152c27e433bb3cc58c0"
+      },
+      "pixels": [
+        930,
+        225
+      ],
+      "transform": {
+        "canvasPixels": [
+          7758,
+          5082
+        ],
+        "pixelRegion": [
+          5460,
+          2250,
+          6390,
+          2475
+        ],
+        "pixelToDisplay": [
+          0.3333333333333333,
+          0,
+          0,
+          0.3333333333333333,
+          1820,
+          750
+        ],
+        "includedNormalizedRegion": [
+          0.7037896365042536,
+          0.4427390791027155,
+          0.8236658932714617,
+          0.487012987012987
+        ],
+        "rounding": "inward_complete_pixels/1"
+      },
+      "privateHeaders": {
+        "cache-control": "private, no-store",
+        "content-type": "image/png",
+        "x-content-type-options": "nosniff",
+        "x-region-sha256": "8bddda9ca939102e984cbf5e24f20e8debb9fbfca4e5c152c27e433bb3cc58c0"
+      },
+      "headerProvenance": "Exact base64url header and decoded provenance retained in private region-T3-2.json",
+      "nativeReceipt": {
+        "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/native-T3-2-receipt.json",
+        "bytes": 719,
+        "sha256": "7138ea3114d1cddc67de59d5c74427f314fa3576b71240d6f06d9f31b73ae10b"
+      },
+      "nativeResult": {
+        "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/native-T3-2-result.json",
+        "bytes": 1308,
+        "sha256": "1bdcbc67f0df52f828f9d8f1b4174e2911dc5feadd708191d203e9bb77781aa8"
+      },
+      "execution": {
+        "exitCode": 0,
+        "stopReason": null,
+        "elapsedSeconds": 1.813,
+        "peakObservedRssBytes": 140017664,
+        "peakJobPrivateBytes": 160968704,
+        "gatedStart": true
+      },
+      "nativeCleanup": "confirmed",
+      "wholePageRenderSupport": "unsupported",
+      "wholePageUrl": null,
+      "calibration": null,
+      "freshNativeLineage": true,
+      "matchesPriorDeterministicPixels": true
+    },
+    "S_001": {
+      "assetId": "haryana-2831-site-plan.pdf",
+      "sourceId": "dd295d03-6fe7-46d7-ba7c-9eb8bb84ddd6",
+      "sourceRevision": 1,
+      "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "sourceBytes": 3782332,
+      "page": 1,
+      "currentFrame": {
+        "kind": "pdf_display_page_top_left_points",
+        "rotation": 0,
+        "width": 2585,
+        "height": 3390
+      },
+      "request": {
+        "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/request-S-001.json",
+        "bytes": 704,
+        "sha256": "14aca7f7de834f8e77eac07b1f18d4ecac38f9bc41a6ed47f41bf6b0aa63709f"
+      },
+      "httpStatus": 200,
+      "png": {
+        "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/region-S-001.png",
+        "bytes": 383473,
+        "sha256": "e6538342892151a8166ab6e9b13ad6f24582ea8439ea11605682d8a7517fd374"
+      },
+      "pixels": [
+        598,
+        1397
+      ],
+      "transform": {
+        "canvasPixels": [
+          6454,
+          8463
+        ],
+        "pixelRegion": [
+          837,
+          2447,
+          1435,
+          3844
+        ],
+        "pixelToDisplay": [
+          0.40052680508211963,
+          0,
+          0,
+          0.4005671747607231,
+          335.24093585373413,
+          980.1878766394894
+        ],
+        "includedNormalizedRegion": [
+          0.12968701580415246,
+          0.2891409665603214,
+          0.22234273318872017,
+          0.4542124542124542
+        ],
+        "rounding": "inward_complete_pixels/1"
+      },
+      "privateHeaders": {
+        "cache-control": "private, no-store",
+        "content-type": "image/png",
+        "x-content-type-options": "nosniff",
+        "x-region-sha256": "e6538342892151a8166ab6e9b13ad6f24582ea8439ea11605682d8a7517fd374"
+      },
+      "headerProvenance": "Exact base64url header and decoded provenance retained in private region-S-001.json",
+      "nativeReceipt": {
+        "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/native-S-001-receipt.json",
+        "bytes": 719,
+        "sha256": "fb36bc02f56d1631ad2cfb07e001b1b22a762bc73e159190cf24e52f568cd868"
+      },
+      "nativeResult": {
+        "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/native-S-001-result.json",
+        "bytes": 1341,
+        "sha256": "f6f1bae49c984081762f38734ad84f9d6c0159bc75961963154e302c63a0b397"
+      },
+      "execution": {
+        "exitCode": 0,
+        "stopReason": null,
+        "elapsedSeconds": 1.813,
+        "peakObservedRssBytes": 153796608,
+        "peakJobPrivateBytes": 164048896,
+        "gatedStart": true
+      },
+      "nativeCleanup": "confirmed",
+      "wholePageRenderSupport": "unsupported",
+      "wholePageUrl": null,
+      "calibration": null,
+      "freshNativeLineage": true,
+      "matchesPriorDeterministicPixels": true
+    }
+  },
+  "controls": [
+    {
+      "name": "wrong-hash",
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    {
+      "name": "foreign-origin",
+      "status": 403,
+      "code": "ORIGIN_DENIED"
+    }
+  ],
+  "protocol": {
+    "orderedPreflightPassed": true,
+    "requiredStageExits": [
+      {
+        "name": "preflight",
+        "actualExit": 0,
+        "signal": null,
+        "spawnErrorCode": null
+      },
+      {
+        "name": "compiled-profile-readiness",
+        "actualExit": 0,
+        "signal": null,
+        "spawnErrorCode": null
+      },
+      {
+        "name": "storage-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnErrorCode": null
+      },
+      {
+        "name": "database-before",
+        "actualExit": 0,
+        "signal": null,
+        "spawnErrorCode": null
+      },
+      {
+        "name": "api-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnErrorCode": null
+      },
+      {
+        "name": "api-readiness",
+        "actualExit": 0,
+        "signal": null,
+        "spawnErrorCode": null
+      },
+      {
+        "name": "actual-private-roi-journey",
+        "actualExit": 0,
+        "signal": null,
+        "spawnErrorCode": null
+      },
+      {
+        "name": "database-after",
+        "actualExit": 0,
+        "signal": null,
+        "spawnErrorCode": null
+      }
+    ],
+    "cleanupStageExits": [
+      {
+        "name": "api-stop",
+        "actualExit": 0
+      },
+      {
+        "name": "storage-stop",
+        "actualExit": 0
+      }
+    ],
+    "changedCondition": "Accepted @Req/existing bounded readJsonBody controller correction; actual e05/run01 422 and skipped stages stay immutable.",
+    "historicalRun01": {
+      "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run01/verification.json",
+      "bytes": 13956,
+      "sha256": "8735d39d61597a3d339eaefa504cbf8d8d33fceebf0688b14093d0a65c64e6f4",
+      "servedCodeCommit": "e05c6d8596891275ebf440660de3e73feb565465",
+      "status": "failed",
+      "regionNativeCalls": 0,
+      "retrospectivePass": false
+    },
+    "freshProfile": {
+      "path": "E:/BhuAayam-data/task-data/d04-live-region-preview-20261005-run02/region-profile.json",
+      "bytes": 298173,
+      "sha256": "e3a8533b16825ffac4cb0f674e48271a4a4fee6c2198c1bc59e923e2572c62ba",
+      "version": "packet-region-runtime/1",
+      "repo": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-gltf\\3d-ulpin",
+      "files": 1350,
+      "assetBytes": 119324813
+    }
+  },
+  "native": {
+    "regionRequests": 2,
+    "regionParentsAndSupervisedWorkers": "two sequential production API invocations, each with bounded Windows Job worker",
+    "metadataOnlyRequests": 2,
+    "receipts": "read-only filesystem event copies of actual API-owned ephemeral outputs; API transport/service/native implementation unmodified",
+    "capturedResultHashesVerified": true,
+    "scratchRemovedByCanonicalRuntime": true,
+    "freshPngPixelsSameAsEarlierOffline": "deterministic byte match; new recipe/header/receipt lineage establishes actual current execution, no old image re-labelling"
+  },
+  "preservation": {
+    "scope": "actual independent read-only PG; exact selected case/two source rows/four review operations/two queued jobs/one D05 package plus small global counts; no full historical-table audit",
+    "before": {
+      "cases": 46,
+      "sources": 45,
+      "jobs": 86,
+      "attempts": 84,
+      "recipes": 6,
+      "decisions": 17,
+      "packages": 1,
+      "model_calls": 0,
+      "operations": 160,
+      "registry_records": 2
+    },
+    "after": {
+      "cases": 46,
+      "sources": 45,
+      "jobs": 86,
+      "attempts": 84,
+      "recipes": 6,
+      "decisions": 17,
+      "packages": 1,
+      "model_calls": 0,
+      "operations": 160,
+      "registry_records": 2
+    },
+    "allScopedRowsExactlyUnchanged": true,
+    "caseRevision": 2,
+    "sourceRevisions": [
+      1,
+      1
+    ],
+    "d04HistoricalApiReads": [
+      {
+        "revision": 1,
+        "status": 200,
+        "exactPriorClaimsSourcesAndSnapshot": true
+      },
+      {
+        "revision": 2,
+        "status": 200,
+        "exactPriorClaimsSourcesAndSnapshot": true
+      }
+    ],
+    "queuedReraJobs": [
+      {
+        "id": "44116424-96c9-4f1d-a4e0-36e71bdd6758",
+        "status": "queued"
+      },
+      {
+        "id": "c12699ee-d2fd-48ff-8a7c-eb1809d2cd4a",
+        "status": "queued"
+      }
+    ],
+    "d05PackageId": "88ea23fc-db8b-4c40-b187-7e1a73008b90",
+    "newSourceRegistryJobAttemptOperationOrModelRows": 0
+  },
+  "cleanup": {
+    "observationScope": "Accepted run02 completion snapshot; no claim about later owners.",
+    "apiPid": 45760,
+    "apiAbsent": true,
+    "ownedNativeProcessesAbsent": true,
+    "ports3192And28000Absent": true,
+    "taskStartedStorageStopped": true,
+    "scratchEmpty": true,
+    "originalContainerIdsPreserved": 24,
+    "runningContainers": 0,
+    "volumeNamesPreserved": 14,
+    "retainedProfileFilePinsUnchanged": 8,
+    "dockerEngineLeftAvailable": true,
+    "standingUrl": false
+  },
+  "qualification": "PRIVATE_INSPECTION only: two named unchanged Haryana planned PDFs, manually selected caption/table regions, actual private HTTP200/native PNG with current source/frame/selection/affine/recipe lineage at exact served code. Wrong-original-hash409 and foreign-Origin403, prior D04 review1/2 read-back200 and scoped read-only PostgreSQL preservation observed. No quote/calibration/approved revision/canonical identity/rights/learning/Indian accuracy/frontend/release qualification.",
+  "limitations": [
+    "Whole-page raster remains unsupported with URL/calibration null.",
+    "Manual caption/table selection and visual observations only; G+42 is not chosen over the existing G+41 conflict.",
+    "No quote accuracy, physical calibration, approved revision, canonical object/floor identity, rights, learning, Indian accuracy, human login or release-gate claim.",
+    "No ingestion/registry/job mutation, source acquisition/extraction, OCR/model/provider/GPU/dispatcher/Celery work. No frontend changes.",
+    "Other four assets in this six-original acquisition manifest and other page/region/input profiles are not qualified by this run.",
+    "D04 e05/run01 failed before region-native execution; the new e8/run02 is distinct, with no retrospective pass or profile/receipt alias."
+  ]
+}
