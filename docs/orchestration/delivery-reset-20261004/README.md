@@ -8,7 +8,7 @@ The external review identifies the main delivery failure correctly: we optimized
 
 Adopt the review's direction: integrate one traceable source-to-record journey, reuse deterministic conversion, evaluate the two existing domain models, and train only against a demonstrated product gap. Correct the stale implementation claims and avoid replacing the current process with another large planning project.
 
-Read [the delivery queue](EXECUTION.md) for dependencies and concrete completion criteria, and [the ML/data plan](ML_DATA_PLAN.md) for experiments, labels and restart conditions. These three files replace no source history or release requirements.
+Use [the orchestrator prompt](../ORCHESTRATOR.md) and [small worker tasks](../WORK_ITEMS.md) for current dispatch after resume. This assessment and [the ML/data plan](ML_DATA_PLAN.md) explain the decisions, labels and restart conditions; they are not another queue and replace no source history or release requirements.
 
 ## What was checked
 

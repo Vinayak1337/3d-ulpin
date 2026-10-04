@@ -1,12 +1,12 @@
 # 3D ULPIN orchestration operating guide
 
-User direction, 26 September 2026. Read this before every assignment, review, continuation and integration decision. This guide overrides older orchestration/model/testing instructions; backend requirements and release qualification remain intact; the 26 September backend-only scope supersedes older UI implementation plans.
+Engineering guide, reconciled 4 October 2026. [ORCHESTRATOR.md](ORCHESTRATOR.md) governs the delegation-only coordinator and worker settings; [WORK_ITEMS.md](WORK_ITEMS.md) is the current queue. This guide supplies engineering, verification and preview rules. Product/ML delivery remains paused until resumed. Historical plans do not override current user direction.
 
 ## Usage monitoring revoked
 
 The user revoked the custom usage/reset stop rule on 26 September 2026 and requested continued backend work. The `3d-ulpin-usage-stop-guard` schedule has been deleted. Do not poll account usage, hold dispatch based on the former threshold, or recreate the schedule. Normal platform limits still apply; no credit redemption or purchases are authorized.
 
-On 30 September the user reiterated that there is no self-imposed agent/token/usage budget cutoff for workflow development. Effort selection is about usefulness: Astra normally uses medium through xhigh; max is for exceptional cases with a concrete benefit, not routine research or orchestration. Process/VRAM limits remain operational safeguards, not reasons to abandon useful work.
+There is no self-imposed agent/token/usage budget cutoff. Choose effort for the task using the current prompt. Process/VRAM bounds remain operational safeguards.
 
 ## Production-quality engineering before launch clearance
 
@@ -18,17 +18,15 @@ Public community/research/vendor resources may support development experiments; 
 
 Research returns a short evidence-backed comparison tied to the current gap and concrete reusable interfaces/techniques. The lead makes the integration decision; do not replace the registry, queue, model gateway or whole backend merely because a framework exists. Inspect dependencies before installation and use isolated environments for model trials. No framework/model popularity score substitutes for one useful real-input journey.
 
-## Role: own delivery and use delegation when useful
+## Coordination and execution
 
-The lead reads the relevant plan/task, identifies the actual work, owns its result and coordinates file ownership. The lead may execute a bounded task directly, including the user-directed historical cleanup, or delegate independent work when that improves delivery or review. A delegation is optional; it does not replace the lead's responsibility to inspect the result and complete integration. Select model and effort for any delegated role, and record what actually ran. Keep one writer per shared seam.
+The future orchestrator selects and routes work; workers execute implementation, technical review, verification, integration and documentation. Use the exact assignment/return procedure in [ORCHESTRATOR.md](ORCHESTRATOR.md). The user explicitly assigned the present lead to author that prompt and personally audit/list cleanup targets; this does not authorize the future orchestrator to take over implementation.
 
-Do not repeatedly rewrite plans. Improvise inside the selected task when necessary to make it correct and practical. Record a material interpretation briefly in the assignment; do not silently drop a product requirement or change an acceptance gate. Ask only for a material unresolved product decision or missing authorization.
-
-Current execution: [NestJS migration and delivery ledger](NESTJS_MIGRATION.md). The user explicitly authorizes multiple independent Sol implementation tasks in separate worktrees for this migration, followed by review/integration and lead-owned OpenAPI/data handoff.
+Do not repeatedly rewrite plans. Improvise within the selected task to make it correct and practical. Record a material interpretation briefly; do not silently drop a requirement or change a gate. Ask only for a material unresolved decision or genuinely missing authorization/data. Read the migration ledger only for the relevant accepted implementation/history, not as a live dispatch queue.
 
 ## Current planning boundary
 
-All active plans cover backend services, processing, sources, permissions, recovery and API contracts for the user-owned UI. The user now authorizes bounded backend implementation/data tasks after normalization. The lead hardens plans directly; workers execute plan tasks. Do not change frontend technology, screens/components/styles or mobile/theme work. Public-portal work remains full product. Follow the normalized backend decisions. Keep supplied design references and the current UI untouched. Preserve exact identity/revision/selection semantics, compatible saved URLs and unique inspection capabilities at API boundaries. Backend evidence cannot qualify untested UI or a complete product release.
+All active plans cover backend services, processing, sources, permissions, recovery and API contracts for the user-owned UI. After a user resume, workers execute bounded backend/data tasks under the current queue and exclusive ownership. Do not change frontend technology, screens/components/styles or mobile/theme work. Public-portal work remains full product. Follow the normalized backend decisions. Keep supplied design references and the current UI untouched. Preserve exact identity/revision/selection semantics, compatible saved URLs and unique inspection capabilities at API boundaries. Backend evidence cannot qualify untested UI or a complete product release.
 
 ## Before dispatch: six decisions
 
@@ -41,39 +39,15 @@ All active plans cover backend services, processing, sources, permissions, recov
 
 Hardening means preventing a concrete failure: stale records, unsafe egress, false claims, broken selection, lost originals, incompatible contracts. It does not mean inventing adjacent features, exhaustive edge-case lists or a testing project.
 
-## Stable model tasks
+## Worker ownership
 
-**Latest effort/delivery override, 1 October:** GPT-6.1 Sol may use high, xhigh or max. Prefer xhigh for demanding work, high for bounded work and max when useful; **max is exclusive to GPT-6.1 Sol**. Astra remains high/xhigh, with no max continuations. All models still use default/standard speed only. Keep the currently running review unchanged. The user explicitly sets finishing the authorized backend project as the continuing goal: process callbacks, integrate accepted results and immediately scope/allocate useful dependency-ready work. Preserve exclusive worktrees/seams/resources and avoid filler, repeat reviews, polls or wakeup schedules. This supersedes earlier high/xhigh-only Sol and exceptional Astra/max directions without rewriting historical receipts.
+Model/effort/speed and callback rules have one current definition in [ORCHESTRATOR.md](ORCHESTRATOR.md): Sol 6.1 high/xhigh, max for a stated hard problem, standard/default speed only. Ordinary local `3d-ulpin` chats use exclusive pinned worktrees and verified full local permissions. Preserve interrupted checkpoints. Do not poll usage/tasks, create wakeup schedules or manufacture activity.
 
-**Latest speed override, 30 September:** use **default/standard (1×) for every worker/task**, both GPT-6.1 Sol and Astra; never request Fast/priority/1.5×. Keep reasoning **high or xhigh only**. This overrides the earlier model-specific speed policy and all historical priority authorizations below. Local `service_tier = "default"` is verified as a new-turn preference, not proof of a running turn or chat-specific override. Current chat tools have no service-tier argument; report this limit honestly instead of treating assignment text as configuration. Use supported controls, never internal app-state edits, and do not restart active work just to claim a speed change. No fast task was launched for this update.
+Parallelize dependency-ready work only with separate files/resources. Reserve one writer per shared seam, one learner/GPU owner, and explicit runtime and integration owners. The staging integration worker receives a bounded exclusive window; all other workers leave that checkout read-only. It preserves the user index/changes, integrates only accepted owned commits, and publishes changed API contracts when required. Catalogue changes precede source-pin/OpenAPI/client generation. Main merges, remote pushes, provider calls and deployments require applicable authorization.
 
-**Latest user override, 30 September:** the user resumed workers and selected GPT-6.1 Sol (`gpt-6.1-sol`) for ordinary work, with priority authorized. Do not use GPT-6 Sol for new dispatches or continuations. Reserve Astra for the most demanding work and highest-quality control, at standard/default speed and the previously agreed medium–xhigh efforts. This supersedes older model/tier instructions below while preserving their history. Reuse paused chats/worktrees and uncommitted checkpoints. Current dispatch exposes model and effort but no per-chat speed parameter; configured global default is not proof of a worker's actual tier. Do not change unrelated chat settings to manufacture a tier claim.
+A technical reviewer returns concrete reproducible defects to the implementation owner; it does not also edit that owner's production code. A separate review is useful for consequential or uncertain changes, not every small edit. Do not reopen accepted reviews without new evidence. Model reviews do not substitute for a gate's independent/human acceptance.
 
-User direction, 29 September: new worker chats must belong to the local `3d-ulpin` project and inherit `approval_policy=never` / `sandbox_mode=danger-full-access`. Create the chat with the local project target, then use its separately assigned worktree explicitly for implementation. Check actual turn metadata or supplied permission instructions before implementation; an old chat can retain `on-request` / `workspace-write` despite full-access global config. Retire that chat, preserve its worktree checkpoint and transfer ownership to a verified new project chat. Do not repeatedly ask for already granted local permission. This does not grant live provider spending, public deployment or destructive data resets.
-
-Use ordinary reusable Codex tasks for each model/role; do not spawn subagents. Reuse existing tasks where appropriate and create another task only when authorized by the user. Keep separate reusable tasks for each model/role. Do not switch their model between assignments merely to save creating a lane. Prefer stable instructions and short delta assignments; reference this guide and artifacts instead of reposting the whole plan. Cache hits are not guaranteed.
-
-Use **GPT-6 Sol** by default, including implementation, research, manual verification and review. Use separate reusable role tasks/worktrees where independence matters, with effort suited to the work (high normally; xhigh/max for consequential code/review). On 29 September 2026 the user explicitly authorized **GPT-6 Astra for AI model training**, **local GPU training if useful**, and later **selecting, downloading and testing a suitable open pretrained model**. The existing learner task may be upgraded to Astra to preserve its context and exclusive file ownership. This supersedes the previous Sol-only, no-GPU and additional-model-download restrictions for the selected local work; it does not authorize priority tier, cloud spending or live provider calls. Download only a justified needed checkpoint with pinned revision, licence and hashes in a separate environment. Keep source-derived labels and untouched evaluation families separate, freeze settings before fitting, and measure bounded RTX 3070 memory/runtime use. CPU remains suitable when it is faster or sufficient for the small candidate.
-
-**Astra effort, user direction 30 September:** choose `medium`, `high` or `xhigh` according to the assigned work. Reserve `max` for exceptional cases with a concrete expected benefit and state that reason briefly in the assignment; being an AI task or inheriting an earlier max setting is not sufficient. Routine source curation and bounded comparisons do not default to max. Apply the chosen effort explicitly when dispatching or continuing Astra, and preserve honest historical requested/observed settings. AI-06C source-only curation requested `high`; its recorded scope and frozen-data boundaries are unchanged.
-
-Use the default service tier. The user's latest instruction revokes Fast/priority; local `service_tier = "default"` was verified on26September. The task API exposes no speed argument, and per-turn tier remains unobserved unless returned explicitly. Do not request priority or modify credentials, buy access, or retry authentication failures in a loop.
-
-After dispatch, end the lead turn and resume only when a worker sends a message. Do not poll tasks, run wait loops or create wakeup/heartbeat schedules. A callback may trigger its needed review, fix or integration work and the next authorized dispatch, followed by another quiet wait.
-
-Astra, Sol and Luna are the same model family. Their reviews are engineering checks, not the plan's independent cross-family/human milestone approval.
-
-## Pipeline and ownership
-
-Latest user direction, 30 September: expand useful parallel work beyond one implementation lane. GPT-6.1 Sol is an available ordinary-work choice, not an exclusivity rule; Astra high/xhigh is appropriate for demanding analysis/quality control. Keep one writer per seam and one learner owner; resource-sensitive runtime operations remain explicitly owned. Preserve the no-polling/callback workflow and do not reopen evaluations or repeat completed work to occupy workers.
-
-Normally keep one implementation lane plus only useful verification/research lanes. For the authorized NestJS migration, run multiple independent Sol implementation lanes with exact module ownership after the shared foundation is accepted. Do not launch workers before dependencies are ready. Only the lead dispatches ordinary tasks; delegated owners do not create further tasks or subagents.
-
-An owner finishes -> returns an exact diff or commit and concise evidence -> lead reviews the outcome -> optional manual tester checks a pinned revision. The lead may be that owner. While review/testing runs, scope the next dependency-ready, non-conflicting feature. Use separate worker worktrees from a pinned accepted staging commit; never switch another worker’s checkout or edit its owned files. Do not build dependent work on an unaccepted change merely to keep a worker busy.
-
-Testers/reviewers own reports, not production code. They return reproducible issues with route/action, expected versus actual behavior, severity and a screenshot only when useful. Send fixes to the implementation lane. If it is already coding, choose a safe checkpoint or queue the fix; never let two owners edit the same seam. Blocking defects prevent integration of that result, not unrelated work.
-
-Current checkout policy, updated by explicit user direction: the lead integrates in the original `staging` checkout; each ordinary worker model uses its own worktree and branch. Record a pinned base and exact file ownership. Reuse model tasks/worktrees; retire a worker worktree only after its commits and dirty files are reconciled. Preserve original checkout changes and its index state. Integrate one accepted change at a time, directly or through a delegated execution assignment. Keep main unchanged; no push/deploy/public activation without authorization. Do not reset populated services, rewrite originals, overwrite credentials or kill unrelated processes.
+No populated-service resets, altered originals, overwritten credentials or unrelated process kills. Archive a worktree only after exact commit/dirty/ignored-state classification, ownership reconciliation and preservation of needed ignored files. Follow the lead-authored [cleanup list](CLEANUP_20261004.md); deletion is not a blanket tidy-up command.
 
 ## MVP delivery and verification
 
@@ -88,7 +62,7 @@ For ingestion, preserve the unchanged original and produce separate traceable ex
 ### Default working loop
 
 1. Pick one useful feature and define its smallest end-to-end result. Reuse existing services and tools; avoid adjacent features and infrastructure that result does not need.
-2. Implement it. Review the changed flow for obvious defects, broken contracts and relevant data/access risks. The lead can review it; use a separate reviewer only when the change materially benefits from one.
+2. Implement it. Review the changed flow for obvious defects, broken contracts and relevant data/access risks. The implementer reviews its changed flow; use a separate technical reviewer when the change materially benefits from one. The orchestrator only routes the return.
 3. Run the relevant typecheck or build once after the code stabilizes. Use a small set of unchanged real inputs: normally one representative successful journey and one naturally difficult or incomplete input relevant to the feature. Reuse retained official sources before finding more.
 4. Check the flow manually through the UI when it is wired, or directly through the API for backend-only work. Confirm the result, readable status and a useful failure/retry path. Do not build UI merely to test an API.
 5. Fix observed defects and repeat only the affected check. Once the scoped checks pass and no known blocker remains, integrate, update the API handoff briefly and move to the next feature.
@@ -119,7 +93,7 @@ Assignment: task ID/attempt; outcome and relevant plan sections; exact base/chec
 
 Worker return: exact code/result commits, what changed, commands/check results, short relevant verification instructions, known limitations, dirty paths and owned-resource cleanup. Preserve actual failure evidence but do not send raw logs or repeat the entire task history. All agents are sharing a codebase: never revert others' changes.
 
-Lead review: accept bounded work, request specific corrections, or record a concrete blocker. After two unsuccessful fixes of the same defect, escalate that defect with existing evidence rather than restarting the whole feature. Avoid endless cosmetic review loops. A configuration, unit test or screenshot alone does not pass a runtime gate.
+Orchestrator disposition: route accepted bounded work to integration, request a specific correction, or record a concrete blocker. Technical findings come from the assigned implementer/reviewer. After two unsuccessful fixes of the same defect, escalate that defect with existing evidence rather than restarting the whole feature. Avoid endless cosmetic review loops. A configuration, unit test or screenshot alone does not pass a runtime gate.
 
 Use tool-based completion callbacks and compact ledger updates. No polling loops, heartbeat automation or status chatter for unchanged work. Do not start new work solely to manufacture activity. Maintain a short queue of actual work and return attention to the core product.
 
