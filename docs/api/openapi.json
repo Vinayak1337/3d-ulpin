@@ -40679,8 +40679,25 @@
         "x-batch": "DOC-CLAIMS-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "scope": "201 save/same-key replay and append-only locator correction/replay; independent PostgreSQL history immutable, four request/snapshot rows, no refusal writes. Changed payload/stale pins return409; wrong-source/Origin return403. human_entry/not_machine_verified/local_process; four literal source claims and one unresolved conflict, no canonical adoption.",
+          "evidencePointers": [
+            "/review",
+            "/refusals",
+            "/sources",
+            "/pages",
+            "/attribution",
+            "/preservation"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d04-source-claims-20261005.json",
+          "servedCodeCommit": "a9d1f960bd1fe10f96bba40dd590ca99f679d0bd",
+          "environment": "Stopped retained isolated local prefix run; API and three task-started storage containers stopped. IDs apply only to that preserved run; no standing URL.",
+          "limitation": "Only two unchanged Haryana RERA 2831 planned PDFs: private manual source-claim save/replay/correction/exact history through real PostgreSQL and current bounded Windows PDF metadata. Quote correctness, extraction, canonical adoption, raster rendering and release are unqualified."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-max-body-bytes": 524288,
         "x-transport-profile": "json",
@@ -40919,8 +40936,24 @@
         "x-batch": "DOC-CLAIMS-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "scope": "200 exact revisions1/2 after correction, with original/source/page authority and immutable revision1. No latest substitution, quote verification or authenticated human truth. Original download/current page metadata work; whole-page raster unsupported.",
+          "evidencePointers": [
+            "/review",
+            "/sources",
+            "/pages",
+            "/attribution",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d04-source-claims-20261005.json",
+          "servedCodeCommit": "a9d1f960bd1fe10f96bba40dd590ca99f679d0bd",
+          "environment": "Stopped retained isolated local prefix run; API and three task-started storage containers stopped. IDs apply only to that preserved run; no standing URL.",
+          "limitation": "Only two unchanged Haryana RERA 2831 planned PDFs: private manual source-claim save/replay/correction/exact history through real PostgreSQL and current bounded Windows PDF metadata. Quote correctness, extraction, canonical adoption, raster rendering and release are unqualified."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
         "x-dataset-catalogue": "/api/docs/datasets.json"
