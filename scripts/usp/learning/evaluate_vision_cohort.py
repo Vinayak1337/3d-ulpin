@@ -172,7 +172,7 @@ def freeze(args, cohort):
     value = {"task": "D07", "developmentOnly": True, "cohortPath": str(args.cohort),
              "cohortSha256": sha(args.cohort), "items": {k: [i["id"] for i in v["items"]]
                                                        for k, v in cohort["tasks"].items()},
-             "groups": cohort["groups"], "exclusions": cohort["exclusions"],
+             "groups": cohort["groups"], "exclusions": cohort["excludedItems"],
              "modelDirectory": str(args.models), "models": models,
              "sourcePins": {str(p.relative_to(REPO)): sha(p) for p in
                             (Path(__file__), REPO / "services/geo/geo/spatial_ml.py",
