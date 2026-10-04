@@ -23,6 +23,14 @@ To reproduce assembly without native imports, choose a **new** private output di
 
 Open the cited original/crop, inspect the quote and target scope, then make an explicit operator decision through the existing review workflow. The result is **not** a D04 `human_entry` save payload. No canonical building/floor IDs, approved floor count, height, units or rights are inferred.
 
+## Accepted offline integration
+
+Independent backend source/citation/affine/role/bounds review accepted the exact two-file return with no findings. Only owner `e7e117b04f7f4778d59d25e6efbf08243e4012f0` and `b454add9ac14524acf3886051c6193b8b1c2550e` integrate as `c259b847d9c568f72b4b74fd13cf75288f2449bd` and `53da837f06ded11ccfea5f752393d3922f47e644`; both blobs matched the owner final before this handoff amendment. Owner native/model/source/refusal/affine/compile/network/cleanup checks and the independent review are consumed without rerunning them. The CLI/report are isolated offline leaves, outside the registered API producer set; source pins, catalogues, model registration and API/client remain unchanged (277 operations/310 schemas).
+
+For operator assembly, use the `propose` command above with the integrated script path **`E:/Projects/3d-ulpin/scripts/usp/learning/document_fields_baseline.py`**, the same retained `inputs.json`, and a new private `--output` directory. This path substitution is for proposal assembly only; it does not relabel historical native receipts or authorize another render/OCR/model run. Review original/crop quotes, source-pixel locators and target context before any explicit existing review action; these outputs are not a human_entry save payload, canonical target, native accepted part/job or qualified learning labels. Private file paths do not establish current HTTP/source authorization. `FLOOR-02` remains a caption type, the four literal ordinals stay literal, tower-row contexts stay separate and the missed G+41/spacing/conflict gaps remain visible.
+
+D01's independently assigned live ROI server must continue serving explicit accepted **`e05c6d8596891275ebf440660de3e73feb565465`**, even though staging advances through this offline integration. Do not refresh or alias its frozen profile/code authority to the later CLI head. Integration starts no native/provider/model/GPU/HTTP/DB/service work; current live consumer/API, independent accuracy, calibration/property/rights and learning qualification remain open. Python-level local-files/socket guards are not an OS/native-egress audit.
+
 ## Actual observations
 
 Both retained native-text observations are empty; the new S-001 selected region also contains no native text. All proposals remain `not_machine_verified`, `needs_review`, `humanAuthenticated=false`, `independentGroundTruth=false`, with `canonicalMatchState=not_assessed`.
