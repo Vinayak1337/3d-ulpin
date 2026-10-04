@@ -15,6 +15,7 @@ import {fusionGeoParquetSourceProjection} from './source-fusion-geoparquet';
 import {fusionRasterSourceProjection} from './source-fusion-raster';
 import {fusionPointSourceProjection} from './source-fusion-point';
 import {fusionSurveySourceProjection} from './source-fusion-survey';
+import {fusionObjSourceProjection} from './source-fusion-obj';
 import {fusionGltfSourceProjection} from './source-fusion-gltf';
 
 type Loaded=Awaited<ReturnType<typeof readFusionResult>>;
@@ -84,6 +85,7 @@ export function fusionSourceProjection(selection:SourceFusionSelection,loaded:Lo
   if(selection.kind==='dxf'&&loaded.kind==='dxf')return fusionDXFSourceProjection(selection,loaded);
   if(selection.kind==='kml'&&loaded.kind==='kml')return fusionKMLSourceProjection(selection,loaded);
   if(selection.kind==='citygml'&&loaded.kind==='citygml')return fusionCityGMLSourceProjection(selection,loaded);
+  if(selection.kind==='obj'&&loaded.kind==='obj')return fusionObjSourceProjection(selection,loaded);
   if(selection.kind==='gltf'&&loaded.kind==='gltf')return fusionGltfSourceProjection(selection,loaded);
   if(selection.kind==='geoparquet'&&loaded.kind==='geoparquet')return fusionGeoParquetSourceProjection(selection,loaded);
   if(selection.kind==='raster'&&loaded.kind==='raster')return fusionRasterSourceProjection(selection,loaded);

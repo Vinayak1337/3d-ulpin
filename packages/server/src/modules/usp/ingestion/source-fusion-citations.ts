@@ -52,6 +52,8 @@ export function citationReadBudget():FusionBudget{
 export async function resolveFusionCitationsTx(client:PoolClient,ctx:RequestContext,
   request:{contextSha256:string;selection:{sources:SourceFusionSelection[]}},dependencies:FusionCitationDependencies,siteId?:string,
   surveyReferences=false,gltfReferences=false){
+  if(request.selection.sources.some(source=>source.kind==='obj'))
+    throw new AppError(422,'SOURCE_FUSION_OBJ_CONTEXT_ONLY','OBJ polygons support source context only; citation attachment is unsupported.');
   if(request.selection.sources.some(source=>source.kind==='gltf')&&(!gltfReferences||!siteId))
     throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY',
       'glTF nodes support source context only; reviewed citation attachment is unsupported.');

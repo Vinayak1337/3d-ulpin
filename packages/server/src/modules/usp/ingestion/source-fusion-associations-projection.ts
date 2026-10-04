@@ -29,6 +29,8 @@ export function exactIdentifier(text:string,value:string){
 export function associationLiterals(context:SourceFusionContext,unsupportedSources:readonly string[]=[]):AssociationLiteral[]{
   const literals:AssociationLiteral[]=[];
   for(const source of context.sources){
+    if(source.kind==='obj')throw new AppError(422,'SOURCE_FUSION_OBJ_CONTEXT_ONLY',
+      'OBJ polygons support source context only; association and citation attachment are unsupported.');
     if(source.kind==='gltf')throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY',
       'glTF nodes support source context only; property association proposals are unsupported.');
     if(source.kind==='survey_report')throw new AppError(422,'SOURCE_FUSION_SURVEY_CONTEXT_ONLY',
@@ -123,6 +125,8 @@ export function associationManualSelection(request:FusionAssociationRequest,cont
   ifcProjection?:AssociationIFCProjection){
   const selected=new Set(keys);
   const candidates=context.sources.flatMap<SourceFusionContext['sources'][number]>(source=>{
+    if(source.kind==='obj')throw new AppError(422,'SOURCE_FUSION_OBJ_CONTEXT_ONLY',
+      'OBJ polygons support source context only; association and citation attachment are unsupported.');
     if(source.kind==='gltf')throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY',
       'glTF nodes support source context only; reviewed citation attachment is unsupported.');
     if(source.kind==='survey_report')throw new AppError(422,'SOURCE_FUSION_SURVEY_CONTEXT_ONLY',
