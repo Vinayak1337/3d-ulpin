@@ -887,16 +887,12 @@ export const amendRegistryDocumentCitations=async(draftId:string,raw:unknown)=>{
     throw new AppError(422,'SOURCE_FUSION_GLTF_CONTEXT_ONLY','glTF nodes support source context only; reviewed citation attachment is unsupported.');
   let prepared:RegistryRegionAmendmentPrepared|RegistryImageRegionAmendmentPrepared|undefined;
   if(request.addImageRegion){
-    const captured=await transaction(async client=>{
-      await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
-      return registryImageRegionAmendmentPreflightTx(client,draftId,request);
-    },{deadlineAt:Date.now()+30_000});
+    const captured=await transaction(client=>registryImageRegionAmendmentPreflightTx(client,draftId,request),
+      {deadlineAt:Date.now()+30_000},'repeatable_read_only');
     if(captured)prepared={...await prepareRegistryImageRegion(request.addImageRegion,captured.source),...captured};
   }else if(request.addRegion){
-    const captured=await transaction(async client=>{
-      await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
-      return registryRegionAmendmentPreflightTx(client,draftId,request);
-    },{deadlineAt:Date.now()+30_000});
+    const captured=await transaction(client=>registryRegionAmendmentPreflightTx(client,draftId,request),
+      {deadlineAt:Date.now()+30_000},'repeatable_read_only');
     if(captured)prepared={...await prepareRegistryRegion(request.addRegion,captured.source),...captured};
   }
   return transaction(client=>amendRegistryDocumentCitationsTx(client,draftId,request,defaults,prepared),
