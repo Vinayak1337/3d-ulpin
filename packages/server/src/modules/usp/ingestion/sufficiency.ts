@@ -8,10 +8,11 @@ import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {appendCaseIngestionTx,assertIngestionBinding} from './events';
-import {sufficiencyCaseTx,sufficiencySourceTx,type SufficiencyContext} from './sufficiency-context';
+import {sufficiencyCaseTx,sufficiencySourceTx,type SufficiencyContext,type SufficiencyNativeOptions} from './sufficiency-context';
 import {assessSufficiency} from './sufficiency-policy';
 import {assertPackageDocumentAuthority} from '../../areas/package-authority';
-import {meshBudget,type SufficiencyMeshOptions,type SufficiencyMeshDependencies} from './sufficiency-mesh';
+import {meshBudget,type SufficiencyMeshDependencies} from './sufficiency-mesh';
+import type {SufficiencyIFCDependencies} from './sufficiency-ifc';
 
 const uuid=z.uuid(),kind='ingestion-sufficiency';
 const same=(a:SufficiencyPins,b:SufficiencyPins)=>fingerprint(a)===fingerprint(b);
@@ -33,36 +34,38 @@ function assertPins(current:SufficiencyContext,pins:SufficiencyPins){
   if(!current.latest || !same(current.pins,pins))conflict('The source, case, approval, geometry, policy or access evidence changed. Refresh the current task decision.');
 }
 /** Called only under the canonical case lock. Foreign ownership/access never frees capacity. */
-async function retireOwned(client:PoolClient,ctx:SufficiencyContext,key:string,options:SufficiencyMeshOptions={}){
+async function retireOwned(client:PoolClient,ctx:SufficiencyContext,key:string,options:SufficiencyNativeOptions={}){
   const rows=(await client.query(`SELECT id,body FROM usp_ingestion_questions WHERE case_id=$1 AND owner_subject=$2
     AND access_sha256=$3 AND state<>'stale' AND (state='open' OR source_id=$4) ORDER BY id`,
     [ctx.pins.caseId,ctx.scope.binding.subject,ctx.pins.accessSha256,ctx.pins.sourceId])).rows;
-  const changes=[];
+  const changes=[],contexts:SufficiencyContext[]=[];
   for(const row of rows){
     const q=SufficiencyQuestionSchema.parse(row.body);
     const current=q.pins.sourceId===ctx.pins.sourceId?ctx:await sufficiencySourceTx(client,ctx.scope,q.pins.sourceId,options);
+    contexts.push(current);
     if(current.latest && same(q.pins,current.pins))continue;
     changes.push({id:q.id,fromRevision:q.revision,toRevision:q.revision+1,pins:q.pins});
     q.state='stale';q.revision++;await saveQuestion(client,q);
   }
   if(changes.length)await saveReceipt(client,ctx.pins.caseId,`scope:${key}`,fingerprint(changes),
     {actor:ctx.scope.binding.subject,changes},'ingestion-sufficiency-lifecycle');
+  return contexts;
 }
-async function referenceExists(client:PoolClient,ctx:SufficiencyContext,ref:SufficiencyReference,options:SufficiencyMeshOptions={}){
+async function referenceExists(client:PoolClient,ctx:SufficiencyContext,ref:SufficiencyReference,options:SufficiencyNativeOptions={}){
   const source=await sufficiencySourceTx(client,ctx.scope,ref.sourceId,options);
   if(!source.latest || source.row.revision!==ref.sourceRevision)conflict('The referenced source revision changed.');
   if(ref.kind==='recipe'){
     if(ref.packageId || !source.recipe || source.recipe.id!==ref.id || source.recipe.revision!==ref.revision)
       conflict('The referenced recipe is not current in this source context.');
-    return;
+    return source;
   }
   if(ref.kind==='source_part'){
-    if(source.mesh)throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Native mesh metadata is not a document source part or qualified geometry reference.');
+    if(source.ifc||source.mesh)throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Native metadata is not a document source part or qualified geometry reference.');
     const part=source.document?source.document.parts.some(part=>part.id===ref.id):(await client.query(`SELECT 1 FROM sources WHERE id=$1 AND case_id=$2 AND
       jsonb_path_exists(inspection,'$.referenceParts[*] ? (@.id == $part)',jsonb_build_object('part',$3::text))`,[ref.sourceId,ctx.pins.caseId,ref.id])).rowCount;
     if(ref.packageId || ref.revision!==source.row.revision || !part)
       throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Choose an existing source part from the current retained revision.');
-    return;
+    return source;
   }
   if(!ref.packageId)throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Choose an existing package evidence reference.');
   const pkg=(await client.query('SELECT body FROM import_packages WHERE case_id=$1 AND id=$2',[ctx.pins.caseId,ref.packageId])).rows[0]?.body;
@@ -73,23 +76,33 @@ async function referenceExists(client:PoolClient,ctx:SufficiencyContext,ref:Suff
   if(ref.kind==='package_review' ? ref.id!==ref.packageId || !pkg.review || pkg.review.packageRevision!==pkg.revision :
     !candidate || !candidate.evidence?.some((e:{sourceRevisionId:string})=>e.sourceRevisionId===ref.sourceId))
     throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Choose an existing source-backed candidate or current officer review.');
+  return source;
 }
-/** Mesh readers share one aggregate deadline/byte budget per operation. Existing
+/** Native readers share one aggregate deadline/byte budget per operation. Existing
  * document/vector callers retain the same stores/questions/receipts. */
-async function revalidateMeshContexts(client:PoolClient,scope:SufficiencyContext['scope'],contexts:Iterable<SufficiencyContext>){
-  const meshes=[...contexts].filter(ctx=>ctx.mesh).sort((a,b)=>a.pins.sourceId.localeCompare(b.pins.sourceId));
-  if(!meshes.length)return;
+async function revalidateNativeContexts(client:PoolClient,scope:SufficiencyContext['scope'],contexts:Iterable<SufficiencyContext>){
+  // Keep every capture, including repeated references to the same source: a
+  // later capture must not conceal drift from an earlier decision's authority.
+  const native=[...contexts].filter(ctx=>ctx.ifc||ctx.mesh).sort((a,b)=>a.pins.sourceId.localeCompare(b.pins.sourceId));
+  if(!native.length)return;
   const current=await sufficiencyCaseTx(client,scope.row.id,true);
-  if(current.context!==scope.context)conflict('The complete mesh source case or access context changed.');
-  for(const ctx of meshes)await ctx.mesh!.revalidate(true);
+  if(current.context!==scope.context)conflict('The complete native source case or access context changed.');
+  if(native.some(ctx=>ctx.ifc)){
+    await client.query('SELECT id FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE',[[...new Set(native.map(ctx=>ctx.pins.sourceId))].sort()]);
+    const jobs=[...new Set(native.flatMap(ctx=>ctx.recordPins.filter(pin=>pin.authority==='job').map(pin=>pin.id)))].sort();
+    await client.query('SELECT id FROM jobs WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE',[jobs]);
+    await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=ANY($1::uuid[]) ORDER BY job_id FOR SHARE',[jobs]);
+    await client.query('SELECT job_id FROM usp_job_attempts WHERE job_id=ANY($1::uuid[]) ORDER BY job_id,number FOR SHARE',[jobs]);
+  }
+  for(const ctx of native)await (ctx.ifc??ctx.mesh)!.revalidate(true);
   assertIngestionBinding(scope.binding);
 }
 export class IngestionSufficiencyService{
-  constructor(private readonly dependencies:{transaction?:typeof transaction;mesh?:SufficiencyMeshDependencies}={}){}
-  private run<T>(work:(client:PoolClient)=>Promise<T>,options:SufficiencyMeshOptions){
+  constructor(private readonly dependencies:{transaction?:typeof transaction;mesh?:SufficiencyMeshDependencies;ifc?:SufficiencyIFCDependencies}={}){}
+  private run<T>(work:(client:PoolClient)=>Promise<T>,options:SufficiencyNativeOptions){
     return (this.dependencies.transaction??transaction)(work,{deadlineAt:options.budget!.deadlineAt,signal:options.budget!.signal});
   }
-  private options():SufficiencyMeshOptions{return {dependencies:this.dependencies.mesh,budget:meshBudget()};}
+  private options():SufficiencyNativeOptions{return {dependencies:this.dependencies.mesh,ifc:this.dependencies.ifc,budget:meshBudget()};}
   async evaluate(caseValue:string,sourceValue:string,raw:unknown){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),input=EvaluateSufficiencySchema.parse(raw);
     const options=this.options();return this.run(async client=>{
@@ -105,9 +118,9 @@ export class IngestionSufficiencyService{
           const current=(await client.query('SELECT revision,state FROM usp_ingestion_questions WHERE id=$1',[question.id])).rows[0];
           if(!current || current.revision!==question.revision || current.state!==question.state)conflict('The question changed after this evaluation. Request a current decision.');
         }
-        await revalidateMeshContexts(client,scope,[ctx]);assertIngestionBinding(scope.binding);return parsed;
+        await revalidateNativeContexts(client,scope,[ctx]);assertIngestionBinding(scope.binding);return parsed;
       }
-      await retireOwned(client,ctx,key,options);
+      const contexts=[ctx,...await retireOwned(client,ctx,key,options)];
       const questions:SufficiencyQuestion[]=[],decisions:IngestionSufficiencyDecision[]=[];
       for(const task of input.tasks){
         const assessment=assessSufficiency(ctx,task),missing=assessment.evidence.filter(e=>e.state!=='satisfied').map(e=>e.requirement);
@@ -135,14 +148,14 @@ export class IngestionSufficiencyService{
         const reason=question?.state==='parked'?'Not sure was recorded for this evidence class. The affected task stays parked until source evidence or its normal approval changes.':
           question?.state==='answered'?'An existing evidence reference is proposed. Officer review has not satisfied the missing task requirements.':
           assessment.gapClass && !question?'The class question is unavailable or the case question budget is occupied. Retain the missing evidence and park this task.':assessment.reason;
-        decisions.push(IngestionSufficiencyDecisionSchema.parse({version:SUFFICIENCY_VERSION,id:randomUUID(),pins:ctx.pins,recordPins:ctx.recordPins,processing:ctx.mesh?.processing??ctx.document?.processing??null,task,
+        decisions.push(IngestionSufficiencyDecisionSchema.parse({version:SUFFICIENCY_VERSION,id:randomUUID(),pins:ctx.pins,recordPins:ctx.recordPins,processing:ctx.ifc?.processing??ctx.mesh?.processing??ctx.document?.processing??null,task,
           requirements:assessment.evidence.map(e=>e.requirement),missing,outcome,availability:assessment.availability,evidence:assessment.evidence,
           unlocks:missing.length?[task]:[],questionId:question?.id??null,nextAction:question?.state==='answered'?'review_evidence':
             question?.state==='parked'?'park':assessment.nextAction,reason,createdAt:new Date().toISOString()}));
         if(question && !questions.some(q=>q.id===question!.id))questions.push(question);
       }
       const result=SufficiencyResultSchema.parse({version:SUFFICIENCY_VERSION,decisions,questions});
-      await revalidateMeshContexts(client,scope,[ctx]);
+      await revalidateNativeContexts(client,scope,contexts);
       await saveReceipt(client,caseId,key,digest,result);
       await appendCaseIngestionTx(client,caseId,{kind:'sufficiency.changed',sourceId,sourceRevision:ctx.pins.sourceRevision,status:'evaluated'},scope.binding.subject);
       assertIngestionBinding(scope.binding);return result;
@@ -157,20 +170,21 @@ export class IngestionSufficiencyService{
       if(row.owner_subject!==scope.binding.subject || row.access_sha256!==scope.binding.access)
         throw new AppError(403,'SUFFICIENCY_DENIED','This source context is unavailable.');
       const question=SufficiencyQuestionSchema.parse(row.body),ctx=await sufficiencySourceTx(client,scope,row.source_id,options);
+      const contexts=[ctx];
       assertPins(ctx,input.pins);assertPins(ctx,question.pins);
       const key=`answer:${input.requestKey}`,digest=fingerprint({input,questionId,actor:scope.binding.subject,access:scope.binding.access});
       const prior=await priorReceipt(client,caseId,key,digest);
       if(prior){
         const parsed=SufficiencyQuestionSchema.parse(prior);
         if(parsed.revision!==question.revision || fingerprint(parsed)!==fingerprint(question))conflict('The question changed after this answer.');
-        if(parsed.proposal)await referenceExists(client,ctx,parsed.proposal,options);
-        await revalidateMeshContexts(client,scope,[ctx]);assertIngestionBinding(scope.binding);return parsed;
+        if(parsed.proposal)contexts.push(await referenceExists(client,ctx,parsed.proposal,options));
+        await revalidateNativeContexts(client,scope,contexts);assertIngestionBinding(scope.binding);return parsed;
       }
       if(question.revision!==input.expectedQuestionRevision || question.state!=='open')conflict('This question is no longer open at the expected revision.');
       if(input.answer.choice==='provide_existing_evidence'){
-        await referenceExists(client,ctx,input.answer.reference,options);question.proposal=input.answer.reference;question.state='answered';
+        contexts.push(await referenceExists(client,ctx,input.answer.reference,options));question.proposal=input.answer.reference;question.state='answered';
       }else question.state='parked';
-      await revalidateMeshContexts(client,scope,[ctx]);
+      await revalidateNativeContexts(client,scope,contexts);
       question.revision++;await saveQuestion(client,question);await saveReceipt(client,caseId,key,digest,question);
       await appendCaseIngestionTx(client,caseId,{kind:'sufficiency.changed',sourceId:row.source_id,sourceRevision:ctx.pins.sourceRevision,
         status:question.state==='parked'?'parked':'answered'},scope.binding.subject);
@@ -183,7 +197,7 @@ export class IngestionSufficiencyService{
       // The bounded transaction has already queried its deadline guard, so SET
       // TRANSACTION isolation is too late. Canonical case/source gates protect
       // this read and final authority without changing any evidence records.
-      const scope=await sufficiencyCaseTx(client,caseId,true),contexts=new Map<string,SufficiencyContext>();
+      const scope=await sufficiencyCaseTx(client,caseId,true),contexts=new Map<string,SufficiencyContext>(),references:SufficiencyContext[]=[];
       const context=async(sourceId:string)=>{if(!contexts.has(sourceId))contexts.set(sourceId,await sufficiencySourceTx(client,scope,sourceId,options));return contexts.get(sourceId)!;};
       const rows=(await client.query(`SELECT result FROM operations WHERE case_id=$1 AND kind=$2 AND result ? 'decisions'
         AND result#>>'{decisions,0,pins,accessSha256}'=$3 ORDER BY created_at DESC,operation_key DESC LIMIT 129`,[caseId,kind,scope.binding.access])).rows;
@@ -208,14 +222,14 @@ export class IngestionSufficiencyService{
         }
         const question=stored.questionId?currentQuestions.get(stored.questionId):undefined;
         const stale=!ctx.latest || !same(ctx.pins,stored.pins);
-        if(!stale && question?.proposal)await referenceExists(client,ctx,question.proposal,options);
+        if(!stale && question?.proposal)references.push(await referenceExists(client,ctx,question.proposal,options));
         const decision=stale?{...stored,availability:'stale',outcome:'park',nextAction:'park',questionId:null,
           reason:'The source, case, approval, geometry, policy or access evidence changed. Reevaluate before using this decision.'}:
           question?.state==='parked'?{...stored,outcome:'park',nextAction:'park',reason:'Not sure was recorded. This task remains parked on unchanged evidence.'}:
           question?.state==='answered'?{...stored,outcome:'park',nextAction:'review_evidence',reason:'An evidence reference is proposed; the existing officer review must satisfy task requirements.'}:stored;
         decisions.push(IngestionSufficiencyDecisionSchema.parse(decision));
       }
-      await revalidateMeshContexts(client,scope,contexts.values());
+      await revalidateNativeContexts(client,scope,[...contexts.values(),...references]);
       assertIngestionBinding(scope.binding);
       const result=NeedsInputSchema.parse({version:SUFFICIENCY_VERSION,caseId,caseRevision:scope.row.revision,decisions,questions,staleQuestions,
         hasMore:overflow||rows.length>128||questionRows.length>5});

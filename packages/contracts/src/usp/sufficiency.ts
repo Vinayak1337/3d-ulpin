@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {CoreIdSchema, CoreSha256Schema, coreText} from '../spatial/core/scalars';
 import {ObjSummarySchema} from './obj-ingestion';
 import {GltfSummarySchema} from './gltf-ingestion';
+import {IFCSummarySchema} from './ifc-ingestion';
 import {DataSufficiencyRequirementsShape, exactSufficiencyRequirements} from './geometry';
 
 export const SUFFICIENCY_VERSION='ingestion-sufficiency/1' as const;
@@ -34,11 +35,18 @@ export const SufficiencyMeshProcessingSchema=z.strictObject({kind:z.enum(['obj',
   metadata:SufficiencyMeshMetadataSchema.nullable(),
   coverage:z.literal('accepted_result_metadata_only; native_artifact_not_read'),
 });
+export const SufficiencyIFCProcessingSchema=z.strictObject({
+  inputSha256:hash.nullable(),readerSha256:hash.nullable(),acceptedFence:z.number().int().positive().nullable(),
+  tools:z.enum(['not_checked','current','unavailable']),code:coreText(100).nullable(),
+  summary:IFCSummarySchema.nullable(),sourceUnits:z.literal('native_artifact_not_read'),
+  coverage:z.literal('accepted_result_metadata_only; native_artifact_not_read'),
+});
 export const SufficiencyProcessingSchema=z.strictObject({
-  state:z.enum(['pending','running','failed','stale','needs_ocr','unsupported','tool_error','extracted','canonical_conversion_required','unavailable','inspected_local','inspected_partial']),
+  state:z.enum(['pending','running','failed','stale','needs_ocr','unsupported','tool_error','extracted','canonical_conversion_required','unavailable','inspected_local','inspected_partial','inspected_metadata']),
   jobId:id.nullable(),resultSha256:hash.nullable(),
   nativeStatus:z.enum(['extracted','needs_ocr','unsupported','encrypted','tool_error','inspected_local','inspected_partial']).nullable(),
   mesh:SufficiencyMeshProcessingSchema.optional(),
+  ifc:SufficiencyIFCProcessingSchema.optional(),
   modelStatus:z.enum(['not_requested','disabled','unavailable','blocked','needs_input','proposed']).nullable(),
 });
 export const IngestionSufficiencyDecisionSchema=z.strictObject({version:z.literal(SUFFICIENCY_VERSION),id,pins:SufficiencyPinsSchema,
