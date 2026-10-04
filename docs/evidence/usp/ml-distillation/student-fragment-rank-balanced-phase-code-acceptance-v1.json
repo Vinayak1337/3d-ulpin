@@ -1,0 +1,200 @@
+{
+  "accepted": true,
+  "activeRuntimeSources": 36,
+  "all36RuntimeGitBytesEqual": true,
+  "changedPaths": [
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-code-v1.md",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-output-recipe-code-v1.json",
+    "docs/evidence/usp/ml-distillation/student/fragment-rank-balanced-phase-output-recipe-code-v1.md",
+    "scripts/usp/learning/association/association_adapter.py",
+    "scripts/usp/learning/association/stage_fragment_rank_phase.py",
+    "scripts/usp/learning/association/test_fragment_rank_balance.py",
+    "services/geo/geo/usp_learning/association/adapter.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_balance.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_fit.py",
+    "services/geo/geo/usp_learning/association/fragment_rank_phase_adapter.py"
+  ],
+  "checkpointCodeAcceptance": {
+    "bytes": 9068,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-checkpoint-code-acceptance-v1.json",
+    "physicalSha256": "25c154e47a1b47a11e51ada60a7ecd322e8754fd77da92062cc3e49070c3852b"
+  },
+  "containedPathCodeAcceptance": {
+    "bytes": 6542,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-contained-path-code-acceptance-v1.json",
+    "physicalSha256": "364b403df008b7739704a18b869c3f81b727cf1b8d916b053f14896624920fb7"
+  },
+  "coordinatorIntegratedInMemoryCompiles": 7,
+  "correctedControl": {
+    "bytes": 768,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\output-recipe-controls.json",
+    "physicalSha256": "65cffd75e0b6b339229d35c391880b6c7370985dc265eb528c788be1ba4388ae"
+  },
+  "correctedPrivateReview": {
+    "bytes": 6450,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-44-balanced-code-acceptance-native-packet-v1-25fb38ed9360451984e1eda28f89a47c\\review.json",
+    "physicalSha256": "89df2b9e1677489c0bdeac49a36da1298f65fcceb835dc5263d8a5c9d98e8ccb"
+  },
+  "correctedRetainedReferences": 99,
+  "correctionChecks": {
+    "accepted": "Actual PhaseSession result/manifest fields in constructed shared-writer recipe envelopes,without duplicate result settings/numerics; matching duplicates; unchanged retained legacy metadata.",
+    "actualHistory": "Recipe-valid constructed evidence reaches next rank_phase_output_tokens refusal on deliberately invalid4097 sentinel; conflicting duplicate fails earlier with rank_phase_output_recipe. No full/native phase acceptance.",
+    "codeCommitCommands": {
+      "bytes": 2964,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\code-commit.commands.json",
+      "physicalSha256": "0df90ca6d415e4b01a987badc872697c6e8ee65d777ddada951e7e65937f9d45"
+    },
+    "command": {
+      "command": [
+        "C:\\Users\\kvina\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\python.exe",
+        "-B",
+        "-I",
+        "-S",
+        "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\scripts\\usp\\learning\\association\\test_fragment_rank_balance.py",
+        "--receipt-root",
+        "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d",
+        "--assignment",
+        "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-44.continuation-1.fragment-rank-balanced-phase-output-recipe-code.assignment.json",
+        "BalanceControls.test_emitted_output_recipe"
+      ],
+      "cwd": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin",
+      "exitCode": 0,
+      "scope": "Only new emitted-output-recipe control; no old group or native campaign"
+    },
+    "compileExit": 0,
+    "compileReceipt": {
+      "bytes": 449,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\compile-1.json",
+      "physicalSha256": "9b62b94d1423c2d6f195ed310e5ead6545230acf02c2c4702d7a5d584f9666dc"
+    },
+    "compiledSources": 2,
+    "controlsPassed": 1,
+    "details": {
+      "bytes": 768,
+      "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1-cf0fb5d5059648068e24c6f2124b493d\\output-recipe-controls.json",
+      "physicalSha256": "65cffd75e0b6b339229d35c391880b6c7370985dc265eb528c788be1ba4388ae"
+    },
+    "doubles": "Constructed recipe envelope,zero placeholder checkpoint/proof hashes and loss values,invalid token sentinel. Actual session/config/source/path/codec/payload/helper/history functions execute. No tensor/autograd/model/GPU/optimizer/guard/boundary doubles run in this continuation.",
+    "firstTry": true,
+    "nativeImports": [],
+    "observedNewFailures": [],
+    "oldGroupRerun": false,
+    "refused": "Wrong binding.fit or binding.numerics,conflicting duplicate settings/numerics,wrong objective and missing mandatory manifest settings.",
+    "whitespaceCommand": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "whitespaceExit": 0
+  },
+  "correctionUnchangedProtections": 40,
+  "coupledChanges": "New exact objective/recipe/source/encoded/checkpoint/output/proof bindings and fixed host reader; original model/data/labels/splits/prompt/scorer/threshold/schedule/optimizer/scaler/serializer/guard/limits unchanged.",
+  "decision": "accept_fixed_class_balanced_objective_and_strict_emitted_result_recipe_reader_code_only",
+  "developmentOrExpectationsOpened": false,
+  "fitPerformed": false,
+  "heldOutClosed": true,
+  "historicalFitSealed": true,
+  "integratedOwnedCommits": [
+    "cc9eca9e279df2082df5e19b4fe6b4b0f4b512bf",
+    "fdf146374dda33f838a0ca29804d8bbf7abd051a",
+    "064f54c9d6fe5412e522424783554aeede04f8b0",
+    "cf9f1c2608b4a70f6e19bc9f9416a64bbfeff592"
+  ],
+  "mergeResolution": "Initial phase-source conflict with prior coordinator legacy helper resolved to exact owned original source, then reviewed correction commit applied. Final owned/runtime Git blobs equal learner; no coordinator-only runtime substitution.",
+  "nativeExecutionPerformed": false,
+  "next": "STUDENT45 separately positive frozen first balanced phase at final learner393f058/new experiment; phase2/3 only after independently accepted immediate same-objective checkpoint.",
+  "objective": {
+    "classMultipliers": {
+      "0": {
+        "denominator": 274,
+        "numerator": 175
+      },
+      "1": {
+        "denominator": 76,
+        "numerator": 175
+      }
+    },
+    "labels": "0=not directly supported;1=directly supported; provisional supervision unchanged",
+    "negativePairs": 45,
+    "normalization": "Fixed global per-class mass over frozen57 pairs; no per-parent renormalization, sampling or dynamic batch normalization.",
+    "originalCandidateWeight": "1/(10*candidateCount)",
+    "originalNegativeMass": {
+      "denominator": 175,
+      "numerator": 137
+    },
+    "originalPositiveMass": {
+      "denominator": 175,
+      "numerator": 38
+    },
+    "pairs": 57,
+    "parentTotalsEqual": false,
+    "parents": 10,
+    "positivePairs": 12,
+    "promptSha256": "39ced4c36b37c0d67d3f68c95e10acdd8791c7e745d2139717aa050392cea6b5",
+    "publicationSha256": "edffc5d0f047e065f0c1d32f50bc43592206ee9dca224000549f99622cd7cc82",
+    "selectionPolicySha256": "ab32fe7cb76e34aca57dbc799b9664c8a05f26aae1eaa13dffdc1e19ae0cb5e2",
+    "targetClassMass": {
+      "0": {
+        "denominator": 2,
+        "numerator": 1
+      },
+      "1": {
+        "denominator": 2,
+        "numerator": 1
+      }
+    },
+    "totalMass": {
+      "denominator": 1,
+      "numerator": 1
+    },
+    "trainingDataSha256": "6dc7c52195c9d19683654c6593dd83b08eefc39327803510fdcaca824df529cd",
+    "version": "association-fragment-rank-balanced-objective/1",
+    "weightDerivationUsesDevelopment": false
+  },
+  "objectiveSha256": "d4ccb3dd75ec5e47d08f9ccb9d9ab5e043ac177147ec098e5e7aa96226531702",
+  "oldControlMethodsAstUnchanged": true,
+  "originalChecks": "Three initial CPU controls passed; startup assertion-only correction passed on sole affected rerun; seven compiles. Consumed without rerun.",
+  "originalRetainedReferences": 69,
+  "originalReview": {
+    "bytes": 5033,
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-orchestrator-20261002\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student-fragment-rank-balanced-phase-code-review-v1.json",
+    "physicalSha256": "ccb22f6925571842fdf1ec8529c1567ebde928383e547a4aee659b35d05bb3d0"
+  },
+  "originalUnchangedProtections": 35,
+  "ownedGitBytesEqual": true,
+  "ownerCorrectionCodeCommit": "0dc8197eceb4a130f5666afc683e8ed5a8ba8b77",
+  "ownerFinalHead": "393f058fae9eff61429a2fa53d04b97f919e31ab",
+  "ownerInitialBase": "9e1782a98252542d02440022f8680535f4ee0080",
+  "ownerInitialCodeCommit": "a87aa5d75ea796d8ea3ea3f4e6bc06c811abc1a8",
+  "ownerInitialFinalHead": "116c0a9eb2b7681e0ed24935277ba05fc2d83b91",
+  "promotionAuthorized": false,
+  "qualification": "Original arithmetic/native doubles and continuation constructed metadata qualify code checks only. New native weighted autograd/full-state save-resume/fit/resources/quality unrun.",
+  "qualityQualified": false,
+  "recordedAtUtc": "2026-10-04T16:25:38.711016+00:00",
+  "references": {
+    "bytes": 28304,
+    "path": "E:\\BhuAayam-data\\task-data\\ml-distillation\\coordinator\\student-44-balanced-code-acceptance-native-packet-v1-25fb38ed9360451984e1eda28f89a47c\\checked-references.json",
+    "physicalSha256": "0fa30fdf734ffba2f03bfd6dbe0b3894d9b46ccf461159147596ffe345992125"
+  },
+  "reloadPerformed": false,
+  "scalerClarification": "init_scale128,growth_interval2000; tracker ends60. Prior shorthand growth60 was inaccurate and does not change runtime.",
+  "sourceEvidence": [
+    {
+      "bytes": 14545,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-balanced-phase-code-v1.json",
+      "physicalSha256": "93b30b8a99b33192422a921543fa947d513e8379aab86459cf8ce79010221875"
+    },
+    {
+      "bytes": 11327,
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\56f9\\3d-ulpin\\docs\\evidence\\usp\\ml-distillation\\student\\fragment-rank-balanced-phase-output-recipe-code-v1.json",
+      "physicalSha256": "a083d85e6af439ca78ba663716b3209bd8feb8d1c44e08b442d2d23adc033a52"
+    }
+  ],
+  "sourceWhitespaceExit": 0,
+  "teacherIdleBlind": true,
+  "testsRerun": false,
+  "version": "student-fragment-rank-balanced-phase-code-acceptance/1",
+  "weightedObjective": "Original rational weight multiplied once before backward by175/76 positive or175/274 negative; effective global class mass1/2 each,total1; no parent renormalization."
+}
