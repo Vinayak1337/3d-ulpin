@@ -86,7 +86,7 @@ def label_logits(logits, label_ids, torch, vocab_size):
     return values
 
 
-def score_focus(model, tokenizer, item, torch, gpu_check):
+def score_focus(model, tokenizer, item, torch, gpu_check, *, reload_session=None):
     encoded = tokenizer(item["prompt"], return_tensors="pt", add_special_tokens=False, truncation=False)
     require(set(encoded) <= {"input_ids", "attention_mask"} and "input_ids" in encoded
             and tuple(encoded["input_ids"].shape) == (1, len(item["inputIds"]))
@@ -106,6 +106,12 @@ def score_focus(model, tokenizer, item, torch, gpu_check):
     record = {**item["record"], **values, "scoreSeconds": seconds, "logitsToKeep": 1,
               "logitsShape": list(output.logits.shape), "nativeLogitsDtype": str(output.logits.dtype),
               "marginDtype": "float32", "scoreOrigin": "original_base_last_prompt_position"}
+    if reload_session is not None:
+        require(reload_session.model is model and reload_session.proof["passed"] is True, "rank_reload_native_proof_required")
+        record.update(scoreOrigin="accepted_rank_adapter_last_prompt_position", adapterApplied=True,
+            acceptedFitSha256=reload_session.proof["acceptedFitSha256"],
+            adapterFilesSha256=reload_session.proof["adapterFilesSha256"],
+            trainingSourceCommit=reload_session.proof["trainingSourceCommit"], fitPerformedInThisProcess=False)
     del output, encoded
     gpu_check()
     return record
@@ -183,28 +189,42 @@ def technical_loss_proof(torch):
             "modelParametersUsedOrUpdated": False, "trainingLabelsRead": False, "reports": reports, "passed": True}
 
 
-def run_scores(model, tokenizer, prepared, contexts, schema, contract, family, torch, gpu_check, preserve_raw, preserve_technical):
-    require(type(model).__name__ == "Qwen2ForCausalLM" and model.config.model_type == "qwen2", "rank_original_qwen2_required")
+def run_scores(model, tokenizer, prepared, contexts, schema, contract, family, torch, gpu_check, preserve_raw, preserve_technical, *, reload_session=None):
+    if reload_session is None:
+        require(type(model).__name__ == "Qwen2ForCausalLM" and model.config.model_type == "qwen2", "rank_original_qwen2_required")
+    else:
+        from .fragment_rank_reload import _Session
+        require(type(reload_session) is _Session and reload_session.model is model
+            and type(reload_session.proof) is dict and reload_session.proof["passed"] is True, "rank_reload_native_proof_required")
     gpu_check()
-    try:
-        proof = technical_loss_proof(torch)
-    except Exception as error:
-        preserve_technical({"version": "association-fragment-rank-technical-proof/1", "passed": False,
-            "isolatedSyntheticLogitsOnly": True, "modelParametersUsedOrUpdated": False, "trainingLabelsRead": False,
-            "error": str(error)})
-        raise
-    preserve_technical(proof)
+    if reload_session is None:
+        try:
+            proof = technical_loss_proof(torch)
+        except Exception as error:
+            preserve_technical({"version": "association-fragment-rank-technical-proof/1", "passed": False,
+                "isolatedSyntheticLogitsOnly": True, "modelParametersUsedOrUpdated": False, "trainingLabelsRead": False,
+                "error": str(error)})
+            raise
+        preserve_technical(proof)
     gpu_check()
     records = []
     for item in prepared:
-        record = score_focus(model, tokenizer, item, torch, gpu_check)
+        options = {"reload_session": reload_session} if reload_session is not None else {}
+        record = score_focus(model, tokenizer, item, torch, gpu_check, **options)
         preserve_raw(len(records), record)  # evidence survives a later failed score/vector
         records.append(record)
     vectors, results = project_records(records, prepared, contexts, schema, contract, family)
-    return records, {"version": "association-fragment-rank-result/1", "results": results, "scoreVectors": vectors,
+    result = {"version": "association-fragment-rank-result/1", "results": results, "scoreVectors": vectors,
         "modelOutputValidCount": len(results), "exampleCount": len(results), "scoreCount": len(records),
         "representation": rank.metadata(), "nativeLabelBoundaryVerified": True, "nativeTechnicalLossProofPassed": True,
         "retrievedFragmentCount": sum(row["retrievedFragmentCount"] for row in results),
         "evaluationOpened": False, "teacherOutputsUsed": False, "fitPerformed": False,
         "expectedSelectionsEvaluated": False, "teacherTargetsInPrompt": False,
         "qualification": "deterministic threshold/projection of model support scores; empty means no support in supplied context, not property absence; relevance/source truth/canonical association unqualified"}
+    if reload_session is not None:
+        proof = reload_session.finish(model)
+        preserve_technical(proof)
+        result.update(version="association-fragment-rank-reload-result/1", adapterApplied=True,
+            nativeTechnicalLossProofPassed=None, technicalLossProofOrigin="accepted historical fit; not rerun in reload",
+            nativeReloadProof=proof, scoreOrigin="accepted_rank_adapter_last_prompt_position", fitPerformedInThisProcess=False)
+    return records, result
