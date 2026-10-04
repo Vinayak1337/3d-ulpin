@@ -36,7 +36,8 @@ export async function proposeAdaptiveMapping(caseValue:string,sourceValue:string
     workspaceRevision:profile.workspaceRevision,workspaceFingerprint:profile.workspaceFingerprint,
     validation:'mechanics_only' as const,reviewRequired:true as const};
   const result=(status:AdaptiveMappingResponse['status'],code:string|null,plan:AdaptiveMappingResponse['plan']=null,
-    validationErrors:string[]=[],call:AdaptiveMappingResponse['call']=null)=>AdaptiveMappingResponseSchema.parse({...base,status,code,plan,validationErrors,call});
+    validationErrors:string[]=[],call:AdaptiveMappingResponse['call']=null,replayed?:boolean)=>AdaptiveMappingResponseSchema.parse({
+      ...base,status,code,plan,validationErrors,call,...(replayed===undefined?{}:{replayed})});
   let policy:string|undefined;
   try{policy=deps.policyHash();}catch{return result('unavailable','MODEL_CONFIGURATION_UNAVAILABLE');}
   if(!policy)return result('disabled','MODEL_DISABLED');
@@ -82,7 +83,7 @@ export async function proposeAdaptiveMapping(caseValue:string,sourceValue:string
     const checked=validateAdaptiveMapping(response.data.output,profile,eligible.map(item=>item.path));
     const call=response.data.receipt?{callId:response.data.receipt.callId,
       responseSha256:response.data.receipt.responseHash,modelId:response.data.modelId}:null;
-    return result(checked.status,checked.code,checked.plan,checked.validationErrors,call);
+    return result(checked.status,checked.code,checked.plan,checked.validationErrors,call,response.data.replayed);
   }catch(error){
     if(error instanceof AppError){
       if(error.status===409 || error.code==='MODEL_POLICY_CHANGED' || error.code==='INGESTION_ACCESS_CHANGED'
