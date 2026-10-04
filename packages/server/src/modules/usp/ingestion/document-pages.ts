@@ -47,10 +47,8 @@ export async function documentPageAuthorityTx(client:PoolClient,sourceId:string,
 }
 async function authorize(sourceId:string,pin:DocumentPagePin,deadline:number){
   live(deadline);
-  return transaction(async client=>{
-    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
-    return documentPageAuthorityTx(client,sourceId,pin);
-  },{deadlineAt:deadline});
+  return transaction(client=>documentPageAuthorityTx(client,sourceId,pin),
+    {deadlineAt:deadline},'repeatable_read_only');
 }
 async function original(authority:DocumentPageAuthority,deadline:number){
   live(deadline);

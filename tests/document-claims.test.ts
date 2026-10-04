@@ -38,7 +38,6 @@ function harness(){
       bytes:i===0?1630108:3782332,subject,receivedAt:'2026-10-05T00:00:00Z'}}}));
   let writeScope=false,caseLocked=false,sourceLocked=false;
   const client={query:async(sql:string,values:any[]=[])=>{
-    if(sql.startsWith('SET TRANSACTION'))return {rows:[]};
     if(sql.startsWith('SELECT id,revision,archived')){
       state.onCaseRead?.();
       if(sql.endsWith('FOR UPDATE')){assert(writeScope);caseLocked=true;}
@@ -66,9 +65,10 @@ function harness(){
   // Serialize the controlled connections; this exercises service replay branches,
   // not PostgreSQL lock/concurrency performance or live transactional durability.
   let tail:Promise<unknown>=Promise.resolve();
-  const tx=(async(action:any,options:any)=>{
+  const tx=(async(action:any,options:any,mode:any)=>{
     const run=tail.then(async()=>{
-      assert(options.deadlineAt>Date.now());writeScope=true;caseLocked=false;sourceLocked=false;
+      assert(options.deadlineAt>Date.now());assert(mode===undefined||mode==='repeatable_read_only');
+      writeScope=mode===undefined;caseLocked=false;sourceLocked=false;
       const prior=structuredClone(operations);
       try{return await action(client);}catch(e){operations.clear();for(const [key,row] of prior)operations.set(key,row);throw e;}
       finally{writeScope=false;caseLocked=false;sourceLocked=false;}
