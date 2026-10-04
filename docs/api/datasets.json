@@ -6736,6 +6736,145 @@
         "nativeInspectionTask": "controlled accepted metadata; native artifact not read",
         "qualification": "no geometry/frame/property/accuracy/rights/learning promotion"
       }
+    },
+    {
+      "id": "home-office-hospitality-2021-q3-ods-20261004",
+      "classification": "test_only",
+      "issuer": "UK Home Office",
+      "originalUrl": "https://assets.publishing.service.gov.uk/media/61ee7e4dd3bf7f0550c0c55a/Home_Office_Senior_Officials_hospitality_-_July_2021_to_September_2021.ods",
+      "publicationUrl": "https://www.gov.uk/government/publications/home-office-senior-officials-business-expenses-and-meetings-july-2021-to-september-2021",
+      "acquiredAt": "2026-10-04T13:47:14.621575+00:00",
+      "version": null,
+      "geography": "United Kingdom; administrative transparency, no physical property reference",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": null,
+      "terms": {
+        "state": "publisher_notice_observed",
+        "license": "OGL-3.0 except where otherwise stated",
+        "attribution": "Home Office / Crown copyright; preserve source publication attribution",
+        "reference": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+      },
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/home-office-hospitality-2021-q3.ods",
+        "bytes": 5168,
+        "sha256": "1c6a364fd20ff769835451a075de4654fc21e1499dfaf159081d3db089e591f6",
+        "format": "ods",
+        "repositoryBytesVerified": false
+      },
+      "limitations": [
+        "Source-native cells/ranges only; no formulas/links executed or headers/units/joins inferred.",
+        "No official Indian property, matching, geometry, accuracy, rights or learning qualification."
+      ],
+      "manifest": "docs/evidence/usp/native-ods/sources.json",
+      "manifestSha256": "0f1cb41c4ab2da5ded0d21b229f6943f73998998770dfe954e068884c5cd70dd",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "published_official_administrative_table",
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "nativeInspectionEvidence": {
+        "guide": "docs/evidence/usp/native-ods-handoff.md",
+        "proofPath": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/verification.json",
+        "proofBytes": 5394,
+        "proofSha256": "079e21018595aeadad3c1867e09a3761fc0c46bec99592d1f77fd984e71eb7ba",
+        "scope": "Actual document parser/isolated HTTP bridge with disclosed input/auth/byte-reader controls and removal of unused pyproj imports; full geo-service startup/live enrollment unverified.",
+        "readerSha256": "1f498264ec90016980a7f03d091b0239ed7be0ec379997cbbe48f08b4151a255",
+        "installedCurrentProfileQualified": false
+      }
+    },
+    {
+      "id": "libreoffice-fdo43534-ods-20261004",
+      "classification": "test_only",
+      "issuer": "LibreOffice / The Document Foundation",
+      "originalUrl": "https://raw.githubusercontent.com/LibreOffice/core/ec079b9fc5938d548b082278dbb4f02f9569660e/sc/qa/unit/data/ods/fdo43534test.ods",
+      "publicationUrl": "https://github.com/LibreOffice/core/commit/ec079b9fc5938d548b082278dbb4f02f9569660e",
+      "acquiredAt": "2026-10-04T13:47:50.165162+00:00",
+      "version": "ec079b9fc5938d548b082278dbb4f02f9569660e",
+      "geography": "Development regression input; physical geography unknown",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": null,
+      "terms": {
+        "state": "publisher_licence_files_observed",
+        "license": null,
+        "attribution": "LibreOffice core regression corpus, ec079b9fc5938d548b082278dbb4f02f9569660e, sc/qa/unit/data/ods/fdo43534test.ods",
+        "reference": "https://github.com/LibreOffice/core/tree/ec079b9fc5938d548b082278dbb4f02f9569660e",
+        "limitations": "Revision contains GPLv3/MPL2 texts; input-specific redistribution/ML clearance not independently established."
+      },
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/libreoffice-fdo43534test.ods",
+        "bytes": 18047,
+        "sha256": "576998ac8d4283964c329a4979579e81959d60ca5b4aecb7d673575b9007b288",
+        "format": "ods",
+        "repositoryBytesVerified": false
+      },
+      "limitations": [
+        "Source-native cells/ranges only; no formulas/links executed or headers/units/joins inferred.",
+        "No official Indian property, matching, geometry, accuracy, rights or learning qualification."
+      ],
+      "manifest": "docs/evidence/usp/native-ods/sources.json",
+      "manifestSha256": "0f1cb41c4ab2da5ded0d21b229f6943f73998998770dfe954e068884c5cd70dd",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "published_upstream_regression_sample",
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "nativeInspectionEvidence": {
+        "guide": "docs/evidence/usp/native-ods-handoff.md",
+        "proofPath": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/verification.json",
+        "proofBytes": 5394,
+        "proofSha256": "079e21018595aeadad3c1867e09a3761fc0c46bec99592d1f77fd984e71eb7ba",
+        "scope": "Actual document parser/isolated HTTP bridge with disclosed input/auth/byte-reader controls and removal of unused pyproj imports; full geo-service startup/live enrollment unverified.",
+        "readerSha256": "1f498264ec90016980a7f03d091b0239ed7be0ec379997cbbe48f08b4151a255",
+        "installedCurrentProfileQualified": false
+      }
+    },
+    {
+      "id": "kit-iai-fzk-haus-ifc4-20261004",
+      "manifest": "docs/evidence/usp/paired-building-floor-sources/manifest.json",
+      "manifestSha256": "182ee165fb57470c3cc9a7514395e9d71ced22ac17d3eb5ebf60764ad4bd59ed",
+      "manifestHashScope": "UTF-8 metadata with LF line endings; originals use exact-byte hashes.",
+      "originKind": "publisher_linked_development_model",
+      "classification": "test_only",
+      "issuer": "KIT/IAI, as attributed by IFC Wiki",
+      "originalUrl": "https://www.ifcwiki.org/images/e/e3/AC20-FZK-Haus.ifc",
+      "acquiredAt": "2026-10-04T13:46:37.471Z",
+      "geography": "Physical geography unknown; publisher describes a Simple Phantasy Building.",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": "Source-native metre length unit; no conversion/measurement qualification.",
+      "terms": {
+        "state": "publisher_notice_observed",
+        "license": null,
+        "attribution": "KIT/IAI FZK-Haus example, hosted by IFC Wiki; preserve institutional attribution requested by publisher. IFC metadata identifies KHH / IAI / FZK and generic author/organization strings, not a property owner.",
+        "reference": "https://www.ifcwiki.org/index.php?title=KIT_IFC_Examples&oldid=552",
+        "limitations": "Public development research/inspection; no independent model-specific formal licence, operational permission or training qualification asserted."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01/originals/AC20-FZK-Haus.ifc",
+        "bytes": 2570803,
+        "sha256": "70cc8ff245fc0894201d96496c031005a5cbd7a96b22d8a1b87c5a883fb77994",
+        "format": "ifc",
+        "repositoryBytesVerified": false
+      },
+      "literalInspectionEvidence": {
+        "guide": "docs/evidence/usp/paired-building-floor-sources-handoff.md",
+        "proofPath": "E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01/verification.json",
+        "proofBytes": 8519,
+        "proofSha256": "c2d0f6238d009fd7b4c50f7152351efe5366470fecd3ea55e16cc268a8b88130",
+        "scope": "Exact source byte/line building/storey/decomposition literals only; no native parser/profile/job executed."
+      },
+      "crossInputCorrespondence": "not_assessed",
+      "pairedSourceState": "needs_input",
+      "limitations": [
+        "One retained model, zero qualified cross-input building/floor pairs; companion institutional endpoints returned HTML challenges.",
+        "Named storeys and decomposition are source declarations; no canonical IDs, geometry, frame, heights, rights, accuracy, operational or learning qualification.",
+        "Require valid unchanged companion bytes and explicit named-storey/version correspondence; no inferred crosswalk."
+      ]
     }
   ],
   "offlineLearningCorpus": {

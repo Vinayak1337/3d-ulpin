@@ -8507,6 +8507,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -8562,6 +8571,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -10195,6 +10213,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -11139,6 +11166,15 @@ export interface components {
                             /** @enum {string} */
                             cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                             cellType?: string;
+                            ods?: {
+                                rowElement: number;
+                                cellElement: number;
+                                rowRepeat: number;
+                                columnRepeat: number;
+                                /** @enum {string} */
+                                valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                formula?: string;
+                            };
                             /** Format: uuid */
                             unitId?: string;
                             unitSha256?: string;
@@ -11570,6 +11606,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -13194,6 +13239,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -14138,6 +14192,15 @@ export interface components {
                             /** @enum {string} */
                             cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                             cellType?: string;
+                            ods?: {
+                                rowElement: number;
+                                cellElement: number;
+                                rowRepeat: number;
+                                columnRepeat: number;
+                                /** @enum {string} */
+                                valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                formula?: string;
+                            };
                             /** Format: uuid */
                             unitId?: string;
                             unitSha256?: string;
@@ -14569,6 +14632,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -15049,6 +15121,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -15084,6 +15165,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -16245,6 +16335,15 @@ export interface components {
                             /** @enum {string} */
                             cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                             cellType?: string;
+                            ods?: {
+                                rowElement: number;
+                                cellElement: number;
+                                rowRepeat: number;
+                                columnRepeat: number;
+                                /** @enum {string} */
+                                valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                formula?: string;
+                            };
                             /** Format: uuid */
                             unitId?: string;
                             unitSha256?: string;
@@ -16637,6 +16736,15 @@ export interface components {
                             /** @enum {string} */
                             cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                             cellType?: string;
+                            ods?: {
+                                rowElement: number;
+                                cellElement: number;
+                                rowRepeat: number;
+                                columnRepeat: number;
+                                /** @enum {string} */
+                                valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                formula?: string;
+                            };
                             /** Format: uuid */
                             unitId?: string;
                             unitSha256?: string;
@@ -30350,6 +30458,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -30532,6 +30649,15 @@ export interface components {
                             /** @enum {string} */
                             cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                             cellType?: string;
+                            ods?: {
+                                rowElement: number;
+                                cellElement: number;
+                                rowRepeat: number;
+                                columnRepeat: number;
+                                /** @enum {string} */
+                                valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                formula?: string;
+                            };
                             /** Format: uuid */
                             unitId?: string;
                             unitSha256?: string;
@@ -30684,6 +30810,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -30719,6 +30854,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -31880,6 +32024,15 @@ export interface components {
                             /** @enum {string} */
                             cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                             cellType?: string;
+                            ods?: {
+                                rowElement: number;
+                                cellElement: number;
+                                rowRepeat: number;
+                                columnRepeat: number;
+                                /** @enum {string} */
+                                valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                formula?: string;
+                            };
                             /** Format: uuid */
                             unitId?: string;
                             unitSha256?: string;
@@ -32272,6 +32425,15 @@ export interface components {
                             /** @enum {string} */
                             cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                             cellType?: string;
+                            ods?: {
+                                rowElement: number;
+                                cellElement: number;
+                                rowRepeat: number;
+                                columnRepeat: number;
+                                /** @enum {string} */
+                                valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                formula?: string;
+                            };
                             /** Format: uuid */
                             unitId?: string;
                             unitSha256?: string;
@@ -33471,6 +33633,15 @@ export interface components {
                         /** @enum {string} */
                         cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                         cellType?: string;
+                        ods?: {
+                            rowElement: number;
+                            cellElement: number;
+                            rowRepeat: number;
+                            columnRepeat: number;
+                            /** @enum {string} */
+                            valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                            formula?: string;
+                        };
                         /** Format: uuid */
                         unitId?: string;
                         unitSha256?: string;
@@ -45269,7 +45440,7 @@ export interface components {
                 reasonCodes: string[];
                 source: {
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     readerSha256: string;
@@ -45303,6 +45474,15 @@ export interface components {
                             /** @enum {string} */
                             cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                             cellType?: string;
+                            ods?: {
+                                rowElement: number;
+                                cellElement: number;
+                                rowRepeat: number;
+                                columnRepeat: number;
+                                /** @enum {string} */
+                                valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                formula?: string;
+                            };
                             /** Format: uuid */
                             unitId?: string;
                             unitSha256?: string;
@@ -45874,7 +46054,7 @@ export interface components {
                     /** @enum {string} */
                     kind: "document";
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     code: string | null;
@@ -45917,6 +46097,15 @@ export interface components {
                                 /** @enum {string} */
                                 cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                                 cellType?: string;
+                                ods?: {
+                                    rowElement: number;
+                                    cellElement: number;
+                                    rowRepeat: number;
+                                    columnRepeat: number;
+                                    /** @enum {string} */
+                                    valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                    formula?: string;
+                                };
                                 /** Format: uuid */
                                 unitId?: string;
                                 unitSha256?: string;
@@ -46069,7 +46258,7 @@ export interface components {
                     /** @enum {string} */
                     kind: "document_ocr";
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     nativeCode: string | null;
@@ -47256,6 +47445,15 @@ export interface components {
                             /** @enum {string} */
                             cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                             cellType?: string;
+                            ods?: {
+                                rowElement: number;
+                                cellElement: number;
+                                rowRepeat: number;
+                                columnRepeat: number;
+                                /** @enum {string} */
+                                valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                formula?: string;
+                            };
                             /** Format: uuid */
                             unitId?: string;
                             unitSha256?: string;
@@ -48100,7 +48298,7 @@ export interface components {
                         /** @enum {string} */
                         kind: "document";
                         /** @enum {string} */
-                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
                         /** @enum {string} */
                         nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                         code: string | null;
@@ -48143,6 +48341,15 @@ export interface components {
                                     /** @enum {string} */
                                     cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                                     cellType?: string;
+                                    ods?: {
+                                        rowElement: number;
+                                        cellElement: number;
+                                        rowRepeat: number;
+                                        columnRepeat: number;
+                                        /** @enum {string} */
+                                        valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                        formula?: string;
+                                    };
                                     /** Format: uuid */
                                     unitId?: string;
                                     unitSha256?: string;
@@ -48295,7 +48502,7 @@ export interface components {
                         /** @enum {string} */
                         kind: "document_ocr";
                         /** @enum {string} */
-                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
                         /** @enum {string} */
                         nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                         nativeCode: string | null;
@@ -49482,6 +49689,15 @@ export interface components {
                                 /** @enum {string} */
                                 cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                                 cellType?: string;
+                                ods?: {
+                                    rowElement: number;
+                                    cellElement: number;
+                                    rowRepeat: number;
+                                    columnRepeat: number;
+                                    /** @enum {string} */
+                                    valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                                    formula?: string;
+                                };
                                 /** Format: uuid */
                                 unitId?: string;
                                 unitSha256?: string;
@@ -59020,7 +59236,7 @@ export interface components {
                 /** @enum {string} */
                 status: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                 /** @enum {string} */
-                format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "png" | "jpeg" | "archive" | "unsupported";
+                format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
                 readerSha256: string;
                 code: string | null;
                 warnings: string[];
@@ -59095,6 +59311,15 @@ export interface components {
                     /** @enum {string} */
                     cellState?: "literal" | "empty" | "empty_string" | "whitespace" | "formula_cached" | "formula_uncached" | "error" | "unsupported";
                     cellType?: string;
+                    ods?: {
+                        rowElement: number;
+                        cellElement: number;
+                        rowRepeat: number;
+                        columnRepeat: number;
+                        /** @enum {string} */
+                        valueSource: "value" | "boolean-value" | "date-value" | "time-value" | "string-value" | "text" | "none";
+                        formula?: string;
+                    };
                     /** Format: uuid */
                     unitId?: string;
                     unitSha256?: string;
