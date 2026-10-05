@@ -6,6 +6,8 @@ A separate exact root instruction admits the frozen Torch reference, with
 current-process gates and conditional ALL24. Separately authorized v2 is an
 own-route ALL24 baseline with cached production scoring. A distinct exact root
 instruction admits one frozen pilot fit with no evaluation or scoring.
+A separate positive/empty loss probe admits at most two no-grad forwards,
+without Trainer, backward, optimizer or checkpoint writes.
 The e71d historical control and its single-use launcher remain unchanged.
 """
 from __future__ import annotations
@@ -57,6 +59,14 @@ FIT_ROOT_SHA = "71f0091f70ede5c5b8db1729ac368e626c79e7cb8f97d8594e74bbc7e7a9b3ef
 FIT_RUNNER_SHA = "30dfc02ab1f7d4122e306cdd7ca4ac3262b8e30791f2c77b8098527fb8880c93"
 FIT_PLAN_SHA = "22b0a1bd318490bb3a5b484dd248eebdba9d94c87879897f1c3d2de60f7abe37"
 FIT_INTERFACE_SHA = "5f26294968f4af554dd6419dde4bdd020321b0bd3eade07c55a9086d9355b29e"
+PROBE = DATA / "d07-rfdetr-empty-loss-probe-20261006"
+DIAGNOSIS = DATA / "d07-rfdetr-nonfinite-diagnosis-20261006"
+PROBE_ROOT_SHA = "2e42045ae78021a92a5bc7ee47456933f597396eea75581bb60cc9c1b1e9aa41"
+PROBE_RUNNER_SHA = "24afe260cb2c19fd6a56c5cfdd7b88d40a3df6af03b08f073fee20fb061deafd"
+PROBE_PROPOSAL_SHA = "6dc4ffde6a8b3b6e00ba67000d3c592c01848ae5953fee81fcf0b10a6ef98be2"
+PROBE_SCOPE = {"task":"D07-RFDETR-EMPTY-LOSS-PROBE", "scope":"original_positive_empty_loss_only",
+    "forwardWithBuiltInLossMax":2, "backward":0, "optimizer":0, "fitEpochs":0,
+    "developmentExamples":0, "finalExamples":0, "selectedImageIds":[1,13]}
 
 
 def require(condition, reason):
@@ -325,7 +335,7 @@ def validate_inspection(actual, expected):
             and config["Image"] == expected["imageDigest"], "Actual selected image mismatch")
     require(config["User"] == "10001:10001" and config["WorkingDir"] == "/inputs/plan"
             and config["Entrypoint"] == [expected["python"]]
-            and config["Cmd"] == expected["createArgv"][-4:]
+            and config["Cmd"] == expected.get("processArgv", expected["createArgv"][-4:])
             and config["Labels"].get("codex.task") == expected["task"], "Actual task/entrypoint binding mismatch")
     env = dict(x.split("=", 1) for x in config["Env"])
     require(len(env) == len(config["Env"]) and env == expected["environment"], "Actual environment differs from finite binding")
@@ -553,6 +563,321 @@ finally:
 need(peak<=budget and reserved<=budget,'Torch memory allocation cap exceeded')
 need(failure is None,'Accepted runner failed: '+str(failure))
 '''.lstrip()
+
+
+PROBE_FORWARD = r'''
+# Same native process, new root scope; no old baseline/fit authority is accepted.
+import ast, copy, runpy, time, traceback
+authority=Path('/inputs/probe/authorization.json')
+gate=json.loads(authority.read_bytes())
+need(gate['scope']==cfg['scope'] and gate['rootAuthorized'] is True and gate['trainingAuthorized'] is False,'Wrong diagnostic scope')
+need(digest(Path('/inputs/probe/root-assignment.txt'))==cfg['rootSha256'],'Diagnostic root instruction drift')
+need(digest(Path(__file__))==gate['entrySha256'],'Diagnostic entry drift')
+need(digest(config)==gate['planSha256'],'Diagnostic plan drift')
+observation=gate['launchObservation']
+need(observation['validated'] and observation['imageDigest']==cfg['runtimeBinding']['imageDigest'],'Fresh image readback required')
+need(all(os.environ.get(k)==v for k,v in observation['environment'].items()),'Actual diagnostic environment mismatch')
+for mount in observation['mounts']:
+    need(bool(os.statvfs(mount['containerPath']).f_flag & os.ST_RDONLY)==mount['readOnly'],'Diagnostic mount permission mismatch')
+proof={'schemaVersion':'ramp-empty-loss-process/1','pid':os.getpid(),'scope':cfg['scope'],
+    'rootSha256':cfg['rootSha256'],'imageDigest':observation['imageDigest'],'bounds':cfg['bounds'],
+    'gpuUuid':observation['environment']['NVIDIA_VISIBLE_DEVICES'],'gpuOwnerTransferred':True,
+    'modelOwner':'01a0fbd5-4561-7692-b366-ebd123380593','effectiveNetworkDenied':True,
+    'effectiveResourceLimits':True,'exactMountsAndEnvironmentVerified':True,'nativeProof':result,
+    'observedMounts':observation['mounts'],'environment':observation['environment']}
+raw=(json.dumps(proof,indent=2)+'\n').encode()
+need(len(raw)<=262144,'Process receipt bound exceeded')
+with (output/'process-preflight.json').open('xb') as f:f.write(raw)
+print(json.dumps({'readyForAuthorization':True,'pid':os.getpid(),'preflightBytes':len(raw),
+    'preflightSha256':hashlib.sha256(raw).hexdigest()}),flush=True)
+release=json.loads(sys.stdin.readline())
+need(release['pid']==os.getpid() and Path('/inputs/probe/preflight.json').read_bytes()==raw,'Same-PID preflight required')
+need(digest(authority)==release['authorizationSha256'],'Diagnostic authorization drift')
+gate=json.loads(authority.read_bytes())
+need(gate['scope']==cfg['scope'] and gate['preflightReceipt']['sha256']==hashlib.sha256(raw).hexdigest()
+    and gate['entrySha256']==digest(Path(__file__)) and gate['planSha256']==digest(config)
+    and gate['rootAuthorized'] is True and gate['trainingAuthorized'] is False,'Exact diagnostic authority required')
+need(proof['gpuUuid']=='GPU-3989f368-bd26-bd52-9daf-037a9862f82f','Wrong GPU transfer')
+proposal=json.loads(Path('/inputs/probe/proposal.json').read_bytes())
+package=Path(importlib.metadata.distribution('transformers').locate_file('transformers'))
+for expected in proposal['sourceReview']['pins']:
+    name=Path(expected['path'].replace('\\','/')).name.removeprefix('primary-')
+    relative=('loss/'+name) if name.startswith('loss_') else ('models/rf_detr/'+name if name in ['modeling_rf_detr.py','image_processing_rf_detr.py'] else name)
+    installed=package/relative
+    need(installed.stat().st_size==expected['bytes'] and digest(installed)==expected['sha256'],'Installed loss/model/processor/Trainer source drift')
+need(cfg['scope']['selectedImageIds']==[i['imageId'] for i in proposal['nextExperiment']['inputs']]
+    and cfg['scope']['forwardWithBuiltInLossMax']==2 and cfg['scope']['backward']==cfg['scope']['optimizer']==0,'Frozen two-call contract changed')
+started=time.perf_counter();failure=None;torch=None;diagnostics=None;calls=[]
+def bounded_json(name,value):
+    encoded=(json.dumps(value,indent=2,allow_nan=False)+'\n').encode()
+    need(len(encoded)<=262144,'Diagnostic receipt bound exceeded')
+    with (output/name).open('xb') as f:f.write(encoded)
+def offline(event,args):
+    if event in {'socket.connect','socket.getaddrinfo','socket.bind','socket.sendto','subprocess.Popen','os.system'}:
+        raise RuntimeError('Diagnostic network/child launch refused')
+sys.addaudithook(offline)
+try:
+    import torch
+    import numpy as np
+    from PIL import Image
+    from pycocotools import mask as coco_mask
+    from transformers import RfDetrForInstanceSegmentation,RfDetrImageProcessor,set_seed
+    torch.set_num_threads(2);torch.set_num_interop_threads(1)
+    need(torch.cuda.is_available() and torch.cuda.device_count()==1,'Single GPU required')
+    props=torch.cuda.get_device_properties(0)
+    need(str(props.uuid).removeprefix('GPU-')==proof['gpuUuid'].removeprefix('GPU-') and 'RTX 3070' in props.name,'Wrong physical GPU')
+    budget=cfg['bounds']['gpuAllocationBytes']
+    torch.cuda.set_per_process_memory_fraction(budget/props.total_memory,0);torch.cuda.reset_peak_memory_stats()
+    torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
+    set_seed(42)
+    model,loading=RfDetrForInstanceSegmentation.from_pretrained('/inputs/model',local_files_only=True,
+        use_safetensors=True,attn_implementation='eager',output_loading_info=True)
+    need(not any(loading.get(k) for k in ['missing_keys','unexpected_keys','mismatched_keys','error_msgs']),'Original strict load failed')
+    need(model.config.id2label=={0:'building'} and model.config.num_labels==1 and model.config.num_queries==200
+        and model.config.group_detr==13 and model.config.disable_custom_kernels is True,'Original head/query/group contract drift')
+    need(all(p.dtype==torch.float32 and torch.isfinite(p).all().item() for p in model.parameters()),'Original finite FP32 parameters required')
+    processor=RfDetrImageProcessor.from_pretrained('/inputs/model',local_files_only=True)
+    # Compile only the accepted source adapter/observer nodes. Never execute the
+    # runner main, execute_trainer, Trainer construction, optimizer or fit route.
+    tree=ast.parse(Path('/inputs/plan/train_building_ramp.py').read_text())
+    trainer_node=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='execute_trainer')
+    nodes=[next(n for n in tree.body if getattr(n,'name',None)==key) for key in ['diagnostic_tensor','LossDiagnostics']]
+    nodes += [next(n for n in trainer_node.body if getattr(n,'name',None)==key) for key in ['CocoPool','collate']]
+    namespace={'Path':Path,'json':json,'torch':torch,'np':np,'Image':Image,'coco_mask':coco_mask,
+        'processor':processor,'read_json':lambda p:json.loads(Path(p).read_bytes()),'require':need,'pilot':False}
+    exec(compile(ast.Module(body=nodes,type_ignores=[]),'/inputs/plan/train_building_ramp.py','exec'),namespace)
+    diagnostics=namespace['LossDiagnostics'](torch,output)
+    namespace['diagnostics']=diagnostics
+    pool=namespace['CocoPool']({'annotationPin':{'path':'/inputs/coco/train/_annotations.coco.json'}})
+    selected=proposal['nextExperiment']['inputs'];selected_ids=[i['imageId'] for i in selected]
+    images=[im for im in pool.images if im['id'] in selected_ids]
+    for item in selected:
+        image=next(im for im in images if im['id']==item['imageId'])
+        anns=pool.annotations[image['id']]
+        need(image['file_name']==item['fileName'] and [image['width'],image['height']]==[256,256]
+            and [a['id'] for a in anns]==item['sourceAnnotationIds']
+            and len(anns)==item['sourceInstanceCount'] and all(a['category_id']==1 for a in anns),'Selected source identity drift')
+    diagnostics.register_sources(images,{im['id']:pool.annotations[im['id']] for im in images})
+    model.to('cuda');model.train();diagnostics.capture_state(model)
+    model.register_forward_pre_hook(diagnostics.before_forward,with_kwargs=True)
+    def guard(module,inputs,outputs):
+        need(time.perf_counter()-started<=135,'Diagnostic inner deadline exceeded')
+        need(torch.cuda.memory_allocated()<=budget and torch.cuda.memory_reserved()<=budget,'Diagnostic GPU cap exceeded')
+        loss=outputs.loss
+        valid=(loss is not None and loss.numel()==1 and torch.isfinite(loss).all().item()
+            and all(torch.isfinite(v).all().item() for v in outputs.loss_dict.values()))
+        try:diagnostics.after_forward(outputs,valid)
+        except Exception as error:
+            print('Loss telemetry unavailable: '+type(error).__name__+': '+str(error)[:500],file=sys.stderr)
+        need(valid,'Nonfinite built-in loss; stop before backward and retain the attempt')
+        need(list(outputs.pred_masks.shape[-2:])==[108,108],'Native mask grid changed')
+        calls.append(copy.deepcopy(diagnostics.current))
+    model.register_forward_hook(guard)
+    for item in selected:
+        need(diagnostics.forward_calls<2 and time.perf_counter()-started<=135,'Two-call/deadline bound exceeded')
+        index=next(i for i,im in enumerate(pool.images) if im['id']==item['imageId'])
+        batch=namespace['collate']([pool[index]])
+        batch={k:([{n:v.to('cuda') for n,v in t.items()} for t in value] if k=='labels' else value.to('cuda')) for k,value in batch.items()}
+        with torch.no_grad(),torch.autocast(device_type='cuda',enabled=False):model(**batch)
+    need(diagnostics.forward_calls==2,'Incomplete two-call diagnostic')
+except BaseException as error:
+    failure={'type':type(error).__name__,'message':str(error)[:4000]};traceback.print_exc()
+finally:
+    bounded_json('result.json',{'schemaVersion':'ramp-empty-loss-result/1','scope':cfg['scope'],
+        'state':'stopped_before_backward' if failure else 'both_controls_finite',
+        'forwardCalls':diagnostics.forward_calls if diagnostics else 0,'completedCalls':calls,'failure':failure,
+        'optimizerUpdates':0,'backwardCalls':0,'checkpointSaved':False,'trainingAuthorized':False,
+        'historicalFailingInput':'UNKNOWN','authorizationSha256':release['authorizationSha256']})
+    metrics={'pid':os.getpid(),'failure':failure,'elapsedSeconds':time.perf_counter()-started,
+        'cgroupMemoryPeakBytes':int((Path('/sys/fs/cgroup')/'memory.peak').read_text()),
+        'pidsPeak':int((Path('/sys/fs/cgroup')/'pids.peak').read_text()),'trainingAuthorized':False}
+    if torch is not None and torch.cuda.is_initialized():
+        metrics.update(gpuUuid=str(torch.cuda.get_device_properties(0).uuid),
+            peakAllocatedBytes=torch.cuda.max_memory_allocated(),peakReservedBytes=torch.cuda.max_memory_reserved(),
+            preExitAllocatedBytes=torch.cuda.memory_allocated())
+    bounded_json('resources.json',metrics)
+    if metrics.get('peakAllocatedBytes',0)>5368709120 or metrics.get('peakReservedBytes',0)>5368709120:
+        failure=failure or {'type':'ResourceCap','message':'Torch cap exceeded'}
+need(failure is None,'Diagnostic stopped: '+str(failure))
+'''.lstrip()
+
+
+def prepare_empty_probe(root_instruction):
+    require(root_instruction == PROBE / "root-assignment.txt" and pin(root_instruction)["sha256"] == PROBE_ROOT_SHA,
+            "Exact separate two-forward root instruction required")
+    require(pin(DIAGNOSIS/"train_building_ramp.py")["sha256"] == PROBE_RUNNER_SHA
+            and pin(DIAGNOSIS/"diagnosis-proposal.json")["sha256"] == PROBE_PROPOSAL_SHA, "Accepted diagnostic source drift")
+    proposal=json.loads((DIAGNOSIS/"diagnosis-proposal.json").read_bytes())
+    binding=checked_json(BINDING)
+    old_interface=checked_json(INTERFACE)  # Metadata only; no old directory scan.
+    mounts=[];inventory=[]
+    def add(path,target,expected=None):
+        actual=pin(path)
+        if expected: require((actual["bytes"],actual["sha256"])==(expected["bytes"],expected["sha256"]),"Probe input pin drift")
+        mounts.append({"hostPath":actual["path"],"containerPath":target,"readOnly":True,"kind":"file"})
+        inventory.append({"hostPin":actual,"containerPin":{**actual,"path":target}})
+    model_host=next(m["hostPath"] for m in old_interface["mounts"] if m["role"]=="model")
+    for expected in proposal["nextExperiment"]["modelConfigProcessorPins"].values():
+        add(Path(model_host)/PurePosixPath(expected["path"]).name,expected["path"],expected)
+    add(DATA/"d06-ramp-coco-20261005/train/_annotations.coco.json",proposal["nextExperiment"]["coco"]["path"],proposal["nextExperiment"]["coco"])
+    for item in proposal["nextExperiment"]["inputs"]:
+        add(item["hostPath"],item["retainedImagePinNotReread"]["path"],item["retainedImagePinNotReread"])
+    add(DIAGNOSIS/"train_building_ramp.py","/inputs/plan/train_building_ramp.py")
+    add(DIAGNOSIS/"diagnosis-proposal.json","/inputs/probe/proposal.json")
+    add(root_instruction,"/inputs/probe/root-assignment.txt")
+    add(BINDING[0],"/inputs/plan/runtime-binding.json")
+    for key in ["packageLock","installedMetadata","imageMetadata"]:
+        expected=binding[key];add(expected["path"],"/inputs/plan/"+Path(expected["path"]).name,expected)
+    plan={"schemaVersion":"ramp-empty-loss-plan/1","scope":PROBE_SCOPE,"rootSha256":PROBE_ROOT_SHA,
+        "launcherPin":pin(__file__),"runtimeBinding":binding,"mounts":mounts,"inventory":inventory,
+        "bounds":proposal["nextExperiment"]["bounds"],"trainingAuthorized":False}
+    with (PROBE/"execution-code.py").open("xb") as out:out.write(Path(__file__).read_bytes())
+    plan_path=PROBE/"plan.json";save(plan_path,plan)
+    native=CONTROL.replace("need(not list(Path('/dev').glob('nvidia*')) and not Path('/dev/dxg').exists(),'Unexpected GPU devices in CPU profile')","# Exact physical GPU follows same-PID diagnostic authority.")
+    native=native.replace("/inputs/plan/mounted-config.json","/inputs/probe/plan.json")
+    native=native.replace("config.stat().st_size==52751","config.stat().st_size=="+str(plan_path.stat().st_size))
+    native=native.replace(CONFIG[2],pin(plan_path)["sha256"]).replace("'gpuAssigned':False","'gpuAssigned':True")
+    native=native.replace("actual_cpu_native_control_passed","actual_empty_loss_native_control_passed")
+    entry=native+PROBE_FORWARD;compile(entry,"<empty-loss-probe>","exec")
+    with (PROBE/"entry.py").open("x",encoding="utf-8",newline="\n") as out:out.write(entry)
+    return {"plan":pin(plan_path),"entry":pin(PROBE/"entry.py"),"launcher":pin(PROBE/"execution-code.py"),
+            "inputPins":len(inventory),"scope":PROBE_SCOPE,"preparedOnly":True}
+
+
+def probe_host_job():
+    """Read the current Windows Job ceiling; flags cannot assert containment."""
+    import ctypes
+    from ctypes import wintypes
+    class Basic(ctypes.Structure):
+        _fields_=[("processTime",ctypes.c_int64),("jobTime",ctypes.c_int64),("flags",wintypes.DWORD),
+            ("minWS",ctypes.c_size_t),("maxWS",ctypes.c_size_t),("active",wintypes.DWORD),
+            ("affinity",ctypes.c_size_t),("priority",wintypes.DWORD),("scheduling",wintypes.DWORD)]
+    class Io(ctypes.Structure):
+        _fields_=[(k,ctypes.c_uint64) for k in ["readOps","writeOps","otherOps","readBytes","writeBytes","otherBytes"]]
+    class Limits(ctypes.Structure):
+        _fields_=[("basic",Basic),("io",Io),("processMemory",ctypes.c_size_t),("jobMemory",ctypes.c_size_t),
+            ("peakProcess",ctypes.c_size_t),("peakJob",ctypes.c_size_t)]
+    kernel=ctypes.WinDLL("kernel32",use_last_error=True)
+    kernel.GetCurrentProcess.restype=ctypes.c_void_p
+    kernel.IsProcessInJob.argtypes=[ctypes.c_void_p,ctypes.c_void_p,ctypes.POINTER(wintypes.BOOL)]
+    kernel.QueryInformationJobObject.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_void_p,wintypes.DWORD,ctypes.c_void_p]
+    inside=wintypes.BOOL();limits=Limits()
+    require(kernel.IsProcessInJob(kernel.GetCurrentProcess(),None,ctypes.byref(inside)) and inside.value,
+            "Diagnostic requires actual current host Job")
+    require(kernel.QueryInformationJobObject(None,9,ctypes.byref(limits),ctypes.sizeof(limits),None)
+            and limits.basic.flags & 0x0200 and limits.basic.flags & 0x2000
+            and limits.jobMemory==536870912,"Actual 512MiB kill-on-close host Job required")
+    return {"jobMemoryCapBytes":limits.jobMemory,"killOnClose":True,"peakJobPrivateBytes":limits.peakJob}
+
+
+def empty_probe_checks(root_instruction, execution_state):
+    started=time.perf_counter()
+    require(root_instruction == PROBE/"root-assignment.txt" and pin(root_instruction)["sha256"]==PROBE_ROOT_SHA,
+            "Exact separate two-forward root instruction required")
+    host_job=probe_host_job()
+    prepared=json.loads((PROBE/"prepared.json").read_bytes())
+    for key in ["plan","entry","launcher"]:
+        require(pin(prepared[key]["path"])==prepared[key],"Prepared diagnostic code/plan drift")
+    require(pin(__file__)["sha256"]==prepared["launcher"]["sha256"],"Exact diagnostic launcher required")
+    plan=json.loads((PROBE/"plan.json").read_bytes())
+    require(plan["scope"]==PROBE_SCOPE and plan["rootSha256"]==PROBE_ROOT_SHA,"Distinct probe scope drift")
+    for row in plan["inventory"]:require(pin(row["hostPin"]["path"])==row["hostPin"],"Frozen diagnostic input drift")
+    require(not (PROBE/"output").exists(),"Probe output must be new")
+    save(PROBE/"attempt.json",{"probeAttempts":1,"maxForwardCalls":2,"rootInstruction":pin(root_instruction)})
+    binding=plan["runtimeBinding"];output=PROBE/"output";output.mkdir()
+    auth_path=PROBE/"authorization.json";control_path=PROBE/"preflight.json"
+    save(control_path,{"state":"awaiting_actual_same_pid"})
+    auth={"schemaVersion":"ramp-empty-loss-authorization/1","rootAuthorized":True,"trainingAuthorized":False,
+        "scope":PROBE_SCOPE,"rootSha256":PROBE_ROOT_SHA,"entrySha256":prepared["entry"]["sha256"],"planSha256":prepared["plan"]["sha256"],"hostJob":host_job}
+    save(auth_path,auth)
+    overrides={"NVIDIA_VISIBLE_DEVICES":GPU_UUID,"CUDA_VISIBLE_DEVICES":"0","HOME":"/tmp",
+        "HF_HOME":"/outputs/rfdetr/cache/huggingface","XDG_CACHE_HOME":"/outputs/rfdetr/cache","TMPDIR":"/tmp"}
+    environment=dict(i.split("=",1) for i in binding["imageEnvironment"]);environment.update(overrides)
+    mounts=plan["mounts"]+[{"hostPath":str(PROBE/name),"containerPath":"/inputs/probe/"+name,"readOnly":True,"kind":"file"}
+        for name in ["plan.json","entry.py","authorization.json","preflight.json"]]
+    writable={"hostPath":str(output),"containerPath":"/outputs/rfdetr","readOnly":False,"kind":"directory"}
+    for i,mount in enumerate([*mounts,writable]):
+        hp=host_path(mount["hostPath"]);cp=container_path(mount["containerPath"])
+        for other in [*mounts,writable][:i]:
+            oh=Path(other["hostPath"]);oc=PurePosixPath(other["containerPath"])
+            require(not(hp.is_relative_to(oh) or oh.is_relative_to(hp) or cp.is_relative_to(oc) or oc.is_relative_to(cp)),"Diagnostic mount overlap refused")
+    args=["docker","--context","desktop-linux","create","--pull=never","--platform=linux/amd64",
+        "--name",PROBE.name+"-"+uuid.uuid4().hex[:12],"--label","codex.task="+PROBE.name,
+        "--network=none","--read-only","--cap-drop=ALL","--security-opt=no-new-privileges","--user=10001:10001",
+        "--init","--ipc=private","--pids-limit=32","--cpus=2","--cpuset-cpus=0,1","--memory=5g","--memory-swap=5g",
+        "--shm-size=16m","--tmpfs=/tmp:rw,noexec,nosuid,size=16m","--workdir=/inputs/plan",
+        "--entrypoint="+binding["pythonExecutable"],"--interactive","--gpus","device="+GPU_UUID]
+    for k,v in overrides.items():args += ["--env",k+"="+v]
+    for m in [*mounts,writable]:args += ["--mount","type=bind,source="+m["hostPath"]+",target="+m["containerPath"]+(",readonly" if m["readOnly"] else "")]
+    argv=["-I","-B","/inputs/probe/entry.py"];args += [binding["imageDigest"],*argv]
+    selected={"task":PROBE.name,"imageDigest":binding["imageDigest"],"python":binding["pythonExecutable"],
+        "gpuAssigned":True,"createArgv":args,"processArgv":argv,"environment":environment,"mounts":mounts,
+        "output":writable,"policy":{"tmpfs":{"/tmp":"rw,noexec,nosuid,size=16m"}}}
+    save(PROBE/"profile.json",selected)
+    docker=["docker","--context","desktop-linux"];calls=[];cid=None;process=None;reader=None;failure=None;ready={}
+    def remaining(cleanup=False):
+        value=180-(time.perf_counter()-started)-(0 if cleanup else 45)
+        require(value>0,"180s diagnostic/cleanup deadline exhausted");return value
+    def command(argv,cleanup=False):
+        p=subprocess.run(argv,capture_output=True,text=True,timeout=min(10,remaining(cleanup)))
+        calls.append({"argv":argv,"exitCode":p.returncode,"stdout":p.stdout[:65536],"stderr":p.stderr[:4000]})
+        require(p.returncode==0,"Diagnostic Docker command failed: "+p.stderr[:2000]);return p.stdout
+    def inventory(cleanup=False):
+        return {"containers":sorted(command([*docker,"ps","-aq","--no-trunc"],cleanup).splitlines()),
+            "volumes":sorted(command([*docker,"volume","ls","-q"],cleanup).splitlines())}
+    before=inventory();require(len(before["containers"])==24 and len(before["volumes"])==14,"Retained runtime inventory changed")
+    try:
+        actual=json.loads(command([*docker,"image","inspect",binding["imageDigest"]]))[0]
+        retained=json.loads(Path(binding["imageMetadata"]["path"]).read_bytes())
+        require(all(actual[k]==retained[k] for k in ["Id","Config","RootFS","Descriptor"]),"Sealed diagnostic image drift")
+        cid=command(args).strip();inspection=json.loads(command([*docker,"inspect",cid]))[0]
+        validate_inspection(inspection,selected);save(PROBE/"container-readback.json",inspection)
+        auth["launchObservation"]={"imageDigest":inspection["Image"],"validated":True,"mounts":[*mounts,writable],"environment":environment}
+        auth_path.write_text(json.dumps(auth,indent=2)+"\n",encoding="utf-8",newline="\n")
+        channel=queue.Queue();execution_state["attempted"]=True
+        process=subprocess.Popen([*docker,"start","--attach","--interactive",cid],stdin=subprocess.PIPE,stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,creationflags=getattr(subprocess,"CREATE_NO_WINDOW",0))
+        def drain():
+            with (PROBE/"container.log").open("xb") as sink:
+                size=0
+                for line in iter(process.stdout.readline,b""):
+                    size+=len(line)
+                    if size>262144:channel.put(ValueError("Probe log bound exceeded"));break
+                    sink.write(line);sink.flush();channel.put(line)
+            channel.put(None)
+        reader=threading.Thread(target=drain,daemon=True);reader.start()
+        while True:
+            line=channel.get(timeout=remaining());require(line is not None,"Probe stopped before native proof")
+            if isinstance(line,Exception):raise line
+            try:ready=json.loads(line)
+            except(ValueError,UnicodeDecodeError):continue
+            if ready.get("readyForAuthorization"):break
+        raw=(output/"process-preflight.json").read_bytes()
+        require(len(raw)==ready["preflightBytes"] and hashlib.sha256(raw).hexdigest()==ready["preflightSha256"],"Diagnostic preflight transport drift")
+        require(json.loads(raw)["pid"]==ready["pid"],"Diagnostic proof PID drift")
+        execution_state["confirmed"]=True;control_path.write_bytes(raw)
+        auth["preflightReceipt"]={"path":"/inputs/probe/preflight.json","bytes":len(raw),"sha256":ready["preflightSha256"]}
+        auth_path.write_text(json.dumps(auth,indent=2)+"\n",encoding="utf-8",newline="\n")
+        process.stdin.write((json.dumps({"pid":ready["pid"],"authorizationSha256":pin(auth_path)["sha256"]})+"\n").encode())
+        process.stdin.flush();process.stdin.close();exit_code=process.wait(timeout=remaining())
+        reader.join(timeout=3);require(not reader.is_alive(),"Diagnostic reader survived")
+        state=json.loads(command([*docker,"inspect","--format","{{json .State}}",cid]))
+        save(PROBE/"container-exit.json",state)
+        require(exit_code==0 and state["ExitCode"]==0 and not state["OOMKilled"],"Probe stopped; retained diagnostic output/log")
+    except Exception as error:failure={"type":type(error).__name__,"message":str(error)}
+    finally:
+        if process and process.stdin and not process.stdin.closed:process.stdin.close()
+        if process and process.poll() is None:process.kill();process.wait(timeout=3)
+        if cid:
+            current=json.loads(command([*docker,"inspect",cid],True))[0]
+            require(current["Id"]==cid and current["Config"]["Labels"].get("codex.task")==PROBE.name,"Exact probe cleanup identity mismatch")
+            command([*docker,"rm","--force",cid],True)
+        if reader:reader.join(timeout=3);require(not reader.is_alive(),"Probe reader survived cleanup")
+        if process and process.stdout:process.stdout.close()
+        after=inventory(True);require(before==after,"Probe altered retained containers/volumes")
+        save(PROBE/"host-receipt.json",{"scope":PROBE_SCOPE,"containerId":cid,"pid":ready.get("pid"),"removed":bool(cid),
+            "failure":failure,"calls":calls,"before":before,"after":after,"elapsedSeconds":time.perf_counter()-started,"trainingAuthorized":False})
+    if failure:raise ValueError(failure["message"])
 
 
 def pilot_bridge():
@@ -938,14 +1263,26 @@ def main():
     parser.add_argument("--torch-baseline", action="store_true")
     parser.add_argument("--score-torch-baseline", action="store_true")
     parser.add_argument("--pilot-fit", action="store_true")
+    parser.add_argument("--prepare-empty-loss-probe", action="store_true")
+    parser.add_argument("--empty-loss-probe", action="store_true")
     parser.add_argument("--root-authorization", type=Path)
     parser.add_argument("--runtime-binding", type=Path)
     parser.add_argument("--readback", type=Path, help="Validate saved exact Docker inspect JSON; no Docker call")
     args = parser.parse_args()
     execution_state = {"attempted": False, "confirmed": False}
     try:
-        require(sum([args.execute,args.torch_reference,args.torch_baseline,args.score_torch_baseline,args.pilot_fit])<=1,
+        require(sum([args.execute,args.torch_reference,args.torch_baseline,args.score_torch_baseline,args.pilot_fit,
+                     args.prepare_empty_loss_probe,args.empty_loss_probe])<=1,
                 "Only one explicitly authorized execution route allowed")
+        if args.prepare_empty_loss_probe:
+            prepared=prepare_empty_probe(args.root_authorization)
+            save(PROBE/"prepared.json",prepared)
+            print(json.dumps(prepared))
+            return
+        if args.empty_loss_probe:
+            empty_probe_checks(args.root_authorization,execution_state)
+            print(json.dumps({"status":"both_controls_finite","experimentExecution":True,"trainingAuthorized":False}))
+            return
         if args.pilot_fit:
             require(args.root_authorization is not None,"Pilot fit root instruction absent; refused before execution")
             reference_checks(args.root_authorization, execution_state, pilot=True)

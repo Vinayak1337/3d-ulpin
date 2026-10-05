@@ -1,0 +1,313 @@
+{
+  "schemaVersion": "rfdetr-empty-loss-probe-evidence/1",
+  "task": "D07-RFDETR-EMPTY-LOSS-PROBE",
+  "date": "2026-10-06",
+  "state": "prepared_probe_not_run_docker_engine_unavailable",
+  "outcome": "Separate two-forward no-grad entry implemented and checked. Docker Desktop Linux engine pipe is unavailable; no service restart, model work or runtime retry attempted.",
+  "baseCommit": "9daea413150e748190b768a119447f9825400ec7",
+  "branch": "task/d07-rfdetr-empty-loss-probe-20261006",
+  "ownedFiles": [
+    "scripts/usp/learning/rfdetr_runtime_profile.py",
+    "docs/evidence/usp/rfdetr-empty-loss-probe-20261006.json"
+  ],
+  "scope": {
+    "task": "D07-RFDETR-EMPTY-LOSS-PROBE",
+    "scope": "original_positive_empty_loss_only",
+    "forwardWithBuiltInLossMax": 2,
+    "backward": 0,
+    "optimizer": 0,
+    "fitEpochs": 0,
+    "developmentExamples": 0,
+    "finalExamples": 0,
+    "selectedImageIds": [
+      1,
+      13
+    ]
+  },
+  "bounds": {
+    "gpuAllocationBytes": 5368709120,
+    "containerMemoryBytes": 5368709120,
+    "hostJobMemoryBytes": 536870912,
+    "cpu": 2,
+    "computeThreads": 2,
+    "pids": 32,
+    "swapBytes": 0,
+    "diagnosticAndCleanupSeconds": 180,
+    "innerDiagnosticSeconds": 135,
+    "cleanupReserveSeconds": 45,
+    "receiptBytesMax": 262144
+  },
+  "implementation": {
+    "cli": "--empty-loss-probe",
+    "preparationCli": "--prepare-empty-loss-probe",
+    "entry": "Saved narrow task file, invoked with -I -B; no long inline handoff builder",
+    "adapterAndObserver": "Compile only accepted CocoPool/collate/diagnostic_tensor/LossDiagnostics AST nodes; runner main/execute_trainer are never invoked.",
+    "lossGuard": "Original total-present/numel1/all-finite plus every named component all-finite expression preserved; observer stores shapes, numel, source identity and last finite call before first invalid stop.",
+    "plannedForward": "Original strict complete one-building head/200queries/group_detr13/native108, eager FP32/train mode, seed42, TF32/autocast off, no_grad, original432bilinear/nearest/category1->0 targets.",
+    "authority": "Exact root/plan/entry/accepted runner/proposal/input/source/package pins; current Windows512MiB kill-on-close Job readback; same-PID native denial/mount/env/cgroup handshake before Torch.",
+    "mounts": {
+      "individualPinnedFiles": 13,
+      "readOnlyFilesIncludingPlanEntryAuthorityProof": 17,
+      "writableTaskOutput": 1,
+      "developmentOrFinalImageDirectory": false,
+      "modelEvaluationArrays": false
+    },
+    "launchGate": "Immutable image/current inspection, sole exact GPU UUID, 134 versions and installed loss/model/processor/Trainer text pins checked before model work.",
+    "cleanup": "Exact owned container task-label/ID removal, host child reaping and Job close, before/after retained24IDs/14volumes equality required.",
+    "historicalInlineControls": "Byte-identical to accepted base; existing fit/reference routes retained."
+  },
+  "acceptedSource": {
+    "ownerCommit": "dae438e9e0b931a29f958594ca6853e211e8fefc",
+    "runner": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\train_building_ramp.py",
+      "bytes": 71184,
+      "sha256": "24afe260cb2c19fd6a56c5cfdd7b88d40a3df6af03b08f073fee20fb061deafd"
+    },
+    "proposal": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\diagnosis-proposal.json",
+      "bytes": 14825,
+      "sha256": "6dc4ffde6a8b3b6e00ba67000d3c592c01848ae5953fee81fcf0b10a6ef98be2"
+    },
+    "repositoryRunnerPhysical": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\train_building_ramp.py",
+      "bytes": 72189,
+      "sha256": "320d4c948ac9320d285dcd34891b1ecf5ef1f8197dca76c73e9cd345bf58cee7"
+    },
+    "repositoryRunnerCanonicalLfSha256": "24afe260cb2c19fd6a56c5cfdd7b88d40a3df6af03b08f073fee20fb061deafd",
+    "sourceReviewRepeated": false,
+    "historicalFakeMetadataControlsRepeated": false
+  },
+  "sourceInputs": [
+    {
+      "hostPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\model.safetensors",
+        "bytes": 141551436,
+        "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+      },
+      "containerPin": {
+        "path": "/inputs/model/model.safetensors",
+        "bytes": 141551436,
+        "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+      }
+    },
+    {
+      "hostPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\config.json",
+        "bytes": 2490,
+        "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+      },
+      "containerPin": {
+        "path": "/inputs/model/config.json",
+        "bytes": 2490,
+        "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+      }
+    },
+    {
+      "hostPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\preprocessor_config.json",
+        "bytes": 442,
+        "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+      },
+      "containerPin": {
+        "path": "/inputs/model/preprocessor_config.json",
+        "bytes": 442,
+        "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+      }
+    },
+    {
+      "hostPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\train\\_annotations.coco.json",
+        "bytes": 289622,
+        "sha256": "107e9ef9fe68e6f7d7c5a803188d44839cecf486a670fc0ff474761e0112b72c"
+      },
+      "containerPin": {
+        "path": "/inputs/coco/train/_annotations.coco.json",
+        "bytes": 289622,
+        "sha256": "107e9ef9fe68e6f7d7c5a803188d44839cecf486a670fc0ff474761e0112b72c"
+      }
+    },
+    {
+      "hostPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\train\\0003d02a-6bf0-4790-ac29-eed4337fe430.png",
+        "bytes": 101859,
+        "sha256": "7e146a4543c77da6ae092c971298948c4cd7e55f063422ee136d098ce7e8815c"
+      },
+      "containerPin": {
+        "path": "/inputs/coco/train/0003d02a-6bf0-4790-ac29-eed4337fe430.png",
+        "bytes": 101859,
+        "sha256": "7e146a4543c77da6ae092c971298948c4cd7e55f063422ee136d098ce7e8815c"
+      }
+    },
+    {
+      "hostPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\train\\860ea202-9316-47fc-91f1-98b462951819.png",
+        "bytes": 65726,
+        "sha256": "8f1a9420e374d75a947c819a4e38bbfdfd4bb9150b46e35183dfafd3379e167b"
+      },
+      "containerPin": {
+        "path": "/inputs/coco/train/860ea202-9316-47fc-91f1-98b462951819.png",
+        "bytes": 65726,
+        "sha256": "8f1a9420e374d75a947c819a4e38bbfdfd4bb9150b46e35183dfafd3379e167b"
+      }
+    }
+  ],
+  "runtimePins": {
+    "imageDigest": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+    "imageConfigDigest": "sha256:35a594b1962dcced21366ade1ef5ab02949dfe0dc059c16145d6ffd2d699b57b",
+    "runtimeBinding": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-gpu-base-20261005\\runtime-binding.json",
+      "bytes": 6417,
+      "sha256": "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615"
+    },
+    "packageLock": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-gpu-base-20261005\\environment-lock.json",
+      "bytes": 62182,
+      "sha256": "0a049c8f7e893df7a8a6a579a81dcca2f2554c700883dbe1a4be661a5d2fa7d8"
+    },
+    "installedMetadata": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-gpu-base-20261005\\installed-metadata.json",
+      "bytes": 5161,
+      "sha256": "db7da96d4c7141c72cf6b80ae68477b791703d329c9649bffcdfa978ea9da872"
+    },
+    "imageMetadata": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-gpu-base-20261005\\layer-image-inspect.json",
+      "bytes": 2778,
+      "sha256": "4e5b95f7ce57a3f13a23b2370af3fdf544bbed1c18c11d7e9ee84622184a7611"
+    },
+    "gpuUuid": "GPU-3989f368-bd26-bd52-9daf-037a9862f82f"
+  },
+  "verification": {
+    "prepareCommand": [
+      "C:/Python313/python.exe",
+      "-I",
+      "-B",
+      "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\rfdetr_runtime_profile.py",
+      "--prepare-empty-loss-probe",
+      "--root-authorization",
+      "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\root-assignment.txt"
+    ],
+    "prepareExitCode": 0,
+    "checkCommand": [
+      "C:\\Python313\\python.exe",
+      "-I",
+      "-B",
+      "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\check_prepared.py"
+    ],
+    "checkExitCode": 0,
+    "checksElapsedSeconds": 0.05413900001440197,
+    "launcherAndSavedEntryAndAcceptedAstSyntax": "passed",
+    "supervisorSyntax": "passed_only_not_executed",
+    "scopeAndMountSourceReview": "passed",
+    "samePidBeforeHeavyImports": "static_review_only",
+    "noBackwardOptimizerTrainerCheckpointCalls": "static_review_only",
+    "historicalControlsPreserved": "passed",
+    "gitDiffCheck": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0
+    },
+    "heavyImportsRun": false,
+    "imageOrRleDecodeRun": false
+  },
+  "actualProbe": {
+    "started": false,
+    "forwardCalls": 0,
+    "positiveResult": null,
+    "emptyResult": null,
+    "lossShapeOrFinitenessMeasured": false,
+    "currentProcessProof": null,
+    "optimizerUpdates": 0,
+    "backwardCalls": 0,
+    "checkpointSaved": false,
+    "trainingRun": false,
+    "candidateInferenceRun": false,
+    "developmentOrFinalOpened": false,
+    "runtimeDurationSeconds": null,
+    "runtimeResourcePeak": null
+  },
+  "runtimeBlocker": {
+    "signature": "dockerDesktopLinuxEngine named pipe missing",
+    "observation": "Both read-only Docker container and volume inventory queries failed during initial reconciliation. No Python/Docker Desktop/backend processes matched later process snapshot.",
+    "serviceBoundary": "Root instruction excludes shared service restart; no daemon start/reset/configuration change made.",
+    "prerequisite": "Runtime owner provides the unchanged Docker Desktop Linux engine and reconciles retained24container IDs/14volumes; root releases the next exclusive probe window.",
+    "noRepeatedDaemonChecks": true,
+    "retainedRuntimeInventory": "Unavailable; current equality/counts not claimed."
+  },
+  "decisions": {
+    "emptyShapeHypothesis": "Source-supported, still untested",
+    "historicalFailingInput": "UNKNOWN",
+    "actualLossFixApplied": false,
+    "patchProposal": null,
+    "nextDecision": "Reuse retained prepared code for a separately resumed probe once runtime is available. Stop here; no auto-fit, retry, precision/LR/loss change or extra forward."
+  },
+  "preservation": {
+    "priorPilotBranchPreserved": "task/d07-rfdetr-pilot-fit-run-20261005 at a236f8027e056f2e796a8f57c8fbaa2b5756505f",
+    "priorFailedPilotAndCheckpointsChanged": false,
+    "originalImagesCocoLabelsModelSplitChanged": false,
+    "servicesRestarted": false,
+    "containersStarted": 0,
+    "hostJobsCreated": 0,
+    "newOwnedProcessesRemaining": false,
+    "gpuTaken": false,
+    "resourcesToRelease": 0,
+    "DefenderChangedOrExcludedOrBypassed": false,
+    "newDefenderBlockObserved": false
+  },
+  "settings": {
+    "requested": "GPT-6.1 Sol/xhigh/default-standard1x",
+    "actualModelEffortTier": null,
+    "liveSuppliedPermissions": "never/danger-full-access",
+    "tierObservation": "Unexposed; no prompt or config inferred as observed tier."
+  },
+  "artifacts": {
+    "rootInstruction": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\root-assignment.txt",
+      "bytes": 6866,
+      "sha256": "2e42045ae78021a92a5bc7ee47456933f597396eea75581bb60cc9c1b1e9aa41"
+    },
+    "reconciliation": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\reconcile.json",
+      "bytes": 2465,
+      "sha256": "9e3b9e4c5e3e18c66f7e9d1f1eb791863494ec6ae9f3903a794074adc73d0017"
+    },
+    "preparedPlan": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\plan.json",
+      "bytes": 16914,
+      "sha256": "196f107b25b36b0fd4892a73abbe57782c525893b42c348f2f0da3ce4268ebba"
+    },
+    "entry": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\entry.py",
+      "bytes": 16097,
+      "sha256": "677d65c21f78557f913bfa79aee619bb6e716ecb3624023dab3c7c6f4e90533b"
+    },
+    "launcherSnapshot": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\execution-code.py",
+      "bytes": 100728,
+      "sha256": "f6a776ba68ec2add9930e3fa422c016053839d4ad09c7bfbcd9ce4b6e37b4eaf"
+    },
+    "preparedBindings": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\prepared.json",
+      "bytes": 1002,
+      "sha256": "6df5db5a4535d6cb6b6c9ded980774452bf2d2732a36fbe2ebd7e00b1b5a6fab"
+    },
+    "checks": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\checks.json",
+      "bytes": 1908,
+      "sha256": "2bd609e9f4f24c8d3763c4729b47e54e46e8ca928deeb779581358b801490313"
+    },
+    "checker": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\check_prepared.py",
+      "bytes": 4250,
+      "sha256": "e5e3a0228eee58aa6d1eee11d0217dd68aafff43221d7076b9962f18dedc50af"
+    },
+    "preparedSupervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\supervise.py",
+      "bytes": 3798,
+      "sha256": "99894cbf9f750ac119950897516029855d2bf66cf4e2254a8addca9bc8b3b1be"
+    }
+  },
+  "privateFinalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-loss-probe-20261006\\finalization.json"
+}
