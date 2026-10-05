@@ -2,7 +2,8 @@ import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {SPATIAL_SOURCE_REVIEW_LIMITS as limits,SpatialSourceReviewPinSchema,SpatialSourceReviewRequestSchema,
-  SpatialSourceReviewSchema,SpatialSourceReviewContextSchema,type SpatialSourceReviewPin,type SpatialSourceReview}
+  SpatialSourceReviewSchema,SpatialSourceReviewContextSchema,SpatialSourceReviewsHistoryQuerySchema,SpatialSourceReviewsHistorySchema,
+  type SpatialSourceReviewPin,type SpatialSourceReview}
   from '../../../../contracts/src/spatial-ml-source-review';
 import {transaction} from '../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../infrastructure/errors';
@@ -161,6 +162,37 @@ export class SpatialSourceReviewsService{
       live(deadline);const current=await captureTx(client,before.pin.itemId,true);same(before,current);
       const result=await action(client,current);same(current,await captureTx(client,current.pin.itemId));live(deadline);return result;
     },{deadlineAt:deadline});
+  }
+  async history(itemValue:string,raw:unknown={}){
+    const itemId=id.parse(itemValue),query=SpatialSourceReviewsHistoryQuerySchema.parse(raw),deadline=Date.now()+limits.seconds*1000;
+    const before=await this.capture(itemId,deadline);
+    if(query.after)await this.dependencies.transaction(client=>load(client,before,query.after!),{deadlineAt:deadline},'repeatable_read_only');
+    await this.verify(before,deadline);
+    return this.finish(before,deadline,async(client,current)=>{
+      if(query.after)await load(client,current,query.after);
+      const prefix='spatial-source-review:',lower=query.after?snapshotKey(query.after):prefix;
+      // Case/key primary-key range, exact snapshot kind/item filter, one lookahead.
+      const rows=(await client.query(`SELECT operation_key FROM operations WHERE case_id=$1 AND kind=$2
+        AND operation_key>$3 AND operation_key<$4 AND result#>>'{snapshot,pin,itemId}'=$5
+        ORDER BY operation_key ASC LIMIT $6`,[current.pin.scope.caseId,snapshotKind,lower,prefix+'g',itemId,query.limit+1])).rows;
+      if(rows.length>query.limit+1)fail('ML_REVIEW_SNAPSHOT_INTEGRITY','The history reader exceeded its bounded page.');
+      const references=[];let previous=lower;
+      for(const row of rows){live(deadline);const parsed=id.safeParse(typeof row.operation_key==='string'?row.operation_key.slice(prefix.length):null);
+        if(!parsed.success||row.operation_key!==snapshotKey(parsed.data)||row.operation_key<=previous)
+          fail('ML_REVIEW_SNAPSHOT_INTEGRITY','The history contains an invalid or unordered review key.');
+        previous=row.operation_key;const stored=await load(client,current,parsed.data),s=stored.snapshot;
+        references.push({reviewId:s.reviewId,reviewRevision:s.reviewRevision,reviewSha256:fingerprint(s),caseRevision:s.pin.scope.caseRevision,
+          jobId:s.pin.jobId,resultSha256:s.pin.resultSha256,candidateCount:s.candidateCount,decisionCount:s.decisions.length,
+          unselectedCount:s.unselectedCount,limits:s.limits,review:s.review,
+          readUrl:`/api/v1/spatial-ml/items/${itemId}/source-reviews/${s.reviewId}`});
+      }
+      const page=references.slice(0,query.limit),hasMore=references.length>query.limit;
+      const response=SpatialSourceReviewsHistorySchema.parse({version:'source-candidate-reviews-history/1',itemId,
+        caseId:current.pin.scope.caseId,sourceId:current.pin.scope.sourceId,sourceRevision:current.pin.scope.sourceRevision,
+        sourceSha256:current.pin.scope.sourceSha256,currentJobId:current.pin.jobId,resultSha256:current.pin.resultSha256,
+        order:'review_id_ascending',after:query.after??null,limit:query.limit,references:page,hasMore,
+        nextAfter:hasMore?page.at(-1)!.reviewId:null});bounded(response,limits.historyBytes);return response;
+    });
   }
   async context(itemValue:string){
     const itemId=id.parse(itemValue),deadline=Date.now()+limits.seconds*1000,before=await this.capture(itemId,deadline);

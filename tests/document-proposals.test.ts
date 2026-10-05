@@ -7,8 +7,10 @@ import type {PoolClient} from 'pg';
 import type {transaction} from '../packages/server/src/infrastructure/db';
 import {AppError} from '../packages/server/src/infrastructure/errors';
 import {sha256} from '../packages/server/src/infrastructure/storage';
+import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {DocumentProposalsService} from '../packages/server/src/modules/usp/ingestion/document-proposals';
-import {DocumentProposalsSaveSchema,DocumentProposalSnapshotViewSchema} from '../packages/contracts/src/usp/document-proposals';
+import {DocumentProposalsSaveSchema,DocumentProposalSnapshotViewSchema,DocumentProposalsHistorySchema,
+  DocumentProposalsHistoryQuerySchema} from '../packages/contracts/src/usp/document-proposals';
 import {DocumentProposalsController} from '../apps/api/src/modules/ingestion/document-proposals.controller';
 import {PrivateSpatialGuard} from '../apps/api/src/modules/spatial/private-spatial.guard';
 
@@ -49,7 +51,8 @@ function harness(useSecond=false){
   const request=()=>inputFor(sourceId),frame=request().packet.proposals[0].locator.frame;
   const state={revision:2,archived:false,owner:subject,latest:1,pages:0,verified:0,inserts:0,
     onPage:undefined as undefined|(()=>void),onVerify:undefined as undefined|(()=>void),
-    onLock:undefined as undefined|(()=>void),onInsert:undefined as undefined|(()=>void),pageFrame:frame};
+    onLock:undefined as undefined|(()=>void),onInsert:undefined as undefined|(()=>void),
+    onHistoryRead:undefined as undefined|(()=>void),pageFrame:frame};
   const operations=new Map<string,{payload_hash:string;result:any}>();
   let writeScope=false,caseLocked=false,sourceLocked=false;
   const client={query:async(sql:string,v:any[]=[])=>{
@@ -64,6 +67,13 @@ function harness(useSecond=false){
     if(sql.startsWith('SELECT * FROM sources'))return rows(records.filter((r:any)=>r.case_id===v[0]&&r.id===v[1]).map((r:any)=>({...r,
       inspection:{...r.inspection,documentOriginal:{...r.inspection.documentOriginal,subject:state.owner}}})));
     if(sql.startsWith('SELECT max(revision)'))return rows([{revision:state.latest}]);
+    if(sql.startsWith('SELECT operation_key FROM operations')){
+      assert(caseLocked&&sourceLocked);assert(v[5]>=2&&v[5]<=11);
+      assert(sql.includes('operation_key>$3 AND operation_key<$4')&&sql.includes('ORDER BY operation_key ASC LIMIT $6'));
+      const keys=[...operations].filter(([k,r])=>{const [c,key,kind]=k.split('|');
+        return c===v[0]&&kind===v[1]&&key>v[2]&&key<v[3]&&r.result.snapshot?.source.sourceId===v[4];})
+        .map(([k])=>k.split('|')[1]).sort().slice(0,v[5]);state.onHistoryRead?.();return rows(keys.map(operation_key=>({operation_key})));
+    }
     if(sql.startsWith('SELECT payload_hash,result FROM operations')){const stored=operations.get(`${v[0]}|${v[1]}|${v[2]}`);return rows(stored?[stored]:[]);}
     if(sql.startsWith('INSERT INTO operations')){
       assert(writeScope&&caseLocked&&sourceLocked,'Only insert after canonical case/source-family locks.');
@@ -179,3 +189,73 @@ test('private no-store controller keeps source routing and fatal UTF-8/literal U
   input.packet.unknowns.push('जाँच 🧭');await controller.save(f.caseId,f.sourceId,stream(Buffer.from(JSON.stringify(input))));
   assert.deepEqual(seen,[{caseId:f.caseId,sourceId:f.sourceId,raw:input}]);
 }));
+
+const historyRoot='E:/BhuAayam-data/task-data/d08-document-proposals-runtime-20261005-run01';
+const historyOptions={skip:options.skip||(!existsSync(historyRoot+'/pg-after.json')?'Retained saved D08 snapshot required.':false)};
+async function historyFixture(){
+  const f=harness(),setup=await f.service.save(f.caseId,f.sourceId,f.request());
+  const retained=JSON.parse(readFileSync(historyRoot+'/pg-after.json','utf8')).addedOperations
+    .find((v:any)=>v.kind==='document-proposal-snapshot/1');
+  assert.equal(fingerprint(retained.result),retained.payload_hash,'Retained immutable wrapper is unchanged.');
+  assert.equal(retained.result.snapshot.snapshotId,'d69d935a-20f7-4399-b4b3-9ef3b4bb7ef3');
+  assert.equal(retained.result.snapshot.source.sourceId,f.sourceId);assert.equal(retained.result.snapshot.caseId,f.caseId);
+  const envelope=structuredClone([...f.operations.values()].find(v=>v.result.snapshot)!.result);f.operations.clear();
+  // Saved real packet/reference/time, with only technical actor/access authority
+  // from the controlled harness. Extra UUIDs are pagination controls, not live saves.
+  const seed=(snapshotId:string,sourceId=f.sourceId,caseId=f.caseId)=>{
+    const result=structuredClone(envelope);result.snapshot=structuredClone(retained.result.snapshot);
+    result.snapshot.snapshotId=snapshotId;result.snapshot.source.sourceId=sourceId;result.snapshot.caseId=caseId;
+    result.snapshot.review.actor=subject;
+    const key=`${caseId}|document-proposal-snapshot:${snapshotId}|document-proposal-snapshot/1`;
+    f.operations.set(key,{payload_hash:fingerprint(result),result});return key;
+  };
+  seed(retained.result.snapshot.snapshotId);
+  assert.equal(setup.packet.proposals.length,retained.result.snapshot.packet.proposals.length);
+  return {...f,seed,retained:retained.result.snapshot};
+}
+test('history discovers retained D08 UUID and exact reader; bounded ordered pages preserve saved metadata without writes',historyOptions,()=>withSubject(async()=>{
+  const f=await historyFixture(),actual=f.retained.snapshotId,small='00000001-0000-4000-8000-000000000001';
+  f.seed(small);f.seed('00000002-0000-4000-8000-000000000002',randomUUID());f.seed('00000003-0000-4000-8000-000000000003',f.sourceId,randomUUID());
+  const before=structuredClone(f.operations),inserts=f.state.inserts,pages=f.state.pages;f.state.revision=3;
+  const first=await f.service.history(f.caseId,f.sourceId,{limit:'1'});assert(DocumentProposalsHistorySchema.safeParse(first).success);
+  assert.deepEqual(first.references.map(r=>r.snapshotId),[small]);assert.equal(first.hasMore,true);assert.equal(first.nextAfter,small);
+  assert.equal(first.currentCaseRevision,3);assert.equal(first.references[0].caseRevision,2);
+  const last=await f.service.history(f.caseId,f.sourceId,{after:first.nextAfter,limit:'1'});
+  assert.deepEqual(last.references.map(r=>r.snapshotId),[actual]);assert.equal(last.hasMore,false);assert.equal(last.nextAfter,null);
+  const ref=last.references[0],read=await f.service.read(f.caseId,f.sourceId,ref.snapshotId);
+  assert.equal(ref.snapshotSha256,read.snapshotSha256);assert.equal(ref.readUrl,`/api/v1/ingestion/cases/${f.caseId}/sources/${f.sourceId}/document-proposals/${actual}`);
+  assert.equal(ref.proposalCount,10);assert.equal(ref.conflictCount,f.retained.packet.conflicts.length);assert.deepEqual(ref.review,read.review);
+  assert.equal('packet' in ref,false);assert.equal(ref.learningLabel,false);assert.equal(ref.quotationVerification,'not_machine_verified');
+  const empty=await f.service.history(f.caseId,f.sourceId,{after:actual});assert.deepEqual(empty.references,[]);assert.equal(empty.hasMore,false);
+  assert.deepEqual(f.operations,before);assert.equal(f.state.inserts,inserts);assert.equal(f.state.pages,pages);
+}));
+test('history refuses wrong-scope cursors, corrupt snapshots, denied access and authority changes after reads with no writes',historyOptions,()=>withSubject(async()=>{
+  const f=await historyFixture(),foreign='00000002-0000-4000-8000-000000000002';f.seed(foreign,randomUUID());
+  await assert.rejects(f.service.history(f.caseId,f.sourceId,{after:foreign}),error(409));assert.equal(f.state.verified,1,'Setup alone verified original.');
+  const before=structuredClone(f.operations),inserts=f.state.inserts;
+  f.state.archived=true;await assert.rejects(f.service.history(f.caseId,f.sourceId),error(403));assert.equal(f.state.verified,1);
+  f.state.archived=false;f.state.onVerify=()=>{f.state.latest=2;};await assert.rejects(f.service.history(f.caseId,f.sourceId),error(409));
+  f.state.latest=1;f.state.onVerify=undefined;f.state.onHistoryRead=()=>{f.state.revision++;};
+  await assert.rejects(f.service.history(f.caseId,f.sourceId),error(409));f.state.onHistoryRead=undefined;f.state.revision=2;
+  const ownKey=[...f.operations.keys()].find(k=>k.includes(f.retained.snapshotId))!,own=f.operations.get(ownKey)!;
+  own.result.snapshot.source.sourceRevision++;own.payload_hash=fingerprint(own.result);
+  await assert.rejects(f.service.history(f.caseId,f.sourceId),error(409),'Rehashed stale source metadata cannot be promoted by current authority.');
+  f.operations.set(ownKey,structuredClone(before.get(ownKey)!));f.operations.get(ownKey)!.result.snapshot.packet.proposals[0].quote='tampered';
+  await assert.rejects(f.service.history(f.caseId,f.sourceId),error(422,'DOCUMENT_PROPOSALS_SNAPSHOT_INTEGRITY'));
+  f.operations.set(ownKey,structuredClone(before.get(ownKey)!));
+  assert.deepEqual(f.operations,before);assert.equal(f.state.inserts,inserts);
+}));
+test('history controller keeps private no-store collection and exact-query semantics with strict bounded pagination',()=>{
+  const seen:any[]=[],controller=new DocumentProposalsController({history:(...args:any[])=>{seen.push(args);return args;},read:()=>null} as any);
+  const request=(query='')=>({originalUrl:'/document-proposals'+query}) as any;
+  controller.history('case','source',request('?limit=2'));assert.deepEqual({...seen[0][2]},{limit:'2'});
+  assert.equal(DocumentProposalsHistoryQuerySchema.parse({}).limit,5);
+  for(const q of ['?limit=0','?limit=11','?limit=1&limit=2','?offset=1','?after=context'])
+    assert.throws(()=>controller.history('case','source',request(q)));
+  assert.equal(seen.length,1);assert.throws(()=>controller.read('case','source','snapshot',request('?limit=1')),error(422));
+  const handler=DocumentProposalsController.prototype.history;
+  assert.deepEqual(Reflect.getMetadata('__guards__',DocumentProposalsController),[PrivateSpatialGuard]);
+  assert.equal(Reflect.getMetadata('path',handler),'/');assert.equal(Reflect.getMetadata('method',handler),0);
+  assert.equal(Reflect.getMetadata('swagger/apiOperation',handler).operationId,'GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals');
+  assert(Reflect.getMetadata('__headers__',handler).some((h:any)=>h.name==='Cache-Control'&&h.value==='private, no-store'));
+});

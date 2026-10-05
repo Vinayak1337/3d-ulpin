@@ -10,7 +10,8 @@ import {sha256} from '../packages/server/src/infrastructure/storage';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {SpatialSourceReviewsService,spatialSourceReviewPin} from '../packages/server/src/modules/spatial/spatial-ml-source-review';
 import {spatialMlSourceAuthorityTx} from '../packages/server/src/modules/spatial/spatial-ml-source';
-import {SpatialSourceReviewRequestSchema,SpatialSourceReviewSchema} from '../packages/contracts/src/spatial-ml-source-review';
+import {SpatialSourceReviewRequestSchema,SpatialSourceReviewSchema,SpatialSourceReviewsHistorySchema,
+  SpatialSourceReviewsHistoryQuerySchema} from '../packages/contracts/src/spatial-ml-source-review';
 import {SpatialSourceReviewsController} from '../apps/api/src/modules/spatial/spatial-ml-source-review.controller';
 import {PrivateSpatialGuard} from '../apps/api/src/modules/spatial/private-spatial.guard';
 
@@ -32,7 +33,7 @@ async function harness(){
   const scope=record.item.scope,caseId=scope.caseId,itemId=record.item.id;
   const state={archived:false,revision:scope.caseRevision,latest:scope.sourceRevision,owner:subject,
     originalReads:0,artifactReads:0,inserts:0,onIo:undefined as undefined|(()=>void),
-    onLock:undefined as undefined|(()=>void),onInsert:undefined as undefined|(()=>void),
+    onLock:undefined as undefined|(()=>void),onInsert:undefined as undefined|(()=>void),onHistoryRead:undefined as undefined|(()=>void),
     job:structuredClone(after.owned.job),batch:structuredClone(after.owned.batch)};
   const operations=new Map<string,{payload_hash:string;result:any}>();
   let writeScope=false,caseLocked=false,sourceLocked=false,itemLocked=false,jobLocked=false;
@@ -57,6 +58,13 @@ async function harness(){
     }
     if(sql.startsWith('SELECT payload_hash,result FROM operations')){
       const value=operations.get(`${v[0]}|${v[1]}|${v[2]}`);return rows(value?[value]:[]);
+    }
+    if(sql.startsWith('SELECT operation_key FROM operations')){
+      assert(caseLocked&&sourceLocked&&itemLocked&&jobLocked);assert(v[5]>=2&&v[5]<=11);
+      assert(sql.includes('operation_key>$3 AND operation_key<$4')&&sql.includes('ORDER BY operation_key ASC LIMIT $6'));
+      const keys=[...operations].filter(([k,r])=>{const [c,key,kind]=k.split('|');
+        return c===v[0]&&kind===v[1]&&key>v[2]&&key<v[3]&&r.result.snapshot?.pin.itemId===v[4];})
+        .map(([k])=>k.split('|')[1]).sort().slice(0,v[5]);state.onHistoryRead?.();return rows(keys.map(operation_key=>({operation_key})));
     }
     if(sql.startsWith('INSERT INTO operations')){
       assert(writeScope&&caseLocked&&sourceLocked&&itemLocked&&jobLocked,'Insert only after all final authority locks.');
@@ -204,4 +212,81 @@ test('private no-store controller advertises three typed routes and delegates ex
   const item=randomUUID(),review=randomUUID(),request={originalUrl:'/exact'} as any;
   await controller.context(item,request);await controller.read(item,review,request);assert.deepEqual(seen,[item,item,review]);
   assert.throws(()=>controller.context(item,{originalUrl:'/exact?actor=caller'} as any),error(422,'ML_REVIEW_QUERY'));
+});
+
+const historyRoot='E:/BhuAayam-data/task-data/d07-source-review-runtime-20261005-run01';
+const historyOptions={skip:options.skip||(!existsSync(historyRoot+'/pg-after.json')?'Retained saved D07 review required.':false)};
+async function historyFixture(){
+  const f=await harness();await f.service.review(f.itemId,f.request());
+  const retained=JSON.parse(readFileSync(historyRoot+'/pg-after.json','utf8')).addedOperations
+    .find((v:any)=>v.kind==='spatial-source-review-snapshot/1');
+  assert.equal(fingerprint(retained.result),retained.payload_hash,'Retained immutable wrapper is unchanged.');
+  assert.equal(retained.result.snapshot.reviewId,'b46216ba-8c6b-4514-9e29-acc793330a5b');
+  const envelope=structuredClone([...f.operations.values()].find(v=>v.result.snapshot)!.result),pin=spatialSourceReviewPin(f.record);
+  assert.deepEqual(retained.result.snapshot.pin.raster,pin.raster);assert.deepEqual(retained.result.snapshot.pin.mask,pin.mask);
+  assert.equal(retained.result.snapshot.pin.transformSha256,pin.transformSha256);
+  f.operations.clear();
+  // Saved real decisions/reference/time; input/job/item/access pins are the
+  // controlled retained-output harness, not a claim of live enrollment.
+  const seed=(reviewId:string,itemId=f.itemId,caseId=pin.scope.caseId)=>{
+    const result=structuredClone(envelope);result.snapshot=structuredClone(retained.result.snapshot);
+    result.snapshot.reviewId=reviewId;result.snapshot.pin=structuredClone(pin);result.snapshot.pin.itemId=itemId;
+    result.snapshot.pin.scope.caseId=caseId;result.snapshot.review.actor=subject;
+    const key=`${caseId}|spatial-source-review:${reviewId}|spatial-source-review-snapshot/1`;
+    f.operations.set(key,{payload_hash:fingerprint(result),result});return key;
+  };
+  seed(retained.result.snapshot.reviewId);return {...f,seed,retained:retained.result.snapshot};
+}
+test('history discovers retained D07 review and exact reader with bounded ordering and zero mutations',historyOptions,()=>withSubject(async()=>{
+  const f=await historyFixture(),actual=f.retained.reviewId,small='00000001-0000-4000-8000-000000000001';
+  f.seed(small);f.seed('00000002-0000-4000-8000-000000000002',randomUUID());
+  f.seed('00000003-0000-4000-8000-000000000003',f.itemId,randomUUID());
+  const before=structuredClone(f.operations),record=structuredClone(f.record),inserts=f.state.inserts;
+  const first=await f.service.history(f.itemId,{limit:'1'});assert(SpatialSourceReviewsHistorySchema.safeParse(first).success);
+  assert.deepEqual(first.references.map(r=>r.reviewId),[small]);assert.equal(first.hasMore,true);assert.equal(first.nextAfter,small);
+  const last=await f.service.history(f.itemId,{after:first.nextAfter,limit:'1'});
+  assert.deepEqual(last.references.map(r=>r.reviewId),[actual]);assert.equal(last.hasMore,false);assert.equal(last.nextAfter,null);
+  const ref=last.references[0],read=await f.service.read(f.itemId,ref.reviewId);
+  assert.equal(ref.reviewSha256,fingerprint(read));assert.equal(ref.resultSha256,read.pin.resultSha256);
+  assert.equal(ref.candidateCount,100);assert.equal(ref.decisionCount,read.decisions.length);assert.deepEqual(ref.review,read.review);
+  assert.equal(ref.readUrl,`/api/v1/spatial-ml/items/${f.itemId}/source-reviews/${actual}`);
+  assert.equal('decisions' in ref,false);assert.equal('candidates' in ref,false);assert.equal(ref.limits.learningLabel,false);
+  const empty=await f.service.history(f.itemId,{after:actual});assert.deepEqual(empty.references,[]);assert.equal(empty.hasMore,false);
+  assert.deepEqual(f.operations,before);assert.deepEqual(f.record,record);assert.equal(f.state.inserts,inserts);
+}));
+test('history refuses wrong-item cursors, corruption, stale pins and canonical batch/access drift after reads without writes',historyOptions,()=>withSubject(async()=>{
+  const f=await historyFixture(),foreign='00000002-0000-4000-8000-000000000002';f.seed(foreign,randomUUID());
+  const reads=f.state.originalReads,inserts=f.state.inserts,before=structuredClone(f.operations);
+  await assert.rejects(f.service.history(f.itemId,{after:foreign}),error(422,'ML_REVIEW_SNAPSHOT_INTEGRITY'));
+  assert.equal(f.state.originalReads,reads);f.state.archived=true;
+  await assert.rejects(f.service.history(f.itemId),error(403));assert.equal(f.state.originalReads,reads);
+  f.state.archived=false;f.state.onIo=()=>{f.state.batch.source_id=f.otherSourceId;};
+  await assert.rejects(f.service.history(f.itemId),error(409));f.state.onIo=undefined;f.state.batch.source_id=f.record.item.scope.sourceId;
+  f.state.onHistoryRead=()=>{f.state.batch.case_id=randomUUID();};await assert.rejects(f.service.history(f.itemId),error(409));
+  f.state.onHistoryRead=undefined;f.state.batch.case_id=f.record.item.scope.caseId;
+  f.state.onHistoryRead=()=>{f.state.owner='revoked-after-read';};await assert.rejects(f.service.history(f.itemId),error(403));
+  f.state.onHistoryRead=undefined;f.state.owner=subject;
+  const ownKey=[...f.operations.keys()].find(k=>k.includes(f.retained.reviewId))!,own=f.operations.get(ownKey)!;
+  const original=structuredClone(own);own.result.snapshot.pin.resultSha256='f'.repeat(64);own.payload_hash=fingerprint(own.result);
+  await assert.rejects(f.service.history(f.itemId),error(409),'A schema-valid rehashed stale snapshot is not silently made current.');
+  f.operations.set(ownKey,structuredClone(original));f.operations.get(ownKey)!.result.snapshot.decisions[0].reason='tampered';
+  await assert.rejects(f.service.history(f.itemId),error(422,'ML_REVIEW_SNAPSHOT_INTEGRITY'));
+  f.operations.set(ownKey,original);assert.deepEqual(f.operations,before);assert.equal(f.state.inserts,inserts);
+}));
+test('history controller keeps static context separate from review IDs and preserves private no-store strict queries',()=>{
+  const seen:any[]=[],controller=new SpatialSourceReviewsController({history:(...args:any[])=>{seen.push(args);return args;},
+    context:()=>null,read:()=>null} as any),request=(query='')=>({originalUrl:'/source-reviews'+query}) as any;
+  controller.history('item',request('?limit=2'));assert.deepEqual({...seen[0][1]},{limit:'2'});
+  assert.equal(SpatialSourceReviewsHistoryQuerySchema.parse({}).limit,5);
+  for(const q of ['?limit=0','?limit=11','?limit=1&limit=2','?after=context','?actor=caller'])
+    assert.throws(()=>controller.history('item',request(q)));
+  assert.equal(seen.length,1);assert.throws(()=>controller.context('item',request('?limit=1')),error(422));
+  assert.throws(()=>controller.read('item','review',request('?limit=1')),error(422));
+  const handler=SpatialSourceReviewsController.prototype.history;
+  assert.deepEqual(Reflect.getMetadata('__guards__',SpatialSourceReviewsController),[PrivateSpatialGuard]);
+  assert.equal(Reflect.getMetadata('path',handler),'/');assert.equal(Reflect.getMetadata('method',handler),0);
+  assert.equal(Reflect.getMetadata('path',SpatialSourceReviewsController.prototype.context),'context');
+  assert.equal(Reflect.getMetadata('path',SpatialSourceReviewsController.prototype.read),':reviewId');
+  assert.equal(Reflect.getMetadata('swagger/apiOperation',handler).operationId,'GET_api_v1_spatial_ml_items_itemId_source_reviews');
+  assert(Reflect.getMetadata('__headers__',handler).some((h:any)=>h.name==='Cache-Control'&&h.value==='private, no-store'));
 });

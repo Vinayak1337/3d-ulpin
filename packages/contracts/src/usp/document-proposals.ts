@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {DocumentPageFrameSchema} from '../document-pages';
 
 export const DOCUMENT_PROPOSAL_LIMITS=Object.freeze({requestBytes:512*1024,responseBytes:768*1024,
-  proposals:32,rejected:256,seconds:90,pageSpan:50});
+  proposals:32,rejected:256,seconds:90,pageSpan:50,historyBytes:64*1024});
 const id=z.uuid().transform(v=>v.toLowerCase()).pipe(z.uuid()),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const count=z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const text=(max:number)=>z.string().min(1).max(max).refine(v=>/\S/u.test(v),'Use nonblank text.')
@@ -64,6 +64,22 @@ export const DocumentProposalSnapshotSchema=z.strictObject({version:z.literal('s
   review:z.strictObject({actor:text(256),time:z.iso.datetime(),attribution:z.literal('local_process'),
     humanAuthenticated:z.literal(false),independentGroundTruth:z.literal(false)})});
 export const DocumentProposalSnapshotViewSchema=DocumentProposalSnapshotSchema.extend({currentCaseRevision:count,snapshotSha256:hash});
+export const DocumentProposalsHistoryQuerySchema=z.strictObject({after:id.optional(),
+  limit:z.string().regex(/^(?:[1-9]|10)$/).default('5').transform(Number)});
+export const DocumentProposalReferenceSchema=DocumentProposalSnapshotSchema.pick({snapshotId:true,snapshotRevision:true,
+  caseRevision:true,review:true,method:true,provenanceAuthority:true,population:true,status:true,quotationVerification:true,
+  qualification:true,learningLabel:true}).extend({snapshotSha256:hash,
+  proposalCount:count.max(DOCUMENT_PROPOSAL_LIMITS.proposals),rejectedCount:count.max(DOCUMENT_PROPOSAL_LIMITS.rejected),
+  conflictCount:count.max(32),locatorWarningCount:count.max(288),readUrl:z.string().max(256)});
+export const DocumentProposalsHistorySchema=z.strictObject({version:z.literal('source-document-proposals-history/1'),
+  caseId:id,currentCaseRevision:count,source:DocumentProposalSourcePinSchema.extend({sourceId:id}),
+  order:z.literal('snapshot_id_ascending'),after:id.nullable(),limit:count.min(1).max(10),
+  references:z.array(DocumentProposalReferenceSchema).max(10),hasMore:z.boolean(),nextAfter:id.nullable()})
+  .refine(v=>v.references.length<=v.limit&&v.references.every((r,i)=>r.snapshotId>(i?v.references[i-1].snapshotId:v.after??''))&&
+    (v.hasMore?v.references.length===v.limit&&v.nextAfter===v.references.at(-1)?.snapshotId:v.nextAfter===null),
+  'Retain the complete ordered page and its continuation cursor.');
 export type DocumentProposalSourcePin=z.output<typeof DocumentProposalSourcePinSchema>;
 export type DocumentProposalSnapshot=z.output<typeof DocumentProposalSnapshotSchema>;
 export type DocumentProposalPacket=z.output<typeof DocumentProposalPacketSchema>;
+export type DocumentProposalReference=z.output<typeof DocumentProposalReferenceSchema>;
+export type DocumentProposalsHistory=z.output<typeof DocumentProposalsHistorySchema>;
