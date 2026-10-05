@@ -132,6 +132,22 @@ test('queue/read/replay/retry retain canonical jobs and nullable package/part wi
   f.subject = 'revoked'; await assert.rejects(retrySpatialMlItem(item.id, key), error(403));
 }));
 
+test('committed replay survives native prepare outage but still verifies current access and original bytes', async () => fixture(async f => {
+  const committed = await f.create(), writes = f.sql.filter((s: string) => /^(INSERT|UPDATE)/.test(s)).length;
+  let prepares = 0;
+  spatialMlSourceService.prepare = async () => { prepares++; throw new AppError(503, 'DOCUMENT_PAGES_CLEANUP_UNRESOLVED', 'Controlled native inspection outage'); };
+  assert.equal((await f.create()).id, committed.id);
+  assert.equal(prepares, 0); assert.equal(f.jobs.size, 1); assert.equal(f.batches.size, 1);
+  await assert.rejects(createSpatialMlSourceBatch({ ...input, region: { ...input.region, x: .1 } }), error(409, 'ML_REQUEST_KEY'));
+  f.sourceBytes = Buffer.from('changed retained original');
+  await assert.rejects(f.create(), error(422, 'SOURCE_INTEGRITY')); f.sourceBytes = original;
+  f.subject = 'revoked'; await assert.rejects(f.create(), error(403)); f.subject = 'source-batch-technical-operator';
+  assert.equal(f.sql.filter((s: string) => /^(INSERT|UPDATE)/.test(s)).length, writes);
+  assert.equal(prepares, 0);
+  await assert.rejects(createSpatialMlSourceBatch({ ...input, requestKey: '10000000-0000-4000-8000-000000000004' }), error(503));
+  assert.equal(prepares, 1, 'a new batch still requires native prepare');
+}));
+
 test('current family/frame/bytes and final case/context drift refuse queue and disclosure', async () => fixture(async f => {
   f.latest = 2; await assert.rejects(f.create(), error(409)); f.latest = 1;
   f.pageFrame = { ...frame, width: 700 }; await assert.rejects(f.create(), error(409)); f.pageFrame = frame;
