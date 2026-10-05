@@ -3944,6 +3944,83 @@
       "jobsClosed": true,
       "ownedChildrenSurvived": false,
       "gpuUsed": false
+    },
+    "recallComparison": {
+      "report": "docs/evidence/usp/building-ramp-recall-20261005.json",
+      "ownerCommit": "04ce9909b88c9a9e2d8632dcd672c48482329cb5",
+      "integrationCommit": "c48a345e9c13169c723e06bc827287524e228b69",
+      "reportCanonicalGitSha256": "82297b96ca2b36125b75b0b3e791100a68e8a624450cc863f562fcb6fb84dd5f",
+      "freeze": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\frozen-recall-config.json",
+        "bytes": 153837,
+        "sha256": "a733d4c8def3f06d9cff81e2b327fa12ae76b3166f1364e847dc36ff8a38a92c"
+      },
+      "results": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\recall-results.json",
+        "bytes": 179559,
+        "sha256": "d7ba940ff2c47e6bbd0a838da334e7a2ce0285b1e90590f2efbd318186493fc1"
+      },
+      "singleFactor": {
+        "baselineConfidenceCutoff": 0.5,
+        "experimentalConfidenceCutoff": 0.3
+      },
+      "maskMetrics": {
+        "baseline": {
+          "iou": 0.4483779399837794,
+          "precision": 0.8466552446950046,
+          "recall": 0.4880088712836328
+        },
+        "experimental": {
+          "iou": 0.49710700294990845,
+          "precision": 0.779818766181591,
+          "recall": 0.5782719754605289
+        }
+      },
+      "finalPolygonObjects": {
+        "baseline": {
+          "tp": 67,
+          "fp": 43,
+          "fn": 111,
+          "precision": 0.6090909090909091,
+          "recall": 0.37640449438202245
+        },
+        "experimental": {
+          "tp": 87,
+          "fp": 75,
+          "fn": 91,
+          "precision": 0.5370370370370371,
+          "recall": 0.4887640449438202
+        }
+      },
+      "emptyLabelledFpScenes": {
+        "baseline": 1,
+        "experimental": 2,
+        "denominator": 5
+      },
+      "emptyLabelledFpPixels": {
+        "baseline": 1106,
+        "experimental": 4817
+      },
+      "smallPolygonOmissions": {
+        "baseline": 1,
+        "experimental": 127
+      },
+      "changedPolygonPixels": {
+        "baseline": 1,
+        "experimental": 266
+      },
+      "decision": "recall_gain_with_cost",
+      "productionPromoted": false,
+      "productionProfileChanged": false,
+      "newNativeModelCalls": 0,
+      "cachedQueryFiles": 24,
+      "nativeOrOsEgressQualified": false,
+      "tilingFinding": "tile256/stride192 is a no-op for these24 inputs: production uses one unpadded256 tile resized432, scale1.6875; no pixel-resolution cause established.",
+      "cutoffChoice": "Retained1198-pixel roof query confidence0.3322/pixelIoU0.80794 justified one frozen cutoff comparison; upstream configurable confidence API does not recommend0.30 for satellites.",
+      "labelsAndBaseline": "Original labels and baseline frozen outputs/results unchanged; prior empty-label roof-like ambiguity persists, no new truth or relabelling.",
+      "runtimeSeconds": 3.078,
+      "peakJobPrivateBytes": 179073024,
+      "qualification": "Descriptive cached open-development tradeoff only; no model promotion/fit/final/official/physical/generalization or ML-ready qualification."
     }
   }
 }
