@@ -363,7 +363,7 @@
     "suppliedApprovalPolicy": "never",
     "suppliedSandbox": "danger-full-access"
   },
-  "latestAmendment": "pilotFitPreparation",
+  "latestAmendment": "nonfiniteDiagnosis",
   "pilotFitPreparation": {
     "task": "D07-RFDETR-PILOT-FIT-PREP",
     "date": "2026-10-05",
@@ -590,6 +590,88 @@
     "settings": {
       "requested": "gpt-6.1-sol/xhigh/default-standard1x",
       "observedPerTurnModelEffortTier": null,
+      "suppliedPermissions": "never/danger-full-access"
+    }
+  },
+  "nonfiniteDiagnosis": {
+    "task": "D07-RFDETR-NONFINITE-DIAGNOSIS",
+    "date": "2026-10-06",
+    "state": "source_hypotheses_and_telemetry_prepared_diagnostic_not_run",
+    "baseCommit": "fb48f85874fdc94aa515cbea0a1eb7f1878466ea",
+    "branch": "task/d07-rfdetr-nonfinite-diagnosis-20261006",
+    "failedOwnerCommit": "a236f8027e056f2e796a8f57c8fbaa2b5756505f",
+    "observed": "Four finite logged updates; generic guard raised before backward. Actual ID/total shape/component/gradient/parameter state absent. No checkpoint; teacher released resources. NaN not proven.",
+    "sourceFinding": "Transformers5.17 empty-mask branch returns empty zeros_like, not scalar: weighted total can stay empty and fail same guard. Legitimate empty train13 preserved. Sigmoid-log saturation/post-update corruption remain hypotheses. Normalization clamps min1; large norms precede clipping.",
+    "primaryResearch": {
+      "version": "Transformers5.17.0; retained RF-DETR loss/model/processor byte-equal to installed text; no imports",
+      "links": [
+        "https://raw.githubusercontent.com/huggingface/transformers/v5.17.0/src/transformers/loss/loss_rf_detr.py",
+        "https://huggingface.co/docs/transformers/v5.17.0/model_doc/rf_detr",
+        "https://raw.githubusercontent.com/roboflow/rf-detr/e0c69e63a05f9404c53eac16bc94db23f617d265/src/rfdetr/models/criterion.py"
+      ],
+      "upstreamCommit": "e0c69e63a05f9404c53eac16bc94db23f617d265",
+      "applicability": "Pinned Roboflow scalar empty-mask/logsigmoid losses support later narrow fix; no recipe/library/checkpoint replacement or historical-failure proof."
+    },
+    "telemetry": "Opt-in detached IDs/files/annotations/target summaries, named loss shape/numel/finiteness, failed outputs, last finite forward/gradient/parameter phase/update. Exclusive256KiB receipt. Guard/default unchanged; new exact code/root authority required. Existing --execute still fits six epochs, NOT two-forward entry.",
+    "nextExperiment": "Later sole teacher: original-checkpoint FP32/train-mode/no-grad positive1 then legitimate empty13, max2 unchanged built-in forward/loss calls, zero backward/optimizer/fit/eval/scoring. Same432/query/head/category adapter. Stop first invalid or180s incl45s cleanup; GPU/container5GiB, host512MiB/CPU2/PIDs32/swap0; fresh root scope/current-PID native/resource/sole-GPU proof. Return empty/non-scalar vs named nonfinite; no dropped empties/repeated pilot.",
+    "artifacts": {
+      "proposal": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\diagnosis-proposal.json",
+        "bytes": 14825,
+        "sha256": "6dc4ffde6a8b3b6e00ba67000d3c592c01848ae5953fee81fcf0b10a6ef98be2"
+      },
+      "runner": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\train_building_ramp.py",
+        "bytes": 71184,
+        "sha256": "24afe260cb2c19fd6a56c5cfdd7b88d40a3df6af03b08f073fee20fb061deafd"
+      },
+      "checks": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\checks.json",
+        "bytes": 2184,
+        "sha256": "61ffe70179d773da3876fc49edc0841b63955ac2fd0350b0634b5386a75444b4"
+      },
+      "checker": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\checks.py",
+        "bytes": 9521,
+        "sha256": "9ad36a185641d2db24b2c55c41eede8613f6c92cfaa3e92015dde0007c466830"
+      },
+      "upstreamOrigin": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\primary-roboflow-origin.json",
+        "bytes": 464,
+        "sha256": "c45bc137249fcdec2d38cec6edd21d0fec6b00a5fd69985cbb734cd8908d9bd9"
+      }
+    },
+    "verification": {
+      "command": "C:/Python313/python.exe -I -B E:/BhuAayam-data/task-data/d07-rfdetr-nonfinite-diagnosis-20261006/checks.py",
+      "exitCode": 0,
+      "checks": 8,
+      "cliExitCodes": [
+        2,
+        2,
+        0
+      ],
+      "scope": "8 stdlib/fake metadata/selected train checks; three CLI2/2/0. No heavy imports/image/RLE/model/loss/GPU execution",
+      "changedCodeReview": "Scoped diff reviewed: original stop/detached summaries/root opt-in/last-finite attribution/receipt preservation. No tensor/Trainer/model/diagnostic execution."
+    },
+    "gaps": [
+      "Historical input/named loss/actual numerical cause unknown; empty-shape defect source-supported, not runtime-confirmed",
+      "Separate root teacher assignment/minimal existing-launcher2-forward entry/fresh pins and controls required; no execution authorization here",
+      "No successful pilot/final trio/candidate comparison/quality/promotion; prior UNBOUND reference untouched and source/overlap/ignore limits retained"
+    ],
+    "cleanup": {
+      "ownedProcessesRunning": false,
+      "gpuOwnershipTaken": false,
+      "containersStarted": 0,
+      "servicesStarted": 0,
+      "originalsOrCheckpointsChanged": false,
+      "sourceCocoLabelsOrSplitsChanged": false,
+      "stagingEdited": false,
+      "dependenciesChanged": false,
+      "runtimeLauncherOrProfileChanged": false
+    },
+    "settings": {
+      "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+      "actualPerTurnModelEffortTier": null,
       "suppliedPermissions": "never/danger-full-access"
     }
   }
