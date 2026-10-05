@@ -3,7 +3,8 @@
 Metadata readiness is separate from actual runtime, model, GPU and fit admission.
 The historical authorization admits CPU processor and tiny GPU controls.
 A separate exact root instruction admits the frozen Torch reference, with
-current-process gates and conditional ALL24. There is no fitting entry point.
+current-process gates and conditional ALL24. Separately authorized v2 is an
+own-route ALL24 baseline with cached production scoring. There is no fitting entry point.
 The e71d historical control and its single-use launcher remain unchanged.
 """
 from __future__ import annotations
@@ -13,7 +14,9 @@ import copy
 import hashlib
 import json
 import queue
+import runpy
 import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -41,6 +44,12 @@ REF_RUNNER_SHA = "cb771a12ac46ee4ae448bd90ce42574676d9a6afc28ac147aa1cd9e98212e0
 REF_INTERFACE_SHA = "dca3b54f2ca7401cf2b3a02656d845a6985b023d79db309b4cbfe2a9d754c993"
 REF_PLANS = {"smoke": "c971142103a4dc19c4165a0f051664df8856013e5699565b4349030af4e96e20",
              "development": "88a3b33c742044c19d868d31b3d19a362b65c7e113899f1367b89a22f71fdfca"}
+BL_PREP = DATA / "d07-rfdetr-torch-baseline-20261005/prepared-v2"
+BL_RUN = DATA / "d07-rfdetr-torch-baseline-run-20261005"
+BL_ROOT_SHA = "f453d00a279c07e9f43315b195cd18c4e59e709addc94ce3c3d556a1e2e54ada"
+BL_RUNNER_SHA = "7882a3bf3ff99076add9f551c1b5881a52fba1c98bbe553bf125768cd0d84db1"
+BL_PLAN_SHA = "d350f2f0fa943423150e20ed77cd3d0fcc7558a4213456bb2b321d4bd384a3b0"
+BL_INTERFACE_SHA = "2c37c0e547f1d0724d0525bc3103e1edbc7ca3bff7137a106fa94000968ec3f6"
 
 
 def require(condition, reason):
@@ -539,14 +548,21 @@ need(failure is None,'Accepted runner failed: '+str(failure))
 '''.lstrip()
 
 
-def reference_checks(root_instruction, execution_state):
-    require(root_instruction == REF_RUN / "root-assignment.txt"
-            and pin(root_instruction)["sha256"] == REF_ROOT_SHA, "Exact reference root instruction required")
-    require(pin(REF / "compare_ramp_torch.py")["sha256"] == REF_RUNNER_SHA
-            and pin(REF / "mount-interface.json")["sha256"] == REF_INTERFACE_SHA, "Reference runner/interface drift")
-    save(REF_RUN / "attempt.json", {"smokeAttempts":1,"conditionalAll24Attempts":1,"rootInstruction":pin(root_instruction)})
+def reference_checks(root_instruction, execution_state, baseline=False):
+    prepared = BL_PREP if baseline else REF
+    run_root = BL_RUN if baseline else REF_RUN
+    root_sha = BL_ROOT_SHA if baseline else REF_ROOT_SHA
+    runner_sha = BL_RUNNER_SHA if baseline else REF_RUNNER_SHA
+    interface_sha = BL_INTERFACE_SHA if baseline else REF_INTERFACE_SHA
+    plan_pins = {"experimental-baseline": BL_PLAN_SHA} if baseline else REF_PLANS
+    task_id = "D07-RFDETR-TORCH-BASELINE-V2-ACTUAL" if baseline else "D07-RFDETR-TORCH-REFERENCE"
+    require(root_instruction == run_root / "root-assignment.txt"
+            and pin(root_instruction)["sha256"] == root_sha, "Exact reference root instruction required")
+    require(pin(prepared / "compare_ramp_torch.py")["sha256"] == runner_sha
+            and pin(prepared / "mount-interface.json")["sha256"] == interface_sha, "Reference runner/interface drift")
+    save(run_root / "attempt.json", {"baselineAttempts":1,"rootInstruction":pin(root_instruction)} if baseline else {"smokeAttempts":1,"conditionalAll24Attempts":1,"rootInstruction":pin(root_instruction)})
     base = profile(validate_old_output=False)
-    interface = json.loads((REF / "mount-interface.json").read_bytes())
+    interface = json.loads((prepared / "mount-interface.json").read_bytes())
     output = host_path(interface["replaceWritableOutput"]["hostPath"], exists=False)
     require(not output.exists() or not any(output.iterdir()), "Reference output must be new/empty")
     output.mkdir(exist_ok=True)
@@ -564,28 +580,31 @@ def reference_checks(root_instruction, execution_state):
     def inventory(cleanup=False):
         return {"containers":sorted(command([*docker,"ps","-aq","--no-trunc"],timeout=10,cleanup=cleanup).splitlines()),
                 "volumes":sorted(command([*docker,"volume","ls","-q"],timeout=10,cleanup=cleanup).splitlines())}
-    before=inventory();save(REF_RUN/"before.json",before)
+    before=inventory();save(run_root/"before.json",before)
     require(len(before["containers"])==24 and len(before["volumes"])==14,"Exclusive reference inventory prerequisite changed")
     actual_image=json.loads(command([*docker,"image","inspect",base["imageDigest"]]))[0]
     retained=json.loads((BASE/"layer-image-inspect.json").read_bytes())
     require(all(actual_image[k]==retained[k] for k in ["Id","Config","RootFS","Descriptor"]),"Immutable reference image drift")
     smoke=None; failure=None
     try:
-        for mode in ["smoke","development"]:
-            require(pin(REF/(mode+"-plan.json"))["sha256"]==REF_PLANS[mode],"Frozen reference plan drift")
-            plan=json.loads((REF/(mode+"-plan.json")).read_bytes())
-            gates=REF_RUN/mode;gates.mkdir()
+        for mode in (["experimental-baseline"] if baseline else ["smoke","development"]):
+            plan_path=prepared/("baseline-plan.json" if baseline else mode+"-plan.json")
+            require(pin(plan_path)["sha256"]==plan_pins[mode],"Frozen reference plan drift")
+            plan=json.loads(plan_path.read_bytes())
+            gates=run_root/mode;gates.mkdir()
             auth_path=gates/"authorization.json"; control_path=gates/"preflight.json"
-            auth={"schemaVersion":"ramp-torch-reference-authorization/1","rootThreadId":"01a0ed8a-4383-79c3-a0ae-35c1e969ef66",
-                "rootAuthorized":True,"mode":mode,"planSha256":plan["planSha256"],"scriptSha256":REF_RUNNER_SHA,
-                "rootAssignmentSha256":REF_ROOT_SHA,"rootAssignment":root_instruction.read_text(encoding="utf-8")}
+            auth={"schemaVersion":"ramp-torch-baseline-authorization/2" if baseline else "ramp-torch-reference-authorization/1","rootThreadId":"01a0ed8a-4383-79c3-a0ae-35c1e969ef66",
+                "rootAuthorized":True,"mode":mode,"planSha256":plan["planSha256"],"scriptSha256":runner_sha,
+                "rootAssignmentSha256":root_sha,"rootAssignment":root_instruction.read_text(encoding="utf-8")}
+            if baseline:
+                auth.update(baselinePolicy=plan["baselinePolicy"],prerequisites=plan["prerequisites"])
             save(auth_path,auth);save(control_path,{"state":"awaiting_actual_process"})
-            selected=copy.deepcopy(base);selected.update(task=REF_RUN.name,gpuAssigned=True,output={"hostPath":str(output),"containerPath":"/outputs/rfdetr","readOnly":False,"kind":"directory"})
+            selected=copy.deepcopy(base);selected.update(task=run_root.name,gpuAssigned=True,output={"hostPath":str(output),"containerPath":"/outputs/rfdetr","readOnly":False,"kind":"directory"})
             selected["policy"]["deviceRequests"]=[{"DeviceIDs":[GPU_UUID],"Count":0,"Capabilities":[["gpu"]]}]
             selected["policy"].pop("attachDeadlineSeconds")
             selected["policy"].update(supervisorDeadlineSeconds=600,innerDeadlineSeconds=590,cleanupReserveSeconds=45,
                                        attachDeadline="remaining inner budget minus cleanup reserve")
-            extras=interface["modes"][mode]["newReadOnlyMounts"]
+            extras=interface["newReadOnlyMounts"] if baseline else interface["modes"][mode]["newReadOnlyMounts"]
             for mount in extras:
                 path=host_path(mount["hostPath"],"file");actual=pin(path)
                 require((actual["bytes"],actual["sha256"])==(mount["pin"]["bytes"],mount["pin"]["sha256"]),"Exact reference input pin mismatch")
@@ -604,11 +623,13 @@ def reference_checks(root_instruction, execution_state):
             selected["environment"].update(NVIDIA_VISIBLE_DEVICES=GPU_UUID,CUDA_VISIBLE_DEVICES="0")
             selected["environmentOverrides"].update(NVIDIA_VISIBLE_DEVICES=GPU_UUID,CUDA_VISIBLE_DEVICES="0")
             source=CONTROL.replace("need(not list(Path('/dev').glob('nvidia*')) and not Path('/dev/dxg').exists(),'Unexpected GPU devices in CPU profile')","# Exact physical GPU checked after current-process authorization.")
-            source=source.replace("native-control.json",mode+"-native.json").replace("'gpuAssigned':False","'gpuAssigned':True").replace("actual_cpu_native_control_passed","actual_reference_native_control_passed")+REFERENCE_BRIDGE
+            bridge=REFERENCE_BRIDGE.replace(REF_ROOT_SHA,root_sha)
+            if baseline: bridge=bridge.replace("'--reference-run'","'--experimental-baseline-run'")
+            source=source.replace("native-control.json",mode+"-native.json").replace("'gpuAssigned':False","'gpuAssigned':True").replace("actual_cpu_native_control_passed","actual_reference_native_control_passed")+bridge
             compile(source,"<reference-current-process>","exec")
             args=base["createArgv"][:base["createArgv"].index("--mount")]
-            args[args.index("--name")+1]=REF_RUN.name+"-"+mode+"-"+uuid.uuid4().hex[:12]
-            args[args.index("--label")+1]="codex.task="+REF_RUN.name
+            args[args.index("--name")+1]=run_root.name+"-"+mode+"-"+uuid.uuid4().hex[:12]
+            args[args.index("--label")+1]="codex.task="+run_root.name
             for i,value in enumerate(args):
                 if value.startswith("NVIDIA_VISIBLE_DEVICES="):args[i]="NVIDIA_VISIBLE_DEVICES="+GPU_UUID
                 if value.startswith("CUDA_VISIBLE_DEVICES="):args[i]="CUDA_VISIBLE_DEVICES=0"
@@ -658,6 +679,10 @@ def reference_checks(root_instruction, execution_state):
                 state=json.loads(command([*docker,"inspect","--format","{{json .State}}",cid]))
                 require(state["ExitCode"]==0 and not state["Running"] and not state["OOMKilled"],"Reference resource/exit failure")
                 result=json.loads((output/Path(plan["outputDir"]).name/"result.json").read_bytes())
+                if baseline:
+                    require(result["schemaVersion"]=="ramp-torch-baseline-result/2" and result["state"]=="experimental_baseline_completed"
+                            and result["scriptSha256"]==runner_sha and result["planSha256"]==plan["planSha256"]
+                            and [i["id"] for i in result["items"]]==plan["selectedIds"],"Incomplete or drifted v2 result")
                 if mode=="smoke":smoke=result
             except Exception as error:
                 stage_error={"type":type(error).__name__,"message":str(error)}
@@ -666,7 +691,7 @@ def reference_checks(root_instruction, execution_state):
                 if process and process.poll() is None:process.kill();process.wait(timeout=3)
                 if cid:
                     current=json.loads(command([*docker,"inspect",cid],timeout=10,cleanup=True))[0]
-                    require(current["Id"]==cid and current["Config"]["Labels"].get("codex.task")==REF_RUN.name,"Reference cleanup identity mismatch")
+                    require(current["Id"]==cid and current["Config"]["Labels"].get("codex.task")==run_root.name,"Reference cleanup identity mismatch")
                     command([*docker,"rm","--force",cid],timeout=10,cleanup=True)
                 if reader:
                     reader.join(timeout=3);require(not reader.is_alive(),"Reference reader survived cleanup")
@@ -678,9 +703,114 @@ def reference_checks(root_instruction, execution_state):
                 failure={"type":"FrozenParityMiss","message":"Two-case smoke failed fixed numerical parity; ALL24 not admitted"};break
     finally:
         after=inventory(cleanup=True);require(before==after,"Reference changed retained container/volume inventory")
-        save(REF_RUN/"host-receipt.json",{"task":"D07-RFDETR-TORCH-REFERENCE","status":"blocked" if failure else "all24_reference_completed",
+        save(run_root/"host-receipt.json",{"task":task_id,"status":"blocked" if failure else ("experimental_baseline_completed" if baseline else "all24_reference_completed"),
             "failure":failure,"stages":stages,"calls":calls,"before":before,"after":after,"elapsedSeconds":time.perf_counter()-started,"trainingAuthorized":False})
     if failure:raise ValueError(failure["message"])
+
+
+def cached_baseline_score(root_instruction, execution_state):
+    """Reuse production projection/scoring on saved outputs only, at 0.5/logit0."""
+    require(root_instruction == BL_RUN / "root-assignment.txt" and pin(root_instruction)["sha256"] == BL_ROOT_SHA,
+            "Exact baseline root instruction required for cached scoring")
+    prepared = checked_json((BL_PREP / "baseline-plan.json", 27288, BL_PLAN_SHA))
+    output = DATA / "d07-rfdetr-torch-baseline-20261005/output/experimental-baseline-v2"
+    result = json.loads((output / "result.json").read_bytes())
+    require(result["state"] == "experimental_baseline_completed" and result["scriptSha256"] == BL_RUNNER_SHA
+            and result["planSha256"] == prepared["planSha256"]
+            and [i["id"] for i in result["items"]] == prepared["selectedIds"], "Complete frozen v2 result required")
+    baseline = DATA / "d07-karnataka-baseline-20261005"
+    frozen = checked_json((baseline / "frozen-config.json", 155083,
+                          "9b580000468c6db12e9d74a2ff25e68fa44eed289204e9fd73dd4461acbffe2c"))
+    deployed = checked_json((baseline / "results.json", 173113,
+                            "57becbda6d0058e1e07cca834a29965c193ec60c598d040ef2531172980b0dc1"))
+    ids = prepared["selectedIds"]
+    require([i["id"] for i in frozen["items"]] == ids == [i["id"] for i in deployed["items"]]
+            and len(ids) == 24 and sum(i["publisherFeatureCount"] for i in frozen["items"]) == 178,
+            "Original ALL24/source-label denominators required")
+    for entry in frozen["sourcePins"]:
+        if Path(entry["path"]).name in {"evaluate_vision_cohort.py", "spatial_ml.py", "validation.py", "ml-models.json"}:
+            actual = pin(Path(entry["path"]))
+            require(all(actual[k] == entry[k] for k in ("bytes", "sha256")), "Production scoring code drift")
+    require(pin(Path(frozen["environment"]["lock"]["path"]))["sha256"] == frozen["environment"]["lock"]["sha256"],
+            "Cached scoring environment lock drift")
+    destination = BL_RUN / "scoring"
+    destination.mkdir()  # One scoring attempt; retained partial output prevents replay.
+    execution_state.update(attempted=True, confirmed=True)
+    sys.path.insert(0, str(Path(frozen["environment"]["path"]) / "Lib/site-packages"))
+    module = runpy.run_path(str(Path(__file__).with_name("compare_building_ramp.py")))
+    denied = module["offline"]()
+    e = module["cached_evaluator"]()  # Session and weight loaders fail closed.
+    require(e.dependencies() == frozen["environment"]["dependencies"], "Cached scoring dependencies drift")
+    require("torch" not in sys.modules and "onnxruntime" not in sys.modules, "Cached scoring imported a model runtime")
+    items, started = [], time.perf_counter()
+    for source, raw, old in zip(frozen["items"], result["items"], deployed["items"], strict=True):
+        require(time.perf_counter() - started < 540, "Cached scoring deadline exceeded")
+        for key in ("image", "targetMask", "scoringMask", "rawLabel"):
+            e.read_pinned(source[key])
+        folder = destination / source["id"].replace("/", "--"); folder.mkdir()
+        archive = output / folder.name / "native-00.npz"
+        require(all(pin(archive)[k] == raw["artifacts"]["native-00.npz"][k] for k in ("bytes", "sha256")),
+                "Torch raw output drift")
+        with e.np.load(archive, allow_pickle=False) as arrays:
+            labels, scores, palette = module["cached_masks"](e, arrays["output0"], arrays["output1"], .5, 256, 256)
+            candidates = int((1 / (1 + e.np.exp(-e.np.clip(arrays["output0"][0, :, 0], -80, 80))) > .5).sum())
+        truth = e.np.asarray(e.Image.open(source["targetMask"]["path"])).copy()
+        valid = e.np.asarray(e.Image.open(source["scoringMask"]["path"])) == 1
+        require(truth.shape == (256, 256) and valid.shape == truth.shape and valid.all(), "Original full-frame scoring required")
+        components, omissions = e.production._components(labels, scores, palette, source["image"]["sha256"])
+        transformed = e.source_components(components, old["transform"])
+        mask = (labels > 0).astype(e.np.uint8)
+        polygon_mask = e.polygon_mask(transformed, 256, 256, ["background", "building"])
+        objects, domain, outside = e.building_truth_objects(source, valid)
+        raw_objects = [p.intersection(domain) for p in e.mask_objects(mask)]
+        poly_objects = [e.shape(p["geometry"]).intersection(domain) for p in transformed]
+        old_folder = baseline / "raw" / folder.name
+        historical = {}
+        for name in ("source-mask.png", "source-polygon-mask.png", "polygons.json"):
+            entry = {**old["artifacts"][name], "path": str(old_folder / name)}
+            e.read_pinned(entry); historical[name] = Path(entry["path"])
+        old_mask = e.np.asarray(e.Image.open(historical["source-mask.png"]))
+        old_polygon = e.np.asarray(e.Image.open(historical["source-polygon-mask.png"]))
+        old_geometries = json.loads(historical["polygons.json"].read_bytes())["source"]
+        item = {"id": source["id"], "task": "building", "groupId": source["groupId"], "transform": old["transform"],
+            "scoredPixels": int(valid.sum()), "ignoredPixels": 0, "positiveTruthPixelsInIgnoredRegion": 0,
+            "emptyTruth": not bool((truth > 0).any()), "mask": e.class_metrics(e.confusion(truth, mask, valid, 2), ["background", "building"]),
+            "polygons": e.class_metrics(e.confusion(truth, polygon_mask, valid, 2), ["background", "building"]),
+            "objects": {"mask": e.match_objects(objects, [p for p in raw_objects if p.area]),
+                "polygons": e.match_objects(objects, [p for p in poly_objects if p.area]),
+                "publisherFeatures": source["publisherFeatureCount"], "truthFeaturesOutsideScoringDomain": outside},
+            "candidates": {"aboveConfidence050": candidates, "paintedInstances": len(palette) - 1},
+            "polygonization": {"omissions": omissions, "returnedComponents": len(components),
+                "changedScoredPixels": int((mask != polygon_mask).sum()),
+                "removedForegroundPixels": int(((mask > 0) & (polygon_mask == 0)).sum()),
+                "addedForegroundPixels": int(((mask == 0) & (polygon_mask > 0)).sum())},
+            "deployedDisagreement": {"foregroundXorPixels": int((mask != old_mask).sum()),
+                "polygonXorPixels": int((polygon_mask != old_polygon).sum()), "sourceGeometriesEqual":
+                json.loads(json.dumps([p["geometry"] for p in transformed])) == [p["geometry"] for p in old_geometries]},
+            "rawArchive": pin(archive)}
+        require(item["emptyTruth"] == source["sourceEmpty"] == old["emptyTruth"], "Publisher-empty identity drift")
+        e.Image.fromarray(mask).save(folder / "source-mask.png")
+        e.Image.fromarray(polygon_mask).save(folder / "source-polygon-mask.png")
+        save(folder / "polygons.json", {"processing": components, "source": transformed, "omissions": omissions})
+        save(folder / "result.json", item); items.append(item)
+        print(json.dumps({"scored": len(items), "id": source["id"]}), flush=True)
+    empty = [i for i in items if i["emptyTruth"]]
+    summary = {"task": "D07-RFDETR-TORCH-BASELINE-V2-ACTUAL", "status": "completed_cached_production050_scoring",
+        "result": pin(output / "result.json"), "baselineFreeze": pin(baseline / "frozen-config.json"),
+        "items": items, "aggregate": e.aggregate(items, ["background", "building"]), "deployedAggregate": deployed["aggregate"],
+        "emptyScenes": {"items": len(empty), "falsePositiveScenes": sum(bool(i["mask"]["classes"][1]["fp"]) for i in empty),
+            "falsePositivePixels": sum(i["mask"]["classes"][1]["fp"] for i in empty),
+            "falsePositivePolygonObjects": sum(i["objects"]["polygons"]["fp"] for i in empty)},
+        "omissions": {k: sum(i["polygonization"]["omissions"][k] for i in items) for k in ("small", "complex", "invalid", "capacity")},
+        "deployedDisagreement": {"foregroundXorPixels": sum(i["deployedDisagreement"]["foregroundXorPixels"] for i in items),
+            "polygonXorPixels": sum(i["deployedDisagreement"]["polygonXorPixels"] for i in items),
+            "geometryEqualItems": sum(i["deployedDisagreement"]["sourceGeometriesEqual"] for i in items)},
+        "runtime": {"seconds": time.perf_counter() - started, "newNativeModelCalls": 0, "gpuUsed": False,
+            "dependencies": e.dependencies(), "pythonAuditDenials": denied, "nativeOrOsEgressAudit": False},
+        "scoringPolicy": frozen["scoringPolicy"], "sourceLimitations": frozen["sourceLimitations"], "fitOrPromotion": False}
+    require(len(items) == 24 and len(empty) == 5, "Incomplete ALL24 scoring")
+    save(destination / "results.json", summary)
+    print(json.dumps({"status": summary["status"], "items": 24, "result": pin(destination / "results.json")}), flush=True)
 
 
 def main():
@@ -690,12 +820,24 @@ def main():
     parser.add_argument("--output", type=Path)
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--torch-reference", action="store_true")
+    parser.add_argument("--torch-baseline", action="store_true")
+    parser.add_argument("--score-torch-baseline", action="store_true")
     parser.add_argument("--root-authorization", type=Path)
     parser.add_argument("--runtime-binding", type=Path)
     parser.add_argument("--readback", type=Path, help="Validate saved exact Docker inspect JSON; no Docker call")
     args = parser.parse_args()
     execution_state = {"attempted": False, "confirmed": False}
     try:
+        require(sum([args.execute,args.torch_reference,args.torch_baseline,args.score_torch_baseline])<=1,
+                "Only one explicitly authorized execution route allowed")
+        if args.score_torch_baseline:
+            cached_baseline_score(args.root_authorization, execution_state)
+            return
+        if args.torch_baseline:
+            require(args.root_authorization is not None,"Baseline root instruction absent; refused before execution")
+            reference_checks(args.root_authorization, execution_state, baseline=True)
+            print(json.dumps({"status":"experimental_baseline_completed","experimentExecution":True,"trainingAuthorized":False}))
+            return
         if args.torch_reference:
             require(args.root_authorization is not None,"Reference root instruction absent; refused before execution")
             reference_checks(args.root_authorization, execution_state)
