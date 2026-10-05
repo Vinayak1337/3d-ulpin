@@ -3,6 +3,8 @@
 
 Preparation and plan inspection use stdlib only. --reference-run additionally
 requires a current-process root authorization and separately verified containment.
+--experimental-baseline-run is a distinct v2 experiment: numeric differences
+remain observations, while complete valid ALL24 inference defines completion.
 """
 from __future__ import annotations
 
@@ -19,9 +21,12 @@ import time
 import zipfile
 
 VERSION = "ramp-torch-reference-plan/1"
+BASELINE_VERSION = "ramp-torch-baseline-plan/2"
+BASELINE_MODE = "experimental-baseline"
 ROOT_THREAD = "01a0ed8a-4383-79c3-a0ae-35c1e969ef66"
 MODEL_OWNER = "01a0fbd5-4561-7692-b366-ebd123380593"
 PRIVATE = Path("E:/BhuAayam-data/task-data/d07-rfdetr-torch-reference-20261005")
+BASELINE_PRIVATE = Path("E:/BhuAayam-data/task-data/d07-rfdetr-torch-baseline-20261005")
 MOUNTED = Path("E:/BhuAayam-data/task-data/d07-rfdetr-mounted-plan-20261005")
 BASELINE = Path("E:/BhuAayam-data/task-data/d07-karnataka-baseline-20261005")
 COCO = Path("E:/BhuAayam-data/task-data/d06-ramp-coco-20261005")
@@ -39,6 +44,19 @@ PARITY = {"inputAtol": 1e-6, "inputRtol": 0, "outputAtol": 1e-4, "outputRtol": 1
     "alignment": "same query index; no permutation, threshold tuning or favourable subset",
     "basis": "FP32 eager CUDA versus retained CPU ONNX; fixed tolerances before execution. Report both numeric and threshold disagreements, even on failure.",
     "limitation": "Historical432 input tensors were not retained. Current processor-versus-production-formula input check is separate from cached output parity; Pillow11.0 versus baseline11.2.1/NumPy2.0.2/ORT1.19.2 can matter. Same source weights do not establish numerical parity."}
+BASELINE_POLICY = {"experiment": "ramp-torch-own-baseline/2", "role": "open_development_only",
+    "groupId": "ramp-MaxarODP-104001002CA32300", "items": 24, "positive": 19, "sourceEmpty": 5,
+    "publisherRoofInstances": 178, "fit": False, "promotion": False, "onnxEquivalence": False,
+    "completion": "all24_original_order_valid_load_input_finite_outputs_and_containment",
+    "numericComparison": "unchanged_same_index_tolerance_reported_separately_not_a_completion_gate",
+    "quality": "not_scored_by_runner; reuse_cached_production_scorer_at_0.5/logit0; no_assumed_pass"}
+PREREQUISITES = {
+    "originalExecution": {"path": "/inputs/reference/prerequisites/original-execution.json", "bytes": 14033,
+        "sha256": "5abf5ab3390020c90785d235b8635e192a596cfefde81478ea802aa95f78b9a8"},
+    "originalSmokeResult": {"path": "/inputs/reference/prerequisites/original-smoke-result.json", "bytes": 2637,
+        "sha256": "2dc7ff9d59fc381b03b4392ee165676a204898684b99252be6e57a76d3c79da8"},
+    "cachedDiagnosis": {"path": "/inputs/reference/prerequisites/cached-diagnosis.json", "bytes": 9911,
+        "sha256": "ce3b79d7258deaf2258608a9788b40f146cc95bd58edab2a5a34ff002fa88dfe"}}
 
 
 def require(condition, message):
@@ -110,7 +128,8 @@ def inspect_archive(path):
 
 
 def validate_plan(plan):
-    require(plan["schemaVersion"] == VERSION and plan["mode"] in {"smoke", "development"} and
+    baseline = plan["schemaVersion"] == BASELINE_VERSION and plan["mode"] == BASELINE_MODE
+    require((baseline or (plan["schemaVersion"] == VERSION and plan["mode"] in {"smoke", "development"})) and
             plan["executionAuthorized"] is False and plan["outputContract"] == CONTRACT and
             plan["preprocessing"] == PREPROCESS and plan["parityPolicy"] == PARITY, "Unsupported reference protocol")
     cohort = plan["cohort"]
@@ -120,7 +139,11 @@ def validate_plan(plan):
     require(plan["selectedIds"] == (smoke if plan["mode"] == "smoke" else [i["id"] for i in cohort]), "Subset/reordered reference refused")
     require(plan["mountedConfig"]["sha256"] == CONFIG_SHA and plan["mountedConfig"]["path"] == "/inputs/plan/mounted-config.json" and
             plan["scriptPin"]["path"] == "/inputs/reference/compare_ramp_torch.py" and
-            plan["outputDir"] == "/outputs/rfdetr/reference-" + plan["mode"], "Undeclared runtime path")
+            plan["outputDir"] == ("/outputs/rfdetr/experimental-baseline-v2" if baseline else
+                                   "/outputs/rfdetr/reference-" + plan["mode"]), "Undeclared runtime path")
+    if baseline:
+        require(plan["baselinePolicy"] == BASELINE_POLICY and plan["prerequisites"] == PREREQUISITES,
+                "Only the fixed no-fit v2 baseline and accepted prerequisites are supported")
     require(plan["planSha256"] == digest({k: v for k, v in plan.items() if k != "planSha256"}), "Reference plan digest drift")
 
 
@@ -179,11 +202,90 @@ def prepare():
     print(json.dumps({"state": "prepared_only", "smokeIds": smoke, "fullDevelopment": 24, "plans": [pin(root / (m + "-plan.json")) for m in ["smoke", "development"]], "interface": pin(root / "mount-interface.json")}))
 
 
+def baseline_prerequisites(plan, entries):
+    """Read exact accepted prior evidence; failed numeric smoke stays failed."""
+    require(set(entries) == set(PREREQUISITES), "Complete baseline prerequisites required")
+    for key, entry in entries.items():
+        require({k: entry[k] for k in ("bytes", "sha256")} ==
+                {k: PREREQUISITES[key][k] for k in ("bytes", "sha256")}, "Baseline prerequisite identity drift")
+    execution, smoke, diagnosis = [read(checked(entries[k])) for k in PREREQUISITES]
+    expected = [next(i["id"] for i in plan["cohort"] if not i["sourceEmpty"]),
+                next(i["id"] for i in plan["cohort"] if i["sourceEmpty"])]
+    require(execution["status"] == "smoke_executed_parity_failed_all24_not_admitted" and
+            execution["loading"]["state"] == "unchanged_checkpoint_load_and_two_inferences_completed" and
+            execution["runner"]["sha256"] == "cb771a12ac46ee4ae448bd90ce42574676d9a6afc28ac147aa1cd9e98212e0a1" and
+            execution["execution"]["result"]["sha256"] == PREREQUISITES["originalSmokeResult"]["sha256"] and
+            execution["runtime"]["imageDigest"] == plan["runtime"]["imageDigest"], "Accepted original load/image evidence required")
+    require(execution["loading"]["checksPassedBeforeInference"] == [
+        "empty missing_keys/unexpected_keys/mismatched_keys/error_msgs",
+        "original one-building-class head,200queries,custom kernels disabled",
+        "local-only safetensors,eager,eval,FP32,inference_mode; no TF32/autocast/compile"], "Accepted strict load/head checks missing")
+    for key in ("weights", "modelConfig", "processorConfig"):
+        require(all(execution["loading"]["model"][key][k] == plan["originalModel"][key][k]
+                    for k in ("bytes", "sha256")), "Baseline model differs from accepted original load")
+    require(smoke["schemaVersion"] == "ramp-torch-reference-result/1" and smoke["mode"] == "smoke" and
+            smoke["state"] == "reference_completed_parity_failed" and smoke["cohortSha256"] == COHORT_SHA and
+            smoke["scriptSha256"] == execution["runner"]["sha256"] and
+            [i["id"] for i in smoke["items"]] == expected and
+            all(i["numericParityPassed"] is False and 0 <= i["inputMaxAbs"] <= PARITY["inputAtol"]
+                for i in smoke["items"]), "Original successful inputs and failed numeric result must be preserved")
+    require(diagnosis["schemaVersion"] == "rfdetr-cached-parity-diagnosis/1" and
+            [i["id"] for i in diagnosis["items"]] == expected and
+            all(all(i["historicalCacheReproduction"].values()) and i["projection"]["foregroundXorPixels"] == 0
+                for i in diagnosis["items"]), "Exact accepted cached diagnosis required")
+
+
+def prepare_baseline():
+    """Freeze v2 from accepted v1 metadata; no data/model/archive reads."""
+    old_plan_pin = {"path": str(PRIVATE / "development-plan.json"), "bytes": 25998,
+        "sha256": "88a3b33c742044c19d868d31b3d19a362b65c7e113899f1367b89a22f71fdfca"}
+    old_interface_pin = {"path": str(PRIVATE / "mount-interface.json"), "bytes": 20132,
+        "sha256": "dca3b54f2ca7401cf2b3a02656d845a6985b023d79db309b4cbfe2a9d754c993"}
+    plan = read(checked(old_plan_pin)); validate_plan(plan)
+    require(plan["mode"] == "development" and plan["scriptPin"]["sha256"] ==
+            "cb771a12ac46ee4ae448bd90ce42574676d9a6afc28ac147aa1cd9e98212e0a1", "Use original prepared full24 metadata")
+    interface = read(checked(old_interface_pin))
+    paths = {"originalExecution": BASELINE_PRIVATE / "original-execution.json",
+        "originalSmokeResult": PRIVATE / "output/reference-smoke/result.json",
+        "cachedDiagnosis": Path("E:/BhuAayam-data/task-data/d07-rfdetr-parity-diagnosis-20261005/diagnostic.json")}
+    evidence = {k: {**PREREQUISITES[k], "path": str(unlinked(p))} for k, p in paths.items()}
+    baseline_prerequisites(plan, evidence)
+    root = unlinked(BASELINE_PRIVATE / "prepared-v2")
+    require(not root.exists(), "Baseline preparation already exists; preserve it")
+    root.mkdir()
+    snapshot = root / "compare_ramp_torch.py"
+    with snapshot.open("xb") as out: out.write(Path(__file__).read_bytes())
+    script_pin = {**pin(snapshot), "path": "/inputs/reference/compare_ramp_torch.py"}
+    plan.update(schemaVersion=BASELINE_VERSION, mode=BASELINE_MODE, scriptPin=script_pin,
+        outputDir="/outputs/rfdetr/experimental-baseline-v2", baselinePolicy=BASELINE_POLICY,
+        prerequisites=PREREQUISITES)
+    plan["planSha256"] = digest({k: v for k, v in plan.items() if k != "planSha256"}); validate_plan(plan)
+    plan_path = root / "baseline-plan.json"; save(plan_path, plan)
+    mounts = interface["modes"]["development"]["newReadOnlyMounts"][2:]
+    require([m["containerPath"] for m in mounts] == [i["onnx"]["path"] for i in plan["cohort"]] and
+            all(m["readOnly"] is True and m["pin"] == i["onnx"] for m, i in zip(mounts, plan["cohort"], strict=True)), "Complete ordered24 cache mounts required")
+    invocation = {"schemaVersion": "ramp-torch-baseline-interface/2", "state": "prepared_only",
+        "baseInterface": interface["baseInterface"], "originalPlan": old_plan_pin, "originalInterface": old_interface_pin,
+        "replaceWritableOutput": {"hostPath": str(BASELINE_PRIVATE / "output"), "containerPath": "/outputs/rfdetr", "readOnly": False},
+        "newReadOnlyMounts": [
+            {"hostPath": str(snapshot), "containerPath": script_pin["path"], "readOnly": True, "kind": "file", "pin": script_pin},
+            {"hostPath": str(plan_path), "containerPath": "/inputs/reference/plan.json", "readOnly": True, "kind": "file", "pin": pin(plan_path)},
+            *mounts, *[{"hostPath": str(paths[k]), "containerPath": PREREQUISITES[k]["path"], "readOnly": True, "kind": "file", "pin": PREREQUISITES[k]} for k in paths]],
+        "argv": ["/opt/conda/bin/python", "-I", "-B", script_pin["path"], "--plan", "/inputs/reference/plan.json", "--experimental-baseline-run",
+            "--authorization", "/inputs/reference/authorization.json", "--authorization-sha256", "<actual-root-receipt-sha256>"],
+        "futureUnsealedGateMounts": ["Exact v2 root authorization JSON binding all3 prerequisites", "Exact current-process native-control/resource receipt"],
+        "requiredAuthorizationSchema": "ramp-torch-baseline-authorization/2",
+        "gpuChange": "Teacher must independently verify/review this contract and receive separate root sole-GPU execution authority, exact PID/image/env/mount/network/resource controls and cleanup. No execution authorized by preparation."}
+    save(root / "mount-interface.json", invocation)
+    print(json.dumps({"state": "prepared_only", "mode": BASELINE_MODE, "items": 24, "plan": pin(plan_path), "interface": pin(root / "mount-interface.json")}))
+
+
 def authorize(plan, path, sha):
     require(path is not None and sha is not None, "Reference blocked: exact actual-process root authorization required before heavy imports")
     require(pin(path)["sha256"] == sha, "Authorization pin drift")
     gate = read(path)
-    require(gate["schemaVersion"] == "ramp-torch-reference-authorization/1" and gate["rootThreadId"] == ROOT_THREAD and
+    baseline = plan["schemaVersion"] == BASELINE_VERSION
+    require(gate["schemaVersion"] == ("ramp-torch-baseline-authorization/2" if baseline else "ramp-torch-reference-authorization/1") and gate["rootThreadId"] == ROOT_THREAD and
             gate["rootAuthorized"] is True and gate["mode"] == plan["mode"] and gate["planSha256"] == plan["planSha256"] and
             gate["scriptSha256"] == pin(__file__)["sha256"], "Reference not authorized for this exact plan/code")
     runtime = plan["runtime"]
@@ -191,6 +293,9 @@ def authorize(plan, path, sha):
     require(control["pid"] == os.getpid() and control["imageDigest"] == runtime["imageDigest"] and control["modelOwner"] == MODEL_OWNER and
             control["effectiveNetworkDenied"] is True and control["effectiveResourceLimits"] is True and
             control["exactMountsAndEnvironmentVerified"] is True and control["gpuOwnerTransferred"] is True, "Actual reference process lacks exclusive contained resource handoff")
+    if baseline:
+        require(gate["baselinePolicy"] == BASELINE_POLICY and gate["prerequisites"] == plan["prerequisites"], "Explicit v2 experiment/prerequisite authorization required")
+        baseline_prerequisites(plan, gate["prerequisites"])
     if plan["mode"] == "development":
         smoke = read(checked(gate["smokeResult"]))
         expected_ids = [next(i["id"] for i in plan["cohort"] if not i["sourceEmpty"]), next(i["id"] for i in plan["cohort"] if i["sourceEmpty"])]
@@ -270,10 +375,19 @@ def reference_run(plan):
             "artifacts": {"native-00.npz": {k: v for k, v in pin(folder / "native-00.npz").items() if k != "path"}}}
         save(folder / "reference.json", item); items.append(item)
         del output, arrays, inputs
-    result = {"schemaVersion": "ramp-torch-reference-result/1", "mode": plan["mode"], "planSha256": plan["planSha256"],
+    baseline = plan["schemaVersion"] == BASELINE_VERSION
+    if baseline:
+        require([i["id"] for i in items] == [i["id"] for i in plan["cohort"]], "Incomplete/reordered baseline cannot complete")
+    result = {"schemaVersion": "ramp-torch-baseline-result/2" if baseline else "ramp-torch-reference-result/1", "mode": plan["mode"], "planSha256": plan["planSha256"],
         "scriptSha256": pin(__file__)["sha256"], "cohortSha256": COHORT_SHA, "items": items,
         "state": "reference_completed_parity_passed" if all(i["numericParityPassed"] for i in items) else "reference_completed_parity_failed",
         "trainingOrPromotion": False, "qualityScoring": "Reuse existing cached evaluator at unchanged0.5; raw archives compatible, no label/metric qualification here."}
+    if baseline:
+        result.update(state="experimental_baseline_completed", baselinePolicy=BASELINE_POLICY,
+            prerequisites=plan["prerequisites"], numericComparisonState="all24_numeric_parity_passed" if
+            all(i["numericParityPassed"] for i in items) else "all24_numeric_parity_failed",
+            parityPolicy=PARITY, model=plan["originalModel"], runtime=plan["runtime"],
+            qualification="own_route_open_development_baseline_only; no_ONNX_equivalence_fit_promotion_or_release_claim")
     save(out / "result.json", result)
     return result
 
@@ -281,19 +395,25 @@ def reference_run(plan):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prepare", action="store_true")
+    parser.add_argument("--prepare-baseline", action="store_true")
     parser.add_argument("--plan", type=Path)
     parser.add_argument("--reference-run", action="store_true")
+    parser.add_argument("--experimental-baseline-run", action="store_true")
     parser.add_argument("--authorization", type=Path)
     parser.add_argument("--authorization-sha256")
     args = parser.parse_args()
-    if args.prepare:
-        require(not args.plan and not args.reference_run and not args.authorization and not args.authorization_sha256, "Preparation grants no execution")
-        prepare(); return
+    if args.prepare or args.prepare_baseline:
+        require(not (args.prepare and args.prepare_baseline) and not args.plan and not args.reference_run and
+                not args.experimental_baseline_run and not args.authorization and not args.authorization_sha256, "Preparation grants no execution")
+        (prepare_baseline if args.prepare_baseline else prepare)(); return
     require(args.plan is not None, "Supply --prepare or --plan")
-    if args.reference_run:
+    execute = args.reference_run or args.experimental_baseline_run
+    require(not (args.reference_run and args.experimental_baseline_run), "One explicit execution contract required")
+    if execute:
         require(args.authorization is not None and args.authorization_sha256 is not None, "Reference blocked: root authorization required before heavy imports")
     plan = read(args.plan); validate_plan(plan)
-    if args.reference_run:
+    if execute:
+        require(args.experimental_baseline_run == (plan["schemaVersion"] == BASELINE_VERSION), "Execution mode and versioned plan must agree")
         authorize(plan, args.authorization, args.authorization_sha256)
         print(json.dumps(reference_run(plan), indent=2))
     else:
