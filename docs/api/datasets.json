@@ -4925,6 +4925,29 @@
             ],
             "otherManifestAssetsQualified": false,
             "role": "PRIVATE_INSPECTION"
+          },
+          {
+            "receipt": "docs/evidence/usp/nest-migration/runtime-source/d08-document-proposals-20261005.json",
+            "servedCodeCommit": "54fb35222b91764044888aa0ca390b852f404177",
+            "recordedAt": "2026-10-05T05:33:44.639Z",
+            "environment": "Stopped retained local document-proposal run01; API/task storage stopped. One canonical PDF metadata worker on first save, no repeat reader/render/OCR/model/processor/Celery. Original containers/volumes/profiles/Redis and prior proofs preserved; no standing URL.",
+            "qualification": "Actual bounded local-process software persistence for one explicit T3-2 caller-supplied provisional packet at exact 54fb: POST201/exact read200/identical-key-body201 same immutable snapshot; same-key changed body409 STALE_REVISION, new-key wrong source hash409 STALE_REVISION, foreign Origin403 ORIGIN_DENIED, denied writes0. One snapshot/request pair only, replay adds0. First save performs one canonical metadata-only PDF worker; read/replay/refusals add0. caller_supplied_provisional/caller_supplied_unverified/explicit_selection_only/not_machine_verified, local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, canonicalTarget null and qualification not_assessed. No quote truth/producer execution/approved revision/building-floor identity/geometry/rights/accuracy/learning/frontend/release qualification.",
+            "unqualified": [
+              "One selected T3-2 caller-supplied provisional packet, not a human_entry or independently qualified model execution. Exact text/span preservation does not prove quote truth, approved revision, building/floor linkage, geometry, rights, semantic accuracy or learning labels.",
+              "The complete unchanged origin retains excluded S-001 six proposals/137 rejected entries and its separate manual review context; this source-scoped save does not claim their persistence.",
+              "One bounded metadata reader was necessary for first save; zero raster/OCR/model/native extraction, provider/GPU/training, dispatcher/Celery, new jobs/sources, migrations/reset/reseed or credential/environment edits.",
+              "No forced case mutation to repeat the completed controlled recovery regression. No held-out evaluation, source discovery, frontend, standing URL, push/deployment or release qualification.",
+              "No whole-OS egress audit or running worker service-tier proof from assignment text."
+            ],
+            "operations": [
+              "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals",
+              "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}"
+            ],
+            "testedAssetIds": [
+              "haryana-2831-tower3-plan2.pdf"
+            ],
+            "otherManifestAssetsQualified": false,
+            "role": "PRIVATE_INSPECTION"
           }
         ]
       },
