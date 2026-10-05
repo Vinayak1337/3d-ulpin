@@ -1,0 +1,3852 @@
+{
+  "schemaVersion": 1,
+  "task": "D06-BUILDING-TRAIN-POOL",
+  "baseCommit": "2f33940fa503e38ec3ef77dfbfe0f25725fc68bb",
+  "preparedAt": "2026-10-05T12:21:46.984853+00:00",
+  "privateRoot": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005",
+  "status": "train_candidate",
+  "allocation": "unallocated",
+  "fitAdmission": "not_fit_admitted",
+  "purpose": "Foreign publisher-human rooftop transfer-learning candidate inventory; not proof of Indian performance or authorization to fit",
+  "partition": {
+    "trainingCandidates": 24,
+    "unallocated": 24,
+    "trainAllocated": 0,
+    "developmentAllocated": 0,
+    "finalAllocated": 0,
+    "fitAdmitted": 0,
+    "karnatakaIncluded": 0,
+    "protectedEvaluationReopened": false
+  },
+  "denominators": {
+    "uniqueOriginalImageFiles": 24,
+    "distinctOriginalImageHashes": 24,
+    "distinctDecodedRgbFrames": 24,
+    "originalLabelFiles": 24,
+    "distinctLabelByteContents": 24,
+    "completePairs": 24,
+    "positivePairs": 23,
+    "naturalSourceEmptyPairs": 1,
+    "publishedPolygonInstances": 263,
+    "positiveMaskPixels": 145104,
+    "imagePages": 0,
+    "sourceProjects": 1,
+    "parentCaptures": 1,
+    "conservativeLeakageGroups": 1,
+    "independentPhysicalSites": "unknown"
+  },
+  "groups": [
+    {
+      "id": "ramp-MaxarODP-105001001597B000",
+      "sourceProjectId": "ramp_barishal_bangladesh",
+      "parentCapture": "105001001597B000",
+      "geography": "Barishal, Bangladesh; foreign research training imagery",
+      "split": "unallocated",
+      "fitAdmission": "not_fit_admitted",
+      "items": 24,
+      "boundsLonLat": [
+        90.31967486557133,
+        22.652473846337905,
+        90.38149045555444,
+        22.750593830438078
+      ],
+      "relations": "All chips, neighboring/overlapping tiles, repeated roofs and unknown site/template relations remain together under the one parent/source-project group",
+      "selectedInteriorOverlap": 0,
+      "boundaryTouchingPairs": [
+        {
+          "a": "ramp-barishal/23366eea-d17f-4882-9da8-f00df15203dd",
+          "b": "ramp-barishal/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0",
+          "kind": "boundary-touching; one conservative scene group"
+        }
+      ]
+    }
+  ],
+  "dataset": {
+    "id": "ramp-barishal-bangladesh-v1",
+    "name": "RAMP Building Footprint Training Dataset - Barishal, Bangladesh",
+    "publisher": "DevGlobal / RAMP with WHO; Radiant MLHub/Source Cooperative hosting",
+    "version": "1.0",
+    "publishedAt": "2022-08-23",
+    "doi": "10.34911/rdnt.cmejc0",
+    "seriesDoi": "10.34911/rdnt.b0noju",
+    "publisherRepository": "https://source.coop/ramp/ramp/ramp_barishal_bangladesh",
+    "trainingPage": "https://rampml.global/training-data/",
+    "upstreamPartition": "Publisher training dataset; no test or evaluation assets opened",
+    "parentSource": "Maxar Open Data Program105001001597B000",
+    "sourceCaptureDate": null,
+    "parentLiteralDiscrepancy": {
+      "retainedTrainingPage": "105001001597B00",
+      "newREADMEAndDatasetPdf": "105001001597B000",
+      "used": "Full literal agreed by collection README/PDF; page variant retained, no undisclosed correction"
+    },
+    "declaredNominalResolution": "40cm in all three publisher descriptions; exact TIFF affine governs",
+    "measuredFrame": "EPSG:4326 / PixelIsArea,3.832811878912986e-6 degrees per axis; GeoJSON default WGS84 longitude/latitude",
+    "keywords": [
+      "Urban",
+      "Peri-urban",
+      "River"
+    ],
+    "selectionRationale": {
+      "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/provenance/selection-rationale.json",
+      "bytes": 744,
+      "sha256": "125dd462415c25fbbdc6dbde842d313d76702bc19d4a4aa9b3d62e175672a8d5"
+    },
+    "humanProvenance": "TaQadam/B.O.T trained individual annotation; another human reviewer; DevGlobal Tier1 second-round QC. Pair-level identities/time/audit unavailable.",
+    "license": {
+      "spdx": "CC-BY-NC-4.0",
+      "url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "basis": "New publisher README and retained training page declare associated imagery and labels",
+      "attribution": "DevGlobal (2022), ramp Building Footprint Training Dataset - Barishal, Bangladesh, v1.0, DOI10.34911/rdnt.cmejc0; Maxar ODP105001001597B000; TaQadam/B.O.T annotations and DevGlobal QC",
+      "changes": "Unchanged originals; lossless RGB PNG, deterministic affine/pixel-vector/binary-mask derivatives and inspection overlays",
+      "launchGap": "Noncommercial restriction/upstream imagery conditions preserved; no commercial or operational launch clearance qualified"
+    },
+    "sourceMetadata": [
+      {
+        "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/provenance/README.md",
+        "bytes": 1184,
+        "sha256": "2e407f28d52980a10c16c95e33f59d5ac17d77850367a50a6dd65b4964865452"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/provenance/Documentation.pdf",
+        "bytes": 166179,
+        "sha256": "e7a35e5c8cffbab8d7e9d989a7411b3272577154ba9b26a445cbd3dff9bc4d2d"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/provenance/source-index.json",
+        "bytes": 683426,
+        "sha256": "a631be5cf27342a398ec64bb86c375d4c23bac374a22c9024bf96eae38561d85"
+      }
+    ],
+    "sharedPolicyReferences": [
+      {
+        "path": "E:/BhuAayam-data/task-data/data-building-shard-20261005/provenance/publisher-training.html",
+        "bytes": 152894,
+        "sha256": "1f75a04fe3ebd5422ed209ef2e82e123b6484f51572bf3c943cc5faa7f220cce"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/data-building-shard-20261005/provenance/Labeling-Guidelines.pdf",
+        "bytes": 26528724,
+        "sha256": "23cc6b28e77ed2f0437a812a14bf7cbb759ed6239ad4bf8d026003d696f4d890"
+      }
+    ],
+    "acquiredAtRange": [
+      "2026-10-05T12:14:16.271049+00:00",
+      "2026-10-05T12:16:37.109273+00:00"
+    ],
+    "trainingOverlap": {
+      "rampBaseline": "Publisher used this dataset to develop RAMP baseline",
+      "rfDetr": "unknown; no claim of independent model evaluation truth"
+    }
+  },
+  "labelPolicy": {
+    "target": "Published visible-rooftop building polygons, not ground/base/facade, parcel/property, floors or surveyed building identity",
+    "minimumStructure": "Approximately5m2 with contextual exceptions under retained publisher guidance",
+    "occlusion": "Publisher may infer roof edges under trees/shadows; agent does not relabel or create uncertainty masks",
+    "instances": "Touching/shared/clipped structures retained;263 source features are not263 proven independent physical buildings",
+    "rings": "Original rings and full pixel vectors preserved;6 exterior rings extend beyond chip and rasterize only inside image;0 hole rings in selected data",
+    "ignore": "No publisher ignore or per-feature ambiguity mask; no TIFF NODATA tag or all-zero RGB pixels. Full-frame eligible-pixel mask is explicit publisher-label analysis policy, not official certainty.",
+    "classMap": {
+      "background": 0,
+      "published_rooftop_building": 1
+    },
+    "agentOrModelOrTeacherCreatedLabels": 0,
+    "applicationGroundTruth": false,
+    "localIndependentHumanAudit": "not_performed"
+  },
+  "tasks": {
+    "building": {
+      "status": "train_candidate",
+      "allocation": "unallocated",
+      "fitAdmission": "not_fit_admitted",
+      "items": [
+        {
+          "id": "ramp-barishal/0003d02a-6bf0-4790-ac29-eed4337fe430",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 0,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0003d02a-6bf0-4790-ac29-eed4337fe430/rgb.png",
+            "bytes": 101859,
+            "sha256": "7e146a4543c77da6ae092c971298948c4cd7e55f063422ee136d098ce7e8815c"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/0003d02a-6bf0-4790-ac29-eed4337fe430/0003d02a-6bf0-4790-ac29-eed4337fe430.tif",
+            "bytes": 197194,
+            "sha256": "76c8fc69a8406281666526bea4504a9419d4ca5e0fcfd6884cd3a6bde8ef1872",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/0003d02a-6bf0-4790-ac29-eed4337fe430.tif",
+            "etag": "0x8DB3BAFBF37631D"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/0003d02a-6bf0-4790-ac29-eed4337fe430/0003d02a-6bf0-4790-ac29-eed4337fe430.geojson",
+            "bytes": 10193,
+            "sha256": "d643beae49cd5c6d3a9771447fdd895c9c57fa731ac885e21f626ad3c0561058",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/0003d02a-6bf0-4790-ac29-eed4337fe430.geojson",
+            "etag": "0x8DB3BAFD7CA7B04"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0003d02a-6bf0-4790-ac29-eed4337fe430/building-mask.png",
+            "bytes": 664,
+            "sha256": "341711713b51c8f6ae87c3a60d1290bd5e682e2fdbfeb9a9bf3dc7fa519a2b26"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0003d02a-6bf0-4790-ac29-eed4337fe430/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0003d02a-6bf0-4790-ac29-eed4337fe430/pixel-polygons.json",
+            "bytes": 8658,
+            "sha256": "f3a90ae33767d7fdd499e99658a0b8ca7ab26d9cd41154c894ed10779f51f688"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0003d02a-6bf0-4790-ac29-eed4337fe430/overlay.png",
+            "bytes": 101453,
+            "sha256": "68fa2a4369c7f1610de42bd62213838c8d6ab1bd87d3f6311407dcf942a13c35"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.3599040590524,
+              0,
+              -3.832811878912986e-06,
+              22.722139035049025
+            ],
+            "boundsLonLat": [
+              90.3599040590524,
+              22.721157835208025,
+              90.3608852588934,
+              22.722139035049025
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.3599040590524,
+                22.722139035049025,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "799a2d5c52c24d393fd71ba37d27f074a7c7fcea5f0b6a7a616c3b1492675532",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 10,
+          "publisherPolygonCount": 10,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 1,
+          "positivePixels": 14614,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/0aea67bc-e36b-4e73-87a9-34307099a74e",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 131,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0aea67bc-e36b-4e73-87a9-34307099a74e/rgb.png",
+            "bytes": 105912,
+            "sha256": "acfd7b41b3f5136b76031733ab77b8165eef73e9f460be8bc1648bb7b7cef799"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/0aea67bc-e36b-4e73-87a9-34307099a74e/0aea67bc-e36b-4e73-87a9-34307099a74e.tif",
+            "bytes": 197194,
+            "sha256": "451663bfd3aa9f2645821513d2a414e364709a2eb58ad375677c060ef08cbcea",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/0aea67bc-e36b-4e73-87a9-34307099a74e.tif",
+            "etag": "0x8DB3BAFC82B21CE"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/0aea67bc-e36b-4e73-87a9-34307099a74e/0aea67bc-e36b-4e73-87a9-34307099a74e.geojson",
+            "bytes": 64956,
+            "sha256": "1c6028c356e6b3c9491bce0adc602c77fea091715fb1ef0d8ee91669f6045c90",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/0aea67bc-e36b-4e73-87a9-34307099a74e.geojson",
+            "etag": "0x8DB3BAFDFB78D8E"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0aea67bc-e36b-4e73-87a9-34307099a74e/building-mask.png",
+            "bytes": 1204,
+            "sha256": "12a2bccadf77865b804ac38f1661d367e29668906f7ae391aa9f9b9f4c46f9c4"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0aea67bc-e36b-4e73-87a9-34307099a74e/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0aea67bc-e36b-4e73-87a9-34307099a74e/pixel-polygons.json",
+            "bytes": 44645,
+            "sha256": "6574e9363a883be257f31a0f960ca7c1c0aa58940853d741e4efaa6f51ca1ada"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/0aea67bc-e36b-4e73-87a9-34307099a74e/overlay.png",
+            "bytes": 105377,
+            "sha256": "2c99a13a3261fe0aafeb1c6b16e4d3775d96ddb0915e4170a7299dc4130917c4"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.34911086080137,
+              0,
+              -3.832811878912986e-06,
+              22.67209784315794
+            ],
+            "boundsLonLat": [
+              90.34911086080137,
+              22.67111664331694,
+              90.35009206064238,
+              22.67209784315794
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.34911086080137,
+                22.67209784315794,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "4a79908b1ba846ac8a7e47e48724d7bb73fbe6e52c472181bfd91e81c4974942",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 31,
+          "publisherPolygonCount": 31,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 19389,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/17ac8d6f-610c-421d-813f-3f345c5dea05",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 263,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/17ac8d6f-610c-421d-813f-3f345c5dea05/rgb.png",
+            "bytes": 96919,
+            "sha256": "5e10ed198b3e3c674c0f79ab524e8cd6cd6d2cf966aab66f51d64930c5dd538e"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/17ac8d6f-610c-421d-813f-3f345c5dea05/17ac8d6f-610c-421d-813f-3f345c5dea05.tif",
+            "bytes": 197194,
+            "sha256": "b8c065b4b96f49a2e91ae8b952831d12aee96ef38606e859a9fcb71b8ad89f58",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/17ac8d6f-610c-421d-813f-3f345c5dea05.tif",
+            "etag": "0x8DB3BAFD16E7BD2"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/17ac8d6f-610c-421d-813f-3f345c5dea05/17ac8d6f-610c-421d-813f-3f345c5dea05.geojson",
+            "bytes": 24274,
+            "sha256": "bb26d8ecc352e49898ea2b0b81dd93ef5812ccea7f0f55b654ab41a377de9d56",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/17ac8d6f-610c-421d-813f-3f345c5dea05.geojson",
+            "etag": "0x8DB3BAFE826111E"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/17ac8d6f-610c-421d-813f-3f345c5dea05/building-mask.png",
+            "bytes": 910,
+            "sha256": "fa9b6bf9bec1339fc688ee5256ee761fb451ad70ae4359e2906b5d410c010b9c"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/17ac8d6f-610c-421d-813f-3f345c5dea05/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/17ac8d6f-610c-421d-813f-3f345c5dea05/pixel-polygons.json",
+            "bytes": 18257,
+            "sha256": "2f0283d65d65a4fbe0091d5d7c7f27200a1924e40ae6bb25468225bbae8aba61"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/17ac8d6f-610c-421d-813f-3f345c5dea05/overlay.png",
+            "bytes": 97533,
+            "sha256": "aed06aa50a9c7915de5294f91848739c170c8559a4c9870d46569aae9abc1a42"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.34616726127837,
+              0,
+              -3.832811878912986e-06,
+              22.66719184395293
+            ],
+            "boundsLonLat": [
+              90.34616726127837,
+              22.66621064411193,
+              90.34714846111937,
+              22.66719184395293
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.34616726127837,
+                22.66719184395293,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "00fd048e5b6b746a6743cdf7feee6671f66de56b16dc44898a62b7b2ffcf6bea",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 17,
+          "publisherPolygonCount": 17,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 1,
+          "positivePixels": 7987,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/23366eea-d17f-4882-9da8-f00df15203dd",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 394,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/23366eea-d17f-4882-9da8-f00df15203dd/rgb.png",
+            "bytes": 88765,
+            "sha256": "21ac372ffa49b09de6a5f1c661ec8b31085a181f8d1e1c161189fbf56825faaf"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/23366eea-d17f-4882-9da8-f00df15203dd/23366eea-d17f-4882-9da8-f00df15203dd.tif",
+            "bytes": 197194,
+            "sha256": "ab9773beb6371dcacc430a8ed10734f9953cd81747b62f825a831cc3ec8d8175",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/23366eea-d17f-4882-9da8-f00df15203dd.tif",
+            "etag": "0x8DB3BAFBA98D352"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/23366eea-d17f-4882-9da8-f00df15203dd/23366eea-d17f-4882-9da8-f00df15203dd.geojson",
+            "bytes": 1985,
+            "sha256": "ac203491c378b546e86dcf4904801197e9102a14ce1e2f5b253c675a10cafca3",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/23366eea-d17f-4882-9da8-f00df15203dd.geojson",
+            "etag": "0x8DB3BAFB9E58EC2"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/23366eea-d17f-4882-9da8-f00df15203dd/building-mask.png",
+            "bytes": 291,
+            "sha256": "60b0cb54fa9f713bb3fa079e388ff0eb6f3ccc31f860b2ff1cb034a7da89dc78"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/23366eea-d17f-4882-9da8-f00df15203dd/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/23366eea-d17f-4882-9da8-f00df15203dd/pixel-polygons.json",
+            "bytes": 2919,
+            "sha256": "e2fa2732998b964a5ac6a75e01a24e81aa7c0cee386495033208fb2512242089"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/23366eea-d17f-4882-9da8-f00df15203dd/overlay.png",
+            "bytes": 89172,
+            "sha256": "e2cebda23e241378390b595ae381c50a3dae2a9aeb430203e9d69b7c2ca19a5c"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.34616726127837,
+              0,
+              -3.832811878912986e-06,
+              22.653455046178905
+            ],
+            "boundsLonLat": [
+              90.34616726127837,
+              22.652473846337905,
+              90.34714846111937,
+              22.653455046178905
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.34616726127837,
+                22.653455046178905,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "0113f74df8ef02deb033d0bca2a37769e0accddcf55bede268c8800428e913a7",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 2,
+          "publisherPolygonCount": 2,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 317,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/2e8a6718-ef42-4414-bfb2-e220c1e1d75c",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 526,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/2e8a6718-ef42-4414-bfb2-e220c1e1d75c/rgb.png",
+            "bytes": 106835,
+            "sha256": "5dedae2c6723b65b454a653efe253468eecb57fc317c68372ba124eea67874d5"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/2e8a6718-ef42-4414-bfb2-e220c1e1d75c/2e8a6718-ef42-4414-bfb2-e220c1e1d75c.tif",
+            "bytes": 197194,
+            "sha256": "1b0f2f422da259fe336379d6c42e1b540869c72da115958b945dbe58d7242c1b",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/2e8a6718-ef42-4414-bfb2-e220c1e1d75c.tif",
+            "etag": "0x8DB3BAFC2D38781"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/2e8a6718-ef42-4414-bfb2-e220c1e1d75c/2e8a6718-ef42-4414-bfb2-e220c1e1d75c.geojson",
+            "bytes": 51485,
+            "sha256": "6132f120c7bacb030c9280a705cba41968e556df94381d1ea271cd682261b55f",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/2e8a6718-ef42-4414-bfb2-e220c1e1d75c.geojson",
+            "etag": "0x8DB3BAFC0901940"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/2e8a6718-ef42-4414-bfb2-e220c1e1d75c/building-mask.png",
+            "bytes": 1142,
+            "sha256": "d4a047c686aa4d66278299bd36447e51673b20e7e15a5958836c298991fce710"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/2e8a6718-ef42-4414-bfb2-e220c1e1d75c/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/2e8a6718-ef42-4414-bfb2-e220c1e1d75c/pixel-polygons.json",
+            "bytes": 35656,
+            "sha256": "901eb8e7625c3526ed2163f3d0c85ef3e9c91439ec1803ab44842224a598eddc"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/2e8a6718-ef42-4414-bfb2-e220c1e1d75c/overlay.png",
+            "bytes": 108137,
+            "sha256": "7ecb053d3aa719df5855edde0ee3dae40b163d4e9b1cd3b52e6bcfa2dc541e1b"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.35401686000638,
+              0,
+              -3.832811878912986e-06,
+              22.68877824045497
+            ],
+            "boundsLonLat": [
+              90.35401686000638,
+              22.68779704061397,
+              90.35499805984739,
+              22.68877824045497
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.35401686000638,
+                22.68877824045497,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "2ce4aafbcc909026416f42cc2053a783fb538c3d2986b7eeabbf3a6d7e996ec8",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 23,
+          "publisherPolygonCount": 23,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 8342,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/385d21fa-1c9d-4734-b35a-b36d5e7500a4",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 657,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/385d21fa-1c9d-4734-b35a-b36d5e7500a4/rgb.png",
+            "bytes": 99303,
+            "sha256": "cd5ffdca89ed8120a3f4894dcef558d9dbfc8762bb9acd1b09ba816b73b48c99"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/385d21fa-1c9d-4734-b35a-b36d5e7500a4/385d21fa-1c9d-4734-b35a-b36d5e7500a4.tif",
+            "bytes": 197194,
+            "sha256": "cbd459aed07e52d206da24052dabc224ea98606e2f4d754e1ef7d532ffebb157",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/385d21fa-1c9d-4734-b35a-b36d5e7500a4.tif",
+            "etag": "0x8DB3BAFCBCE6A0F"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/385d21fa-1c9d-4734-b35a-b36d5e7500a4/385d21fa-1c9d-4734-b35a-b36d5e7500a4.geojson",
+            "bytes": 30539,
+            "sha256": "35a2e2090971e6a4a03b88da96b7a0f4aa2ca55338e52f5928cb631baf1fa615",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/385d21fa-1c9d-4734-b35a-b36d5e7500a4.geojson",
+            "etag": "0x8DB3BAFC785D73A"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/385d21fa-1c9d-4734-b35a-b36d5e7500a4/building-mask.png",
+            "bytes": 943,
+            "sha256": "7a6c962358cb39edade1fd92a779bcf5405a01e39667070606ae0f994213ea18"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/385d21fa-1c9d-4734-b35a-b36d5e7500a4/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/385d21fa-1c9d-4734-b35a-b36d5e7500a4/pixel-polygons.json",
+            "bytes": 21951,
+            "sha256": "e10c675b1fcd573d3d57d17a4aea4684700b48e83f9f7357bef9487e66dc2768"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/385d21fa-1c9d-4734-b35a-b36d5e7500a4/overlay.png",
+            "bytes": 100432,
+            "sha256": "3feecfe15ae6fabcd09eee2fc90ec9316d7d8cd99f017e8925c02a5cd563c838"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.34911086080137,
+              0,
+              -3.832811878912986e-06,
+              22.664248244429924
+            ],
+            "boundsLonLat": [
+              90.34911086080137,
+              22.663267044588924,
+              90.35009206064238,
+              22.664248244429924
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.34911086080137,
+                22.664248244429924,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "a36734577d8559255a604ce46de1c575cd6cbf62d5b29df972af4eb0a85b587f",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 17,
+          "publisherPolygonCount": 17,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 6951,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/4524e211-e0ca-4615-a280-85468a4ca065",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 789,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4524e211-e0ca-4615-a280-85468a4ca065/rgb.png",
+            "bytes": 94860,
+            "sha256": "3ecae5eab915de848d7e21cc881466b1ea41fc5bcf33fa1be89993c1c5e87699"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/4524e211-e0ca-4615-a280-85468a4ca065/4524e211-e0ca-4615-a280-85468a4ca065.tif",
+            "bytes": 197194,
+            "sha256": "fe8e300895c8204025a4912f392f2fa6782f6fd844c2517a8a73acf52151b21a",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/4524e211-e0ca-4615-a280-85468a4ca065.tif",
+            "etag": "0x8DB3BAFD4C97377"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/4524e211-e0ca-4615-a280-85468a4ca065/4524e211-e0ca-4615-a280-85468a4ca065.geojson",
+            "bytes": 47283,
+            "sha256": "312bb28e3c789efe63f9bd544706d9775bf1c3314ad22dcce868f1bdcf452f04",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/4524e211-e0ca-4615-a280-85468a4ca065.geojson",
+            "etag": "0x8DB3BAFCEC67B01"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4524e211-e0ca-4615-a280-85468a4ca065/building-mask.png",
+            "bytes": 1671,
+            "sha256": "4f81ec644d83daff7ef87adf7c39e68a4b9dd6227b22d5cf7af198c40c0c74c1"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4524e211-e0ca-4615-a280-85468a4ca065/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4524e211-e0ca-4615-a280-85468a4ca065/pixel-polygons.json",
+            "bytes": 33053,
+            "sha256": "3aa510adbe30a11c0d2667c68758ef296beb8eb7b899537c6a2c9799a4e64fd2"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4524e211-e0ca-4615-a280-85468a4ca065/overlay.png",
+            "bytes": 98064,
+            "sha256": "ddd71a7cca153e4cca1615196a19a973f4b67b9f9745c5107fe0efdf44fc8111"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.35892285921139,
+              0,
+              -3.832811878912986e-06,
+              22.687797040613965
+            ],
+            "boundsLonLat": [
+              90.35892285921139,
+              22.686815840772965,
+              90.3599040590524,
+              22.687797040613965
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.35892285921139,
+                22.687797040613965,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "d1c03a086a692669ef2be9f86a4a72a1da6d796d5f6df1a444d0c84db37eaf39",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 21,
+          "publisherPolygonCount": 21,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 12406,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/4eb44be8-276c-4420-bac8-163c04f3ce4c",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 920,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4eb44be8-276c-4420-bac8-163c04f3ce4c/rgb.png",
+            "bytes": 95088,
+            "sha256": "7c7928c016a9b759701b3e9f66b006ff1cda54142c412dc3fcffdf89836d29b4"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/4eb44be8-276c-4420-bac8-163c04f3ce4c/4eb44be8-276c-4420-bac8-163c04f3ce4c.tif",
+            "bytes": 197194,
+            "sha256": "d1ea6323a5b6a79a5eb105d662db75009eca9a3cf7a27a2e435c4d7c0706ae9e",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/4eb44be8-276c-4420-bac8-163c04f3ce4c.tif",
+            "etag": "0x8DB3BAFD1D52EEA"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/4eb44be8-276c-4420-bac8-163c04f3ce4c/4eb44be8-276c-4420-bac8-163c04f3ce4c.geojson",
+            "bytes": 39798,
+            "sha256": "170f519bc46bf35a08f86467ddc9a00d47c9adeb3945b30a24df3d7b6ef4310e",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/4eb44be8-276c-4420-bac8-163c04f3ce4c.geojson",
+            "etag": "0x8DB3BAFBE74ED48"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4eb44be8-276c-4420-bac8-163c04f3ce4c/building-mask.png",
+            "bytes": 946,
+            "sha256": "697b8f250050b5ecbacaedb6d209b09d7cc7a9786f4a9156fb8b8c85999760c8"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4eb44be8-276c-4420-bac8-163c04f3ce4c/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4eb44be8-276c-4420-bac8-163c04f3ce4c/pixel-polygons.json",
+            "bytes": 28106,
+            "sha256": "b4773b30db52bcffd78ad5ae875285f8e2a3b4e97bfb75c8a238148729982704"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/4eb44be8-276c-4420-bac8-163c04f3ce4c/overlay.png",
+            "bytes": 95972,
+            "sha256": "e61dd05223a1fb8533211ea7da7c2fc0bc813ed5ccb92476d09755d200de4418"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.35009206064238,
+              0,
+              -3.832811878912986e-06,
+              22.725082634572033
+            ],
+            "boundsLonLat": [
+              90.35009206064238,
+              22.724101434731033,
+              90.35107326048339,
+              22.725082634572033
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.35009206064238,
+                22.725082634572033,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "eeaa7446d4722d4ace347de13f1ada388c446bcbf45bab694d7b1f55a74077fb",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 23,
+          "publisherPolygonCount": 23,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 5929,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/59eb8aef-35a7-49d0-ab95-6dd66dc603b3",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 1051,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/59eb8aef-35a7-49d0-ab95-6dd66dc603b3/rgb.png",
+            "bytes": 66895,
+            "sha256": "14bd9b50bce0fcaff0246025d140e7cccd9b07473572927c7131a9c5b2644b5d"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/59eb8aef-35a7-49d0-ab95-6dd66dc603b3/59eb8aef-35a7-49d0-ab95-6dd66dc603b3.tif",
+            "bytes": 197194,
+            "sha256": "e5ccec504930927f79a4a6f3e4877e0988464aa6c78f024180f074941050b22c",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/59eb8aef-35a7-49d0-ab95-6dd66dc603b3.tif",
+            "etag": "0x8DB3BAFDAFEB534"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/59eb8aef-35a7-49d0-ab95-6dd66dc603b3/59eb8aef-35a7-49d0-ab95-6dd66dc603b3.geojson",
+            "bytes": 2907,
+            "sha256": "f2b352c6a0caf037cccf11361807e69e688a455430aa412ff69aff49ea69223f",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/59eb8aef-35a7-49d0-ab95-6dd66dc603b3.geojson",
+            "etag": "0x8DB3BAFC6950B53"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/59eb8aef-35a7-49d0-ab95-6dd66dc603b3/building-mask.png",
+            "bytes": 249,
+            "sha256": "1438d5233750a269f1bbabc5274193673ed828313a79647bde968f8a116fa0da"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/59eb8aef-35a7-49d0-ab95-6dd66dc603b3/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/59eb8aef-35a7-49d0-ab95-6dd66dc603b3/pixel-polygons.json",
+            "bytes": 3580,
+            "sha256": "ef92d4ddaeae05683309908c80a72f4a180d3470cd09b1db557aeaaa9d61ba75"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/59eb8aef-35a7-49d0-ab95-6dd66dc603b3/overlay.png",
+            "bytes": 66893,
+            "sha256": "7bca2e3b3c2a10f412808e24ef25b46e39f97a6b4fe7af2b3cdc62198648f807"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.33341166334534,
+              0,
+              -3.832811878912986e-06,
+              22.700552638546988
+            ],
+            "boundsLonLat": [
+              90.33341166334534,
+              22.699571438705988,
+              90.33439286318635,
+              22.700552638546988
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.33341166334534,
+                22.700552638546988,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "a18c2a742c52cc1ac53f8f82005a51a75797837d6b5a8b520e17a42739af39cc",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 3,
+          "publisherPolygonCount": 3,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 666,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/659750d8-2c65-45aa-b1bd-364a75289d33",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 1183,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/659750d8-2c65-45aa-b1bd-364a75289d33/rgb.png",
+            "bytes": 97241,
+            "sha256": "778fcaac53090e86782b5248fe4ee4c958898cccd74d580439555ef9f8a0a7d9"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/659750d8-2c65-45aa-b1bd-364a75289d33/659750d8-2c65-45aa-b1bd-364a75289d33.tif",
+            "bytes": 197194,
+            "sha256": "2bad6832e8be833be0a6cf240dde5677f3be862084c8ae9c44d9437920ff2773",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/659750d8-2c65-45aa-b1bd-364a75289d33.tif",
+            "etag": "0x8DB3BAFE3C96FB0"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/659750d8-2c65-45aa-b1bd-364a75289d33/659750d8-2c65-45aa-b1bd-364a75289d33.geojson",
+            "bytes": 16468,
+            "sha256": "b071845038a5aebe1718e7bc205ec536661270bb03e7dd613c4442444fe9b86f",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/659750d8-2c65-45aa-b1bd-364a75289d33.geojson",
+            "etag": "0x8DB3BAFCF3451F1"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/659750d8-2c65-45aa-b1bd-364a75289d33/building-mask.png",
+            "bytes": 770,
+            "sha256": "24e767a7839caf2188dc4124317b78762138e1922fa6001b4a0062525bb81027"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/659750d8-2c65-45aa-b1bd-364a75289d33/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/659750d8-2c65-45aa-b1bd-364a75289d33/pixel-polygons.json",
+            "bytes": 13032,
+            "sha256": "1667a538e0b55a3daad52921999beffd68f83716390b30bc45270ac7caaeecc1"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/659750d8-2c65-45aa-b1bd-364a75289d33/overlay.png",
+            "bytes": 96584,
+            "sha256": "a538131aefcea6d5470199873decff97cb7f17b38d24aab7f9e9d5a8777e75fd"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.35892285921139,
+              0,
+              -3.832811878912986e-06,
+              22.718214235685018
+            ],
+            "boundsLonLat": [
+              90.35892285921139,
+              22.717233035844018,
+              90.3599040590524,
+              22.718214235685018
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.35892285921139,
+                22.718214235685018,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "2860e63aeea1846674d02e1d2580eee1abaf35ce548677b196886bfd3524dba8",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 13,
+          "publisherPolygonCount": 13,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 3,
+          "positivePixels": 19108,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/703a4254-1e02-498b-9263-277aa2fc821c",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 1314,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/703a4254-1e02-498b-9263-277aa2fc821c/rgb.png",
+            "bytes": 105457,
+            "sha256": "70c674578ae356d79b2243c36e25b5c2ed11b09f6ee57f335d92252ae4a2a3f8"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/703a4254-1e02-498b-9263-277aa2fc821c/703a4254-1e02-498b-9263-277aa2fc821c.tif",
+            "bytes": 197194,
+            "sha256": "9fcbc8aba0460538e33d418d15bf4109ae6559aedca1503027597cb852e0115c",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/703a4254-1e02-498b-9263-277aa2fc821c.tif",
+            "etag": "0x8DB3BAFC0ACF6AD"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/703a4254-1e02-498b-9263-277aa2fc821c/703a4254-1e02-498b-9263-277aa2fc821c.geojson",
+            "bytes": 19938,
+            "sha256": "0ace5847f2afe57a59537cee2c535ab865b94d6782d21a495498e5fda1149ae2",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/703a4254-1e02-498b-9263-277aa2fc821c.geojson",
+            "etag": "0x8DB3BAFD7326810"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/703a4254-1e02-498b-9263-277aa2fc821c/building-mask.png",
+            "bytes": 1715,
+            "sha256": "fa9747e88e5bbe1a7d429031f187a840cf4f33e8b1b46d54c17d6b6c2384a9b7"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/703a4254-1e02-498b-9263-277aa2fc821c/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/703a4254-1e02-498b-9263-277aa2fc821c/pixel-polygons.json",
+            "bytes": 15338,
+            "sha256": "ee24951906cbc4c6ec1fd367eebdadc520107bcd4c5612cf8e0b2160145aa9b1"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/703a4254-1e02-498b-9263-277aa2fc821c/overlay.png",
+            "bytes": 109351,
+            "sha256": "51f24d4652086860735d8428e2c0bfe634058671e30ca668c42b96f0c51214c4"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.38050925571343,
+              0,
+              -3.832811878912986e-06,
+              22.717233035844018
+            ],
+            "boundsLonLat": [
+              90.38050925571343,
+              22.716251836003018,
+              90.38149045555444,
+              22.717233035844018
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.38050925571343,
+                22.717233035844018,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "1522cacc432cdd72c36174d734b7d19ff2891a9b850571eabf13c137fcd4684a",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 19,
+          "publisherPolygonCount": 19,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 1,
+          "positivePixels": 6826,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/7a65f236-5015-42ba-a3e5-20e996d594c6",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 1446,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/7a65f236-5015-42ba-a3e5-20e996d594c6/rgb.png",
+            "bytes": 94791,
+            "sha256": "fea5c6aa122c50b8bd2e54da15adc0620a080838e4fca319b01a5934b37c12ce"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/7a65f236-5015-42ba-a3e5-20e996d594c6/7a65f236-5015-42ba-a3e5-20e996d594c6.tif",
+            "bytes": 197194,
+            "sha256": "e4e037ff48ba6329400f5c79173bf33ba4f0f256cef20791198c848c6c56223f",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/7a65f236-5015-42ba-a3e5-20e996d594c6.tif",
+            "etag": "0x8DB3BAFC8AF9BA7"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/7a65f236-5015-42ba-a3e5-20e996d594c6/7a65f236-5015-42ba-a3e5-20e996d594c6.geojson",
+            "bytes": 8473,
+            "sha256": "6bc820d84ac1fb1821449f140d2a33dd4e73f45de4003a3599ae8fdd38ad6abe",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/7a65f236-5015-42ba-a3e5-20e996d594c6.geojson",
+            "etag": "0x8DB3BAFBDB339EC"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/7a65f236-5015-42ba-a3e5-20e996d594c6/building-mask.png",
+            "bytes": 439,
+            "sha256": "3a06b52feef74557ec8834700f817e2b5c55c587b9a1aaa8d95ca40d7b65a81a"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/7a65f236-5015-42ba-a3e5-20e996d594c6/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/7a65f236-5015-42ba-a3e5-20e996d594c6/pixel-polygons.json",
+            "bytes": 7470,
+            "sha256": "dd79154e031aae2e7c567db99bfdcc5eeacd2ac5b4913dde6881f85f71e39c7d"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/7a65f236-5015-42ba-a3e5-20e996d594c6/overlay.png",
+            "bytes": 95167,
+            "sha256": "7f5df7233d82b514e7eead83ec418f5766081a960ae7cdacf49e470173cf848c"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.34224246191437,
+              0,
+              -3.832811878912986e-06,
+              22.707421037434
+            ],
+            "boundsLonLat": [
+              90.34224246191437,
+              22.706439837593,
+              90.34322366175537,
+              22.707421037434
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.34224246191437,
+                22.707421037434,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "0446881b9460f2870377a74f977a59f976ca042264a4f1e23b41ba5c73e746f3",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 8,
+          "publisherPolygonCount": 8,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 1348,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/860ea202-9316-47fc-91f1-98b462951819",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 1577,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/860ea202-9316-47fc-91f1-98b462951819/rgb.png",
+            "bytes": 65726,
+            "sha256": "8f1a9420e374d75a947c819a4e38bbfdfd4bb9150b46e35183dfafd3379e167b"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/860ea202-9316-47fc-91f1-98b462951819/860ea202-9316-47fc-91f1-98b462951819.tif",
+            "bytes": 197194,
+            "sha256": "f3f4691b57cbf34e0a9dc4d26a66fba14a1109682d382a148557b136222a4780",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/860ea202-9316-47fc-91f1-98b462951819.tif",
+            "etag": "0x8DB3BAFD097D157"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/860ea202-9316-47fc-91f1-98b462951819/860ea202-9316-47fc-91f1-98b462951819.geojson",
+            "bytes": 55,
+            "sha256": "0e48e00525b7d02b53a0cbade537868bcc0fb3450f5131a9591516e37d3cb181",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/860ea202-9316-47fc-91f1-98b462951819.geojson",
+            "etag": "0x8DB3BAFC48D787B"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/860ea202-9316-47fc-91f1-98b462951819/building-mask.png",
+            "bytes": 143,
+            "sha256": "5933d4c44ed2bc2f431e2698b41923a18d056b24b450540bb109e7592a547060"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/860ea202-9316-47fc-91f1-98b462951819/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/860ea202-9316-47fc-91f1-98b462951819/pixel-polygons.json",
+            "bytes": 1581,
+            "sha256": "8ca63b223d8d5bbb914df7709a6680af6d6ab06f19b1762d3ca45e7f92709399"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/860ea202-9316-47fc-91f1-98b462951819/overlay.png",
+            "bytes": 65726,
+            "sha256": "8f1a9420e374d75a947c819a4e38bbfdfd4bb9150b46e35183dfafd3379e167b"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.36775365778041,
+              0,
+              -3.832811878912986e-06,
+              22.73096983361804
+            ],
+            "boundsLonLat": [
+              90.36775365778041,
+              22.72998863377704,
+              90.36873485762142,
+              22.73096983361804
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.36775365778041,
+                22.73096983361804,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "5a5acffc31e6acc9c264419c2109d4445dd6eaea2bd01b94958abfa4922243c6",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": true,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 0,
+          "publisherPolygonCount": 0,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 0,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 1709,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0/rgb.png",
+            "bytes": 92900,
+            "sha256": "ff1ba8f6de49f6f15fb73118afe48be413999ff6ee82fd0df3e6af20b398bd88"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0.tif",
+            "bytes": 197194,
+            "sha256": "286059e5a810a31dd9e8ae11ca6f8c0da71e5a9c3e5cebee90fd951f1aca3549",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0.tif",
+            "etag": "0x8DB3BAFDBED39AD"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0.geojson",
+            "bytes": 4590,
+            "sha256": "fdd5476d7b306f56742eb481d80a4eea8404419dbf29736cc9abb6e257e79782",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0.geojson",
+            "etag": "0x8DB3BAFCBF098C2"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0/building-mask.png",
+            "bytes": 699,
+            "sha256": "a06f8f5e4adb23f407085f80b5760efc8473b8c196fb3388df1d934d58681c24"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0/pixel-polygons.json",
+            "bytes": 4635,
+            "sha256": "0ff5d083fb38850360ed772dcc0853b7d7c6d4ba9603892e41712487aa6178b0"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/92331f88-b2b7-4fa1-a57f-8c8d8ed513f0/overlay.png",
+            "bytes": 94034,
+            "sha256": "3b3788158ca3055b6b3cebcb972142fb7e1134cd73f02b306512860877c19a9f"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.34616726127837,
+              0,
+              -3.832811878912986e-06,
+              22.65443624601991
+            ],
+            "boundsLonLat": [
+              90.34616726127837,
+              22.65345504617891,
+              90.34714846111937,
+              22.65443624601991
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.34616726127837,
+                22.65443624601991,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "bf257687090d78aefaea4567e2a80cc4425319b046800c9a7fa58c58b0790a04",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 3,
+          "publisherPolygonCount": 3,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 6558,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/9d94b803-70b2-4243-9e4f-9b21e0ffe734",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 1840,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/9d94b803-70b2-4243-9e4f-9b21e0ffe734/rgb.png",
+            "bytes": 70953,
+            "sha256": "041c0787a23aefec6edc6eedb273fe9cc8a6e2b252bc075822c90869b62cabe7"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/9d94b803-70b2-4243-9e4f-9b21e0ffe734/9d94b803-70b2-4243-9e4f-9b21e0ffe734.tif",
+            "bytes": 197194,
+            "sha256": "8fd32be077838a27c4ed577a12ecee5b093d54dc74506fe49aefb44ba101604a",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/9d94b803-70b2-4243-9e4f-9b21e0ffe734.tif",
+            "etag": "0x8DB3BAFBDF183B0"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/9d94b803-70b2-4243-9e4f-9b21e0ffe734/9d94b803-70b2-4243-9e4f-9b21e0ffe734.geojson",
+            "bytes": 3231,
+            "sha256": "f461bc5a45c2fb3741089c27897ad12461d68804fd76ca6353b325a603576cfc",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/9d94b803-70b2-4243-9e4f-9b21e0ffe734.geojson",
+            "etag": "0x8DB3BAFCFB8F2B6"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/9d94b803-70b2-4243-9e4f-9b21e0ffe734/building-mask.png",
+            "bytes": 286,
+            "sha256": "ea62ce731592f7899f99e6e98363760bb0124a6bfbd309b801b97bc5e0f3cea1"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/9d94b803-70b2-4243-9e4f-9b21e0ffe734/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/9d94b803-70b2-4243-9e4f-9b21e0ffe734/pixel-polygons.json",
+            "bytes": 3782,
+            "sha256": "2941c3c9bce69b651a02fc07c187f67bf39549f02ff429b9154a4663b763ccf3"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/9d94b803-70b2-4243-9e4f-9b21e0ffe734/overlay.png",
+            "bytes": 71010,
+            "sha256": "5eef765e04cf627c9c7abb5ce5604d993d533fe7dfda4189c48c66a25edcc317"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.33831766255037,
+              0,
+              -3.832811878912986e-06,
+              22.670135443475935
+            ],
+            "boundsLonLat": [
+              90.33831766255037,
+              22.669154243634935,
+              90.33929886239137,
+              22.670135443475935
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.33831766255037,
+                22.670135443475935,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "fee546f008976158a2c473ef95c5f8f0e8f85f7f7dab1a0bc41a4662fceceec8",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 3,
+          "publisherPolygonCount": 3,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 780,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/a8dbf7e9-2feb-461a-a76f-88b62662e40b",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 1972,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/a8dbf7e9-2feb-461a-a76f-88b62662e40b/rgb.png",
+            "bytes": 91431,
+            "sha256": "7f7dd675b8fa22d790ad8974f950f2c0008cfc8a0f2b8fbf5f36e614a3df9f6e"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/a8dbf7e9-2feb-461a-a76f-88b62662e40b/a8dbf7e9-2feb-461a-a76f-88b62662e40b.tif",
+            "bytes": 197194,
+            "sha256": "a718ea004853cf09ad014525218725b9fe202ce44f027f183a29af81d2c45f82",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/a8dbf7e9-2feb-461a-a76f-88b62662e40b.tif",
+            "etag": "0x8DB3BAFC7994977"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/a8dbf7e9-2feb-461a-a76f-88b62662e40b/a8dbf7e9-2feb-461a-a76f-88b62662e40b.geojson",
+            "bytes": 9638,
+            "sha256": "228e9bc9daf18894fd2d7fcefb43661e90b83bc7411ed4600f87f04d127b56aa",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/a8dbf7e9-2feb-461a-a76f-88b62662e40b.geojson",
+            "etag": "0x8DB3BAFD7F91EE0"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/a8dbf7e9-2feb-461a-a76f-88b62662e40b/building-mask.png",
+            "bytes": 703,
+            "sha256": "e1f08020b059b6bb49f9aba2408cfb4d7547876c5de70db7c601a629038fc6cb"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/a8dbf7e9-2feb-461a-a76f-88b62662e40b/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/a8dbf7e9-2feb-461a-a76f-88b62662e40b/pixel-polygons.json",
+            "bytes": 8255,
+            "sha256": "b2ad22f91c6a9b9a84cf11b2b1a874289493a63287f9fcb38210c1fba3973030"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/a8dbf7e9-2feb-461a-a76f-88b62662e40b/overlay.png",
+            "bytes": 92546,
+            "sha256": "1b790018bf9c5ccffe5c5940f02809fd7f27f3eab6b438a44cf47e662ae6a0cf"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.33831766255037,
+              0,
+              -3.832811878912986e-06,
+              22.69662783918298
+            ],
+            "boundsLonLat": [
+              90.33831766255037,
+              22.69564663934198,
+              90.33929886239137,
+              22.69662783918298
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.33831766255037,
+                22.69662783918298,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "c5c0cddd5b6f5a7902ea595d6cbb6c6fcd039192d48cd1fa33f5af6a43858292",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 9,
+          "publisherPolygonCount": 9,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 3073,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/b35f6511-cb5e-45c1-a549-031c060d5820",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 2103,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/b35f6511-cb5e-45c1-a549-031c060d5820/rgb.png",
+            "bytes": 93019,
+            "sha256": "61e81615b3667987e6186ad574cfe7b3b975bba276928a1bd4ab3e1de856c7bf"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/b35f6511-cb5e-45c1-a549-031c060d5820/b35f6511-cb5e-45c1-a549-031c060d5820.tif",
+            "bytes": 197194,
+            "sha256": "511dbdf6fb53618d4a5c1d835ad32241af4474ef4d228436b75313406c910fa9",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/b35f6511-cb5e-45c1-a549-031c060d5820.tif",
+            "etag": "0x8DB3BAFD1AB19C7"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/b35f6511-cb5e-45c1-a549-031c060d5820/b35f6511-cb5e-45c1-a549-031c060d5820.geojson",
+            "bytes": 12797,
+            "sha256": "480508ad1ab2e64150f2797ef58af3c584e45021b722882fd82965f10dd0426d",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/b35f6511-cb5e-45c1-a549-031c060d5820.geojson",
+            "etag": "0x8DB3BAFDF8764C3"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/b35f6511-cb5e-45c1-a549-031c060d5820/building-mask.png",
+            "bytes": 580,
+            "sha256": "3a8dbe855049773e17b81b1a9ae1ecb4b5473b294982ac08b4bcc4b17ad19efd"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/b35f6511-cb5e-45c1-a549-031c060d5820/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/b35f6511-cb5e-45c1-a549-031c060d5820/pixel-polygons.json",
+            "bytes": 10512,
+            "sha256": "d70912edc121498c545fa59e293958ca195cde7de178cbdfade57602b013bd2d"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/b35f6511-cb5e-45c1-a549-031c060d5820/overlay.png",
+            "bytes": 93263,
+            "sha256": "8cc53f825351ae26ab9bf74a3783917d602d57f537bc4dbe287c1dd72944b679"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.34126126207336,
+              0,
+              -3.832811878912986e-06,
+              22.731951033459044
+            ],
+            "boundsLonLat": [
+              90.34126126207336,
+              22.730969833618044,
+              90.34224246191437,
+              22.731951033459044
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.34126126207336,
+                22.731951033459044,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "79e7cac854edf09298cb64fd957e25fae673ef2284ba8542070288719d2bb21f",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 12,
+          "publisherPolygonCount": 12,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 3637,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/c0a1392f-7bd2-403b-9cb9-83ff05411b3f",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 2234,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/c0a1392f-7bd2-403b-9cb9-83ff05411b3f/rgb.png",
+            "bytes": 95020,
+            "sha256": "f14235a33ebd7a1751d2d8455bbebbffc49fbb0e62e32372f535d7467a804b95"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/c0a1392f-7bd2-403b-9cb9-83ff05411b3f/c0a1392f-7bd2-403b-9cb9-83ff05411b3f.tif",
+            "bytes": 197194,
+            "sha256": "385954a16c5a9e2e1bdaf7dc17ed0f6340cd27182dd7f3f84960d5072eb9538f",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/c0a1392f-7bd2-403b-9cb9-83ff05411b3f.tif",
+            "etag": "0x8DB3BAFDC56CFA3"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/c0a1392f-7bd2-403b-9cb9-83ff05411b3f/c0a1392f-7bd2-403b-9cb9-83ff05411b3f.geojson",
+            "bytes": 10924,
+            "sha256": "5496978838004134c546f9b66fa2144176d34d011a70e5ec3f567772b261ab42",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/c0a1392f-7bd2-403b-9cb9-83ff05411b3f.geojson",
+            "etag": "0x8DB3BAFE7758852"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/c0a1392f-7bd2-403b-9cb9-83ff05411b3f/building-mask.png",
+            "bytes": 1040,
+            "sha256": "5c19d4389bf6f598267a7d5f675ce2c5b153e10e64607641f2bf0561917fd2a8"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/c0a1392f-7bd2-403b-9cb9-83ff05411b3f/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/c0a1392f-7bd2-403b-9cb9-83ff05411b3f/pixel-polygons.json",
+            "bytes": 9127,
+            "sha256": "e2516d47cc8fbf56b3c698290ea50c0858b41bd6e9693d4641d34d8a3bfa9fa0"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/c0a1392f-7bd2-403b-9cb9-83ff05411b3f/overlay.png",
+            "bytes": 97290,
+            "sha256": "3a745a4d722c6f4c9ccfe5b0105bab3dfac5ff38deadc7366643b0c560a0084f"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.31967486557133,
+              0,
+              -3.832811878912986e-06,
+              22.750593830438078
+            ],
+            "boundsLonLat": [
+              90.31967486557133,
+              22.749612630597078,
+              90.32065606541234,
+              22.750593830438078
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.31967486557133,
+                22.750593830438078,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "85a58775fa5016396ad57d7757e6d3295fcafd3dad796e4732f099cf85ce78e7",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 11,
+          "publisherPolygonCount": 11,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 5739,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/ca74a806-f77f-4124-88b6-620a92aca3df",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 2366,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/ca74a806-f77f-4124-88b6-620a92aca3df/rgb.png",
+            "bytes": 104900,
+            "sha256": "78aedbe032f2da9eb0a86cf43cc09177fe5c9edbc64280e5f0cd9b1a073c6069"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/ca74a806-f77f-4124-88b6-620a92aca3df/ca74a806-f77f-4124-88b6-620a92aca3df.tif",
+            "bytes": 197194,
+            "sha256": "fe98ea9cdf185a0441dce73ac60e89eea8e0a253a7cc8a38b151da48c5ecc1dd",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/ca74a806-f77f-4124-88b6-620a92aca3df.tif",
+            "etag": "0x8DB3BAFC349929F"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/ca74a806-f77f-4124-88b6-620a92aca3df/ca74a806-f77f-4124-88b6-620a92aca3df.geojson",
+            "bytes": 20975,
+            "sha256": "95342b12d926a1ceec8994f2a6154762ece2accf1e216bb74e86f5fc009395d2",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/ca74a806-f77f-4124-88b6-620a92aca3df.geojson",
+            "etag": "0x8DB3BAFBF48670A"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/ca74a806-f77f-4124-88b6-620a92aca3df/building-mask.png",
+            "bytes": 1277,
+            "sha256": "eb4c073caf262fa613fac2b5dfb085c1e3531aa6f4249239c1e1c59388470885"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/ca74a806-f77f-4124-88b6-620a92aca3df/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/ca74a806-f77f-4124-88b6-620a92aca3df/pixel-polygons.json",
+            "bytes": 16050,
+            "sha256": "23ba9b37f15bf63d96ba6e115c5399d8b801160684d4635d083673e94ed82868"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/ca74a806-f77f-4124-88b6-620a92aca3df/overlay.png",
+            "bytes": 106474,
+            "sha256": "46ca9d406ae11306dbe74d7155a114656a01a76799bd93fde41ffe8cdc39378a"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.36382885841641,
+              0,
+              -3.832811878912986e-06,
+              22.708402237275003
+            ],
+            "boundsLonLat": [
+              90.36382885841641,
+              22.707421037434003,
+              90.36481005825742,
+              22.708402237275003
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.36382885841641,
+                22.708402237275003,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "cf691d19845f8110495bcc40fb2bc424eb52c717f6e1e75c8bc38f17239d6f65",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 16,
+          "publisherPolygonCount": 16,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 12172,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/d5894390-7899-4954-bcc6-74d3c5ade778",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 2497,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/d5894390-7899-4954-bcc6-74d3c5ade778/rgb.png",
+            "bytes": 71178,
+            "sha256": "37819f5ce67b83f073a28ff3028c66406cd338be42b446fb838fedb08ea5593e"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/d5894390-7899-4954-bcc6-74d3c5ade778/d5894390-7899-4954-bcc6-74d3c5ade778.tif",
+            "bytes": 197194,
+            "sha256": "8cea300c4c031b63b14faf409c94111041dafbb6fe29a9ac1d73f35b0aef8628",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/d5894390-7899-4954-bcc6-74d3c5ade778.tif",
+            "etag": "0x8DB3BAFCE07F85D"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/d5894390-7899-4954-bcc6-74d3c5ade778/d5894390-7899-4954-bcc6-74d3c5ade778.geojson",
+            "bytes": 4825,
+            "sha256": "c33642d1231fbdec0c05bceb163dce43c69be6ae391bc8b0cca3df33b95c1a86",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/d5894390-7899-4954-bcc6-74d3c5ade778.geojson",
+            "etag": "0x8DB3BAFC7156B1A"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/d5894390-7899-4954-bcc6-74d3c5ade778/building-mask.png",
+            "bytes": 425,
+            "sha256": "f3155db7b6571d9808b084e720d8ba28df59a3741d5a5369369d7a45f991c5d1"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/d5894390-7899-4954-bcc6-74d3c5ade778/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/d5894390-7899-4954-bcc6-74d3c5ade778/pixel-polygons.json",
+            "bytes": 4926,
+            "sha256": "badc25e48bc645b79b30d46563d1d06643150525fe020bdb4790a7e0889a9d10"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/d5894390-7899-4954-bcc6-74d3c5ade778/overlay.png",
+            "bytes": 71401,
+            "sha256": "730edc000ab19c3809960058007dc2ae50582fbfd4a0e73aca98c8c9d77caa60"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.33831766255037,
+              0,
+              -3.832811878912986e-06,
+              22.722139035049025
+            ],
+            "boundsLonLat": [
+              90.33831766255037,
+              22.721157835208025,
+              90.33929886239137,
+              22.722139035049025
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.33831766255037,
+                22.722139035049025,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "33bb7ec65f58cb6769d3ec3388ce872b2bfe557d91e75025f2f716b56c7a80ba",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 5,
+          "publisherPolygonCount": 5,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 2227,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/df8bdb15-c163-453a-b877-49cf6c840da3",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 2629,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/df8bdb15-c163-453a-b877-49cf6c840da3/rgb.png",
+            "bytes": 86314,
+            "sha256": "9267a4ceef467f34eafdabddc7bcdecb93f1a596806cfbf5f3c6288aa49eee34"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/df8bdb15-c163-453a-b877-49cf6c840da3/df8bdb15-c163-453a-b877-49cf6c840da3.tif",
+            "bytes": 197194,
+            "sha256": "46ff704313d00ee7af24d9c2f5147929653482bec7682ad2dead4f94057d6b31",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/df8bdb15-c163-453a-b877-49cf6c840da3.tif",
+            "etag": "0x8DB3BAFD87F6B6B"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/df8bdb15-c163-453a-b877-49cf6c840da3/df8bdb15-c163-453a-b877-49cf6c840da3.geojson",
+            "bytes": 7583,
+            "sha256": "4516e4960dfae3b136a51628a0ce58dc3e1ca12c81a427fbdf30b940f247ab9f",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/df8bdb15-c163-453a-b877-49cf6c840da3.geojson",
+            "etag": "0x8DB3BAFCF598A90"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/df8bdb15-c163-453a-b877-49cf6c840da3/building-mask.png",
+            "bytes": 482,
+            "sha256": "e9571547d5e4b37b8cda8e93e93d8770ef7394b759216e57736e1b27cdc5761f"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/df8bdb15-c163-453a-b877-49cf6c840da3/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/df8bdb15-c163-453a-b877-49cf6c840da3/pixel-polygons.json",
+            "bytes": 6922,
+            "sha256": "95ab41bc862289f6660a741ff1e6de820a6ffc4769584a12737ab1b3dbca9091"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/df8bdb15-c163-453a-b877-49cf6c840da3/overlay.png",
+            "bytes": 86334,
+            "sha256": "5f5c72d227d81174d97474794db0d58d475f8c23a31f177e3c3eb8cc6b22c8b0"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.33733646270936,
+              0,
+              -3.832811878912986e-06,
+              22.72998863377704
+            ],
+            "boundsLonLat": [
+              90.33733646270936,
+              22.72900743393604,
+              90.33831766255037,
+              22.72998863377704
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.33733646270936,
+                22.72998863377704,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "bab1beb545a08e18ca9e38cb3ef30bb0db9ded24a4bb7ca088c94fe070b1c429",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 5,
+          "publisherPolygonCount": 5,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 4282,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/e940db29-795f-4ed9-84bc-21112614000c",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 2760,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/e940db29-795f-4ed9-84bc-21112614000c/rgb.png",
+            "bytes": 86822,
+            "sha256": "f4f2b691630d4fa12dc8ecc131dc36e758f790945b7f9d2dd3c21c5ac655157d"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/e940db29-795f-4ed9-84bc-21112614000c/e940db29-795f-4ed9-84bc-21112614000c.tif",
+            "bytes": 197194,
+            "sha256": "8bf407b84b1a056701b555736613fd3951b1eb7488b7e68bc85df91fbd4807c9",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/e940db29-795f-4ed9-84bc-21112614000c.tif",
+            "etag": "0x8DB3BAFE34C19AD"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/e940db29-795f-4ed9-84bc-21112614000c/e940db29-795f-4ed9-84bc-21112614000c.geojson",
+            "bytes": 13118,
+            "sha256": "20b5dd13c784a427d1247c3ad5e7b49a771a38c75bb88fc0bb67e78a187a2c10",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/e940db29-795f-4ed9-84bc-21112614000c.geojson",
+            "etag": "0x8DB3BAFD796FA9E"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/e940db29-795f-4ed9-84bc-21112614000c/building-mask.png",
+            "bytes": 499,
+            "sha256": "4c26819f32d5d8b37897c3133409b46cd5e2b7877d80f7d26d3b9e95233c9b39"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/e940db29-795f-4ed9-84bc-21112614000c/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/e940db29-795f-4ed9-84bc-21112614000c/pixel-polygons.json",
+            "bytes": 10523,
+            "sha256": "03f30bdf818cade6e7cb615f77d69c5a5539c39d0e35511f8eae901a571f9846"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/e940db29-795f-4ed9-84bc-21112614000c/overlay.png",
+            "bytes": 87214,
+            "sha256": "6600cc33ecbf4a2c0dbe614f873ecf2669970ee47dff123b19fe32625bb74735"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.32556206461734,
+              0,
+              -3.832811878912986e-06,
+              22.73685703266405
+            ],
+            "boundsLonLat": [
+              90.32556206461734,
+              22.73587583282305,
+              90.32654326445835,
+              22.73685703266405
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.32556206461734,
+                22.73685703266405,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "74bc8ec954d49020d98aa53bce99233cec4fd1c70ecdc7c1d475cc558dad1ffa",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 10,
+          "publisherPolygonCount": 10,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 2454,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/f4dca685-98ec-4d4b-b897-daacb553dc3e",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 2892,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/f4dca685-98ec-4d4b-b897-daacb553dc3e/rgb.png",
+            "bytes": 68781,
+            "sha256": "587a7cc9c50f19b5e4a088cd429add0f251bd10c4919f2d48b4ba96e0d74795a"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/f4dca685-98ec-4d4b-b897-daacb553dc3e/f4dca685-98ec-4d4b-b897-daacb553dc3e.tif",
+            "bytes": 197194,
+            "sha256": "ba2c410583ffb8ab80fb242deb63142ea2f22a41d1f4fa20447abde4a18ac838",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/f4dca685-98ec-4d4b-b897-daacb553dc3e.tif",
+            "etag": "0x8DB3BAFCC0F48FE"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/f4dca685-98ec-4d4b-b897-daacb553dc3e/f4dca685-98ec-4d4b-b897-daacb553dc3e.geojson",
+            "bytes": 1062,
+            "sha256": "3266a95b890e40326327da50b3afa53e457a7d1582b309906102ea9bce449629",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/f4dca685-98ec-4d4b-b897-daacb553dc3e.geojson",
+            "etag": "0x8DB3BAFB71A27FC"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/f4dca685-98ec-4d4b-b897-daacb553dc3e/building-mask.png",
+            "bytes": 201,
+            "sha256": "03ee23495e6e91c1e4c862c20f010e10b407725495da2f5afea7b116fa060a3a"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/f4dca685-98ec-4d4b-b897-daacb553dc3e/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/f4dca685-98ec-4d4b-b897-daacb553dc3e/pixel-polygons.json",
+            "bytes": 2254,
+            "sha256": "20aba28257c43796ff96a30a991074530a1f69de3e31d4408b810eb0343f4575"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/f4dca685-98ec-4d4b-b897-daacb553dc3e/overlay.png",
+            "bytes": 68896,
+            "sha256": "01aa504a9fb507b41dc266845e5215abf3698b298fd289fc8acfb16226864534"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.33341166334534,
+              0,
+              -3.832811878912986e-06,
+              22.72312023489003
+            ],
+            "boundsLonLat": [
+              90.33341166334534,
+              22.72213903504903,
+              90.33439286318635,
+              22.72312023489003
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.33341166334534,
+                22.72312023489003,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "bb2ce3d714378f41f1fce7988e10275592dff8c73838b79ce655838ce675dcee",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 1,
+          "publisherPolygonCount": 1,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 151,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        },
+        {
+          "id": "ramp-barishal/fff8d1fa-5f45-481f-8360-00dd356b736e",
+          "groupId": "ramp-MaxarODP-105001001597B000",
+          "sourceProjectId": "ramp_barishal_bangladesh",
+          "sourceSceneId": "105001001597B000",
+          "split": "unallocated",
+          "pool": "train_candidate",
+          "fitAdmission": "not_fit_admitted",
+          "upstreamSplit": "publisher-training-dataset",
+          "sourceIndexRank": 3023,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/fff8d1fa-5f45-481f-8360-00dd356b736e/rgb.png",
+            "bytes": 78942,
+            "sha256": "2a435277fce337d72027a7151c138e11fa6a09f0f3daa65bfcd4a653ed201b70"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/fff8d1fa-5f45-481f-8360-00dd356b736e/fff8d1fa-5f45-481f-8360-00dd356b736e.tif",
+            "bytes": 197194,
+            "sha256": "ab002904ab8453aacd5a39132b452abdf9e197fedccdaa952c2180ebe8ebb6f0",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/source/fff8d1fa-5f45-481f-8360-00dd356b736e.tif",
+            "etag": "0x8DB3BAFD5ADA34C"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/originals/fff8d1fa-5f45-481f-8360-00dd356b736e/fff8d1fa-5f45-481f-8360-00dd356b736e.geojson",
+            "bytes": 1025,
+            "sha256": "b9c63c7a4d590aac0e51c117e05076d91c9bb95feb3d30af956133a04778662f",
+            "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_barishal_bangladesh/labels/fff8d1fa-5f45-481f-8360-00dd356b736e.geojson",
+            "etag": "0x8DB3BAFBF252814"
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/fff8d1fa-5f45-481f-8360-00dd356b736e/building-mask.png",
+            "bytes": 228,
+            "sha256": "0c4c9d5b2a636df873317e95acbe5b8bd4bc33acd02d83eed69f2e8b3e56e0ed"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/fff8d1fa-5f45-481f-8360-00dd356b736e/eligible-pixels.png",
+            "bytes": 464,
+            "sha256": "575028185a80d61f2d9426436e6b0eb3a4d6a7613bb921fc3b0ef6c8f46ec603"
+          },
+          "pixelVectors": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/fff8d1fa-5f45-481f-8360-00dd356b736e/pixel-polygons.json",
+            "bytes": 2252,
+            "sha256": "f61cb61b392b9669b80a9345ad2ad3bf7841ef537581c61c58f87baf10dcd7d9"
+          },
+          "inspectionOverlay": {
+            "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/derivatives/fff8d1fa-5f45-481f-8360-00dd356b736e/overlay.png",
+            "bytes": 79347,
+            "sha256": "e1d3e8fc71676a1ce00bb12e3f27964432a017e32eed3128d9ff46592d916b99"
+          },
+          "width": 256,
+          "height": 256,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              3.832811878912986e-06,
+              0,
+              90.33635526286835,
+              0,
+              -3.832811878912986e-06,
+              22.680928641726954
+            ],
+            "boundsLonLat": [
+              90.33635526286835,
+              22.679947441885954,
+              90.33733646270936,
+              22.680928641726954
+            ],
+            "pixelScaleDegrees": [
+              3.832811878912986e-06,
+              3.832811878912986e-06
+            ],
+            "geoTiffTags": {
+              "33550": [
+                3.832811878912986e-06,
+                3.832811878912986e-06,
+                0.0
+              ],
+              "33922": [
+                0.0,
+                0.0,
+                0.0,
+                90.33635526286835,
+                22.680928641726954,
+                0.0
+              ],
+              "34735": [
+                1,
+                1,
+                0,
+                7,
+                1024,
+                0,
+                1,
+                2,
+                1025,
+                0,
+                1,
+                1,
+                2048,
+                0,
+                1,
+                4326,
+                2049,
+                34737,
+                7,
+                0,
+                2054,
+                0,
+                1,
+                9102,
+                2057,
+                34736,
+                1,
+                1,
+                2059,
+                34736,
+                1,
+                0
+              ],
+              "34736": [
+                298.257223563,
+                6378137.0
+              ],
+              "34737": "WGS 84|"
+            },
+            "labelCrs": "OGC:CRS84 (GeoJSON default WGS84 lon/lat; no explicit CRS member)",
+            "labelCrsBasis": "RFC7946 section4 + matching measured TIFF extent",
+            "nodataDeclared": null,
+            "publisherIgnoreMask": null
+          },
+          "rgbPixelSha256": "8c0ec481564b9c0b5db6935d28ef319ad7d95803df856e608adc23e8147a0dd7",
+          "rgbTransform": "Lossless uint8 RGB TIFF-to-PNG; no stretch/resample/crop",
+          "labelTransform": "Full inverse TIFF affine to pixel edges; binary union at pixel centers +0.5; outer rings minus holes; clip only to original image extent",
+          "scoringMaskStatus": "All original-frame pixels eligible for this publisher-label task; no NODATA tag/all-zero pixels; publisher ignore mask absent, uncertainty flags unknown",
+          "labelStatus": "independent_published_human_annotation",
+          "applicationGroundTruth": false,
+          "sourceEmpty": false,
+          "scoredPixels": 65536,
+          "ignoredAllZeroPixels": 0,
+          "publisherFeatureCount": 1,
+          "publisherPolygonCount": 1,
+          "holeRingCount": 0,
+          "ringsClippedByImageBoundary": 0,
+          "positivePixels": 148,
+          "overlappingInstancePixels": 0,
+          "zeroPixelFeatures": [],
+          "transformRoundtripMaxDegrees": 0,
+          "referenceParityDifferentPixels": 0
+        }
+      ]
+    }
+  },
+  "excludedItems": [],
+  "verification": {
+    "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/verification.json",
+    "bytes": 5114,
+    "sha256": "ba5a719f2bae928bfdcf5f5bd7c7df8b1fda5168bc9c77cae7147a8a029ee5d1"
+  },
+  "selection": {
+    "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/provenance/selection.json",
+    "bytes": 7799,
+    "sha256": "74ecfebea97b46232bf02e4a19c29a929fdaca1cec550cf56f72b7596fcd0458"
+  },
+  "preservation": {
+    "karnatakaReservation": "All24 reserved development-only, excluded from this pool; no fit or allocation changed",
+    "acceptedKarnatakaOwner": "addbf2399255a864d45f275ce57f6ad9c0687b1c",
+    "acceptedGroup2Owner": "7bc0f1bee75bb26e9b85d1ad6d31e67e612b1f9f",
+    "closedIndiaSearchReopened": false,
+    "protectedEvaluationReopened": false,
+    "priorSpaceNetAndKarnatakaSourceExclusion": {
+      "cachedPriorSpaceNetFrames": 8,
+      "reservedKarnatakaFrames": 24,
+      "oneChipBufferedIntersections": 0,
+      "sourceHashMatches": 0,
+      "priorAssetsOrPredictionsReopened": false
+    },
+    "sharedCatalogueOrBoardOrSplitWrites": 0
+  },
+  "limitations": [
+    "Foreign transfer candidate; roof/context resemblance is a hypothesis, not Indian performance evidence.",
+    "One parent capture/source project/group cannot supply an internal independent train/development split.",
+    "A fit still requires a useful measured residual, fair grouped comparison and eligible supervision; no fit instruction follows this inventory.",
+    "Independent site/building/template identities, capture date, per-feature uncertainty and local annotation audit remain unknown.",
+    "RF-DETR pretraining overlap remains unknown; source-human annotation is not application/official property truth."
+  ],
+  "resources": {
+    "permissionsObserved": {
+      "approvalPolicy": "never",
+      "sandboxMode": "danger-full-access"
+    },
+    "requestedSettings": {
+      "model": "gpt-6.1-sol",
+      "reasoningEffort": "high",
+      "speed": "default/standard1x"
+    },
+    "actualModelEffortTier": "unexposed",
+    "cpuAffinityLogicalProcessors": [
+      0,
+      1
+    ],
+    "memoryLimitBytes": 2147483648,
+    "preparationPeakWorkingSetBytes": 43110400,
+    "transferLimitBytes": 134217728,
+    "transferredBytes": 7292162,
+    "newDependencyInstalls": 0,
+    "modelGpuFitProviderRuntimeDatabaseApiOrContainerOperations": 0,
+    "privateAcl": "Operator/Administrators/SYSTEM only",
+    "ownedProcesses": "Synchronous source acquisition and preparation finished; no standing service created"
+  },
+  "catalogueUpdateRequests": [
+    {
+      "owner": "integration",
+      "action": "Review this separate foreign train_candidate/unallocated/not_fit_admitted leaf; preserve Karnataka entire development reservation. Shared dedup/split/source merge requires explicit integration ownership."
+    }
+  ]
+}
