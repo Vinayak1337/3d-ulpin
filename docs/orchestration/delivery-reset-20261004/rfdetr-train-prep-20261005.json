@@ -1,0 +1,366 @@
+{
+  "schemaVersion": "rfdetr-training-preparation/1",
+  "task": "D07-RFDETR-TRAIN-PREP",
+  "preparedAt": "2026-10-05",
+  "baseCommit": "2f33940fa503e38ec3ef77dfbfe0f25725fc68bb",
+  "state": "direct_matching_route_prepared_fit_blocked",
+  "route": {
+    "library": "Transformers Trainer 5.17.0",
+    "model": "RfDetrForInstanceSegmentation",
+    "checkpointRevision": "05b80dce9a57701724ad6a0fc052827c8b724257",
+    "scope": "Same unchanged checkpoint/config/head as deployed ONNX source; no mapping to native Roboflow serialization",
+    "modelArtifacts": [
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\model.safetensors",
+        "bytes": 141551436,
+        "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+      },
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\config.json",
+        "bytes": 2490,
+        "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+      },
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\preprocessor_config.json",
+        "bytes": 442,
+        "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+      }
+    ],
+    "compatibilityConclusion": "Source forward(labels=...) returns standard segmentation loss; RF-DETR loss includes labels/boxes/masks with focal and DICE, auxiliary/encoder supervision. Config preserves id2label0 building and one class; COCO1 rooftop_building is explicitly mapped to0 in the in-memory target adapter. Complete safetensors loading is required later with zero missing/unexpected/mismatched keys; no head reinitialization or tensor/model run occurred.",
+    "inputMasks": "Owner standard COCO uncompressed RLE, column-major; pycocotools.frPyObjects/decode keeps source holes/multipart instances. In-memory training masks resize nearest; RGB Pillow bilinear432 preserves production per-tile image resize choice. Original processor handles normalization/box conversion with its own resize disabled. Numerical Torch/ONNX parity is deferred.",
+    "classSemantics": "Published research rooftop labels stay research roof targets; no cadastral/operational footprint, property identity or independent non-overlap qualification.",
+    "output": "Standard Trainer fitting, one final safetensors checkpoint under a new owned directory and compact unqualified result. No optimizer/training loop/loss implementation created."
+  },
+  "primarySources": [
+    {
+      "url": "https://raw.githubusercontent.com/huggingface/transformers/v5.17.0/src/transformers/models/rf_detr/modeling_rf_detr.py",
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\primary-modeling_rf_detr.py",
+      "bytes": 99680,
+      "sha256": "17d2bdb5ba80857eb773d3cd857ec54007c91d77d6e6c155e5c2e6d50a7aab71"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/huggingface/transformers/v5.17.0/src/transformers/models/rf_detr/image_processing_rf_detr.py",
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\primary-image_processing_rf_detr.py",
+      "bytes": 33433,
+      "sha256": "9add84010672fc77b1364dfb9130ebf958090ca3608586d6734558c363539b22"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/huggingface/transformers/v5.17.0/src/transformers/loss/loss_rf_detr.py",
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\primary-loss_rf_detr.py",
+      "bytes": 19958,
+      "sha256": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece"
+    },
+    {
+      "url": "https://huggingface.co/merve/rf-detr-seg-satellite-buildings/resolve/05b80dce9a57701724ad6a0fc052827c8b724257/README.md",
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\matching-model-card.md",
+      "bytes": 2089,
+      "sha256": "2921728e98ea96e7576f7bad1006b613460239f84e5903854e70a28ca60ebe2d"
+    },
+    {
+      "url": "https://api.github.com/repos/huggingface/transformers/git/ref/tags/v5.17.0",
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\transformers-tag.json",
+      "bytes": 353,
+      "sha256": "e74c381484e8a48a34fe1e45cd378d334c2538f18e73a19e6aab26e1ff2396ba"
+    }
+  ],
+  "primaryLinks": [
+    "https://huggingface.co/docs/transformers/v5.17.0/model_doc/rf_detr",
+    "https://huggingface.co/docs/transformers/v5.17.0/main_classes/trainer",
+    "https://huggingface.co/merve/rf-detr-seg-satellite-buildings/tree/05b80dce9a57701724ad6a0fc052827c8b724257",
+    "https://pypi.org/project/pycocotools/2.0.11/"
+  ],
+  "installedImplementationPins": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Lib\\site-packages\\transformers\\models\\rf_detr\\modeling_rf_detr.py",
+      "bytes": 99680,
+      "sha256": "17d2bdb5ba80857eb773d3cd857ec54007c91d77d6e6c155e5c2e6d50a7aab71"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Lib\\site-packages\\transformers\\models\\rf_detr\\image_processing_rf_detr.py",
+      "bytes": 33433,
+      "sha256": "9add84010672fc77b1364dfb9130ebf958090ca3608586d6734558c363539b22"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Lib\\site-packages\\transformers\\loss\\loss_rf_detr.py",
+      "bytes": 19958,
+      "sha256": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece"
+    }
+  ],
+  "versionScope": "Primary version-tag source and installed5.17.0 source are both retained by hash. They are not asserted byte-identical; metadata/source support is distinct from unrun numerical parity or effective runtime qualification.",
+  "inputs": {
+    "datasetManifest": {
+      "path": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\manifest.json",
+      "bytes": 444695,
+      "sha256": "443f57089ca43044b281a80267b5e6f3c8209adc023e1afbe2460401311fc6cb"
+    },
+    "train": {
+      "source": "Barishal",
+      "group": "ramp-MaxarODP-105001001597B000",
+      "images": 24,
+      "publisherInstances": 263,
+      "sourceEmptyImages": 1,
+      "annotations": {
+        "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/train/_annotations.coco.json",
+        "bytes": 289622,
+        "sha256": "107e9ef9fe68e6f7d7c5a803188d44839cecf486a670fc0ff474761e0112b72c"
+      }
+    },
+    "development": {
+      "source": "Karnataka",
+      "group": "ramp-MaxarODP-104001002CA32300",
+      "images": 24,
+      "publisherInstances": 178,
+      "sourceEmptyImages": 5,
+      "annotations": {
+        "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/valid/_annotations.coco.json",
+        "bytes": 248539,
+        "sha256": "50ae2e87534f2957f8664337ef6c8c60233322f9c613c6f73613eb200019b601"
+      }
+    },
+    "maskLabelProvenance": "Immutable adjacent COCO manifest/source feature identities, original/image/label/frame hashes and publisher human annotation history; no new data generation",
+    "split": "Fixed groups; no random split, Karnataka training, teacher labels or final/test access",
+    "fitAdmission": "not_fit_admitted; separate frozen eligibility/authorization needed"
+  },
+  "cli": {
+    "path": "scripts/usp/learning/train_building_ramp.py",
+    "config": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\config.json",
+      "bytes": 1808,
+      "sha256": "237c0f3815a66151a462f5d0bbe30a23e8cb4b8c9822c44cf2250f57c01107e2"
+    },
+    "plan": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\final-plan.json",
+      "bytes": 17380,
+      "sha256": "bf69a1f7aff08844e6b2899f66dee58f78a6435e13b52f188a4f36dcca9f1d6d"
+    },
+    "planSha256": "3757b7701d1c4dfca68694b90961158757e01fae3e091fd83e97aeb2dd9ea958",
+    "command": "python -B -I <absolute scripts/usp/learning/train_building_ramp.py> --config E:/BhuAayam-data/task-data/d07-rfdetr-train-prep-20261005/config.json --plan-only",
+    "trainingGate": "--execute requires an exact-hash root authorization receipt binding this code/config/data/model plan, source-group eligibility, same-checkpoint development baseline, Torch/ONNX preprocessing parity, resolved environment lock and current-PID effective network/resource/GPU handoff before any heavy import",
+    "preprocessing": "RGB Pillow bilinear square432 then original processor rescale/ImageNet normalization with resize disabled. Targets: standard pycocotools RLE decode, Pillow nearest masks, scaled source boxes; originals untouched. No inference profile/threshold change.",
+    "arguments": {
+      "output_dir": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-fit-authorized-later-20261005",
+      "num_train_epochs": 1,
+      "per_device_train_batch_size": 1,
+      "per_device_eval_batch_size": 1,
+      "gradient_accumulation_steps": 4,
+      "learning_rate": 0.0001,
+      "weight_decay": 0.0001,
+      "seed": 42,
+      "data_seed": 42,
+      "dataloader_num_workers": 0,
+      "remove_unused_columns": false,
+      "eval_strategy": "epoch",
+      "save_strategy": "no",
+      "prediction_loss_only": true,
+      "report_to": "none",
+      "push_to_hub": false,
+      "fp16": true,
+      "gradient_checkpointing": true,
+      "optim": "adamw_torch",
+      "logging_steps": 1,
+      "label_names": [
+        "labels"
+      ],
+      "use_cpu": false,
+      "torch_compile": false
+    }
+  },
+  "isolatedRecipe": {
+    "python": "3.12.14",
+    "pinnedTopLevel": [
+      "torch==2.14.0",
+      "torchvision==0.29.0",
+      "transformers==5.17.0",
+      "accelerate==1.15.0",
+      "safetensors==0.8.0",
+      "numpy==2.5.3",
+      "scipy==1.18.1",
+      "Pillow==12.3.0",
+      "pycocotools==2.0.11"
+    ],
+    "operation": "Create a new task environment; resolve a platform/CUDA-compatible wheelhouse and freeze all transitive versions/hashes before fitting. Do not mutate the inspected environment. No installation performed.",
+    "observedExistingMetadata": {
+      "torch": "2.14.0",
+      "torchvision": "0.29.0",
+      "transformers": "5.17.0",
+      "accelerate": "1.15.0",
+      "pycocotools": null,
+      "pillow": "12.3.0",
+      "safetensors": "0.8.0",
+      "numpy": "2.3.5",
+      "scipy": "1.18.1"
+    },
+    "missingInInspectedEnvironment": [
+      "pycocotools"
+    ],
+    "container": "No qualified cached training image/tag/digest known; containment owner received exact host CLI/mount requirements. Absolute host-path config is not asserted portable to a container."
+  },
+  "checks": {
+    "syntax": "pass",
+    "cliPlanExit": 0,
+    "cliExecuteWithoutHandoffExit": 2,
+    "gateMessage": {
+      "state": "blocked",
+      "error": "Execution blocked: a root authorization/handoff receipt and exact hash are required"
+    },
+    "planSha256": "3757b7701d1c4dfca68694b90961158757e01fae3e091fd83e97aeb2dd9ea958",
+    "codePin": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\scripts\\usp\\learning\\train_building_ramp.py",
+      "bytes": 20413,
+      "sha256": "40dd3ae09a8edebaf1248b03d80a69808d170f6164ebcd9c340aa4d155a85b84"
+    },
+    "images": 48,
+    "instances": 441,
+    "heavyModulesImported": false,
+    "gpuUsed": false,
+    "fitting": false,
+    "computeThreads": 1,
+    "cpuAffinity": [
+      0,
+      1
+    ],
+    "observedOsThreadsIncludingHelpers": 4,
+    "observedRssBytes": 27803648
+  },
+  "resources": {
+    "supervisor": "Existing scripts/usp/document-models/run_trial.py::_run_worker",
+    "cpuAffinity": [
+      0,
+      1
+    ],
+    "computeThreads": 1,
+    "workerMemoryCapBytes": 1879048192,
+    "finalCheck": {
+      "exitCode": 0,
+      "stopReason": null,
+      "elapsedSeconds": 0.515,
+      "peakObservedRssBytes": 35008512,
+      "peakJobPrivateBytes": 20262912,
+      "gatedStart": true,
+      "logPath": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\final-check.log",
+      "logSha256": "a4ae711dc6990c16a1ee88154c69ec91a669ca412cad2e8daa80d8f443cac54e"
+    },
+    "matchingAcquisition": {
+      "exitCode": 0,
+      "stopReason": null,
+      "elapsedSeconds": 16.437,
+      "peakObservedRssBytes": 39985152,
+      "peakJobPrivateBytes": 18964480,
+      "gatedStart": true,
+      "logPath": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\matching-acquisition.log",
+      "logSha256": "c14e6b9792d4544a4e82eb7a076dd4df09204226dfbbd5e689cd0bc84f3ab783"
+    },
+    "nativeAcquisition": {
+      "exitCode": 0,
+      "stopReason": null,
+      "elapsedSeconds": 10.531,
+      "peakObservedRssBytes": 40112128,
+      "peakJobPrivateBytes": 19013632,
+      "gatedStart": true,
+      "logPath": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\acquisition.log",
+      "logSha256": "531d40b7b2b25bfce1e6cf81b405a101d639e6adb99fbb211c40499b88e4bfc0"
+    },
+    "totalCheckpointBytes": 284575494,
+    "tensorsLoaded": false,
+    "gpuUse": false,
+    "fitting": false,
+    "osHelperThreads": "Four observed including runtime helpers; no two-total-OS-thread guarantee claimed."
+  },
+  "retainedUnselectedNativeAlternative": {
+    "artifact": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\rf-detr-seg-medium.pt",
+      "bytes": 143024058,
+      "sha256": "3ad325094735f431aee9962a8d204d68eb5bfc393d53e7e836e70998fef5ea58"
+    },
+    "receipt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\native-base.json",
+      "bytes": 751,
+      "sha256": "a0dda9321d53c9d5f204f57b74f5acfb242a6850884f25f136c67990ba4b5796"
+    },
+    "scope": "Native COCO-pretrained RFDETRSegMedium is different weights/serialization; unselected, not continuation. Source API research and uncommitted draft retained privately. No further checkpoint acquisition.",
+    "rootAmendment": "Root authorized one additional exact original checkpoint after initial native acquisition; combined transfers remain below512MiB."
+  },
+  "evidence": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\matching-base.json",
+      "bytes": 785,
+      "sha256": "b516e9861e18162273f83d426b1a35fd7a0c78c0562720f7f5a5666f50a08ab9"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\matching-publisher-metadata.json",
+      "bytes": 2157,
+      "sha256": "29f320a056e50df025e853063daf2c7bae4c088620b9d72671cc4a2bc557502c"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\config.json",
+      "bytes": 1808,
+      "sha256": "237c0f3815a66151a462f5d0bbe30a23e8cb4b8c9822c44cf2250f57c01107e2"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\final-plan.json",
+      "bytes": 17380,
+      "sha256": "bf69a1f7aff08844e6b2899f66dee58f78a6435e13b52f188a4f36dcca9f1d6d"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\final-check.json",
+      "bytes": 836,
+      "sha256": "18b17c42e4f2bedd92ecb79f7fde12f57dc37948f1037a7aa7c7b2f3c96c1adb"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\final-check-execution.json",
+      "bytes": 349,
+      "sha256": "3f93605b7245c5bffa46bac22fa8bd746ad6b0ff8a9393e8a3646ae2b7198231"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\checks.json",
+      "bytes": 1066,
+      "sha256": "020481576aace4997f4a333a3c8aea66f998d9155e3adce06cd6b737b8142c38"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\checks-execution.json",
+      "bytes": 344,
+      "sha256": "3d2e4671e1422e1130b049f41d2b97da5c7be11ac547c8c196c1f78c827420fa"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\matching-acquisition-execution.json",
+      "bytes": 359,
+      "sha256": "361d729b2880350944ac7d0e7c1c6a96ef10affba00c431745d07741a0bd4cb9"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\acquisition-execution.json",
+      "bytes": 350,
+      "sha256": "8dc699e798b276e0c42a7e5399015a0c10210e410e24b81ee55e0d946391a68e"
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\upstream-receipts.json",
+      "bytes": 2564,
+      "sha256": "aac912ccb84fad680a69e101e466d3d41b135fb6f70f2877bde90108f1b95646"
+    }
+  ],
+  "gaps": [
+    "Root measured-residual authorization",
+    "Frozen eligible source-group supervision and category/head baseline",
+    "Unchanged source-checkpoint open-development baseline and Torch/ONNX preprocessing parity",
+    "Single model/GPU ownership transfer",
+    "Effective network/resource preflight for this exact training process",
+    "Isolated resolved dependency lock and safe matching checkpoint loading",
+    "RF-DETR publisher training population/non-overlap remains unresolved; RAMP source terms and uncertainty retained. Formal launch clearance deferred.",
+    "GPU capacity, native network/resource containment, actual pycocotools/processor target execution, complete numerical checkpoint load and training are unrun; no performance or accuracy qualification."
+  ],
+  "cleanup": {
+    "ownedModelOrTrainProcessRunning": false,
+    "gpuOwnerTaken": false,
+    "stagingEdited": false,
+    "sourceOriginalsOrCocoChanged": false,
+    "environmentsModified": false,
+    "sharedBackendOrFrontendChanged": false
+  },
+  "settings": {
+    "requestedModel": "gpt-6.1-sol",
+    "requestedEffort": "xhigh",
+    "requestedSpeed": "default/standard1x",
+    "observedPerTurnModelEffortTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandbox": "danger-full-access"
+  }
+}
