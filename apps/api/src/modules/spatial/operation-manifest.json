@@ -339,7 +339,8 @@
       "runtimeEvidence": [],
       "statefulRuntimeEvidence": "stateful-acceptance",
       "status": 200
-    }
+    },
+    {"operationId":"GET_api_v1_spatial_ml_items_itemId_source_reviews","method":"GET","path":"/api/v1/spatial-ml/items/{itemId}/source-reviews","disposition":"added","batch":"D08-D07-REOPEN","canonicalService":"SpatialSourceReviewsService.history","runtimeEvidence":[],"statefulRuntimeEvidence":"pending","status":200}
   ],
   "exactPathReview": {
     "retiredNextCompatibilityRoute": "apps/web/app/api/v1/spatial/calibration/[kind]/[...asset]/route.ts",

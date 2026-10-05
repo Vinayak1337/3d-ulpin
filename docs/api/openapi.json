@@ -30987,10 +30987,31 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
-    "/api/v1/spatial-ml/items/{itemId}/source-reviews/context": {
+    "/api/v1/spatial-ml/items/{itemId}/source-reviews": {
       "get": {
-        "operationId": "GET_api_v1_spatial_ml_items_itemId_source_reviews_context",
+        "description": "Follow readUrl for exact content. Stale/corrupt snapshots refuse the page; context remains a separate static route. Refresh without after for new saves.",
+        "operationId": "GET_api_v1_spatial_ml_items_itemId_source_reviews",
         "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            }
+          },
+          {
+            "name": "after",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
           {
             "name": "itemId",
             "required": true,
@@ -31007,7 +31028,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GET_spatial_ml_items_itemId_source_reviews_context_Response_200_application_json"
+                  "$ref": "#/components/schemas/GET_spatial_ml_items_itemId_source_reviews_Response_200_application_json"
                 }
               }
             },
@@ -31193,41 +31214,19 @@
             }
           }
         },
-        "summary": "Inspect exact source-only candidate review pins through current private authority",
+        "summary": "Discover a bounded UUID-ordered page of private saved candidate-review references",
         "tags": [
           "spatial ML"
         ],
         "x-source-file": "apps/api/src/modules/spatial/spatial-ml-source-review.controller.ts",
-        "x-batch": "D07-SOURCE-REVIEW",
+        "x-batch": "D08-D07-REOPEN",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": true,
-        "x-runtime-qualification": {
-          "scope": "200 current private pin and100-candidate context for existing T3-2 item only; foreign Origin403 ORIGIN_DENIED, no denied writes.",
-          "sourceManifests": [
-            "docs/evidence/usp/association-crosswalk/manifest.json"
-          ],
-          "evidencePointers": [
-            "/sources",
-            "/authority",
-            "/protocol",
-            "/review",
-            "/httpObservations",
-            "/replay",
-            "/refusals",
-            "/preservation",
-            "/cleanup"
-          ],
-          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d07-source-review-20261005.json",
-          "servedCodeCommit": "aac6332dbb19a9d7ffa8997df9b51e7c87053a9e",
-          "environment": "Stopped retained local source-review run01; API/storage stopped, no processor/Celery or native/model execution. Original containers/volumes/profiles and Redis data retained; no standing URL.",
-          "limitation": "Actual bounded local-process software persistence for one needs_input source-candidate inspection at exact AAC: context200/save201/exact read200/same-key same-body201 immutable replay; changed result pin409 STALE_REVISION and foreign Origin403 ORIGIN_DENIED with denied writes0. One snapshot/request receipt only. local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, physicalTarget/calibration null and qualification not_assessed. No semantic/accuracy/human acceptance/property/floor identity/adoption/rights/learning/frontend/release qualification."
-        },
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
         "x-operation-manifest": "apps/api/src/modules/spatial/operation-manifest.json",
         "x-dataset-catalogue": "/api/docs/datasets.json"
-      }
-    },
-    "/api/v1/spatial-ml/items/{itemId}/source-reviews": {
+      },
       "post": {
         "description": "Local-process reviewed/rejected/needs_input decisions with reasons. No geometry adoption, physical target or qualified learning labels.",
         "operationId": "POST_api_v1_spatial_ml_items_itemId_source_reviews",
@@ -31495,6 +31494,246 @@
         },
         "x-operation-manifest": "apps/api/src/modules/spatial/operation-manifest.json",
         "x-max-body-bytes": 262144,
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/spatial-ml/items/{itemId}/source-reviews/context": {
+      "get": {
+        "operationId": "GET_api_v1_spatial_ml_items_itemId_source_reviews_context",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_ml_items_itemId_source_reviews_context_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "504": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Inspect exact source-only candidate review pins through current private authority",
+        "tags": [
+          "spatial ML"
+        ],
+        "x-source-file": "apps/api/src/modules/spatial/spatial-ml-source-review.controller.ts",
+        "x-batch": "D07-SOURCE-REVIEW",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "200 current private pin and100-candidate context for existing T3-2 item only; foreign Origin403 ORIGIN_DENIED, no denied writes.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/review",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d07-source-review-20261005.json",
+          "servedCodeCommit": "aac6332dbb19a9d7ffa8997df9b51e7c87053a9e",
+          "environment": "Stopped retained local source-review run01; API/storage stopped, no processor/Celery or native/model execution. Original containers/volumes/profiles and Redis data retained; no standing URL.",
+          "limitation": "Actual bounded local-process software persistence for one needs_input source-candidate inspection at exact AAC: context200/save201/exact read200/same-key same-body201 immutable replay; changed result pin409 STALE_REVISION and foreign Origin403 ORIGIN_DENIED with denied writes0. One snapshot/request receipt only. local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, physicalTarget/calibration null and qualification not_assessed. No semantic/accuracy/human acceptance/property/floor identity/adoption/rights/learning/frontend/release qualification."
+        },
+        "x-operation-manifest": "apps/api/src/modules/spatial/operation-manifest.json",
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
@@ -42316,6 +42555,255 @@
       }
     },
     "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals": {
+      "get": {
+        "description": "Follow readUrl for exact content. A stale/corrupt snapshot refuses the page; refresh without after to discover new saves.",
+        "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            }
+          },
+          {
+            "name": "after",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_sources_sourceId_document_proposals_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "504": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Discover a bounded UUID-ordered page of private saved proposal references",
+        "tags": [
+          "document proposals"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/document-proposals.controller.ts",
+        "x-batch": "D08-D07-REOPEN",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "private-bounded-read",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      },
       "post": {
         "description": "Declared methods/hashes are unverified caller content, not observed model execution or human_entry. Saving is not adoption.",
         "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals",
@@ -316969,432 +317457,262 @@
           }
         }
       },
-      "GET_spatial_ml_items_itemId_source_reviews_context_Response_200_application_json": {
+      "GET_spatial_ml_items_itemId_source_reviews_Response_200_application_json": {
         "type": "object",
         "properties": {
           "version": {
             "type": "string",
             "enum": [
-              "source-candidate-context/1"
+              "source-candidate-reviews-history/1"
             ]
           },
-          "pin": {
-            "type": "object",
-            "properties": {
-              "itemId": {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-              },
-              "batchId": {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-              },
-              "jobId": {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-              },
-              "scope": {
-                "type": "object",
-                "properties": {
-                  "kind": {
-                    "type": "string",
-                    "enum": [
-                      "source"
-                    ]
-                  },
-                  "caseId": {
-                    "type": "string",
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                  },
-                  "caseRevision": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 9007199254740991
-                  },
-                  "sourceId": {
-                    "type": "string",
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                  },
-                  "sourceRevision": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 9007199254740991
-                  },
-                  "sourceSha256": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
-                  },
-                  "sourceBytes": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 16777216
-                  },
-                  "page": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 100
-                  },
-                  "frame": {
-                    "type": "object",
-                    "properties": {
-                      "kind": {
-                        "type": "string",
-                        "enum": [
-                          "pdf_display_page_top_left_points"
-                        ]
-                      },
-                      "rotation": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 359
-                      },
-                      "width": {
-                        "type": "number",
-                        "minimum": 0,
-                        "exclusiveMinimum": true,
-                        "maximum": 10000000
-                      },
-                      "height": {
-                        "type": "number",
-                        "minimum": 0,
-                        "exclusiveMinimum": true,
-                        "maximum": 10000000
-                      }
-                    },
-                    "required": [
-                      "kind",
-                      "rotation",
-                      "width",
-                      "height"
-                    ],
-                    "additionalProperties": false
-                  },
-                  "region": {
-                    "type": "object",
-                    "properties": {
-                      "x": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 1
-                      },
-                      "y": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 1
-                      },
-                      "width": {
-                        "type": "number",
-                        "minimum": 0,
-                        "exclusiveMinimum": true,
-                        "maximum": 1
-                      },
-                      "height": {
-                        "type": "number",
-                        "minimum": 0,
-                        "exclusiveMinimum": true,
-                        "maximum": 1
-                      }
-                    },
-                    "required": [
-                      "x",
-                      "y",
-                      "width",
-                      "height"
-                    ],
-                    "additionalProperties": false
-                  },
-                  "locator": {
-                    "type": "object",
-                    "properties": {
-                      "kind": {
-                        "type": "string",
-                        "enum": [
-                          "pdf_page"
-                        ]
-                      },
-                      "page": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 100
-                      }
-                    },
-                    "required": [
-                      "kind",
-                      "page"
-                    ],
-                    "additionalProperties": false
-                  },
-                  "calibration": {
-                    "type": "string",
-                    "nullable": true,
-                    "enum": [
-                      null
-                    ]
-                  },
-                  "applicability": {
-                    "type": "string",
-                    "enum": [
-                      "not_assessed"
-                    ]
-                  }
-                },
-                "required": [
-                  "kind",
-                  "caseId",
-                  "caseRevision",
-                  "sourceId",
-                  "sourceRevision",
-                  "sourceSha256",
-                  "sourceBytes",
-                  "page",
-                  "frame",
-                  "region",
-                  "locator",
-                  "calibration",
-                  "applicability"
-                ],
-                "additionalProperties": false
-              },
-              "inputFingerprint": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "model": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 120
-                  },
-                  "sha256": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
-                  },
-                  "profileVersion": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 160
-                  }
-                },
-                "required": [
-                  "id",
-                  "sha256",
-                  "profileVersion"
-                ],
-                "additionalProperties": false
-              },
-              "resultSha256": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "transformSha256": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "raster": {
-                "type": "object",
-                "properties": {
-                  "sha256": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
-                  },
-                  "width": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 4000
-                  },
-                  "height": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 4000
-                  },
-                  "bytes": {
-                    "type": "integer",
-                    "minimum": 24,
-                    "maximum": 8388608
-                  }
-                },
-                "required": [
-                  "sha256",
-                  "width",
-                  "height",
-                  "bytes"
-                ],
-                "additionalProperties": false
-              },
-              "mask": {
-                "type": "object",
-                "properties": {
-                  "sha256": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
-                  },
-                  "width": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 4000
-                  },
-                  "height": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 4000
-                  },
-                  "bytes": {
-                    "type": "integer",
-                    "minimum": 24,
-                    "maximum": 8388608
-                  }
-                },
-                "required": [
-                  "sha256",
-                  "width",
-                  "height",
-                  "bytes"
-                ],
-                "additionalProperties": false
-              }
-            },
-            "required": [
-              "itemId",
-              "batchId",
-              "jobId",
-              "scope",
-              "inputFingerprint",
-              "model",
-              "resultSha256",
-              "transformSha256",
-              "raster",
-              "mask"
-            ],
-            "additionalProperties": false
+          "itemId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
-          "candidates": {
-            "maxItems": 100,
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sourceRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "sourceSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "currentJobId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "resultSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "review_id_ascending"
+            ]
+          },
+          "after": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "references": {
+            "maxItems": 10,
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "componentId": {
+                "reviewId": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 120
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                 },
-                "className": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 100
-                },
-                "score": {
+                "reviewRevision": {
                   "type": "number",
-                  "minimum": 0,
-                  "maximum": 1
+                  "enum": [
+                    1
+                  ]
                 },
-                "geometrySha256": {
+                "reviewSha256": {
                   "type": "string",
                   "pattern": "^[a-f0-9]{64}$"
+                },
+                "caseRevision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "jobId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "resultSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "candidateCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "decisionCount": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "unselectedCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "limits": {
+                  "type": "object",
+                  "properties": {
+                    "coordinateUnit": {
+                      "type": "string",
+                      "enum": [
+                        "pixel"
+                      ]
+                    },
+                    "physicalTarget": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null
+                      ]
+                    },
+                    "calibration": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null
+                      ]
+                    },
+                    "canonicalMatchState": {
+                      "type": "string",
+                      "enum": [
+                        "not_assessed"
+                      ]
+                    },
+                    "qualification": {
+                      "type": "string",
+                      "enum": [
+                        "not_assessed"
+                      ]
+                    },
+                    "learningLabel": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "independentGroundTruth": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    }
+                  },
+                  "required": [
+                    "coordinateUnit",
+                    "physicalTarget",
+                    "calibration",
+                    "canonicalMatchState",
+                    "qualification",
+                    "learningLabel",
+                    "independentGroundTruth"
+                  ],
+                  "additionalProperties": false
+                },
+                "review": {
+                  "type": "object",
+                  "properties": {
+                    "actor": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "attribution": {
+                      "type": "string",
+                      "enum": [
+                        "local_process"
+                      ]
+                    },
+                    "humanAuthenticated": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "independentGroundTruth": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "time",
+                    "attribution",
+                    "humanAuthenticated",
+                    "independentGroundTruth"
+                  ],
+                  "additionalProperties": false
+                },
+                "readUrl": {
+                  "type": "string",
+                  "maxLength": 256
                 }
               },
               "required": [
-                "componentId",
-                "className",
-                "score",
-                "geometrySha256"
+                "reviewId",
+                "reviewRevision",
+                "reviewSha256",
+                "caseRevision",
+                "jobId",
+                "resultSha256",
+                "candidateCount",
+                "decisionCount",
+                "unselectedCount",
+                "limits",
+                "review",
+                "readUrl"
               ],
               "additionalProperties": false
             }
           },
-          "inspection": {
-            "type": "object",
-            "properties": {
-              "itemUrl": {
-                "type": "string"
-              },
-              "rasterUrl": {
-                "type": "string"
-              },
-              "maskUrl": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "itemUrl",
-              "rasterUrl",
-              "maskUrl"
-            ],
-            "additionalProperties": false
+          "hasMore": {
+            "type": "boolean"
           },
-          "limits": {
-            "type": "object",
-            "properties": {
-              "coordinateUnit": {
-                "type": "string",
-                "enum": [
-                  "pixel"
-                ]
-              },
-              "physicalTarget": {
-                "type": "string",
-                "nullable": true,
-                "enum": [
-                  null
-                ]
-              },
-              "calibration": {
-                "type": "string",
-                "nullable": true,
-                "enum": [
-                  null
-                ]
-              },
-              "canonicalMatchState": {
-                "type": "string",
-                "enum": [
-                  "not_assessed"
-                ]
-              },
-              "qualification": {
-                "type": "string",
-                "enum": [
-                  "not_assessed"
-                ]
-              },
-              "learningLabel": {
-                "type": "boolean",
-                "enum": [
-                  false
-                ]
-              },
-              "independentGroundTruth": {
-                "type": "boolean",
-                "enum": [
-                  false
-                ]
-              }
-            },
-            "required": [
-              "coordinateUnit",
-              "physicalTarget",
-              "calibration",
-              "canonicalMatchState",
-              "qualification",
-              "learningLabel",
-              "independentGroundTruth"
-            ],
-            "additionalProperties": false
+          "nextAfter": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
         "required": [
           "version",
-          "pin",
-          "candidates",
-          "inspection",
-          "limits"
+          "itemId",
+          "caseId",
+          "sourceId",
+          "sourceRevision",
+          "sourceSha256",
+          "currentJobId",
+          "resultSha256",
+          "order",
+          "after",
+          "limit",
+          "references",
+          "hasMore",
+          "nextAfter"
         ],
         "additionalProperties": false
       },
@@ -318215,6 +318533,435 @@
           "unselectedCount",
           "limits",
           "review"
+        ],
+        "additionalProperties": false
+      },
+      "GET_spatial_ml_items_itemId_source_reviews_context_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "source-candidate-context/1"
+            ]
+          },
+          "pin": {
+            "type": "object",
+            "properties": {
+              "itemId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "batchId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "jobId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "scope": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "source"
+                    ]
+                  },
+                  "caseId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "caseRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sourceRevision": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "sourceBytes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 16777216
+                  },
+                  "page": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "frame": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "pdf_display_page_top_left_points"
+                        ]
+                      },
+                      "rotation": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 359
+                      },
+                      "width": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      },
+                      "height": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "rotation",
+                      "width",
+                      "height"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "region": {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "y": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "width": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1
+                      },
+                      "height": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y",
+                      "width",
+                      "height"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "locator": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "pdf_page"
+                        ]
+                      },
+                      "page": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "page"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "calibration": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      null
+                    ]
+                  },
+                  "applicability": {
+                    "type": "string",
+                    "enum": [
+                      "not_assessed"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "caseId",
+                  "caseRevision",
+                  "sourceId",
+                  "sourceRevision",
+                  "sourceSha256",
+                  "sourceBytes",
+                  "page",
+                  "frame",
+                  "region",
+                  "locator",
+                  "calibration",
+                  "applicability"
+                ],
+                "additionalProperties": false
+              },
+              "inputFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "model": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "profileVersion": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  }
+                },
+                "required": [
+                  "id",
+                  "sha256",
+                  "profileVersion"
+                ],
+                "additionalProperties": false
+              },
+              "resultSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "transformSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "raster": {
+                "type": "object",
+                "properties": {
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4000
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4000
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 24,
+                    "maximum": 8388608
+                  }
+                },
+                "required": [
+                  "sha256",
+                  "width",
+                  "height",
+                  "bytes"
+                ],
+                "additionalProperties": false
+              },
+              "mask": {
+                "type": "object",
+                "properties": {
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4000
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4000
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 24,
+                    "maximum": 8388608
+                  }
+                },
+                "required": [
+                  "sha256",
+                  "width",
+                  "height",
+                  "bytes"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "itemId",
+              "batchId",
+              "jobId",
+              "scope",
+              "inputFingerprint",
+              "model",
+              "resultSha256",
+              "transformSha256",
+              "raster",
+              "mask"
+            ],
+            "additionalProperties": false
+          },
+          "candidates": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "componentId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "className": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "score": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "geometrySha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "componentId",
+                "className",
+                "score",
+                "geometrySha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "inspection": {
+            "type": "object",
+            "properties": {
+              "itemUrl": {
+                "type": "string"
+              },
+              "rasterUrl": {
+                "type": "string"
+              },
+              "maskUrl": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "itemUrl",
+              "rasterUrl",
+              "maskUrl"
+            ],
+            "additionalProperties": false
+          },
+          "limits": {
+            "type": "object",
+            "properties": {
+              "coordinateUnit": {
+                "type": "string",
+                "enum": [
+                  "pixel"
+                ]
+              },
+              "physicalTarget": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "calibration": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "canonicalMatchState": {
+                "type": "string",
+                "enum": [
+                  "not_assessed"
+                ]
+              },
+              "qualification": {
+                "type": "string",
+                "enum": [
+                  "not_assessed"
+                ]
+              },
+              "learningLabel": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              },
+              "independentGroundTruth": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              }
+            },
+            "required": [
+              "coordinateUnit",
+              "physicalTarget",
+              "calibration",
+              "canonicalMatchState",
+              "qualification",
+              "learningLabel",
+              "independentGroundTruth"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "version",
+          "pin",
+          "candidates",
+          "inspection",
+          "limits"
         ],
         "additionalProperties": false
       },
@@ -337316,6 +338063,253 @@
           "review",
           "currentCaseRevision",
           "snapshotSha256"
+        ],
+        "additionalProperties": false
+      },
+      "GET_ingestion_cases_caseId_sources_sourceId_document_proposals_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "source-document-proposals-history/1"
+            ]
+          },
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "currentCaseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sourceBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16777216
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "required": [
+              "sourceRevision",
+              "sourceSha256",
+              "sourceBytes",
+              "sourceId"
+            ],
+            "additionalProperties": false
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "snapshot_id_ascending"
+            ]
+          },
+          "after": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "references": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "snapshotId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "snapshotRevision": {
+                  "type": "number",
+                  "enum": [
+                    1
+                  ]
+                },
+                "caseRevision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "review": {
+                  "type": "object",
+                  "properties": {
+                    "actor": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "attribution": {
+                      "type": "string",
+                      "enum": [
+                        "local_process"
+                      ]
+                    },
+                    "humanAuthenticated": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "independentGroundTruth": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "time",
+                    "attribution",
+                    "humanAuthenticated",
+                    "independentGroundTruth"
+                  ],
+                  "additionalProperties": false
+                },
+                "method": {
+                  "type": "string",
+                  "enum": [
+                    "caller_supplied_provisional"
+                  ]
+                },
+                "provenanceAuthority": {
+                  "type": "string",
+                  "enum": [
+                    "caller_supplied_unverified"
+                  ]
+                },
+                "population": {
+                  "type": "string",
+                  "enum": [
+                    "explicit_selection_only"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "needs_review"
+                  ]
+                },
+                "quotationVerification": {
+                  "type": "string",
+                  "enum": [
+                    "not_machine_verified"
+                  ]
+                },
+                "qualification": {
+                  "type": "string",
+                  "enum": [
+                    "not_assessed"
+                  ]
+                },
+                "learningLabel": {
+                  "type": "boolean",
+                  "enum": [
+                    false
+                  ]
+                },
+                "snapshotSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "proposalCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 32
+                },
+                "rejectedCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 256
+                },
+                "conflictCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 32
+                },
+                "locatorWarningCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 288
+                },
+                "readUrl": {
+                  "type": "string",
+                  "maxLength": 256
+                }
+              },
+              "required": [
+                "snapshotId",
+                "snapshotRevision",
+                "caseRevision",
+                "review",
+                "method",
+                "provenanceAuthority",
+                "population",
+                "status",
+                "quotationVerification",
+                "qualification",
+                "learningLabel",
+                "snapshotSha256",
+                "proposalCount",
+                "rejectedCount",
+                "conflictCount",
+                "locatorWarningCount",
+                "readUrl"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "nextAfter": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "version",
+          "caseId",
+          "currentCaseRevision",
+          "source",
+          "order",
+          "after",
+          "limit",
+          "references",
+          "hasMore",
+          "nextAfter"
         ],
         "additionalProperties": false
       },
