@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "task": "D06-PAR-BUILDING-GROUP2",
+  "baseCommit": "087697e2bb2a174f1d2745c2f462d6a6f7cdcf30",
+  "preparedAt": "2026-10-05T11:50:36.991442+00:00",
+  "privateRoot": "E:/BhuAayam-data/task-data/data-building-group2-20261005",
+  "status": "not_acquired",
+  "reason": "No second Indian collection with a distinct documented capture in retained RAMP training inventory.",
+  "gap": "publisher_inventory_only_existing_indian_collection",
+  "purpose": "A genuinely distinct Indian image/human-rooftop-label parent and geography for future group-level train/development allocation",
+  "denominators": {
+    "newCompletePairs": 0,
+    "newRgbOriginals": 0,
+    "newLabelOriginals": 0,
+    "newImagePages": 0,
+    "newSourceProjects": 0,
+    "newParentCaptures": 0,
+    "newLeakageGroups": 0,
+    "newPolygonLabels": 0
+  },
+  "partition": {
+    "pool": "train_candidate",
+    "allocation": "unallocated",
+    "train": 0,
+    "development": 0,
+    "final": 0,
+    "protectedEvaluationReopened": false
+  },
+  "boundedInventory": {
+    "retainedPublisherPage": "https://rampml.global/training-data/",
+    "publisherRepository": "https://source.coop/ramp/ramp",
+    "retainedTrainingCollections": 22,
+    "documentedIndiaCollections": 1,
+    "liveRootCollectionDirectories": 22,
+    "liveRootMetadataDirectories": 1,
+    "newRootMetadataGetCount": 1,
+    "httpStatus": 200,
+    "rootListingComplete": true,
+    "newTransferBytes": 2668,
+    "documentedIndiaCandidates": [
+      {
+        "declaredCollection": "ramp_karnataka_india",
+        "parentCapture": "104001002CA32300",
+        "disposition": "rejected_for_group2_same_parent_and_geography_as_accepted_first_shard",
+        "newSourceOrLabelReads": 0
+      }
+    ],
+    "secondCandidate": "not_present_in_bounded_documented_inventory",
+    "scope": "Reuse retained training page; one anonymous delimiter-based publisher-root Azure listing. No Karnataka child listing, imagery, labels or foreign/evaluation assets downloaded."
+  },
+  "sourceAndPolicyReferences": {
+    "publisherPage": {
+      "path": "E:/BhuAayam-data/task-data/data-building-shard-20261005/provenance/publisher-training.html",
+      "bytes": 152894,
+      "sha256": "1f75a04fe3ebd5422ed209ef2e82e123b6484f51572bf3c943cc5faa7f220cce"
+    },
+    "annotationGuidance": {
+      "path": "E:/BhuAayam-data/task-data/data-building-shard-20261005/provenance/Labeling-Guidelines.pdf",
+      "bytes": 26528724,
+      "sha256": "23cc6b28e77ed2f0437a812a14bf7cbb759ed6239ad4bf8d026003d696f4d890"
+    },
+    "acceptedKarnatakaSourceIndex": {
+      "path": "E:/BhuAayam-data/task-data/data-building-shard-20261005/provenance/source-index.json",
+      "bytes": 1395938,
+      "sha256": "e16136893d3a4854c9ca44d3e221376973a6b8fc753fe2605208488fd0c7f040"
+    },
+    "humanProvenance": "Publisher individual annotation, another reviewer, DevGlobal Tier1 QC; unchanged prior documented guidance",
+    "classPolicy": "Visible rooftops; preserve original class, holes, clipping and ambiguity. No new pair exists to transfer or qualify.",
+    "sourceTerms": "Publisher declares CC-BY-NC-4.0 labels and associated imagery; upstream Maxar lineage and launch gaps retained"
+  },
+  "preservation": {
+    "acceptedFirstShardCommit": "addbf2399255a864d45f275ce57f6ad9c0687b1c",
+    "acceptedFirstShardPrivateRoot": "E:/BhuAayam-data/task-data/data-building-shard-20261005",
+    "firstShardPrivateWrites": 0,
+    "oldAssetHttpReads": 0,
+    "oldPinCampaignsRepeated": 0,
+    "firstParentExcluded": "104001002CA32300",
+    "closedOemXbdHuntReopened": false,
+    "publisherTestOrClosedEvaluationOpened": false,
+    "sharedSourceCatalogueOrCohortOrSplitWrites": 0
+  },
+  "items": [],
+  "verification": {
+    "path": "E:/BhuAayam-data/task-data/data-building-group2-20261005/verification.json",
+    "bytes": 2555,
+    "sha256": "a16819c777832ca0843d1d3938ed0aa001259c94f981a8f8b2a3040431a67850"
+  },
+  "nextPrerequisite": "A publisher-documented Indian human-label/image collection with a parent capture different from104001002CA32300 and non-overlapping geography, through a permitted bounded individual-asset route.",
+  "scopeLimitations": [
+    "This is a bounded RAMP publisher-inventory result, not evidence that no second Indian dataset exists elsewhere.",
+    "No image/label/visual registration tests were run because no distinct eligible collection was identified."
+  ],
+  "resources": {
+    "permissionsObserved": {
+      "approvalPolicy": "never",
+      "sandboxMode": "danger-full-access"
+    },
+    "requestedSettings": {
+      "model": "gpt-6.1-sol",
+      "reasoningEffort": "high",
+      "speed": "default/standard1x"
+    },
+    "actualModelEffortTier": "unexposed",
+    "cpuAffinityLogicalProcessors": [
+      0,
+      1
+    ],
+    "peakWorkingSetBytes": 30744576,
+    "memoryLimitBytes": 2147483648,
+    "transferLimitBytes": 134217728,
+    "transferredBytes": 2668,
+    "newDependencyInstalls": 0,
+    "modelGpuProviderServiceDatabaseOrContainerOperations": 0,
+    "privateAcl": "Operator, Administrators and SYSTEM only",
+    "ownedProcesses": "One synchronous metadata/check command finished; no standing process/service created"
+  },
+  "catalogueUpdateRequests": []
+}
