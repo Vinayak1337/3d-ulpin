@@ -7,12 +7,13 @@ Fitting requires a separate root authorization and effective resource handoff.
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import importlib.metadata
 import json
 import math
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import struct
 import sys
 
@@ -24,6 +25,178 @@ PROCESSOR_SHA = "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf2738
 PACKAGES = {"torch": "2.14.0", "torchvision": "0.29.0", "transformers": "5.17.0",
             "accelerate": "1.15.0", "pycocotools": "2.0.11", "pillow": "12.3.0",
             "safetensors": "0.8.0", "numpy": "2.5.3", "scipy": "1.18.1"}
+MOUNT_VERSION = "ramp-mounted-training-config/1"
+ORIGINAL_CONFIG_SHA = "237c0f3815a66151a462f5d0bbe30a23e8cb4b8c9822c44cf2250f57c01107e2"
+ORIGINAL_PLAN_SHA = "bf69a1f7aff08844e6b2899f66dee58f78a6435e13b52f188a4f36dcca9f1d6d"
+ORIGINAL_SCRIPT_SHA = "40dd3ae09a8edebaf1248b03d80a69808d170f6164ebcd9c340aa4d155a85b84"
+PORTABLE_SHA = "5063af10cd818804c93196df6cb80f1b5ddf428d58a4f3439e56e3447afd4267"
+MOUNT_DESTINATIONS = {"model": "/inputs/model", "train": "/inputs/coco/train",
+    "valid": "/inputs/coco/valid", "manifest": "/inputs/coco/manifest.json",
+    "descriptor": "/inputs/coco/provenance/portable-v1/descriptor.json",
+    "checks": "/inputs/coco/provenance/portable-v1/checks.json",
+    **{k: f"/inputs/coco/provenance/portable-v1/input-metadata/input-{k}.json"
+       for k in ["trainOriginal", "developmentOriginal", "developmentObserved"]},
+    "originalConfig": "/inputs/plan/original-config.json", "originalPlan": "/inputs/plan/original-plan.json",
+    "originalScript": "/inputs/plan/original-trainer.py", "adapter": "/inputs/plan/train_building_ramp.py"}
+
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+
+
+def unlinked(path):
+    """Refuse links/reparse points before resolution, including existing ancestors."""
+    path = Path(path).absolute()
+    for item in [path, *path.parents]:
+        if item.exists() or item.is_symlink():
+            require(not item.is_symlink() and not (getattr(item.lstat(), "st_file_attributes", 0) & 0x400),
+                    f"Linked/reparse input or output: {item}")
+    return path.resolve()
+
+
+def foreign_path(value):
+    path = PureWindowsPath(value) if PureWindowsPath(value).drive else PurePosixPath(value)
+    require(path.is_absolute() and ".." not in path.parts, f"Noncanonical/unmapped path: {value}")
+    return path
+
+
+def rebase(value, mounts):
+    path = foreign_path(value)
+    matches = []
+    for mount in mounts:
+        host = foreign_path(mount["hostPath"])
+        if type(host) is type(path) and (path == host or mount["kind"] == "directory" and path.is_relative_to(host)):
+            matches.append(str(PurePosixPath(mount["containerPath"]) / path.relative_to(host).as_posix()))
+    require(len(matches) == 1, f"Expected exactly one explicit mapping: {value}")
+    return matches[0]
+
+
+def mapped_pin(pin, mounts):
+    return {**pin, "path": rebase(pin["path"], mounts)}
+
+
+def portable_inputs(descriptor_path):
+    descriptor = read_json(descriptor_path)
+    require(file_pin(descriptor_path)["sha256"] == PORTABLE_SHA and
+            descriptor["schemaVersion"] == "ramp-coco-portable-provenance/1", "Unsealed portable descriptor")
+    refs = {"descriptor": file_pin(descriptor_path), "manifest": descriptor["legacyManifest"],
+            "train": descriptor["exportAnnotations"]["train"], "valid": descriptor["exportAnnotations"]["valid"],
+            "checks": descriptor["checks"]}
+    refs.update({k: v["sourceManifest"] for k, v in descriptor["inputMetadataSnapshots"].items()})
+    for key, pin in list(refs.items()):
+        if key == "descriptor": continue
+        path = unlinked(Path(descriptor_path).parent / pin["path"])
+        root = Path(descriptor_path).parent.parent.parent.resolve()
+        require(path.is_relative_to(root), "Portable dependency escapes export root")
+        refs[key] = {**pin, "path": str(path)}
+        check_pin(refs[key])
+    # All sourceManifest paths in the old export are historical locators. Only the
+    # unchanged snapshots beside this sealed descriptor become runtime dependencies.
+    return refs
+
+
+def prepare_mounted(spec_path):
+    """Cheap metadata mapping of the already verified plan; no COCO/RLE replay."""
+    spec = read_json(spec_path, 1024**2)
+    require(set(spec) == {"schemaVersion", "originalConfig", "originalPlan", "originalScript", "portableDescriptor",
+                         "adapter", "mounts", "output", "runtimeBinding"} and
+            spec["schemaVersion"] == "ramp-mount-map/1", "Unsupported mount-map fields/version")
+    for key, sha in [("originalConfig", ORIGINAL_CONFIG_SHA), ("originalPlan", ORIGINAL_PLAN_SHA),
+                     ("originalScript", ORIGINAL_SCRIPT_SHA), ("portableDescriptor", PORTABLE_SHA)]:
+        require(spec[key]["sha256"] == sha, f"Unsealed {key}")
+        check_pin(spec[key])
+    check_pin(spec["adapter"])
+    require(spec["adapter"]["sha256"] == file_pin(__file__)["sha256"], "Adapter source differs from running script")
+    config = read_json(spec["originalConfig"]["path"])
+    original = read_json(spec["originalPlan"]["path"])
+    unsigned = {k: v for k, v in original.items() if k != "planSha256"}
+    require(digest(unsigned) == original["planSha256"], "Original plan canonical digest drift")
+    require(config["trainSource"] == original["trainSource"] == "ramp-barishal" and
+            config["developmentSource"] == original["developmentSource"] == "ramp-karnataka", "Pool roles cannot be swapped")
+    refs = portable_inputs(spec["portableDescriptor"]["path"])
+    expected = {"model": str(Path(config["weights"]["path"]).parent),
+        "train": str(Path(config["datasetRoot"]) / "train"), "valid": str(Path(config["datasetRoot"]) / "valid"),
+        "manifest": config["datasetManifest"]["path"],
+        **{k: refs[k]["path"] for k in ["descriptor", "checks", "trainOriginal", "developmentOriginal", "developmentObserved"]},
+        **{k: spec[k]["path"] for k in ["originalConfig", "originalPlan", "originalScript", "adapter"]}}
+    mounts = spec["mounts"]
+    require(len(mounts) == len(expected) and {m["role"] for m in mounts} == set(expected), "Finite input roles required")
+    output = spec["output"]
+    require(set(output) == {"hostPath", "containerPath", "readOnly", "kind"} and output["containerPath"] == "/outputs/rfdetr" and
+            output["readOnly"] is False and output["kind"] == "directory", "One isolated writable output required")
+    out = unlinked(output["hostPath"])
+    task_root = unlinked(Path(spec_path).parent)
+    require(task_root == unlinked("E:/BhuAayam-data/task-data/d07-rfdetr-mounted-plan-20261005") and
+            out == task_root / "output", "Output must be the assigned task's isolated output directory")
+    require(not out.exists() or out.is_dir() and not any(out.iterdir()), "Output must be new/empty task-owned directory")
+    host_roots = []
+    for mount in mounts:
+        require(set(mount) == {"role", "hostPath", "containerPath", "readOnly", "kind"}, "Unknown mount field")
+        role = mount["role"]
+        path = unlinked(mount["hostPath"])
+        kind = "directory" if role in {"model", "train", "valid"} else "file"
+        require(path == unlinked(expected[role]) and mount["kind"] == kind and mount["readOnly"] is True and
+                mount["containerPath"] == MOUNT_DESTINATIONS[role], "Unsupported/writable input mount")
+        require(path.is_dir() if kind == "directory" else path.is_file(), "Mount type mismatch")
+        require(not out.is_relative_to(path) and not path.is_relative_to(out), "Output overlaps protected input")
+        require(all(not path.is_relative_to(p) and not p.is_relative_to(path) for p in host_roots), "Overlapping input mounts")
+        host_roots.append(path)
+        mount["hostPath"] = str(path)
+    # Directory inventory is exact. Retained image pins are reused; newly check
+    # bytes/paths only here, with full image/hash validation left to actual runtime.
+    inventory = [config[k] for k in ["weights", "modelConfig", "processorConfig", "datasetManifest", "trainAnnotations", "developmentAnnotations"]]
+    inventory += [spec[k] for k in ["originalConfig", "originalPlan", "originalScript", "adapter"]]
+    inventory += [p for k, p in refs.items() if k not in {"manifest", "train", "valid"}]
+    for pool in original["pools"]:
+        require(pool["split"] in {"train", "valid"} and pool["images"] == 24 and len(pool["imagePins"]) == 24, "Unsupported pool")
+        inventory.extend(pool["imagePins"])
+    require([p["split"] for p in original["pools"]] == ["train", "valid"] and
+            sum(p["instances"] for p in original["pools"]) == 441, "Original 48-image/441-instance scope changed")
+    paths = {unlinked(p["path"]): p for p in inventory}
+    require(len(paths) == len(inventory), "Duplicate inventory input")
+    for mount in mounts:
+        root = Path(mount["hostPath"])
+        children = [unlinked(p) for p in root.rglob("*")] if mount["kind"] == "directory" else []
+        actual = {root} if mount["kind"] == "file" else {p for p in children if p.is_file()}
+        require(actual == {p for p in paths if p == root or mount["kind"] == "directory" and p.is_relative_to(root)}, "Unlisted/missing mount input")
+    for path, pin in paths.items():
+        require(path.is_file() and path.stat().st_size == pin["bytes"], f"Inventory size drift: {path}")
+    images = [p for pool in original["pools"] for p in pool["imagePins"]]
+    for pin in inventory:
+        if pin not in images: check_pin(pin)
+    view = copy.deepcopy(config)
+    for key in ["weights", "modelConfig", "processorConfig", "datasetManifest", "trainAnnotations", "developmentAnnotations"]:
+        view[key] = mapped_pin(config[key], mounts)
+    view["datasetRoot"] = "/inputs/coco"
+    view["outputDir"] = "/outputs/rfdetr/fit"
+    mapped = copy.deepcopy(original)
+    for key in ["weights", "modelConfig", "processorConfig", "datasetManifest"]:
+        mapped[key] = mapped_pin(original[key], mounts)
+    for pool in mapped["pools"]:
+        pool["annotationPin"] = mapped_pin(pool["annotationPin"], mounts)
+        pool["imagePins"] = [mapped_pin(p, mounts) for p in pool["imagePins"]]
+    # Old scriptPin is an origin identity; it must not point at the new adapter.
+    mapped["scriptPin"] = mapped_pin(spec["originalScript"], mounts)
+    mapped["configPin"] = mapped_pin(spec["originalConfig"], mounts)
+    mapped["trainingArguments"]["output_dir"] = view["outputDir"]
+    runtime = spec["runtimeBinding"]
+    require(runtime is None, "Runtime binding awaits the ENV owner's sealed compatible lock; no arbitrary versions accepted")
+    wrapper = {"schemaVersion": MOUNT_VERSION, "kind": "metadata_only_mapping_not_runtime_validation",
+        "config": view, "mounts": mounts, "output": {**output, "hostPath": str(out)},
+        "originalConfig": mapped_pin(spec["originalConfig"], mounts), "originalPlan": mapped_pin(spec["originalPlan"], mounts),
+        "originalScript": mapped_pin(spec["originalScript"], mounts), "adapter": mapped_pin(spec["adapter"], mounts),
+        "portableInputs": {k: mapped_pin(p, mounts) for k, p in refs.items()}, "runtimeBinding": runtime,
+        "inventory": [{"hostPin": p, "containerPin": mapped_pin(p, mounts),
+                       "verification": "retained_sha256_and_current_path_size" if p in images else "current_exact_bytes_sha256"} for p in inventory],
+        "trainingAuthorized": False, "fitAdmission": "not_fit_admitted"}
+    mapped.update({"schemaVersion": "ramp-mounted-training-plan/1", "originalPlanSha256": original["planSha256"],
+        "mountedConfigSha256": digest(wrapper), "adapterPin": wrapper["adapter"], "runtimeBinding": runtime,
+        "installedPackageMetadata": None, "kind": wrapper["kind"], "trainingAuthorized": False,
+        "blockers": ["Sealed compatible Linux runtime/dependency lock", "Actual mounted-process containment and input readback",
+                     *original["blockers"]]})
+    del mapped["planSha256"]
+    mapped["planSha256"] = digest(mapped)
+    return {"mountedConfig": wrapper, "mountedPlan": mapped}
 
 
 def require(condition, message):
@@ -105,9 +278,45 @@ def validate_pool(root, split, annotation_pin):
     return {"split": split, "annotationPin": annotation_pin, "imagePins": pins, "images": len(images), "instances": len(seen)}
 
 
+def mounted_view(wrapper):
+    """Resolve only declared POSIX inputs; source snapshots stay unchanged."""
+    require(wrapper["schemaVersion"] == MOUNT_VERSION and wrapper["fitAdmission"] == "not_fit_admitted" and
+            wrapper["trainingAuthorized"] is False, "Mounted configuration grants no fit admission")
+    require({m["role"] for m in wrapper["mounts"]} == set(MOUNT_DESTINATIONS) and
+            len(wrapper["mounts"]) == len(MOUNT_DESTINATIONS) and
+            all(m["readOnly"] is True and m["containerPath"] == MOUNT_DESTINATIONS[m["role"]]
+                for m in wrapper["mounts"]), "Unsupported mounted input scope")
+    for key, sha in [("originalConfig", ORIGINAL_CONFIG_SHA), ("originalPlan", ORIGINAL_PLAN_SHA),
+                     ("originalScript", ORIGINAL_SCRIPT_SHA)]:
+        require(wrapper[key]["sha256"] == sha, f"Unsealed mounted {key}")
+        check_pin(wrapper[key])
+    require(check_pin(wrapper["adapter"]) == Path(__file__).resolve(), "Run the declared mounted adapter")
+    original = read_json(wrapper["originalConfig"]["path"])
+    view = copy.deepcopy(original)
+    for key in ["weights", "modelConfig", "processorConfig", "datasetManifest", "trainAnnotations", "developmentAnnotations"]:
+        view[key] = mapped_pin(view[key], wrapper["mounts"])
+    view.update(datasetRoot="/inputs/coco", outputDir="/outputs/rfdetr/fit")
+    require(view == wrapper["config"], "Mounted config changes more than declared paths")
+    refs = portable_inputs(wrapper["portableInputs"]["descriptor"]["path"])
+    require(refs == wrapper["portableInputs"], "Mounted portable provenance differs from sealed descriptor")
+    manifest = read_json(view["datasetManifest"]["path"])
+    for split, key in zip(manifest["splits"], ["trainOriginal", "developmentOriginal"]):
+        require(split["sourceManifest"]["sha256"] == refs[key]["sha256"] and
+                split["sourceManifest"]["bytes"] == refs[key]["bytes"], "Snapshot differs from original export input")
+        split["sourceManifest"] = refs[key]
+        split["annotations"] = mapped_pin(split["annotations"], wrapper["mounts"])
+    for row in manifest["images"]:
+        row["image"] = mapped_pin(row["image"], wrapper["mounts"])
+    return view, manifest
+
+
 def build_plan(config_path):
     config_path = Path(config_path).resolve(strict=True)
     config = read_json(config_path, 1024**2)
+    mounted = config if config.get("schemaVersion") == MOUNT_VERSION else None
+    mounted_manifest = None
+    if mounted:
+        config, mounted_manifest = mounted_view(mounted)
     require(config["schemaVersion"] == VERSION and config["modelScope"] == "exact_deployed_transformers_source", "Wrong plan/model scope")
     weights = check_pin(config["weights"])
     require(config["weights"]["sha256"] == BASE_SHA and config["weights"]["bytes"] == BASE_BYTES, "Only the exact deployed model source checkpoint is supported")
@@ -125,7 +334,7 @@ def build_plan(config_path):
     require(not ({p["sha256"] for p in pools[0]["imagePins"]} & {p["sha256"] for p in pools[1]["imagePins"]}), "Train/development image overlap")
     # The data owner pins source identities, label provenance, conservative site groups and ambiguity policy.
     # A separate frozen eligibility receipt is required at execution; export alone grants no fit admission.
-    manifest = read_json(manifest_path)
+    manifest = mounted_manifest if mounted_manifest is not None else read_json(manifest_path)
     require(manifest["task"] == "D06-RAMP-COCO-PREP" and manifest["fitAdmission"] == "not_fit_admitted" and manifest["finalOrTestSelection"] is False, "Expected prepared research pools, not implicit fit/final admission")
     require([s["split"] for s in manifest["splits"]] == ["train", "valid"] and manifest["splits"][0]["sourceParent"] == "105001001597B000" and manifest["splits"][1]["sourceParent"] == "104001002CA32300", "Fixed source groups changed")
     require(manifest["splits"][0]["sourceGroup"] != manifest["splits"][1]["sourceGroup"], "Source group overlap")
@@ -169,6 +378,11 @@ def build_plan(config_path):
             "blockers": ["Root measured-residual authorization", "Frozen eligible source-group supervision and category/head baseline",
                          "Unchanged source-checkpoint open-development baseline and Torch/ONNX preprocessing parity", "Single model/GPU ownership transfer",
                          "Effective network/resource preflight for this exact training process", "Isolated resolved dependency lock and safe matching checkpoint loading"]}
+    if mounted:
+        plan.update(schemaVersion="ramp-mounted-runtime-plan/1", runtimeBinding=mounted["runtimeBinding"],
+                    portableInputs=mounted["portableInputs"], originalPlan=mounted["originalPlan"],
+                    mountedConfigVersion=MOUNT_VERSION)
+        plan["blockers"].insert(0, "Exact compatible Linux image/Python/dependency binding and actual mounted-process authorization")
     encoded = json.dumps(plan, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
     plan["planSha256"] = hashlib.sha256(encoded).hexdigest()
     return plan, manifest
@@ -176,6 +390,8 @@ def build_plan(config_path):
 
 def check_gate(path, expected_sha, plan):
     require(path is not None and expected_sha is not None, "Execution blocked: a root authorization/handoff receipt and exact hash are required")
+    if plan["schemaVersion"] == "ramp-mounted-runtime-plan/1":
+        require(False, "Mounted execution blocked: sealed compatible runtime binding/actual-process authorization must be implemented under the ENV handoff")
     require(file_pin(path)["sha256"] == expected_sha, "Authorization receipt hash mismatch")
     gate = read_json(path, 1024**2)
     require(gate["schemaVersion"] == "ramp-training-authorization/1" and gate["planSha256"] == plan["planSha256"], "Authorization belongs to another plan")
@@ -273,13 +489,26 @@ def execute(plan, gate):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--config", type=Path)
+    parser.add_argument("--prepare-mounted", type=Path, help="Finite host mount map; reuse sealed plan without data validation/model imports")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--plan-only", action="store_true", help="Default; no Torch/Transformers/CUDA import or fitting")
     mode.add_argument("--execute", action="store_true")
     parser.add_argument("--authorization", type=Path)
     parser.add_argument("--authorization-sha256")
     args = parser.parse_args()
+    if args.prepare_mounted:
+        require(not args.config and not args.execute and not args.authorization and not args.authorization_sha256,
+                "Mount preparation is metadata-only and accepts no execution/config override")
+        print(json.dumps(prepare_mounted(args.prepare_mounted), indent=2))
+        return
+    require(args.config is not None, "--config or --prepare-mounted is required")
+    if args.execute:
+        require(args.authorization is not None and args.authorization_sha256 is not None,
+                "Execution blocked: a root authorization/handoff receipt and exact hash are required")
+    candidate = read_json(args.config, 1024**2)
+    if candidate.get("schemaVersion") == MOUNT_VERSION and args.execute:
+        require(False, "Mounted execution blocked: sealed compatible runtime lock and actual-runtime-bound root authorization remain unassigned")
     plan, _ = build_plan(args.config)
     if args.execute:
         gate = check_gate(args.authorization, args.authorization_sha256, plan)
