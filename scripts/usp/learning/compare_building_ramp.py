@@ -32,6 +32,10 @@ RESERVATION_SHA = "05b10b5d8025ad97ff3e122bbf0ab686ce8f050ed5f8cf192a2c19913766f
 OWNER_SHA = "2d45390a3b58bf69b616e7a4e2369499b6a0ba71afa9ddab772fe390a4326bb7"
 PUBLICATION_SHA = "afe84e4bad6a539bfa44bccfd208c045408031b3c8ed081b0d2c34bd0b032ba4"
 GROUP = "ramp-MaxarODP-104001002CA32300"
+BASELINE = Path("E:/BhuAayam-data/task-data/d07-karnataka-baseline-20261005")
+BASELINE_FREEZE_SHA = "9b580000468c6db12e9d74a2ff25e68fa44eed289204e9fd73dd4461acbffe2c"
+BASELINE_RESULTS_SHA = "57becbda6d0058e1e07cca834a29965c193ec60c598d040ef2531172980b0dc1"
+RECALL_VERSION = "rfdetr-cached-confidence030-mask000/1"
 
 
 def pin(path):
@@ -269,16 +273,190 @@ def run(root, denied):
         e.production._session.cache_clear()
 
 
+def cached_evaluator():
+    e = evaluator()
+    def refuse(*args, **kwargs):
+        raise RuntimeError("Cached recall comparison prohibits model/session/weight loading")
+    e.production._session = refuse
+    e.production._verified_path = refuse
+    return e
+
+
+def freeze_recall(root, denied):
+    e = cached_evaluator()
+    for name, expected in (("frozen-config.json", BASELINE_FREEZE_SHA), ("results.json", BASELINE_RESULTS_SHA)):
+        if pin(BASELINE / name)["sha256"] != expected:
+            raise ValueError("Immutable baseline changed")
+    parent = read(BASELINE / "frozen-config.json")
+    baseline = read(BASELINE / "results.json")
+    # These are execution inputs, not a repeated review of the original TIFFs.
+    native = []
+    for source, result in zip(parent["items"], baseline["items"], strict=True):
+        if source["id"] != result["id"] or (source["width"], source["height"]) != (256, 256):
+            raise ValueError("Baseline input/order/frame mismatch")
+        for key in ("image", "targetMask", "scoringMask", "rawLabel"):
+            checked(source[key])
+        entry = dict(result["artifacts"]["native-00.npz"], path=str(BASELINE / "raw" / source["id"].replace("/", "--") / "native-00.npz"))
+        checked(entry)
+        with e.np.load(entry["path"], allow_pickle=False) as arrays:
+            if arrays["output0"].shape != (1, 200, 1) or arrays["output1"].shape != (1, 200, 108, 108):
+                raise ValueError("Complete pre-filter query arrays required")
+        expected_tile = [{"x": 0, "y": 0, "width": 256, "height": 256, "tileToRaster": [1, 0, 0, 0, 1, 0]}]
+        if result["tiling"] != expected_tile:
+            raise ValueError("Cached replay requires the recorded single unpadded tile")
+        native.append(entry)
+    diagnosis = read(root / "diagnosis.json")
+    support = [roof for roof in diagnosis["findings"][0]["roofs"] if not roof["baselineFinalMatched"]
+               and .3 < roof["queryConfidence"] <= .5 and roof["bestRawQueryPixelIoU"] >= .5]
+    if not support:
+        raise ValueError("No retained evidence for the single proposed confidence change")
+    value = {"task": "D07-KARNATAKA-RECALL", "atUtc": datetime.now(timezone.utc).isoformat(),
+        "experimentalVersion": RECALL_VERSION, "baselineCommit": "397474d670e29229867bed83a71b892c7461b3d2",
+        "baselineFreeze": pin(BASELINE / "frozen-config.json"), "baselineResults": pin(BASELINE / "results.json"),
+        "diagnosis": pin(root / "diagnosis.json"), "items": parent["items"], "cachedNative": native,
+        "sourcePins": [pin(p) for p in (Path(__file__), Path(e.__file__), REPO / "services/geo/geo/spatial_ml.py",
+            root / "supervise.py", root / "diagnose.py")],
+        "environment": parent["environment"], "model": parent["model"], "sourceLimitations": parent["sourceLimitations"],
+        "change": {"factor": "object confidence cutoff", "baseline": .5, "experimental": .3,
+            "preserved": "All200 native queries;432 model input/native108 masks; mask logit>0; stable descending score painting only unassigned pixels; source256 frames/labels/full scoring; unchanged components/limits/matching",
+            "hypothesis": "A useful rooftop query (confidence0.3322,pixelIoU0.80794,label1198pixels) is censored at0.5. A fixed0.30 cutoff may recover some missed roofs; tiny/lower-confidence/domain/annotation errors remain. This is one changed cutoff, not a sweep.",
+            "choiceBasis": "Largest one-decimal cutoff below the highest-confidence filtered query that supports an unmatched roof in the two-case diagnosis. No alternative threshold was scored before this freeze.",
+            "upstream": {"url": "https://rfdetr.roboflow.com/latest/reference/rfdetr/", "checkedOn": "2026-10-05",
+                "claim": "RFDETR.predict exposes float threshold with default0.5;0.30 is this isolated development experiment, not an upstream recommended satellite threshold."}},
+        "decision": {"baselineMaskRecall": baseline["aggregate"]["mask"]["classes"][1]["recall"],
+            "baselineMaskPrecision": baseline["aggregate"]["mask"]["classes"][1]["precision"],
+            "baselinePolygonMatched": 67, "baselinePolygonObjectPrecision": 67/110,
+            "baselineEmptyLabelledFpScenes": 1, "baselineCapacityOmissions": 0,
+            "rule": "Recall mechanism supported only if mask recall increases and final polygon matches exceed67. If both precisions stay>=baseline, empty-labelled FP scenes<=1 and capacity omissions==0, classify development_metrics_improved; otherwise recall_gain_with_cost. Without both recall gains classify no_supported_recall_gain. Always report all pixel/object/empty/geometry costs; no promotion, fit or final/generalization claim."},
+        "bounds": parent["bounds"], "allocation": parent["groupReservation"],
+        "isolation": {"newNativeModelCalls": 0, "modelSessionAndWeightCallsFailClosed": True,
+            "nativeOrOsEgressBoundary": "Not established for fresh RF-DETR. Existing audited Qwen launcher has fixed roles/staged scopes; no global/ACL/runtime changes performed. Pure cached-output comparison only.",
+            "pythonAuditDenials": denied.copy(), "job": "existing gated Job/CPU affinity/resource cap; not an egress boundary"}}
+    save(root / "frozen-recall-config.json", value)
+    print(json.dumps({"freeze": pin(root / "frozen-recall-config.json"), "cachedItems": len(native), "newNativeModelCalls": 0}), flush=True)
+
+
+def cached_masks(e, logits, masks, threshold, width, height):
+    # Exact production score/mask/painting operations, with only the declared
+    # confidence cutoff changed. No preprocessing or model/session call.
+    np = e.np
+    if logits.shape != (1, 200, 1) or masks.shape != (1, 200, 108, 108) or not np.isfinite(logits).all() or not np.isfinite(masks).all():
+        raise ValueError("Invalid complete cached query arrays")
+    confidence = 1 / (1 + np.exp(-np.clip(logits[0, :, 0], -80, 80)))
+    labels = np.zeros((height, width), np.uint8)
+    scores = np.zeros(labels.shape, np.float32)
+    palette = {0: "background"}
+    index = 0
+    for query in np.argsort(-confidence, kind="stable"):
+        if confidence[query] <= threshold:
+            break
+        mask = e.production._resize_logits(masks[0, query], height, width) > 0
+        paint = mask & (labels == 0)
+        if paint.any():
+            index += 1
+            labels[paint] = index
+            scores[paint] = confidence[query]
+            palette[index] = "building"
+    return labels, scores, palette
+
+
+def replay_recall(root, denied):
+    e = cached_evaluator()
+    f = read(root / "frozen-recall-config.json")
+    for entry in f["sourcePins"] + [f["baselineFreeze"], f["baselineResults"], f["diagnosis"], f["environment"]["lock"]]:
+        checked(entry)
+    if f["experimentalVersion"] != RECALL_VERSION or f["change"]["experimental"] != .3 or e.dependencies() != f["environment"]["dependencies"]:
+        raise ValueError("Frozen experimental configuration/runtime drift")
+    baseline = read(f["baselineResults"]["path"])
+    output = root / "cached-replay"
+    output.mkdir()  # One alternative only; preserve any partial attempt.
+    results = []
+    start = time.perf_counter()
+    for source, old, native in zip(f["items"], baseline["items"], f["cachedNative"], strict=True):
+        item_start = time.perf_counter()
+        save(root / f"started-{len(results):02d}.json", {"id": source["id"], "atUtc": datetime.now(timezone.utc).isoformat()})
+        def expire():
+            print("cached_item_deadline_exceeded:" + source["id"], file=sys.stderr, flush=True)
+            os._exit(3)
+        remaining = 1200 - (time.perf_counter() - start)
+        if remaining <= 0:
+            raise RuntimeError("Cached comparison deadline reached")
+        timer = threading.Timer(min(120, remaining), expire)
+        timer.daemon = True
+        timer.start()
+        try:
+            folder = output / source["id"].replace("/", "--")
+            folder.mkdir()
+            for key in ("image", "targetMask", "scoringMask", "rawLabel"):
+                e.read_pinned(source[key])
+            checked(native)
+            with e.np.load(native["path"], allow_pickle=False) as arrays:
+                labels, scores, palette = cached_masks(e, arrays["output0"], arrays["output1"], .3, 256, 256)
+            truth = e.np.asarray(e.Image.open(source["targetMask"]["path"])).copy()
+            valid = e.np.asarray(e.Image.open(source["scoringMask"]["path"])) == 1
+            if truth.shape != (256, 256) or not valid.all():
+                raise ValueError("Unchanged full source scoring domain required")
+            components, omissions = e.production._components(labels, scores, palette, source["image"]["sha256"])
+            transformed = e.source_components(components, old["transform"])
+            mask = (labels > 0).astype(e.np.uint8)
+            polygon_mask = e.polygon_mask(transformed, 256, 256, ["background", "building"])
+            objects, domain, outside = e.building_truth_objects(source, valid)
+            raw_objects = [p.intersection(domain) for p in e.mask_objects(mask)]
+            poly_objects = [e.shape(p["geometry"]).intersection(domain) for p in transformed]
+            result = {"id": source["id"], "groupId": source["groupId"], "task": "building", "experimentalVersion": RECALL_VERSION,
+                "freezeSha256": pin(root / "frozen-recall-config.json")["sha256"], "cachedNative": native,
+                "newNativeCalls": 0, "transform": old["transform"], "source": source["image"], "truthMask": source["targetMask"],
+                "scoredPixels": int(valid.sum()), "ignoredPixels": 0, "positiveTruthPixelsInIgnoredRegion": 0,
+                "emptyTruth": old["emptyTruth"], "mask": e.class_metrics(e.confusion(truth, mask, valid, 2), ["background", "building"]),
+                "polygons": e.class_metrics(e.confusion(truth, polygon_mask, valid, 2), ["background", "building"]),
+                "objects": {"mask": e.match_objects(objects, [p for p in raw_objects if p.area]),
+                    "polygons": e.match_objects(objects, [p for p in poly_objects if p.area]), "publisherFeatures": source["publisherFeatureCount"],
+                    "truthFeaturesOutsideScoringDomain": outside},
+                "polygonization": {"omissions": omissions, "returnedComponents": len(components),
+                    "changedScoredPixels": int((mask != polygon_mask).sum()),
+                    "removedForegroundPixels": int(((mask > 0) & (polygon_mask == 0)).sum()),
+                    "addedForegroundPixels": int(((mask == 0) & (polygon_mask > 0)).sum())}}
+            e.Image.fromarray(labels).save(folder / "instance-mask.png")
+            e.Image.fromarray(mask).save(folder / "source-mask.png")
+            e.Image.fromarray(polygon_mask).save(folder / "source-polygon-mask.png")
+            e.np.save(folder / "confidence.npy", scores)
+            save(folder / "polygons.json", {"processing": components, "source": transformed, "transform": old["transform"], "omissions": omissions})
+            result["artifacts"] = {p.name: pin(p) for p in sorted(folder.iterdir())}
+            result["totalItemSeconds"] = time.perf_counter() - item_start
+            save(folder / "result.json", result)
+            results.append(result)
+        finally:
+            timer.cancel()
+            timer.join()
+    aggregate = e.aggregate(results, ["background", "building"])
+    empty = [i for i in results if i["emptyTruth"]]
+    empty_fp = sum(bool(i["mask"]["classes"][1]["fp"]) for i in empty)
+    omissions = {k: sum(i["polygonization"]["omissions"][k] for i in results) for k in ("small", "complex", "invalid", "capacity")}
+    recall_gain = aggregate["mask"]["classes"][1]["recall"] > f["decision"]["baselineMaskRecall"] and aggregate["objects"]["polygons"]["tp"] > 67
+    no_cost = (aggregate["mask"]["classes"][1]["precision"] >= f["decision"]["baselineMaskPrecision"]
+        and aggregate["objects"]["polygons"]["precision"] >= 67/110 and empty_fp <= 1 and omissions["capacity"] == 0)
+    summary = {"task": f["task"], "status": "completed_cached_comparison", "experimentalVersion": RECALL_VERSION,
+        "freeze": pin(root / "frozen-recall-config.json"), "items": results, "aggregate": aggregate,
+        "emptyLabelledScenes": {"items": len(empty), "fpScenes": empty_fp,
+            "fpPixels": sum(i["mask"]["classes"][1]["fp"] for i in empty),
+            "fpPolygonObjects": sum(i["objects"]["polygons"]["fp"] for i in empty)},
+        "omissions": omissions, "decision": "development_metrics_improved" if recall_gain and no_cost else ("recall_gain_with_cost" if recall_gain else "no_supported_recall_gain"),
+        "runtime": {"bodySeconds": time.perf_counter() - start, "newNativeModelCalls": 0, "cachedQueryFiles": len(results),
+            "pythonAuditDenials": denied, "nativeOrOsEgressBoundary": False}}
+    save(root / "recall-results.json", summary)
+    print(json.dumps({k: v for k, v in summary.items() if k != "items"}), flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("freeze", "run"))
+    parser.add_argument("action", choices=("freeze", "run", "freeze-recall", "replay-recall"))
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--worker", action="store_true")
     args = parser.parse_args()
     if not args.worker:
         parser.error("Use the existing gated Job supervisor")
     denied = offline()
-    {"freeze": freeze, "run": run}[args.action](args.root, denied)
+    {"freeze": freeze, "run": run, "freeze-recall": freeze_recall, "replay-recall": replay_recall}[args.action](args.root, denied)
 
 
 if __name__ == "__main__":
