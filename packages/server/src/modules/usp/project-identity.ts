@@ -10,7 +10,7 @@ import { transaction } from '../../infrastructure/db';
 import { canonical, fingerprint } from '../cases/domain';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx, requestReceiptTx, scopedManifestTx } from './commands';
-import { assertLocalUsp, captureRegistrySnapshotTx } from './snapshots';
+import { assertLocalUsp, assertSnapshotDocumentsTx, captureRegistrySnapshotTx } from './snapshots';
 import { newProjectCode } from './project-code-generator';
 
 type Review = z.infer<typeof ProjectIdentityReviewSchema>;
@@ -234,6 +234,7 @@ export async function assignProjectCode(ctx: RequestContext, raw: Assign,
     const previous = await requestReceiptTx(client, ctx, command.scope.scopeId, operation, command.requestKey, hash);
     if (previous) {
       await scopedManifestTx(client, ctx, command.scope);
+      await assertSnapshotDocumentsTx(client, ctx, command.scope, true);
       return UspCommitReceiptSchema.parse(previous);
     }
     const rows = await lockedRecords(client, command.scope.scopeId, [command.recordId]);
@@ -280,6 +281,7 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
     const previous = await requestReceiptTx(client, ctx, command.scope.scopeId, operation, command.requestKey, hash);
     if (previous) {
       await scopedManifestTx(client, ctx, command.scope);
+      await assertSnapshotDocumentsTx(client, ctx, command.scope, true);
       return UspCommitReceiptSchema.parse(previous);
     }
     const rows = await lockedRecords(client, command.scope.scopeId, ids);
@@ -349,6 +351,9 @@ export async function resolveProjectIdentity(ctx: RequestContext, raw: z.infer<t
   }
   return transaction(async client => {
     const manifest = await scopedManifestTx(client, ctx, input.scope);
+    // Historical identity bodies and receipts retain their pins; current source
+    // authority still governs disclosure, as it does for ordinary snapshot reads.
+    await assertSnapshotDocumentsTx(client, ctx, input.scope, true);
     const captured = (await client.query(`SELECT object_id,revision,body,body_sha256 FROM usp_snapshot_bodies
       WHERE manifest_id=$1 AND namespace='registry_record' ORDER BY object_id`, [input.scope.manifestId])).rows;
     const selected = (id: string, revision: number) => manifest.selection.kind === 'site'
