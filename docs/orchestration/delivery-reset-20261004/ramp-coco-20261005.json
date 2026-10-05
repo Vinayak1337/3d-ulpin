@@ -81,7 +81,7 @@
   },
   "groupPolicy": {
     "train": "All24 Barishal parent105001001597B000 retained together as candidate TRAIN; unallocated/not_fit_admitted",
-    "valid": "ALL24 Karnataka parent104001002CA32300 retained together for DEVELOPMENT; never included in train",
+    "valid": "ALL24 Karnataka parent104001002CA32300 solely DEVELOPMENT; accepted export used reserved metadata, immutable later descriptor records observed allocation, source group/assets unchanged.",
     "final": "No final/test selection; prior open-development inputs and closed evaluations unchanged",
     "fitAdmission": "not_fit_admitted"
   },
@@ -121,12 +121,12 @@
   },
   "usage": {
     "workingDirectory": "C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin",
-    "command": "python scripts/usp/learning/prepare_ramp_coco.py --train-manifest <fixed Barishal JSON> --development-manifest <reserved Karnataka JSON> --output <fresh private directory> --polygon-helper <retained D06 prepare_derivatives.py>",
+    "command": "python scripts/usp/learning/prepare_ramp_coco.py --train-manifest <immutable train metadata snapshot> --development-manifest <immutable reserved/observed development metadata snapshot> --train-source-commit <exact40hex> --development-source-commit <exact40hex> --output <fresh private directory> --polygon-helper <retained D06 prepare_derivatives.py>",
     "existingDatasetRoot": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005",
     "trainAnnotations": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/train/_annotations.coco.json",
     "developmentAnnotations": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/valid/_annotations.coco.json",
     "existingOutputPolicy": "Refuses overwrite; use a fresh private output for a separately authorized regeneration",
-    "relativeInputManifestReferences": "Resolve any repository-relative split.sourceManifest.path against the pinned workingDirectory; original/image/vector/mask refs are absolute",
+    "relativeInputManifestReferences": "Legacy export sourceManifest paths reflect old CLI inputs. For current consumption resolve portableProvenance descriptor-relative immutable snapshots; never resolve them through a later mutable worktree. Source asset refs retain the unchanged private data root.",
     "runtime": "Existing bundled Python3.12.14, NumPy2.3.5/Pillow12.3.0 and retained deterministic polygon helper; no new dependencies"
   },
   "pending": [
@@ -156,5 +156,30 @@
     "newDependencyInstalls": 0,
     "originalOrSharedCatalogueOrModelOrApiWrites": 0
   },
-  "collaboration": "Authorized file-interface exchange only with AI-04B Documents Full Access; no delegation, model inference or fitting"
+  "collaboration": "Authorized file-interface exchange only with AI-04B Documents Full Access; no delegation, model inference or fitting",
+  "portableProvenance": {
+    "descriptor": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/provenance/portable-v1/descriptor.json",
+      "bytes": 5633,
+      "sha256": "5063af10cd818804c93196df6cb80f1b5ddf428d58a4f3439e56e3447afd4267"
+    },
+    "checks": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/provenance/portable-v1/checks.json",
+      "bytes": 3505,
+      "sha256": "b9192821bdaf87ad7c419b1194f94f2d04b9bd792b8cc709fd76a8296bd9da98"
+    },
+    "scope": "Separate metadata-only descriptor; original manifest443f5708/export/receipts remain unchanged. Descriptor-relative byte-pinned read-only input snapshots replace mutable checkout source pointers.",
+    "originalInputCommit": "03c06ebd38396e34e6adc5d60aa67b5204085e3a",
+    "observedDevelopmentCommit": "dad41f8563346f2c003c136a0e0c7cb98ab175d3",
+    "rawAndGitByteRepresentations": "Original runtime CRLF bytes kept exactly; immutable Git LF blob bytes/hash recorded separately, parsed JSON equality verified.",
+    "observedTransition": "reserved24/allocated0 -> reserved0/allocated24; whole Karnataka group solely development, zero training/final, same sources/groups/assets/frames/terms; no fit admission.",
+    "futureExporterCode": {
+      "path": "C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin/scripts/usp/learning/prepare_ramp_coco.py",
+      "bytes": 24508,
+      "sha256": "2ca2edd8b1120141a0d36b25148a2ac9110f4dab58bc333d74b30214cd9b6ff6"
+    },
+    "metadataGuard": "Full canonical train identity and full dev metadata identity except explicit observation fields; both development states check exact group/item roles, zero train/final and no fit/promotion.",
+    "checksRun": "Metadata functions/source commits/snapshots only; no export/RGB/mask/library/model/native rerun."
+  },
+  "codeScope": "Historical code pin at original export execution; current exporter change has separate portableProvenance.futureExporterCode pin and Git commit. Original private manifest/verification remain exact historical receipts."
 }

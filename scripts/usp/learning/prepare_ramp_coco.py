@@ -9,6 +9,8 @@ import argparse
 import ctypes
 import importlib.util
 import json
+import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from hashlib import sha256
@@ -45,6 +47,87 @@ def save_json(path, value):
         json.dump(value, output, indent=2)
         output.write("\n")
     return pin(path)
+
+
+def metadata_identity(source, split):
+    """Exclude only the explicitly checked development observation fields."""
+    stable = json.loads(json.dumps(source))
+    if split == "valid":
+        for key in ("status", "purpose", "partition", "developmentReservation", "developmentObservation"):
+            stable.pop(key, None)
+        for group in stable["groups"]:
+            group.pop("split", None)
+        stable["tasks"]["building"].pop("status", None)
+        for item in stable["tasks"]["building"]["items"]:
+            item.pop("pool", None)
+            item.pop("split", None)
+    encoded = json.dumps(stable, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode()
+    return sha256(encoded).hexdigest()
+
+
+def validate_metadata(train, dev):
+    # These hashes bind all original identities, assets, frames, terms and groups.
+    if metadata_identity(train, "train") != "3698dfba9c0d3fdeb3bff9b58cc1cff2fd4bcd161df345610445fe9a44e94a28":
+        raise ValueError("Fixed pending Barishal metadata differs")
+    if metadata_identity(dev, "valid") != "ce5e5f5d3e5e778cb7920f264d49060c2129f155fb85e9c0a49576406d1935c2":
+        raise ValueError("Fixed Karnataka source/group/asset metadata differs")
+    partition = dev["partition"]
+    if set(partition) != {"pool", "trainingAllocated", "developmentAllocated", "finalEvaluationAllocated", "unallocatedItems",
+                          "protectedOrRetiredEvaluationReopened", "prior19DevelopmentItemsChanged", "globalSplitWrites",
+                          "developmentReserved", "reservationStatus"}:
+        raise ValueError("Unsupported development partition fields")
+    reserved = (partition.get("developmentReserved"), partition.get("developmentAllocated")) == (24, 0)
+    observed = (partition.get("developmentReserved"), partition.get("developmentAllocated")) == (0, 24)
+    if not (reserved or observed):
+        raise ValueError("Require ALL24 Karnataka reserved or observed solely for development")
+    for key in ("trainingAllocated", "finalEvaluationAllocated", "unallocatedItems", "globalSplitWrites"):
+        if partition.get(key) != 0:
+            raise ValueError("Development group cannot enter training/final or become partial")
+    for key in ("protectedOrRetiredEvaluationReopened", "prior19DevelopmentItemsChanged"):
+        if partition.get(key) is not False:
+            raise ValueError("Protected development/evaluation state differs")
+    group_split = "development_reserved_pending_preflight" if reserved else "open_development"
+    pool = "open-development-feasibility-reservation" if reserved else "open-development-feasibility"
+    task_status = "development_reserved_pending_suitability_preflight" if reserved else "open_development_comparison_complete"
+    status = "prepared_publisher_human_inventory_development_reserved_pending_preflight" if reserved else "prepared_publisher_human_inventory_open_development_comparison_complete"
+    if partition.get("pool") != pool or dev.get("status") != status or dev["tasks"]["building"].get("status") != task_status:
+        raise ValueError("Unsupported development metadata state")
+    reservation_status = "pending_suitability_preflight_and_comparison_return" if reserved else "suitability_preflight_passed_comparison_complete"
+    if partition.get("reservationStatus") != reservation_status:
+        raise ValueError("Unsupported development observation transition")
+    if any(g["split"] != group_split for g in dev["groups"]) or any(
+        item["split"] != group_split or item["pool"] != pool for item in dev["tasks"]["building"]["items"]
+    ):
+        raise ValueError("All development items must retain the same explicit group role")
+    if observed and any(dev["developmentReservation"].get(k) is not True for k in ("trainingExcluded", "finalEvaluationExcluded", "noFitOrPromotion")):
+        raise ValueError("Observed development does not grant fit or promotion")
+    return "reserved" if reserved else "observed"
+
+
+def metadata_origin(raw, commit, logical_path):
+    """Verify an immutable Git origin without using a later checkout state."""
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ValueError("Source metadata requires an exact Git commit")
+    repository = Path(__file__).resolve().parents[3]
+    def git(*args):
+        return subprocess.run(["git", "-C", str(repository), *args], check=True, capture_output=True, timeout=10).stdout
+    if git("rev-parse", "--verify", commit + "^{commit}").decode().strip() != commit:
+        raise ValueError("Source commit differs")
+    blob = git("show", commit + ":" + logical_path)
+    if json.loads(raw) != json.loads(blob):
+        raise ValueError("Input metadata differs from its exact source commit")
+    return {"commit": commit, "gitPath": logical_path, "blobOid": git("rev-parse", commit + ":" + logical_path).decode().strip(),
+            "blobBytes": len(blob), "blobSha256": sha256(blob).hexdigest(),
+            "inputBytes": len(raw), "inputSha256": sha256(raw).hexdigest(),
+            "representation": "Exact input bytes retained; Git blob identity recorded separately; parsed JSON equality verified"}
+
+
+def snapshot_metadata(directory, split, raw, origin):
+    path = directory / ("input-" + split + ".json")
+    with path.open("xb") as output:
+        output.write(raw)
+    os.chmod(path, 0o444)
+    return {"sourceManifest": pin(path), "sourceOrigin": origin}
 
 
 def rle_encode(mask):
@@ -147,13 +230,16 @@ def main():
     parser.add_argument("--development-manifest", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--polygon-helper", type=Path, required=True)
+    parser.add_argument("--train-source-commit", required=True, help="Exact Git commit for the Barishal input metadata")
+    parser.add_argument("--development-source-commit", required=True, help="Exact Git commit for the Karnataka input metadata")
     args = parser.parse_args()
     cpus, peak = bounded_process()
+    train_raw, dev_raw = args.train_manifest.read_bytes(), args.development_manifest.read_bytes()
+    train, dev = json.loads(train_raw), json.loads(dev_raw)
+    development_state = validate_metadata(train, dev)
+    origins = {"train": metadata_origin(train_raw, args.train_source_commit, "docs/orchestration/delivery-reset-20261004/data-building-train-pool-20261005.json"),
+               "valid": metadata_origin(dev_raw, args.development_source_commit, "docs/orchestration/delivery-reset-20261004/data-building-shard-20261005.json")}
     polygon_mask = load_polygon_helper(args.polygon_helper.resolve())
-    train = json.loads(args.train_manifest.read_text())
-    dev = json.loads(args.development_manifest.read_text())
-    if train.get("fitAdmission") != "not_fit_admitted" or dev["partition"].get("developmentReserved") != 24:
-        raise ValueError("Expected pending Barishal fit admission and all24 Karnataka development reservation")
     output = args.output.resolve()
     sources = [("train", train, "105001001597B000", 263), ("valid", dev, "104001002CA32300", 178)]
     for split, source, parent, count in sources:
@@ -168,6 +254,10 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     if (output / "manifest.json").exists():
         raise FileExistsError("Export manifest exists")
+    provenance = output / "provenance"
+    provenance.mkdir()
+    metadata_refs = {"train": snapshot_metadata(provenance, "train", train_raw, origins["train"]),
+                     "valid": snapshot_metadata(provenance, "valid", dev_raw, origins["valid"])}
     category = {"id": 1, "name": "rooftop_building", "supercategory": "published_rooftop"}
     mapping, split_records, image_hashes, pixel_hashes = [], [], set(), set()
     image_id, annotation_id = 0, 0
@@ -259,7 +349,7 @@ def main():
                 "images": images, "annotations": annotations, "categories": [category]}
         coco_pin = save_json(directory / "_annotations.coco.json", coco)
         split_records.append({"split": split, "sourceParent": parent, "sourceGroup": source["groups"][0]["id"],
-                              "sourceManifest": pin(args.train_manifest if split == "train" else args.development_manifest),
+                              **metadata_refs[split],
                               "images": len(images), "instances": len(annotations), "sourceEmptyImages": empty, "unionPositivePixels": positive_pixels,
                               "annotations": coco_pin, "provenance": source.get("dataset", source.get("datasets", [None])[0])})
     loader = {"status": "not_available", "reason": "No compatible pycocotools in retained export runtime; JSON, per-instance RLE and union/pixel/frame checks passed"}
@@ -276,7 +366,7 @@ def main():
     manifest = {"schemaVersion": 1, "task": "D06-RAMP-COCO-PREP", "preparedAt": datetime.now(timezone.utc).isoformat(),
                 "status": "exported_pending_fit_admission", "datasetRoot": output.as_posix(), "segmentation": "COCO uncompressed RLE, column-major, iscrowd0",
                 "category": category, "fitAdmission": "not_fit_admitted", "trainAllocation": "candidate_train_group_only",
-                "developmentAllocation": "entire_reserved_Karnataka_group", "finalOrTestSelection": False,
+                "developmentAllocation": "entire_Karnataka_development_group", "developmentMetadataState": development_state, "finalOrTestSelection": False,
                 "splits": split_records, "images": mapping, "sourceInstanceCount": annotation_id, "uniqueRgbFrames": len(pixel_hashes),
                 "method": "Unchanged lossless RGB bytes; original TIFF affine; retained pixel-center polygon fill, exterior minus holes, one RLE per original feature clipped only to original frame",
                 "checks": {"sourceAndExportRgbPixelsEqual": True, "allInstanceRleRoundtripsEqual": True, "allInstanceUnionsEqualSourceTargets": True,
