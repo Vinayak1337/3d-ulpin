@@ -1,0 +1,311 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-RFDETR-CONTAINMENT",
+  "status": "native_boundary_control_passed_matching_training_runtime_blocked",
+  "baseCommit": "04ce9909b88c9a9e2d8632dcd672c48482329cb5",
+  "branch": "task/d07-rfdetr-containment-20261005",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005",
+  "code": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\rfdetr_container_control.py",
+    "bytes": 13000,
+    "sha256": "a0fc7045192c76f138c05c9b16fddfc8dd0b8afe2ab3b02637a0ebb026f2ec06",
+    "canonicalLfSha256": "a0fc7045192c76f138c05c9b16fddfc8dd0b8afe2ab3b02637a0ebb026f2ec06"
+  },
+  "launchProfile": {
+    "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\launch-profile.json",
+    "bytes": 2190,
+    "sha256": "b177d3dcc11610e6d90b39fb49eef776068bbee248c78feb18adb99350a465cc"
+  },
+  "testedCommand": [
+    "docker",
+    "create",
+    "--pull=never",
+    "--name",
+    "d07-rfdetr-containment-20261005-6a26ecd7846b",
+    "--label",
+    "codex.task=d07-rfdetr-containment-20261005",
+    "--network=none",
+    "--read-only",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--user=10001:10001",
+    "--init",
+    "--ipc=private",
+    "--pids-limit=32",
+    "--cpus=2",
+    "--cpuset-cpus=0,1",
+    "--memory=5g",
+    "--memory-swap=5g",
+    "--shm-size=16m",
+    "--tmpfs=/tmp:rw,noexec,nosuid,size=16m",
+    "--env=HOME=/tmp",
+    "--env=HF_HUB_OFFLINE=1",
+    "--env=TRANSFORMERS_OFFLINE=1",
+    "--env=CUDA_VISIBLE_DEVICES=",
+    "--env=OMP_NUM_THREADS=2",
+    "--env=MKL_NUM_THREADS=2",
+    "--env=OPENBLAS_NUM_THREADS=2",
+    "--entrypoint=/usr/local/bin/python",
+    "--mount",
+    "type=bind,source=E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\code,target=/code,readonly",
+    "--mount",
+    "type=bind,source=E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\input,target=/input,readonly",
+    "--mount",
+    "type=bind,source=E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\output,target=/output",
+    "sha256:e71d87961be773c18685622eb570c034cf664bfa206e21f6fa3691d629b440c9",
+    "-B",
+    "-I",
+    "/code/control.py",
+    "--probe-worker"
+  ],
+  "boundary": {
+    "runtime": "Docker Desktop Linux 29.8.0",
+    "context": "desktop-linux",
+    "imageId": "sha256:e71d87961be773c18685622eb570c034cf664bfa206e21f6fa3691d629b440c9",
+    "imageSource": "retained ulpin-geo:desktop-ai03c-b10ec8c",
+    "noImagePullOrBuild": true,
+    "python": "3.12.14 (main, Sep  1 2026, 00:10:15) [GCC 12.2.0]",
+    "uid": 10001,
+    "networkMode": "none",
+    "interfaces": [
+      "lo"
+    ],
+    "namespace": "net:[4026532391]",
+    "effectiveContainerInspection": {
+      "NetworkMode": "none",
+      "ReadonlyRootfs": true,
+      "CapDrop": [
+        "ALL"
+      ],
+      "SecurityOpt": [
+        "no-new-privileges"
+      ],
+      "Memory": 5368709120,
+      "MemorySwap": 5368709120,
+      "NanoCpus": 2000000000,
+      "CpusetCpus": "0,1",
+      "PidsLimit": 32,
+      "DeviceRequests": null,
+      "IpcMode": "private"
+    },
+    "mounts": [
+      {
+        "Type": "bind",
+        "Source": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\code",
+        "Destination": "/code",
+        "Mode": "",
+        "RW": false,
+        "Propagation": "rprivate"
+      },
+      {
+        "Type": "bind",
+        "Source": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\input",
+        "Destination": "/input",
+        "Mode": "",
+        "RW": false,
+        "Propagation": "rprivate"
+      },
+      {
+        "Type": "bind",
+        "Source": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\output",
+        "Destination": "/output",
+        "Mode": "",
+        "RW": true,
+        "Propagation": "rprivate"
+      }
+    ],
+    "inheritedEnvironmentScope": "Image environment-name whitelist plus explicit offline/thread/task-scratch values; no host env file,credentials/home/provider config or Docker socket mounts."
+  },
+  "actualControls": {
+    "nativeNetwork": [
+      {
+        "operation": "native_tcp_connect",
+        "result": -1,
+        "errno": 101,
+        "error": "Network is unreachable"
+      },
+      {
+        "operation": "native_udp_sendto",
+        "result": -1,
+        "errno": 101,
+        "error": "Network is unreachable"
+      }
+    ],
+    "mechanism": "ctypes libc.socket/connect/sendto directly invoke Linux kernel; no Python socket patch/hook. TEST-NET-1 192.0.2.1:9 only after lo-only namespace readback. Both denied by missing route.",
+    "readOnlyWritesDenied": [
+      {
+        "path": "/input/allowed.txt",
+        "errno": 30,
+        "denied": true
+      },
+      {
+        "path": "/code/control.py",
+        "errno": 30,
+        "denied": true
+      },
+      {
+        "path": "/etc/d07-control-forbidden",
+        "errno": 30,
+        "denied": true
+      }
+    ],
+    "unmountedAndCredentialReachDenied": [
+      {
+        "path": "/run/desktop/mnt/host/e/BhuAayam-data/task-data/d07-rfdetr-containment-20261005/unmounted-canary.txt",
+        "errno": 2,
+        "reachable": false
+      },
+      {
+        "path": "/var/run/docker.sock",
+        "errno": 2,
+        "reachable": false
+      },
+      {
+        "path": "/root/.aws/credentials",
+        "errno": 13,
+        "reachable": false
+      },
+      {
+        "path": "/root/.docker/config.json",
+        "errno": 13,
+        "reachable": false
+      }
+    ],
+    "permittedInputRead": true,
+    "permittedTaskOutputWrite": true,
+    "childExit": -15,
+    "childSurvived": false,
+    "inputAndCodePinsUnchanged": true
+  },
+  "runtimeAndBounds": {
+    "hostReceipt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\command.json",
+      "bytes": 771,
+      "sha256": "a569c1c24e00db0845c6a77daa1eb079245ebca247b1eeb7bf2d5d893e66c047"
+    },
+    "elapsedSeconds": 5.407,
+    "hostPeakObservedRssBytes": 56385536,
+    "hostPeakJobPrivateBytes": 75423744,
+    "containerPeakCgroupMemoryBytes": 39202816,
+    "containerPeakSelfRssBytes": 27844608,
+    "hostJobCapBytes": 536870912,
+    "containerMemoryCapBytes": 5368709120,
+    "combinedOwnedHardMemoryCapBytes": 5905580032,
+    "cpuMaximum": 2,
+    "cpuAffinity": "0-1",
+    "deadlineSeconds": 300,
+    "effectiveCgroup": {
+      "memory.max": "5368709120",
+      "memory.swap.max": "0",
+      "memory.peak": "39202816",
+      "cpu.max": "200000 100000",
+      "cpuset.cpus.effective": "0-1",
+      "pids.max": "32",
+      "pids.peak": "6"
+    },
+    "hostJobClosed": true
+  },
+  "compatibility": {
+    "cachedImagePackageMetadataOnly": {
+      "torch": null,
+      "torchvision": null,
+      "transformers": null,
+      "pycocotools": null,
+      "onnxruntime": "1.19.2"
+    },
+    "matchingTorchTrainingReady": false,
+    "hostGpuMetadata": "NVIDIA GeForce RTX 3070, 616.92, 8192 MiB, 1987 MiB",
+    "gpuAssigned": false,
+    "gpuTensorSmoke": "not_run: cached image has no Torch; no GPU runtime/device/driver compatibility claim",
+    "modelLoads": 0,
+    "trainOrInferenceCalls": 0,
+    "cudaAllocatedBytes": 0
+  },
+  "trainPrepInterface": {
+    "owner": "01a0ee2d-5889-7ac3-a75d-2d2248265c26",
+    "ownerCommit": "3f681f66a7c9debbe7f7a27c0388a88be548849c",
+    "planSha256": "3757b7701d1c4dfca68694b90961158757e01fae3e091fd83e97aeb2dd9ea958",
+    "preparedRoute": "Windows CPython3.12.14 / Torch2.14.0 / Torchvision0.29.0 / Transformers5.17.0; pycocotools2.0.11 proposed, not installed here",
+    "modelPinProvidedNotLoaded": {
+      "bytes": 141551436,
+      "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+    },
+    "pathsProvidedReadOnly": {
+      "script": "C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin/scripts/usp/learning/train_building_ramp.py",
+      "modelConfig": "E:/BhuAayam-data/task-data/d07-rfdetr-train-prep-20261005",
+      "data": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005",
+      "futureOutput": "E:/BhuAayam-data/task-data/d07-rfdetr-fit-authorized-later-20261005"
+    },
+    "pathConversionNeeded": true,
+    "actualModelDataMountedOrOpened": false,
+    "noTorchImportOrEnvironmentMutation": true
+  },
+  "blockerAndMinimalNextRoute": {
+    "blocker": "No cached compatible Linux Torch/Transformers/pycocotools runtime or qualified GPU runtime/image. Windows DLLs/absolute config/data paths cannot be silently mounted as a Linux training environment. Audited Windows launcher remains fixed to Qwen/task-staged roles; shared ACL/runtime changes were not made.",
+    "nextRoute": "Separately assign a pinned compatible Linux training image/environment (or task-private compatible Windows containment stage), mounted-path config/manifest adapter retaining original hashes/classes, and a minimal actual-runtime native-egress/local-access/GPU tensor control. For Docker reuse network-none, non-root/read-only/cap-drop/no-new-privileges/resource policy and exact RO code/model/data mounts; only new owned output is RW. Freeze new runtime/config/plan before authorization.",
+    "futureExecutionGates": "TRAIN-PREP plan-only/new environment lock; unchanged original class0 building/explicit COCO1 remap; source-group label/allocation eligibility, Torch/ONNX preprocessing parity and same-checkpoint baseline, current-process effective guard plus separately authorized GPU/fit handoff. This control is not a training authorization or model/parity qualification."
+  },
+  "cleanup": {
+    "temporaryContainerId": "99008d173692c2ba0ab37731622f120716e9505fdf15ba2b07c3bbc414fcdeae",
+    "ownedContainerRemoved": true,
+    "childSurvived": false,
+    "retainedContainerIds": 24,
+    "retainedVolumeNames": 14,
+    "beforeAfterExactlyEqual": true,
+    "historicalEightProfiles": "Not mounted, started or modified; no runtime/profile/ACL actions outside owned scope",
+    "runningServicesStarted": 0,
+    "dockerRestartResetOrRepair": false,
+    "sharedAclOrGlobalNetworkChange": false,
+    "gpuResourcesOwned": 0
+  },
+  "receipts": {
+    "preflight": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\preflight.json",
+      "bytes": 17496,
+      "sha256": "c82e18557c1a178ddf657e1e6fb1637487451d2a85ddd698aed169d65605e2d6"
+    },
+    "host": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\host-receipt.json",
+      "bytes": 40958,
+      "sha256": "7a07721a473dd4a009fbe35669c84459fe74a751262bb1824e91edbc03625aa6"
+    },
+    "worker": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\output\\control.json",
+      "bytes": 2012,
+      "sha256": "67179ffd0614663c157e48b8181f59e4c8a5bd23efd529bf3ac9f643b7b86d33"
+    },
+    "supervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\supervise.py",
+      "bytes": 850,
+      "sha256": "3dee55e8baa3ad987e911df679ae61816f6fe6fd08f4315f34254480d80a7f56"
+    },
+    "command": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\command.json",
+      "bytes": 771,
+      "sha256": "a569c1c24e00db0845c6a77daa1eb079245ebca247b1eeb7bf2d5d893e66c047"
+    }
+  },
+  "verification": {
+    "syntaxExit": 0,
+    "controlExit": 0,
+    "savedProofPinAndScopeChecksExit": 0,
+    "oneTemporaryContainerOnly": true,
+    "noOldSourceEvaluationOrModelAccess": true
+  },
+  "primaryReferences": [
+    {
+      "url": "https://docs.docker.com/engine/network/drivers/none/",
+      "claim": "network none creates only loopback; actual native denial verified here"
+    },
+    {
+      "url": "https://docs.docker.com/engine/containers/resource_constraints/",
+      "claim": "Docker cgroup memory/cpu controls; actual limits/peak read back here"
+    }
+  ],
+  "settings": {
+    "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+    "observed": "model/effort/tier unexposed",
+    "permissions": "never/danger-full-access"
+  },
+  "scope": "One owned control launcher and compact evidence leaf. Prior397474d6/04ce9909/results/raw arrays preserved. No training/model inference/optimizer/GPU import/download/build/install/global firewall/proxy/credentials/shared ACL/DB/storage/API/dispatcher/frontend/push/main/deploy."
+}
