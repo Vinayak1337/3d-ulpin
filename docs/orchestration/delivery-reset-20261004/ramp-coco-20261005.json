@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "task": "D06-RAMP-COCO-PREP",
+  "baseCommit": "03c06ebd38396e34e6adc5d60aa67b5204085e3a",
+  "status": "exported_pending_fit_admission",
+  "code": {
+    "path": "C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin/scripts/usp/learning/prepare_ramp_coco.py",
+    "bytes": 18374,
+    "sha256": "01e9c506d0b310a93b87a2db67882b5f6e9c4c43a55cf05c060e3e109a4b4b4a"
+  },
+  "privateRoot": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005",
+  "privateSourceMappingManifest": {
+    "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/manifest.json",
+    "bytes": 444695,
+    "sha256": "443f57089ca43044b281a80267b5e6f3c8209adc023e1afbe2460401311fc6cb"
+  },
+  "verification": {
+    "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/verification.json",
+    "bytes": 4991,
+    "sha256": "8927835c118dfe81c7884de74d879641d0f3805330dac89de4ab26341fd5d35f"
+  },
+  "format": {
+    "type": "COCO instance segmentation",
+    "encoding": "Uncompressed RLE counts in column-major order; one annotation per original publisher feature; iscrowd0",
+    "category": {
+      "id": 1,
+      "name": "rooftop_building",
+      "supercategory": "published_rooftop"
+    },
+    "imageIds": "1-24 train;25-48 valid",
+    "annotationIds": "1-263 train;264-441 valid",
+    "images": "Native-size lossless RGB PNG bytes copied unchanged from source-derived RGB; source UUID filenames",
+    "noTestPool": true,
+    "modelSpecificClassRemapping": "Trainer-owned; exporter never changes original category semantics"
+  },
+  "splits": [
+    {
+      "split": "train",
+      "sourceParent": "105001001597B000",
+      "sourceGroup": "ramp-MaxarODP-105001001597B000",
+      "images": 24,
+      "instances": 263,
+      "sourceEmptyImages": 1,
+      "unionPositivePixels": 145104,
+      "annotations": {
+        "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/train/_annotations.coco.json",
+        "bytes": 289622,
+        "sha256": "107e9ef9fe68e6f7d7c5a803188d44839cecf486a670fc0ff474761e0112b72c"
+      }
+    },
+    {
+      "split": "valid",
+      "sourceParent": "104001002CA32300",
+      "sourceGroup": "ramp-MaxarODP-104001002CA32300",
+      "images": 24,
+      "instances": 178,
+      "sourceEmptyImages": 5,
+      "unionPositivePixels": 181259,
+      "annotations": {
+        "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/valid/_annotations.coco.json",
+        "bytes": 248539,
+        "sha256": "50ae2e87534f2957f8664337ef6c8c60233322f9c613c6f73613eb200019b601"
+      }
+    }
+  ],
+  "counts": {
+    "images": 48,
+    "uniqueOriginalRgbFrames": 48,
+    "sourceFeatures": 441,
+    "cocoInstances": 441,
+    "sourceEmptyImages": 6,
+    "sourceProjects": 2,
+    "sourceParentCaptures": 2,
+    "conservativeGroups": 2,
+    "fullFramePixels": 3145728,
+    "unionPositivePixels": 326363,
+    "instancePositivePixels": 326363,
+    "multipartSourceFeatures": 0,
+    "holeRings": 0,
+    "clippedSourceRings": 29
+  },
+  "groupPolicy": {
+    "train": "All24 Barishal parent105001001597B000 retained together as candidate TRAIN; unallocated/not_fit_admitted",
+    "valid": "ALL24 Karnataka parent104001002CA32300 retained together for DEVELOPMENT; never included in train",
+    "final": "No final/test selection; prior open-development inputs and closed evaluations unchanged",
+    "fitAdmission": "not_fit_admitted"
+  },
+  "sourceIdentity": "Adjacent manifest maps each COCO image/annotation to source image UUID/group/parent, raw TIFF/RGB/vector hashes, publisher feature index/id, original feature identity, full affine, mask hash and source policy",
+  "topologyAndExtent": "RLE preserves each individual feature mask, including multipart/hole composition when present; no source components split or different instances merged. Mask clips only to original image extent, raw vectors remain unchanged. This fixed corpus has0multipart/holes and29clipped rings.",
+  "emptyPolicy": "Only explicit complete publisher FeatureCollections with zero features produce zero annotations; null/unannotated/provisional inputs are rejected",
+  "sourcePolicy": "Human-reviewed published roof labels; no agent/model/teacher labels or corrections. Source full-frame analysis/absent authoritative uncertainty masks remain visible. Rooftops are not base/property/floor truth; instance counts are not independent physical buildings.",
+  "terms": "DevGlobal RAMP CC-BY-NC-4.0 imagery/labels; upstream Maxar lineage, attribution and launch limitations copied into private provenance manifest and COCO license fields",
+  "checks": {
+    "exportCommandExit": 0,
+    "perInstanceRleEquality": true,
+    "sourceMaskUnionEquality": true,
+    "sourceAndExportRgbPixelEquality": true,
+    "nativeTiffFrameEquality": true,
+    "allSourceFeatureIdentitiesEqual": true,
+    "jsonAndImageAndMappingCheckExit": 0,
+    "compatibleLibraryLoader": {
+      "status": "not_available",
+      "reason": "No compatible pycocotools in retained export runtime; JSON, per-instance RLE and union/pixel/frame checks passed"
+    },
+    "observedLimit": "pycocotools unavailable in retained exporter runtime; no heavy toolkit installed or model imported",
+    "trainerStaticInterfaceReport": {
+      "owner": "AI-04B Documents Full Access",
+      "nativeReference": "rfdetr1.11.2 upstream7433d5919d0f7e72cc6cb78663e0a731afd499e0",
+      "report": "Owner static loader check supports RLE; original Transformers route/explicit category1 to checkpoint0 mapping remains trainer-owned, no remap by exporter"
+    },
+    "reversedGroupRefusal": {
+      "actualExit": 1,
+      "expectedExit": 1,
+      "outputCreated": false,
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/refusal-check.json",
+        "bytes": 483,
+        "sha256": "ae990df4e81f85dd2d5b4d0f481d59160a9a8701092409ae43ecaa15df022544"
+      }
+    }
+  },
+  "usage": {
+    "workingDirectory": "C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin",
+    "command": "python scripts/usp/learning/prepare_ramp_coco.py --train-manifest <fixed Barishal JSON> --development-manifest <reserved Karnataka JSON> --output <fresh private directory> --polygon-helper <retained D06 prepare_derivatives.py>",
+    "existingDatasetRoot": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005",
+    "trainAnnotations": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/train/_annotations.coco.json",
+    "developmentAnnotations": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/valid/_annotations.coco.json",
+    "existingOutputPolicy": "Refuses overwrite; use a fresh private output for a separately authorized regeneration",
+    "relativeInputManifestReferences": "Resolve any repository-relative split.sourceManifest.path against the pinned workingDirectory; original/image/vector/mask refs are absolute",
+    "runtime": "Existing bundled Python3.12.14, NumPy2.3.5/Pillow12.3.0 and retained deterministic polygon helper; no new dependencies"
+  },
+  "pending": [
+    "Fit authorization/admission, eligible grouped supervision, fair comparison and single GPU/resource handoff remain trainer/lead-owned.",
+    "Local independent human audit, RF-DETR pretraining overlap and physical site/building identities remain unknown.",
+    "Existing model format/base compatibility and class adapter checks belong to trainer; this export makes no model or Indian-performance claim."
+  ],
+  "resources": {
+    "cpuAffinityLogicalProcessors": [
+      0,
+      1
+    ],
+    "peakWorkingSetBytes": 42565632,
+    "memoryLimitBytes": 2147483648,
+    "networkRequests": 0,
+    "modelOrFitOrGpuCalls": 0,
+    "permissionsObserved": {
+      "approvalPolicy": "never",
+      "sandboxMode": "danger-full-access"
+    },
+    "requestedSettings": {
+      "model": "gpt-6.1-sol",
+      "reasoningEffort": "high",
+      "speed": "default/standard1x"
+    },
+    "actualModelEffortTier": "unexposed",
+    "newDependencyInstalls": 0,
+    "originalOrSharedCatalogueOrModelOrApiWrites": 0
+  },
+  "collaboration": "Authorized file-interface exchange only with AI-04B Documents Full Access; no delegation, model inference or fitting"
+}
