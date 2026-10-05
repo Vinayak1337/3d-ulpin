@@ -1,6 +1,6 @@
 # ML and data: revised sequence
 
-**Proposed; all workers and training remain stopped.** This plan preserves the user's full goal: combine fragmented inputs, link evidence to the right buildings/floors, and produce reviewable 3D records. It separates that goal into tasks whose outputs can be measured and used. See [assessment](README.md) and [delivery queue](../WORK_ITEMS.md). The user's 4 October distillation addendum is incorporated below as conditional D08D, not a restart of the old learner.
+**Reference sequence; bounded delivery and data preparation resumed, fine-tuning remains unrun.** Current assignments live in [the delivery queue](../WORK_ITEMS.md), including parallel floor/building/document data shards; their dispatch does not supply independent Indian labels, teacher audit or training authorization. Old fragment-support work and closed evaluations remain parked/protected. This plan preserves the user's full goal: combine fragmented inputs, link evidence to the right buildings/floors, and produce reviewable 3D records. It separates that goal into tasks whose outputs can be measured and used. See [assessment](README.md) and [delivery queue](../WORK_ITEMS.md). The user's 4 October distillation addendum is incorporated below as conditional D08D, not a restart of the old learner.
 
 ## Task-to-output map
 

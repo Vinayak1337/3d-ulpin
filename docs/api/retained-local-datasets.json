@@ -809,6 +809,29 @@
           ],
           "otherManifestAssetsQualified": false,
           "role": "PRIVATE_INSPECTION"
+        },
+        {
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/source-evidence-history-20261005.json",
+          "servedCodeCommit": "4dbf42b1a46a91cc85ae2cdc27ace295e1bf9f68",
+          "recordedAt": "2026-10-05T11:04:05.891Z",
+          "environment": "Stopped retained read-only source-evidence-history run01; owned API/task storage stopped, no processing or inference. Original24 container IDs/14 volumes/eight profiles/six branch pins and prior receipts preserved; no standing URL.",
+          "qualification": "Actual bounded read-only local-process software inspection at exact 4dbf: both private histories200 return one immutable reference and returned exact-read URLs200 preserve the earlier D08 proposal snapshot and D07 needs_input review; two empty after-tails200, wrong-collection cursor404 NOT_FOUND, duplicate limit422 DOCUMENT_PROPOSALS_QUERY and foreign Origin403 ORIGIN_DENIED. Nine GETs/zero mutations; all29 full table counts/per-row digests and three Redis values unchanged, operations164→164. Provisional/local_process/non-human/non-ground-truth/non-label/not_assessed remain. No quote truth, model-producer execution, approved revision, building/floor identity, geometry, rights, accuracy, labels, frontend or release qualification.",
+          "unqualified": [
+            "One real persisted reference per collection and two empty after-tails. Controlled multi-page/lookahead/corruption/drift behavior remains in accepted owner/reviewer evidence; no new control records or forced mutations.",
+            "Caller-supplied provisional document packet, model-derived candidates and local-process review attribution remain not_machine_verified/not_assessed/non-human/non-ground-truth/non-label. Discovery and exact reads establish no approval/current approved revision, quote truth, building/floor identity, geometry, rights, semantic accuracy or learning labels.",
+            "No POST/save/upload/new records, native page/raster/OCR/geometry/inference/model/provider/GPU/dispatcher/Celery, migration/reset/reseed, source acquisition, held-out, frontend, push/deployment or standing URL.",
+            "No PG EXPLAIN/performance or whole-OS egress/model-process audit; reported scratch observations and counters have the stated task scope. No running worker tier proof from assignment text.",
+            "Assignment reference docs/api/first-journey.md is absent; actual published reopening consumer guidance is docs/api/first-journey-contract.md."
+          ],
+          "operations": [
+            "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals",
+            "GET /api/v1/spatial-ml/items/{itemId}/source-reviews"
+          ],
+          "testedAssetIds": [
+            "haryana-2831-tower3-plan2.pdf"
+          ],
+          "otherManifestAssetsQualified": false,
+          "role": "PRIVATE_INSPECTION"
         }
       ]
     },
