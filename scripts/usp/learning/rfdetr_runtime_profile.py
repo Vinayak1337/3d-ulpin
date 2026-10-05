@@ -4,7 +4,8 @@ Metadata readiness is separate from actual runtime, model, GPU and fit admission
 The historical authorization admits CPU processor and tiny GPU controls.
 A separate exact root instruction admits the frozen Torch reference, with
 current-process gates and conditional ALL24. Separately authorized v2 is an
-own-route ALL24 baseline with cached production scoring. There is no fitting entry point.
+own-route ALL24 baseline with cached production scoring. A distinct exact root
+instruction admits one frozen pilot fit with no evaluation or scoring.
 The e71d historical control and its single-use launcher remain unchanged.
 """
 from __future__ import annotations
@@ -50,6 +51,12 @@ BL_ROOT_SHA = "f453d00a279c07e9f43315b195cd18c4e59e709addc94ce3c3d556a1e2e54ada"
 BL_RUNNER_SHA = "7882a3bf3ff99076add9f551c1b5881a52fba1c98bbe553bf125768cd0d84db1"
 BL_PLAN_SHA = "d350f2f0fa943423150e20ed77cd3d0fcc7558a4213456bb2b321d4bd384a3b0"
 BL_INTERFACE_SHA = "2c37c0e547f1d0724d0525bc3103e1edbc7ca3bff7137a106fa94000968ec3f6"
+FIT_PREP = DATA / "d07-rfdetr-pilot-fit-20261005"
+FIT_RUN = DATA / "d07-rfdetr-pilot-fit-run-20261005"
+FIT_ROOT_SHA = "71f0091f70ede5c5b8db1729ac368e626c79e7cb8f97d8594e74bbc7e7a9b3ef"
+FIT_RUNNER_SHA = "30dfc02ab1f7d4122e306cdd7ca4ac3262b8e30791f2c77b8098527fb8880c93"
+FIT_PLAN_SHA = "22b0a1bd318490bb3a5b484dd248eebdba9d94c87879897f1c3d2de60f7abe37"
+FIT_INTERFACE_SHA = "5f26294968f4af554dd6419dde4bdd020321b0bd3eade07c55a9086d9355b29e"
 
 
 def require(condition, reason):
@@ -548,29 +555,94 @@ need(failure is None,'Accepted runner failed: '+str(failure))
 '''.lstrip()
 
 
-def reference_checks(root_instruction, execution_state, baseline=False):
-    prepared = BL_PREP if baseline else REF
-    run_root = BL_RUN if baseline else REF_RUN
-    root_sha = BL_ROOT_SHA if baseline else REF_ROOT_SHA
-    runner_sha = BL_RUNNER_SHA if baseline else REF_RUNNER_SHA
-    interface_sha = BL_INTERFACE_SHA if baseline else REF_INTERFACE_SHA
-    plan_pins = {"experimental-baseline": BL_PLAN_SHA} if baseline else REF_PLANS
-    task_id = "D07-RFDETR-TORCH-BASELINE-V2-ACTUAL" if baseline else "D07-RFDETR-TORCH-REFERENCE"
+def pilot_bridge():
+    """Reuse the same-PID pause/seal/resume primitive for the separate fit gate."""
+    bridge = REFERENCE_BRIDGE.replace(REF_ROOT_SHA, FIT_ROOT_SHA)
+    bridge = bridge.replace("/inputs/reference/authorization.json", "/inputs/pilot/authorization.json")
+    bridge = bridge.replace("/inputs/reference/preflight.json", "/inputs/pilot/current-process-preflight.json")
+    bridge = bridge.replace("/inputs/reference/compare_ramp_torch.py", "/inputs/plan/train_building_ramp.py")
+    bridge = bridge.replace("plan=module['read'](Path('/inputs/reference/plan.json'));module['validate_plan'](plan)\nmodule['authorize'](plan,authority,release['authorizationSha256'])",
+        "plan=module['read_json'](Path('/inputs/pilot/plan.json'));module['validate_pilot'](plan)\n"
+        "module['check_gate'](authority,release['authorizationSha256'],plan)")
+    bridge = bridge.replace("phase=initial['mode']; path=output/(phase+'-process-preflight.json')",
+        "preflight.update(gpuUuid=observation['environment']['NVIDIA_VISIBLE_DEVICES'],"
+        "bounds=cfg['bounds'],planSha256=cfg['planSha256'])\n"
+        "phase=initial['mode']; path=output/(phase+'-process-preflight.json')")
+    bridge = bridge.replace("'--plan','/inputs/reference/plan.json','--reference-run'",
+                            "'--config','/inputs/pilot/plan.json','--execute'")
+    # This resource receipt follows the actual fit gate. The earlier native
+    # proof still accurately records no Torch/model load and no fit authority.
+    bridge = bridge.replace("'trainingAuthorized':False", "'trainingAuthorized':True")
+    require("module['check_gate'](authority,release['authorizationSha256'],plan)" in bridge
+            and "/inputs/reference/" not in bridge, "Pilot bridge binding incomplete")
+    return bridge
+
+
+def pilot_inputs(interface, plan):
+    """Verify only the frozen interface's explicit pins and finite mappings."""
+    require(len(interface["allReadOnlyMounts"]) == 24
+            and interface["allReadOnlyMounts"][:-1] == plan["mounts"]
+            and interface["inputInventory"] == plan["inventory"]
+            and interface["evidenceInventory"] == plan["evidence"], "Frozen pilot interface drift")
+    require(interface["runtimeRequirements"]["bounds"] == plan["bounds"]
+            and interface["runtimeRequirements"]["gpuUuid"] == GPU_UUID
+            and interface["canonicalPlanSha256"] == plan["planSha256"], "Pilot bounds/plan drift")
+    check_plan = copy.deepcopy(plan); expected_sha = check_plan.pop("planSha256")
+    require(hashlib.sha256(json.dumps(check_plan, sort_keys=True, separators=(",", ":"),
+            allow_nan=False).encode()).hexdigest() == expected_sha, "Canonical pilot plan drift")
+    def mapped(container_pin):
+        path = container_path(container_pin["path"])
+        matches = []
+        for mount in interface["allReadOnlyMounts"]:
+            host = host_path(mount["hostPath"], mount["kind"])
+            target = container_path(mount["containerPath"])
+            require(mount["readOnly"] is True, "Writable pilot input refused")
+            if path == target or mount["kind"] == "directory" and path.is_relative_to(target):
+                matches.append(host / str(path.relative_to(target)))
+        require(len(matches) == 1, "Pilot input mapping missing/overlapping")
+        actual = pin(matches[0])
+        require((actual["bytes"], actual["sha256"]) == (container_pin["bytes"], container_pin["sha256"]),
+                "Pilot input pin mismatch")
+        return actual
+    for row in interface["inputInventory"]:
+        actual = mapped(row["containerPin"])
+        require(Path(actual["path"]) == Path(row["hostPin"]["path"])
+                and actual["bytes"] == row["hostPin"]["bytes"]
+                and actual["sha256"] == row["hostPin"]["sha256"], "Pilot host/container pin mismatch")
+    for evidence in interface["evidenceInventory"].values():
+        mapped(evidence)
+    mapped(interface["allReadOnlyMounts"][-1]["pin"])
+
+
+def reference_checks(root_instruction, execution_state, baseline=False, pilot=False):
+    started = time.perf_counter()  # Pilot's 900s includes pin checks and cleanup.
+    require(not (baseline and pilot), "Reference and fit authorities are distinct")
+    prepared = FIT_PREP if pilot else (BL_PREP if baseline else REF)
+    run_root = FIT_RUN if pilot else (BL_RUN if baseline else REF_RUN)
+    root_sha = FIT_ROOT_SHA if pilot else (BL_ROOT_SHA if baseline else REF_ROOT_SHA)
+    runner_sha = FIT_RUNNER_SHA if pilot else (BL_RUNNER_SHA if baseline else REF_RUNNER_SHA)
+    interface_sha = FIT_INTERFACE_SHA if pilot else (BL_INTERFACE_SHA if baseline else REF_INTERFACE_SHA)
+    runner_name = "train_building_ramp.py" if pilot else "compare_ramp_torch.py"
+    plan_pins = {"pilot-fit": FIT_PLAN_SHA} if pilot else ({"experimental-baseline": BL_PLAN_SHA} if baseline else REF_PLANS)
+    task_id = "D07-RFDETR-PILOT-FIT-ACTUAL" if pilot else ("D07-RFDETR-TORCH-BASELINE-V2-ACTUAL" if baseline else "D07-RFDETR-TORCH-REFERENCE")
     require(root_instruction == run_root / "root-assignment.txt"
             and pin(root_instruction)["sha256"] == root_sha, "Exact reference root instruction required")
-    require(pin(prepared / "compare_ramp_torch.py")["sha256"] == runner_sha
+    require(pin(prepared / runner_name)["sha256"] == runner_sha
             and pin(prepared / "mount-interface.json")["sha256"] == interface_sha, "Reference runner/interface drift")
-    save(run_root / "attempt.json", {"baselineAttempts":1,"rootInstruction":pin(root_instruction)} if baseline else {"smokeAttempts":1,"conditionalAll24Attempts":1,"rootInstruction":pin(root_instruction)})
+    save(run_root / "attempt.json", {"fitAttempts":1,"evaluationAttempts":0,"rootInstruction":pin(root_instruction)} if pilot else ({"baselineAttempts":1,"rootInstruction":pin(root_instruction)} if baseline else {"smokeAttempts":1,"conditionalAll24Attempts":1,"rootInstruction":pin(root_instruction)}))
     base = profile(validate_old_output=False)
     interface = json.loads((prepared / "mount-interface.json").read_bytes())
-    output = host_path(interface["replaceWritableOutput"]["hostPath"], exists=False)
+    output = host_path(interface["writableOutput" if pilot else "replaceWritableOutput"]["hostPath"], exists=False)
+    if pilot:
+        require(output == FIT_PREP / "output", "Exact new pilot output required")
     require(not output.exists() or not any(output.iterdir()), "Reference output must be new/empty")
     output.mkdir(exist_ok=True)
     docker = ["docker","--context","desktop-linux"]
-    calls, stages, started = [], [], time.perf_counter()
+    calls, stages = [], []
+    if not pilot: started = time.perf_counter()
     def remaining(reserve=45):
-        value=590-(time.perf_counter()-started)-reserve
-        require(value>0,"Total600s reference deadline exhausted")
+        value=(900 if pilot else 590)-(time.perf_counter()-started)-reserve
+        require(value>0,"Total900s pilot deadline exhausted" if pilot else "Total600s reference deadline exhausted")
         return value
     def command(args,timeout=20,cleanup=False):
         p=subprocess.run(args,capture_output=True,text=True,timeout=min(timeout,remaining(0 if cleanup else 45)))
@@ -587,29 +659,55 @@ def reference_checks(root_instruction, execution_state, baseline=False):
     require(all(actual_image[k]==retained[k] for k in ["Id","Config","RootFS","Descriptor"]),"Immutable reference image drift")
     smoke=None; failure=None
     try:
-        for mode in (["experimental-baseline"] if baseline else ["smoke","development"]):
-            plan_path=prepared/("baseline-plan.json" if baseline else mode+"-plan.json")
+        for mode in (["pilot-fit"] if pilot else (["experimental-baseline"] if baseline else ["smoke","development"])):
+            plan_path=prepared/("pilot-plan.json" if pilot else ("baseline-plan.json" if baseline else mode+"-plan.json"))
             require(pin(plan_path)["sha256"]==plan_pins[mode],"Frozen reference plan drift")
             plan=json.loads(plan_path.read_bytes())
+            if pilot: pilot_inputs(interface, plan)
             gates=run_root/mode;gates.mkdir()
-            auth_path=gates/"authorization.json"; control_path=gates/"preflight.json"
-            auth={"schemaVersion":"ramp-torch-baseline-authorization/2" if baseline else "ramp-torch-reference-authorization/1","rootThreadId":"01a0ed8a-4383-79c3-a0ae-35c1e969ef66",
+            auth_path=gates/"authorization.json"; control_path=gates/("current-process-preflight.json" if pilot else "preflight.json")
+            auth={"schemaVersion":"ramp-pilot-training-authorization/1" if pilot else ("ramp-torch-baseline-authorization/2" if baseline else "ramp-torch-reference-authorization/1"),"rootThreadId":"01a0ed8a-4383-79c3-a0ae-35c1e969ef66",
                 "rootAuthorized":True,"mode":mode,"planSha256":plan["planSha256"],"scriptSha256":runner_sha,
                 "rootAssignmentSha256":root_sha,"rootAssignment":root_instruction.read_text(encoding="utf-8")}
             if baseline:
                 auth.update(baselinePolicy=plan["baselinePolicy"],prerequisites=plan["prerequisites"])
+            if pilot:
+                assignment_path = gates / "root-fit-assignment.json"
+                assignment = {"schemaVersion":"ramp-pilot-root-assignment/1", "task":"D07-RFDETR-PILOT-FIT-EXECUTE",
+                    "rootTask":task_id, "rootThreadId":auth["rootThreadId"], "fitAuthorized":True,
+                    "evaluationAuthorized":False, "planSha256":plan["planSha256"], "scriptSha256":runner_sha,
+                    "modelOwnerThreadId":"01a0fbd5-4561-7692-b366-ebd123380593",
+                    "rootInstruction":pin(root_instruction), "verbatimRootInstruction":auth["rootAssignment"]}
+                save(assignment_path, assignment)
+                auth.update(scope="one_fixed_pilot_fit_no_evaluation", recipe=plan["trainingArguments"],
+                    bounds=plan["bounds"], evidence=plan["evidence"], modelOwnerThreadId=assignment["modelOwnerThreadId"],
+                    rootAssignment={**pin(assignment_path),"path":"/inputs/pilot/root-fit-assignment.json"})
             save(auth_path,auth);save(control_path,{"state":"awaiting_actual_process"})
             selected=copy.deepcopy(base);selected.update(task=run_root.name,gpuAssigned=True,output={"hostPath":str(output),"containerPath":"/outputs/rfdetr","readOnly":False,"kind":"directory"})
             selected["policy"]["deviceRequests"]=[{"DeviceIDs":[GPU_UUID],"Count":0,"Capabilities":[["gpu"]]}]
             selected["policy"].pop("attachDeadlineSeconds")
             selected["policy"].update(supervisorDeadlineSeconds=600,innerDeadlineSeconds=590,cleanupReserveSeconds=45,
                                        attachDeadline="remaining inner budget minus cleanup reserve")
-            extras=interface["newReadOnlyMounts"] if baseline else interface["modes"][mode]["newReadOnlyMounts"]
+            if pilot:
+                selected["policy"].update(supervisorDeadlineSeconds=900,innerDeadlineSeconds=855,
+                    attachDeadline="900s total budget minus elapsed and 45s cleanup reserve")
+                selected.update(state="root_authorized_pilot_pending_actual_process", trainingAuthorized=True)
+            extras=interface["allReadOnlyMounts"] if pilot else (interface["newReadOnlyMounts"] if baseline else interface["modes"][mode]["newReadOnlyMounts"])
             for mount in extras:
-                path=host_path(mount["hostPath"],"file");actual=pin(path)
-                require((actual["bytes"],actual["sha256"])==(mount["pin"]["bytes"],mount["pin"]["sha256"]),"Exact reference input pin mismatch")
-            selected["mounts"]+=extras+[{"hostPath":str(auth_path),"containerPath":"/inputs/reference/authorization.json","readOnly":True,"kind":"file"},
-                {"hostPath":str(control_path),"containerPath":"/inputs/reference/preflight.json","readOnly":True,"kind":"file"}]
+                path=host_path(mount["hostPath"],mount["kind"] if pilot else "file")
+                if not pilot or "pin" in mount:
+                    actual=pin(path)
+                    require((actual["bytes"],actual["sha256"])==(mount["pin"]["bytes"],mount["pin"]["sha256"]),"Exact reference input pin mismatch")
+            gate_prefix = "/inputs/pilot" if pilot else "/inputs/reference"
+            fresh_mounts=[{"hostPath":str(auth_path),"containerPath":gate_prefix+"/authorization.json","readOnly":True,"kind":"file"},
+                {"hostPath":str(control_path),"containerPath":gate_prefix+("/current-process-preflight.json" if pilot else "/preflight.json"),"readOnly":True,"kind":"file"}]
+            if pilot:
+                fresh_mounts.insert(1, {"hostPath":str(assignment_path),"containerPath":gate_prefix+"/root-fit-assignment.json","readOnly":True,"kind":"file"})
+                require([{k:m[k] for k in ["containerPath","readOnly","kind"]} for m in fresh_mounts]
+                        == [{k:m[k] for k in ["containerPath","readOnly","kind"]} for m in interface["futureRequiredReadOnlyMounts"]],
+                        "Exact three pilot gate mounts required")
+                selected["mounts"] = extras + fresh_mounts
+            else: selected["mounts"] += extras + fresh_mounts
             if mode=="development":
                 require(smoke and smoke["state"]=="reference_completed_parity_passed","ALL24 requires successful unchanged smoke")
                 smoke_path=gates/"smoke-result.json";smoke_path.write_bytes((output/"reference-smoke/result.json").read_bytes())
@@ -620,19 +718,25 @@ def reference_checks(root_instruction, execution_state, baseline=False):
                 for other in [*selected["mounts"],selected["output"]][:index]:
                     oh=Path(other["hostPath"]);oc=PurePosixPath(other["containerPath"])
                     require(not (hp.is_relative_to(oh) or oh.is_relative_to(hp) or cp.is_relative_to(oc) or oc.is_relative_to(cp)),"Reference mount escape/overlap refused")
-            selected["environment"].update(NVIDIA_VISIBLE_DEVICES=GPU_UUID,CUDA_VISIBLE_DEVICES="0")
-            selected["environmentOverrides"].update(NVIDIA_VISIBLE_DEVICES=GPU_UUID,CUDA_VISIBLE_DEVICES="0")
+            overrides = interface["runtimeRequirements"]["environmentOverrides"] if pilot else {"NVIDIA_VISIBLE_DEVICES":GPU_UUID,"CUDA_VISIBLE_DEVICES":"0"}
+            selected["environment"].update(overrides)
+            selected["environmentOverrides"].update(overrides)
             source=CONTROL.replace("need(not list(Path('/dev').glob('nvidia*')) and not Path('/dev/dxg').exists(),'Unexpected GPU devices in CPU profile')","# Exact physical GPU checked after current-process authorization.")
-            bridge=REFERENCE_BRIDGE.replace(REF_ROOT_SHA,root_sha)
+            bridge=pilot_bridge() if pilot else REFERENCE_BRIDGE.replace(REF_ROOT_SHA,root_sha)
             if baseline: bridge=bridge.replace("'--reference-run'","'--experimental-baseline-run'")
             source=source.replace("native-control.json",mode+"-native.json").replace("'gpuAssigned':False","'gpuAssigned':True").replace("actual_cpu_native_control_passed","actual_reference_native_control_passed")+bridge
+            if pilot:
+                source=source.replace("/inputs/plan/mounted-config.json", "/inputs/pilot/plan.json")
+                source=source.replace("config.stat().st_size==52751", "config.stat().st_size==96561")
+                source=source.replace(CONFIG[2], FIT_PLAN_SHA).replace("actual_reference_native_control_passed", "actual_pilot_native_control_passed")
             compile(source,"<reference-current-process>","exec")
             args=base["createArgv"][:base["createArgv"].index("--mount")]
             args[args.index("--name")+1]=run_root.name+"-"+mode+"-"+uuid.uuid4().hex[:12]
             args[args.index("--label")+1]="codex.task="+run_root.name
-            for i,value in enumerate(args):
-                if value.startswith("NVIDIA_VISIBLE_DEVICES="):args[i]="NVIDIA_VISIBLE_DEVICES="+GPU_UUID
-                if value.startswith("CUDA_VISIBLE_DEVICES="):args[i]="CUDA_VISIBLE_DEVICES=0"
+            for key,value in selected["environmentOverrides"].items():
+                positions=[i for i,arg in enumerate(args) if arg.startswith(key+"=")]
+                if positions:args[positions[0]]=key+"="+value
+                else:args += ["--env",key+"="+value]
             args += ["--interactive","--gpus","device="+GPU_UUID]
             for mount in [*selected["mounts"],selected["output"]]:
                 args += ["--mount","type=bind,source="+mount["hostPath"]+",target="+mount["containerPath"]+(",readonly" if mount["readOnly"] else "")]
@@ -670,7 +774,7 @@ def reference_checks(root_instruction, execution_state, baseline=False):
                 require(json.loads(raw)["pid"]==ready["pid"],"Current preflight PID mismatch")
                 execution_state["confirmed"]=True
                 control_path.write_bytes(raw)
-                auth["preflightReceipt"]={"path":"/inputs/reference/preflight.json","bytes":len(raw),"sha256":ready["preflightSha256"]}
+                auth["preflightReceipt"]={"path":fresh_mounts[-1]["containerPath"],"bytes":len(raw),"sha256":ready["preflightSha256"]}
                 auth_path.write_text(json.dumps(auth,indent=2)+"\n",encoding="utf-8",newline="\n")
                 process.stdin.write((json.dumps({"pid":ready["pid"],"authorizationSha256":pin(auth_path)["sha256"]})+"\n").encode());process.stdin.flush();process.stdin.close()
                 exit_code=process.wait(timeout=remaining());reader.join(timeout=3)
@@ -678,7 +782,18 @@ def reference_checks(root_instruction, execution_state, baseline=False):
                 require(exit_code==0,"Reference worker failed; see "+str(log))
                 state=json.loads(command([*docker,"inspect","--format","{{json .State}}",cid]))
                 require(state["ExitCode"]==0 and not state["Running"] and not state["OOMKilled"],"Reference resource/exit failure")
-                result=json.loads((output/Path(plan["outputDir"]).name/"result.json").read_bytes())
+                result=json.loads((output/("pilot-fit-v1" if pilot else Path(plan["outputDir"]).name)/"result.json").read_bytes())
+                if pilot:
+                    require(result["schemaVersion"]=="ramp-pilot-training-result/1" and result["state"]=="fit_completed_unqualified"
+                            and result["fixedFinalCheckpoint"] is True and result["optimizerUpdates"]==36
+                            and result["trainingObservations"]=={"forwardCalls":144,"trainExamples":144}
+                            and result["evaluationRun"] is False and result["developmentLossHistory"]==[]
+                            and result["heldOutTestOpened"] is False and result["promotion"] is False
+                            and result["authorizationSha256"]==pin(auth_path)["sha256"], "Incomplete/drifted pilot result")
+                    for name, expected in result["checkpointFiles"].items():
+                        actual=pin(output/"pilot-fit-v1/checkpoint"/name)
+                        require((actual["bytes"],actual["sha256"])==(expected["bytes"],expected["sha256"]), "Saved pilot checkpoint pin drift")
+                    require(set(result["checkpointFiles"])=={"model.safetensors","config.json","preprocessor_config.json"}, "Fixed final trio missing")
                 if baseline:
                     require(result["schemaVersion"]=="ramp-torch-baseline-result/2" and result["state"]=="experimental_baseline_completed"
                             and result["scriptSha256"]==runner_sha and result["planSha256"]==plan["planSha256"]
@@ -703,8 +818,8 @@ def reference_checks(root_instruction, execution_state, baseline=False):
                 failure={"type":"FrozenParityMiss","message":"Two-case smoke failed fixed numerical parity; ALL24 not admitted"};break
     finally:
         after=inventory(cleanup=True);require(before==after,"Reference changed retained container/volume inventory")
-        save(run_root/"host-receipt.json",{"task":task_id,"status":"blocked" if failure else ("experimental_baseline_completed" if baseline else "all24_reference_completed"),
-            "failure":failure,"stages":stages,"calls":calls,"before":before,"after":after,"elapsedSeconds":time.perf_counter()-started,"trainingAuthorized":False})
+        save(run_root/"host-receipt.json",{"task":task_id,"status":"blocked" if failure else ("fit_completed_unqualified" if pilot else ("experimental_baseline_completed" if baseline else "all24_reference_completed")),
+            "failure":failure,"stages":stages,"calls":calls,"before":before,"after":after,"elapsedSeconds":time.perf_counter()-started,"trainingAuthorized":pilot})
     if failure:raise ValueError(failure["message"])
 
 
@@ -822,14 +937,20 @@ def main():
     parser.add_argument("--torch-reference", action="store_true")
     parser.add_argument("--torch-baseline", action="store_true")
     parser.add_argument("--score-torch-baseline", action="store_true")
+    parser.add_argument("--pilot-fit", action="store_true")
     parser.add_argument("--root-authorization", type=Path)
     parser.add_argument("--runtime-binding", type=Path)
     parser.add_argument("--readback", type=Path, help="Validate saved exact Docker inspect JSON; no Docker call")
     args = parser.parse_args()
     execution_state = {"attempted": False, "confirmed": False}
     try:
-        require(sum([args.execute,args.torch_reference,args.torch_baseline,args.score_torch_baseline])<=1,
+        require(sum([args.execute,args.torch_reference,args.torch_baseline,args.score_torch_baseline,args.pilot_fit])<=1,
                 "Only one explicitly authorized execution route allowed")
+        if args.pilot_fit:
+            require(args.root_authorization is not None,"Pilot fit root instruction absent; refused before execution")
+            reference_checks(args.root_authorization, execution_state, pilot=True)
+            print(json.dumps({"status":"fit_completed_unqualified","experimentExecution":True,"trainingAuthorized":True,"evaluationRun":False}))
+            return
         if args.score_torch_baseline:
             cached_baseline_score(args.root_authorization, execution_state)
             return
@@ -863,7 +984,7 @@ def main():
             "writableMounts": 1, "inputPinsChecked": 68, "packageVersions": len(expected["packageVersions"]),
             "imageDigest": expected["imageDigest"], "executionAuthorized": False,
             "output": str(args.output) if args.output else None}))
-    except (ValueError, OSError, KeyError) as error:
+    except (ValueError, OSError, KeyError, subprocess.TimeoutExpired, queue.Empty) as error:
         # A post-launch failure must retain its confirmed execution scope.
         executed = True if execution_state["confirmed"] else (None if execution_state["attempted"] else False)
         print(json.dumps({"status": "blocked" if execution_state["attempted"] else "refused",

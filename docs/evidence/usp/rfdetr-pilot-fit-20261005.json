@@ -1,0 +1,376 @@
+{
+  "schemaVersion": "rfdetr-pilot-fit-evidence/1",
+  "task": "D07-RFDETR-PILOT-FIT-ACTUAL",
+  "state": "stopped_nonfinite_loss_unqualified",
+  "outcome": "One frozen Barishal research fit reached four logged optimizer updates, then the accepted built-in loss finiteness guard stopped the next failing forward before backward. No retry, final checkpoint, evaluation or promotion.",
+  "baseCommit": "fb48f85874fdc94aa515cbea0a1eb7f1878466ea",
+  "branch": "task/d07-rfdetr-pilot-fit-run-20261005",
+  "ownedFiles": [
+    "scripts/usp/learning/rfdetr_runtime_profile.py",
+    "docs/evidence/usp/rfdetr-pilot-fit-20261005.json"
+  ],
+  "settings": {
+    "requested": "GPT-6.1 Sol/xhigh/default-standard 1x",
+    "actualModel": null,
+    "actualReasoningEffort": null,
+    "actualServiceTier": null,
+    "observation": "Task model/effort/tier metadata unexposed; live permissions never/danger-full-access supplied."
+  },
+  "sourceScope": {
+    "train": {
+      "group": "Barishal",
+      "images": 24,
+      "publishedHumanRoofInstances": 263,
+      "publisherEmptyImages": 1
+    },
+    "development": {
+      "group": "Karnataka",
+      "images": 24,
+      "publishedHumanRoofInstances": 178,
+      "publisherEmptyImages": 5,
+      "evaluatedDuringFit": false
+    },
+    "finalImages": 0,
+    "status": "Publisher-human CC-BY-NC research rooftops only; pretraining overlap/independent local audit/ignore ambiguity unknown; clipping and roof-vs-ground limits retained; no operational labels",
+    "operationalTruth": false,
+    "sourceOverlayCountersChanged": false,
+    "dataAuditRun": false
+  },
+  "frozenInputs": {
+    "runner": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\train_building_ramp.py",
+      "bytes": 62726,
+      "sha256": "30dfc02ab1f7d4122e306cdd7ca4ac3262b8e30791f2c77b8098527fb8880c93"
+    },
+    "plan": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\pilot-plan.json",
+      "bytes": 96561,
+      "sha256": "22b0a1bd318490bb3a5b484dd248eebdba9d94c87879897f1c3d2de60f7abe37"
+    },
+    "interface": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\mount-interface.json",
+      "bytes": 54785,
+      "sha256": "5f26294968f4af554dd6419dde4bdd020321b0bd3eade07c55a9086d9355b29e"
+    },
+    "canonicalPlanSha256": "8139eedd077a78513daadfa4b5a6173fcb75b13e637f76ce4ea2bf3954c41716",
+    "weights": {
+      "path": "/inputs/model/model.safetensors",
+      "bytes": 141551436,
+      "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+    },
+    "modelConfig": {
+      "path": "/inputs/model/config.json",
+      "bytes": 2490,
+      "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+    },
+    "processorConfig": {
+      "path": "/inputs/model/preprocessor_config.json",
+      "bytes": 442,
+      "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+    },
+    "datasetManifest": {
+      "path": "/inputs/coco/manifest.json",
+      "bytes": 444695,
+      "sha256": "443f57089ca43044b281a80267b5e6f3c8209adc023e1afbe2460401311fc6cb"
+    },
+    "allocation": {
+      "path": "/inputs/pilot/allocation.json",
+      "bytes": 31595,
+      "sha256": "3f31d467c9ca8f6c92e02d7a09ffbb0fee7d51cd0d4dc3642629a32b02c074da"
+    },
+    "baselineScore": {
+      "path": "/inputs/pilot/baselineScore.json",
+      "bytes": 129769,
+      "sha256": "9239661b104c58dc8d00252170d5c7fcfb41cb2e9b6f4cb6106638c096163355"
+    },
+    "imageDigest": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+    "imageConfigDigest": "sha256:35a594b1962dcced21366ade1ef5ab02949dfe0dc059c16145d6ffd2d699b57b",
+    "runtimeBinding": {
+      "path": "/inputs/plan/runtime-binding.json",
+      "bytes": 6417,
+      "sha256": "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615"
+    },
+    "packageLock": {
+      "path": "/inputs/plan/environment-lock.json",
+      "bytes": 62182,
+      "sha256": "0a049c8f7e893df7a8a6a579a81dcca2f2554c700883dbe1a4be661a5d2fa7d8"
+    },
+    "originalCheckpointAndSourceUnchanged": true
+  },
+  "recipe": {
+    "output_dir": "/outputs/rfdetr/pilot-fit-v1",
+    "num_train_epochs": 6,
+    "per_device_train_batch_size": 1,
+    "per_device_eval_batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "seed": 42,
+    "data_seed": 42,
+    "dataloader_num_workers": 0,
+    "remove_unused_columns": false,
+    "eval_strategy": "no",
+    "save_strategy": "no",
+    "load_best_model_at_end": false,
+    "do_eval": false,
+    "prediction_loss_only": true,
+    "report_to": "none",
+    "push_to_hub": false,
+    "fp16": false,
+    "bf16": false,
+    "gradient_checkpointing": false,
+    "optim": "adamw_torch",
+    "logging_steps": 1,
+    "logging_nan_inf_filter": false,
+    "label_names": [
+      "labels"
+    ],
+    "use_cpu": false,
+    "torch_compile": false,
+    "max_steps": -1,
+    "lr_scheduler_type": "linear",
+    "warmup_steps": 0,
+    "max_grad_norm": 1.0,
+    "auto_find_batch_size": false,
+    "tf32": false
+  },
+  "bounds": {
+    "cpu": 2,
+    "computeThreads": 2,
+    "containerMemoryBytes": 5368709120,
+    "swapBytes": 0,
+    "pids": 32,
+    "hostJobMemoryBytes": 536870912,
+    "gpuAllocationBytes": 5368709120,
+    "fitAndCleanupSeconds": 900,
+    "cleanupReserveSeconds": 45,
+    "innerFitSeconds": 855
+  },
+  "verification": {
+    "prelaunchCommand": [
+      "C:/Python313/python.exe",
+      "-I",
+      "-B",
+      "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\prelaunch.py"
+    ],
+    "prelaunchExitCode": 0,
+    "syntaxAndBootstrapCompile": "passed",
+    "exactInputAndEvidencePins": "passed",
+    "missingAndOldRootAuthority": "refused before execution",
+    "writableInputCorruption": "refused",
+    "observedMounts": {
+      "readOnly": 27,
+      "writable": 1
+    },
+    "samePidAuthorityBeforeTorch": "passed",
+    "nativeNetworkAndWriteAndUnmountedReachControls": "passed",
+    "134PackageVersionBinding": "passed",
+    "originalCompleteCheckpointLoadAndInitialFP32FiniteParameters": "passed before Trainer",
+    "frozenLossAccumulationFix": "trainer.model_accepts_loss_kwargs=False retained in exact runner",
+    "changedCodeReview": "completed; historical routes and runner preserved",
+    "gitDiffCheck": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0
+    }
+  },
+  "execution": {
+    "command": [
+      "C:\\Python313\\python.exe",
+      "-I",
+      "-B",
+      "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\supervise.py",
+      "pilot-fit"
+    ],
+    "shellExitCode": 1,
+    "hostLauncherExitCode": 2,
+    "containerExitCode": 1,
+    "fitAttempts": 1,
+    "retryAttempts": 0,
+    "optimizerUpdatesObserved": 4,
+    "optimizerUpdatesPlanned": 36,
+    "trainExamplesPlanned": 144,
+    "partialTrainExampleCounter": null,
+    "partialForwardCounter": null,
+    "counterLimitation": "The frozen failure receipt omits in-memory Trainer/global and sample counters. Four completed updates are observed in four Trainer logs and progress 4/36; sample counts are not invented.",
+    "loggedTrainingUpdates": [
+      {
+        "loss": "37.12",
+        "grad_norm": "556.6",
+        "learning_rate": "0.0001",
+        "epoch": "0.1667"
+      },
+      {
+        "loss": "83.25",
+        "grad_norm": "2745",
+        "learning_rate": "9.722e-05",
+        "epoch": "0.3333"
+      },
+      {
+        "loss": "41.76",
+        "grad_norm": "3282",
+        "learning_rate": "9.444e-05",
+        "epoch": "0.5"
+      },
+      {
+        "loss": "42.58",
+        "grad_norm": "1132",
+        "learning_rate": "9.167e-05",
+        "epoch": "0.6667"
+      }
+    ],
+    "logPrecision": "Retained printed Trainer values, rounded as emitted; full-precision gradients/losses were not serialized on failure.",
+    "failure": {
+      "schemaVersion": "ramp-pilot-training-failure/1",
+      "state": "stopped_unqualified",
+      "planSha256": "8139eedd077a78513daadfa4b5a6173fcb75b13e637f76ce4ea2bf3954c41716",
+      "errorType": "ValueError",
+      "error": "Nonfinite built-in loss; stop before backward and retain the attempt",
+      "retryAuthorized": false,
+      "evaluationRun": false,
+      "promotion": false
+    },
+    "finalResult": null,
+    "fixedFinalCheckpointTrio": null,
+    "finalParameterIntegrity": "not_run_after_failure",
+    "evaluationRun": false,
+    "heldOutFinalOpened": false,
+    "candidateReferenceRun": false,
+    "qualityScoringRun": false
+  },
+  "resources": {
+    "containerId": "600b03a47eef2c7f4363fc4cfd1bfdea1d536a074194d46201d89cd43e317192",
+    "containerPid": 7,
+    "hostChildPid": 48560,
+    "gpuUuid": "GPU-3989f368-bd26-bd52-9daf-037a9862f82f",
+    "gpuName": "NVIDIA GeForce RTX 3070",
+    "torchPeakAllocatedBytes": 3815052800,
+    "torchPeakReservedBytes": 4313841664,
+    "cgroupMemoryPeakBytes": 2600218624,
+    "pidsPeak": 13,
+    "peakHostJobPrivateBytes": 72962048,
+    "effectiveCgroupLimits": {
+      "memory.max": "5368709120",
+      "memory.swap.max": "0",
+      "cpu.max": "200000 100000",
+      "cpuset.cpus.effective": "0-1",
+      "pids.max": "32",
+      "memory.peak": "42577920",
+      "pids.peak": "6"
+    },
+    "modelRouteElapsedSeconds": 9.927371683,
+    "hostFitAndCleanupElapsedSeconds": 20.297111899999436,
+    "supervisedElapsedSeconds": 20.422,
+    "OOMKilled": false
+  },
+  "cleanup": {
+    "exactOwnedContainerRemoved": true,
+    "ownedHostChildReaped": true,
+    "hostJobClosed": true,
+    "retainedContainerIdsAndVolumesEqual": true,
+    "retainedContainers": 24,
+    "retainedVolumes": 14,
+    "experimentalGpuWindowReleased": true,
+    "otherServicesChanged": false,
+    "worktreeChangesOnlyOwnedFiles": true
+  },
+  "limits": [
+    "Nonfinite total loss or a loss_dict component triggered the accepted guard; the failing component/value/input ID was not retained, so cause is unresolved.",
+    "Large printed gradient norms are observed; they do not by themselves identify the cause.",
+    "Kernel caching could not create its directory; warning retained, no environment change made.",
+    "No fixed-final result/trio exists to bind the future candidate-reference interface.",
+    "Previous original-weight ONNX parity remains FAILED; no equivalence, model-quality, readiness or generalization claim."
+  ],
+  "artifacts": {
+    "prelaunch": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\prelaunch.json",
+      "bytes": 2686,
+      "sha256": "62d19a33b665c83c7d7774d3e539a9e82edc459ddf16855a6798cc6241eaf797"
+    },
+    "prelaunchCode": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\prelaunch.py",
+      "bytes": 3834,
+      "sha256": "f5390f5361085769de310dca04822647cc320157ee86697f54063d9f74f3c89d"
+    },
+    "executedLauncher": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\execution-code.py",
+      "bytes": 74367,
+      "sha256": "be9039edb5313f92ecc9c5a2af0eea1cf050ea4fab7437d0d30693cd301de98a"
+    },
+    "supervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\supervise.py",
+      "bytes": 4196,
+      "sha256": "48f117bf10ae76674eb8c996fc57dc234da898e966949504813d499ce46e4662"
+    },
+    "command": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\command.json",
+      "bytes": 2081,
+      "sha256": "a04eb18b1ed658c4da826efc27a1fa59d2ca26e279d2ec33135f60e5528dffa3"
+    },
+    "hostReceipt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\host-receipt.json",
+      "bytes": 129251,
+      "sha256": "f86c50b7cabcec938d6461144c051aa50952fadfb19a05d3fea7cf1f003b15c2"
+    },
+    "rootInstruction": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\root-assignment.txt",
+      "bytes": 3788,
+      "sha256": "71f0091f70ede5c5b8db1729ac368e626c79e7cb8f97d8594e74bbc7e7a9b3ef"
+    },
+    "attempt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\attempt.json",
+      "bytes": 278,
+      "sha256": "f9a24e1e8b14a8bcf03c3939f1ebe0a289f5404b98e04b3c9807bf54886b12d5"
+    },
+    "authorization": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\pilot-fit\\authorization.json",
+      "bytes": 12034,
+      "sha256": "a3e5a73d04450133ae888ede5f61daf4157ca312e725d69fc491243499cc14b8"
+    },
+    "rootAssignment": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\pilot-fit\\root-fit-assignment.json",
+      "bytes": 4545,
+      "sha256": "1564d7066d7bc5b2e1785ed3b1586c9fe5dfc2c210dd5914523ea5e98404bf43"
+    },
+    "currentProcessPreflight": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\pilot-fit\\current-process-preflight.json",
+      "bytes": 14816,
+      "sha256": "4dac9472bd5e70ae3d1990b116d73ddabc6f549d53f413d441975bd9ff5921d2"
+    },
+    "observedContainer": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\pilot-fit\\container-readback.json",
+      "bytes": 39131,
+      "sha256": "03c30299fd82e16c26eb764bc6ad995f2bef1c2513c2c1b14af5b3ed5031fa6c"
+    },
+    "launchProfile": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\pilot-fit\\profile.json",
+      "bytes": 31198,
+      "sha256": "7c3f09327bc0064bc5a3cf681ef82afae214a2faab8bf9007d70260f818bf300"
+    },
+    "containerLog": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\pilot-fit\\container.log",
+      "bytes": 4618,
+      "sha256": "5bcf5a6604e9ecaa536b8f5ef3c0a996d99c3d165723c7de1f984fa9f5618c1c"
+    },
+    "nativeProof": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\output\\pilot-fit-native.json",
+      "bytes": 5333,
+      "sha256": "e565e7e5cbc45d3980b6a298a1d2e6aed625facbe37db54d67d73644f12f38a2"
+    },
+    "resourceReceipt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\output\\pilot-fit-resources.json",
+      "bytes": 536,
+      "sha256": "276f663df32ce7a567bddee210ca45883cdf9ddd5ad908f228935dfe388bdff4"
+    },
+    "failure": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\output\\pilot-fit-v1\\failure.json",
+      "bytes": 361,
+      "sha256": "4043356f2c5345fef9a34c053ca37c2d94636122ceabe93557249e03e7ec7fff"
+    }
+  },
+  "nextDecision": "Stop this attempt. Any focused failure diagnosis or materially changed experiment requires a separate root assignment; no unchanged retry.",
+  "finalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-run-20261005\\finalization.json"
+}
