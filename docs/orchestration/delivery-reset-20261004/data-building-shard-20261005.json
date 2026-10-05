@@ -4,19 +4,19 @@
   "baseCommit": "6c173b0e357b1f968b204bb9e6eb8ac2ab9f805b",
   "preparedAt": "2026-10-05T11:38:06.636214+00:00",
   "privateRoot": "E:/BhuAayam-data/task-data/data-building-shard-20261005",
-  "status": "prepared_publisher_human_inventory_development_reserved_pending_preflight",
-  "purpose": "24 real Indian RGB/chip and independently published human rooftop-outline pairs for a future grouped training allocation; no fitting, evaluation or model promotion",
+  "status": "prepared_publisher_human_inventory_open_development_comparison_complete",
+  "purpose": "24 retained publisher-human Indian rooftop pairs allocated together to open-development feasibility; no training or final-evaluation admission",
   "partition": {
-    "pool": "open-development-feasibility-reservation",
+    "pool": "open-development-feasibility",
     "trainingAllocated": 0,
-    "developmentAllocated": 0,
+    "developmentAllocated": 24,
     "finalEvaluationAllocated": 0,
     "unallocatedItems": 0,
     "protectedOrRetiredEvaluationReopened": false,
     "prior19DevelopmentItemsChanged": false,
     "globalSplitWrites": 0,
-    "developmentReserved": 24,
-    "reservationStatus": "pending_suitability_preflight_and_comparison_return"
+    "developmentReserved": 0,
+    "reservationStatus": "suitability_preflight_passed_comparison_complete"
   },
   "denominators": {
     "uniqueOriginalRgbChipFiles": 24,
@@ -44,7 +44,7 @@
       "parentSceneId": "104001002CA32300",
       "siteTemplatePolicy": "All selected Karnataka chips remain together at scene/source-project level; unknown physical building/site/template identities are not invented",
       "items": 24,
-      "split": "development_reserved_pending_preflight",
+      "split": "open_development",
       "geography": "Karnataka, India (publisher declaration; actual lon/lat frames retained)",
       "boundsLonLat": [
         75.92259396012341,
@@ -141,15 +141,15 @@
   ],
   "tasks": {
     "building": {
-      "status": "development_reserved_pending_suitability_preflight",
+      "status": "open_development_comparison_complete",
       "items": [
         {
           "id": "ramp-karnataka/0020b409-a333-4eb4-89c8-531b8110312a",
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 0,
           "image": {
@@ -298,8 +298,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 273,
           "image": {
@@ -448,8 +448,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 547,
           "image": {
@@ -598,8 +598,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 820,
           "image": {
@@ -748,8 +748,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 1093,
           "image": {
@@ -898,8 +898,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 1367,
           "image": {
@@ -1048,8 +1048,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 1640,
           "image": {
@@ -1198,8 +1198,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 1913,
           "image": {
@@ -1348,8 +1348,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 2187,
           "image": {
@@ -1498,8 +1498,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 2460,
           "image": {
@@ -1648,8 +1648,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 2733,
           "image": {
@@ -1798,8 +1798,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 3007,
           "image": {
@@ -1948,8 +1948,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 3280,
           "image": {
@@ -2098,8 +2098,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 3554,
           "image": {
@@ -2248,8 +2248,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 3827,
           "image": {
@@ -2398,8 +2398,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 4100,
           "image": {
@@ -2548,8 +2548,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 4374,
           "image": {
@@ -2698,8 +2698,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 4647,
           "image": {
@@ -2848,8 +2848,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 4920,
           "image": {
@@ -2998,8 +2998,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 5194,
           "image": {
@@ -3148,8 +3148,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 5467,
           "image": {
@@ -3298,8 +3298,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 5740,
           "image": {
@@ -3448,8 +3448,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 6014,
           "image": {
@@ -3598,8 +3598,8 @@
           "groupId": "ramp-MaxarODP-104001002CA32300",
           "sourceProjectId": "ramp_karnataka_india",
           "sourceSceneId": "104001002CA32300",
-          "split": "development_reserved_pending_preflight",
-          "pool": "open-development-feasibility-reservation",
+          "split": "open_development",
+          "pool": "open-development-feasibility",
           "upstreamSplit": "publisher-training-dataset",
           "sourceIndexRank": 6287,
           "image": {
@@ -3840,7 +3840,7 @@
   },
   "developmentReservation": {
     "task": "D07-KARNATAKA-BASELINE",
-    "authority": "Lead-dispatched bounded development-only feasibility comparison; input reservation only, not a completed preflight/run or independent model qualification.",
+    "authority": "Lead-dispatched development-only feasibility comparison accepted and integrated; one source scene, no independent model qualification.",
     "owner": "ML Teacher — Cited Evidence Demonstrations",
     "branch": "task/d07-karnataka-baseline-20261005",
     "assignmentBaseCommit": "62d9d11d67be2a12f2d11d3f0ae923e064a7421e",
@@ -3849,9 +3849,9 @@
     "groupId": "ramp-MaxarODP-104001002CA32300",
     "reservedItems": 24,
     "allItemsTogether": true,
-    "split": "new_open_development_feasibility_reserved",
-    "suitabilityPreflight": "completion_not_reported",
-    "comparison": "completion_not_reported",
+    "split": "new_open_development_feasibility",
+    "suitabilityPreflight": "passed_for_frozen_publisher_label_full_frame_diagnostic",
+    "comparison": "completed_once_24_of_24",
     "trainingExcluded": true,
     "finalEvaluationExcluded": true,
     "noFitOrPromotion": true,
@@ -3863,6 +3863,87 @@
     "requestedModel": "gpt-6.1-sol",
     "requestedEffort": "xhigh",
     "requestedSpeed": "default/standard1x",
-    "actualModelEffortTier": "unexposed; dispatch text is not execution proof"
+    "actualModelEffortTier": "unexposed; dispatch text is not execution proof",
+    "completedItems": 24
+  },
+  "developmentObservation": {
+    "task": "D07-KARNATAKA-BASELINE",
+    "report": "docs/evidence/usp/building-ramp-baseline-20261005.json",
+    "ownerCommit": "397474d670e29229867bed83a71b892c7461b3d2",
+    "integrationCommit": "a059bc89e0ff53a5099d9e28ed9b8a8a44df7e20",
+    "reportCanonicalGitSha256": "4e2dfbbed3238ee2c5e53e6269818945f1ce048c31b2c4dbd68c7e8db7857f28",
+    "freeze": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\frozen-config.json",
+      "bytes": 155083,
+      "sha256": "9b580000468c6db12e9d74a2ff25e68fa44eed289204e9fd73dd4461acbffe2c"
+    },
+    "coverage": {
+      "requestedItems": 24,
+      "completedItems": 24,
+      "positiveItems": 19,
+      "emptyItems": 5,
+      "nativeCalls": 24,
+      "totalSourcePixels": 1572864,
+      "publisherFeatures": 178,
+      "outsideScoringDomain": 0,
+      "failedItems": 0,
+      "ignoredPixels": 0
+    },
+    "model": {
+      "id": "rfdetr-satellite-buildings-onnx-v1",
+      "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+      "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
+    },
+    "maskForeground": {
+      "id": 1,
+      "name": "building",
+      "truthPixels": 181259,
+      "predictedPixels": 104477,
+      "tp": 88456,
+      "fp": 16021,
+      "fn": 92803,
+      "iou": 0.4483779399837794,
+      "precision": 0.8466552446950046,
+      "recall": 0.4880088712836328
+    },
+    "finalPolygonObjects": {
+      "tp": 67,
+      "fp": 43,
+      "fn": 111,
+      "iou": 0.3031674208144796,
+      "precision": 0.6090909090909091,
+      "recall": 0.37640449438202245,
+      "mergeCandidates": 8
+    },
+    "emptyLabelledScenes": {
+      "items": 5,
+      "itemsWithForegroundFalsePositives": 1,
+      "falsePositivePixels": 1106,
+      "falsePositiveMaskObjects": 1,
+      "falsePositivePolygonObjects": 1,
+      "idsWithForegroundFalsePositives": [
+        "ramp-karnataka/f58cf24e-0da4-4612-812a-d54bf65a17c9"
+      ]
+    },
+    "annotationCompleteness": "One source-empty chip has a relative-to-retained-label false positive over a visible roof-like feature; completeness unresolved, originals unchanged.",
+    "workerSeconds": 35.438,
+    "peakJobPrivateBytes": 617201664,
+    "pythonDenialControls": [
+      "socket.getaddrinfo",
+      "socket.connect",
+      "socket.sendto",
+      "subprocess.Popen"
+    ],
+    "nativeOsEgressAudit": "unrun; Python audit controls do not qualify native/OS isolation",
+    "executedAdapterSha256": "9826ff69b28ba79729d432d7c8dac0823ea2943b7a39b39442d1db6a0c7d5369",
+    "finalGitAdapterSha256": "52e54d23052984c18adf5ba97c0da9a0c8f178a1df2c6c9ea726fd7725e21f68",
+    "postRunCodeDelta": "Final Git adds sys.dont_write_bytecode=True before dependency imports after execution; no inference replay. Exact executed adapter and generated caches retained privately.",
+    "qualification": "Descriptive one-scene publisher-label open-development diagnostic; no fit, tuning, promotion, independent generalization, physical-property or release-accuracy qualification.",
+    "resourcesReleased": {
+      "workerExited": true,
+      "jobsClosed": true,
+      "ownedChildrenSurvived": false,
+      "gpuUsed": false
+    }
   }
 }
