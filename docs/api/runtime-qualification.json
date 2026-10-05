@@ -1199,6 +1199,169 @@
           ]
         }
       }
+    },
+    {
+      "recordedAt": "2026-10-05T03:54:00.178Z",
+      "receipt": "docs/evidence/usp/nest-migration/runtime-source/d07-source-batch-20261005.json",
+      "receiptSha256": "11e588f614e39e9dc325f56187f077ee18b38496c6d31e003b215487a82cf9ca",
+      "servedCodeCommit": "85070c0f744e820f1f75645fb99504fd306cedd5",
+      "environment": "Stopped retained isolated Windows solo CPU run02; API/processor/worker/storage stopped, original containers/volumes/profiles preserved. IDs apply only to this run; no standing URL.",
+      "qualification": "Bounded Windows solo CPU source-only pixel runtime on unchanged T3-2 page1 selected ROI only: one canonical processor/infer_spatial/ONNX call, new batch/item/job and raster/mask, current private read-back and same-key replay without extra inference. Source-only apply refusal is technical only. Calibration null/applicability not_assessed/spatialAuthority false/scores uncalibrated; no independent accuracy, metric/property/identity/rights/learning/frontend/release qualification. Generic dispatcher loop unrun.",
+      "unqualified": [
+        "Bounded Windows solo development runtime; no production-platform or task-time-limit qualification.",
+        "Exact returned job submitted through actual canonical admission/processor and processing.ingestJob; generic dispatcher loop was intentionally not run, so dispatched_at remains null.",
+        "Pixel candidates and raw mask only: calibration null, applicability not_assessed, spatialAuthority false, scoresCalibrated false; omissions retained. No independent model accuracy, physical geometry/adoption, identity, ownership, rights, learning or release qualification.",
+        "No frontend, source acquisition, training/GPU, provider, remote push/deployment, reset/reseed, original/credential/model/environment edits or unrelated queued-job execution.",
+        "Loopback/configuration and process controls observed; no whole-OS network egress audit.",
+        "Only haryana-2831-tower3-plan2.pdf page1 selected ROI is covered; other originals/pages/regions/models are not qualified.",
+        "Historical D07 run01 remains blocked before startup with zero inference; no retrospective pass or artifact/profile alias."
+      ],
+      "operations": {
+        "GET /api/v1/sources/{sourceId}/pages": {
+          "scope": "200 current T3-2 page1 original-hash/revision/display-frame metadata only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/sources/{sourceId}/file": {
+          "scope": "200 private original read for exact unchanged1,630,108-byte T3-2 PDF only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/status": {
+          "scope": "200 allowlisted model readiness for this isolated CPU runtime; no accuracy qualification.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/spatial-ml/source-batches": {
+          "scope": "201 one source-only batch/item/job, actual canonical CPU inference and same-key201 same IDs/no additional inference; changed-key body409 ML_REQUEST_KEY. Selected T3-2 ROI pixel candidates only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/batches/{batchId}": {
+          "scope": "200 current source-scoped batch and item read-back for this one succeeded job.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/items/{itemId}": {
+          "scope": "200 succeeded source-only item with current private source/job/artifact authority and unresolved pixel qualifiers.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/items/{itemId}/artifacts/{artifact}": {
+          "scope": "200 exact pinned768x445 raster/mask PNGs, private no-store/nosniff; foreign Origin403 ORIGIN_DENIED. This job and two artifacts only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/spatial-ml/items/{itemId}/apply": {
+          "scope": "Refusal-only technical control: source-only422 ML_SOURCE_ONLY; no successful apply, physical fact/geometry mutation or property qualification.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        }
+      }
     }
   ]
 }
