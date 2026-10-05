@@ -84,13 +84,14 @@ async function captureTx(client:PoolClient,itemId:string,lock=false):Promise<Cap
   // Canonical case/source family locks precede item and job locks. No storage I/O.
   const authority=await spatialMlSourceAuthorityTx(client,pin.scope,lock);
   const ctx=await documentCaseTx(client,pin.scope.caseId);assertIngestionBinding(ctx.binding);
-  const batch=(await client.query(`SELECT id,package_id,scope,source_scope FROM spatial_ml_batches WHERE id=$1${lock?' FOR SHARE':''}`,[pin.batchId])).rows[0];
+  const batch=(await client.query(`SELECT id,case_id,source_id,package_id,scope,source_scope FROM spatial_ml_batches WHERE id=$1${lock?' FOR SHARE':''}`,[pin.batchId])).rows[0];
   const record=lock?await getSpatialMlItemRecord(itemId,client,true):initial;
   const current=spatialSourceReviewPin(record);
   const row=(await client.query('SELECT id,batch_id,package_id,source_id,current_job_id FROM spatial_ml_items WHERE id=$1',[itemId])).rows[0];
   if(fingerprint(pin)!==fingerprint(current)||fingerprint(authority)!==fingerprint(record.privateInput.sourceAuthority)||
     !row||row.id!==itemId||row.batch_id!==pin.batchId||row.package_id!==null||row.source_id!==pin.scope.sourceId||row.current_job_id!==pin.jobId||
-    !batch||batch.id!==pin.batchId||batch.package_id!==null||batch.scope!=='source'||fingerprint(batch.source_scope)!==fingerprint(pin.scope))
+    !batch||batch.id!==pin.batchId||batch.case_id!==pin.scope.caseId||batch.source_id!==pin.scope.sourceId||
+    batch.package_id!==null||batch.scope!=='source'||fingerprint(batch.source_scope)!==fingerprint(pin.scope))
     conflict('The source batch, item, original or private access changed. Refresh the inspection.');
   const job=(await client.query(`SELECT id,case_id,source_id,operation,input_fingerprint,payload,status,completed_at FROM jobs WHERE id=$1${lock?' FOR SHARE':''}`,[pin.jobId])).rows[0];
   const attempt=record.item.attempts.filter(v=>v.jobId===pin.jobId);
