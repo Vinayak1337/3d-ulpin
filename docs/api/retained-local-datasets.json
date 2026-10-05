@@ -761,6 +761,31 @@
           ],
           "otherManifestAssetsQualified": false,
           "role": "PRIVATE_INSPECTION"
+        },
+        {
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d07-source-review-20261005.json",
+          "servedCodeCommit": "aac6332dbb19a9d7ffa8997df9b51e7c87053a9e",
+          "recordedAt": "2026-10-05T04:49:23.909Z",
+          "environment": "Stopped retained local source-review run01; API/storage stopped, no processor/Celery or native/model execution. Original containers/volumes/profiles and Redis data retained; no standing URL.",
+          "qualification": "Actual bounded local-process software persistence for one needs_input source-candidate inspection at exact AAC: context200/save201/exact read200/same-key same-body201 immutable replay; changed result pin409 STALE_REVISION and foreign Origin403 ORIGIN_DENIED with denied writes0. One snapshot/request receipt only. local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, physicalTarget/calibration null and qualification not_assessed. No semantic/accuracy/human acceptance/property/floor identity/adoption/rights/learning/frontend/release qualification.",
+          "unqualified": [
+            "One bounded private local-process review of one existing source-only candidate; no human authentication/independent ground truth, semantic accuracy, property/floor/space identity, metric geometry/adoption, rights or learning label qualification.",
+            "100 raw predictions and omission/mask fallback remain unchanged; a needs_input reason is inspection status only.",
+            "No new enrollment/job/model/native reader, provider/GPU/training, source discovery, frontend, migration/reset/reseed, credential/environment/model/source edits, standing URL, push/deployment or release qualification.",
+            "No whole-OS egress audit; no running worker/service tier proof from assignment text.",
+            "Only one selected other_room candidate on named T3-2 source is covered; other candidates/assets/decisions or authority-change cases are not qualified by this run.",
+            "Earlier native run02 and failed-before-startup histories keep exact served pins; this run performs no new native page/geometry/model execution."
+          ],
+          "operations": [
+            "GET /api/v1/spatial-ml/items/{itemId}/source-reviews/context",
+            "POST /api/v1/spatial-ml/items/{itemId}/source-reviews",
+            "GET /api/v1/spatial-ml/items/{itemId}/source-reviews/{reviewId}"
+          ],
+          "testedAssetIds": [
+            "haryana-2831-tower3-plan2.pdf"
+          ],
+          "otherManifestAssetsQualified": false,
+          "role": "PRIVATE_INSPECTION"
         }
       ]
     },
