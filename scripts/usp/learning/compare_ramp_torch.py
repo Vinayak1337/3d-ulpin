@@ -5,6 +5,8 @@ Preparation and plan inspection use stdlib only. --reference-run additionally
 requires a current-process root authorization and separately verified containment.
 --experimental-baseline-run is a distinct v2 experiment: numeric differences
 remain observations, while complete valid ALL24 inference defines completion.
+--candidate-run separately reloads only a bound, completed pilot's fixed final
+checkpoint. Preparation/fit receipts grant no candidate execution permission.
 """
 from __future__ import annotations
 
@@ -23,6 +25,27 @@ import zipfile
 VERSION = "ramp-torch-reference-plan/1"
 BASELINE_VERSION = "ramp-torch-baseline-plan/2"
 BASELINE_MODE = "experimental-baseline"
+CANDIDATE_VERSION = "ramp-torch-candidate-plan/1"
+CANDIDATE_MODE = "saved-candidate"
+CANDIDATE_PRIVATE = Path("E:/BhuAayam-data/task-data/d07-rfdetr-candidate-reference-20261005")
+PILOT_PRIVATE = Path("E:/BhuAayam-data/task-data/d07-rfdetr-pilot-fit-20261005")
+PILOT_PIN = {"path": "/inputs/candidate/pilot-plan.json", "bytes": 96561,
+    "sha256": "22b0a1bd318490bb3a5b484dd248eebdba9d94c87879897f1c3d2de60f7abe37"}
+PILOT_SHA = "8139eedd077a78513daadfa4b5a6173fcb75b13e637f76ce4ea2bf3954c41716"
+OWN_SCORE_PIN = {"path": "/inputs/candidate/baseline-score.json", "bytes": 129769,
+    "sha256": "9239661b104c58dc8d00252170d5c7fcfb41cb2e9b6f4cb6106638c096163355"}
+CANDIDATE_POLICY = {"experiment": "ramp-torch-saved-final-candidate/1", "role": "open_development_only",
+    "items": 24, "positive": 19, "sourceEmpty": 5, "publisherRoofInstances": 178,
+    "selection": "fixed_final_only", "runs": 1, "fit": False, "finalAccess": False,
+    "promotion": False, "onnxEquivalence": False,
+    "completion": "strict_saved_final_reload_all24_original_order_finite_FP32_outputs",
+    "quality": "later_cached_production_scorer_confidence0.5_logit0; no_threshold_or_checkpoint_selection"}
+CANDIDATE_BOUNDS = {"cpu": 2, "containerMemoryBytes": 5 * 1024**3, "hostJobMemoryBytes": 512 * 1024**2,
+    "swapBytes": 0, "pids": 32, "gpuAllocationBytes": 5 * 1024**3,
+    "referenceAndCleanupSeconds": 600, "cleanupReserveSeconds": 45, "innerReferenceSeconds": 555}
+FIT_FILES = {"weights": "model.safetensors", "modelConfig": "config.json", "processorConfig": "preprocessor_config.json"}
+FIT_RECEIPTS = {"fitResult": "fit-result.json", "fitAuthorization": "fit-authorization.json",
+    "rootFitAssignment": "root-fit-assignment.json", "fitPreflight": "fit-preflight.json"}
 ROOT_THREAD = "01a0ed8a-4383-79c3-a0ae-35c1e969ef66"
 MODEL_OWNER = "01a0fbd5-4561-7692-b366-ebd123380593"
 PRIVATE = Path("E:/BhuAayam-data/task-data/d07-rfdetr-torch-reference-20261005")
@@ -129,7 +152,8 @@ def inspect_archive(path):
 
 def validate_plan(plan):
     baseline = plan["schemaVersion"] == BASELINE_VERSION and plan["mode"] == BASELINE_MODE
-    require((baseline or (plan["schemaVersion"] == VERSION and plan["mode"] in {"smoke", "development"})) and
+    candidate = plan["schemaVersion"] == CANDIDATE_VERSION and plan["mode"] == CANDIDATE_MODE
+    require((candidate or baseline or (plan["schemaVersion"] == VERSION and plan["mode"] in {"smoke", "development"})) and
             plan["executionAuthorized"] is False and plan["outputContract"] == CONTRACT and
             plan["preprocessing"] == PREPROCESS and plan["parityPolicy"] == PARITY, "Unsupported reference protocol")
     cohort = plan["cohort"]
@@ -139,12 +163,174 @@ def validate_plan(plan):
     require(plan["selectedIds"] == (smoke if plan["mode"] == "smoke" else [i["id"] for i in cohort]), "Subset/reordered reference refused")
     require(plan["mountedConfig"]["sha256"] == CONFIG_SHA and plan["mountedConfig"]["path"] == "/inputs/plan/mounted-config.json" and
             plan["scriptPin"]["path"] == "/inputs/reference/compare_ramp_torch.py" and
-            plan["outputDir"] == ("/outputs/rfdetr/experimental-baseline-v2" if baseline else
+            plan["outputDir"] == ("/outputs/rfdetr/saved-candidate-v1" if candidate else "/outputs/rfdetr/experimental-baseline-v2" if baseline else
                                    "/outputs/rfdetr/reference-" + plan["mode"]), "Undeclared runtime path")
     if baseline:
         require(plan["baselinePolicy"] == BASELINE_POLICY and plan["prerequisites"] == PREREQUISITES,
                 "Only the fixed no-fit v2 baseline and accepted prerequisites are supported")
+    if candidate:
+        require(plan["candidatePolicy"] == CANDIDATE_POLICY and plan["pilotPlan"] == PILOT_PIN and
+                plan["baselineScore"] == OWN_SCORE_PIN and plan["pilotPlanSha256"] == PILOT_SHA and plan["bounds"] == CANDIDATE_BOUNDS,
+                "Only the accepted fixed pilot and own-route baseline are allowed")
+        require([plan["decision"][k] for k in ["maskIoUMin", "maskRecallMin", "maskPrecisionMin",
+                    "emptyFalsePositiveScenesMax", "emptyScenes", "finalAccess", "checkpointOrThresholdSelection"]] ==
+                [0.4683830, 0.5380144, 0.8266567, 1, 5, False, False], "Frozen candidate decision changed")
+        require(plan["bindingStatus"] in {"UNBOUND", "BOUND"} and
+                ((plan["bindingStatus"] == "UNBOUND" and plan["candidateBinding"] is None) or
+                 (plan["bindingStatus"] == "BOUND" and isinstance(plan["candidateBinding"], dict))), "Candidate binding status drift")
+        if plan["bindingStatus"] == "BOUND":
+            binding = plan["candidateBinding"]
+            require(set(binding["receipts"]) == set(FIT_RECEIPTS) and set(binding["model"]) == set(FIT_FILES) and
+                    binding["receiptChainSha256"] == digest(binding["receipts"]) and
+                    binding["model"]["weights"]["sha256"] != plan["originalModel"]["weights"]["sha256"], "Incomplete/original checkpoint binding refused")
+            require(all(p["path"] == "/inputs/candidate/" + FIT_RECEIPTS[k] for k, p in binding["receipts"].items()) and
+                    all(p["path"] == "/inputs/candidate/checkpoint/" + FIT_FILES[k] for k, p in binding["model"].items()), "Undeclared candidate receipt/model path")
     require(plan["planSha256"] == digest({k: v for k, v in plan.items() if k != "planSha256"}), "Reference plan digest drift")
+
+
+def identity(entry):
+    return {k: entry[k] for k in ("bytes", "sha256")}
+
+
+def metadata(entry):
+    path = unlinked(entry["path"])
+    require(0 < entry["bytes"] <= 1024**2 and path.stat().st_size == entry["bytes"], "Missing/drifted bounded metadata")
+    return read(checked(entry))
+
+
+def pilot_metadata(entry):
+    require(identity(entry) == identity(PILOT_PIN), "Wrong pilot authority")
+    pilot = metadata(entry)
+    require(pilot["schemaVersion"] == "ramp-pilot-training-plan/1" and pilot["planSha256"] == PILOT_SHA and
+            digest({k: v for k, v in pilot.items() if k != "planSha256"}) == PILOT_SHA and
+            pilot["budget"] == {"trainExamples": 144, "optimizerUpdates": 36, "epochs": 6,
+                "developmentExamplesDuringFit": 0, "finalExamples": 0}, "Exact accepted pilot budget required")
+    return pilot
+
+
+def candidate_lineage(pilot, receipts):
+    """Qualify saved metadata from the completed fit; never load/hash weights here."""
+    require(set(receipts) == set(FIT_RECEIPTS), "Complete actual fit receipt chain required")
+    result, auth, assignment, proof = [metadata(receipts[k]) for k in FIT_RECEIPTS]
+    require(result["schemaVersion"] == "ramp-pilot-training-result/1" and result["state"] == "fit_completed_unqualified" and
+            result["planSha256"] == PILOT_SHA and result["fixedFinalCheckpoint"] is True and
+            result["optimizerUpdates"] == 36 and result["trainingObservations"] == {"forwardCalls": 144, "trainExamples": 144} and
+            result["trainingConfig"] == pilot["trainingArguments"] and result["decision"] == pilot["decision"] and
+            result["evaluationRun"] is False and result["heldOutTestOpened"] is False and
+            result["promotion"] is False and result["accuracyQualification"] is False and
+            result["developmentLossHistory"] == [] and math_finite(result["metrics"]["train_loss"]) and
+            not any(k.startswith("eval_") for row in result["trainingLossHistory"] for k in row), "Incomplete/nonfixed/evaluated fit refused")
+    require(auth["schemaVersion"] == "ramp-pilot-training-authorization/1" and auth["rootThreadId"] == ROOT_THREAD and
+            auth["rootAuthorized"] is True and auth["scope"] == "one_fixed_pilot_fit_no_evaluation" and
+            auth["planSha256"] == PILOT_SHA and auth["scriptSha256"] == pilot["scriptPin"]["sha256"] and
+            auth["modelOwnerThreadId"] == MODEL_OWNER and auth["recipe"] == pilot["trainingArguments"] and
+            auth["bounds"] == pilot["bounds"] and auth["evidence"] == pilot["evidence"] and
+            result["authorizationSha256"] == receipts["fitAuthorization"]["sha256"] and
+            identity(auth["rootAssignment"]) == identity(receipts["rootFitAssignment"]) and
+            identity(auth["preflightReceipt"]) == identity(receipts["fitPreflight"]), "Fit root/code/source authorization lineage required")
+    require(assignment["schemaVersion"] == "ramp-pilot-root-assignment/1" and
+            assignment["task"] == "D07-RFDETR-PILOT-FIT-EXECUTE" and assignment["rootThreadId"] == ROOT_THREAD and
+            assignment["fitAuthorized"] is True and assignment["evaluationAuthorized"] is False and
+            assignment["planSha256"] == PILOT_SHA and assignment["scriptSha256"] == pilot["scriptPin"]["sha256"] and
+            assignment["modelOwnerThreadId"] == MODEL_OWNER, "Explicit completed-fit root assignment required")
+    require(isinstance(proof["pid"], int) and proof["pid"] > 0 and proof["modelOwner"] == MODEL_OWNER and
+            proof["imageDigest"] == pilot["runtimeBinding"]["imageDigest"] and
+            proof["gpuUuid"] == pilot["authorizationContract"]["gpuUuid"] and proof["bounds"] == pilot["bounds"] and
+            proof["planSha256"] == PILOT_SHA and all(proof[k] is True for k in ["gpuOwnerTransferred",
+                "effectiveNetworkDenied", "effectiveResourceLimits", "exactMountsAndEnvironmentVerified"]), "Actual fit-process lineage required")
+    files = result["checkpointFiles"]
+    require(set(files) == set(FIT_FILES.values()) and result["selectedCheckpoint"] == files["model.safetensors"], "Fixed final trio required")
+    for key, filename in FIT_FILES.items():
+        entry = files[filename]
+        require(entry["path"] == pilot["checkpointInterface"]["directory"] + "/" + filename and
+                isinstance(entry["bytes"], int) and 0 < entry["bytes"] <= (512 * 1024**2 if key == "weights" else 1024**2) and
+                isinstance(entry["sha256"], str) and len(entry["sha256"]) == 64 and
+                all(c in "0123456789abcdef" for c in entry["sha256"]), "Arbitrary/missing saved checkpoint refused")
+    require(files["model.safetensors"]["sha256"] != pilot["weights"]["sha256"], "Original checkpoint cannot masquerade as fitted candidate")
+    return {key: {**files[name], "path": "/inputs/candidate/checkpoint/" + name} for key, name in FIT_FILES.items()}
+
+
+def math_finite(value):
+    return isinstance(value, (float, int)) and not isinstance(value, bool) and float("-inf") < value < float("inf")
+
+
+def candidate_interface(plan, root, receipt_hosts=None, checkpoint_host=None):
+    plan_name = "candidate-template.json" if plan["bindingStatus"] == "UNBOUND" else "candidate-plan.json"
+    additions = [
+        {"hostPath": str(root / "compare_ramp_torch.py"), "containerPath": plan["scriptPin"]["path"], "readOnly": True, "kind": "file", "pin": plan["scriptPin"]},
+        {"hostPath": str(root / plan_name), "containerPath": "/inputs/reference/plan.json", "readOnly": True, "kind": "file", "pin": pin(root / plan_name)},
+        {"hostPath": str(PILOT_PRIVATE / "pilot-plan.json"), "containerPath": PILOT_PIN["path"], "readOnly": True, "kind": "file", "pin": PILOT_PIN},
+        {"hostPath": str(Path("E:/BhuAayam-data/task-data/d07-rfdetr-torch-baseline-run-20261005/scoring/results-corrected.json")), "containerPath": OWN_SCORE_PIN["path"], "readOnly": True, "kind": "file", "pin": OWN_SCORE_PIN}]
+    if plan["bindingStatus"] == "BOUND":
+        additions += [{"hostPath": receipt_hosts[k], "containerPath": plan["candidateBinding"]["receipts"][k]["path"],
+            "readOnly": True, "kind": "file", "pin": plan["candidateBinding"]["receipts"][k]} for k in FIT_RECEIPTS]
+        additions.append({"hostPath": str(checkpoint_host), "containerPath": "/inputs/candidate/checkpoint", "readOnly": True,
+            "kind": "directory", "files": plan["candidateBinding"]["model"]})
+    return {"schemaVersion": "ramp-torch-candidate-interface/1", "state": "prepared_only", "bindingStatus": plan["bindingStatus"],
+        "executionAuthorized": False, "canonicalPlanSha256": plan["planSha256"],
+        "baseInterface": {"path": str(MOUNTED / "launch-interface-runtime-v1.json"), "bytes": 51011,
+            "sha256": "eaeb7e13580fb3a43f7079e11626e815e8dde60b537bcd6b6cd6225aa0f3194c"},
+        "replaceWritableOutput": {"hostPath": str(root / "output"), "containerPath": "/outputs/rfdetr", "readOnly": False},
+        "newReadOnlyMounts": additions, "oldOnnxCacheMountsNeeded": False,
+        "futureGateMounts": ["Exact separately assigned one-run candidate root authorization", "Fresh same-PID native/mount/environment/resource/sole-GPU proof"],
+        "requiredAuthorizationSchema": "ramp-torch-candidate-authorization/1",
+        "argv": ["/opt/conda/bin/python", "-I", "-B", plan["scriptPin"]["path"], "--plan", "/inputs/reference/plan.json",
+            "--candidate-run", "--authorization", "/inputs/reference/authorization.json", "--authorization-sha256", "<later-actual-root-receipt-sha256>"],
+        "missingInputs": list(FIT_RECEIPTS) + ["fixed_final_trio"] if plan["bindingStatus"] == "UNBOUND" else [],
+        "decision": plan["decision"], "scoring": "Saved native-00.npz/reference.json/result.json use the existing cached production scorer at0.5/logit0; all24 original order, same source/labels/object/polygon/empty/omission policy. No scorer or candidate execution in preparation.",
+        "bounds": CANDIDATE_BOUNDS,
+        "runtime": "Later teacher retains image47ee371d/Python3.11.13/all134 versions/exact GPU UUID/current native guards/<=5GiB GPU/existing host+cgroup bounds and finite deadline/cleanup; no permission from this interface.",
+        "qualification": "Open cohort only; old original-weight ONNX numeric parity stays FAILED. No fit/threshold selection/final data/promotion/readiness."}
+
+
+def prepare_candidate():
+    base = metadata({"path": str(BASELINE_PRIVATE / "prepared-v2/baseline-plan.json"), "bytes": 27288,
+        "sha256": "d350f2f0fa943423150e20ed77cd3d0fcc7558a4213456bb2b321d4bd384a3b0"})
+    validate_plan(base)
+    pilot = pilot_metadata({**PILOT_PIN, "path": str(PILOT_PRIVATE / "pilot-plan.json")})
+    metadata({**OWN_SCORE_PIN, "path": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-baseline-run-20261005/scoring/results-corrected.json"})
+    require(pilot["runtimeBinding"] == base["runtime"] and
+            all(pilot[k] == base["originalModel"][k] for k in FIT_FILES), "Pilot changed original model/runtime authority")
+    root = unlinked(CANDIDATE_PRIVATE); require(not root.exists(), "Candidate preparation exists; preserve it")
+    root.mkdir(); snapshot = root / "compare_ramp_torch.py"
+    with snapshot.open("xb") as stream: stream.write(Path(__file__).read_bytes())
+    plan = {**base, "schemaVersion": CANDIDATE_VERSION, "mode": CANDIDATE_MODE,
+        "scriptPin": {**pin(snapshot), "path": "/inputs/reference/compare_ramp_torch.py"},
+        "outputDir": "/outputs/rfdetr/saved-candidate-v1", "candidatePolicy": CANDIDATE_POLICY,
+        "pilotPlan": PILOT_PIN, "pilotPlanSha256": PILOT_SHA, "baselineScore": OWN_SCORE_PIN,
+        "decision": pilot["decision"], "bounds": CANDIDATE_BOUNDS, "bindingStatus": "UNBOUND", "candidateBinding": None}
+    plan.pop("baselinePolicy"); plan.pop("prerequisites")
+    plan["planSha256"] = digest({k: v for k, v in plan.items() if k != "planSha256"}); validate_plan(plan)
+    save(root / "candidate-template.json", plan)
+    save(root / "mount-interface-unbound.json", candidate_interface(plan, root))
+    return {"state": "prepared_only", "bindingStatus": "UNBOUND", "template": pin(root / "candidate-template.json"),
+        "interface": pin(root / "mount-interface-unbound.json"), "executionAuthorized": False}
+
+
+def bind_candidate(spec_path):
+    spec = read(spec_path)
+    require(set(spec) == {"schemaVersion", "receipts"} and spec["schemaVersion"] == "ramp-torch-candidate-binding-input/1", "Finite receipt-only candidate binding required")
+    root = unlinked(CANDIDATE_PRIVATE); plan = read(root / "candidate-template.json"); validate_plan(plan)
+    require(plan["bindingStatus"] == "UNBOUND" and identity(pin(__file__)) == identity(plan["scriptPin"]) and
+            pin(root / "compare_ramp_torch.py")["sha256"] == plan["scriptPin"]["sha256"], "Use frozen prepared candidate code")
+    pilot = pilot_metadata({**PILOT_PIN, "path": str(PILOT_PRIVATE / "pilot-plan.json")})
+    model = candidate_lineage(pilot, spec["receipts"])
+    result_path = unlinked(spec["receipts"]["fitResult"]["path"])
+    require(result_path.name == "result.json" and result_path.parent.name == "pilot-fit-v1", "Only fixed final fit output can bind")
+    checkpoint = unlinked(result_path.parent / "checkpoint")
+    for key, filename in FIT_FILES.items():
+        path = unlinked(checkpoint / filename)
+        require(path.parent == checkpoint and path.is_file() and path.stat().st_size == model[key]["bytes"], "Saved final file missing/size drift")
+        if key != "weights": metadata({**model[key], "path": str(path)})
+    receipts = {k: {**v, "path": "/inputs/candidate/" + FIT_RECEIPTS[k]} for k, v in spec["receipts"].items()}
+    plan.update(bindingStatus="BOUND", candidateBinding={"receipts": receipts, "model": model,
+        "receiptChainSha256": digest(receipts), "weightVerification": "fit-result_saved_pin_and_current_size_only; exact_bytes_hash_required_in_authorized_reference_before_heavy_imports"})
+    plan["planSha256"] = digest({k: v for k, v in plan.items() if k != "planSha256"}); validate_plan(plan)
+    save(root / "candidate-plan.json", plan)
+    save(root / "mount-interface.json", candidate_interface(plan, root,
+        {k: str(unlinked(v["path"])) for k, v in spec["receipts"].items()}, checkpoint))
+    return {"state": "prepared_only", "bindingStatus": "BOUND", "plan": pin(root / "candidate-plan.json"),
+        "interface": pin(root / "mount-interface.json"), "executionAuthorized": False}
 
 
 def prepare():
@@ -281,11 +467,15 @@ def prepare_baseline():
 
 
 def authorize(plan, path, sha):
+    candidate = plan["schemaVersion"] == CANDIDATE_VERSION
+    if candidate:
+        validate_plan(plan)
+        require(plan["bindingStatus"] == "BOUND", "Candidate reference blocked: successful fixed-final fit/trio remains UNBOUND")
     require(path is not None and sha is not None, "Reference blocked: exact actual-process root authorization required before heavy imports")
     require(pin(path)["sha256"] == sha, "Authorization pin drift")
     gate = read(path)
     baseline = plan["schemaVersion"] == BASELINE_VERSION
-    require(gate["schemaVersion"] == ("ramp-torch-baseline-authorization/2" if baseline else "ramp-torch-reference-authorization/1") and gate["rootThreadId"] == ROOT_THREAD and
+    require(gate["schemaVersion"] == ("ramp-torch-candidate-authorization/1" if candidate else "ramp-torch-baseline-authorization/2" if baseline else "ramp-torch-reference-authorization/1") and gate["rootThreadId"] == ROOT_THREAD and
             gate["rootAuthorized"] is True and gate["mode"] == plan["mode"] and gate["planSha256"] == plan["planSha256"] and
             gate["scriptSha256"] == pin(__file__)["sha256"], "Reference not authorized for this exact plan/code")
     runtime = plan["runtime"]
@@ -296,6 +486,18 @@ def authorize(plan, path, sha):
     if baseline:
         require(gate["baselinePolicy"] == BASELINE_POLICY and gate["prerequisites"] == plan["prerequisites"], "Explicit v2 experiment/prerequisite authorization required")
         baseline_prerequisites(plan, gate["prerequisites"])
+    if candidate:
+        require(gate["scope"] == "one_saved_final_ALL24_reference_only" and gate["candidatePolicy"] == CANDIDATE_POLICY and
+                gate["candidateBinding"] == plan["candidateBinding"] and gate["bounds"] == CANDIDATE_BOUNDS and
+                control["bounds"] == CANDIDATE_BOUNDS, "Explicit one-run saved candidate/resource authority required")
+        pilot = pilot_metadata(plan["pilotPlan"])
+        require(plan["decision"] == pilot["decision"] and plan["runtime"] == pilot["runtimeBinding"] and
+                all(plan["originalModel"][k] == pilot[k] for k in FIT_FILES) and
+                control["gpuUuid"] == pilot["authorizationContract"]["gpuUuid"], "Original pilot/runtime/decision/GPU scope changed")
+        require(candidate_lineage(pilot, plan["candidateBinding"]["receipts"]) == plan["candidateBinding"]["model"], "Bound saved candidate differs from completed fit")
+        require(identity(plan["baselineScore"]) == identity(OWN_SCORE_PIN), "Wrong own-route quality baseline")
+        metadata(plan["baselineScore"])
+        gate.update(authorizedPid=os.getpid(), authorizationSha256=sha)
     if plan["mode"] == "development":
         smoke = read(checked(gate["smokeResult"]))
         expected_ids = [next(i["id"] for i in plan["cohort"] if not i["sourceEmpty"]), next(i["id"] for i in plan["cohort"] if i["sourceEmpty"])]
@@ -305,8 +507,14 @@ def authorize(plan, path, sha):
     return gate
 
 
-def reference_run(plan):
+def reference_run(plan, authorization=None):
     """Only inference; external native/resource controls are mandatory."""
+    candidate = plan["schemaVersion"] == CANDIDATE_VERSION
+    if candidate:
+        validate_plan(plan)
+        require(plan["bindingStatus"] == "BOUND" and authorization is not None and
+                authorization.get("authorizedPid") == os.getpid() and authorization.get("planSha256") == plan["planSha256"],
+                "Candidate blocked before imports: bound final checkpoint and checked current-process authority required")
     config = read(checked(plan["mountedConfig"]))
     runtime = config["runtimeBinding"]
     require(plan["originalModel"] == {k: config["config"][k] for k in ["weights", "modelConfig", "processorConfig"]}, "Only the exact unchanged mounted checkpoint/config/processor are supported")
@@ -315,6 +523,9 @@ def reference_run(plan):
             Path(sys.executable).resolve() == Path(runtime["pythonExecutable"]).resolve(), "Runtime Python/platform/binding drift")
     require(all(importlib.metadata.version(k) == v for k, v in runtime["packageVersions"].items()), "Exact complete dependency lock required")
     for entry in plan["originalModel"].values(): checked(entry)
+    selected_model = plan["candidateBinding"]["model"] if candidate else plan["originalModel"]
+    if candidate:
+        for entry in selected_model.values(): checked(entry)
     require(checked(plan["scriptPin"]) == Path(__file__).resolve(), "Use exact declared runner")
     out = unlinked(plan["outputDir"])
     require(out.parent == Path("/outputs/rfdetr") and not out.exists(), "New isolated reference output required")
@@ -327,7 +538,7 @@ def reference_run(plan):
     torch.set_num_threads(2); torch.set_num_interop_threads(1)
     torch.backends.cuda.matmul.allow_tf32 = False; torch.backends.cudnn.allow_tf32 = False
     require(torch.cuda.is_available() and torch.cuda.device_count() == 1, "Exactly one root-assigned GPU required")
-    original = str(Path(plan["originalModel"]["weights"]["path"]).parent)
+    original = str(Path(selected_model["weights"]["path"]).parent)
     model, loading = RfDetrForInstanceSegmentation.from_pretrained(original, local_files_only=True, use_safetensors=True,
         attn_implementation="eager", dtype=torch.float32, output_loading_info=True)
     require(not any(loading.get(k) for k in ["missing_keys", "unexpected_keys", "mismatched_keys", "error_msgs"]), "Incomplete source checkpoint load; no replacements")
@@ -336,9 +547,27 @@ def reference_run(plan):
     model.eval(); model.to("cuda:0")
     require(not model.training and all(p.dtype == torch.float32 for p in model.parameters() if p.is_floating_point()), "Reference requires unchanged eval FP32 parameters")
     processor = RfDetrImageProcessor.from_pretrained(original, local_files_only=True)
+    if candidate:
+        source_dir = str(Path(plan["originalModel"]["modelConfig"]["path"]).parent)
+        source_config = model.config.__class__.from_pretrained(source_dir, local_files_only=True)
+        def semantic_config(value):
+            if isinstance(value, dict):
+                return {k: semantic_config(v) for k, v in value.items() if k not in {"_name_or_path", "_commit_hash", "transformers_version"}}
+            if isinstance(value, list): return [semantic_config(v) for v in value]
+            return value
+        require(semantic_config(model.config.to_dict()) == semantic_config(source_config.to_dict()), "Saved model configuration changed source architecture/class/query contract")
+        source_processor = RfDetrImageProcessor.from_pretrained(source_dir, local_files_only=True)
+        require(processor.to_dict() == source_processor.to_dict(), "Saved processor changed original preprocessing contract")
+        require(all(torch.isfinite(p).all().item() for p in model.parameters()), "Nonfinite saved candidate parameters")
+        torch.cuda.set_per_process_memory_fraction(CANDIDATE_BOUNDS["gpuAllocationBytes"] / torch.cuda.get_device_properties(0).total_memory, 0)
+    reference_started = time.monotonic()
     items = []
     for source in plan["cohort"]:
         if source["id"] not in plan["selectedIds"]: continue
+        if candidate:
+            require(time.monotonic() - reference_started <= CANDIDATE_BOUNDS["innerReferenceSeconds"] and
+                    torch.cuda.memory_allocated() <= CANDIDATE_BOUNDS["gpuAllocationBytes"] and
+                    torch.cuda.memory_reserved() <= CANDIDATE_BOUNDS["gpuAllocationBytes"], "Candidate reference resource budget exceeded")
         folder = out / source["id"].replace("/", "--"); folder.mkdir()
         with Image.open(checked(source["image"])) as image:
             require(image.size == (256, 256) and image.mode == "RGB" and image.getexif().get(274, 1) == 1, "Unsupported retained RGB source frame")
@@ -360,27 +589,31 @@ def reference_run(plan):
                   "output1": np.ascontiguousarray(output.pred_masks.detach().cpu().numpy())}
         require(all(list(a.shape) == CONTRACT[k] and a.dtype == np.float32 and np.isfinite(a).all() for k, a in arrays.items()), "Invalid complete reference output")
         np.savez_compressed(folder / "native-00.npz", **arrays)
-        inspect_archive(checked(source["onnx"]))
         parity = {}
-        with np.load(source["onnx"]["path"], allow_pickle=False) as old:
-            for key, new in arrays.items():
-                previous = old[key]
-                require(list(previous.shape) == CONTRACT[key] and previous.dtype == np.float32 and np.isfinite(previous).all(), "Invalid retained ONNX output")
-                delta = np.abs(new.astype(np.float64) - previous.astype(np.float64))
-                parity[key] = {"maxAbs": float(delta.max()), "meanAbs": float(delta.mean()),
-                    "outsideTolerance": int((~np.isclose(new, previous, atol=PARITY["outputAtol"], rtol=PARITY["outputRtol"])).sum()),
-                    "thresholdSignDisagreements": int(((new > 0) != (previous > 0)).sum())}
+        if not candidate:
+            inspect_archive(checked(source["onnx"]))
+            with np.load(source["onnx"]["path"], allow_pickle=False) as old:
+                for key, new in arrays.items():
+                    previous = old[key]
+                    require(list(previous.shape) == CONTRACT[key] and previous.dtype == np.float32 and np.isfinite(previous).all(), "Invalid retained ONNX output")
+                    delta = np.abs(new.astype(np.float64) - previous.astype(np.float64))
+                    parity[key] = {"maxAbs": float(delta.max()), "meanAbs": float(delta.mean()),
+                        "outsideTolerance": int((~np.isclose(new, previous, atol=PARITY["outputAtol"], rtol=PARITY["outputRtol"])).sum()),
+                        "thresholdSignDisagreements": int(((new > 0) != (previous > 0)).sum())}
         item = {"id": source["id"], "source": source["image"], "sourceEmpty": source["sourceEmpty"], "seconds": elapsed,
             "inputMaxAbs": input_max, "parity": parity, "numericParityPassed": all(p["outsideTolerance"] == 0 for p in parity.values()),
             "artifacts": {"native-00.npz": {k: v for k, v in pin(folder / "native-00.npz").items() if k != "path"}}}
+        if candidate:
+            item.pop("numericParityPassed"); item.pop("parity")
+            item["model"] = selected_model
         save(folder / "reference.json", item); items.append(item)
         del output, arrays, inputs
     baseline = plan["schemaVersion"] == BASELINE_VERSION
-    if baseline:
+    if baseline or candidate:
         require([i["id"] for i in items] == [i["id"] for i in plan["cohort"]], "Incomplete/reordered baseline cannot complete")
-    result = {"schemaVersion": "ramp-torch-baseline-result/2" if baseline else "ramp-torch-reference-result/1", "mode": plan["mode"], "planSha256": plan["planSha256"],
+    result = {"schemaVersion": "ramp-torch-candidate-reference-result/1" if candidate else "ramp-torch-baseline-result/2" if baseline else "ramp-torch-reference-result/1", "mode": plan["mode"], "planSha256": plan["planSha256"],
         "scriptSha256": pin(__file__)["sha256"], "cohortSha256": COHORT_SHA, "items": items,
-        "state": "reference_completed_parity_passed" if all(i["numericParityPassed"] for i in items) else "reference_completed_parity_failed",
+        "state": "saved_candidate_reference_completed" if candidate else "reference_completed_parity_passed" if all(i["numericParityPassed"] for i in items) else "reference_completed_parity_failed",
         "trainingOrPromotion": False, "qualityScoring": "Reuse existing cached evaluator at unchanged0.5; raw archives compatible, no label/metric qualification here."}
     if baseline:
         result.update(state="experimental_baseline_completed", baselinePolicy=BASELINE_POLICY,
@@ -388,6 +621,13 @@ def reference_run(plan):
             all(i["numericParityPassed"] for i in items) else "all24_numeric_parity_failed",
             parityPolicy=PARITY, model=plan["originalModel"], runtime=plan["runtime"],
             qualification="own_route_open_development_baseline_only; no_ONNX_equivalence_fit_promotion_or_release_claim")
+    if candidate:
+        result.update(candidatePolicy=CANDIDATE_POLICY, candidateBinding=plan["candidateBinding"], model=selected_model,
+            originalModel=plan["originalModel"], baselineScore=plan["baselineScore"], decision=plan["decision"],
+            authorizationSha256=authorization["authorizationSha256"], runtime=plan["runtime"],
+            numericComparisonState="not_applicable_changed_weights; original_ONNX_parity_FAILED_preserved",
+            loading="strict_complete_local_only_saved_final_one_class_200queries_FP32_eval; unchanged_semantic_config_and_processor",
+            qualification="open_development_candidate_predictions_only; cached_quality_decision_unrun; no_fit_final_data_promotion_readiness")
     save(out / "result.json", result)
     return result
 
@@ -396,28 +636,36 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--prepare-baseline", action="store_true")
+    parser.add_argument("--prepare-candidate", action="store_true")
+    parser.add_argument("--bind-candidate", type=Path)
     parser.add_argument("--plan", type=Path)
     parser.add_argument("--reference-run", action="store_true")
     parser.add_argument("--experimental-baseline-run", action="store_true")
+    parser.add_argument("--candidate-run", action="store_true")
     parser.add_argument("--authorization", type=Path)
     parser.add_argument("--authorization-sha256")
     args = parser.parse_args()
-    if args.prepare or args.prepare_baseline:
-        require(not (args.prepare and args.prepare_baseline) and not args.plan and not args.reference_run and
+    preparation = [args.prepare, args.prepare_baseline, args.prepare_candidate, args.bind_candidate is not None]
+    if any(preparation):
+        require(sum(preparation) == 1 and not args.plan and not args.reference_run and not args.candidate_run and
                 not args.experimental_baseline_run and not args.authorization and not args.authorization_sha256, "Preparation grants no execution")
+        if args.prepare_candidate or args.bind_candidate:
+            print(json.dumps(bind_candidate(args.bind_candidate) if args.bind_candidate else prepare_candidate())); return
         (prepare_baseline if args.prepare_baseline else prepare)(); return
     require(args.plan is not None, "Supply --prepare or --plan")
-    execute = args.reference_run or args.experimental_baseline_run
-    require(not (args.reference_run and args.experimental_baseline_run), "One explicit execution contract required")
+    execute = args.reference_run or args.experimental_baseline_run or args.candidate_run
+    require(sum([args.reference_run, args.experimental_baseline_run, args.candidate_run]) <= 1, "One explicit execution contract required")
     if execute:
         require(args.authorization is not None and args.authorization_sha256 is not None, "Reference blocked: root authorization required before heavy imports")
     plan = read(args.plan); validate_plan(plan)
     if execute:
         require(args.experimental_baseline_run == (plan["schemaVersion"] == BASELINE_VERSION), "Execution mode and versioned plan must agree")
-        authorize(plan, args.authorization, args.authorization_sha256)
-        print(json.dumps(reference_run(plan), indent=2))
+        require(args.candidate_run == (plan["schemaVersion"] == CANDIDATE_VERSION), "Candidate plan requires its explicit saved-final execution mode")
+        authorization = authorize(plan, args.authorization, args.authorization_sha256)
+        print(json.dumps(reference_run(plan, authorization), indent=2))
     else:
-        print(json.dumps({"state": "prepared_only", "mode": plan["mode"], "items": len(plan["selectedIds"]), "planSha256": plan["planSha256"]}))
+        print(json.dumps({"state": "prepared_only", "mode": plan["mode"], "items": len(plan["selectedIds"]), "planSha256": plan["planSha256"],
+            **({"bindingStatus": plan["bindingStatus"]} if plan["schemaVersion"] == CANDIDATE_VERSION else {})}))
 
 
 if __name__ == "__main__":
