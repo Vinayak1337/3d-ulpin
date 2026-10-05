@@ -42568,8 +42568,28 @@
         "x-batch": "DOC-PROPOSALS-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "201 immutable explicit T3-2 selection: 10 provisional proposals/0 rejected/1 unresolved difference/4 unknowns. Identical-key/body201 recovers the same snapshot with operations0/page inspections0 added; changed body409 STALE_REVISION and wrong source hash409 STALE_REVISION add0 writes. First save performs one bounded metadata-only PDF worker; no raster/OCR/inference.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/packet",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d08-document-proposals-20261005.json",
+          "servedCodeCommit": "54fb35222b91764044888aa0ca390b852f404177",
+          "environment": "Stopped retained local document-proposal run01; API/task storage stopped. One canonical PDF metadata worker on first save, no repeat reader/render/OCR/model/processor/Celery. Original containers/volumes/profiles/Redis and prior proofs preserved; no standing URL.",
+          "limitation": "Actual bounded local-process software persistence for one explicit T3-2 caller-supplied provisional packet at exact 54fb: POST201/exact read200/identical-key-body201 same immutable snapshot; same-key changed body409 STALE_REVISION, new-key wrong source hash409 STALE_REVISION, foreign Origin403 ORIGIN_DENIED, denied writes0. One snapshot/request pair only, replay adds0. First save performs one canonical metadata-only PDF worker; read/replay/refusals add0. caller_supplied_provisional/caller_supplied_unverified/explicit_selection_only/not_machine_verified, local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, canonicalTarget null and qualification not_assessed. No quote truth/producer execution/approved revision/building-floor identity/geometry/rights/accuracy/learning/frontend/release qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-max-body-bytes": 524288,
         "x-transport-profile": "json",
@@ -42808,8 +42828,28 @@
         "x-batch": "DOC-PROPOSALS-01",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
-        "x-runtime-verified": false,
-        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "200 exact revision1 provisional snapshot under current private original/context/access authority, private no-store; foreign Origin403 ORIGIN_DENIED adds0 writes. No page worker on read and no human/quote/semantic/property/learning acceptance.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/packet",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ],
+          "receipt": "docs/evidence/usp/nest-migration/runtime-source/d08-document-proposals-20261005.json",
+          "servedCodeCommit": "54fb35222b91764044888aa0ca390b852f404177",
+          "environment": "Stopped retained local document-proposal run01; API/task storage stopped. One canonical PDF metadata worker on first save, no repeat reader/render/OCR/model/processor/Celery. Original containers/volumes/profiles/Redis and prior proofs preserved; no standing URL.",
+          "limitation": "Actual bounded local-process software persistence for one explicit T3-2 caller-supplied provisional packet at exact 54fb: POST201/exact read200/identical-key-body201 same immutable snapshot; same-key changed body409 STALE_REVISION, new-key wrong source hash409 STALE_REVISION, foreign Origin403 ORIGIN_DENIED, denied writes0. One snapshot/request pair only, replay adds0. First save performs one canonical metadata-only PDF worker; read/replay/refusals add0. caller_supplied_provisional/caller_supplied_unverified/explicit_selection_only/not_machine_verified, local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, canonicalTarget null and qualification not_assessed. No quote truth/producer execution/approved revision/building-floor identity/geometry/rights/accuracy/learning/frontend/release qualification."
+        },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
         "x-dataset-catalogue": "/api/docs/datasets.json"

@@ -1,0 +1,423 @@
+{
+  "schemaVersion": "ulpin-scoped-runtime-observation/1",
+  "task": "D08-PROPOSAL-PERSISTENCE-RUNTIME",
+  "attempt": 1,
+  "recordedAt": "2026-10-05T05:33:44.639Z",
+  "clientDate": "2026-10-05",
+  "servedCodeCommit": "54fb35222b91764044888aa0ca390b852f404177",
+  "role": "PRIVATE_INSPECTION",
+  "privateProof": {
+    "path": "E:/BhuAayam-data/task-data/d08-document-proposals-runtime-20261005-run01/verification.json",
+    "bytes": 30598,
+    "sha256": "6ba3dcb89beb9be835fdf143e65c8514bacb59e0aa053086e0e0d8678f51a4e8"
+  },
+  "publication": "Selected safe metadata only; local Windows actor identifier, complete packet/request/snapshot/SQL rows, credentials, raw source and runtime code remain private.",
+  "sources": {
+    "manifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+    "testedAssetIds": [
+      "haryana-2831-tower3-plan2.pdf"
+    ],
+    "otherManifestAssetsQualified": false,
+    "sourcePin": {
+      "caseId": "9a2618cf-0d63-45fa-a53b-18e80fc13b04",
+      "caseRevision": 2,
+      "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+      "sourceRevision": 1,
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "sourceBytes": 1630108
+    },
+    "approvedRevisionIdentity": "not_assessed"
+  },
+  "authority": {
+    "pin": {
+      "caseId": "9a2618cf-0d63-45fa-a53b-18e80fc13b04",
+      "caseRevision": 2,
+      "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+      "sourceRevision": 1,
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "sourceBytes": 1630108
+    },
+    "privateAccess": "Actual server-owned local-process subject, current source/context/access, original bytes/hash and final locked disclosure. No fabricated transport or installed authority.",
+    "priorItemBatchJobSourceRowsMatchRun02": true,
+    "priorD07ReviewExact": true,
+    "pageMetadata": {
+      "version": "document-pages-local/1",
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "sourceBytes": 1630108,
+      "pageCount": 1,
+      "offset": 0,
+      "limit": 1,
+      "pages": [
+        {
+          "page": 1,
+          "label": "Page 1",
+          "sourceLabel": null,
+          "frame": {
+            "kind": "pdf_display_page_top_left_points",
+            "rotation": 0,
+            "width": 2586,
+            "height": 1694
+          },
+          "mediaBox": [
+            0,
+            0,
+            2586,
+            1694
+          ],
+          "cropBox": [
+            0,
+            0,
+            2586,
+            1694
+          ],
+          "boxConvention": "pymupdf_page_rectangles/1",
+          "renderSupport": "unsupported"
+        }
+      ],
+      "render": null
+    },
+    "metadataExecution": {
+      "version": "document-pages-execution/1",
+      "seconds": 23,
+      "memoryBytes": 2147483648,
+      "worker": {
+        "exitCode": 0,
+        "stopReason": null,
+        "elapsedSeconds": 0.266,
+        "peakObservedRssBytes": 9166848,
+        "peakJobPrivateBytes": 62001152,
+        "gatedStart": true,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "logByteLimit": 65536,
+        "logTruncated": false
+      },
+      "resultSha256": "19404444b07052365ac028d43408d85d98ceba85fb7dd529807ad57374c9c810"
+    },
+    "retainedMetadataPins": [
+      {
+        "path": "E:/BhuAayam-data/task-data/d08-document-proposals-runtime-20261005-run01/page-metadata-1-result.json",
+        "bytes": 485,
+        "sha256": "19404444b07052365ac028d43408d85d98ceba85fb7dd529807ad57374c9c810"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d08-document-proposals-runtime-20261005-run01/page-metadata-1-receipt.json",
+        "bytes": 606,
+        "sha256": "4d47104d5b2b50c70fd30bfe675b166676b38ca27089a3f4304cf0ec1e928703"
+      }
+    ]
+  },
+  "protocol": {
+    "lifecycleExit": 0,
+    "helperSyntaxExit": 0,
+    "helperSyntaxChecked": 11,
+    "startupStages": [
+      {
+        "name": "cold-preflight",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "source-packet-admission",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "fresh-profile",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "compiled-readiness",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "storage-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "database-before",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "retained-redis-before",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "api-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "api-ready",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      }
+    ],
+    "journeyAndPreservationStages": [
+      {
+        "name": "one-document-proposals",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "database-after",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "retained-redis-after",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      }
+    ],
+    "shutdownStages": [
+      {
+        "name": "api-stop",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "storage-stop",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      }
+    ],
+    "coldAuditPassed": true,
+    "method": "Actual canonical API/PG/object authority; save performs the necessary bounded metadata-only PDF supervisor once. Passive scratch events retain exact original producer receipt/result before canonical cleanup. No production functions, transports or native producer overridden.",
+    "nativePageMetadataCalls": 1,
+    "repeatPageInspectionsOnReadReplayOrDenial": 0,
+    "renderOcrInferenceCalls": 0,
+    "processorAndCeleryStarted": false,
+    "migrationsApplied": 0
+  },
+  "packet": {
+    "origin": {
+      "bytes": 210982,
+      "sha256": "9fa7f99e52f90d446c3a26c075ebed64d1d539dd930556af91ae77aa632f63d5"
+    },
+    "original": {
+      "bytes": 1630108,
+      "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+    },
+    "selection": {
+      "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+      "proposals": 10,
+      "rejected": 0,
+      "conflicts": 1,
+      "unknowns": 4,
+      "excludedOtherSourceProposals": 6,
+      "excludedOtherSourceRejected": 137,
+      "manualReviewContext": "Preserved in unchanged origin; not converted into machine proposals",
+      "packetBytes": 7643,
+      "packetSha256": "c1cd647bb18be33888e2c0917ebc20152460bda5d2115a07c58fe128f10a4203"
+    },
+    "snapshotId": "d69d935a-20f7-4399-b4b3-9ef3b4bb7ef3",
+    "snapshotRevision": 1,
+    "requestKey": "afae2186-8958-4ce8-a5ca-07219eec4822",
+    "source": {
+      "sourceRevision": 1,
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "sourceBytes": 1630108,
+      "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950"
+    },
+    "caseRevision": 2,
+    "currentCaseRevision": 2,
+    "snapshotSha256": "00f04155771ccd5a82fb4a8a317ab51443c416be4c5f8b9c985bfd4ecf5edda0",
+    "locatorWarnings": [],
+    "literalsSpansReasonsMethodsClaimsAndUnknownsExact": true,
+    "method": "caller_supplied_provisional",
+    "provenanceAuthority": "caller_supplied_unverified",
+    "population": "explicit_selection_only",
+    "status": "needs_review",
+    "quotationVerification": "not_machine_verified",
+    "canonicalTarget": null,
+    "canonicalMatchState": "not_assessed",
+    "qualification": "not_assessed",
+    "learningLabel": false,
+    "attribution": {
+      "time": "2026-10-05T05:33:25.551Z",
+      "attribution": "local_process",
+      "humanAuthenticated": false,
+      "independentGroundTruth": false
+    }
+  },
+  "httpObservations": [
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/source-reviews/b46216ba-8c6b-4514-9e29-acc793330a5b",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/ingestion/cases/9a2618cf-0d63-45fa-a53b-18e80fc13b04/sources/a124fb03-6ee4-4ced-8450-c67eb68dc950/document-proposals",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/ingestion/cases/9a2618cf-0d63-45fa-a53b-18e80fc13b04/sources/a124fb03-6ee4-4ced-8450-c67eb68dc950/document-proposals/d69d935a-20f7-4399-b4b3-9ef3b4bb7ef3",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/ingestion/cases/9a2618cf-0d63-45fa-a53b-18e80fc13b04/sources/a124fb03-6ee4-4ced-8450-c67eb68dc950/document-proposals",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/ingestion/cases/9a2618cf-0d63-45fa-a53b-18e80fc13b04/sources/a124fb03-6ee4-4ced-8450-c67eb68dc950/document-proposals",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "path": "/ingestion/cases/9a2618cf-0d63-45fa-a53b-18e80fc13b04/sources/a124fb03-6ee4-4ced-8450-c67eb68dc950/document-proposals",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "path": "/ingestion/cases/9a2618cf-0d63-45fa-a53b-18e80fc13b04/sources/a124fb03-6ee4-4ced-8450-c67eb68dc950/document-proposals/d69d935a-20f7-4399-b4b3-9ef3b4bb7ef3",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/source-reviews/b46216ba-8c6b-4514-9e29-acc793330a5b",
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "privateResponseCacheControl": "private, no-store",
+  "replay": {
+    "sameImmutableSnapshot": true,
+    "additionalOperations": 0,
+    "additionalPageInspections": 0
+  },
+  "refusals": [
+    {
+      "name": "same-key-changed-body",
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    {
+      "name": "new-key-wrong-source-hash",
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    {
+      "name": "foreign-origin",
+      "status": 403,
+      "code": "ORIGIN_DENIED"
+    }
+  ],
+  "deniedWriteDelta": 0,
+  "preservation": {
+    "observationScope": "Actual 29-table counts/sorted per-row JSONB digest comparisons; excludes only the two exact owned operation keys after save. Prior source/review/job/registry/ledger/prediction rows retained.",
+    "tablesChecked": 29,
+    "perTableCountsAndSha256DigestsUnchanged": true,
+    "digestMethod": "SHA-256 of sorted per-row PostgreSQL SHA-256 JSONB representations; excludes only the two exact owned operation keys after save",
+    "operationsBefore": 162,
+    "operationsAfter": 164,
+    "intendedWriteDelta": {
+      "operations": 2,
+      "snapshot": 1,
+      "requestReceipt": 1
+    },
+    "counts": {
+      "cases": 46,
+      "import_packages": 1,
+      "jobs": 87,
+      "operations": 162,
+      "registry_aliases": 0,
+      "registry_case_feature_mappings": 0,
+      "registry_case_import_operations": 0,
+      "registry_drafts": 1,
+      "registry_links": 0,
+      "registry_records": 2,
+      "registry_reviews": 0,
+      "registry_revisions": 0,
+      "registry_rights": 0,
+      "registry_sites": 2,
+      "snapshots": 0,
+      "sources": 45,
+      "spatial_ml_batches": 1,
+      "spatial_ml_footprint_drafts": 0,
+      "spatial_ml_items": 1,
+      "usp_job_attempts": 84,
+      "usp_job_metadata": 86,
+      "usp_migration_ledger": 7,
+      "usp_model_budget": 0,
+      "usp_model_calls": 0,
+      "usp_packet_pdf_entry_checkpoints": 0,
+      "usp_packet_plan_confirmations": 0,
+      "usp_packet_plan_executions": 0,
+      "usp_packet_plans": 0,
+      "usp_packets": 0
+    },
+    "oldItemPredictionsMasksOmissionsAndD07ReviewUnchanged": true,
+    "retainedRedisDb": 15,
+    "retainedRedisKeys": 3,
+    "redisDumpHashesUnchanged": true,
+    "unchangedOriginAndOriginal": true,
+    "priorProofs": [
+      {
+        "path": "E:/BhuAayam-data/task-data/d07-source-review-runtime-20261005-run01/verification.json",
+        "bytes": 24476,
+        "sha256": "6255b06e3b8e96410e762dac3dcf67d12995c065cab616914e9b813805a810fb"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/verification.json",
+        "bytes": 31376,
+        "sha256": "fbf0b388f05c250f750455053492fc334c1c4e6ccd6669c35ef4f3055be69674"
+      }
+    ]
+  },
+  "cleanup": {
+    "observationScope": "Accepted run01 completion snapshot; no claim about later owners.",
+    "at": "2026-10-05T05:33:44.638Z",
+    "apiAndTaskStorageStopped": true,
+    "ports3192And28000Absent": true,
+    "ownedNativeChildrenAbsent": true,
+    "scratchEmpty": true,
+    "originalContainerIdsPreserved": 24,
+    "runningContainers": 0,
+    "volumeNamesPreserved": 14,
+    "profileFilesUnchanged": 8,
+    "priorProofs": [
+      {
+        "path": "E:/BhuAayam-data/task-data/d07-source-review-runtime-20261005-run01/verification.json",
+        "bytes": 24476,
+        "sha256": "6255b06e3b8e96410e762dac3dcf67d12995c065cab616914e9b813805a810fb"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/verification.json",
+        "bytes": 31376,
+        "sha256": "fbf0b388f05c250f750455053492fc334c1c4e6ccd6669c35ef4f3055be69674"
+      }
+    ],
+    "dockerAvailable": true,
+    "standingUrl": false
+  },
+  "qualification": "Actual bounded local-process software persistence for one explicit T3-2 caller-supplied provisional packet at exact 54fb: POST201/exact read200/identical-key-body201 same immutable snapshot; same-key changed body409 STALE_REVISION, new-key wrong source hash409 STALE_REVISION, foreign Origin403 ORIGIN_DENIED, denied writes0. One snapshot/request pair only, replay adds0. First save performs one canonical metadata-only PDF worker; read/replay/refusals add0. caller_supplied_provisional/caller_supplied_unverified/explicit_selection_only/not_machine_verified, local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, canonicalTarget null and qualification not_assessed. No quote truth/producer execution/approved revision/building-floor identity/geometry/rights/accuracy/learning/frontend/release qualification.",
+  "limitations": [
+    "One selected T3-2 caller-supplied provisional packet, not a human_entry or independently qualified model execution. Exact text/span preservation does not prove quote truth, approved revision, building/floor linkage, geometry, rights, semantic accuracy or learning labels.",
+    "The complete unchanged origin retains excluded S-001 six proposals/137 rejected entries and its separate manual review context; this source-scoped save does not claim their persistence.",
+    "One bounded metadata reader was necessary for first save; zero raster/OCR/model/native extraction, provider/GPU/training, dispatcher/Celery, new jobs/sources, migrations/reset/reseed or credential/environment edits.",
+    "No forced case mutation to repeat the completed controlled recovery regression. No held-out evaluation, source discovery, frontend, standing URL, push/deployment or release qualification.",
+    "No whole-OS egress audit or running worker service-tier proof from assignment text."
+  ]
+}
