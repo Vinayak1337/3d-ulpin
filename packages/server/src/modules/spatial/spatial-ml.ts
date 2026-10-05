@@ -192,12 +192,12 @@ export async function getSpatialMlBatch(id: string): Promise<SpatialMlBatch> {
 export async function createSpatialMlSourceBatch(value: unknown): Promise<SpatialMlBatch> {
   const input = spatialMlSourceBatchSchema.parse(value), digest = fingerprint(input);
   // Replays still recapture current private authority; no result is disclosed by key alone.
-  const prepared = await spatialMlSourceService.prepare(input);
   const existing = (await query("SELECT id,request_digest FROM spatial_ml_batches WHERE scope='source' AND case_id=$1 AND source_id=$2 AND request_key=$3", [input.caseId, input.sourceId, input.requestKey])).rows[0];
   if (existing) {
     if (existing.request_digest !== digest) throw new AppError(409, 'ML_REQUEST_KEY', 'This source batch key was used for different inputs.');
     return getSpatialMlBatch(existing.id);
   }
+  const prepared = await spatialMlSourceService.prepare(input);
   const status = await spatialMlStatus(), model = status.models.find(m => m.task === 'floor-plan' && m.id === input.modelId);
   if (!model) throw new AppError(422, 'ML_MODEL_UNKNOWN', 'Select an allowlisted local floor-plan model.');
   const id = await transaction(async client => {
