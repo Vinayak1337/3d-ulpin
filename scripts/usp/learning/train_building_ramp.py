@@ -16,6 +16,7 @@ import os
 from pathlib import Path, PurePosixPath, PureWindowsPath
 import struct
 import sys
+import time
 
 VERSION = "ramp-transformers-training-plan/1"
 BASE_SHA = "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
@@ -44,6 +45,197 @@ MOUNT_DESTINATIONS = {"model": "/inputs/model", "train": "/inputs/coco/train",
 RUNTIME_DESTINATIONS = {"runtimeReceipt": "/inputs/plan/runtime-binding.json",
     "packageLock": "/inputs/plan/environment-lock.json", "installedMetadata": "/inputs/plan/installed-metadata.json",
     "imageMetadata": "/inputs/plan/layer-image-inspect.json"}
+PILOT_VERSION = "ramp-pilot-training-plan/1"
+PILOT_ROOT = Path("E:/BhuAayam-data/task-data/d07-rfdetr-pilot-fit-20261005")
+ROOT_THREAD = "01a0ed8a-4383-79c3-a0ae-35c1e969ef66"
+GPU_UUID = "GPU-3989f368-bd26-bd52-9daf-037a9862f82f"
+# These are retained metadata identities, not new data/model validation receipts.
+PILOT_EVIDENCE = {
+    "mountedConfig": (52751, "14d3936c88b983a5838f027bc411c9a656804de6b301f8e5be6d1aa6a87cf367"),
+    "mountedPlan": (26107, "14343270b4511007b6d0bdbcfb6b4f473f4f60b20d5ee49f95b971af7fcdb9ac"),
+    "allocation": (31595, "3f31d467c9ca8f6c92e02d7a09ffbb0fee7d51cd0d4dc3642629a32b02c074da"),
+    "baseline": (17457, "0997be82e44c33943c828f76ecd42cc6e556944180d904f2c1416eda88521483"),
+    "baselineScore": (129769, "9239661b104c58dc8d00252170d5c7fcfb41cb2e9b6f4cb6106638c096163355"),
+    "controls": (15034, "133f7c27494d7b78056097b0f621c06e963cb757597e728e6efbf4a4ddcdee7c"),
+}
+PILOT_BOUNDS = {"cpu": 2, "computeThreads": 2, "containerMemoryBytes": 5 * 1024**3,
+    "swapBytes": 0, "pids": 32, "hostJobMemoryBytes": 512 * 1024**2,
+    "gpuAllocationBytes": 5 * 1024**3, "fitAndCleanupSeconds": 900,
+    "cleanupReserveSeconds": 45, "innerFitSeconds": 855}
+PILOT_DECISION = {"maskIoUMin": 0.4683830, "maskRecallMin": 0.5380144,
+    "maskPrecisionMin": 0.8266567, "emptyFalsePositiveScenesMax": 1,
+    "emptyScenes": 5, "role": "open_cohort_decision_not_model_readiness",
+    "report": ["polygon_matches", "polygon_false_positives", "polygon_misses", "geometry_omissions"],
+    "candidateEvaluation": "later_separately_assigned_teacher_saved_final_ALL24_once_FP32_432_confidence0.5_logit0_cached_production_scorer",
+    "finalAccess": False, "checkpointOrThresholdSelection": False}
+
+
+def pilot_arguments():
+    """One fixed recipe; no user-selected sweep, precision or evaluation override."""
+    return {"output_dir": "/outputs/rfdetr/pilot-fit-v1", "num_train_epochs": 6,
+        "per_device_train_batch_size": 1, "per_device_eval_batch_size": 1,
+        "gradient_accumulation_steps": 4, "learning_rate": 1e-4, "weight_decay": 1e-4,
+        "seed": 42, "data_seed": 42, "dataloader_num_workers": 0,
+        "remove_unused_columns": False, "eval_strategy": "no", "save_strategy": "no",
+        "load_best_model_at_end": False, "do_eval": False, "prediction_loss_only": True,
+        "report_to": "none", "push_to_hub": False, "fp16": False, "bf16": False,
+        "gradient_checkpointing": False, "optim": "adamw_torch", "logging_steps": 1,
+        "logging_nan_inf_filter": False, "label_names": ["labels"], "use_cpu": False,
+        "torch_compile": False, "max_steps": -1, "lr_scheduler_type": "linear",
+        "warmup_steps": 0, "max_grad_norm": 1.0, "auto_find_batch_size": False, "tf32": False}
+
+
+def pilot_evidence(entries):
+    require(set(entries) == set(PILOT_EVIDENCE), "Exact complete pilot evidence required")
+    values = {}
+    for key, entry in entries.items():
+        require((entry["bytes"], entry["sha256"]) == PILOT_EVIDENCE[key], f"Pilot {key} identity drift")
+        path = unlinked(entry["path"])
+        require(path.stat().st_size == entry["bytes"], f"Pilot {key} metadata size drift")
+        check_pin({**entry, "path": str(path)})
+        values[key] = read_json(entry["path"], 1024**2)
+    wrapper, prior, overlay, baseline = [values[k] for k in ["mountedConfig", "mountedPlan", "allocation", "baseline"]]
+    require(wrapper["schemaVersion"] == BOUND_MOUNT_VERSION and wrapper["trainingAuthorized"] is False and
+            prior["runtimeBinding"] == wrapper["runtimeBinding"] and prior["trainingAuthorized"] is False,
+            "Reuse unchanged bound preparation")
+    require(overlay["schemaVersion"] == "ramp-pilot-allocation-overlay/1" and
+            overlay["partition"] == {"experimentalTrainingAllocated": 24, "openDevelopmentAllocated": 24,
+                "finalTestAllocated": 0, "unallocated": 0, "fitAdmitted": 0} and
+            overlay["executionReservation"]["trainingAuthorized"] is False, "Frozen whole-group allocation required")
+    require([(g["role"], g["parentCapture"], g["images"], g["publisherInstances"], g["sourceEmptyImages"])
+            for g in overlay["groups"]] == [("experimental_training", "105001001597B000", 24, 263, 1),
+                ("open_development", "104001002CA32300", 24, 178, 5)], "Pilot roles/counts cannot change")
+    require(baseline["status"] == "all24_own_route_baseline_and_cached_production050_scoring_completed" and
+            baseline["contract"]["baselinePolicy"]["items"] == 24 and baseline["decision"]["fit"] is False and
+            baseline["decision"]["onnxEquivalence"] is False and
+            baseline["numericalObservations"]["state"] == "all24_numeric_parity_failed" and
+            baseline["scoring"]["correctedResult"]["sha256"] == entries["baselineScore"]["sha256"],
+            "Own-route measured baseline required; failed ONNX parity remains separate")
+    require(values["controls"]["status"] == "actual_native_cpu_processor_and_tiny_gpu_controls_passed_model_unrun",
+            "Retain accepted controls; they do not authorize this new process")
+    return values
+
+
+def validate_pilot(plan):
+    require(plan["schemaVersion"] == PILOT_VERSION and plan["task"] == "D07-RFDETR-PILOT-FIT" and
+            plan["trainingAuthorized"] is False and plan["state"] == "prepared_only",
+            "Preparation grants no fit permission")
+    require(plan["planSha256"] == digest({k: v for k, v in plan.items() if k != "planSha256"}), "Pilot plan drift")
+    require(plan["trainingArguments"] == pilot_arguments() and plan["bounds"] == PILOT_BOUNDS and
+            plan["decision"] == PILOT_DECISION, "Fixed pilot recipe/bounds/decision changed")
+    require(plan["budget"] == {"trainExamples": 144, "optimizerUpdates": 36, "epochs": 6,
+        "developmentExamplesDuringFit": 0, "finalExamples": 0}, "Fixed pilot budget changed")
+    require(set(plan["evidence"]) == set(PILOT_EVIDENCE) and
+            all((p["bytes"], p["sha256"]) == PILOT_EVIDENCE[k] for k, p in plan["evidence"].items()), "Evidence authority drift")
+    require([p["split"] for p in plan["pools"]] == ["train", "valid"] and
+            [(p["images"], p["instances"]) for p in plan["pools"]] == [(24, 263), (24, 178)] and
+            (plan["trainSource"], plan["developmentSource"]) == ("ramp-barishal", "ramp-karnataka"), "Whole-group role drift")
+    require(plan["memberIdentityDigest"] == "77e70e0947766378e131b1829a572a951840913389b48eeab1f2d7a264a6d7bd" and
+            digest(plan["members"]) == plan["memberIdentityDigest"] and len(plan["members"]) == 48,
+            "Frozen complete membership changed")
+
+
+def prepare_pilot(spec_path):
+    """Freeze accepted metadata only. Never read model tensors or image payloads."""
+    spec = read_json(spec_path, 1024**2)
+    require(set(spec) == {"schemaVersion", "evidence", "outputHost"} and
+            spec["schemaVersion"] == "ramp-pilot-preparation/1" and
+            unlinked(spec["outputHost"]) == unlinked(PILOT_ROOT / "output"), "Finite pilot preparation scope required")
+    values = pilot_evidence(spec["evidence"])
+    prior, wrapper, overlay, baseline = [values[k] for k in ["mountedPlan", "mountedConfig", "allocation", "baseline"]]
+    runtime = sealed_runtime(next({"path": m["hostPath"], "bytes": 6417, "sha256": RUNTIME_SHA}
+        for m in wrapper["mounts"] if m["role"] == "runtimeReceipt"))
+    require(runtime["imageDigest"] == wrapper["runtimeBinding"]["imageDigest"] and
+            runtime["packageVersions"] == wrapper["runtimeBinding"]["packageVersions"], "Sealed pilot environment drift")
+    mounts = copy.deepcopy(wrapper["mounts"])
+    next(m for m in mounts if m["role"] == "adapter")["hostPath"] = str(PILOT_ROOT / "train_building_ramp.py")
+    evidence = {}
+    for key, entry in spec["evidence"].items():
+        destination = f"/inputs/pilot/{key}.json"
+        mounts.append({"role": key, "hostPath": entry["path"], "containerPath": destination, "readOnly": True, "kind": "file"})
+        evidence[key] = {**entry, "path": destination}
+    script = {**file_pin(__file__), "path": "/inputs/plan/train_building_ramp.py"}
+    inventory = [{**r, "hostPin": {**script, "path": str(PILOT_ROOT / "train_building_ramp.py")},
+        "containerPin": script} if r["containerPin"]["path"] == script["path"] else r for r in wrapper["inventory"]]
+    score = baseline["scoring"]
+    plan = {"schemaVersion": PILOT_VERSION, "task": "D07-RFDETR-PILOT-FIT", "state": "prepared_only",
+        "trainingAuthorized": False, "scriptPin": script, "evidence": evidence,
+        "runtimeBinding": wrapper["runtimeBinding"], "mounts": mounts, "inventory": inventory,
+        "outputHost": spec["outputHost"], "trainingArguments": pilot_arguments(), "bounds": PILOT_BOUNDS,
+        "budget": {"trainExamples": 144, "optimizerUpdates": 36, "epochs": 6, "developmentExamplesDuringFit": 0, "finalExamples": 0},
+        "decision": PILOT_DECISION, "groups": overlay["groups"], "members": overlay["members"],
+        "memberIdentityDigest": overlay["memberIdentityDigest"],
+        **{k: prior[k] for k in ["weights", "modelConfig", "processorConfig", "datasetManifest", "pools",
+            "trainSource", "developmentSource", "classMapping", "initialHead", "preprocessing"]},
+        "measuredBaseline": {"ownerCommit": "07d726337703bd88a91b38f28074d404cc6231f1",
+            "mask": score["maskAndPolygonBuildingMetrics"]["mask"], "polygons": score["objects"]["polygons"],
+            "emptyScenes": score["emptyScenes"], "omissions": score["omissions"],
+            "observedResidual": "roof_pixel_recall0.4880144; polygon67matched43FP111missed; emptyFP1of5",
+            "onnxParity": "FAILED; not an own-route completion/adaptation gate; no equivalence claim"},
+        "coupledChanges": {"num_train_epochs": [1, 6], "fp16": [True, False], "gradient_checkpointing": [True, False],
+            "eval_strategy": ["epoch", "no"], "load_best_model_at_end": "explicitFalse",
+            "lossAccumulation": "documented Trainer.model_accepts_loss_kwargs=False; RF-DETR built-in loss ignores num_items_in_batch"},
+        "supervision": "Publisher-human CC-BY-NC research rooftops only; pretraining overlap/independent local audit/ignore ambiguity unknown; clipping and roof-vs-ground limits retained; no operational labels",
+        "authorizationContract": {"schemaVersion": "ramp-pilot-training-authorization/1", "rootThreadId": ROOT_THREAD,
+            "scope": "one_fixed_pilot_fit_no_evaluation", "currentPidRequired": True,
+            "rootAssignmentTask": "D07-RFDETR-PILOT-FIT-EXECUTE", "gpuUuid": GPU_UUID,
+            "required": ["exact_plan_code_recipe_split_baseline", "later_root_fit_assignment", "current_pid_native_mount_environment_resource_proof", "sole_gpu_handoff"]},
+        "checkpointInterface": {"directory": "/outputs/rfdetr/pilot-fit-v1/checkpoint",
+            "files": ["model.safetensors", "config.json", "preprocessor_config.json"],
+            "result": "/outputs/rfdetr/pilot-fit-v1/result.json", "selection": "fixed_final_only",
+            "teacherPermission": "information_only; separate root assignment required"},
+        "blockers": ["Later explicit root fit assignment and fresh current-PID native/resource/sole-GPU proof",
+            "Actual fit capacity/finite losses/parameter integrity unrun", "Later separately assigned saved-checkpoint ALL24 comparison unrun"]}
+    plan["planSha256"] = digest(plan)
+    validate_pilot(plan)
+    return plan
+
+
+def check_pilot_gate(path, expected_sha, plan):
+    validate_pilot(plan)
+    require(path is not None and expected_sha is not None, "Pilot fitting blocked: later root authorization/current-process handoff required")
+    require(file_pin(unlinked(path))["sha256"] == expected_sha, "Pilot authorization hash drift")
+    gate = read_json(path, 1024**2)
+    require(gate["schemaVersion"] == "ramp-pilot-training-authorization/1" and gate["rootThreadId"] == ROOT_THREAD and
+            gate["rootAuthorized"] is True and gate["scope"] == "one_fixed_pilot_fit_no_evaluation" and
+            gate["planSha256"] == plan["planSha256"] and gate["scriptSha256"] == file_pin(__file__)["sha256"] == plan["scriptPin"]["sha256"] and
+            gate["recipe"] == pilot_arguments() and gate["bounds"] == PILOT_BOUNDS and gate["evidence"] == plan["evidence"],
+            "Exact pilot code/plan/recipe/source authority required")
+    check_pin(gate["rootAssignment"])
+    assignment = read_json(gate["rootAssignment"]["path"], 1024**2)
+    require(assignment["schemaVersion"] == "ramp-pilot-root-assignment/1" and
+            assignment["task"] == "D07-RFDETR-PILOT-FIT-EXECUTE" and assignment["rootThreadId"] == ROOT_THREAD and
+            assignment["fitAuthorized"] is True and assignment["evaluationAuthorized"] is False and
+            assignment["planSha256"] == plan["planSha256"] and assignment["scriptSha256"] == plan["scriptPin"]["sha256"] and
+            isinstance(gate["modelOwnerThreadId"], str) and len(gate["modelOwnerThreadId"]) == 36 and
+            assignment["modelOwnerThreadId"] == gate["modelOwnerThreadId"],
+            "Preparation or baseline assignment grants no fit permission")
+    check_pin(gate["preflightReceipt"])
+    proof = read_json(gate["preflightReceipt"]["path"], 1024**2)
+    require(proof["pid"] == os.getpid() and proof["imageDigest"] == plan["runtimeBinding"]["imageDigest"] and
+            proof["gpuUuid"] == GPU_UUID and proof["gpuOwnerTransferred"] is True and proof["modelOwner"] == gate["modelOwnerThreadId"] and
+            proof["effectiveNetworkDenied"] is True and proof["effectiveResourceLimits"] is True and
+            proof["exactMountsAndEnvironmentVerified"] is True and proof["bounds"] == PILOT_BOUNDS and
+            proof["planSha256"] == plan["planSha256"], "Fresh exclusive contained pilot process required")
+    values = pilot_evidence(plan["evidence"])
+    require(plan["groups"] == values["allocation"]["groups"] and plan["members"] == values["allocation"]["members"],
+            "Frozen allocation authority changed")
+    runtime = sealed_runtime(plan["runtimeBinding"]["receipt"], plan["mounts"])
+    require(runtime == plan["runtimeBinding"] and sys.platform == "linux" and os.uname().machine == "x86_64" and
+            ".".join(map(str, sys.version_info[:3])) == runtime["pythonVersion"] and
+            Path(sys.executable).resolve() == Path(runtime["pythonExecutable"]).resolve() and
+            all(importlib.metadata.version(k) == v for k, v in runtime["packageVersions"].items()), "Exact sealed134-package process required")
+    prior = read_json(plan["evidence"]["mountedPlan"]["path"])
+    require(all(plan[k] == prior[k] for k in ["weights", "modelConfig", "processorConfig", "datasetManifest", "pools",
+        "trainSource", "developmentSource", "classMapping", "initialHead", "preprocessing"]), "Original input contract drift")
+    adapter_host = next(m["hostPath"] for m in plan["mounts"] if m["role"] == "adapter")
+    expected_inventory = [{**r, "hostPin": {**plan["scriptPin"], "path": adapter_host},
+        "containerPin": plan["scriptPin"]} if r["containerPin"]["path"] == plan["scriptPin"]["path"] else r
+        for r in values["mountedConfig"]["inventory"]]
+    require(plan["inventory"] == expected_inventory, "Complete retained input inventory required")
+    for row in plan["inventory"]: check_pin(row["containerPin"])
+    gate.update(authorizedPid=os.getpid(), authorizationSha256=expected_sha)
+    return gate
 
 
 def digest(value):
@@ -447,6 +639,8 @@ def build_plan(config_path):
 
 
 def check_gate(path, expected_sha, plan):
+    if plan["schemaVersion"] == PILOT_VERSION:
+        return check_pilot_gate(path, expected_sha, plan)
     require(path is not None and expected_sha is not None, "Execution blocked: a root authorization/handoff receipt and exact hash are required")
     if plan["schemaVersion"] in {"ramp-mounted-runtime-plan/1", "ramp-mounted-runtime-plan/2"}:
         require(False, "Mounted execution blocked: actual-process qualification/root authorization gate remains unassigned")
@@ -465,6 +659,32 @@ def check_gate(path, expected_sha, plan):
 
 
 def execute(plan, gate):
+    pilot = plan["schemaVersion"] == PILOT_VERSION
+    if pilot:
+        validate_pilot(plan)
+        require(gate.get("authorizedPid") == os.getpid() and gate.get("planSha256") == plan["planSha256"] and
+                gate.get("authorizationSha256"), "Pilot fitting blocked: check the exact current-process authorization first")
+        output = unlinked(plan["trainingArguments"]["output_dir"])
+        require(output == Path("/outputs/rfdetr/pilot-fit-v1") and not output.exists(), "New isolated pilot output required")
+        output.mkdir(parents=True, exist_ok=False)
+        (output / "plan.json").write_text(json.dumps(plan, indent=2)+"\n")
+    try:
+        return execute_trainer(plan, gate, time.monotonic())
+    except BaseException as error:
+        if pilot:
+            # Preserve the failed attempt, including any partial checkpoint. No
+            # OOM/nonfinite/compatibility retry, precision fallback or overwrite.
+            (output / "failure.json").write_text(json.dumps({"schemaVersion": "ramp-pilot-training-failure/1",
+                "state": "stopped_unqualified", "planSha256": plan["planSha256"],
+                "errorType": type(error).__name__, "error": str(error)[:4000],
+                "retryAuthorized": False, "evaluationRun": False, "promotion": False}, indent=2)+"\n")
+        raise
+
+
+def execute_trainer(plan, gate, started=None):
+    if plan["schemaVersion"] == PILOT_VERSION:
+        require(gate.get("authorizedPid") == os.getpid() and gate.get("planSha256") == plan["planSha256"] and
+                gate.get("authorizationSha256"), "Pilot Trainer blocked before heavy imports: checked process authority required")
     # This layer supplements the required external process guard; it does not claim
     # to enforce OS/CUDA limits or block native egress by itself.
     os.environ.update({"HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1", "HF_HUB_DISABLE_TELEMETRY": "1",
@@ -481,15 +701,38 @@ def execute(plan, gate):
     torch.set_num_threads(2)
     torch.set_num_interop_threads(1)
     require(torch.cuda.is_available() and torch.cuda.device_count() == 1, "Preflight must expose exactly one authorized GPU")
+    pilot = plan["schemaVersion"] == PILOT_VERSION
     output = Path(plan["trainingArguments"]["output_dir"])
-    output.mkdir(parents=True, exist_ok=False)
-    (output / "plan.json").write_text(json.dumps(plan, indent=2)+"\n")
+    if not pilot:
+        output.mkdir(parents=True, exist_ok=False)
+        (output / "plan.json").write_text(json.dumps(plan, indent=2)+"\n")
     set_seed(plan["trainingArguments"]["seed"])
     original = str(Path(plan["weights"]["path"]).parent)
     model, loading = RfDetrForInstanceSegmentation.from_pretrained(original, local_files_only=True, use_safetensors=True, attn_implementation="eager", output_loading_info=True)
     require(not any(loading.get(k) for k in ["missing_keys", "unexpected_keys", "mismatched_keys", "error_msgs"]), "Matching checkpoint failed complete load; no random replacement allowed")
     require(model.config.id2label == {0: "building"} and model.config.num_labels == 1, "Original classification head changed")
     processor = RfDetrImageProcessor.from_pretrained(original, local_files_only=True)
+    started = started if started is not None else time.monotonic()
+    observed = {"forwardCalls": 0, "trainExamples": 0}
+    parameter_signature = None
+    if pilot:
+        require(model.config.num_queries == 200 and model.config.disable_custom_kernels is True, "Original query/kernel contract changed")
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
+        torch.cuda.set_per_process_memory_fraction(PILOT_BOUNDS["gpuAllocationBytes"] / torch.cuda.get_device_properties(0).total_memory, 0)
+        require(all(p.dtype == torch.float32 and torch.isfinite(p).all().item() for p in model.parameters()), "Original FP32 parameters must be finite")
+        parameter_signature = [(n, tuple(p.shape), str(p.dtype), p.requires_grad) for n, p in model.named_parameters()]
+
+        def finite_loss(module, inputs, outputs):
+            require(time.monotonic() - started <= PILOT_BOUNDS["innerFitSeconds"], "Pilot inner fit deadline exceeded")
+            require(torch.cuda.memory_allocated() <= PILOT_BOUNDS["gpuAllocationBytes"] and
+                    torch.cuda.memory_reserved() <= PILOT_BOUNDS["gpuAllocationBytes"], "Pilot GPU allocation exceeded")
+            loss = outputs.loss
+            require(loss is not None and loss.numel() == 1 and torch.isfinite(loss).all().item() and
+                    all(torch.isfinite(v).all().item() for v in outputs.loss_dict.values()),
+                    "Nonfinite built-in loss; stop before backward and retain the attempt")
+            observed["forwardCalls"] += 1
+        model.register_forward_hook(finite_loss)
 
     class CocoPool:
         """Small source adapter only; losses, optimizer, evaluation and fitting belong to Trainer."""
@@ -503,6 +746,8 @@ def execute(plan, gate):
         def __len__(self): return len(self.images)
 
         def __getitem__(self, index):
+            if pilot:
+                observed["trainExamples"] += 1
             source = self.images[index]
             with Image.open(self.path.parent / source["file_name"]) as image:
                 rgb = image.convert("RGB").resize((432, 432), Image.Resampling.BILINEAR)
@@ -530,17 +775,41 @@ def execute(plan, gate):
                 "pixel_mask": torch.ones((len(batch), 432, 432), dtype=torch.bool), "labels": [b["labels"] for b in batch]}
 
     trainer = Trainer(model=model, args=TrainingArguments(**plan["trainingArguments"]),
-                      train_dataset=CocoPool(plan["pools"][0]), eval_dataset=CocoPool(plan["pools"][1]),
+                      train_dataset=CocoPool(plan["pools"][0]), eval_dataset=None if pilot else CocoPool(plan["pools"][1]),
                       data_collator=collate, processing_class=processor)
+    if pilot:
+        # RF-DETR's built-in object/mask loss does not consume num_items_in_batch.
+        # Use the documented standard Trainer accumulation normalization.
+        trainer.model_accepts_loss_kwargs = False
     fitted = trainer.train()
     require(math.isfinite(fitted.metrics["train_loss"]), "Non-finite training loss; keep the failed run for diagnosis")
-    trainer.save_model(str(output / "checkpoint"))
+    if pilot:
+        require(time.monotonic() - started <= PILOT_BOUNDS["innerFitSeconds"], "Pilot fit deadline exceeded before final save")
+        require(trainer.state.global_step == 36 and observed == {"forwardCalls": 144, "trainExamples": 144} and
+                trainer.state.epoch == 6.0, "Fixed six-epoch whole-pool training did not complete")
+        require(not any(k.startswith("eval_") for row in trainer.state.log_history for k in row), "Unexpected development evaluation")
+        require(parameter_signature == [(n, tuple(p.shape), str(p.dtype), p.requires_grad) for n, p in model.named_parameters()] and
+                all(torch.isfinite(p).all().item() for p in model.parameters()) and
+                model.config.id2label == {0: "building"} and model.config.num_labels == 1, "Final parameter/head integrity failed")
+    if pilot:
+        # Standard model/processor serialization, one fixed final directory;
+        # no epoch/optimizer checkpoint or best-model selection.
+        model.save_pretrained(str(output / "checkpoint"), safe_serialization=True)
+        processor.save_pretrained(str(output / "checkpoint"))
+    else:
+        trainer.save_model(str(output / "checkpoint"))
     selected = output / "checkpoint" / "model.safetensors"
     result = {"schemaVersion": "ramp-training-result/1", "planSha256": plan["planSha256"],
               "state": "fit_completed_unqualified", "selectedCheckpoint": file_pin(selected),
               "metrics": fitted.metrics, "developmentLossHistory": trainer.state.log_history,
               "trainingConfig": plan["trainingArguments"], "heldOutTestOpened": False,
               "promotion": False, "accuracyQualification": False}
+    if pilot:
+        result.update(schemaVersion="ramp-pilot-training-result/1", fixedFinalCheckpoint=True,
+            trainingObservations=observed, optimizerUpdates=trainer.state.global_step,
+            trainingLossHistory=trainer.state.log_history, developmentLossHistory=[], evaluationRun=False,
+            authorizationSha256=gate["authorizationSha256"], decision=plan["decision"],
+            checkpointFiles={name: file_pin(output / "checkpoint" / name) for name in plan["checkpointInterface"]["files"]})
     (output / "result.json").write_text(json.dumps(result, indent=2, allow_nan=False)+"\n")
     return result
 
@@ -549,12 +818,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path)
     parser.add_argument("--prepare-mounted", type=Path, help="Finite host mount map; reuse sealed plan without data validation/model imports")
+    parser.add_argument("--prepare-pilot", type=Path, help="Freeze fixed research pilot from accepted metadata only; no fit permission")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--plan-only", action="store_true", help="Default; no Torch/Transformers/CUDA import or fitting")
     mode.add_argument("--execute", action="store_true")
     parser.add_argument("--authorization", type=Path)
     parser.add_argument("--authorization-sha256")
     args = parser.parse_args()
+    if args.prepare_pilot:
+        require(not args.prepare_mounted and not args.config and not args.execute and not args.authorization and
+                not args.authorization_sha256, "Pilot preparation accepts no execution/config override")
+        print(json.dumps(prepare_pilot(args.prepare_pilot), indent=2, allow_nan=False))
+        return
     if args.prepare_mounted:
         require(not args.config and not args.execute and not args.authorization and not args.authorization_sha256,
                 "Mount preparation is metadata-only and accepts no execution/config override")
@@ -565,6 +840,14 @@ def main():
         require(args.authorization is not None and args.authorization_sha256 is not None,
                 "Execution blocked: a root authorization/handoff receipt and exact hash are required")
     candidate = read_json(args.config, 1024**2)
+    if candidate.get("schemaVersion") == PILOT_VERSION:
+        validate_pilot(candidate)
+        if args.execute:
+            gate = check_gate(args.authorization, args.authorization_sha256, candidate)
+            print(json.dumps(execute(candidate, gate), indent=2, allow_nan=False))
+        else:
+            print(json.dumps(candidate, indent=2, allow_nan=False))
+        return
     if candidate.get("schemaVersion") in {MOUNT_VERSION, BOUND_MOUNT_VERSION} and args.execute:
         require(False, "Mounted execution blocked: actual-mounted-process qualification and root authorization remain unassigned")
     plan, _ = build_plan(args.config)

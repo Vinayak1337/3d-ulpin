@@ -362,5 +362,235 @@
     "observedPerTurnModelEffortTier": null,
     "suppliedApprovalPolicy": "never",
     "suppliedSandbox": "danger-full-access"
+  },
+  "latestAmendment": "pilotFitPreparation",
+  "pilotFitPreparation": {
+    "task": "D07-RFDETR-PILOT-FIT-PREP",
+    "date": "2026-10-05",
+    "state": "fixed_pilot_prepared_fit_not_authorized",
+    "baseCommit": "a678b153eadc47e27320483ef3f7848f55e912f8",
+    "branch": "task/d07-rfdetr-pilot-fit-prep-20261005",
+    "owned": [
+      "scripts/usp/learning/train_building_ramp.py",
+      "docs/orchestration/delivery-reset-20261004/rfdetr-train-prep-20261005.json"
+    ],
+    "route": "Existing standard Transformers Trainer and built-in RF-DETR loss/AdamW; original complete pretrained model and one-building head. No alternate stack or mutable recipe.",
+    "artifacts": {
+      "runner": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\train_building_ramp.py",
+        "bytes": 62726,
+        "sha256": "30dfc02ab1f7d4122e306cdd7ca4ac3262b8e30791f2c77b8098527fb8880c93"
+      },
+      "plan": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\pilot-plan.json",
+        "bytes": 96561,
+        "sha256": "22b0a1bd318490bb3a5b484dd248eebdba9d94c87879897f1c3d2de60f7abe37"
+      },
+      "interface": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\mount-interface.json",
+        "bytes": 54785,
+        "sha256": "5f26294968f4af554dd6419dde4bdd020321b0bd3eade07c55a9086d9355b29e"
+      },
+      "checks": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\checks.json",
+        "bytes": 6055,
+        "sha256": "d883de594bf3065f5f13a6fb0a797c5cc4a3d45fd5abc63c08d7b0f9cbd0b08c"
+      },
+      "checker": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\checks.py",
+        "bytes": 7179,
+        "sha256": "e0b49ec1b43313bc9ca52e2fa79e003b7ad999d1b0a2c05cbe145b42f7c145f3"
+      },
+      "preparation": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-pilot-fit-20261005\\preparation.json",
+        "bytes": 1616,
+        "sha256": "fa5dc7572485cd283c716b1fa3fe5d0ea00eb2c8361be799638f3c031eb835a5"
+      }
+    },
+    "canonicalPlanSha256": "8139eedd077a78513daadfa4b5a6173fcb75b13e637f76ce4ea2bf3954c41716",
+    "baseline": {
+      "ownerCommit": "07d726337703bd88a91b38f28074d404cc6231f1",
+      "state": "measured_original_own_PyTorch_route",
+      "evidence": {
+        "path": "/inputs/pilot/baseline.json",
+        "bytes": 17457,
+        "sha256": "0997be82e44c33943c828f76ecd42cc6e556944180d904f2c1416eda88521483"
+      },
+      "score": {
+        "path": "/inputs/pilot/baselineScore.json",
+        "bytes": 129769,
+        "sha256": "9239661b104c58dc8d00252170d5c7fcfb41cb2e9b6f4cb6106638c096163355"
+      },
+      "maskIoU": 0.4483830089213301,
+      "maskPrecision": 0.8466567124179253,
+      "maskRecall": 0.48801438825106613,
+      "polygonMatchesFPmisses": [
+        67,
+        43,
+        111
+      ],
+      "sourceEmptyFPscenes": "1/5",
+      "onnxRawParity": "FAILED unchanged; not an own-route completion gate or equivalence claim"
+    },
+    "inputs": {
+      "allocation": {
+        "path": "/inputs/pilot/allocation.json",
+        "bytes": 31595,
+        "sha256": "3f31d467c9ca8f6c92e02d7a09ffbb0fee7d51cd0d4dc3642629a32b02c074da"
+      },
+      "wholeGroupRoles": "ALL24 Barishal Bangladesh train/263 publisher roof instances/1 publisher-empty; ALL24 Karnataka India development/178/5; zero final",
+      "modelHashes": {
+        "weights": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7",
+        "modelConfig": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7",
+        "processorConfig": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+      },
+      "runtimeImage": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+      "python": "3.11.13",
+      "versions": "Exact134-package lock; Torch2.8.0+cu128/torchvision0.23.0+cu128/Transformers5.17.0",
+      "originalSourceCocoMetadataOverlayUnchanged": true
+    },
+    "recipe": {
+      "epochs": 6,
+      "optimizerUpdates": 36,
+      "trainExamples": 144,
+      "batch": 1,
+      "gradientAccumulation": 4,
+      "learningRate": 0.0001,
+      "weightDecay": 0.0001,
+      "seedAndDataSeed": 42,
+      "precision": "FP32; no TF32/autocast/gradient checkpointing",
+      "evaluation": "none during fit; no best/epoch checkpoint; only fixed final model/config/processor",
+      "coupledChanges": {
+        "num_train_epochs": [
+          1,
+          6
+        ],
+        "fp16": [
+          true,
+          false
+        ],
+        "gradient_checkpointing": [
+          true,
+          false
+        ],
+        "eval_strategy": [
+          "epoch",
+          "no"
+        ],
+        "load_best_model_at_end": "explicitFalse",
+        "lossAccumulation": "documented Trainer.model_accepts_loss_kwargs=False; RF-DETR built-in loss ignores num_items_in_batch"
+      },
+      "dataloaderWorkers": 0,
+      "compile": false,
+      "hubOrReportingCalls": false
+    },
+    "decision": {
+      "maskIoUMin": 0.468383,
+      "maskRecallMin": 0.5380144,
+      "maskPrecisionMin": 0.8266567,
+      "emptyFalsePositiveScenesMax": 1,
+      "emptyScenes": 5,
+      "role": "open_cohort_decision_not_model_readiness",
+      "report": [
+        "polygon_matches",
+        "polygon_false_positives",
+        "polygon_misses",
+        "geometry_omissions"
+      ],
+      "candidateEvaluation": "later_separately_assigned_teacher_saved_final_ALL24_once_FP32_432_confidence0.5_logit0_cached_production_scorer",
+      "finalAccess": false,
+      "checkpointOrThresholdSelection": false
+    },
+    "authorization": {
+      "schemaVersion": "ramp-pilot-training-authorization/1",
+      "rootAssignmentSchema": "ramp-pilot-root-assignment/1",
+      "rootAssignmentTask": "D07-RFDETR-PILOT-FIT-EXECUTE",
+      "scope": "one_fixed_pilot_fit_no_evaluation",
+      "trainingAuthorized": false,
+      "required": "Later explicit root assignment binding exact plan/code/source/recipe/bounds and one fit owner; fresh same-PID native mount/environment/resource proof and sole exact-UUID GPU transfer. Baseline/preparation receipts never grant fit permission.",
+      "runtimeChecks": "Original hashes/complete67-pin inventory, frozen groups/members/model/input contract, exact sealed Python/platform/all134 package versions recaptured before heavy imports. Existing legacy unassigned execution refusal remains."
+    },
+    "bounds": {
+      "cpu": 2,
+      "computeThreads": 2,
+      "containerMemoryBytes": 5368709120,
+      "swapBytes": 0,
+      "pids": 32,
+      "hostJobMemoryBytes": 536870912,
+      "gpuAllocationBytes": 5368709120,
+      "fitAndCleanupSeconds": 900,
+      "cleanupReserveSeconds": 45,
+      "innerFitSeconds": 855
+    },
+    "interface": {
+      "readOnlyMounts": 24,
+      "futureExactAuthorityMounts": 3,
+      "writableMounts": 1,
+      "gpuEnvironment": "Immutable imageEnv remains historical; future finite GPU/cache overrides in interface require actual launcher readback.",
+      "checkpoint": {
+        "directory": "/outputs/rfdetr/pilot-fit-v1/checkpoint",
+        "files": [
+          "model.safetensors",
+          "config.json",
+          "preprocessor_config.json"
+        ],
+        "result": "/outputs/rfdetr/pilot-fit-v1/result.json",
+        "selection": "fixed_final_only",
+        "teacherPermission": "information_only; separate root assignment required"
+      },
+      "teacher": "Information only; later separately assigned saved-final ALL24 comparison once at FP32/432/0.5/logit0 with cached production scorer. No evaluation now."
+    },
+    "runtimeFailurePolicy": "Finite scalar/component loss hook before backward, fixed144 forwards/36 updates/six epochs, final finite FP32 parameter shapes/dtypes/freeze and one-class head; allocation/deadline checks supplement external guards. OOM/nonfinite/compatibility failure retains plan/error/partial checkpoint, no retry/precision/resource fallback. Actual execution untested.",
+    "sourceApiInspection": {
+      "version": "Transformers5.17.0 retained installed primary text; no imports",
+      "pins": [
+        {
+          "path": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Lib\\site-packages\\transformers\\trainer.py",
+          "bytes": 226112,
+          "sha256": "1bb62572e150a929b7738ea529fbd0e1decc9a08ea904387989b9a2434dbd162"
+        },
+        {
+          "path": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Lib\\site-packages\\transformers\\training_args.py",
+          "bytes": 146463,
+          "sha256": "a369cc578cff8f86c42a5476568bdbe4f87b2635b0c1e56447ce63ddbfd6548d"
+        },
+        {
+          "path": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Lib\\site-packages\\transformers\\trainer_callback.py",
+          "bytes": 34363,
+          "sha256": "a9703b60f3d585627054ed976eca3dbea69fddcfd4eb01b1cc19bff67bccf00a"
+        }
+      ],
+      "findings": "Trainer computes ceil24/4 *6 =36 updates; no eval/save strategy has no epoch selection. RF-DETR built-in loss ignores num_items_in_batch; documented Trainer.model_accepts_loss_kwargs=False restores accumulation normalization without replacing the loss. Standard model/processor save_pretrained writes the fixed final trio.",
+      "inspectionFault": "Initial terminal cp1252 encoding error while printing source text; re-read with UTF-8 only, no library/data/runtime failure."
+    },
+    "verification": {
+      "command": "C:/Python313/python.exe -I -B E:/BhuAayam-data/task-data/d07-rfdetr-pilot-fit-20261005/checks.py",
+      "exitCode": 0,
+      "checks": 27,
+      "cli": "one plan-only0; four preparation/unauthorized/legacy/baseline authority refusal2",
+      "scope": "stdlib syntax, real retained metadata, API AST/text and source/recipe/role/whole-group/mode refusal checks; import traps and file-pin traps confirm no model/image payload or heavy modules",
+      "seconds": 0.423,
+      "changedCodeReview": "Reviewed scoped diff; corrected platform-dependent adapter host-path comparison before final freeze. Initial successful preparation/check artifacts retained as pre-review-* privately. No runtime/model/fit/quality pass."
+    },
+    "gaps": [
+      "Later explicit root fit/sole-GPU owner assignment and narrow existing launcher adaptation/current-PID native/resource proof",
+      "Actual Trainer/loss/optimizer/FP32 full-model capacity/fit/final checkpoint integrity unrun",
+      "Saved-final reload/ALL24 candidate decision unrun; original raw parity failed",
+      "Research/noncommercial roofs; unknown pretrained overlap/local independent audit/ignore ambiguity and clipping/ground/property limits retained; no model/release readiness"
+    ],
+    "cleanup": {
+      "ownedProcessesRunning": false,
+      "gpuOwnershipTaken": false,
+      "containersStarted": 0,
+      "outputCreated": false,
+      "stagingEdited": false,
+      "originalsOrSourceMetadataChanged": false,
+      "dependenciesOrSharedRuntimeChanged": false
+    },
+    "settings": {
+      "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+      "observedPerTurnModelEffortTier": null,
+      "suppliedPermissions": "never/danger-full-access"
+    }
   }
 }
