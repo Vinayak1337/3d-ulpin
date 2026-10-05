@@ -2740,6 +2740,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/spatial-ml/items/{itemId}/source-reviews/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inspect exact source-only candidate review pins through current private authority */
+        get: operations["GET_api_v1_spatial_ml_items_itemId_source_reviews_context"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/spatial-ml/items/{itemId}/source-reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Save immutable source-only candidate inspection decisions
+         * @description Local-process reviewed/rejected/needs_input decisions with reasons. No geometry adoption, physical target or qualified learning labels.
+         */
+        post: operations["POST_api_v1_spatial_ml_items_itemId_source_reviews"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/spatial-ml/items/{itemId}/source-reviews/{reviewId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one exact immutable source-candidate review with current source/job/result authority */
+        get: operations["GET_api_v1_spatial_ml_items_itemId_source_reviews_reviewId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/spatial/areas/{areaId}": {
         parameters: {
             query?: never;
@@ -55900,6 +55954,279 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        GET_spatial_ml_items_itemId_source_reviews_context_Response_200_application_json: {
+            /** @enum {string} */
+            version: "source-candidate-context/1";
+            pin: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                batchId: string;
+                /** Format: uuid */
+                jobId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "source";
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    sourceBytes: number;
+                    page: number;
+                    frame: {
+                        /** @enum {string} */
+                        kind: "pdf_display_page_top_left_points";
+                        rotation: number;
+                        width: number;
+                        height: number;
+                    };
+                    region: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                    };
+                    locator: {
+                        /** @enum {string} */
+                        kind: "pdf_page";
+                        page: number;
+                    };
+                    /** @enum {string|null} */
+                    calibration: null;
+                    /** @enum {string} */
+                    applicability: "not_assessed";
+                };
+                inputFingerprint: string;
+                model: {
+                    id: string;
+                    sha256: string;
+                    profileVersion: string;
+                };
+                resultSha256: string;
+                transformSha256: string;
+                raster: {
+                    sha256: string;
+                    width: number;
+                    height: number;
+                    bytes: number;
+                };
+                mask: {
+                    sha256: string;
+                    width: number;
+                    height: number;
+                    bytes: number;
+                };
+            };
+            candidates: {
+                componentId: string;
+                className: string;
+                score: number;
+                geometrySha256: string;
+            }[];
+            inspection: {
+                itemUrl: string;
+                rasterUrl: string;
+                maskUrl: string;
+            };
+            limits: {
+                /** @enum {string} */
+                coordinateUnit: "pixel";
+                /** @enum {string|null} */
+                physicalTarget: null;
+                /** @enum {string|null} */
+                calibration: null;
+                /** @enum {string} */
+                canonicalMatchState: "not_assessed";
+                /** @enum {string} */
+                qualification: "not_assessed";
+                /** @enum {boolean} */
+                learningLabel: false;
+                /** @enum {boolean} */
+                independentGroundTruth: false;
+            };
+        };
+        POST_spatial_ml_items_itemId_source_reviews_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            pin: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                batchId: string;
+                /** Format: uuid */
+                jobId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "source";
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    sourceBytes: number;
+                    page: number;
+                    frame: {
+                        /** @enum {string} */
+                        kind: "pdf_display_page_top_left_points";
+                        rotation: number;
+                        width: number;
+                        height: number;
+                    };
+                    region: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                    };
+                    locator: {
+                        /** @enum {string} */
+                        kind: "pdf_page";
+                        page: number;
+                    };
+                    /** @enum {string|null} */
+                    calibration: null;
+                    /** @enum {string} */
+                    applicability: "not_assessed";
+                };
+                inputFingerprint: string;
+                model: {
+                    id: string;
+                    sha256: string;
+                    profileVersion: string;
+                };
+                resultSha256: string;
+                transformSha256: string;
+                raster: {
+                    sha256: string;
+                    width: number;
+                    height: number;
+                    bytes: number;
+                };
+                mask: {
+                    sha256: string;
+                    width: number;
+                    height: number;
+                    bytes: number;
+                };
+            };
+            decisions: {
+                componentId: string;
+                /** @enum {string} */
+                decision: "reviewed" | "rejected" | "needs_input";
+                reason: string;
+            }[];
+        };
+        POST_spatial_ml_items_itemId_source_reviews_Response_201_application_json: {
+            /** @enum {string} */
+            version: "source-candidate-review/1";
+            /** Format: uuid */
+            reviewId: string;
+            /** @enum {number} */
+            reviewRevision: 1;
+            pin: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                batchId: string;
+                /** Format: uuid */
+                jobId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "source";
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    sourceBytes: number;
+                    page: number;
+                    frame: {
+                        /** @enum {string} */
+                        kind: "pdf_display_page_top_left_points";
+                        rotation: number;
+                        width: number;
+                        height: number;
+                    };
+                    region: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                    };
+                    locator: {
+                        /** @enum {string} */
+                        kind: "pdf_page";
+                        page: number;
+                    };
+                    /** @enum {string|null} */
+                    calibration: null;
+                    /** @enum {string} */
+                    applicability: "not_assessed";
+                };
+                inputFingerprint: string;
+                model: {
+                    id: string;
+                    sha256: string;
+                    profileVersion: string;
+                };
+                resultSha256: string;
+                transformSha256: string;
+                raster: {
+                    sha256: string;
+                    width: number;
+                    height: number;
+                    bytes: number;
+                };
+                mask: {
+                    sha256: string;
+                    width: number;
+                    height: number;
+                    bytes: number;
+                };
+            };
+            decisions: {
+                componentId: string;
+                /** @enum {string} */
+                decision: "reviewed" | "rejected" | "needs_input";
+                reason: string;
+            }[];
+            candidateCount: number;
+            unselectedCount: number;
+            limits: {
+                /** @enum {string} */
+                coordinateUnit: "pixel";
+                /** @enum {string|null} */
+                physicalTarget: null;
+                /** @enum {string|null} */
+                calibration: null;
+                /** @enum {string} */
+                canonicalMatchState: "not_assessed";
+                /** @enum {string} */
+                qualification: "not_assessed";
+                /** @enum {boolean} */
+                learningLabel: false;
+                /** @enum {boolean} */
+                independentGroundTruth: false;
+            };
+            review: {
+                actor: string;
+                /** Format: date-time */
+                time: string;
+                /** @enum {string} */
+                attribution: "local_process";
+                /** @enum {boolean} */
+                humanAuthenticated: false;
+                /** @enum {boolean} */
+                independentGroundTruth: false;
+            };
+        };
         GET_spatial_areas_areaId_Response_200_application_json: {
             snapshot: {
                 /** @enum {string} */
@@ -79192,6 +79519,391 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_spatial_ml_items_itemId_source_reviews_context: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_ml_items_itemId_source_reviews_context_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            504: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_spatial_ml_items_itemId_source_reviews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_spatial_ml_items_itemId_source_reviews_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            201: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_spatial_ml_items_itemId_source_reviews_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            408: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            504: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_spatial_ml_items_itemId_source_reviews_reviewId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reviewId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_spatial_ml_items_itemId_source_reviews_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            504: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
                 };
             };
         };

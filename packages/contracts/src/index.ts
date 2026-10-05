@@ -251,4 +251,5 @@ export * from './area';
 
 export * from "./spatial";
 export * from "./spatial-ml";
+export * from "./spatial-ml-source-review";
 export * from "./gis-inspection";
