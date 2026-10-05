@@ -4,7 +4,7 @@ import { query, transaction } from "../../infrastructure/db";
 import { settings } from "../../infrastructure/config";
 import { fingerprint, lockCase, recordEvent } from "./domain";
 import { buildResultSchema, inspectionSchema } from "../../infrastructure/validation";
-import { failSpatialMlJob, ingestSpatialMlJob, markSpatialMlRunning } from "../spatial/spatial-ml";
+import { failSpatialMlJob, ingestSpatialMlJob, markSpatialMlRunning, admitSpatialMlDispatch } from "../spatial/spatial-ml";
 
 import {failDatasetMl,ingestDatasetMl,markDatasetMlRunning} from '../datasets/dataset-ml';
 import {failProjectedJob,ingestProjectedResult,markProjectedRunning} from '../usp/ingestion/projected-publication';
@@ -317,6 +317,7 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
       }
       try {
         if (!job.dispatched_at) {
+          if (job.operation === 'spatial-inference' && !(await admitSpatialMlDispatch(job.id))) return;
           const reply = await geo("/internal/jobs", {
             method: "POST",
             body: JSON.stringify({
