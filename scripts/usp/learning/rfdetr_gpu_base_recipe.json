@@ -1,0 +1,243 @@
+{
+  "schemaVersion": "rfdetr-gpu-base-preparation/1",
+  "task": "D07-RFDETR-GPU-BASE",
+  "state": "prepared_metadata_only",
+  "baseCommit": "6da1c7fbce4c7e6dbfb878556ecb4eb877ff3f04",
+  "supersedesBlockerOnly": "scripts/usp/learning/rfdetr_environment_recipe.json; original record preserved",
+  "runtimeBinding": {
+    "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/runtime-binding.json",
+    "bytes": 6417,
+    "sha256": "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615"
+  },
+  "baseSelection": {
+    "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/base-selection.json",
+    "bytes": 2981,
+    "sha256": "8136c66cbc0d9079eef8826e6b31c3d22624b30f8fd8199fc9979519261d8ca3"
+  },
+  "baseImage": "pytorch/pytorch@sha256:417bd75df6365104c283ea4c1651fb3530d9eb5a4c2fafa51943cff2a94e6385",
+  "imageDigest": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+  "platform": "linux/amd64",
+  "python": {
+    "version": "3.11.13",
+    "executable": "/opt/conda/bin/python",
+    "abi": "cp311"
+  },
+  "coreVersions": {
+    "torch": "2.8.0+cu128",
+    "torchvision": "0.23.0+cu128",
+    "torchaudio": "2.8.0+cu128",
+    "triton": "3.4.0",
+    "transformers": "5.17.0",
+    "accelerate": "1.15.0",
+    "pycocotools": "2.0.11",
+    "numpy": "2.3.2",
+    "pillow": "11.0.0",
+    "safetensors": "0.8.0",
+    "scipy": "1.16.1"
+  },
+  "packageLock": {
+    "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/environment-lock.json",
+    "bytes": 62182,
+    "sha256": "0a049c8f7e893df7a8a6a579a81dcca2f2554c700883dbe1a4be661a5d2fa7d8"
+  },
+  "installedPackages": 134,
+  "newOrReplacementPackages": 21,
+  "preservedFrameworkCudaVersions": {
+    "nvidia-cublas-cu12": "12.8.4.1",
+    "nvidia-cuda-cupti-cu12": "12.8.90",
+    "nvidia-cuda-nvrtc-cu12": "12.8.93",
+    "nvidia-cuda-runtime-cu12": "12.8.90",
+    "nvidia-cudnn-cu12": "9.10.2.21",
+    "nvidia-cufft-cu12": "11.3.3.83",
+    "nvidia-cufile-cu12": "1.13.1.3",
+    "nvidia-curand-cu12": "10.3.9.90",
+    "nvidia-cusolver-cu12": "11.7.3.90",
+    "nvidia-cusparselt-cu12": "0.7.1",
+    "nvidia-cusparse-cu12": "12.5.8.93",
+    "nvidia-nccl-cu12": "2.27.3",
+    "nvidia-nvjitlink-cu12": "12.8.93",
+    "nvidia-nvtx-cu12": "12.8.90",
+    "torch": "2.8.0+cu128",
+    "torchaudio": "2.8.0+cu128",
+    "torchvision": "0.23.0+cu128",
+    "triton": "3.4.0"
+  },
+  "preparationFiles": {
+    "Dockerfile": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/Dockerfile",
+      "bytes": 1010,
+      "sha256": "5ef9fe375f82bf79d72707208850192e0d6f2a222ab09541118ce8e5de149797"
+    },
+    ".dockerignore": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/.dockerignore",
+      "bytes": 113,
+      "sha256": "e58aee87514129e43884d6bcd837cb09332de7f6b86fa81d0e1a3aa496319268"
+    },
+    "requirements-hashed.txt": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/requirements-hashed.txt",
+      "bytes": 2044,
+      "sha256": "8a5c0217e2a187785f1954e72192d6dec058765e4e0350d6acc70d05e42d21d1"
+    },
+    "image-lock.json": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/image-lock.json",
+      "bytes": 6758,
+      "sha256": "681f78477e5b6a03065fdff2a1ebea345e27a8dd8399819a23f7749e282992f4"
+    },
+    "validate_preparation.py": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/validate_preparation.py",
+      "bytes": 2326,
+      "sha256": "d75b3849ece80ae3413a0a2bb40e6bd91ee48f1e7bf4bfee22281bfaba928a7b"
+    }
+  },
+  "buildCommand": [
+    "docker",
+    "build",
+    "--platform",
+    "linux/amd64",
+    "--pull=false",
+    "--network=none",
+    "--resource",
+    "memory=6g",
+    "--resource",
+    "memory-swap=6g",
+    "--resource",
+    "cpu-period=100000",
+    "--resource",
+    "cpu-quota=200000",
+    "--resource",
+    "cpuset-cpus=0,1",
+    "--progress=plain",
+    "--provenance=false",
+    "--sbom=false",
+    "--iidfile",
+    "E:\\BhuAayam-data\\task-data\\d07-rfdetr-gpu-base-20261005\\layer-image-id.txt",
+    "--metadata-file",
+    "E:\\BhuAayam-data\\task-data\\d07-rfdetr-gpu-base-20261005\\build-metadata.json",
+    "-t",
+    "ulpin-rfdetr:gpu-base-20261005",
+    "E:\\BhuAayam-data\\task-data\\d07-rfdetr-gpu-base-20261005"
+  ],
+  "build": {
+    "exit": 0,
+    "seconds": 14.922,
+    "pipCheckExit": 0,
+    "allInstalledVersionsMatch": true,
+    "resources": {
+      "memory.max": 6442450944,
+      "memory.swap.max": "0",
+      "memory.peak": "329060352",
+      "cpu.max": "200000 100000",
+      "cpuset.cpus.effective": "0-1",
+      "validatorPeakRssBytes": 17661952
+    },
+    "networkInterfaces": [
+      "lo"
+    ],
+    "gpuDevices": [],
+    "baseRootfsPrefixUnchanged": true
+  },
+  "actualImageConfig": {
+    "User": "10001:10001",
+    "Env": [
+      "PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "NVIDIA_VISIBLE_DEVICES=all",
+      "NVIDIA_DRIVER_CAPABILITIES=compute,utility",
+      "LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64",
+      "PYTORCH_VERSION=2.8.0",
+      "HF_HUB_OFFLINE=1",
+      "TRANSFORMERS_OFFLINE=1",
+      "HF_HUB_DISABLE_TELEMETRY=1",
+      "PYTHONDONTWRITEBYTECODE=1",
+      "OMP_NUM_THREADS=2",
+      "MKL_NUM_THREADS=2",
+      "OPENBLAS_NUM_THREADS=2",
+      "PIP_NO_INDEX=1"
+    ],
+    "Entrypoint": [
+      "/opt/conda/bin/python"
+    ],
+    "Cmd": [
+      "-I",
+      "-B",
+      "--version"
+    ],
+    "WorkingDir": "/workspace",
+    "Labels": {
+      "codex.task": "d07-rfdetr-gpu-base-20261005",
+      "com.nvidia.volumes.needed": "nvidia_driver",
+      "org.opencontainers.image.ref.name": "ubuntu",
+      "org.opencontainers.image.version": "22.04"
+    },
+    "ArgsEscaped": true
+  },
+  "transfers": {
+    "baseCompressedLayersBytes": 4288258545,
+    "baseNewLayerPayloadBytes": 4288258513,
+    "wheelBytes": 59621000,
+    "newPypiMetadataBytes": 476388,
+    "primaryReferenceBytes": 195243,
+    "registryManifestConfigBytes": 6029,
+    "artifactPayloadTotalBytes": 4348557173,
+    "boundBytes": 12884901888,
+    "accounting": "Retained artifact payload; excludes HTTP/TLS/token overhead. Three prior PyPI metadata receipts reused; no model acquisition."
+  },
+  "disk": {
+    "baseInspectSizeBytes": 12148160894,
+    "layerInspectSizeBytes": 12542110721,
+    "thinLayerInspectDeltaBytes": 393949827,
+    "privateFilesBytesAtSeal": 63566742,
+    "conservativeExpectedBytes": 25147788184,
+    "boundBytes": 42949672960,
+    "accounting": "Conservative planning estimate, not measured unique disk allocation; base layers are shared. No image archive retained."
+  },
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.8.0/Dockerfile",
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/pytorch-v2.8.0-Dockerfile",
+      "bytes": 4183,
+      "sha256": "79101a9971c587ceb42dfe3a30f77fe67df5f29984174a2ab27897102c303d9d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.8.0/docker.Makefile",
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/pytorch-v2.8.0-docker.Makefile",
+      "bytes": 3890,
+      "sha256": "bd7e1281761e0a3f9921a15374e8672f48dd278ee9722622906b497ce4e9c2b6"
+    },
+    {
+      "url": "https://docs.nvidia.com/cuda/archive/12.8.1/cuda-toolkit-release-notes/index.html",
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/cuda12.8.1-release-notes.html",
+      "bytes": 187170,
+      "sha256": "6d534a8b5616b12e63cdde178993a1743875067b73416303a598fac53b4ed020"
+    },
+    {
+      "url": "https://pytorch.org/get-started/previous-versions/"
+    },
+    {
+      "url": "https://huggingface.co/docs/transformers/v5.17.0/installation"
+    },
+    {
+      "url": "https://docs.docker.com/reference/cli/docker/buildx/build/"
+    },
+    {
+      "url": "https://github.com/moby/moby/blob/master/daemon/containerd/image_inspect.go"
+    }
+  ],
+  "hostDriverMetadata": [
+    "NVIDIA GeForce RTX 3070, 616.92, 8192 MiB"
+  ],
+  "driverAssessment": "CUDA12.8.1 Windows driver minimum572.61 satisfied by616.92 metadata; no actual CUDA/device execution qualification.",
+  "nextOwnerRequirements": [
+    "Adapt actual Python/image/version binding under a separate assignment; never rerun old single-use control.",
+    "Review full image environment allowlist; inherited NVIDIA_VISIBLE_DEVICES=all is not an assigned GPU.",
+    "Finite read-only code/model/COCO/config mounts and one task-owned writable output; no secrets, home, global profiles or Docker socket.",
+    "Actual network/resource/device/mount/import and representative loader checks remain required before any model or fit admission."
+  ],
+  "recoveryHistory": [
+    "Docker29/containerd inspect ID is manifest digest, not config digest. Guard corrected to Descriptor/config/RootFS; no repull.",
+    "Initial streamed metadata collection succeeded; summary selector also matched python-libarchive-c. Recovered saved metadata using exact conda name; no repeat stream for this error.",
+    "First dependency pass missed legacy Zstandard egg-info and stopped after five wheels. Added bounded legacy metadata collection; syntax error before execution corrected, broad conda selector narrowed after size refusal. Historical partial receipts preserved.",
+    "Second dependency pass reused all five verified wheels and completed closure. One thin build and one final layer metadata read passed on first actual attempts."
+  ],
+  "scope": "Installation and metadata only; imports, processor, model, CUDA, inference, optimizer and fitting not run.",
+  "trainingAuthorized": false
+}
