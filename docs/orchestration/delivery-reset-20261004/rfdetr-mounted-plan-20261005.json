@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-RFDETR-MOUNT-PREP",
+  "state": "returned_metadata_mapping_runtime_binding_pending",
+  "baseCommit": "3f681f66a7c9debbe7f7a27c0388a88be548849c",
+  "branch": "task/d07-rfdetr-mounted-plan-20261005",
+  "worktree": "C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin",
+  "stagingObservedReadOnly": "358fd9a5bea800dca4605e3e63a2be9b2ef249a6",
+  "settings": {"requested": "gpt-6.1-sol / xhigh / default-standard 1x", "actualModelEffortTier": "unexposed", "suppliedPermissions": "never / danger-full-access"},
+  "ownedSource": "scripts/usp/learning/train_building_ramp.py",
+  "privateRoot": "E:/BhuAayam-data/task-data/d07-rfdetr-mounted-plan-20261005",
+  "adapterSnapshot": {"path": "E:/BhuAayam-data/task-data/d07-rfdetr-mounted-plan-20261005/inputs/train_building_ramp.py", "bytes": 36461, "sha256": "cd7bc9321bd5c77ae4d74842aae4a8971f95d3d0e36ad2eb0fdba7029489d285"},
+  "retainedOriginals": {
+    "configSha256": "237c0f3815a66151a462f5d0bbe30a23e8cb4b8c9822c44cf2250f57c01107e2",
+    "planFileSha256": "bf69a1f7aff08844e6b2899f66dee58f78a6435e13b52f188a4f36dcca9f1d6d",
+    "planCanonicalSha256": "3757b7701d1c4dfca68694b90961158757e01fae3e091fd83e97aeb2dd9ea958",
+    "trainerSha256": "40dd3ae09a8edebaf1248b03d80a69808d170f6164ebcd9c340aa4d155a85b84",
+    "weightsSha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7",
+    "modelConfigSha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7",
+    "processorSha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382",
+    "unchanged": true
+  },
+  "portableProvenance": {
+    "descriptor": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/provenance/portable-v1/descriptor.json",
+    "sha256": "5063af10cd818804c93196df6cb80f1b5ddf428d58a4f3439e56e3447afd4267",
+    "resolution": "Exact immutable trainOriginal/developmentOriginal/developmentObserved snapshots beside descriptor; mutable worker checkout/helper locators remain origin references only.",
+    "roles": "ALL24 Barishal train candidates/unallocated; ALL24 Karnataka solely open development; 48 images/441 annotations unchanged; no final/test/fit admission.",
+    "legacyRoleText": "Original export's reserved-development wording is preserved; descriptor separately pins the later observed-development metadata transition."
+  },
+  "artifacts": {
+    "mountMap": {"file": "mount-map.json", "sha256": "1648c1b00db81e06a98513520c428bccdc715edc8ee55e00120b47fe7698287d"},
+    "config": {"file": "mounted-config.json", "sha256": "e2635340ea76572e1c356ae66db0a867fd6805ebb03680b0ed36d0d721c5a626", "canonicalSha256": "840c162774e765ce95c84b3629795ac60103004c2317392ff5b7ec02c43bb484"},
+    "plan": {"file": "mounted-plan.json", "sha256": "ef4738e4bad54bba9b157101086f8ba8fec4588a3985ad2915718bf7b21bbc8d", "canonicalSha256": "acdc0e4debadc67bc0a1bd3498eb68e69cac823154a444c49a64ec7d1e8396ae"},
+    "interface": {"file": "launch-interface.json", "sha256": "939617fff9cdff3d31a6500536b84e844f9e4772afaa26671a030dcf082d5fed"},
+    "checks": {"file": "checks.json", "sha256": "2abab118b3b3280213c539a38521683b1d10d043fca7902e6bfe13bc8aba2eaa"}
+  },
+  "use": {
+    "hostMetadataCommand": "python -B E:/BhuAayam-data/task-data/d07-rfdetr-mounted-plan-20261005/inputs/train_building_ramp.py --prepare-mounted E:/BhuAayam-data/task-data/d07-rfdetr-mounted-plan-20261005/mount-map.json",
+    "output": "Deterministic JSON containing separately versioned mountedConfig and mountedPlan. Retained generated files are already saved; no repeat campaign required.",
+    "futureMountedArgv": ["/opt/conda/bin/python", "/inputs/plan/train_building_ramp.py", "--config", "/inputs/plan/mounted-config.json", "--plan-only"],
+    "finiteMounts": "13 declared input mounts plus exact generated config mount, all RO; one task/output directory to /outputs/rfdetr RW; complete 63-input inventory and config pin in launch-interface.json.",
+    "pathHandling": "Only explicit Windows/POSIX paths rebase. Unlisted files, links/reparse ancestors or descendants, pool substitutions, writable inputs and input/output overlap refuse. No home/checkout/runtime/credentials/socket/private operational or obsolete Qwen evaluation mounts.",
+    "outputAndCache": "Training subdirectory /outputs/rfdetr/fit; declared output cache; private /tmp remains future containment owner's tmpfs.",
+    "sourceIdentity": "Use retained exact adapter bytes; Git LF blob and checkout line-ending representation may differ. The old scriptPin names the original retained source, never the new adapter."
+  },
+  "runtimeBinding": null,
+  "baseCandidateOnly": {
+    "reference": "pytorch/pytorch@sha256:417bd75df6365104c283ea4c1651fb3530d9eb5a4c2fafa51943cff2a94e6385",
+    "platform": "linux/amd64",
+    "metadataPython": "3.11.13 /opt/conda/bin/python",
+    "bindingDecision": "No Windows Python/package assumption copied into new mounted plan. Complete actual compatible ENV image/layer/dependency lock is pending; metadata is not runtime/import/model/GPU qualification. Original TRAIN-PREP history remains unchanged."
+  },
+  "checks": [
+    {"command": "python -B E:/BhuAayam-data/task-data/d07-rfdetr-mounted-plan-20261005/checks.py", "exit": 0, "result": "Original-to-mounted ordered model/data/head/class/preprocessing/training-argument identities, canonical digests and original byte pins preserved; 63 finite inputs/14 RO mounts/one RW output; unmapped path and pool swap refused."},
+    {"command": "Two retained subprocess --execute controls", "exit": 2, "result": "Missing root authorization and supplied-but-unbound authorization both fail before heavy imports or data validation."},
+    {"command": "In-memory AST comparison against exact retained original trainer", "exit": 0, "result": "execute/Trainer/loss/optimizer/preprocessing and validate_pool/read_json/file_pin/check_pin/contained functions unchanged; private adapter exactly equals owned source."},
+    {"command": "git diff --check", "exit": 0, "result": "No whitespace errors; Git reports configured LF-to-CRLF checkout conversion."}
+  ],
+  "verificationScope": "Stdlib metadata only. Current bytes/hashes verified for model and metadata inputs; 48 existing image hashes reused with current path/size checks, no image/RLE/export replay. Syntax checked in memory; no heavy library imports, tensor/model/parity/GPU/train, container, PG, provider, download or shared runtime work.",
+  "nextPrerequisites": [
+    "ENV owner returns sealed exact compatible Linux image/layer, actual Python and full dependency lock; bind under a new explicit continuation without overwriting these metadata artifacts or original history.",
+    "Containment owner adapts historical three-mount allowlist to this exact finite interface and verifies actual mounts/loader paths/native egress/access/resources/cleanup. Old control does not validate new mounts.",
+    "Mounted --execute is explicitly disabled pending an actual-runtime-bound root authorization/gate implementation; no arbitrary runtime/version override enables it.",
+    "Then only separately assigned loader/parity/tiny-GPU checks; existing eligibility/baseline/residual/current-PID/single-GPU/fit gates remain."
+  ],
+  "resources": "No owned running process/container/model/GPU/DB resources; staging read-only; no push/main/deploy.",
+  "callback": "01a0ed8a-4383-79c3-a0ae-35c1e969ef66 / local"
+}
