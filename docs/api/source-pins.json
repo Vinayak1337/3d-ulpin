@@ -506,7 +506,7 @@
     "packages/server/src/modules/usp/packets/region-runtime.ts": "3a3d7d55be4122b903edce935cf60847859596627ed4e590c0fc5ec766c46e5b",
     "packages/server/src/modules/usp/principal.ts": "addf3951a86c05f7f520db040bfe7d644b6e114bd32fc55f649b2b99b75a2383",
     "packages/server/src/modules/usp/project-code-generator.ts": "006dcc796a4de1b14688e5adb75031f71a0c45ffdf74d29d0beba43adbaf3206",
-    "packages/server/src/modules/usp/project-identity.ts": "0e412b9d2458e9ed431f5e707799060cbaf1810cae93697b2a2e6ec0215ef703",
+    "packages/server/src/modules/usp/project-identity.ts": "2bb54c41fca593f46f53061664beaa9cabec639059f5a2a830ec9e54e99d2b0d",
     "packages/server/src/modules/usp/snapshots.ts": "59dfbbf564a097395e9fd85c617dc0366aa84edbcf69e92fac559f3f780d21aa",
     "packages/server/src/modules/usp/tiles/bounds.ts": "8c8e8e3bc05b409f7d0e9139557ae4140c0b2c9b9124833abc6724261b2bb3a5",
     "packages/server/src/modules/usp/tiles/capacity.ts": "c803dbdd6319e7f1feeab9d96d79c91a19bcc6f0f9921911b75adf48c2643426",
