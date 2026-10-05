@@ -11,6 +11,7 @@ import {
   assertSpatialMlSourceCurrent,
   deriveSpatialMlGeometry,
   spatialMlCalibrationSchema,
+  assertSpatialMlPackageScope,
 } from "./spatial-ml";
 
 export const spatialMlFootprintDraftSchema = z
@@ -49,6 +50,7 @@ export async function createSpatialMlFootprintDraft(
   id: string,
   value: unknown,
 ): Promise<{ package: ImportPackage; receipt: Record<string, unknown> }> {
+  assertSpatialMlPackageScope((await getSpatialMlItemRecord(id)).item);
   const input = spatialMlFootprintDraftSchema.parse(value),
     digest = fingerprint(input);
   const canonicalSelections = [...input.selections].sort((a, b) =>

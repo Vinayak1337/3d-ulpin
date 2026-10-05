@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Res, Param, HttpCode, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, Param, HttpCode, UseGuards, Header } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
@@ -6,6 +6,7 @@ import {
   spatialMlStatus, listSpatialMlBatches, createSpatialMlBatch, getSpatialMlBatch,
   getSpatialMlItem, spatialMlArtifact, retrySpatialMlItem, cancelSpatialMlItem, applySpatialMlItem,
   spatialMlBatchSchema, spatialMlApplySchema,
+  createSpatialMlSourceBatch, spatialMlSourceBatchSchema,
 } from '@ulpin/server/modules/spatial/spatial-ml';
 import { createSpatialMlFootprintDraft, spatialMlFootprintDraftSchema } from '@ulpin/server/modules/spatial/spatial-ml-footprints';
 import { readBoundedBytes } from '../../common/body';
@@ -48,7 +49,19 @@ export class SpatialMlController {
     return createSpatialMlBatch(spatialMlBatchSchema.parse(await readMlJson(request, JSON_LIMIT)));
   }
 
+  @Post('source-batches')
+  @Header('Cache-Control', 'no-store')
+  @HttpCode(201)
+  @ApiOperation({ operationId: 'POST_api_v1_spatial_ml_source_batches', summary: 'Queue source-only PDF floor-plan pixel candidates',
+    description: 'Pins the current private source/case, actual page/frame and explicit normalized region. No preparation, native part, metric placement or property target is implied.' })
+  @ApiBody({ schema: wire(spatialMlSourceBatchSchema) as never })
+  @ApiResult(201, mlBatch, [400, 403, 404, 409, 413, 422, 429, 503, 504])
+  async createSourceBatch(@Req() request: Request) {
+    return createSpatialMlSourceBatch(spatialMlSourceBatchSchema.parse(await readMlJson(request, JSON_LIMIT)));
+  }
+
   @Get('batches/:batchId')
+  @Header('Cache-Control', 'no-store')
   @HttpCode(200)
   @ApiOperation({ operationId: 'GET_api_v1_spatial_ml_batches_batchId', summary: 'Read one retained batch and its items' })
   @ApiParam({ name: 'batchId', schema: { type: 'string', format: 'uuid' } })
@@ -56,6 +69,7 @@ export class SpatialMlController {
   batch(@Param('batchId') id: string) { return getSpatialMlBatch(uuid.parse(id)); }
 
   @Get('items/:itemId')
+  @Header('Cache-Control', 'no-store')
   @HttpCode(200)
   @ApiOperation({ operationId: 'GET_api_v1_spatial_ml_items_itemId', summary: 'Read one inference item without private worker input' })
   @ApiParam(itemParam)
@@ -71,7 +85,7 @@ export class SpatialMlController {
   @ApiQuery({ name: 'sha256', required: true, schema: { type: 'string', pattern: '^[a-f0-9]{64}$' } })
   @ApiResult(200, binary, [400, 403, 404, 409, 422, 503], {
     'X-Content-SHA256': { description:'Verified retained artifact hash',schema:{type:'string',pattern:'^[a-f0-9]{64}$'} },
-    'Cache-Control': { schema:{type:'string',enum:['private, max-age=31536000, immutable']} },
+    'Cache-Control': { schema:{type:'string',enum:['private, max-age=31536000, immutable', 'no-store']} },
   })
   async artifact(@Param('itemId') rawId: string, @Param('artifact') rawKind: string,
     @Req() request: Request, @Res() response: Response) {
@@ -82,6 +96,7 @@ export class SpatialMlController {
   }
 
   @Post('items/:itemId/retry')
+  @Header('Cache-Control', 'no-store')
   @HttpCode(200)
   @ApiOperation({ operationId: 'POST_api_v1_spatial_ml_items_itemId_retry', summary: 'Retry a failed item with the same source and pinned model' })
   @ApiParam(itemParam)
@@ -93,6 +108,7 @@ export class SpatialMlController {
   }
 
   @Post('items/:itemId/cancel')
+  @Header('Cache-Control', 'no-store')
   @HttpCode(200)
   @ApiOperation({ operationId: 'POST_api_v1_spatial_ml_items_itemId_cancel', summary: 'Fence a queued or running item against late publication', description: 'No request body is accepted.' })
   @ApiParam(itemParam)

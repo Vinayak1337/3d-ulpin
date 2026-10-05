@@ -93,10 +93,20 @@ export const mlResult = {type:'object',required:['model','raster','mask','compon
   raster:image,mask:image,components:{type:'array',items:component},
   receipt:{type:'object',additionalProperties:true,description:'Processor-specific retained model and raster receipt fields'},
 }};
+const mlScope = {oneOf:[
+  {type:'object',required:['kind','packageId'],properties:{kind:{const:'package'},packageId:{type:'string',format:'uuid'}}},
+  {type:'object',required:['kind','caseId','caseRevision','sourceId','sourceRevision','sourceSha256','sourceBytes','page','frame','region','locator','calibration','applicability'],properties:{
+    kind:{const:'source'},caseId:{type:'string',format:'uuid'},caseRevision:{type:'integer'},sourceId:{type:'string',format:'uuid'},
+    sourceRevision:{type:'integer'},sourceSha256:{type:'string',pattern:'^[a-f0-9]{64}$'},sourceBytes:{type:'integer'},page:{type:'integer'},
+    frame:{type:'object',required:['kind','width','height','rotation'],properties:{kind:{const:'pdf_display_page_top_left_points'},width:{type:'number'},height:{type:'number'},rotation:{type:'integer'}}},
+    region:{type:'object',required:['x','y','width','height'],properties:{x:{type:'number'},y:{type:'number'},width:{type:'number'},height:{type:'number'}}},
+    locator:{type:'object',required:['kind','page'],properties:{kind:{const:'pdf_page'},page:{type:'integer'}}},calibration:{type:'null'},applicability:{const:'not_assessed'},
+  }},
+]};
 export const mlItem = {type:'object',required:['id','batchId','packageId','sourceRevisionId','sourceSha256','partId','page','task','modelId','modelSha256','inputFingerprint','state','currentJobId','attempts','applications','createdAt','updatedAt'],properties:{
-  id:{type:'string',format:'uuid'},batchId:{type:'string',format:'uuid'},packageId:{type:'string',format:'uuid'},
+  id:{type:'string',format:'uuid'},batchId:{type:'string',format:'uuid'},packageId:{type:['string','null'],format:'uuid'},scope:mlScope,
   sourceRevisionId:{type:'string',format:'uuid'},sourceSha256:{type:'string',pattern:'^[a-f0-9]{64}$'},
-  partId:{type:'string',format:'uuid'},page:{type:'integer'},task:{type:'string',enum:['floor-plan','building']},
+  partId:{type:['string','null'],format:'uuid'},page:{type:'integer'},task:{type:'string',enum:['floor-plan','building']},
   modelId:{type:'string'},modelSha256:{type:'string',pattern:'^[a-f0-9]{64}$'},inputFingerprint:{type:'string'},
   state:{type:'string',enum:['queued','running','succeeded','empty','failed','blocked','cancelled']},
   currentJobId:{type:'string',format:'uuid'},attempts:{type:'array',items:{type:'object',required:['jobId','state','createdAt'],
@@ -110,7 +120,7 @@ export const mlItem = {type:'object',required:['id','batchId','packageId','sourc
   createdAt:{type:'string',format:'date-time'},updatedAt:{type:'string',format:'date-time'},
 }};
 export const mlBatch = {type:'object',required:['id','packageId','requestKey','createdAt','items'],properties:{
-  id:{type:'string',format:'uuid'},packageId:{type:'string',format:'uuid'},requestKey:{type:'string',format:'uuid'},
+  id:{type:'string',format:'uuid'},packageId:{type:['string','null'],format:'uuid'},scope:mlScope,requestKey:{type:'string',format:'uuid'},
   createdAt:{type:'string',format:'date-time'},items:{type:'array',items:mlItem},
 }};
 export const review = {type:'object',required:['id','decision','componentIds','note','createdAt'],properties:{
