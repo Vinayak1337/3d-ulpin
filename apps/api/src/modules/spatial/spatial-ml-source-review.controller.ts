@@ -28,7 +28,7 @@ export class SpatialSourceReviewsController{
   @jsonBody(SpatialSourceReviewRequestSchema) @wireResponse(201,SpatialSourceReviewSchema,[408,504])
   async review(@Param('itemId') itemId:string,@Req() request:Request){
     noQuery(request);const bytes=await readBoundedBytes(request,SPATIAL_SOURCE_REVIEW_LIMITS.requestBytes,30000);
-    let raw:unknown;try{raw=JSON.parse(bytes.toString('utf8'));}
+    let raw:unknown;try{raw=JSON.parse(new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(bytes));}
     catch{throw new AppError(400,'INVALID_JSON','The candidate review body must be valid JSON.');}
     return this.service.review(itemId,SpatialSourceReviewRequestSchema.parse(raw));
   }

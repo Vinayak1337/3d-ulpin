@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {randomUUID} from 'node:crypto';
 import {existsSync,readFileSync} from 'node:fs';
+import {Readable} from 'node:stream';
 import type {PoolClient} from 'pg';
 import type {transaction} from '../packages/server/src/infrastructure/db';
 import {AppError} from '../packages/server/src/infrastructure/errors';
@@ -49,7 +50,7 @@ async function harness(){
     if(sql.startsWith('SELECT * FROM sources'))return rows(v[0]===caseId&&v[1]===source.id?
       [{...source,inspection:{...source.inspection,documentOriginal:{...source.inspection.documentOriginal,subject:state.owner}}}]:[]);
     if(sql.startsWith('SELECT max(revision)'))return rows([{revision:state.latest}]);
-    if(sql.startsWith('SELECT id,package_id,scope,source_scope'))return rows(v[0]===state.batch.id?[state.batch]:[]);
+    if(sql.startsWith('SELECT id,case_id,source_id,package_id,scope,source_scope'))return rows(v[0]===state.batch.id?[state.batch]:[]);
     if(sql.startsWith('SELECT id,batch_id,package_id,source_id,current_job_id'))return rows([{...row,current_job_id:record.item.currentJobId}]);
     if(sql.startsWith('SELECT id,case_id,source_id,operation')){
       if(sql.endsWith('FOR SHARE')){assert(itemLocked);jobLocked=true;}return rows(v[0]===state.job.id?[state.job]:[]);
@@ -98,7 +99,8 @@ async function harness(){
     record.item.result.components.slice(0,3).map((c:any,i:number)=>({componentId:c.id,
       decision:['reviewed','rejected','needs_input'][i],reason:['Inspected retained pixels; physical target remains unknown.',
         'Reject this prediction; source support is insufficient.','Need source clarification before an inspection conclusion.'][i]}))});
-  return {service,state,record,originalRecord,operations,request,itemId};
+  const otherSourceId=before.sources.find((r:any)=>r.id!==source.id).id;
+  return {service,state,record,originalRecord,operations,request,itemId,otherSourceId};
 }
 async function withSubject(work:()=>Promise<void>){
   const prior=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=subject;
@@ -161,6 +163,34 @@ test('snapshot corruption and invalid decision text/duplicates/extra actor field
   const snapshot=[...f.operations.values()].find(v=>v.result.snapshot)!;snapshot.result.snapshot.decisions[0].reason='tampered';
   await assert.rejects(f.service.read(f.itemId,saved.reviewId),error(422,'ML_REVIEW_SNAPSHOT_INTEGRITY'));
   assert.equal(f.operations.size,2);
+}));
+test('canonical batch source drift during verified I/O and mismatched batch case refuse without operation inserts',options,()=>withSubject(async()=>{
+  const f=await harness(),request=f.request(),originalScope=structuredClone(f.state.batch.source_scope);
+  f.state.onIo=()=>{f.state.batch.source_id=f.otherSourceId;};
+  await assert.rejects(f.service.review(f.itemId,request),error(409));
+  assert(f.state.artifactReads>0,'The canonical batch drift occurs during verified artifact I/O.');
+  assert.deepEqual(f.state.batch.source_scope,originalScope,'The JSON scope stays unchanged while its canonical source pointer drifts.');
+  assert.equal(f.operations.size,0);assert.equal(f.state.inserts,0);
+  f.state.onIo=undefined;f.state.batch.source_id=request.pin.scope.sourceId;f.state.batch.case_id=randomUUID();
+  const reads=f.state.originalReads;
+  await assert.rejects(f.service.context(f.itemId),error(409));assert.equal(f.state.originalReads,reads);
+  assert.equal(f.operations.size,0);assert.equal(f.state.inserts,0);
+}));
+test('raw-stream controller refuses malformed UTF-8 before save and retains multilingual and astral reasons',options,()=>withSubject(async()=>{
+  const f=await harness(),input=f.request(),seen:any[]=[];
+  const controller=new SpatialSourceReviewsController({review:async(itemId:string,raw:unknown)=>{seen.push({itemId,raw});return raw;}} as any);
+  const request=(chunks:Buffer[])=>Object.assign(Readable.from(chunks),{headers:{'content-type':'application/json'},
+    originalUrl:`/api/v1/spatial-ml/items/${f.itemId}/source-reviews`}) as any;
+  const placeholder='UTF8_CONTROL_TOKEN',badText=JSON.stringify({...input,decisions:[{...input.decisions[0],reason:placeholder}]}),
+    position=badText.indexOf(placeholder);
+  const malformed=Buffer.concat([Buffer.from(badText.slice(0,position)),Buffer.from([0xff]),Buffer.from(badText.slice(position+placeholder.length))]);
+  await assert.rejects(controller.review(f.itemId,request([malformed])),error(400,'INVALID_JSON'));
+  assert.equal(seen.length,0,'Malformed source-review text must never reach the service save.');
+  const reason='जाँचा गया ✓ 🧭',valid={...input,decisions:[{...input.decisions[0],reason}]},bytes=Buffer.from(JSON.stringify(valid),'utf8'),
+    split=bytes.indexOf(Buffer.from('🧭'))+2;
+  await controller.review(f.itemId,request([bytes.subarray(0,split),bytes.subarray(split)]));
+  assert.equal(seen.length,1);assert.equal(seen[0].itemId,f.itemId);assert.deepEqual(seen[0].raw,valid);
+  assert.equal(seen[0].raw.decisions[0].reason,reason);
 }));
 test('private no-store controller advertises three typed routes and delegates exact IDs without caller attribution',async()=>{
   assert.deepEqual(Reflect.getMetadata('__guards__',SpatialSourceReviewsController),[PrivateSpatialGuard]);
