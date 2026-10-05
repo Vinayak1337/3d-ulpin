@@ -1439,9 +1439,18 @@
       "order": 28,
       "sha256": "db132a1de6bb59000006c02d2476aba0a103209d62989a2c918679e61da9e8a9",
       "statements": [
-        {"ordinal": 1, "sha256": "86d93a0bd4831ca68c2fc7fd4cf683f6764c5ed6baaa62ddafe9e64e579a2143"},
-        {"ordinal": 2, "sha256": "8391130d28025e61491605518caa93ebd8ecb48799de793bed17b5757784c452"},
-        {"ordinal": 3, "sha256": "8e0da2eed1374077a9bc59b9a5c2ad27b6c8f35ef1a23d69948f2c28bf2bc02e"}
+        {
+          "ordinal": 1,
+          "sha256": "86d93a0bd4831ca68c2fc7fd4cf683f6764c5ed6baaa62ddafe9e64e579a2143"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "8391130d28025e61491605518caa93ebd8ecb48799de793bed17b5757784c452"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "8e0da2eed1374077a9bc59b9a5c2ad27b6c8f35ef1a23d69948f2c28bf2bc02e"
+        }
       ],
       "runtime": {
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
@@ -1723,7 +1732,7 @@
         "function": "migrateSufficiencyTx"
       }
     },
-{
+    {
       "id": "ingestion.streaming-vector.schema",
       "source": {
         "path": "database/sql/95-ingestion/streaming-vector.sql",
@@ -1785,11 +1794,26 @@
       "order": 36,
       "sha256": "0d32a38dde4d894f42d520e1e2e5064adc912c683049b8b05e807e031224eb05",
       "statements": [
-        {"ordinal": 1, "sha256": "43e6f6de0a9197427232b6a28cc205906e8606590731c68d3a1b9828dcb27f4d"},
-        {"ordinal": 2, "sha256": "943da61158f1c6bb91e2b915c815986f4a28f88a9e4f836826c5a9c949bbef62"},
-        {"ordinal": 3, "sha256": "3aa8eb5821b70b83bcdafc1fcd9a72469521365201f11c4618a8d1a42c2be484"},
-        {"ordinal": 4, "sha256": "c1bf6c4478d3edd5af6cc6d9aa9bd85c71c4c16d985f0333c72bf8c7c83e9cea"},
-        {"ordinal": 5, "sha256": "afcabae874ffdd8cde80b71864a999b018e0a1490707a63a9dce1c7a943d9705"}
+        {
+          "ordinal": 1,
+          "sha256": "43e6f6de0a9197427232b6a28cc205906e8606590731c68d3a1b9828dcb27f4d"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "943da61158f1c6bb91e2b915c815986f4a28f88a9e4f836826c5a9c949bbef62"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "3aa8eb5821b70b83bcdafc1fcd9a72469521365201f11c4618a8d1a42c2be484"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "c1bf6c4478d3edd5af6cc6d9aa9bd85c71c4c16d985f0333c72bf8c7c83e9cea"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "afcabae874ffdd8cde80b71864a999b018e0a1490707a63a9dce1c7a943d9705"
+        }
       ],
       "runtime": {
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
@@ -2352,6 +2376,64 @@
       "runtime": {
         "path": "packages/server/src/modules/usp/migrations.ts",
         "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "spatial-ml.source-batches",
+      "source": {
+        "path": "database/sql/50-spatial-ml/source-batches.sql",
+        "function": "migrateSpatialMl",
+        "kind": "authored-sql",
+        "task": "D07-SOURCE-BATCH",
+        "acceptedBase": "e8a407ab0e73d97f13ccd040ca87e218aa470030"
+      },
+      "file": "sql/50-spatial-ml/source-batches.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "after spatial-ml.schema; existing cases/sources base tables already present",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 50,
+      "sha256": "e58f0d57877783e2a356f7295129b479e824566176104ca31ce2a3fee1ec8b47",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "5b6ce1f12726bf89e7e4b4de2e894ef1d7c7cf9b27fbdb8aaeb5bbc4a1fa2d95"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "ff7f12e89894e198bdc60dac18c718fa8ba2bf1de9f60bcdd51ac8f31c99a331"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "331caa25c3c9c9e92560430808dcd6fed5c6ba0469b23cc44b99031169d16fff"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "99e4e0abe4b3bc77bef6de273daaae604c76e8b7d5f23dd77460d874c8fb0bd9"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "763413eb4639cd06de69a917c407d34232dd4ee9478e311fba6cdc6182bbc5dd"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "831066b910260ccb76e6d77d922602f672b933ad715bca72273f3b08a0a78576"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "820f2755a6231c70f376cba7d4fa1589d2af99d63b7df004afab223b5ce3a15b"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "c0fc9ba38fbd2e2a34754b9c7b2876d0e2c3170d1fb55e7ccea8b758f2ad5456"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-ml-db.ts",
+        "function": "migrateSpatialMl"
       }
     }
   ],

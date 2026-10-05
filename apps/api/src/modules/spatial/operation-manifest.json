@@ -152,6 +152,18 @@
       "status": 201
     },
     {
+      "operationId": "POST_api_v1_spatial_ml_source_batches",
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/source-batches",
+      "disposition": "added",
+      "batch": "D07-SOURCE-BATCH",
+      "canonicalService": "createSpatialMlSourceBatch",
+      "runtimeEvidence": [],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 201,
+      "maxBodyBytes": 100000
+    },
+    {
       "operationId": "GET_api_v1_spatial_ml_batches_batchId",
       "method": "GET",
       "path": "/api/v1/spatial-ml/batches/{batchId}",

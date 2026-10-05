@@ -29301,6 +29301,228 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/spatial-ml/source-batches": {
+      "post": {
+        "description": "Pins the current private source/case, actual page/frame and explicit normalized region. No preparation, native part, metric placement or property target is implied.",
+        "operationId": "POST_api_v1_spatial_ml_source_batches",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_spatial_ml_source_batches_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_spatial_ml_batches_Response_201_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_datasets_search_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_datasets_search_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_datasets_search_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_datasets_search_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_datasets_search_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_datasets_search_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "429": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_datasets_search_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_datasets_search_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "504": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_spatial_datasets_search_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Queue source-only PDF floor-plan pixel candidates",
+        "tags": [
+          "spatial ML"
+        ],
+        "x-source-file": "apps/api/src/modules/spatial/spatial-ml.controller.ts",
+        "x-batch": "D07-SOURCE-BATCH",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/spatial/operation-manifest.json",
+        "x-max-body-bytes": 100000,
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/spatial-ml/batches/{batchId}": {
       "get": {
         "operationId": "GET_api_v1_spatial_ml_batches_batchId",
@@ -29685,7 +29907,8 @@
                 "schema": {
                   "type": "string",
                   "enum": [
-                    "private, max-age=31536000, immutable"
+                    "private, max-age=31536000, immutable",
+                    "no-store"
                   ]
                 }
               },
@@ -308325,8 +308548,145 @@
               "format": "uuid"
             },
             "packageId": {
-              "type": "string",
+              "type": [
+                "string",
+                "null"
+              ],
               "format": "uuid"
+            },
+            "scope": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "kind",
+                    "packageId"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "package"
+                    },
+                    "packageId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "kind",
+                    "caseId",
+                    "caseRevision",
+                    "sourceId",
+                    "sourceRevision",
+                    "sourceSha256",
+                    "sourceBytes",
+                    "page",
+                    "frame",
+                    "region",
+                    "locator",
+                    "calibration",
+                    "applicability"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "source"
+                    },
+                    "caseId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "caseRevision": {
+                      "type": "integer"
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "sourceRevision": {
+                      "type": "integer"
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "sourceBytes": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "frame": {
+                      "type": "object",
+                      "required": [
+                        "kind",
+                        "width",
+                        "height",
+                        "rotation"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "const": "pdf_display_page_top_left_points"
+                        },
+                        "width": {
+                          "type": "number"
+                        },
+                        "height": {
+                          "type": "number"
+                        },
+                        "rotation": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "region": {
+                      "type": "object",
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "properties": {
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        },
+                        "width": {
+                          "type": "number"
+                        },
+                        "height": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "locator": {
+                      "type": "object",
+                      "required": [
+                        "kind",
+                        "page"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "const": "pdf_page"
+                        },
+                        "page": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "calibration": {
+                      "type": "null"
+                    },
+                    "applicability": {
+                      "const": "not_assessed"
+                    }
+                  }
+                }
+              ]
             },
             "requestKey": {
               "type": "string",
@@ -308369,8 +308729,145 @@
                     "format": "uuid"
                   },
                   "packageId": {
-                    "type": "string",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "format": "uuid"
+                  },
+                  "scope": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "kind",
+                          "packageId"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "const": "package"
+                          },
+                          "packageId": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "kind",
+                          "caseId",
+                          "caseRevision",
+                          "sourceId",
+                          "sourceRevision",
+                          "sourceSha256",
+                          "sourceBytes",
+                          "page",
+                          "frame",
+                          "region",
+                          "locator",
+                          "calibration",
+                          "applicability"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "const": "source"
+                          },
+                          "caseId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "caseRevision": {
+                            "type": "integer"
+                          },
+                          "sourceId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "sourceRevision": {
+                            "type": "integer"
+                          },
+                          "sourceSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceBytes": {
+                            "type": "integer"
+                          },
+                          "page": {
+                            "type": "integer"
+                          },
+                          "frame": {
+                            "type": "object",
+                            "required": [
+                              "kind",
+                              "width",
+                              "height",
+                              "rotation"
+                            ],
+                            "properties": {
+                              "kind": {
+                                "const": "pdf_display_page_top_left_points"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              },
+                              "rotation": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "region": {
+                            "type": "object",
+                            "required": [
+                              "x",
+                              "y",
+                              "width",
+                              "height"
+                            ],
+                            "properties": {
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "locator": {
+                            "type": "object",
+                            "required": [
+                              "kind",
+                              "page"
+                            ],
+                            "properties": {
+                              "kind": {
+                                "const": "pdf_page"
+                              },
+                              "page": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "calibration": {
+                            "type": "null"
+                          },
+                          "applicability": {
+                            "const": "not_assessed"
+                          }
+                        }
+                      }
+                    ]
                   },
                   "sourceRevisionId": {
                     "type": "string",
@@ -308381,7 +308878,10 @@
                     "pattern": "^[a-f0-9]{64}$"
                   },
                   "partId": {
-                    "type": "string",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "format": "uuid"
                   },
                   "page": {
@@ -308929,8 +309429,145 @@
             "format": "uuid"
           },
           "packageId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uuid"
+          },
+          "scope": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "packageId"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "package"
+                  },
+                  "packageId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "caseId",
+                  "caseRevision",
+                  "sourceId",
+                  "sourceRevision",
+                  "sourceSha256",
+                  "sourceBytes",
+                  "page",
+                  "frame",
+                  "region",
+                  "locator",
+                  "calibration",
+                  "applicability"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "source"
+                  },
+                  "caseId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "caseRevision": {
+                    "type": "integer"
+                  },
+                  "sourceId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "sourceRevision": {
+                    "type": "integer"
+                  },
+                  "sourceSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "sourceBytes": {
+                    "type": "integer"
+                  },
+                  "page": {
+                    "type": "integer"
+                  },
+                  "frame": {
+                    "type": "object",
+                    "required": [
+                      "kind",
+                      "width",
+                      "height",
+                      "rotation"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "pdf_display_page_top_left_points"
+                      },
+                      "width": {
+                        "type": "number"
+                      },
+                      "height": {
+                        "type": "number"
+                      },
+                      "rotation": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "region": {
+                    "type": "object",
+                    "required": [
+                      "x",
+                      "y",
+                      "width",
+                      "height"
+                    ],
+                    "properties": {
+                      "x": {
+                        "type": "number"
+                      },
+                      "y": {
+                        "type": "number"
+                      },
+                      "width": {
+                        "type": "number"
+                      },
+                      "height": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "locator": {
+                    "type": "object",
+                    "required": [
+                      "kind",
+                      "page"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "pdf_page"
+                      },
+                      "page": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "calibration": {
+                    "type": "null"
+                  },
+                  "applicability": {
+                    "const": "not_assessed"
+                  }
+                }
+              }
+            ]
           },
           "requestKey": {
             "type": "string",
@@ -308973,8 +309610,145 @@
                   "format": "uuid"
                 },
                 "packageId": {
-                  "type": "string",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
                   "format": "uuid"
+                },
+                "scope": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "kind",
+                        "packageId"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "const": "package"
+                        },
+                        "packageId": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "kind",
+                        "caseId",
+                        "caseRevision",
+                        "sourceId",
+                        "sourceRevision",
+                        "sourceSha256",
+                        "sourceBytes",
+                        "page",
+                        "frame",
+                        "region",
+                        "locator",
+                        "calibration",
+                        "applicability"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "const": "source"
+                        },
+                        "caseId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "caseRevision": {
+                          "type": "integer"
+                        },
+                        "sourceId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "sourceRevision": {
+                          "type": "integer"
+                        },
+                        "sourceSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "sourceBytes": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "frame": {
+                          "type": "object",
+                          "required": [
+                            "kind",
+                            "width",
+                            "height",
+                            "rotation"
+                          ],
+                          "properties": {
+                            "kind": {
+                              "const": "pdf_display_page_top_left_points"
+                            },
+                            "width": {
+                              "type": "number"
+                            },
+                            "height": {
+                              "type": "number"
+                            },
+                            "rotation": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "region": {
+                          "type": "object",
+                          "required": [
+                            "x",
+                            "y",
+                            "width",
+                            "height"
+                          ],
+                          "properties": {
+                            "x": {
+                              "type": "number"
+                            },
+                            "y": {
+                              "type": "number"
+                            },
+                            "width": {
+                              "type": "number"
+                            },
+                            "height": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        "locator": {
+                          "type": "object",
+                          "required": [
+                            "kind",
+                            "page"
+                          ],
+                          "properties": {
+                            "kind": {
+                              "const": "pdf_page"
+                            },
+                            "page": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "calibration": {
+                          "type": "null"
+                        },
+                        "applicability": {
+                          "const": "not_assessed"
+                        }
+                      }
+                    }
+                  ]
                 },
                 "sourceRevisionId": {
                   "type": "string",
@@ -308985,7 +309759,10 @@
                   "pattern": "^[a-f0-9]{64}$"
                 },
                 "partId": {
-                  "type": "string",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
                   "format": "uuid"
                 },
                 "page": {
@@ -309412,6 +310189,154 @@
           }
         }
       },
+      "POST_spatial_ml_source_batches_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "source"
+            ]
+          },
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "caseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sourceRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "sourceSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "sourceBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 16777216
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "frame": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "pdf_display_page_top_left_points"
+                ]
+              },
+              "rotation": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 359
+              },
+              "width": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 10000000
+              },
+              "height": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 10000000
+              }
+            },
+            "required": [
+              "kind",
+              "rotation",
+              "width",
+              "height"
+            ],
+            "additionalProperties": false
+          },
+          "region": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "width": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 1
+              },
+              "height": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "width",
+              "height"
+            ],
+            "additionalProperties": false
+          },
+          "task": {
+            "type": "string",
+            "enum": [
+              "floor-plan"
+            ]
+          },
+          "modelId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "scope",
+          "caseId",
+          "caseRevision",
+          "sourceId",
+          "sourceRevision",
+          "sourceSha256",
+          "sourceBytes",
+          "page",
+          "frame",
+          "region",
+          "task",
+          "modelId",
+          "requestKey"
+        ],
+        "additionalProperties": false
+      },
       "GET_spatial_ml_items_itemId_Response_200_application_json": {
         "type": "object",
         "required": [
@@ -309443,8 +310368,145 @@
             "format": "uuid"
           },
           "packageId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uuid"
+          },
+          "scope": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "packageId"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "package"
+                  },
+                  "packageId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "caseId",
+                  "caseRevision",
+                  "sourceId",
+                  "sourceRevision",
+                  "sourceSha256",
+                  "sourceBytes",
+                  "page",
+                  "frame",
+                  "region",
+                  "locator",
+                  "calibration",
+                  "applicability"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "source"
+                  },
+                  "caseId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "caseRevision": {
+                    "type": "integer"
+                  },
+                  "sourceId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "sourceRevision": {
+                    "type": "integer"
+                  },
+                  "sourceSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "sourceBytes": {
+                    "type": "integer"
+                  },
+                  "page": {
+                    "type": "integer"
+                  },
+                  "frame": {
+                    "type": "object",
+                    "required": [
+                      "kind",
+                      "width",
+                      "height",
+                      "rotation"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "pdf_display_page_top_left_points"
+                      },
+                      "width": {
+                        "type": "number"
+                      },
+                      "height": {
+                        "type": "number"
+                      },
+                      "rotation": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "region": {
+                    "type": "object",
+                    "required": [
+                      "x",
+                      "y",
+                      "width",
+                      "height"
+                    ],
+                    "properties": {
+                      "x": {
+                        "type": "number"
+                      },
+                      "y": {
+                        "type": "number"
+                      },
+                      "width": {
+                        "type": "number"
+                      },
+                      "height": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "locator": {
+                    "type": "object",
+                    "required": [
+                      "kind",
+                      "page"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "pdf_page"
+                      },
+                      "page": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "calibration": {
+                    "type": "null"
+                  },
+                  "applicability": {
+                    "const": "not_assessed"
+                  }
+                }
+              }
+            ]
           },
           "sourceRevisionId": {
             "type": "string",
@@ -309455,7 +310517,10 @@
             "pattern": "^[a-f0-9]{64}$"
           },
           "partId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uuid"
           },
           "page": {
@@ -311837,8 +312902,145 @@
                 "format": "uuid"
               },
               "packageId": {
-                "type": "string",
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "format": "uuid"
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "kind",
+                      "packageId"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "package"
+                      },
+                      "packageId": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "kind",
+                      "caseId",
+                      "caseRevision",
+                      "sourceId",
+                      "sourceRevision",
+                      "sourceSha256",
+                      "sourceBytes",
+                      "page",
+                      "frame",
+                      "region",
+                      "locator",
+                      "calibration",
+                      "applicability"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "source"
+                      },
+                      "caseId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "caseRevision": {
+                        "type": "integer"
+                      },
+                      "sourceId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "sourceRevision": {
+                        "type": "integer"
+                      },
+                      "sourceSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "sourceBytes": {
+                        "type": "integer"
+                      },
+                      "page": {
+                        "type": "integer"
+                      },
+                      "frame": {
+                        "type": "object",
+                        "required": [
+                          "kind",
+                          "width",
+                          "height",
+                          "rotation"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "const": "pdf_display_page_top_left_points"
+                          },
+                          "width": {
+                            "type": "number"
+                          },
+                          "height": {
+                            "type": "number"
+                          },
+                          "rotation": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "region": {
+                        "type": "object",
+                        "required": [
+                          "x",
+                          "y",
+                          "width",
+                          "height"
+                        ],
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          },
+                          "width": {
+                            "type": "number"
+                          },
+                          "height": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "locator": {
+                        "type": "object",
+                        "required": [
+                          "kind",
+                          "page"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "const": "pdf_page"
+                          },
+                          "page": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "calibration": {
+                        "type": "null"
+                      },
+                      "applicability": {
+                        "const": "not_assessed"
+                      }
+                    }
+                  }
+                ]
               },
               "sourceRevisionId": {
                 "type": "string",
@@ -311849,7 +313051,10 @@
                 "pattern": "^[a-f0-9]{64}$"
               },
               "partId": {
-                "type": "string",
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "format": "uuid"
               },
               "page": {
