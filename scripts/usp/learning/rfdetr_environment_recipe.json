@@ -1,0 +1,250 @@
+{
+  "schemaVersion": "rfdetr-environment-preparation/1",
+  "task": "D07-RFDETR-ENV-PREP",
+  "state": "blocked_compatible_base_runtime",
+  "baseCommit": "d3d5d4106c085ad527a44c1be3acd0fc72051618",
+  "target": {
+    "platform": "Linux amd64",
+    "python": "3.12.14",
+    "containmentOwnerCommit": "f4e2d8dc843e32c860c19e0794ad3e250329e3b6",
+    "controlImage": "sha256:e71d87961be773c18685622eb570c034cf664bfa206e21f6fa3691d629b440c9",
+    "controlImageIsMatchingTrainerBase": false,
+    "installedTorchTorchvisionTransformersPycocotools": null,
+    "gpuAssigned": false
+  },
+  "trainer": {
+    "ownerCommit": "3f681f66a7c9debbe7f7a27c0388a88be548849c",
+    "library": "Transformers5.17.0 RfDetrForInstanceSegmentation + Trainer/Accelerate",
+    "requestedDirectPins": [
+      "torch==2.14.0",
+      "torchvision==0.29.0",
+      "transformers==5.17.0",
+      "accelerate==1.15.0",
+      "pycocotools==2.0.11",
+      "pillow==12.3.0",
+      "safetensors==0.8.0",
+      "numpy==2.5.3",
+      "scipy==1.18.1"
+    ],
+    "modelAcquisitionOwner": "AI-04B; no reacquisition",
+    "processorConfig": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-train-prep-20261005/original/preprocessor_config.json",
+      "bytes": 442,
+      "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+    },
+    "modelConfig": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-train-prep-20261005/original/config.json",
+      "bytes": 2490,
+      "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+    },
+    "sourceCode": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-environment-20261005/trainer-source-3f681f66.py",
+      "bytes": 20413,
+      "sha256": "40dd3ae09a8edebaf1248b03d80a69808d170f6164ebcd9c340aa4d155a85b84"
+    },
+    "sourceCodeOrigin": {
+      "commit": "3f681f66a7c9debbe7f7a27c0388a88be548849c",
+      "gitPath": "scripts/usp/learning/train_building_ramp.py",
+      "scope": "Sealed source bytes, never imported; owner live checkout path absent at check"
+    }
+  },
+  "basePrerequisite": "Containment owner must supply a cached compatible Linux CPython3.12 Torch2.14.0/Torchvision0.29.0 runtime (and separately qualify matching CUDA/GPU before fit), or explicitly assigned compatible private Windows containment. Current Linux control image lacks Torch; known Windows cp312-win_amd64 Torch2.14.0+cpu/torchvision0.29.0+cpu, cuda=None is not this base.",
+  "newPrivateEnvironment": null,
+  "resolvedEnvironmentLock": null,
+  "missingLibraryWheelShortlist": [
+    {
+      "name": "transformers",
+      "version": "5.17.0",
+      "metadata": {
+        "path": "E:/BhuAayam-data/task-data/d07-rfdetr-environment-20261005/pypi-transformers-5.17.0.json",
+        "bytes": 31809,
+        "sha256": "56e08e46c9824bdafaa70768aef87a57c40c3ffce1b5b3f1af1fec3bddd5fddf"
+      },
+      "filename": "transformers-5.17.0-py3-none-any.whl",
+      "bytes": 12295140,
+      "sha256": "78ec1ce21579b38dfb83950a0658cd119f87212a2fcfdff478096ce9d6c03801",
+      "url": "https://files.pythonhosted.org/packages/e8/d0/c502b60d684adbd98a8dc7d5bb866842772b816ac4354e4608be240041ae/transformers-5.17.0-py3-none-any.whl",
+      "requirementsWithoutExtras": [
+        "huggingface-hub<2.0,>=1.5.0",
+        "numpy>=1.17",
+        "packaging>=20.0",
+        "pyyaml>=5.1",
+        "regex>=2025.10.22",
+        "tokenizers<0.24.0,>=0.23.1",
+        "typer",
+        "safetensors>=0.8.0",
+        "tqdm>=4.60"
+      ]
+    },
+    {
+      "name": "accelerate",
+      "version": "1.15.0",
+      "metadata": {
+        "path": "E:/BhuAayam-data/task-data/d07-rfdetr-environment-20261005/pypi-accelerate-1.15.0.json",
+        "bytes": 21246,
+        "sha256": "72df5a25c2aaa301042570b013c71113157d476719772fd1d1958e08a506f529"
+      },
+      "filename": "accelerate-1.15.0-py3-none-any.whl",
+      "bytes": 394295,
+      "sha256": "97eacca0b73e45cb867dbf8c5d5d4dc32219544300e0c8992c7334dc2ef33cec",
+      "url": "https://files.pythonhosted.org/packages/8a/4c/34f0450479d01195027260da68d8a3880683f1640c3ca5adf64acb3185f1/accelerate-1.15.0-py3-none-any.whl",
+      "requirementsWithoutExtras": [
+        "numpy>=1.17",
+        "packaging>=20.0",
+        "psutil",
+        "pyyaml",
+        "torch>=2.0.0",
+        "huggingface_hub>=0.21.0",
+        "safetensors>=0.4.3"
+      ]
+    },
+    {
+      "name": "pycocotools",
+      "version": "2.0.11",
+      "metadata": {
+        "path": "E:/BhuAayam-data/task-data/d07-rfdetr-environment-20261005/pypi-pycocotools-2.0.11.json",
+        "bytes": 39839,
+        "sha256": "06dda02edf9a496a31a2eab5601e5f64f1df205b65b47a66787b31fc1b775a4d"
+      },
+      "filename": "pycocotools-2.0.11-cp312-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "bytes": 411685,
+      "sha256": "a82d1c9ed83f75da0b3f244f2a3cf559351a283307bd9b79a4ee2b93ab3231dd",
+      "url": "https://files.pythonhosted.org/packages/23/59/dc81895beff4e1207a829d40d442ea87cefaac9f6499151965f05c479619/pycocotools-2.0.11-cp312-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "requirementsWithoutExtras": [
+        "numpy"
+      ]
+    }
+  ],
+  "shortlistBytes": 13101120,
+  "shortlistIsCompleteEnvironmentLock": false,
+  "installationPolicy": [
+    "Do not install until target compatible base/interpreter/ABI and private-environment ownership are confirmed.",
+    "Reuse retained platform-compatible wheelcache first; verify every filename/version/hash and transitive dependency against exact base metadata.",
+    "Only missing pinned packages in a NEW private environment/thin layer; no mutation of old/global/shared environments/images/profiles.",
+    "No torch/torchvision/CUDA/NVIDIA downloads or resolver upgrades; no extras/implicit model fetch/build from source.",
+    "Use offline --no-index --no-deps --require-hashes installation with a separately complete hash-pinned requirements lock and wheelhouse; then pip check/freeze. This shortlist cannot be supplied as that full lock.",
+    "Maximum256MiB new dependency transfer, CPU<=2 and RAM<=2GiB; no additional container without containment-owner coordination."
+  ],
+  "offlineMetadataCommand": "<confirmed-private-python> -I -B -c \"import importlib.metadata as m,json,sys; print(json.dumps({'python':sys.version,'versions':{n:m.version(n) for n in ['torch','torchvision','transformers','accelerate','pycocotools','pillow','safetensors','numpy','scipy']}},indent=2))\"",
+  "offlineImportCommandAfterBaseAndLock": "<confirmed-private-python> -I -B -c \"from transformers import RfDetrImageProcessor, Trainer; import accelerate; from pycocotools import mask; print('matching loader imports passed')\"",
+  "commandsExecuted": false,
+  "loaderCheck": {
+    "state": "not_run_missing_compatible_base",
+    "inputs": "One positive train, one positive development, one source-empty annotated image only; no441-image campaign.",
+    "requirements": [
+      "CPU image/label tensors only; no model class construction/weights/inference/optimizer/CUDA/fit.",
+      "Processor from retained pinned local config, local_files_only=True; no trust_remote_code or implicit HF fetch.",
+      "Standard pycocotools.frPyObjects/decode on uncompressed column-major RLE; exact source mask/area/bbox at256; preserve individual holes/components.",
+      "Pillow bilinear RGB432 and nearest instance masks; original processor normalization/box conversion with do_resize=False/do_pad=False.",
+      "Category1 rooftop_building -> model0 building in memory only, empty labels boxes(0,4)/masks(0,432,432), whole-group train/dev separation."
+    ],
+    "sourceCorpusObservedHoleRings": 0,
+    "actualLibrarySemanticsQualified": false,
+    "representativeInputs": [
+      {
+        "split": "train",
+        "imageId": 1,
+        "sourceAnnotations": 10,
+        "image": {
+          "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/train/0003d02a-6bf0-4790-ac29-eed4337fe430.png",
+          "bytes": 101859,
+          "sha256": "7e146a4543c77da6ae092c971298948c4cd7e55f063422ee136d098ce7e8815c"
+        },
+        "sourceGroup": "ramp-MaxarODP-105001001597B000",
+        "role": "train_positive"
+      },
+      {
+        "split": "valid",
+        "imageId": 25,
+        "sourceAnnotations": 11,
+        "image": {
+          "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/valid/0020b409-a333-4eb4-89c8-531b8110312a.png",
+          "bytes": 95959,
+          "sha256": "713a9489f6ec638ad0368ecba14234dd4902f5400bec037360d4a49fad27a339"
+        },
+        "sourceGroup": "ramp-MaxarODP-104001002CA32300",
+        "role": "valid_positive"
+      },
+      {
+        "split": "train",
+        "imageId": 13,
+        "sourceAnnotations": 0,
+        "image": {
+          "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/train/860ea202-9316-47fc-91f1-98b462951819.png",
+          "bytes": 65726,
+          "sha256": "8f1a9420e374d75a947c819a4e38bbfdfd4bb9150b46e35183dfafd3379e167b"
+        },
+        "sourceGroup": "ramp-MaxarODP-105001001597B000",
+        "role": "source_empty"
+      }
+    ]
+  },
+  "preservedExport": {
+    "manifest": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/manifest.json",
+      "bytes": 444695,
+      "sha256": "443f57089ca43044b281a80267b5e6f3c8209adc023e1afbe2460401311fc6cb"
+    },
+    "train": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/train/_annotations.coco.json",
+      "bytes": 289622,
+      "sha256": "107e9ef9fe68e6f7d7c5a803188d44839cecf486a670fc0ff474761e0112b72c"
+    },
+    "development": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/valid/_annotations.coco.json",
+      "bytes": 248539,
+      "sha256": "50ae2e87534f2957f8664337ef6c8c60233322f9c613c6f73613eb200019b601"
+    },
+    "verification": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/verification.json",
+      "bytes": 4991,
+      "sha256": "8927835c118dfe81c7884de74d879641d0f3805330dac89de4ab26341fd5d35f"
+    },
+    "final": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/final.json",
+      "bytes": 5125,
+      "sha256": "b3e3bed8c7f31f62bcb260180fd14f67e19d6de45dbf7ab11853f6e861db1871"
+    }
+  },
+  "evidence": {
+    "windowsMetadata": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-environment-20261005/existing-windows-metadata.json",
+      "bytes": 25469,
+      "sha256": "09f15d2258a8cc6d5b5aba76e57a7b486d39795931b76c598096abbe7a505313"
+    },
+    "dependencyMetadata": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-environment-20261005/dependency-metadata.json",
+      "bytes": 18135,
+      "sha256": "9d035ef82169c5724fa5403db12613ebb494b7c257f77edd334a6b11d76e7b3b"
+    },
+    "controlWorker": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-containment-20261005/output/control.json",
+      "bytes": 2012,
+      "sha256": "67179ffd0614663c157e48b8181f59e4c8a5bd23efd529bf3ac9f643b7b86d33"
+    },
+    "controlLaunch": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-containment-20261005/launch-profile.json",
+      "bytes": 2190,
+      "sha256": "b177d3dcc11610e6d90b39fb49eef776068bbee248c78feb18adb99350a465cc"
+    },
+    "trainerPublication": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-train-prep-20261005/publication.json",
+      "bytes": 17574,
+      "sha256": "4ce501eced3bfbfba822e7226ede769df5299e77a2ecee8aada4483546436cab"
+    }
+  },
+  "transfers": {
+    "publicMetadataRequests": 3,
+    "metadataBytes": 92894,
+    "newDependencyWheelBytes": 0,
+    "newTorchCudaModelBytes": 0
+  },
+  "scope": "Preparation recipe and precise blocker only; no environment, library load or fit admission/accuracy/GPU qualification.",
+  "metadataDiscrepancy": {
+    "trainerSealedCliNumpy": "2.3.5",
+    "trainerEarlierStandaloneNumpy": "2.5.3",
+    "thisTaskReadOnlyDistInfoNumpy": "2.5.3",
+    "proposedPin": "2.5.3",
+    "conclusion": "Historical observations retained separately; none establishes a locked compatible Linux runtime. No environment mutation/version repair by this task."
+  }
+}
