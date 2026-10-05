@@ -1,0 +1,364 @@
+{
+  "schemaVersion": "rfdetr-native-cpu-empty-loss-evidence/1",
+  "task": "D07-NATIVE-CPU-EMPTY-LOSS-PROBE",
+  "date": "2026-10-06",
+  "state": "stopped_same_pid_gate_before_heavy_imports",
+  "outcome": "Official compatible decoder wheel acquired and imported in a new task-local overlay. One Job-gated native CPU launch stopped at the worker same-PID release check before heavy imports or model work. No retry.",
+  "baseCommit": "fb687b2bdb103fe0f91032015c309d10f21b4383",
+  "branch": "task/d07-native-cpu-empty-loss-20261006",
+  "ownedRepositoryFiles": [
+    "docs/evidence/usp/rfdetr-native-cpu-empty-loss-probe-20261006.json"
+  ],
+  "existingLauncherAndTrainerEdited": false,
+  "scope": {
+    "task": "D07-NATIVE-CPU-EMPTY-LOSS-PROBE",
+    "maxForwardCalls": 2,
+    "selectedImageIds": [
+      1,
+      13
+    ],
+    "backward": 0,
+    "optimizer": 0,
+    "gpu": false,
+    "development": 0,
+    "final": 0
+  },
+  "bounds": {
+    "jobMemoryBytes": 5368709120,
+    "cpuAffinity": "0-1",
+    "threads": 2,
+    "interopThreads": 1,
+    "innerSeconds": 135,
+    "cleanupSeconds": 45,
+    "totalSeconds": 180,
+    "receiptBytesMax": 262144
+  },
+  "wheel": {
+    "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pycocotools-2.0.11-cp312-abi3-win_amd64.whl",
+    "bytes": 77570,
+    "sha256": "ffe806ce535f5996445188f9a35643791dc54beabc61bd81e2b03367356d604f",
+    "url": "https://files.pythonhosted.org/packages/83/b4/f6708404ff494706b80e714b919f76dc4ec9845a4007affd6d6b0843f928/pycocotools-2.0.11-cp312-abi3-win_amd64.whl",
+    "tag": "cp312-abi3-win_amd64",
+    "metadataSha256": "7a7af3d05f82f26639e992637485b4ee9ce8c170d6a44b40b500be356c20d573",
+    "pypiMetadata": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pypi-pycocotools-2.0.11.json",
+      "bytes": 39839,
+      "sha256": "06dda02edf9a496a31a2eab5601e5f64f1df205b65b47a66787b31fc1b775a4d"
+    },
+    "pypiUrl": "https://pypi.org/pypi/pycocotools/2.0.11/json",
+    "license": "FreeBSD",
+    "acquiredDate": "2026-10-06",
+    "acquisitionRequests": 2
+  },
+  "decoderCompatibility": {
+    "importExitCode": 0,
+    "observed": {
+      "version": "2.0.11",
+      "maskPath": "E:\\BhuAayam-data/task-data/d07-native-cpu-empty-loss-probe-20261006/dependencies\\pycocotools\\mask.py",
+      "binaryPath": "E:\\BhuAayam-data/task-data/d07-native-cpu-empty-loss-probe-20261006/dependencies\\pycocotools\\_mask.pyd",
+      "decodeCallable": true,
+      "numpyVersion": "2.5.3",
+      "imageOrRleDecoded": false
+    },
+    "tagAcceptedByExistingPackaging": true,
+    "downloadByteAndShaAndMetadataCheck": "passed",
+    "downloadRequests": 2,
+    "officialReleaseJsonSameBytesAsRetained": true,
+    "localInstallCommand": [
+      "C:/Users/kvina/AppData/Local/hermes/bin/uv.exe",
+      "pip",
+      "install",
+      "--python",
+      "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+      "--no-deps",
+      "--only-binary=:all:",
+      "--no-index",
+      "--no-cache",
+      "--target",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\dependencies",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pycocotools-2.0.11-cp312-abi3-win_amd64.whl"
+    ],
+    "localInstallExitCode": 0,
+    "installerVersion": "uv0.12.18",
+    "installedPackages": 1,
+    "existingVenvOrSystemModified": false,
+    "newEnvironmentCreated": false,
+    "installerChoice": "Existing venv has no pip; existing uv targets that exact interpreter and new overlay. No pip/bootstrap/download/dependency addition beyond one wheel.",
+    "metadataCheckCorrection": "First tag checker imported absent pip vendor helper (exit1); used already installed packaging.tags instead (exit0). No model/ABI retry or alternate wheel/version.",
+    "copyWarning": "uv could not hardlink across filesystems and copied the files; no settings changed.",
+    "licenceAndLaunchGap": "Official PyPI pycocotools2.0.11 metadata declares FreeBSD; retain attribution. This research dependency acquisition grants no product/model launch or operational-data qualification."
+  },
+  "environment": {
+    "interpreter": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+    "python": "3.12.14",
+    "platform": "WindowsAMD64",
+    "packageVersions": {
+      "torch": "2.14.0",
+      "torchvision": "0.29.0",
+      "transformers": "5.17.0",
+      "numpy": "2.5.3",
+      "Pillow": "12.3.0",
+      "scipy": "1.18.1",
+      "safetensors": "0.8.0",
+      "tokenizers": "0.23.2",
+      "huggingface-hub": "1.33.0",
+      "pycocotools": "2.0.11"
+    },
+    "torchRuntime": "2.14.0+cpu",
+    "torchvisionRuntime": "0.29.0+cpu",
+    "compiledCuda": null,
+    "priorFeasibility": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\local-loss-diagnostic-feasibility.json",
+      "bytes": 9483,
+      "sha256": "982ba0283536276e5f67ed2752d26819508a79036fb5cc3a7d8579f0adab70ae"
+    },
+    "difference": "NativeWindows/Python3.12/Torch2.14CPU/NumPy2.5.3/Pillow12.3; separate from LinuxPython3.11/Torch2.8cu128/NumPy2.3.2/Pillow11. No numeric/CUDA/ONNX equivalence claim.",
+    "versionsOrLossSourceChanged": false
+  },
+  "sourceInputs": {
+    "runner": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\train_building_ramp.py",
+      "bytes": 71184,
+      "sha256": "24afe260cb2c19fd6a56c5cfdd7b88d40a3df6af03b08f073fee20fb061deafd"
+    },
+    "coco": {
+      "path": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\train\\_annotations.coco.json",
+      "bytes": 289622,
+      "sha256": "107e9ef9fe68e6f7d7c5a803188d44839cecf486a670fc0ff474761e0112b72c"
+    },
+    "selectedInputs": [
+      {
+        "imageId": 1,
+        "fileName": "0003d02a-6bf0-4790-ac29-eed4337fe430.png",
+        "sourceDimensions": [
+          256,
+          256
+        ],
+        "sourceAnnotationIds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "sourceInstanceCount": 10,
+        "sourceCategoryIds": [
+          1
+        ],
+        "retainedImagePinNotReread": {
+          "path": "/inputs/coco/train/0003d02a-6bf0-4790-ac29-eed4337fe430.png",
+          "bytes": 101859,
+          "sha256": "7e146a4543c77da6ae092c971298948c4cd7e55f063422ee136d098ce7e8815c"
+        },
+        "hostPath": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\train\\0003d02a-6bf0-4790-ac29-eed4337fe430.png"
+      },
+      {
+        "imageId": 13,
+        "fileName": "860ea202-9316-47fc-91f1-98b462951819.png",
+        "sourceDimensions": [
+          256,
+          256
+        ],
+        "sourceAnnotationIds": [],
+        "sourceInstanceCount": 0,
+        "sourceCategoryIds": [],
+        "retainedImagePinNotReread": {
+          "path": "/inputs/coco/train/860ea202-9316-47fc-91f1-98b462951819.png",
+          "bytes": 65726,
+          "sha256": "8f1a9420e374d75a947c819a4e38bbfdfd4bb9150b46e35183dfafd3379e167b"
+        },
+        "hostPath": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\train\\860ea202-9316-47fc-91f1-98b462951819.png"
+      }
+    ],
+    "modelTrio": [
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\model.safetensors",
+        "bytes": 141551436,
+        "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+      },
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\config.json",
+        "bytes": 2490,
+        "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+      },
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\preprocessor_config.json",
+        "bytes": 442,
+        "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+      }
+    ],
+    "originalSourceModelLabelsSplitsPreserved": true,
+    "finalIntegrityPinsVerified": 39,
+    "initialRecipe": "Original oneclass/200query/group13 train mode, CPUeagerFP32, seed42,432bilinearRGB/nearestRLE/category1->0/normalizedboxes/pixelmask; at most one positive1 then empty13; no updates.",
+    "adapterObserverScope": "Only accepted CocoPool/collate/diagnostic_tensor/LossDiagnostics AST selected; no execute_trainer/Trainer call or loss/guard repair."
+  },
+  "actualAttempt": {
+    "supervisorCommand": [
+      "C:\\Python313\\python.exe",
+      "-I",
+      "-B",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise.py",
+      "native-cpu-probe"
+    ],
+    "gatedWorkerCommand": [
+      "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+      "-I",
+      "-B",
+      "-c",
+      "import sys,json,runpy\nrelease=json.loads(sys.stdin.readline())\nsys.argv=sys.argv[1:]\nrunpy.run_path(sys.argv[0],run_name='__main__',init_globals={'HOST_RELEASE':release})\n",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native_entry.py",
+      "--plan",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\plan.json"
+    ],
+    "shellAndChildExitCode": 1,
+    "supervisorFailure": null,
+    "attempts": 1,
+    "retryAttempts": 0,
+    "stopLine": "native_entry.py:25",
+    "error": "ValueError: Gated host Job release required",
+    "stopCondition": "HOST_RELEASE must be a dictionary whose childPid equals current os.getpid(); the gate rejected before input checks, actual worker Job/affinity readback and heavy imports.",
+    "expectedLauncherPid": 29964,
+    "actualWorkerPid": null,
+    "causeLimit": "Supervisor sealed Popen PID and runpy init_globals release, but the worker did not retain its current PID. Venv launcher/underlying interpreter PID mismatch is a plausible explanation, not a measured confirmation.",
+    "forwardCalls": 0,
+    "positiveResult": null,
+    "emptyResult": null,
+    "totalOrNamedLossShapes": null,
+    "initialOrFinalParametersMeasured": false,
+    "modelLoaded": false,
+    "heavyImportsStarted": false,
+    "decoderImportEarlierOnly": true,
+    "backwardCalls": 0,
+    "optimizerUpdates": 0,
+    "gpuUsed": false,
+    "checkpointSaved": false,
+    "developmentOrFinalOpened": false,
+    "kernelNetworkDenialClaim": false
+  },
+  "resources": {
+    "elapsedSeconds": 0.11325930000748485,
+    "peakAssignedJobPrivateBytes": 16355328,
+    "assignedLauncherPid": 29964,
+    "supervisorJobMemoryCapBytes": 5368709120,
+    "supervisorAssignedCpuAffinity": "0-1",
+    "gatedRelease": true,
+    "workerBoundariesObserved": false,
+    "resourceLimit": "Assigned launcher Job peak is observed; underlying worker same-PID/Job/affinity proof never passed. No native model capacity measurement."
+  },
+  "cleanup": {
+    "ownedLauncherReaped": true,
+    "hostJobClosed": true,
+    "finalPythonProcessSnapshot": "No python.exe processes returned by Get-CimInstance after attempt.",
+    "ownedProcessesRemaining": false,
+    "containersTouched": false,
+    "gpuTaken": false,
+    "servicesChanged": false,
+    "DefenderOrFirewallChanged": false,
+    "securityBlockObserved": false,
+    "providerOrApplicationDataUsed": false,
+    "retainedWheelAndOverlayAndFailedAttempt": true,
+    "originalGpuProbePreservedUnrun": true
+  },
+  "verification": {
+    "prepareCommand": [
+      "C:/Python313/python.exe",
+      "-I",
+      "-B",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\prepare.py"
+    ],
+    "prepareExitCode": 0,
+    "syntaxAndNoOptimizerBackwardSaveAndPreImportBoundaryReview": "passed static checks; actual gate failed",
+    "decoderImport": "one newly required binary import passed; no image/RLE decode there",
+    "oldFakeObserverOrEnvironmentCampaignRepeated": false,
+    "sourcePinReview": "39 exact plan pins verified before preparation and after stopped attempt",
+    "gitDiffCheck": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0
+    }
+  },
+  "decision": {
+    "emptyShapeHypothesis": "Not tested; no model forward reached",
+    "historicalCudaFailingInput": "UNKNOWN",
+    "graphPreservingScalarZeroRepairRecommendation": null,
+    "lossFixOrRetryRun": false,
+    "nextStep": "Stop this attempt. A separately assigned pre-import launcher/PID identity correction and revised probe authority is required before any model call. Reuse wheel/overlay and preserved source; no unchanged retry or six-epoch fit.",
+    "noModelQualityPromotionOrGeneralizationClaim": true
+  },
+  "settings": {
+    "requested": "GPT-6.1 Sol/xhigh/default-standard1x",
+    "actualModelEffortTier": null,
+    "liveSuppliedPermissions": "never/danger-full-access"
+  },
+  "artifacts": {
+    "root": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\root-assignment.txt",
+      "bytes": 6382,
+      "sha256": "30efccafa18d5250c9d6fe2ee218fa8b5231607bbb7e1242269e386182941ec0"
+    },
+    "wheel": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pycocotools-2.0.11-cp312-abi3-win_amd64.whl",
+      "bytes": 77570,
+      "sha256": "ffe806ce535f5996445188f9a35643791dc54beabc61bd81e2b03367356d604f"
+    },
+    "releaseMetadata": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pypi-pycocotools-2.0.11.json",
+      "bytes": 39839,
+      "sha256": "06dda02edf9a496a31a2eab5601e5f64f1df205b65b47a66787b31fc1b775a4d"
+    },
+    "decoderImport": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\decoder-import.json",
+      "bytes": 363,
+      "sha256": "6fbd0bcafc8e6fe9af770268103cfaffaa2431893759ddfb4045020cac2a8692"
+    },
+    "entry": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native_entry.py",
+      "bytes": 10242,
+      "sha256": "0a676a6eaa7b2b687f272197018b416abccb05d10e80df46dcfbae1c77785cdc"
+    },
+    "supervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise.py",
+      "bytes": 4424,
+      "sha256": "058fcd0a9353f37b9209d0529d17b486b23db2f4c8bc4e2986c9b3e0fbf600da"
+    },
+    "plan": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\plan.json",
+      "bytes": 14895,
+      "sha256": "3da315390e7bc93c9d04737a6728e87f11e46e3c83b9475bffb0ba8d9f68a6df"
+    },
+    "prepareCode": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\prepare.py",
+      "bytes": 6145,
+      "sha256": "ae003b876505a4c0f4ef76133b3477b4d054a8ce9543e0919acd8f882b54d09a"
+    },
+    "prelaunch": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\prelaunch.json",
+      "bytes": 1596,
+      "sha256": "f190ca49d8afa8bb4f4af05f4ef4b58debccb99e443285b6a243e0137bc447d9"
+    },
+    "attempt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\attempt.json",
+      "bytes": 389,
+      "sha256": "b485824db9f4916713effd7bc4c3b95b8e0251a456497136f01fef9086819bff"
+    },
+    "command": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\command.json",
+      "bytes": 2049,
+      "sha256": "d18b4cb5befcfbc71568b30a2f03d9eb392785de277dc77d6bab76eaf6ec5620"
+    },
+    "log": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native-cpu.log",
+      "bytes": 700,
+      "sha256": "1b87d32168fadab8b666d37af97b928143d3674a7799976d121697a71d252f93"
+    }
+  },
+  "privateFinalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\finalization.json"
+}
