@@ -219,7 +219,26 @@
     "gpuTensorSmoke": "not_run: cached image has no Torch; no GPU runtime/device/driver compatibility claim",
     "modelLoads": 0,
     "trainOrInferenceCalls": 0,
-    "cudaAllocatedBytes": 0
+    "cudaAllocatedBytes": 0,
+    "knownWindowsBase": {
+      "environment": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv",
+      "torchVersion": "2.14.0+cpu",
+      "torchvisionVersion": "0.29.0+cpu",
+      "torchCompiledCuda": null,
+      "method": "Read static version.py only; no Torch/torchvision/CUDA import",
+      "pins": [
+        {
+          "path": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Lib\\site-packages\\torch\\version.py",
+          "bytes": 323,
+          "sha256": "d69ff7c9c96d68d70d975a5b9e5e1f599b007eff59b54adb68e3e099b3331468"
+        },
+        {
+          "path": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Lib\\site-packages\\torchvision\\version.py",
+          "bytes": 206,
+          "sha256": "79728dd8cb7c1a75ae2215e92f778071b0d735409882ac29073dd33fb44003dc"
+        }
+      ]
+    }
   },
   "trainPrepInterface": {
     "owner": "01a0ee2d-5889-7ac3-a75d-2d2248265c26",
@@ -238,10 +257,15 @@
     },
     "pathConversionNeeded": true,
     "actualModelDataMountedOrOpened": false,
-    "noTorchImportOrEnvironmentMutation": true
+    "noTorchImportOrEnvironmentMutation": true,
+    "windowsBaseMetadataReceipt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-containment-20261005\\windows-base-metadata.json",
+      "bytes": 765,
+      "sha256": "e711343c977c3f09f289d6081f024a6a4a3f752885c7d9a2f8762afb769a9909"
+    }
   },
   "blockerAndMinimalNextRoute": {
-    "blocker": "No cached compatible Linux Torch/Transformers/pycocotools runtime or qualified GPU runtime/image. Windows DLLs/absolute config/data paths cannot be silently mounted as a Linux training environment. Audited Windows launcher remains fixed to Qwen/task-staged roles; shared ACL/runtime changes were not made.",
+    "blocker": "No cached compatible Linux Torch/Transformers/pycocotools runtime or qualified GPU runtime/image. Windows DLLs/absolute config/data paths cannot be silently mounted as a Linux training environment. Audited Windows launcher remains fixed to Qwen/task-staged roles; shared ACL/runtime changes were not made. Static version.py confirms the known Windows Torch/Torchvision base is CPU-only (+cpu, compiled CUDA=None); it supplies no qualified CUDA execution route.",
     "nextRoute": "Separately assign a pinned compatible Linux training image/environment (or task-private compatible Windows containment stage), mounted-path config/manifest adapter retaining original hashes/classes, and a minimal actual-runtime native-egress/local-access/GPU tensor control. For Docker reuse network-none, non-root/read-only/cap-drop/no-new-privileges/resource policy and exact RO code/model/data mounts; only new owned output is RW. Freeze new runtime/config/plan before authorization.",
     "futureExecutionGates": "TRAIN-PREP plan-only/new environment lock; unchanged original class0 building/explicit COCO1 remap; source-group label/allocation eligibility, Torch/ONNX preprocessing parity and same-checkpoint baseline, current-process effective guard plus separately authorized GPU/fit handoff. This control is not a training authorization or model/parity qualification."
   },
