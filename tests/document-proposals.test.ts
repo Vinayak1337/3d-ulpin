@@ -113,6 +113,21 @@ test('actual T3-2 ten cited proposals save/exact-read/replay with literal captio
   f.state.revision=3;const later=await f.service.read(f.caseId,f.sourceId,saved.snapshotId);
   assert.equal(later.currentCaseRevision,3);assert.equal(later.caseRevision,2);assert.deepEqual(later.packet,input.packet);
 }));
+test('same-key recovery after unrelated case advance returns the committed snapshot without new operations or page inspection',options,()=>withSubject(async()=>{
+  const f=harness(),input=f.request();
+  await f.service.save(f.caseId,f.sourceId,input); // Discard the response as if its server-generated snapshotId was lost.
+  const persisted=[...f.operations.values()].find(v=>v.result.snapshot)!.result.snapshot;
+  const operations=structuredClone(f.operations),pages=f.state.pages,inserts=f.state.inserts,verified=f.state.verified;
+  f.state.revision=3;
+  const recovered=await f.service.save(f.caseId,f.sourceId,input),{currentCaseRevision,snapshotSha256,...snapshot}=recovered;
+  assert.deepEqual(snapshot,persisted);assert.equal(currentCaseRevision,3);assert.equal(snapshot.caseRevision,2);
+  assert.equal(snapshotSha256.length,64);assert.deepEqual(f.operations,operations);
+  assert.equal(f.state.pages,pages);assert.equal(f.state.inserts,inserts);
+  assert.equal(f.state.verified,verified+1,'Exact replay still verifies the current original before locked disclosure.');
+  await assert.rejects(f.service.save(f.caseId,f.sourceId,{...input,expectedCaseRevision:3}),error(409));
+  await assert.rejects(f.service.save(f.caseId,f.sourceId,{...input,requestKey:randomUUID()}),error(409));
+  assert.deepEqual(f.operations,operations);assert.equal(f.state.pages,pages);assert.equal(f.state.inserts,inserts);
+}));
 test('incomplete quote remains needs_input; actual S-001 rejected lines remain inspectable without filtering or promotion',options,()=>withSubject(async()=>{
   const f=harness(),input=f.request();input.packet.proposals[0]={...input.packet.proposals[0],quote:null,lineQuote:null,
     quoteCharacterSpan:null,status:'needs_input',declaredMethod:null,declaredObservation:null};

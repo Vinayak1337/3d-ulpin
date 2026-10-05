@@ -126,8 +126,9 @@ export class DocumentProposalsService{
     const caseId=id.parse(caseValue),sourceId=id.parse(sourceValue),request=DocumentProposalsSaveSchema.parse(raw),deadline=Date.now()+limits.seconds*1000;
     bounded(request,limits.requestBytes);const digest=fingerprint({caseId,sourceId,request});
     const before=await this.readTx(deadline,async client=>{const authority=await captureTx(client,caseId,sourceId,request.source);
-      if(authority.caseRevision!==request.expectedCaseRevision)conflict('Pin the current source-case revision.');
-      return {authority,prior:await replay(client,authority,request.requestKey,digest)};});
+      const prior=await replay(client,authority,request.requestKey,digest);
+      if(!prior&&authority.caseRevision!==request.expectedCaseRevision)conflict('Pin the current source-case revision.');
+      return {authority,prior};});
     await this.verify(before.authority,deadline);
     if(before.prior)return this.disclose(before.authority,before.prior,deadline);
     await this.pages(before.authority,request.packet,deadline);
