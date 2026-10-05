@@ -26,6 +26,9 @@ PACKAGES = {"torch": "2.14.0", "torchvision": "0.29.0", "transformers": "5.17.0"
             "accelerate": "1.15.0", "pycocotools": "2.0.11", "pillow": "12.3.0",
             "safetensors": "0.8.0", "numpy": "2.5.3", "scipy": "1.18.1"}
 MOUNT_VERSION = "ramp-mounted-training-config/1"
+BOUND_MOUNT_VERSION = "ramp-mounted-training-config/2"
+RUNTIME_SHA = "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615"
+LOCK_SHA = "0a049c8f7e893df7a8a6a579a81dcca2f2554c700883dbe1a4be661a5d2fa7d8"
 ORIGINAL_CONFIG_SHA = "237c0f3815a66151a462f5d0bbe30a23e8cb4b8c9822c44cf2250f57c01107e2"
 ORIGINAL_PLAN_SHA = "bf69a1f7aff08844e6b2899f66dee58f78a6435e13b52f188a4f36dcca9f1d6d"
 ORIGINAL_SCRIPT_SHA = "40dd3ae09a8edebaf1248b03d80a69808d170f6164ebcd9c340aa4d155a85b84"
@@ -38,6 +41,9 @@ MOUNT_DESTINATIONS = {"model": "/inputs/model", "train": "/inputs/coco/train",
        for k in ["trainOriginal", "developmentOriginal", "developmentObserved"]},
     "originalConfig": "/inputs/plan/original-config.json", "originalPlan": "/inputs/plan/original-plan.json",
     "originalScript": "/inputs/plan/original-trainer.py", "adapter": "/inputs/plan/train_building_ramp.py"}
+RUNTIME_DESTINATIONS = {"runtimeReceipt": "/inputs/plan/runtime-binding.json",
+    "packageLock": "/inputs/plan/environment-lock.json", "installedMetadata": "/inputs/plan/installed-metadata.json",
+    "imageMetadata": "/inputs/plan/layer-image-inspect.json"}
 
 
 def digest(value):
@@ -95,12 +101,43 @@ def portable_inputs(descriptor_path):
     return refs
 
 
+def sealed_runtime(pin, mounts=None):
+    """Bind the exact ENV metadata receipt, never arbitrary version overrides."""
+    require(pin["sha256"] == RUNTIME_SHA and pin["bytes"] == 6417, "Unsealed runtime binding")
+    check_pin({**pin, "path": str(unlinked(pin["path"]))})
+    runtime = read_json(pin["path"])
+    require(runtime["schemaVersion"] == "rfdetr-runtime-binding/1" and runtime["platform"] == "linux/amd64" and
+            runtime["pullPolicy"] == "never" and runtime["trainingAuthorized"] is False, "Unsupported runtime scope")
+    for key in ["packageLock", "installedMetadata", "imageMetadata"]:
+        if mounts is not None: runtime[key] = mapped_pin(runtime[key], mounts)
+        check_pin({**runtime[key], "path": str(unlinked(runtime[key]["path"]))})
+    lock = read_json(runtime["packageLock"]["path"])
+    installed = read_json(runtime["installedMetadata"]["path"])
+    image = read_json(runtime["imageMetadata"]["path"])
+    require(runtime["packageLock"]["sha256"] == LOCK_SHA and lock["schemaVersion"] == "rfdetr-linux-environment-lock/1" and
+            lock["python"] == runtime["pythonVersion"] and lock["platform"] == runtime["platform"] and
+            lock["installedPackageVersions"] == runtime["packageVersions"] == installed["installedPackageVersions"] and
+            len(runtime["packageVersions"]) == 134 and installed["environmentLockSha256"] == LOCK_SHA and
+            installed["pythonEntrypoint"] == runtime["pythonExecutable"], "Runtime/package lock metadata disagree")
+    require(image["Id"] == image["Descriptor"]["digest"] == runtime["imageDigest"] == runtime["imageReference"] and
+            image["Descriptor"]["annotations"]["config.digest"] == runtime["imageConfigDigest"] and
+            image["Os"] + "/" + image["Architecture"] == runtime["platform"] and
+            image["Config"]["User"] == runtime["imageUser"] == "10001:10001" and
+            image["Config"]["Env"] == runtime["imageEnvironment"] and
+            image["Config"]["Entrypoint"] == runtime["imageEntrypoint"] == [runtime["pythonExecutable"]], "Sealed image metadata disagree")
+    runtime.update(receipt=pin, rootfsLayerDiffIds=image["RootFS"]["Layers"])
+    return runtime
+
+
 def prepare_mounted(spec_path):
     """Cheap metadata mapping of the already verified plan; no COCO/RLE replay."""
     spec = read_json(spec_path, 1024**2)
     require(set(spec) == {"schemaVersion", "originalConfig", "originalPlan", "originalScript", "portableDescriptor",
                          "adapter", "mounts", "output", "runtimeBinding"} and
-            spec["schemaVersion"] == "ramp-mount-map/1", "Unsupported mount-map fields/version")
+            spec["schemaVersion"] in {"ramp-mount-map/1", "ramp-mount-map/2"}, "Unsupported mount-map fields/version")
+    runtime = sealed_runtime(spec["runtimeBinding"]) if spec["runtimeBinding"] is not None else None
+    require((spec["schemaVersion"] == "ramp-mount-map/2") == (runtime is not None), "Map version/runtime binding mismatch")
+    destinations = {**MOUNT_DESTINATIONS, **(RUNTIME_DESTINATIONS if runtime else {})}
     for key, sha in [("originalConfig", ORIGINAL_CONFIG_SHA), ("originalPlan", ORIGINAL_PLAN_SHA),
                      ("originalScript", ORIGINAL_SCRIPT_SHA), ("portableDescriptor", PORTABLE_SHA)]:
         require(spec[key]["sha256"] == sha, f"Unsealed {key}")
@@ -119,6 +156,9 @@ def prepare_mounted(spec_path):
         "manifest": config["datasetManifest"]["path"],
         **{k: refs[k]["path"] for k in ["descriptor", "checks", "trainOriginal", "developmentOriginal", "developmentObserved"]},
         **{k: spec[k]["path"] for k in ["originalConfig", "originalPlan", "originalScript", "adapter"]}}
+    runtime_refs = {} if runtime is None else {"runtimeReceipt": spec["runtimeBinding"],
+        **{k: runtime[k] for k in ["packageLock", "installedMetadata", "imageMetadata"]}}
+    expected.update({k: p["path"] for k, p in runtime_refs.items()})
     mounts = spec["mounts"]
     require(len(mounts) == len(expected) and {m["role"] for m in mounts} == set(expected), "Finite input roles required")
     output = spec["output"]
@@ -127,7 +167,7 @@ def prepare_mounted(spec_path):
     out = unlinked(output["hostPath"])
     task_root = unlinked(Path(spec_path).parent)
     require(task_root == unlinked("E:/BhuAayam-data/task-data/d07-rfdetr-mounted-plan-20261005") and
-            out == task_root / "output", "Output must be the assigned task's isolated output directory")
+            out == task_root / ("output-runtime-v1" if runtime else "output"), "Output must be the assigned task's isolated output directory")
     require(not out.exists() or out.is_dir() and not any(out.iterdir()), "Output must be new/empty task-owned directory")
     host_roots = []
     for mount in mounts:
@@ -136,7 +176,7 @@ def prepare_mounted(spec_path):
         path = unlinked(mount["hostPath"])
         kind = "directory" if role in {"model", "train", "valid"} else "file"
         require(path == unlinked(expected[role]) and mount["kind"] == kind and mount["readOnly"] is True and
-                mount["containerPath"] == MOUNT_DESTINATIONS[role], "Unsupported/writable input mount")
+                mount["containerPath"] == destinations[role], "Unsupported/writable input mount")
         require(path.is_dir() if kind == "directory" else path.is_file(), "Mount type mismatch")
         require(not out.is_relative_to(path) and not path.is_relative_to(out), "Output overlaps protected input")
         require(all(not path.is_relative_to(p) and not p.is_relative_to(path) for p in host_roots), "Overlapping input mounts")
@@ -147,6 +187,7 @@ def prepare_mounted(spec_path):
     inventory = [config[k] for k in ["weights", "modelConfig", "processorConfig", "datasetManifest", "trainAnnotations", "developmentAnnotations"]]
     inventory += [spec[k] for k in ["originalConfig", "originalPlan", "originalScript", "adapter"]]
     inventory += [p for k, p in refs.items() if k not in {"manifest", "train", "valid"}]
+    inventory += list(runtime_refs.values())
     for pool in original["pools"]:
         require(pool["split"] in {"train", "valid"} and pool["images"] == 24 and len(pool["imagePins"]) == 24, "Unsupported pool")
         inventory.extend(pool["imagePins"])
@@ -179,9 +220,11 @@ def prepare_mounted(spec_path):
     mapped["scriptPin"] = mapped_pin(spec["originalScript"], mounts)
     mapped["configPin"] = mapped_pin(spec["originalConfig"], mounts)
     mapped["trainingArguments"]["output_dir"] = view["outputDir"]
-    runtime = spec["runtimeBinding"]
-    require(runtime is None, "Runtime binding awaits the ENV owner's sealed compatible lock; no arbitrary versions accepted")
-    wrapper = {"schemaVersion": MOUNT_VERSION, "kind": "metadata_only_mapping_not_runtime_validation",
+    if runtime:
+        runtime = copy.deepcopy(runtime)
+        for key in ["receipt", "packageLock", "installedMetadata", "imageMetadata"]:
+            runtime[key] = mapped_pin(runtime[key], mounts)
+    wrapper = {"schemaVersion": BOUND_MOUNT_VERSION if runtime else MOUNT_VERSION, "kind": "metadata_only_mapping_not_runtime_validation",
         "config": view, "mounts": mounts, "output": {**output, "hostPath": str(out)},
         "originalConfig": mapped_pin(spec["originalConfig"], mounts), "originalPlan": mapped_pin(spec["originalPlan"], mounts),
         "originalScript": mapped_pin(spec["originalScript"], mounts), "adapter": mapped_pin(spec["adapter"], mounts),
@@ -189,11 +232,12 @@ def prepare_mounted(spec_path):
         "inventory": [{"hostPin": p, "containerPin": mapped_pin(p, mounts),
                        "verification": "retained_sha256_and_current_path_size" if p in images else "current_exact_bytes_sha256"} for p in inventory],
         "trainingAuthorized": False, "fitAdmission": "not_fit_admitted"}
-    mapped.update({"schemaVersion": "ramp-mounted-training-plan/1", "originalPlanSha256": original["planSha256"],
+    mapped.update({"schemaVersion": "ramp-mounted-training-plan/2" if runtime else "ramp-mounted-training-plan/1", "originalPlanSha256": original["planSha256"],
         "mountedConfigSha256": digest(wrapper), "adapterPin": wrapper["adapter"], "runtimeBinding": runtime,
         "installedPackageMetadata": None, "kind": wrapper["kind"], "trainingAuthorized": False,
-        "blockers": ["Sealed compatible Linux runtime/dependency lock", "Actual mounted-process containment and input readback",
+        "blockers": ([] if runtime else ["Sealed compatible Linux runtime/dependency lock"]) + ["Actual mounted-process containment and input readback",
                      *original["blockers"]]})
+    if runtime: mapped["expectedPackageVersions"] = runtime["packageVersions"]
     del mapped["planSha256"]
     mapped["planSha256"] = digest(mapped)
     return {"mountedConfig": wrapper, "mountedPlan": mapped}
@@ -280,12 +324,22 @@ def validate_pool(root, split, annotation_pin):
 
 def mounted_view(wrapper):
     """Resolve only declared POSIX inputs; source snapshots stay unchanged."""
-    require(wrapper["schemaVersion"] == MOUNT_VERSION and wrapper["fitAdmission"] == "not_fit_admitted" and
+    bound = wrapper["schemaVersion"] == BOUND_MOUNT_VERSION
+    require(wrapper["schemaVersion"] in {MOUNT_VERSION, BOUND_MOUNT_VERSION} and wrapper["fitAdmission"] == "not_fit_admitted" and
             wrapper["trainingAuthorized"] is False, "Mounted configuration grants no fit admission")
-    require({m["role"] for m in wrapper["mounts"]} == set(MOUNT_DESTINATIONS) and
-            len(wrapper["mounts"]) == len(MOUNT_DESTINATIONS) and
-            all(m["readOnly"] is True and m["containerPath"] == MOUNT_DESTINATIONS[m["role"]]
+    destinations = {**MOUNT_DESTINATIONS, **(RUNTIME_DESTINATIONS if bound else {})}
+    require({m["role"] for m in wrapper["mounts"]} == set(destinations) and
+            len(wrapper["mounts"]) == len(destinations) and
+            all(m["readOnly"] is True and m["containerPath"] == destinations[m["role"]]
                 for m in wrapper["mounts"]), "Unsupported mounted input scope")
+    if bound:
+        runtime = sealed_runtime(wrapper["runtimeBinding"]["receipt"], wrapper["mounts"])
+        require(runtime == wrapper["runtimeBinding"], "Mounted runtime differs from sealed ENV metadata")
+        require(sys.platform == "linux" and os.uname().machine == "x86_64" and
+                ".".join(map(str, sys.version_info[:3])) == runtime["pythonVersion"] and
+                Path(sys.executable).resolve() == Path(runtime["pythonExecutable"]).resolve(), "Actual process Python/platform differs from runtime binding")
+    else:
+        require(wrapper["runtimeBinding"] is None, "Version1 has no compatible runtime binding")
     for key, sha in [("originalConfig", ORIGINAL_CONFIG_SHA), ("originalPlan", ORIGINAL_PLAN_SHA),
                      ("originalScript", ORIGINAL_SCRIPT_SHA)]:
         require(wrapper[key]["sha256"] == sha, f"Unsealed mounted {key}")
@@ -313,7 +367,7 @@ def mounted_view(wrapper):
 def build_plan(config_path):
     config_path = Path(config_path).resolve(strict=True)
     config = read_json(config_path, 1024**2)
-    mounted = config if config.get("schemaVersion") == MOUNT_VERSION else None
+    mounted = config if config.get("schemaVersion") in {MOUNT_VERSION, BOUND_MOUNT_VERSION} else None
     mounted_manifest = None
     if mounted:
         config, mounted_manifest = mounted_view(mounted)
@@ -356,7 +410,8 @@ def build_plan(config_path):
     protected = [root, weights.parent, config_path.parent]
     require(all(not output.is_relative_to(p) and not p.is_relative_to(output) for p in protected), "Output overlaps retained data/config/weights")
     versions = {}
-    for name in PACKAGES:
+    expected_versions = mounted["runtimeBinding"]["packageVersions"] if mounted and mounted["runtimeBinding"] else PACKAGES
+    for name in expected_versions:
         try: versions[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError: versions[name] = None
     kwargs = {"output_dir": str(output), "num_train_epochs": epochs, "per_device_train_batch_size": 1,
@@ -379,10 +434,13 @@ def build_plan(config_path):
                          "Unchanged source-checkpoint open-development baseline and Torch/ONNX preprocessing parity", "Single model/GPU ownership transfer",
                          "Effective network/resource preflight for this exact training process", "Isolated resolved dependency lock and safe matching checkpoint loading"]}
     if mounted:
-        plan.update(schemaVersion="ramp-mounted-runtime-plan/1", runtimeBinding=mounted["runtimeBinding"],
+        plan.update(schemaVersion="ramp-mounted-runtime-plan/2" if mounted["runtimeBinding"] else "ramp-mounted-runtime-plan/1", runtimeBinding=mounted["runtimeBinding"],
                     portableInputs=mounted["portableInputs"], originalPlan=mounted["originalPlan"],
-                    mountedConfigVersion=MOUNT_VERSION)
-        plan["blockers"].insert(0, "Exact compatible Linux image/Python/dependency binding and actual mounted-process authorization")
+                    mountedConfigVersion=mounted["schemaVersion"])
+        if mounted["runtimeBinding"]:
+            require(versions == expected_versions, "Actual package metadata differs from complete134-package sealed lock")
+            plan["expectedPackageVersions"] = expected_versions
+        plan["blockers"].insert(0, "Actual mounted-process qualification and root authorization")
     encoded = json.dumps(plan, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
     plan["planSha256"] = hashlib.sha256(encoded).hexdigest()
     return plan, manifest
@@ -390,8 +448,8 @@ def build_plan(config_path):
 
 def check_gate(path, expected_sha, plan):
     require(path is not None and expected_sha is not None, "Execution blocked: a root authorization/handoff receipt and exact hash are required")
-    if plan["schemaVersion"] == "ramp-mounted-runtime-plan/1":
-        require(False, "Mounted execution blocked: sealed compatible runtime binding/actual-process authorization must be implemented under the ENV handoff")
+    if plan["schemaVersion"] in {"ramp-mounted-runtime-plan/1", "ramp-mounted-runtime-plan/2"}:
+        require(False, "Mounted execution blocked: actual-process qualification/root authorization gate remains unassigned")
     require(file_pin(path)["sha256"] == expected_sha, "Authorization receipt hash mismatch")
     gate = read_json(path, 1024**2)
     require(gate["schemaVersion"] == "ramp-training-authorization/1" and gate["planSha256"] == plan["planSha256"], "Authorization belongs to another plan")
@@ -507,8 +565,8 @@ def main():
         require(args.authorization is not None and args.authorization_sha256 is not None,
                 "Execution blocked: a root authorization/handoff receipt and exact hash are required")
     candidate = read_json(args.config, 1024**2)
-    if candidate.get("schemaVersion") == MOUNT_VERSION and args.execute:
-        require(False, "Mounted execution blocked: sealed compatible runtime lock and actual-runtime-bound root authorization remain unassigned")
+    if candidate.get("schemaVersion") in {MOUNT_VERSION, BOUND_MOUNT_VERSION} and args.execute:
+        require(False, "Mounted execution blocked: actual-mounted-process qualification and root authorization remain unassigned")
     plan, _ = build_plan(args.config)
     if args.execute:
         gate = check_gate(args.authorization, args.authorization_sha256, plan)
